@@ -6,14 +6,7 @@
  * @module Core
  */
 
-import {
-  Format,
-  FormatProps,
-  FormatterSpec,
-  ParserSpec,
-  UnitsProvider,
-  UnitSystemKey,
-} from "@itwin/core-quantity";
+import { Format, FormatProps, FormatterSpec, ParserSpec, UnitsProvider, UnitSystemKey } from "@itwin/core-quantity";
 import {
   Format as ECFormat,
   InvertedUnit,
@@ -48,43 +41,20 @@ export class KoqPropertyValueFormatter {
   }
 
   public async getFormatterSpec(options: FormatOptions) {
-    const formattingProps = await getFormattingProps(
-      this._schemaContext,
-      options
-    );
+    const formattingProps = await getFormattingProps(this._schemaContext, options);
     if (!formattingProps) return undefined;
     const { formatProps, persistenceUnitName } = formattingProps;
-    const persistenceUnit = await this._unitsProvider.findUnitByName(
-      persistenceUnitName
-    );
-    const format = await Format.createFromJSON(
-      "",
-      this._unitsProvider,
-      formatProps
-    );
-    return FormatterSpec.create(
-      "",
-      format,
-      this._unitsProvider,
-      persistenceUnit
-    );
+    const persistenceUnit = await this._unitsProvider.findUnitByName(persistenceUnitName);
+    const format = await Format.createFromJSON("", this._unitsProvider, formatProps);
+    return FormatterSpec.create("", format, this._unitsProvider, persistenceUnit);
   }
 
   public async getParserSpec(options: FormatOptions) {
-    const formattingProps = await getFormattingProps(
-      this._schemaContext,
-      options
-    );
+    const formattingProps = await getFormattingProps(this._schemaContext, options);
     if (!formattingProps) return undefined;
     const { formatProps, persistenceUnitName } = formattingProps;
-    const persistenceUnit = await this._unitsProvider.findUnitByName(
-      persistenceUnitName
-    );
-    const format = await Format.createFromJSON(
-      "",
-      this._unitsProvider,
-      formatProps
-    );
+    const persistenceUnit = await this._unitsProvider.findUnitByName(persistenceUnitName);
+    const format = await Format.createFromJSON("", this._unitsProvider, formatProps);
     return ParserSpec.create(format, this._unitsProvider, persistenceUnit);
   }
 }
@@ -115,10 +85,7 @@ async function getFormattingProps(
 
 async function getKoq(schemaLocater: ISchemaLocater, fullName: string) {
   const [schemaName, propKoqName] = fullName.split(":");
-  const schema = await schemaLocater.getSchema(
-    new SchemaKey(schemaName),
-    SchemaMatchType.Latest
-  );
+  const schema = await schemaLocater.getSchema(new SchemaKey(schemaName), SchemaMatchType.Latest);
   if (!schema) return undefined;
 
   return schema.getItem<KindOfQuantity>(propKoqName);
@@ -136,23 +103,16 @@ async function getKoqFormatProps(
 
   // use persistence unit format if it matches requested unit system and matching presentation format was not found
   const persistenceUnitSystem = await persistenceUnit.unitSystem;
-  if (
-    persistenceUnitSystem &&
-    unitSystems.includes(persistenceUnitSystem.name.toUpperCase())
-  )
+  if (persistenceUnitSystem && unitSystems.includes(persistenceUnitSystem.name.toUpperCase()))
     return getPersistenceUnitFormatProps(persistenceUnit);
 
   // use default presentation format if persistence unit does not match requested unit system
-  if (koq.defaultPresentationFormat)
-    return formatToFormatProps(koq.defaultPresentationFormat);
+  if (koq.defaultPresentationFormat) return formatToFormatProps(koq.defaultPresentationFormat);
 
   return undefined;
 }
 
-async function getKoqPresentationFormat(
-  koq: KindOfQuantity,
-  unitSystems: string[]
-) {
+async function getKoqPresentationFormat(koq: KindOfQuantity, unitSystems: string[]) {
   const presentationFormats = koq.presentationFormats;
   for (const system of unitSystems) {
     for (const format of presentationFormats) {
@@ -161,8 +121,7 @@ async function getKoqPresentationFormat(
       if (!unit) continue;
 
       const currentUnitSystem = await unit.unitSystem;
-      if (currentUnitSystem && currentUnitSystem.name.toUpperCase() === system)
-        return format;
+      if (currentUnitSystem && currentUnitSystem.name.toUpperCase() === system) return format;
     }
   }
   return undefined;
@@ -204,9 +163,7 @@ function baseFormatToFormatProps(format: ECFormat): FormatProps {
   };
 }
 
-function getPersistenceUnitFormatProps(
-  persistenceUnit: Unit | InvertedUnit
-): FormatProps {
+function getPersistenceUnitFormatProps(persistenceUnit: Unit | InvertedUnit): FormatProps {
   // Same as Format "DefaultRealU" in Formats ecschema
   return {
     formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],

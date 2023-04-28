@@ -90,11 +90,7 @@ export class KnotVector {
    * @param knots
    * @param degree
    */
-  private constructor(
-    knots: number[] | Float64Array | number,
-    degree: number,
-    wrapMode?: BSplineWrapMode
-  ) {
+  private constructor(knots: number[] | Float64Array | number, degree: number, wrapMode?: BSplineWrapMode) {
     this.degree = degree;
     this._wrapMode = wrapMode;
     // default values to satisfy compiler -- real values hapn setupFixedValues or final else defers to user
@@ -140,14 +136,9 @@ export class KnotVector {
     const indexDelta = rightKnotIndex - leftKnotIndex;
     // maximum continuity mode .  . .
     if (mode === BSplineWrapMode.OpenByAddingControlPoints) {
-      for (
-        let k0 = leftKnotIndex - degree + 1;
-        k0 < leftKnotIndex + degree - 1;
-        k0++
-      ) {
+      for (let k0 = leftKnotIndex - degree + 1; k0 < leftKnotIndex + degree - 1; k0++) {
         const k1 = k0 + indexDelta;
-        if (!Geometry.isSameCoordinate(this.knots[k0] + period, this.knots[k1]))
-          return false;
+        if (!Geometry.isSameCoordinate(this.knots[k0] + period, this.knots[k1])) return false;
       }
       return true;
     }
@@ -158,20 +149,8 @@ export class KnotVector {
       const leftKnot = this.knots[leftKnotIndex];
       const rightKnot = this.knots[rightKnotIndex];
       for (let i = 0; i < numRepeated; i++) {
-        if (
-          !Geometry.isSameCoordinate(
-            leftKnot,
-            this.knots[leftKnotIndex - i - 1]
-          )
-        )
-          return false;
-        if (
-          !Geometry.isSameCoordinate(
-            rightKnot,
-            this.knots[rightKnotIndex + i + 1]
-          )
-        )
-          return false;
+        if (!Geometry.isSameCoordinate(leftKnot, this.knots[leftKnotIndex - i - 1])) return false;
+        if (!Geometry.isSameCoordinate(rightKnot, this.knots[rightKnotIndex + i + 1])) return false;
       }
       return true;
     }
@@ -181,11 +160,7 @@ export class KnotVector {
   /** Test matching degree and knot values */
   public isAlmostEqual(other: KnotVector): boolean {
     if (this.degree !== other.degree) return false;
-    return NumberArray.isAlmostEqual(
-      this.knots,
-      other.knots,
-      KnotVector.knotTolerance
-    );
+    return NumberArray.isAlmostEqual(this.knots, other.knots, KnotVector.knotTolerance);
   }
 
   /** Compute the multiplicity of the input knot, or zero if not a knot. */
@@ -206,14 +181,12 @@ export class KnotVector {
       ++m; // count this knot
       for (let i = knotIndex - 1; i >= 0; --i) {
         const k = this.knots[i];
-        if (Math.abs(k - knot) < KnotVector.knotTolerance)
-          ++m; // found multiple to left of knot
+        if (Math.abs(k - knot) < KnotVector.knotTolerance) ++m; // found multiple to left of knot
         else if (knot > k) break;
       }
       for (let i = knotIndex + 1; i < this.knots.length; ++i) {
         const k = this.knots[i];
-        if (Math.abs(k - knot) < KnotVector.knotTolerance)
-          ++m; // found multiple to right of knot
+        if (Math.abs(k - knot) < KnotVector.knotTolerance) ++m; // found multiple to right of knot
         else if (knot < k) break;
       }
     }
@@ -227,20 +200,17 @@ export class KnotVector {
     if (this.knotLength01 < KnotVector.knotTolerance) return false;
     const divisor = 1.0 / this.knotLength01;
     const leftKnot = this.leftKnot;
-    for (let i = 0; i < this.knots.length; ++i)
-      this.knots[i] = (this.knots[i] - leftKnot) * divisor;
+    for (let i = 0; i < this.knots.length; ++i) this.knots[i] = (this.knots[i] - leftKnot) * divisor;
     // explicitly set rightKnot and its multiples to 1.0 to avoid round-off
     for (
       let i = this.rightKnotIndex - 1;
-      i > this.leftKnotIndex &&
-      this.knots[i] === this.knots[this.rightKnotIndex];
+      i > this.leftKnotIndex && this.knots[i] === this.knots[this.rightKnotIndex];
       --i
     )
       this.knots[i] = 1.0;
     for (
       let i = this.rightKnotIndex + 1;
-      i < this.knots.length &&
-      this.knots[i] === this.knots[this.rightKnotIndex];
+      i < this.knots.length && this.knots[i] === this.knots[this.rightKnotIndex];
       ++i
     )
       this.knots[i] = 1.0;
@@ -253,8 +223,7 @@ export class KnotVector {
    */
   public setKnots(knots: number[] | Float64Array, skipFirstAndLast?: boolean) {
     const numAllocate = skipFirstAndLast ? knots.length - 2 : knots.length;
-    if (numAllocate !== this.knots.length)
-      this.knots = new Float64Array(numAllocate);
+    if (numAllocate !== this.knots.length) this.knots = new Float64Array(numAllocate);
     if (skipFirstAndLast) {
       for (let i = 1; i + 1 < knots.length; i++) this.knots[i - 1] = knots[i];
     } else {
@@ -276,18 +245,12 @@ export class KnotVector {
    * @param a0 left knot value for active interval
    * @param a1 right knot value for active interval
    */
-  public static createUniformClamped(
-    numPoles: number,
-    degree: number,
-    a0: number,
-    a1: number
-  ): KnotVector {
+  public static createUniformClamped(numPoles: number, degree: number, a0: number, a1: number): KnotVector {
     const knots = new KnotVector(numPoles + degree - 1, degree);
     let k = 0;
     for (let m = 0; m < degree; m++) knots.knots[k++] = a0;
     const du = 1.0 / (numPoles - degree);
-    for (let i = 1; i + degree < numPoles; i++)
-      knots.knots[k++] = a0 + i * du * (a1 - a0);
+    for (let i = 1; i + degree < numPoles; i++) knots.knots[k++] = a0 + i * du * (a1 - a0);
     for (let m = 0; m < degree; m++) knots.knots[k++] = a1;
     knots.setupFixedValues();
     return knots;
@@ -299,12 +262,7 @@ export class KnotVector {
    * @param a0 left knot value for active interval
    * @param a1 right knot value for active interval
    */
-  public static createUniformWrapped(
-    numInterval: number,
-    degree: number,
-    a0: number,
-    a1: number
-  ): KnotVector {
+  public static createUniformWrapped(numInterval: number, degree: number, a0: number, a1: number): KnotVector {
     const knots = new KnotVector(numInterval + 2 * degree - 1, degree);
     const du = 1.0 / numInterval;
     for (let i = 1 - degree, k = 0; i < numInterval + degree; i++, k++) {
@@ -320,14 +278,8 @@ export class KnotVector {
    * @param degree degree of polynomial
    * @param skipFirstAndLast true to skip copying the first and last knot values.
    */
-  public static create(
-    knotArray: number[] | Float64Array,
-    degree: number,
-    skipFirstAndLast?: boolean
-  ): KnotVector {
-    const numAllocate = skipFirstAndLast
-      ? knotArray.length - 2
-      : knotArray.length;
+  public static create(knotArray: number[] | Float64Array, degree: number, skipFirstAndLast?: boolean): KnotVector {
+    const numAllocate = skipFirstAndLast ? knotArray.length - 2 : knotArray.length;
     const knots = new KnotVector(numAllocate, degree);
     knots.setKnots(knotArray, skipFirstAndLast);
     return knots;
@@ -340,8 +292,7 @@ export class KnotVector {
     if (knotIndex < 0) return this.leftKnot;
     if (knotIndex > this.rightKnotIndex) return this.rightKnot;
     let sum = 0.0;
-    for (let i = knotIndex; i < knotIndex + this.degree; i++)
-      sum += this.knots[i];
+    for (let i = knotIndex; i < knotIndex + this.degree; i++) sum += this.knots[i];
     return sum / this.degree;
   }
   /** Return an array sized for a set of the basis function values. */
@@ -349,10 +300,7 @@ export class KnotVector {
     return new Float64Array(this.degree + 1);
   }
   /** Convert localFraction within the interval following an indexed knot to a knot value. */
-  public baseKnotFractionToKnot(
-    knotIndex0: number,
-    localFraction: number
-  ): number {
+  public baseKnotFractionToKnot(knotIndex0: number, localFraction: number): number {
     const knot0 = this.knots[knotIndex0];
     localFraction = Geometry.clamp(localFraction, 0, 1);
     return knot0 + localFraction * (this.knots[knotIndex0 + 1] - knot0);
@@ -364,21 +312,14 @@ export class KnotVector {
     return this.knots[k] + localFraction * (this.knots[k + 1] - this.knots[k]);
   }
   /** Convert localFraction within an indexed bezier span to fraction of active knot range. */
-  public spanFractionToFraction(
-    spanIndex: number,
-    localFraction: number
-  ): number {
+  public spanFractionToFraction(spanIndex: number, localFraction: number): number {
     const knot = this.spanFractionToKnot(spanIndex, localFraction);
     return (knot - this.leftKnot) / (this.rightKnot - this.leftKnot);
   }
   /** Return fraction of active knot range to knot value. */
   public fractionToKnot(fraction: number): number {
     fraction = Geometry.clamp(fraction, 0, 1); // B-splines are not extendable
-    return Geometry.interpolate(
-      this.knots[this.degree - 1],
-      fraction,
-      this.knots[this.knots.length - this.degree]
-    );
+    return Geometry.interpolate(this.knots[this.degree - 1], fraction, this.knots[this.knots.length - this.degree]);
   }
   /**
    * Evaluate basis functions f[] at knot value u.
@@ -386,11 +327,7 @@ export class KnotVector {
    * @param u knot value for evaluation
    * @param f array of order basis function values
    */
-  public evaluateBasisFunctions(
-    knotIndex0: number,
-    u: number,
-    f: Float64Array
-  ) {
+  public evaluateBasisFunctions(knotIndex0: number, u: number, f: Float64Array) {
     f[0] = 1.0;
     if (this.degree < 1) return;
     // direct compute for linear part ...
@@ -425,13 +362,7 @@ export class KnotVector {
    * @param df array of order basis derivative values
    * @param ddf array of order basis second derivative values
    */
-  public evaluateBasisFunctions1(
-    knotIndex0: number,
-    u: number,
-    f: Float64Array,
-    df: Float64Array,
-    ddf?: Float64Array
-  ) {
+  public evaluateBasisFunctions1(knotIndex0: number, u: number, f: Float64Array, df: Float64Array, ddf?: Float64Array) {
     f[0] = 1.0;
     df[0] = 0.0;
     if (this.degree < 1) return;
@@ -503,8 +434,7 @@ export class KnotVector {
     }
     // for u >= rightKnot, return left index of last nontrivial span
     for (let i = this.rightKnotIndex; i > this.leftKnotIndex; --i) {
-      if (this.knots[i] - this.knots[i - 1] >= KnotVector.knotTolerance)
-        return i - 1;
+      if (this.knots[i] - this.knots[i - 1] >= KnotVector.knotTolerance) return i - 1;
     }
     return this.rightKnotIndex - 1; // shouldn't get here
   }
@@ -529,9 +459,7 @@ export class KnotVector {
    */
   public isIndexOfRealSpan(spanIndex: number): boolean {
     if (spanIndex >= 0 && spanIndex < this.numSpans)
-      return !Geometry.isSmallMetricDistance(
-        this.spanIndexToSpanLength(spanIndex)
-      );
+      return !Geometry.isSmallMetricDistance(this.spanIndexToSpanLength(spanIndex));
     return false;
   }
   /** Reflect all knots so `leftKnot` and `rightKnot` are maintained but interval lengths reverse. */
@@ -547,9 +475,7 @@ export class KnotVector {
    * in classic over-clamped manner
    */
   public copyKnots(includeExtraEndKnot: boolean): number[] {
-    const wrap =
-      this.wrappable === BSplineWrapMode.OpenByAddingControlPoints &&
-      this.testClosable();
+    const wrap = this.wrappable === BSplineWrapMode.OpenByAddingControlPoints && this.testClosable();
     const leftIndex = this.leftKnotIndex;
     const rightIndex = this.rightKnotIndex;
     const a0 = this.leftKnot;

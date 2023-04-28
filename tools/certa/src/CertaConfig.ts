@@ -144,8 +144,7 @@ export namespace CertaConfig {
             propPath,
             relativeFilePath.map((p) => path.resolve(baseDir, p))
           );
-        else
-          lodash.set(opts, propPath, path.resolve(baseDir, relativeFilePath));
+        else lodash.set(opts, propPath, path.resolve(baseDir, relativeFilePath));
       }
     }
   }
@@ -160,13 +159,10 @@ export namespace CertaConfig {
     const resolvedOpts = lodash.defaultsDeep(opts, defaults);
     resolvePaths(process.cwd(), resolvedOpts);
 
-    if (!resolvedOpts.testBundle)
-      throw new Error("The required testBundle option was not set.");
+    if (!resolvedOpts.testBundle) throw new Error("The required testBundle option was not set.");
 
     if (!fs.existsSync(resolvedOpts.testBundle))
-      throw new Error(
-        `The specified testBundle file "${resolvedOpts.testBundle}" does not exist.`
-      );
+      throw new Error(`The specified testBundle file "${resolvedOpts.testBundle}" does not exist.`);
 
     return resolvedOpts;
   }
@@ -180,10 +176,7 @@ export namespace CertaConfig {
    * @param filePath The path to a certa.json config file.
    * @param overrides A partial CertaConfig object. These values will always override any options set in the config file.
    */
-  export function fromConfigFile(
-    filePath: string,
-    overrides: PartialCertaConfig
-  ): CertaConfig {
+  export function fromConfigFile(filePath: string, overrides: PartialCertaConfig): CertaConfig {
     const fileContents = fs.readFileSync(filePath);
     const fileOpts = parse(fileContents.toString()); // Parsing with jsonc-parser lets us safely handle comments.
     resolvePaths(path.dirname(filePath), fileOpts);

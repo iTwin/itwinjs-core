@@ -27,20 +27,14 @@ export abstract class IndexedXYCollection {
    * @param result optional caller-allocated destination
    * @returns undefined if the index is out of bounds
    */
-  public abstract getPoint2dAtCheckedPointIndex(
-    index: number,
-    result?: Point2d
-  ): Point2d | undefined;
+  public abstract getPoint2dAtCheckedPointIndex(index: number, result?: Point2d): Point2d | undefined;
   /**
    * Get from `index` as a `Vector2d`
    * @param index index of point within the array
    * @param result optional caller-allocated destination
    * @returns undefined if the index is out of bounds
    */
-  public abstract getVector2dAtCheckedVectorIndex(
-    index: number,
-    result?: Vector2d
-  ): Vector2d | undefined;
+  public abstract getVector2dAtCheckedVectorIndex(index: number, result?: Vector2d): Vector2d | undefined;
   /**
    * Return a vector from the point at `indexA` to the point at `indexB`
    * @param indexA index of point within the array
@@ -48,11 +42,7 @@ export abstract class IndexedXYCollection {
    * @param result optional caller-allocated vector.
    * @returns undefined if either index is out of bounds
    */
-  public abstract vectorIndexIndex(
-    indexA: number,
-    indexB: number,
-    result?: Vector2d
-  ): Vector2d | undefined;
+  public abstract vectorIndexIndex(indexA: number, indexB: number, result?: Vector2d): Vector2d | undefined;
   /**
    * Return a vector from given origin to the point at `indexB`
    * @param origin origin for vector
@@ -60,11 +50,7 @@ export abstract class IndexedXYCollection {
    * @param result optional caller-allocated vector.
    * @returns undefined if index is out of bounds
    */
-  public abstract vectorXAndYIndex(
-    origin: XAndY,
-    indexB: number,
-    result?: Vector2d
-  ): Vector2d | undefined;
+  public abstract vectorXAndYIndex(origin: XAndY, indexB: number, result?: Vector2d): Vector2d | undefined;
 
   /**
    * Return the cross product of vectors from `origin` to points at `indexA` and `indexB`
@@ -74,11 +60,7 @@ export abstract class IndexedXYCollection {
    * @param result optional caller-allocated vector.
    * @returns undefined if either index is out of bounds
    */
-  public abstract crossProductXAndYIndexIndex(
-    origin: XAndY,
-    indexA: number,
-    indexB: number
-  ): number | undefined;
+  public abstract crossProductXAndYIndexIndex(origin: XAndY, indexA: number, indexB: number): number | undefined;
   /**
    * Return the cross product of vectors from origin point at `indexA` to target points at `indexB` and `indexC`
    * @param origin index of origin
@@ -87,11 +69,7 @@ export abstract class IndexedXYCollection {
    * @param result optional caller - allocated vector.
    * @returns return true if indexA, indexB both valid
    */
-  public abstract crossProductIndexIndexIndex(
-    origin: number,
-    indexA: number,
-    indexB: number
-  ): number | undefined;
+  public abstract crossProductIndexIndexIndex(origin: number, indexA: number, indexB: number): number | undefined;
 
   /**
    * read-only property for number of XY in the collection.
@@ -104,12 +82,8 @@ export abstract class IndexedXYCollection {
    * * Subclasses may wish to override with a more efficient implementation.
    */
   public getXAtUncheckedPointIndex(pointIndex: number): number {
-    const pt = this.getPoint2dAtCheckedPointIndex(
-      pointIndex,
-      IndexedXYCollection._workPoint
-    );
-    if (undefined === IndexedXYCollection._workPoint)
-      IndexedXYCollection._workPoint = pt; // allocate the cache
+    const pt = this.getPoint2dAtCheckedPointIndex(pointIndex, IndexedXYCollection._workPoint);
+    if (undefined === IndexedXYCollection._workPoint) IndexedXYCollection._workPoint = pt; // allocate the cache
     return pt ? pt.x : 0.0;
   }
 
@@ -117,12 +91,8 @@ export abstract class IndexedXYCollection {
    * * Subclasses may wish to override with a more efficient implementation.
    */
   public getYAtUncheckedPointIndex(pointIndex: number): number {
-    const pt = this.getPoint2dAtCheckedPointIndex(
-      pointIndex,
-      IndexedXYCollection._workPoint
-    );
-    if (undefined === IndexedXYCollection._workPoint)
-      IndexedXYCollection._workPoint = pt; // allocate the cache
+    const pt = this.getPoint2dAtCheckedPointIndex(pointIndex, IndexedXYCollection._workPoint);
+    if (undefined === IndexedXYCollection._workPoint) IndexedXYCollection._workPoint = pt; // allocate the cache
     return pt ? pt.y : 0.0;
   }
 
@@ -133,10 +103,7 @@ export abstract class IndexedXYCollection {
    */
   public linearCombination(scales: number[], result?: Point2d | Vector2d): XY {
     const n = Math.min(this.length, scales.length);
-    const sum =
-      result instanceof Vector2d
-        ? Vector2d.createZero(result)
-        : Point2d.createZero(result);
+    const sum = result instanceof Vector2d ? Vector2d.createZero(result) : Point2d.createZero(result);
     for (let i = 0; i < n; ++i) {
       sum.x += scales[i] * this.getXAtUncheckedPointIndex(i);
       sum.y += scales[i] * this.getYAtUncheckedPointIndex(i);

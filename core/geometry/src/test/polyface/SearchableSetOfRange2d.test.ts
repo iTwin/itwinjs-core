@@ -51,21 +51,8 @@ function saveRange(
       ];
       allLines.tryAddChild(LineString3d.create(ticPoints));
     }
-    GeometryCoreTestIO.captureGeometry(
-      allGeometry,
-      allLines,
-      xOrigin,
-      yOrigin,
-      zOrigin
-    );
-  } else
-    GeometryCoreTestIO.captureGeometry(
-      allGeometry,
-      LineString3d.create(points),
-      xOrigin,
-      yOrigin,
-      zOrigin
-    );
+    GeometryCoreTestIO.captureGeometry(allGeometry, allLines, xOrigin, yOrigin, zOrigin);
+  } else GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), xOrigin, yOrigin, zOrigin);
 }
 // cspell::word lisajoue
 describe("LinearSearchRange2dArray", () => {
@@ -99,56 +86,26 @@ describe("LinearSearchRange2dArray", () => {
     // 3) display all candidates on a complete range search.
     const x1 = x0 + 2.0 * totalRange.xLength();
     const x2 = x1 + 2.0 * totalRange.xLength();
-    for (const testPoint of [
-      Point3d.create(0.01, -0.2),
-      Point3d.create(-0.3, 0.5),
-      Point3d.create(-0.4, -0.2),
-    ]) {
+    for (const testPoint of [Point3d.create(0.01, -0.2), Point3d.create(-0.3, 0.5), Point3d.create(-0.4, -0.2)]) {
       y1 += dy;
       saveRange(allGeometry, 0.05, totalRange, x0, y1, -0.0001);
-      GeometryCoreTestIO.createAndCaptureXYCircle(
-        allGeometry,
-        testPoint,
-        0.02,
-        x0,
-        y0
-      );
-      GeometryCoreTestIO.createAndCaptureXYCircle(
-        allGeometry,
-        testPoint,
-        0.02,
-        x1,
-        y1
-      );
-      GeometryCoreTestIO.createAndCaptureXYCircle(
-        allGeometry,
-        testPoint,
-        0.02,
-        x0,
-        y1
-      );
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, testPoint, 0.02, x0, y0);
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, testPoint, 0.02, x1, y1);
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, testPoint, 0.02, x0, y1);
       let numHit = 0;
-      ranges.searchXY(
-        testPoint.x,
-        testPoint.y,
-        (candidate: Range2d, _tag: number) => {
-          numHit++;
-          saveRange(allGeometry, 0.45, candidate, x0, y1);
-          ck.testTrue(candidate.containsPoint(testPoint));
-          return true;
-        }
-      );
+      ranges.searchXY(testPoint.x, testPoint.y, (candidate: Range2d, _tag: number) => {
+        numHit++;
+        saveRange(allGeometry, 0.45, candidate, x0, y1);
+        ck.testTrue(candidate.containsPoint(testPoint));
+        return true;
+      });
       // search again, but quit after 2nd hit.
       let numHit1 = 0;
-      ranges.searchXY(
-        testPoint.x,
-        testPoint.y,
-        (candidate: Range2d, _tag: number) => {
-          numHit1++;
-          saveRange(allGeometry, 0.45, candidate, x1, y1);
-          return numHit1 < 2;
-        }
-      );
+      ranges.searchXY(testPoint.x, testPoint.y, (candidate: Range2d, _tag: number) => {
+        numHit1++;
+        saveRange(allGeometry, 0.45, candidate, x1, y1);
+        return numHit1 < 2;
+      });
       const numHit1A = numHit <= 2 ? numHit : 2;
       ck.testExactNumber(numHit1A, numHit1, "Quick Exit Count");
 
@@ -163,24 +120,16 @@ describe("LinearSearchRange2dArray", () => {
         ck.testTrue(candidate.intersectsRange(testRange));
         return true;
       });
-      ck.testLE(
-        numHit,
-        numHit2,
-        "range search count can be larger than point hit"
-      );
+      ck.testLE(numHit, numHit2, "range search count can be larger than point hit");
     }
 
     // confirm trivial rejects ..
     const outsidePoint = totalRange.fractionToPoint(1.3, 0.3); // safely to the right of everything !!
     let numHitOut = 0;
-    ranges.searchXY(
-      outsidePoint.x,
-      outsidePoint.y,
-      (_candidate: Range2d, _tag: number) => {
-        numHitOut++;
-        return true;
-      }
-    );
+    ranges.searchXY(outsidePoint.x, outsidePoint.y, (_candidate: Range2d, _tag: number) => {
+      numHitOut++;
+      return true;
+    });
     ck.testExactNumber(0, numHitOut, "no candidates for outside point");
     numHitOut = 0;
     const outsideRange = Range2d.createXY(outsidePoint.x, outsidePoint.y);
@@ -190,11 +139,7 @@ describe("LinearSearchRange2dArray", () => {
       return true;
     });
 
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "LinearSearchRange2dArray",
-      "HelloWorld"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "LinearSearchRange2dArray", "HelloWorld");
     expect(ck.getNumErrors()).equals(0);
   });
 });
@@ -207,26 +152,13 @@ describe("GriddedRaggedRange2dSet", () => {
 
     for (const sizeMultiplier of [1, 5, 10]) {
       const boxHalfSize = 10;
-      const fullRange = Range2d.createXYXY(
-        -boxHalfSize,
-        -2 * boxHalfSize,
-        boxHalfSize,
-        2 * boxHalfSize
-      );
+      const fullRange = Range2d.createXYXY(-boxHalfSize, -2 * boxHalfSize, boxHalfSize, 2 * boxHalfSize);
       const numX = 4;
       const numY = 5;
       const rangeSize = 0.75 / numX;
       const circleRadius = 0.2;
-      const rangesInGrid = GriddedRaggedRange2dSet.create<number>(
-        fullRange,
-        numX,
-        numY
-      )!;
-      const allRanges = GriddedRaggedRange2dSetWithOverflow.create<number>(
-        fullRange,
-        numX,
-        numY
-      )!;
+      const rangesInGrid = GriddedRaggedRange2dSet.create<number>(fullRange, numX, numY)!;
+      const allRanges = GriddedRaggedRange2dSetWithOverflow.create<number>(fullRange, numX, numY)!;
       const numRange = 10 * sizeMultiplier * sizeMultiplier;
       const a = 1.0;
       const y0 = 0;
@@ -238,10 +170,7 @@ describe("GriddedRaggedRange2dSet", () => {
       for (let i = 0; i < numRange; i++) {
         const fraction = i / numRange;
         const theta = totalTurns * Math.PI * 2 * i;
-        const uvC = Point3d.create(
-          Geometry.interpolate(-0.01, fraction, 0.99),
-          0.5 + amplitude * Math.sin(theta)
-        );
+        const uvC = Point3d.create(Geometry.interpolate(-0.01, fraction, 0.99), 0.5 + amplitude * Math.sin(theta));
         const deltaUV = lisajouePoint3d(2.14 * theta * theta, a);
         deltaUV.x = Geometry.maxXY(0.01, deltaUV.x);
         deltaUV.y = Geometry.maxXY(0.01, deltaUV.y);
@@ -249,12 +178,7 @@ describe("GriddedRaggedRange2dSet", () => {
         const uv1 = uvC.plusScaled(deltaUV, rangeSize);
         const point0 = fullRange.fractionToPoint(uv0.x, uv0.y);
         const point1 = fullRange.fractionToPoint(uv1.x, uv1.y);
-        const range = Range2d.createXYXY(
-          point0.x,
-          point0.y,
-          point1.x,
-          point1.y
-        );
+        const range = Range2d.createXYXY(point0.x, point0.y, point1.x, point1.y);
         let isInGrid;
         if (rangesInGrid.conditionalInsert(range, i)) {
           isInGrid = true;
@@ -284,96 +208,51 @@ describe("GriddedRaggedRange2dSet", () => {
       saveRange(allGeometry, 0.1, fullRange, x0, y0, -0.0001);
 
       saveRange(allGeometry, 0.1, fullRange, x1, y0);
-      rangesInGrid.visitChildren(
-        0,
-        (depth: number, child: LinearSearchRange2dArray<number>) => {
-          saveRange(
-            allGeometry,
-            undefined,
-            child.totalRange(),
-            x1 + depth * xStep,
-            y0
-          );
-        }
-      );
+      rangesInGrid.visitChildren(0, (depth: number, child: LinearSearchRange2dArray<number>) => {
+        saveRange(allGeometry, undefined, child.totalRange(), x1 + depth * xStep, y0);
+      });
       const testStep = Math.max(1, Math.floor(numRange / 10));
 
       // const testUV = Point3d.create(0.3, 0.2);
       for (let i = 0; i < rangeArray.length; i += testStep) {
-        const testPoint = Point3d.createFrom(
-          rangeArray[i].fractionToPoint(0.0001, 0.0001)
-        );
+        const testPoint = Point3d.createFrom(rangeArray[i].fractionToPoint(0.0001, 0.0001));
         const isInGrid = (rangeArray[i] as any).isInGrid;
         const targetTag = i;
         y1 += dy;
         saveRange(allGeometry, 0.05, totalRange, x0, y1, -0.0001); // point search in grid only
         saveRange(allGeometry, 0.05, totalRange, x1, y1, -0.0001); // point search in two-layer
         saveRange(allGeometry, 0.05, totalRange, x2, y1, -0.0001); // range search in two-layer
-        GeometryCoreTestIO.createAndCaptureXYCircle(
-          allGeometry,
-          testPoint,
-          circleRadius,
-          x0,
-          y1
-        );
-        GeometryCoreTestIO.createAndCaptureXYCircle(
-          allGeometry,
-          testPoint,
-          circleRadius,
-          x1,
-          y1
-        );
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, testPoint, circleRadius, x0, y1);
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, testPoint, circleRadius, x1, y1);
         let numHit = 0;
         let numHitAllRanges = 0;
         let primaryRangeHits = 0;
         let primaryAllRangeHits = 0;
-        rangesInGrid.searchXY(
-          testPoint.x,
-          testPoint.y,
-          (candidate: Range2d, tag: number) => {
-            numHit++;
-            saveRange(allGeometry, 0.45, candidate, x0, y1);
-            ck.testTrue(candidate.containsPoint(testPoint));
-            if (tag === targetTag) primaryRangeHits++;
-            return true;
-          }
-        );
-        allRanges.searchXY(
-          testPoint.x,
-          testPoint.y,
-          (candidate: Range2d, tag: number) => {
-            numHitAllRanges++;
-            saveRange(allGeometry, 0.45, candidate, x1, y1);
-            ck.testTrue(candidate.containsPoint(testPoint));
-            if (tag === targetTag) primaryAllRangeHits++;
-            return true;
-          }
-        );
-        ck.testExactNumber(
-          isInGrid ? 1 : 0,
-          primaryRangeHits,
-          "primary range hits",
-          i
-        );
-        ck.testExactNumber(
-          1,
-          primaryAllRangeHits,
-          "gridded primary range hits",
-          i
-        );
+        rangesInGrid.searchXY(testPoint.x, testPoint.y, (candidate: Range2d, tag: number) => {
+          numHit++;
+          saveRange(allGeometry, 0.45, candidate, x0, y1);
+          ck.testTrue(candidate.containsPoint(testPoint));
+          if (tag === targetTag) primaryRangeHits++;
+          return true;
+        });
+        allRanges.searchXY(testPoint.x, testPoint.y, (candidate: Range2d, tag: number) => {
+          numHitAllRanges++;
+          saveRange(allGeometry, 0.45, candidate, x1, y1);
+          ck.testTrue(candidate.containsPoint(testPoint));
+          if (tag === targetTag) primaryAllRangeHits++;
+          return true;
+        });
+        ck.testExactNumber(isInGrid ? 1 : 0, primaryRangeHits, "primary range hits", i);
+        ck.testExactNumber(1, primaryAllRangeHits, "gridded primary range hits", i);
         ck.testLE(1, numHitAllRanges, "allRange hits", i);
 
         // search again, but quit after 2nd hit.
         let numHit1 = 0;
-        rangesInGrid.searchXY(
-          testPoint.x,
-          testPoint.y,
-          (candidate: Range2d, _tag: number) => {
-            numHit1++;
-            saveRange(allGeometry, 0.45, candidate, x1, y1);
-            return numHit1 < 2;
-          }
-        );
+        rangesInGrid.searchXY(testPoint.x, testPoint.y, (candidate: Range2d, _tag: number) => {
+          numHit1++;
+          saveRange(allGeometry, 0.45, candidate, x1, y1);
+          return numHit1 < 2;
+        });
         const numHit1A = numHit <= 2 ? numHit : 2;
         ck.testExactNumber(numHit1A, numHit1, "Quick Exit Count");
 
@@ -382,58 +261,35 @@ describe("GriddedRaggedRange2dSet", () => {
         const testRange = Range2d.createXY(testPoint.x, testPoint.y);
         testRange.expandInPlace(b);
         saveRange(allGeometry, undefined, testRange, x2, y1);
-        allRanges.searchRange2d(
-          testRange,
-          (candidate: Range2d, _tag: number) => {
-            numHit2++;
-            saveRange(allGeometry, 0.3, candidate, x2, y1);
-            ck.testTrue(candidate.intersectsRange(testRange));
-            return true;
-          }
-        );
-        ck.testLE(
-          numHit,
-          numHit2,
-          "range search count can be larger than point hit"
-        );
+        allRanges.searchRange2d(testRange, (candidate: Range2d, _tag: number) => {
+          numHit2++;
+          saveRange(allGeometry, 0.3, candidate, x2, y1);
+          ck.testTrue(candidate.intersectsRange(testRange));
+          return true;
+        });
+        ck.testLE(numHit, numHit2, "range search count can be larger than point hit");
       }
       // confirm trivial rejects ..
       const outsidePoint = totalRange.fractionToPoint(1.3, 0.3); // safely to the right of everything !!
       let numHitOut = 0;
-      rangesInGrid.searchXY(
-        outsidePoint.x,
-        outsidePoint.y,
-        (_candidate: Range2d, _tag: number) => {
-          numHitOut++;
-          return true;
-        }
-      );
+      rangesInGrid.searchXY(outsidePoint.x, outsidePoint.y, (_candidate: Range2d, _tag: number) => {
+        numHitOut++;
+        return true;
+      });
       ck.testExactNumber(0, numHitOut, "no candidates for outside point");
       numHitOut = 0;
       const outsideRange = Range2d.createXY(outsidePoint.x, outsidePoint.y);
       outsideRange.expandInPlace(0.01 * totalRange.xLength());
-      rangesInGrid.searchRange2d(
-        outsideRange,
-        (_candidate: Range2d, _tag: number) => {
-          numHitOut++;
-          return true;
-        }
-      );
+      rangesInGrid.searchRange2d(outsideRange, (_candidate: Range2d, _tag: number) => {
+        numHitOut++;
+        return true;
+      });
       x0 += 40 * totalRange.xLength();
       const xLine = -2 * boxHalfSize;
-      GeometryCoreTestIO.captureGeometry(
-        allGeometry,
-        LineSegment3d.createXYXY(xLine, 0, xLine, y1),
-        x0,
-        y0
-      );
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYXY(xLine, 0, xLine, y1), x0, y0);
     }
 
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "GriddedRaggedRange2dSet",
-      "HelloWorld"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "GriddedRaggedRange2dSet", "HelloWorld");
     expect(ck.getNumErrors()).equals(0);
   });
   it("FacetGrid", () => {
@@ -443,19 +299,10 @@ describe("GriddedRaggedRange2dSet", () => {
 
     for (const sizeMultiplier of [1, 5, 10]) {
       const boxHalfSize = 10;
-      const fullRange = Range2d.createXYXY(
-        -boxHalfSize,
-        -2 * boxHalfSize,
-        boxHalfSize,
-        2 * boxHalfSize
-      );
+      const fullRange = Range2d.createXYXY(-boxHalfSize, -2 * boxHalfSize, boxHalfSize, 2 * boxHalfSize);
       const numX = 4;
       const numY = 5;
-      const allRanges = GriddedRaggedRange2dSetWithOverflow.create<number>(
-        fullRange,
-        numX,
-        numY
-      )!;
+      const allRanges = GriddedRaggedRange2dSetWithOverflow.create<number>(fullRange, numX, numY)!;
       const numPoints = 10 * sizeMultiplier * sizeMultiplier;
       const y0 = 0;
       const yStep = 2 * fullRange.yLength();
@@ -472,96 +319,53 @@ describe("GriddedRaggedRange2dSet", () => {
       const visitor = facets.createVisitor(0);
       let numFacets = 0;
       for (visitor.reset(); visitor.moveToNextFacet(); ) {
-        allRanges.addRange(
-          visitor.point.getRange(),
-          visitor.currentReadIndex()
-        );
+        allRanges.addRange(visitor.point.getRange(), visitor.currentReadIndex());
         numFacets++;
       }
 
       saveRange(allGeometry, 0.1, fullRange, x1, y0);
-      allRanges.visitChildren(
-        0,
-        (depth: number, child: LinearSearchRange2dArray<number>) => {
-          saveRange(
-            allGeometry,
-            undefined,
-            child.totalRange(),
-            x1 + depth * xStep,
-            y0
-          );
-        }
-      );
+      allRanges.visitChildren(0, (depth: number, child: LinearSearchRange2dArray<number>) => {
+        saveRange(allGeometry, undefined, child.totalRange(), x1 + depth * xStep, y0);
+      });
 
       if (numFacets > 10) {
         visitor.setNumWrap(1);
         const sampleStep = Math.max(1, Math.ceil(numFacets / 5));
         saveRange(allGeometry, undefined, fullRange, x0, y1);
-        for (
-          let facetIndex = 0;
-          facetIndex < numFacets;
-          facetIndex += sampleStep
-        ) {
+        for (let facetIndex = 0; facetIndex < numFacets; facetIndex += sampleStep) {
           visitor.moveToReadIndex(facetIndex);
           const point0 = visitor.point.getPoint3dAtUncheckedPointIndex(0);
 
           const facetRange = visitor.point.getRange();
           saveRange(allGeometry, undefined, facetRange, x0, y1);
-          allRanges.searchRange2d(
-            facetRange,
-            (_candidateRange: Range2d, index: number) => {
-              if (visitor.moveToReadIndex(index)) {
-                const shape = Loop.createPolygon(visitor.point);
-                GeometryCoreTestIO.captureGeometry(allGeometry, shape, x0, y1);
-              }
-              return true;
+          allRanges.searchRange2d(facetRange, (_candidateRange: Range2d, index: number) => {
+            if (visitor.moveToReadIndex(index)) {
+              const shape = Loop.createPolygon(visitor.point);
+              GeometryCoreTestIO.captureGeometry(allGeometry, shape, x0, y1);
             }
-          );
+            return true;
+          });
 
-          GeometryCoreTestIO.createAndCaptureXYCircle(
-            allGeometry,
-            point0,
-            0.04,
-            x0,
-            y2,
-            0.01
-          );
-          allRanges.searchXY(
-            point0.x,
-            point0.y,
-            (_candidateRange: Range2d, index: number) => {
-              if (visitor.moveToReadIndex(index)) {
-                const shape = Loop.createPolygon(visitor.point);
-                GeometryCoreTestIO.captureGeometry(allGeometry, shape, x0, y2);
-              }
-              return true;
+          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, point0, 0.04, x0, y2, 0.01);
+          allRanges.searchXY(point0.x, point0.y, (_candidateRange: Range2d, index: number) => {
+            if (visitor.moveToReadIndex(index)) {
+              const shape = Loop.createPolygon(visitor.point);
+              GeometryCoreTestIO.captureGeometry(allGeometry, shape, x0, y2);
             }
-          );
+            return true;
+          });
         }
       }
       x0 += 10 * xStep;
       const xLine = -2 * boxHalfSize;
-      GeometryCoreTestIO.captureGeometry(
-        allGeometry,
-        LineSegment3d.createXYXY(xLine, -y1, xLine, y1),
-        x0,
-        y0
-      );
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYXY(xLine, -y1, xLine, y1), x0, y0);
     }
 
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "GriddedRaggedRange2dSet",
-      "FacetGrid"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "GriddedRaggedRange2dSet", "FacetGrid");
     expect(ck.getNumErrors()).equals(0);
   });
 });
-function createSinSamplePoints(
-  range: Range2d,
-  numPoint: number,
-  totalTurns: number
-): Point3d[] {
+function createSinSamplePoints(range: Range2d, numPoint: number, totalTurns: number): Point3d[] {
   const points = [];
   for (let i = 0; i < numPoint; i++) {
     const fraction = i / numPoint;

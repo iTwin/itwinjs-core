@@ -4,12 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { compareStrings, Logger } from "@itwin/core-bentley";
-import {
-  IModelConnection,
-  TileTree,
-  TileTreeOwner,
-  TileTreeSupplier,
-} from "@itwin/core-frontend";
+import { IModelConnection, TileTree, TileTreeOwner, TileTreeSupplier } from "@itwin/core-frontend";
 import { loggerCategory } from "./LoggerCategory";
 import { BatchedTilesetReader } from "./BatchedTilesetReader";
 import { BatchedTileTree } from "./BatchedTileTree";
@@ -23,10 +18,7 @@ class BatchedTileTreeSupplier implements TileTreeSupplier {
     return compareStrings(lhs.toString(), rhs.toString());
   }
 
-  public async createTileTree(
-    baseUrl: TreeId,
-    iModel: IModelConnection
-  ): Promise<TileTree | undefined> {
+  public async createTileTree(baseUrl: TreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
     const url = new URL("tileset.json", baseUrl);
     url.search = baseUrl.search;
     try {
@@ -46,9 +38,6 @@ class BatchedTileTreeSupplier implements TileTreeSupplier {
 const batchedTileTreeSupplier: TileTreeSupplier = new BatchedTileTreeSupplier();
 
 /** @internal */
-export function getBatchedTileTreeOwner(
-  iModel: IModelConnection,
-  baseUrl: URL
-): TileTreeOwner {
+export function getBatchedTileTreeOwner(iModel: IModelConnection, baseUrl: URL): TileTreeOwner {
   return iModel.tiles.getTileTreeOwner(baseUrl, batchedTileTreeSupplier);
 }

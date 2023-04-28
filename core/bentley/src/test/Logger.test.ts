@@ -20,10 +20,7 @@ function callLoggerConfigLevels(cfg: any, expectRejection: boolean) {
     Logger.configureLevels(cfg);
     assert.isFalse(expectRejection, "should have rejected config as invalid");
   } catch (err) {
-    assert.isTrue(
-      expectRejection,
-      "should not have rejected config as invalid"
-    );
+    assert.isTrue(expectRejection, "should not have rejected config as invalid");
   }
 }
 
@@ -43,28 +40,17 @@ function checkOutlet(outlet: any[], expected: any[] | undefined) {
     assert.isTrue(outlet.length === 3, "message is expected to have metaData");
     if (outlet.length === 3) {
       if (expected[2] === undefined)
-        assert.isUndefined(
-          outlet[2],
-          "did not expect message to have a metaData function"
-        );
+        assert.isUndefined(outlet[2], "did not expect message to have a metaData function");
     } else {
       assert.isTrue(expected[2] !== undefined, "expected a metaData function");
       assert.deepEqual(outlet[2](), expected[2]());
     }
   } else {
-    assert.isTrue(
-      outlet.length === 2 || outlet[2] === undefined,
-      "message is not expected to have metaData"
-    );
+    assert.isTrue(outlet.length === 2 || outlet[2] === undefined, "message is not expected to have metaData");
   }
 }
 
-function checkOutlets(
-  e: any[] | undefined,
-  w: any[] | undefined,
-  i: any[] | undefined,
-  t: any[] | undefined
-) {
+function checkOutlets(e: any[] | undefined, w: any[] | undefined, i: any[] | undefined, t: any[] | undefined) {
   checkOutlet(outerr, e);
   checkOutlet(outwarn, w);
   checkOutlet(outinfo, i);
@@ -151,26 +137,10 @@ describe("Logger", () => {
       (c, m, d) => (outtrace = [c, m, d])
     );
 
-    const c1msg: [string, string, FunctionReturningAny | undefined] = [
-      "c1",
-      "message1",
-      () => "metaData1",
-    ];
-    const c2msg: [string, string, FunctionReturningAny | undefined] = [
-      "c2",
-      "message2",
-      undefined,
-    ];
-    const c3msg: [string, string, FunctionReturningAny | undefined] = [
-      "c3",
-      "message3",
-      undefined,
-    ];
-    const c4msg: [string, string, FunctionReturningAny | undefined] = [
-      "c4",
-      "message4",
-      () => 4,
-    ];
+    const c1msg: [string, string, FunctionReturningAny | undefined] = ["c1", "message1", () => "metaData1"];
+    const c2msg: [string, string, FunctionReturningAny | undefined] = ["c2", "message2", undefined];
+    const c3msg: [string, string, FunctionReturningAny | undefined] = ["c3", "message3", undefined];
+    const c4msg: [string, string, FunctionReturningAny | undefined] = ["c4", "message4", () => 4];
 
     clearOutlets();
 
@@ -327,16 +297,8 @@ describe("Logger", () => {
       (c, m, d) => (outtrace = [c, m, d])
     );
 
-    const c1msg: [string, string, FunctionReturningAny | undefined] = [
-      "c1",
-      "message1",
-      () => "metaData1",
-    ];
-    const c2msg: [string, string, FunctionReturningAny | undefined] = [
-      "c2",
-      "message2",
-      undefined,
-    ];
+    const c1msg: [string, string, FunctionReturningAny | undefined] = ["c1", "message1", () => "metaData1"];
+    const c2msg: [string, string, FunctionReturningAny | undefined] = ["c2", "message2", undefined];
 
     clearOutlets();
     Logger.configureLevels({
@@ -387,26 +349,11 @@ describe("Logger", () => {
     );
 
     callLoggerConfigLevels({ categoryLevels: { stuff: 0 } }, true);
-    callLoggerConfigLevels(
-      { xcategoryLevels: [{ category: "c1", logLevel: "Error" }] },
-      true
-    );
-    callLoggerConfigLevels(
-      { categoryLevels: [{ xcategory: "c1", logLevel: "Error" }] },
-      true
-    );
-    callLoggerConfigLevels(
-      { categoryLevels: [{ category: "c1", xlogLevel: "Error" }] },
-      true
-    );
-    callLoggerConfigLevels(
-      { categoryLevels: [{ category: "c1", xlogLevel: "Error" }] },
-      true
-    );
-    callLoggerConfigLevels(
-      { categoryLevels: [{ category: "c1", logLevel: "XError" }] },
-      true
-    );
+    callLoggerConfigLevels({ xcategoryLevels: [{ category: "c1", logLevel: "Error" }] }, true);
+    callLoggerConfigLevels({ categoryLevels: [{ xcategory: "c1", logLevel: "Error" }] }, true);
+    callLoggerConfigLevels({ categoryLevels: [{ category: "c1", xlogLevel: "Error" }] }, true);
+    callLoggerConfigLevels({ categoryLevels: [{ category: "c1", xlogLevel: "Error" }] }, true);
+    callLoggerConfigLevels({ categoryLevels: [{ category: "c1", logLevel: "XError" }] }, true);
     callLoggerConfigLevels({ xdefaultLevel: 0 }, true);
     callLoggerConfigLevels({ defaultLevel: "XError" }, true);
   });
@@ -419,16 +366,8 @@ describe("Logger", () => {
       (c, m, d) => (outtrace = [c, m, d])
     );
 
-    const c1msg: [string, string, FunctionReturningAny | undefined] = [
-      "c1",
-      "message1",
-      () => "metaData1",
-    ];
-    const c2msg: [string, string, FunctionReturningAny | undefined] = [
-      "c2",
-      "message2",
-      undefined,
-    ];
+    const c1msg: [string, string, FunctionReturningAny | undefined] = ["c1", "message1", () => "metaData1"];
+    const c2msg: [string, string, FunctionReturningAny | undefined] = ["c2", "message2", undefined];
 
     clearOutlets();
 
@@ -531,11 +470,6 @@ describe("Logger", () => {
     } catch (err: any) {
       Logger.logException("testcat", err);
     }
-    checkOutlets(
-      ["testcat", "Error: error message", { ExceptionType: "Error" }],
-      [],
-      [],
-      []
-    );
+    checkOutlets(["testcat", "Error: error message", { ExceptionType: "Error" }], [], [], []);
   });
 });

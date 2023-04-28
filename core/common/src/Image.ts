@@ -62,49 +62,26 @@ export class ImageBuffer {
    * @returns A new ImageBuffer.
    * @throws Error if the length of the Uint8Array is not appropriate for the specified width and format.
    */
-  public static create(
-    data: Uint8Array,
-    format: ImageBufferFormat,
-    width: number
-  ): ImageBuffer {
+  public static create(data: Uint8Array, format: ImageBufferFormat, width: number): ImageBuffer {
     if (!this.isValidData(data, format, width))
-      throw new Error(
-        "The number of bytes supplied for ImageBuffer do not match its width and format."
-      );
+      throw new Error("The number of bytes supplied for ImageBuffer do not match its width and format.");
 
     return new ImageBuffer(data, format, width);
   }
 
   /** @internal */
-  protected static isValidData(
-    data: Uint8Array,
-    format: ImageBufferFormat,
-    width: number
-  ): boolean {
+  protected static isValidData(data: Uint8Array, format: ImageBufferFormat, width: number): boolean {
     const height = this.computeHeight(data, format, width);
-    return (
-      width > 0 &&
-      height > 0 &&
-      Math.floor(width) === width &&
-      Math.floor(height) === height
-    );
+    return width > 0 && height > 0 && Math.floor(width) === width && Math.floor(height) === height;
   }
 
   /** @internal */
-  protected static computeHeight(
-    data: Uint8Array,
-    format: ImageBufferFormat,
-    width: number
-  ): number {
+  protected static computeHeight(data: Uint8Array, format: ImageBufferFormat, width: number): number {
     return data.length / (width * this.getNumBytesPerPixel(format));
   }
 
   /** @internal */
-  protected constructor(
-    data: Uint8Array,
-    format: ImageBufferFormat,
-    width: number
-  ) {
+  protected constructor(data: Uint8Array, format: ImageBufferFormat, width: number) {
     this.data = data;
     this.format = format;
     this.width = width;

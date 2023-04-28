@@ -22,16 +22,11 @@ export class ContextShareProvider {
       return false;
     }
     // If api.bentley.com/realitydata is used, it is context share
-    if (tilesetUrl.toLowerCase().includes("api.bentley.com/realitydata"))
-      return true;
+    if (tilesetUrl.toLowerCase().includes("api.bentley.com/realitydata")) return true;
     // detect if it is a RDS url
-    const formattedUrl1 = attUrl.pathname
-      .replace(/~2F/g, "/")
-      .replace(/\\/g, "/");
+    const formattedUrl1 = attUrl.pathname.replace(/~2F/g, "/").replace(/\\/g, "/");
     if (formattedUrl1) {
-      const urlParts1 = formattedUrl1
-        .split("/")
-        .map((entry: string) => entry.replace(/%2D/g, "-"));
+      const urlParts1 = formattedUrl1.split("/").map((entry: string) => entry.replace(/%2D/g, "-"));
       let partOffset1: number = 0;
       urlParts1.find((value, index) => {
         if (value === "Repositories") {
@@ -80,10 +75,7 @@ export class ContextShareProvider {
       const indexProjectId = lcTilesetUrl.indexOf("projectid=") + 10; // lenght of "projectid=" = 10;
       let projectId: string | undefined;
       if (indexProjectId && indexProjectId > 0)
-        projectId = lcTilesetUrl.substring(
-          indexProjectId,
-          Guid.empty.length + indexProjectId
-        );
+        projectId = lcTilesetUrl.substring(indexProjectId, Guid.empty.length + indexProjectId);
       const apimContextShareKey = {
         provider: RealityDataProvider.ContextShare,
         format,
@@ -93,13 +85,9 @@ export class ContextShareProvider {
       return apimContextShareKey;
     }
     // detect if it is a RDS url
-    const formattedUrl1 = attUrl.pathname
-      .replace(/~2F/g, "/")
-      .replace(/\\/g, "/");
+    const formattedUrl1 = attUrl.pathname.replace(/~2F/g, "/").replace(/\\/g, "/");
     if (formattedUrl1) {
-      const urlParts1 = formattedUrl1
-        .split("/")
-        .map((entry: string) => entry.replace(/%2D/g, "-"));
+      const urlParts1 = formattedUrl1.split("/").map((entry: string) => entry.replace(/%2D/g, "-"));
       let partOffset1: number = 0;
       urlParts1.find((value, index) => {
         if (value === "Repositories") {
@@ -114,9 +102,7 @@ export class ContextShareProvider {
         urlParts1[partOffset1 + 1].match("S3MXECPlugin--*") !== null &&
         urlParts1[partOffset1 + 2] === "S3MX";
       let projectId: string | undefined;
-      const projectIdSection = urlParts1.find((val: string) =>
-        val.includes("--")
-      );
+      const projectIdSection = urlParts1.find((val: string) => val.includes("--"));
       if (projectIdSection) projectId = projectIdSection.split("--")[1];
       // Make sure the url to compare are REALITYMESH3DTILES url, otherwise, compare the url directly
       if (isRDSUrl || isOPC) {
@@ -124,9 +110,7 @@ export class ContextShareProvider {
         const guid1 = urlParts1.find(Guid.isGuid);
         if (guid1 !== undefined) {
           const provider = RealityDataProvider.ContextShare;
-          const format = isOPC
-            ? RealityDataFormat.OPC
-            : RealityDataFormat.ThreeDTile;
+          const format = isOPC ? RealityDataFormat.OPC : RealityDataFormat.ThreeDTile;
           const contextShareKey = {
             provider,
             format,

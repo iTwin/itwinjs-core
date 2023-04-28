@@ -7,13 +7,7 @@
  * @module Tools
  */
 
-import {
-  IModelApp,
-  PrimitiveVisibility,
-  RenderTargetDebugControl,
-  ScreenViewport,
-  Tool,
-} from "@itwin/core-frontend";
+import { IModelApp, PrimitiveVisibility, RenderTargetDebugControl, ScreenViewport, Tool } from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 
 /** Executes some code against a RenderTargetDebugControl obtained from the selected viewport.
@@ -28,10 +22,7 @@ export abstract class RenderTargetDebugControlTool extends Tool {
     return true;
   }
 
-  protected abstract execute(
-    _control: RenderTargetDebugControl,
-    _vp: ScreenViewport
-  ): void;
+  protected abstract execute(_control: RenderTargetDebugControl, _vp: ScreenViewport): void;
 }
 
 type DebugControlBoolean =
@@ -60,12 +51,8 @@ export abstract class RenderTargetDebugControlToggleTool extends RenderTargetDeb
 
   protected abstract get aspect(): DebugControlBoolean;
 
-  protected execute(
-    control: RenderTargetDebugControl,
-    vp: ScreenViewport
-  ): void {
-    const value =
-      undefined !== this._enable ? this._enable : !control[this.aspect];
+  protected execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
+    const value = undefined !== this._enable ? this._enable : !control[this.aspect];
     control[this.aspect] = value;
     vp.invalidateRenderPlan();
   }
@@ -206,8 +193,7 @@ export class SetAASamplesTool extends RenderTargetDebugControlTool {
   private _changeAll = false;
 
   public execute(_control: RenderTargetDebugControl, vp: ScreenViewport): void {
-    if (this._changeAll)
-      IModelApp.viewManager.setAntialiasingAllViews(this._aaSamples);
+    if (this._changeAll) IModelApp.viewManager.setAntialiasingAllViews(this._aaSamples);
     else vp.antialiasSamples = this._aaSamples;
   }
 

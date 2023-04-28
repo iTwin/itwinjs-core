@@ -77,13 +77,7 @@ export class StrokeCountMap {
     a1: number,
     componentData?: StrokeCountMap[]
   ) {
-    const result = new StrokeCountMap(
-      numStroke,
-      curveLength,
-      a0,
-      a1,
-      componentData
-    );
+    const result = new StrokeCountMap(numStroke, curveLength, a0, a1, componentData);
     result.primitive = primitive;
     return result;
   }
@@ -134,9 +128,7 @@ export class StrokeCountMap {
   public addToCountAndLength(numStroke: number, curveLength: number) {
     const a2 = this.a1 + curveLength;
     if (this.componentData) {
-      this.componentData.push(
-        new StrokeCountMap(numStroke, curveLength, this.a1, a2)
-      );
+      this.componentData.push(new StrokeCountMap(numStroke, curveLength, this.a1, a2));
     }
     this.numStroke += numStroke;
     this.curveLength += curveLength;
@@ -145,26 +137,15 @@ export class StrokeCountMap {
   /** return true if `other` has the same component structure as `this`
    * * testing recurses through corresponding members of componentData arrays.
    */
-  public isCompatibleComponentStructure(
-    other: StrokeCountMap,
-    enforceCounts: boolean
-  ): boolean {
+  public isCompatibleComponentStructure(other: StrokeCountMap, enforceCounts: boolean): boolean {
     if (enforceCounts && this.numStroke !== other.numStroke) return false;
-    if (this.componentData === undefined && other.componentData === undefined)
-      return true;
+    if (this.componentData === undefined && other.componentData === undefined) return true;
     if (this.componentData && other.componentData) {
       // both have components. Recurse . . ..
-      if (this.componentData.length !== other.componentData.length)
-        return false;
+      if (this.componentData.length !== other.componentData.length) return false;
       const n = this.componentData.length;
       for (let i = 0; i < n; i++)
-        if (
-          !this.componentData[i].isCompatibleComponentStructure(
-            other.componentData[i],
-            enforceCounts
-          )
-        )
-          return false;
+        if (!this.componentData[i].isCompatibleComponentStructure(other.componentData[i], enforceCounts)) return false;
       return true;
     }
     // one has componentData, the other not.
@@ -175,16 +156,10 @@ export class StrokeCountMap {
    * * clone componentData arrays recursively.
    */
   public clone(): StrokeCountMap {
-    const a = new StrokeCountMap(
-      this.numStroke,
-      this.curveLength,
-      this.a0,
-      this.a1
-    );
+    const a = new StrokeCountMap(this.numStroke, this.curveLength, this.a0, this.a1);
     if (this.componentData) {
       a.componentData = [];
-      for (const child of this.componentData)
-        a.componentData.push(child.clone());
+      for (const child of this.componentData) a.componentData.push(child.clone());
     }
     return a;
   }

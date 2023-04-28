@@ -11,15 +11,8 @@ import { IModelVersion } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { Reporter } from "@itwin/perf-tools";
 import { IModelHost, IModelJsFs, StandaloneDb } from "@itwin/core-backend";
-import {
-  HubWrappers,
-  IModelTestUtils,
-} from "@itwin/core-backend/lib/cjs/test/index";
-import {
-  BackendTileGenerator,
-  TileGenParams,
-  TileStats,
-} from "./TilesGenUtils";
+import { HubWrappers, IModelTestUtils } from "@itwin/core-backend/lib/cjs/test/index";
+import { BackendTileGenerator, TileGenParams, TileStats } from "./TilesGenUtils";
 
 interface TileResult {
   nModels: number;
@@ -55,11 +48,7 @@ function bytesToMegaBytes(bytes: number): number {
   return Math.round(megaBytes * 100) / 100;
 }
 
-async function writeTileStats(
-  outputDir: string,
-  fileName: string,
-  tileStats: TileStats[]
-) {
+async function writeTileStats(outputDir: string, fileName: string, tileStats: TileStats[]) {
   const tileStatFile = path.join(outputDir, `${fileName}.csv`);
 
   if (fs.existsSync(tileStatFile)) fs.removeSync(tileStatFile);
@@ -71,20 +60,12 @@ async function writeTileStats(
   let tileIndex = 1;
   out.write("index,treeId,contentId,size (bytes),elapsedTime (ms)\r\n");
   for (const stat of tileStats) {
-    out.write(
-      `${tileIndex++},${stat.treeId},${stat.contentId},${stat.sizeInBytes},${
-        stat.elapsedTime
-      }\r\n`
-    );
+    out.write(`${tileIndex++},${stat.treeId},${stat.contentId},${stat.sizeInBytes},${stat.elapsedTime}\r\n`);
   }
   out.close();
 }
 
-async function writeTileMetadata(
-  outputDir: string,
-  fileName: string,
-  tileStats: TileStats[]
-) {
+async function writeTileMetadata(outputDir: string, fileName: string, tileStats: TileStats[]) {
   const tileMetadataPath = path.join(outputDir, `${fileName}_Tiles`);
   if (fs.existsSync(tileMetadataPath)) fs.removeSync(tileMetadataPath);
 
@@ -97,11 +78,7 @@ async function writeTileMetadata(
   }
 }
 
-async function writeOverallStats(
-  result: TileResult,
-  config: ConfigData,
-  outputFilePath: string
-) {
+async function writeOverallStats(result: TileResult, config: ConfigData, outputFilePath: string) {
   const reporter = new Reporter();
   const testSuite = "TilePerformance";
   const testName = "TileGeneration";
@@ -115,69 +92,31 @@ async function writeOverallStats(
     tileSizeInKb: result.totalTileSizeInKb,
   };
 
-  reporter.addEntry(
-    testSuite,
-    testName,
-    "Execution time(s)",
-    result.totalElapsedSeconds,
-    info
-  );
-  reporter.addEntry(
-    testSuite,
-    testName,
-    "Tile generation time(s)",
-    result.tileGenElapsedSeconds,
-    info
-  );
-  reporter.addEntry(
-    testSuite,
-    testName,
-    "Tile Tree Props request time(s)",
-    result.tileTreePropsElapsedSeconds,
-    info
-  );
+  reporter.addEntry(testSuite, testName, "Execution time(s)", result.totalElapsedSeconds, info);
+  reporter.addEntry(testSuite, testName, "Tile generation time(s)", result.tileGenElapsedSeconds, info);
+  reporter.addEntry(testSuite, testName, "Tile Tree Props request time(s)", result.tileTreePropsElapsedSeconds, info);
 
-  reporter.addEntry(
-    testSuite,
-    testName,
-    "Peak memory usage(MB)",
-    result.peakMemUsage,
-    { config, OSStats: result.OSStats }
-  ); // eslint-disable-line @typescript-eslint/naming-convention
-  reporter.addEntry(
-    testSuite,
-    testName,
-    "Peak CPU usage(%)",
-    result.peakCPUUsage,
-    { config }
-  );
+  reporter.addEntry(testSuite, testName, "Peak memory usage(MB)", result.peakMemUsage, {
+    config,
+    OSStats: result.OSStats,
+  }); // eslint-disable-line @typescript-eslint/naming-convention
+  reporter.addEntry(testSuite, testName, "Peak CPU usage(%)", result.peakCPUUsage, { config });
 
   reporter.exportCSV(outputFilePath);
 }
 
-async function generateResultFiles(
-  result: TileResult,
-  configData: ConfigData,
-  resultFilePath: string
-) {
+async function generateResultFiles(result: TileResult, configData: ConfigData, resultFilePath: string) {
   const outputDir = path.dirname(resultFilePath);
   if (configData.genParams.reportTileStats) {
     await writeTileStats(outputDir, configData.iModelName, result.tileStats!);
   }
   if (configData.genParams.reportTileMetadata) {
-    await writeTileMetadata(
-      outputDir,
-      configData.iModelName,
-      result.tileStats!
-    );
+    await writeTileMetadata(outputDir, configData.iModelName, result.tileStats!);
   }
   await writeOverallStats(result, configData, resultFilePath);
 }
 
-async function generateIModelDbTiles(
-  accessToken: AccessToken,
-  config: ConfigData
-): Promise<TileResult | undefined> {
+async function generateIModelDbTiles(accessToken: AccessToken, config: ConfigData): Promise<TileResult | undefined> {
   let peakMemUsage: number = 0;
   let peakCPUUsage: number = 0;
 
@@ -195,8 +134,7 @@ async function generateIModelDbTiles(
     const version: IModelVersion = config.changesetId
       ? IModelVersion.asOfChangeSet(config.changesetId)
       : IModelVersion.latest();
-    if (!iModelId)
-      throw new Error(`iMode with name ${config.iModelName} does not exist`);
+    if (!iModelId) throw new Error(`iMode with name ${config.iModelName} does not exist`);
 
     iModelDb = await HubWrappers.downloadAndOpenCheckpoint({
       accessToken,
@@ -227,9 +165,7 @@ async function generateIModelDbTiles(
     const elapTime = elapHRtime[0] * 1000 + elapHRtime[1] / 1000000;
     const elapUserUsage = elapCPUUsage.user / 1000;
     const elapSysUsage = elapCPUUsage.system / 1000;
-    const elapCPUPercent = Math.round(
-      (100 * (elapUserUsage + elapSysUsage)) / elapTime / os.cpus().length
-    );
+    const elapCPUPercent = Math.round((100 * (elapUserUsage + elapSysUsage)) / elapTime / os.cpus().length);
 
     if (elapCPUPercent > peakCPUUsage) {
       peakCPUUsage = elapCPUPercent;
@@ -253,13 +189,9 @@ async function generateIModelDbTiles(
     nTiles: stats.tileCount,
     nEmptyTiles: stats.emptyTileCount,
     totalTileSizeInKb: Math.round(stats.totalTileSize / 1024.0),
-    tileGenElapsedSeconds:
-      Math.round((stats.totalTileTime / 1000.0) * 100) / 100,
+    tileGenElapsedSeconds: Math.round((stats.totalTileTime / 1000.0) * 100) / 100,
     totalElapsedSeconds: stats.totalTime,
-    tileStats:
-      config.genParams.reportTileStats || config.genParams.reportTileMetadata
-        ? stats.tileStats
-        : [],
+    tileStats: config.genParams.reportTileStats || config.genParams.reportTileMetadata ? stats.tileStats : [],
     OSStats: osStats, // eslint-disable-line @typescript-eslint/naming-convention
     peakMemUsage: bytesToMegaBytes(peakMemUsage),
     peakCPUUsage,
@@ -267,8 +199,7 @@ async function generateIModelDbTiles(
 }
 
 describe("TilesGenerationPerformance", () => {
-  if (process.env.IMJS_TILE_PERF_CONFIG === undefined)
-    throw new Error("Could not find IMJS_TILE_PERF_CONFIG");
+  if (process.env.IMJS_TILE_PERF_CONFIG === undefined) throw new Error("Could not find IMJS_TILE_PERF_CONFIG");
   // TODO: Update config to use iTwin terminology
   const config = require(process.env.IMJS_TILE_PERF_CONFIG); // eslint-disable-line @typescript-eslint/no-var-requires
   const imodels: ConfigData[] = config.iModels;
@@ -285,25 +216,15 @@ describe("TilesGenerationPerformance", () => {
     Logger.setLevelDefault(LogLevel.Error);
     Logger.setLevel("TileGenerationPerformance", LogLevel.Error);
 
-    csvResultPath = IModelTestUtils.prepareOutputFile(
-      "TilesGen",
-      "TilesGen.results.csv"
-    );
+    csvResultPath = IModelTestUtils.prepareOutputFile("TilesGen", "TilesGen.results.csv");
 
     if (IModelJsFs.existsSync(config.iModelLocation)) {
-      imodels.forEach(
-        (element) =>
-          (element.localPath = path.join(
-            config.iModelLocation,
-            `${element.iModelName}.bim`
-          ))
-      );
+      imodels.forEach((element) => (element.localPath = path.join(config.iModelLocation, `${element.iModelName}.bim`)));
       // delete the .tile file
-      const tileFiles = IModelJsFs.readdirSync(config.iModelLocation).filter(
-        (fileName: string) => fileName.endsWith(".Tiles")
+      const tileFiles = IModelJsFs.readdirSync(config.iModelLocation).filter((fileName: string) =>
+        fileName.endsWith(".Tiles")
       );
-      for (const tileFile of tileFiles)
-        IModelJsFs.removeSync(path.join(config.iModelLocation, tileFile));
+      for (const tileFile of tileFiles) IModelJsFs.removeSync(path.join(config.iModelLocation, tileFile));
     } else {
       requestContext = await TestUtility.getAccessToken(TestUsers.regular);
     }

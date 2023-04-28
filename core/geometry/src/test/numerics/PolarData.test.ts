@@ -24,8 +24,7 @@ function verifyCompletePolarSinglePoint(
   if (data === undefined) {
     ck.testPointer(data, "Polar data should not be undefined.");
   } else if (Array.isArray(data)) {
-    for (const d of data)
-      verifyCompletePolarSinglePoint(ck, partialData, d, expectGeometry);
+    for (const d of data) verifyCompletePolarSinglePoint(ck, partialData, d, expectGeometry);
   } else if (partialData.numberOfConstrainedScalars === 2 && expectGeometry) {
     if (
       ck.testTrue(data.state === ConstraintState.singlePoint) &&
@@ -34,16 +33,8 @@ function verifyCompletePolarSinglePoint(
       ck.testTrue(data.r !== undefined, "r defined", prettyPrint(data)) &&
       ck.testTrue(data.theta !== undefined, "theta defined", prettyPrint(data))
     ) {
-      ck.testCoordinate(
-        data.x!,
-        data.r! * data.theta!.cos(),
-        "x = r cos(theta)"
-      );
-      ck.testCoordinate(
-        data.y!,
-        data.r! * data.theta!.sin(),
-        "y = r sin (theta)"
-      );
+      ck.testCoordinate(data.x!, data.r! * data.theta!.cos(), "x = r cos(theta)");
+      ck.testCoordinate(data.y!, data.r! * data.theta!.sin(), "y = r sin (theta)");
     } else {
       // don't check ill-defined data
     }
@@ -72,20 +63,8 @@ function verifyPolarConversion(
     y,
     z
   );
-  GeometryCoreTestIO.captureGeometry(
-    allGeometry,
-    LineSegment3d.createXYZXYZ(-a, 0, ez, a, 0, ez),
-    x,
-    y,
-    z
-  );
-  GeometryCoreTestIO.captureGeometry(
-    allGeometry,
-    LineSegment3d.createXYZXYZ(0, -a, ez, 0, a, ez),
-    x,
-    y,
-    z
-  );
+  GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYZXYZ(-a, 0, ez, a, 0, ez), x, y, z);
+  GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYZXYZ(0, -a, ez, 0, a, ez), x, y, z);
   if (partialData.x !== undefined)
     GeometryCoreTestIO.captureGeometry(
       allGeometry,
@@ -103,24 +82,11 @@ function verifyPolarConversion(
       z
     );
   if (partialData.r !== undefined)
-    GeometryCoreTestIO.captureGeometry(
-      allGeometry,
-      Arc3d.createXY(Point3d.create(0, 0, ez), partialData.r),
-      x,
-      y,
-      z
-    );
+    GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createXY(Point3d.create(0, 0, ez), partialData.r), x, y, z);
   if (partialData.theta !== undefined)
     GeometryCoreTestIO.captureGeometry(
       allGeometry,
-      LineSegment3d.createXYZXYZ(
-        0,
-        0,
-        ez,
-        a * partialData.theta.cos(),
-        a * partialData.theta.sin(),
-        ez
-      ),
+      LineSegment3d.createXYZXYZ(0, 0, ez, a * partialData.theta.cos(), a * partialData.theta.sin(), ez),
       x,
       y,
       z
@@ -136,11 +102,7 @@ function verifyPolarConversion(
       );
   }
   const n1 = ck.getNumErrors();
-  if (n1 !== n0)
-    GeometryCoreTestIO.consoleLog(
-      "   *** While processing partialData ",
-      prettyPrint(partialData)
-    );
+  if (n1 !== n0) GeometryCoreTestIO.consoleLog("   *** While processing partialData ", prettyPrint(partialData));
 }
 
 describe("PolarData", () => {
@@ -149,13 +111,7 @@ describe("PolarData", () => {
     const allGeometry: GeometryQuery[] = [];
     const x0 = 0.55;
     const y0 = 0.77;
-    const polarXY = PolarData.createMixedScalars(
-      ConstraintState.unknown,
-      x0,
-      y0,
-      undefined,
-      undefined
-    );
+    const polarXY = PolarData.createMixedScalars(ConstraintState.unknown, x0, y0, undefined, undefined);
     const polarXYArray = PolarData.solveFromScalars(polarXY);
     verifyCompletePolarSinglePoint(ck, polarXY, polarXYArray, true);
     if (polarXYArray.length === 1) {
@@ -165,13 +121,7 @@ describe("PolarData", () => {
       verifyPolarConversion(
         ck,
         allGeometry,
-        PolarData.createMixedScalars(
-          ConstraintState.unknown,
-          q.x,
-          q.y,
-          undefined,
-          undefined
-        ),
+        PolarData.createMixedScalars(ConstraintState.unknown, q.x, q.y, undefined, undefined),
         0,
         (dy += 3),
         0
@@ -179,13 +129,7 @@ describe("PolarData", () => {
       verifyPolarConversion(
         ck,
         allGeometry,
-        PolarData.createMixedScalars(
-          ConstraintState.unknown,
-          q.x,
-          undefined,
-          q.r,
-          undefined
-        ),
+        PolarData.createMixedScalars(ConstraintState.unknown, q.x, undefined, q.r, undefined),
         0,
         (dy += 3),
         0
@@ -193,13 +137,7 @@ describe("PolarData", () => {
       verifyPolarConversion(
         ck,
         allGeometry,
-        PolarData.createMixedScalars(
-          ConstraintState.unknown,
-          q.x,
-          undefined,
-          undefined,
-          q.theta
-        ),
+        PolarData.createMixedScalars(ConstraintState.unknown, q.x, undefined, undefined, q.theta),
         0,
         (dy += 3),
         0
@@ -207,13 +145,7 @@ describe("PolarData", () => {
       verifyPolarConversion(
         ck,
         allGeometry,
-        PolarData.createMixedScalars(
-          ConstraintState.unknown,
-          undefined,
-          q.y,
-          q.r,
-          undefined
-        ),
+        PolarData.createMixedScalars(ConstraintState.unknown, undefined, q.y, q.r, undefined),
         0,
         (dy += 3),
         0
@@ -221,13 +153,7 @@ describe("PolarData", () => {
       verifyPolarConversion(
         ck,
         allGeometry,
-        PolarData.createMixedScalars(
-          ConstraintState.unknown,
-          undefined,
-          q.y,
-          undefined,
-          q.theta
-        ),
+        PolarData.createMixedScalars(ConstraintState.unknown, undefined, q.y, undefined, q.theta),
         0,
         (dy += 3),
         0
@@ -235,13 +161,7 @@ describe("PolarData", () => {
       verifyPolarConversion(
         ck,
         allGeometry,
-        PolarData.createMixedScalars(
-          ConstraintState.unknown,
-          undefined,
-          undefined,
-          q.r,
-          q.theta
-        ),
+        PolarData.createMixedScalars(ConstraintState.unknown, undefined, undefined, q.r, q.theta),
         0,
         (dy += 3),
         0
@@ -252,13 +172,7 @@ describe("PolarData", () => {
       verifyPolarConversion(
         ck,
         allGeometry,
-        PolarData.createMixedScalars(
-          ConstraintState.unknown,
-          q.x,
-          undefined,
-          undefined,
-          undefined
-        ),
+        PolarData.createMixedScalars(ConstraintState.unknown, q.x, undefined, undefined, undefined),
         dx,
         (dy += 3),
         0
@@ -266,13 +180,7 @@ describe("PolarData", () => {
       verifyPolarConversion(
         ck,
         allGeometry,
-        PolarData.createMixedScalars(
-          ConstraintState.unknown,
-          undefined,
-          q.y,
-          undefined,
-          undefined
-        ),
+        PolarData.createMixedScalars(ConstraintState.unknown, undefined, q.y, undefined, undefined),
         dx,
         (dy += 3),
         0
@@ -280,13 +188,7 @@ describe("PolarData", () => {
       verifyPolarConversion(
         ck,
         allGeometry,
-        PolarData.createMixedScalars(
-          ConstraintState.unknown,
-          undefined,
-          undefined,
-          q.r,
-          undefined
-        ),
+        PolarData.createMixedScalars(ConstraintState.unknown, undefined, undefined, q.r, undefined),
         dx,
         (dy += 3),
         0
@@ -294,13 +196,7 @@ describe("PolarData", () => {
       verifyPolarConversion(
         ck,
         allGeometry,
-        PolarData.createMixedScalars(
-          ConstraintState.unknown,
-          undefined,
-          undefined,
-          undefined,
-          q.theta
-        ),
+        PolarData.createMixedScalars(ConstraintState.unknown, undefined, undefined, undefined, q.theta),
         dx,
         (dy += 3),
         0
@@ -310,13 +206,7 @@ describe("PolarData", () => {
       verifyPolarConversion(
         ck,
         allGeometry,
-        PolarData.createMixedScalars(
-          ConstraintState.unknown,
-          q.x,
-          undefined,
-          undefined,
-          Angle.createDegrees(90.0)
-        ),
+        PolarData.createMixedScalars(ConstraintState.unknown, q.x, undefined, undefined, Angle.createDegrees(90.0)),
         dx,
         (dy += 3),
         0
@@ -324,13 +214,7 @@ describe("PolarData", () => {
       verifyPolarConversion(
         ck,
         allGeometry,
-        PolarData.createMixedScalars(
-          ConstraintState.unknown,
-          undefined,
-          q.y,
-          undefined,
-          Angle.createDegrees(0.0)
-        ),
+        PolarData.createMixedScalars(ConstraintState.unknown, undefined, q.y, undefined, Angle.createDegrees(0.0)),
         dx,
         (dy += 3),
         0
@@ -339,13 +223,7 @@ describe("PolarData", () => {
       verifyPolarConversion(
         ck,
         allGeometry,
-        PolarData.createMixedScalars(
-          ConstraintState.unknown,
-          q.x,
-          undefined,
-          q.x! * 0.5,
-          undefined
-        ),
+        PolarData.createMixedScalars(ConstraintState.unknown, q.x, undefined, q.x! * 0.5, undefined),
         dx,
         (dy += 3),
         0,
@@ -354,13 +232,7 @@ describe("PolarData", () => {
       verifyPolarConversion(
         ck,
         allGeometry,
-        PolarData.createMixedScalars(
-          ConstraintState.unknown,
-          undefined,
-          q.y,
-          q.y! * 0.5,
-          undefined
-        ),
+        PolarData.createMixedScalars(ConstraintState.unknown, undefined, q.y, q.y! * 0.5, undefined),
         dx,
         (dy += 3),
         0,
@@ -368,27 +240,13 @@ describe("PolarData", () => {
       );
 
       const nullCase = PolarData.solveFromScalars(
-        PolarData.createMixedScalars(
-          ConstraintState.unknown,
-          undefined,
-          undefined,
-          undefined,
-          undefined
-        )
+        PolarData.createMixedScalars(ConstraintState.unknown, undefined, undefined, undefined, undefined)
       );
-      ck.testExactNumber(
-        0,
-        nullCase.length,
-        "PartialData with 4 undefined returns empty array"
-      );
+      ck.testExactNumber(0, nullCase.length, "PartialData with 4 undefined returns empty array");
     }
 
     ck.testLE(0.00001, PolarData.defaultRadius, "PolarData static defined");
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "PolarData",
-      "ConstraintSolver"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolarData", "ConstraintSolver");
     expect(ck.getNumErrors()).equals(0);
   });
 });

@@ -59,51 +59,16 @@ export class Matrix4d implements BeJSONFunctions {
     for (let i = 0; i < 16; i++) this._coffs[i] = 0;
     this._coffs[0] = this._coffs[5] = this._coffs[10] = this._coffs[15] = 1.0;
   }
-  private static is1000(
-    a: number,
-    b: number,
-    c: number,
-    d: number,
-    tol: number
-  ): boolean {
-    return (
-      Math.abs(a - 1.0) <= tol &&
-      Math.abs(b) <= tol &&
-      Math.abs(c) <= tol &&
-      Math.abs(d) <= tol
-    );
+  private static is1000(a: number, b: number, c: number, d: number, tol: number): boolean {
+    return Math.abs(a - 1.0) <= tol && Math.abs(b) <= tol && Math.abs(c) <= tol && Math.abs(d) <= tol;
   }
   /** set to identity. */
   public isIdentity(tol: number = 1.0e-10): boolean {
     return (
-      Matrix4d.is1000(
-        this._coffs[0],
-        this._coffs[1],
-        this._coffs[2],
-        this._coffs[3],
-        tol
-      ) &&
-      Matrix4d.is1000(
-        this._coffs[5],
-        this._coffs[6],
-        this._coffs[7],
-        this._coffs[4],
-        tol
-      ) &&
-      Matrix4d.is1000(
-        this._coffs[10],
-        this._coffs[11],
-        this._coffs[8],
-        this._coffs[9],
-        tol
-      ) &&
-      Matrix4d.is1000(
-        this._coffs[15],
-        this._coffs[12],
-        this._coffs[13],
-        this._coffs[14],
-        tol
-      )
+      Matrix4d.is1000(this._coffs[0], this._coffs[1], this._coffs[2], this._coffs[3], tol) &&
+      Matrix4d.is1000(this._coffs[5], this._coffs[6], this._coffs[7], this._coffs[4], tol) &&
+      Matrix4d.is1000(this._coffs[10], this._coffs[11], this._coffs[8], this._coffs[9], tol) &&
+      Matrix4d.is1000(this._coffs[15], this._coffs[12], this._coffs[13], this._coffs[14], tol)
     );
   }
   /** create a Matrix4d filled with zeros. */
@@ -154,13 +119,7 @@ export class Matrix4d implements BeJSONFunctions {
     return result;
   }
   /** Create a `Matrix4d` from 16 values appearing as `Point4d` for each row. */
-  public static createRows(
-    rowX: Point4d,
-    rowY: Point4d,
-    rowZ: Point4d,
-    rowW: Point4d,
-    result?: Matrix4d
-  ): Matrix4d {
+  public static createRows(rowX: Point4d, rowY: Point4d, rowZ: Point4d, rowW: Point4d, result?: Matrix4d): Matrix4d {
     return this.createRowValues(
       rowX.x,
       rowX.y,
@@ -186,12 +145,7 @@ export class Matrix4d implements BeJSONFunctions {
    * * vectorX, vectorY, vectorZ as columns 0,1,2, with weight0.
    * * origin as column3, with weight 1
    */
-  public setOriginAndVectors(
-    origin: XYZ,
-    vectorX: Vector3d,
-    vectorY: Vector3d,
-    vectorZ: Vector3d
-  ) {
+  public setOriginAndVectors(origin: XYZ, vectorX: Vector3d, vectorY: Vector3d, vectorZ: Vector3d) {
     this._coffs[0] = vectorX.x;
     this._coffs[1] = vectorY.x;
     this._coffs[2] = vectorZ.x;
@@ -210,10 +164,7 @@ export class Matrix4d implements BeJSONFunctions {
     this._coffs[15] = 1.0;
   }
   /** promote a transform to full Matrix4d (with 0001 in final row) */
-  public static createTransform(
-    source: Transform,
-    result?: Matrix4d
-  ): Matrix4d {
+  public static createTransform(source: Transform, result?: Matrix4d): Matrix4d {
     const matrix = source.matrix;
     const point = source.origin;
     return Matrix4d.createRowValues(
@@ -246,12 +197,7 @@ export class Matrix4d implements BeJSONFunctions {
     return result;
   }
   /** return matrix with translation directly inserted (along with 1 on diagonal) */
-  public static createTranslationXYZ(
-    x: number,
-    y: number,
-    z: number,
-    result?: Matrix4d
-  ): Matrix4d {
+  public static createTranslationXYZ(x: number, y: number, z: number, result?: Matrix4d): Matrix4d {
     result = Matrix4d.createZero(result);
     result._coffs[0] = 1.0;
     result._coffs[5] = 1.0;
@@ -264,11 +210,7 @@ export class Matrix4d implements BeJSONFunctions {
   }
 
   /** return this matrix plus scale times matrixB. */
-  public plusScaled(
-    matrixB: Matrix4d,
-    scale: number,
-    result?: Matrix4d
-  ): Matrix4d {
+  public plusScaled(matrixB: Matrix4d, scale: number, result?: Matrix4d): Matrix4d {
     // If result is undefined, a real clone is created.
     // If result is "this" we get the pointer to this right back.
     // If result is other, "this" coffs are copied.
@@ -297,25 +239,7 @@ export class Matrix4d implements BeJSONFunctions {
     scaleZ: number,
     result?: Matrix4d
   ): Matrix4d {
-    return Matrix4d.createRowValues(
-      scaleX,
-      0,
-      0,
-      tx,
-      0,
-      scaleY,
-      0,
-      ty,
-      0,
-      0,
-      scaleZ,
-      tz,
-      0,
-      0,
-      0,
-      1,
-      result
-    );
+    return Matrix4d.createRowValues(scaleX, 0, 0, tx, 0, scaleY, 0, ty, 0, 0, scaleZ, tz, 0, 0, 0, 1, result);
   }
   /**
    * Create a mapping the scales and translates (no rotation) from box A to boxB
@@ -367,8 +291,7 @@ export class Matrix4d implements BeJSONFunctions {
    */
   public maxDiff(other: Matrix4d): number {
     let a = 0.0;
-    for (let i = 0; i < 16; i++)
-      a = Math.max(a, Math.abs(this._coffs[i] - other._coffs[i]));
+    for (let i = 0; i < 16; i++) a = Math.max(a, Math.abs(this._coffs[i] - other._coffs[i]));
     return a;
   }
   /**
@@ -394,12 +317,7 @@ export class Matrix4d implements BeJSONFunctions {
     const value = [];
     for (let i = 0; i < 4; ++i) {
       const row = i * 4;
-      value.push([
-        this._coffs[row],
-        this._coffs[row + 1],
-        this._coffs[row + 2],
-        this._coffs[row + 3],
-      ]);
+      value.push([this._coffs[row], this._coffs[row + 1], this._coffs[row + 2], this._coffs[row + 3]]);
     }
     return value;
   }
@@ -466,12 +384,7 @@ export class Matrix4d implements BeJSONFunctions {
    * Returns true if the w row has content other than [0,0,0,1]
    */
   public get hasPerspective(): boolean {
-    return (
-      this._coffs[12] !== 0.0 ||
-      this._coffs[13] !== 0.0 ||
-      this._coffs[14] !== 0.0 ||
-      this._coffs[15] !== 1.0
-    );
+    return this._coffs[12] !== 0.0 || this._coffs[13] !== 0.0 || this._coffs[14] !== 0.0 || this._coffs[15] !== 1.0;
   }
   /**
    * Return a Point4d with the diagonal entries of the matrix
@@ -520,8 +433,7 @@ export class Matrix4d implements BeJSONFunctions {
   }
   /** multiply this * other. */
   public multiplyMatrixMatrix(other: Matrix4d, result?: Matrix4d): Matrix4d {
-    result =
-      result && result !== this && result !== other ? result : new Matrix4d();
+    result = result && result !== this && result !== other ? result : new Matrix4d();
     for (let i0 = 0; i0 < 16; i0 += 4) {
       for (let k = 0; k < 4; k++)
         result._coffs[i0 + k] =
@@ -533,12 +445,8 @@ export class Matrix4d implements BeJSONFunctions {
     return result;
   }
   /** multiply this * transpose(other). */
-  public multiplyMatrixMatrixTranspose(
-    other: Matrix4d,
-    result?: Matrix4d
-  ): Matrix4d {
-    result =
-      result && result !== this && result !== other ? result : new Matrix4d();
+  public multiplyMatrixMatrixTranspose(other: Matrix4d, result?: Matrix4d): Matrix4d {
+    result = result && result !== this && result !== other ? result : new Matrix4d();
     let j = 0;
     for (let i0 = 0; i0 < 16; i0 += 4) {
       for (let k = 0; k < 16; k += 4)
@@ -551,12 +459,8 @@ export class Matrix4d implements BeJSONFunctions {
     return result;
   }
   /** multiply transpose (this) * other. */
-  public multiplyMatrixTransposeMatrix(
-    other: Matrix4d,
-    result?: Matrix4d
-  ): Matrix4d {
-    result =
-      result && result !== this && result !== other ? result : new Matrix4d();
+  public multiplyMatrixTransposeMatrix(other: Matrix4d, result?: Matrix4d): Matrix4d {
+    result = result && result !== this && result !== other ? result : new Matrix4d();
     let j = 0;
     for (let i0 = 0; i0 < 4; i0 += 1) {
       for (let k0 = 0; k0 < 4; k0 += 1)
@@ -591,31 +495,13 @@ export class Matrix4d implements BeJSONFunctions {
     );
   }
   /** multiply matrix times column [x,y,z,w].  return as Point4d.   (And the returned value is NOT normalized down to unit w) */
-  public multiplyXYZW(
-    x: number,
-    y: number,
-    z: number,
-    w: number,
-    result?: Point4d
-  ): Point4d {
+  public multiplyXYZW(x: number, y: number, z: number, w: number, result?: Point4d): Point4d {
     result = result ? result : Point4d.createZero();
     return result.set(
-      this._coffs[0] * x +
-        this._coffs[1] * y +
-        this._coffs[2] * z +
-        this._coffs[3] * w,
-      this._coffs[4] * x +
-        this._coffs[5] * y +
-        this._coffs[6] * z +
-        this._coffs[7] * w,
-      this._coffs[8] * x +
-        this._coffs[9] * y +
-        this._coffs[10] * z +
-        this._coffs[11] * w,
-      this._coffs[12] * x +
-        this._coffs[13] * y +
-        this._coffs[14] * z +
-        this._coffs[15] * w
+      this._coffs[0] * x + this._coffs[1] * y + this._coffs[2] * z + this._coffs[3] * w,
+      this._coffs[4] * x + this._coffs[5] * y + this._coffs[6] * z + this._coffs[7] * w,
+      this._coffs[8] * x + this._coffs[9] * y + this._coffs[10] * z + this._coffs[11] * w,
+      this._coffs[12] * x + this._coffs[13] * y + this._coffs[14] * z + this._coffs[15] * w
     );
   }
   /** multiply matrix times column vectors [x,y,z,w] where [x,y,z,w] appear in blocks in an array.
@@ -629,26 +515,10 @@ export class Matrix4d implements BeJSONFunctions {
       y = data[i + 1];
       z = data[i + 2];
       w = data[i + 3];
-      data[i] =
-        this._coffs[0] * x +
-        this._coffs[1] * y +
-        this._coffs[2] * z +
-        this._coffs[3] * w;
-      data[i + 1] =
-        this._coffs[4] * x +
-        this._coffs[5] * y +
-        this._coffs[6] * z +
-        this._coffs[7] * w;
-      data[i + 2] =
-        this._coffs[8] * x +
-        this._coffs[9] * y +
-        this._coffs[10] * z +
-        this._coffs[11] * w;
-      data[i + 3] =
-        this._coffs[12] * x +
-        this._coffs[13] * y +
-        this._coffs[14] * z +
-        this._coffs[15] * w;
+      data[i] = this._coffs[0] * x + this._coffs[1] * y + this._coffs[2] * z + this._coffs[3] * w;
+      data[i + 1] = this._coffs[4] * x + this._coffs[5] * y + this._coffs[6] * z + this._coffs[7] * w;
+      data[i + 2] = this._coffs[8] * x + this._coffs[9] * y + this._coffs[10] * z + this._coffs[11] * w;
+      data[i + 3] = this._coffs[12] * x + this._coffs[13] * y + this._coffs[14] * z + this._coffs[15] * w;
     }
   }
   /** multiply matrix times XYAndZ  and w. return as Point4d  (And the returned value is NOT normalized down to unit w) */
@@ -656,50 +526,24 @@ export class Matrix4d implements BeJSONFunctions {
     return this.multiplyXYZW(pt.x, pt.y, pt.z, w, result);
   }
   /** multiply matrix times and array  of XYAndZ. return as array of Point4d  (And the returned value is NOT normalized down to unit w) */
-  public multiplyPoint3dArray(
-    pts: XYAndZ[],
-    results: Point4d[],
-    w: number = 1.0
-  ): void {
+  public multiplyPoint3dArray(pts: XYAndZ[], results: Point4d[], w: number = 1.0): void {
     pts.forEach((pt, i) => {
       results[i] = this.multiplyXYZW(pt.x, pt.y, pt.z, w, results[i]);
     });
   }
   /** multiply [x,y,z,w] times matrix.  return as Point4d.   (And the returned value is NOT normalized down to unit w) */
-  public multiplyTransposeXYZW(
-    x: number,
-    y: number,
-    z: number,
-    w: number,
-    result?: Point4d
-  ): Point4d {
+  public multiplyTransposeXYZW(x: number, y: number, z: number, w: number, result?: Point4d): Point4d {
     result = result ? result : Point4d.createZero();
     return result.set(
-      this._coffs[0] * x +
-        this._coffs[4] * y +
-        this._coffs[8] * z +
-        this._coffs[12] * w,
-      this._coffs[1] * x +
-        this._coffs[5] * y +
-        this._coffs[9] * z +
-        this._coffs[13] * w,
-      this._coffs[2] * x +
-        this._coffs[6] * y +
-        this._coffs[10] * z +
-        this._coffs[14] * w,
-      this._coffs[3] * x +
-        this._coffs[7] * y +
-        this._coffs[11] * z +
-        this._coffs[15] * w
+      this._coffs[0] * x + this._coffs[4] * y + this._coffs[8] * z + this._coffs[12] * w,
+      this._coffs[1] * x + this._coffs[5] * y + this._coffs[9] * z + this._coffs[13] * w,
+      this._coffs[2] * x + this._coffs[6] * y + this._coffs[10] * z + this._coffs[14] * w,
+      this._coffs[3] * x + this._coffs[7] * y + this._coffs[11] * z + this._coffs[15] * w
     );
   }
   /** Returns dot product of row rowIndex of this with column columnIndex of other.
    */
-  public rowDotColumn(
-    rowIndex: number,
-    other: Matrix4d,
-    columnIndex: number
-  ): number {
+  public rowDotColumn(rowIndex: number, other: Matrix4d, columnIndex: number): number {
     const i = rowIndex * 4;
     const j = columnIndex;
     return (
@@ -711,29 +555,14 @@ export class Matrix4d implements BeJSONFunctions {
   }
   /** Returns dot product of row rowIndex of this with [x y z w]
    */
-  public rowDotXYZW(
-    rowIndex: number,
-    x: number,
-    y: number,
-    z: number,
-    w: number
-  ): number {
+  public rowDotXYZW(rowIndex: number, x: number, y: number, z: number, w: number): number {
     const i = rowIndex * 4;
-    return (
-      this._coffs[i] * x +
-      this._coffs[i + 1] * y +
-      this._coffs[i + 2] * z +
-      this._coffs[i + 3] * w
-    );
+    return this._coffs[i] * x + this._coffs[i + 1] * y + this._coffs[i + 2] * z + this._coffs[i + 3] * w;
   }
 
   /** Returns dot product of row rowIndexThis of this with row rowIndexOther of other.
    */
-  public rowDotRow(
-    rowIndexThis: number,
-    other: Matrix4d,
-    rowIndexOther: number
-  ): number {
+  public rowDotRow(rowIndexThis: number, other: Matrix4d, rowIndexOther: number): number {
     const i = rowIndexThis * 4;
     const j = rowIndexOther * 4;
     return (
@@ -745,11 +574,7 @@ export class Matrix4d implements BeJSONFunctions {
   }
   /** Returns dot product of row rowIndexThis of this with row rowIndexOther of other.
    */
-  public columnDotColumn(
-    columnIndexThis: number,
-    other: Matrix4d,
-    columnIndexOther: number
-  ): number {
+  public columnDotColumn(columnIndexThis: number, other: Matrix4d, columnIndexOther: number): number {
     const i = columnIndexThis;
     const j = columnIndexOther;
     return (
@@ -761,11 +586,7 @@ export class Matrix4d implements BeJSONFunctions {
   }
   /** Returns dot product of column columnIndexThis of this with row rowIndexOther other.
    */
-  public columnDotRow(
-    columnIndexThis: number,
-    other: Matrix4d,
-    rowIndexOther: number
-  ): number {
+  public columnDotRow(columnIndexThis: number, other: Matrix4d, rowIndexOther: number): number {
     const i = columnIndexThis;
     const j = 4 * rowIndexOther;
     return (
@@ -789,33 +610,14 @@ export class Matrix4d implements BeJSONFunctions {
   /** multiply matrix * [x,y,z,w]. immediately renormalize to return in a Point3d.
    * If zero weight appears in the result (i.e. input is on eyeplane) leave the mapped xyz untouched.
    */
-  public multiplyXYZWQuietRenormalize(
-    x: number,
-    y: number,
-    z: number,
-    w: number,
-    result?: Point3d
-  ): Point3d {
+  public multiplyXYZWQuietRenormalize(x: number, y: number, z: number, w: number, result?: Point3d): Point3d {
     result = result ? result : Point3d.createZero();
     result.set(
-      this._coffs[0] * x +
-        this._coffs[1] * y +
-        this._coffs[2] * z +
-        this._coffs[3] * w,
-      this._coffs[4] * x +
-        this._coffs[5] * y +
-        this._coffs[6] * z +
-        this._coffs[7] * w,
-      this._coffs[8] * x +
-        this._coffs[9] * y +
-        this._coffs[10] * z +
-        this._coffs[11] * w
+      this._coffs[0] * x + this._coffs[1] * y + this._coffs[2] * z + this._coffs[3] * w,
+      this._coffs[4] * x + this._coffs[5] * y + this._coffs[6] * z + this._coffs[7] * w,
+      this._coffs[8] * x + this._coffs[9] * y + this._coffs[10] * z + this._coffs[11] * w
     );
-    const w1 =
-      this._coffs[12] * x +
-      this._coffs[13] * y +
-      this._coffs[14] * z +
-      this._coffs[15] * w;
+    const w1 = this._coffs[12] * x + this._coffs[13] * y + this._coffs[14] * z + this._coffs[15] * w;
     const qx = Geometry.conditionalDivideCoordinate(result.x, w1);
     const qy = Geometry.conditionalDivideCoordinate(result.y, w1);
     const qz = Geometry.conditionalDivideCoordinate(result.z, w1);
@@ -827,64 +629,32 @@ export class Matrix4d implements BeJSONFunctions {
     return result;
   }
   /** multiply matrix * an array of Point4d. immediately renormalize to return in an array of Point3d. */
-  public multiplyPoint4dArrayQuietRenormalize(
-    pts: Point4d[],
-    results: Point3d[]
-  ): void {
+  public multiplyPoint4dArrayQuietRenormalize(pts: Point4d[], results: Point3d[]): void {
     pts.forEach((pt, i) => {
-      results[i] = this.multiplyXYZWQuietRenormalize(
-        pt.x,
-        pt.y,
-        pt.z,
-        pt.w,
-        results[i]
-      );
+      results[i] = this.multiplyXYZWQuietRenormalize(pt.x, pt.y, pt.z, pt.w, results[i]);
     });
   }
   /** multiply a Point4d, return with the optional result convention. */
   public multiplyPoint4d(point: Point4d, result?: Point4d): Point4d {
-    return this.multiplyXYZW(
-      point.xyzw[0],
-      point.xyzw[1],
-      point.xyzw[2],
-      point.xyzw[3],
-      result
-    );
+    return this.multiplyXYZW(point.xyzw[0], point.xyzw[1], point.xyzw[2], point.xyzw[3], result);
   }
   /** multiply a Point4d, return with the optional result convention. */
   public multiplyTransposePoint4d(point: Point4d, result?: Point4d): Point4d {
-    return this.multiplyTransposeXYZW(
-      point.xyzw[0],
-      point.xyzw[1],
-      point.xyzw[2],
-      point.xyzw[3],
-      result
-    );
+    return this.multiplyTransposeXYZW(point.xyzw[0], point.xyzw[1], point.xyzw[2], point.xyzw[3], result);
   }
   /** multiply matrix * point. This produces a weighted xyzw.
    * Immediately renormalize back to xyz and return (with optional result convention).
    * If zero weight appears in the result (i.e. input is on eyeplane)leave the mapped xyz untouched.
    */
-  public multiplyPoint3dQuietNormalize(
-    point: XYAndZ,
-    result?: Point3d
-  ): Point3d {
-    return this.multiplyXYZWQuietRenormalize(
-      point.x,
-      point.y,
-      point.z,
-      1.0,
-      result
-    );
+  public multiplyPoint3dQuietNormalize(point: XYAndZ, result?: Point3d): Point3d {
+    return this.multiplyXYZWQuietRenormalize(point.x, point.y, point.z, 1.0, result);
   }
   /** multiply each matrix * points[i].   This produces a weighted xyzw.
    * Immediately renormalize back to xyz and replace the original point.
    * If zero weight appears in the result (i.e. input is on eyeplane)leave the mapped xyz untouched.
    */
   public multiplyPoint3dArrayQuietNormalize(points: Point3d[]) {
-    points.forEach((point) =>
-      this.multiplyXYZWQuietRenormalize(point.x, point.y, point.z, 1.0, point)
-    );
+    points.forEach((point) => this.multiplyXYZWQuietRenormalize(point.x, point.y, point.z, 1.0, point));
   }
   /**
    * Add the product terms [xx,xy,xz,xw, yx, yy, yz, yw, zx, zy, zz, zs, wx, wy, wz, ww] to respective entries in the matrix
@@ -922,17 +692,11 @@ export class Matrix4d implements BeJSONFunctions {
    * @param firstColumnIndex first column modified.  All from there to the right are updated
    * @param scale scale
    */
-  public rowOperation(
-    rowIndexA: number,
-    rowIndexB: number,
-    firstColumnIndex: number,
-    scale: number
-  ) {
+  public rowOperation(rowIndexA: number, rowIndexB: number, firstColumnIndex: number, scale: number) {
     if (scale === 0.0) return;
     let iA = rowIndexA * 4 + firstColumnIndex;
     let iB = rowIndexB * 4 + firstColumnIndex;
-    for (let i = firstColumnIndex; i < 4; i++, iA++, iB++)
-      this._coffs[iB] += scale * this._coffs[iA];
+    for (let i = firstColumnIndex; i < 4; i++, iA++, iB++) this._coffs[iB] += scale * this._coffs[iA];
   }
   /** Return the determinant of the matrix. */
   public determinant(): number {
@@ -1001,23 +765,11 @@ export class Matrix4d implements BeJSONFunctions {
     const determinantC = rowDAB.dotProduct(columnC);
     const determinantD = rowABC.dotProduct(columnD);
     const maxAbs1 = result.maxAbs();
-    if (
-      determinantA * determinantB > 0.0 &&
-      determinantA * determinantC > 0.0 &&
-      determinantA * determinantD > 0.0
-    ) {
-      const divisionTest = Geometry.conditionalDivideCoordinate(
-        maxAbs1,
-        determinantA
-      );
+    if (determinantA * determinantB > 0.0 && determinantA * determinantC > 0.0 && determinantA * determinantD > 0.0) {
+      const divisionTest = Geometry.conditionalDivideCoordinate(maxAbs1, determinantA);
       if (divisionTest !== undefined) {
         const divDet = 1.0 / determinantA;
-        result.scaleRowsInPlace(
-          divMaxAbsA * divDet,
-          divMaxAbsB * divDet,
-          divMaxAbsC * divDet,
-          divMaxAbsD * divDet
-        );
+        result.scaleRowsInPlace(divMaxAbsA * divDet, divMaxAbsB * divDet, divMaxAbsC * divDet, divMaxAbsD * divDet);
         return result;
       }
     } else {
@@ -1031,30 +783,10 @@ export class Matrix4d implements BeJSONFunctions {
   public rowArrays(f?: (value: number) => any): any {
     if (f)
       return [
-        [
-          f(this._coffs[0]),
-          f(this._coffs[1]),
-          f(this._coffs[2]),
-          f(this._coffs[3]),
-        ],
-        [
-          f(this._coffs[4]),
-          f(this._coffs[5]),
-          f(this._coffs[6]),
-          f(this._coffs[7]),
-        ],
-        [
-          f(this._coffs[8]),
-          f(this._coffs[9]),
-          f(this._coffs[10]),
-          f(this._coffs[11]),
-        ],
-        [
-          f(this._coffs[12]),
-          f(this._coffs[13]),
-          f(this._coffs[14]),
-          f(this._coffs[15]),
-        ],
+        [f(this._coffs[0]), f(this._coffs[1]), f(this._coffs[2]), f(this._coffs[3])],
+        [f(this._coffs[4]), f(this._coffs[5]), f(this._coffs[6]), f(this._coffs[7])],
+        [f(this._coffs[8]), f(this._coffs[9]), f(this._coffs[10]), f(this._coffs[11])],
+        [f(this._coffs[12]), f(this._coffs[13]), f(this._coffs[14]), f(this._coffs[15])],
       ];
     else
       return [
@@ -1083,11 +815,7 @@ export class Matrix4d implements BeJSONFunctions {
    * @param vectorV row vector
    * @param scale scale factor
    */
-  public addScaledOuterProductInPlace(
-    vectorU: Point4d,
-    vectorV: Point4d,
-    scale: number
-  ) {
+  public addScaledOuterProductInPlace(vectorU: Point4d, vectorV: Point4d, scale: number) {
     let a = vectorU.x * scale;
     this._coffs[0] += a * vectorV.x;
     this._coffs[1] += a * vectorV.y;
@@ -1124,13 +852,7 @@ export class Matrix4d implements BeJSONFunctions {
    * @param az z part of translation
    * @param scale scale factor for entire product
    */
-  public addTranslationSandwichInPlace(
-    matrixB: Matrix4d,
-    ax: number,
-    ay: number,
-    az: number,
-    scale: number
-  ) {
+  public addTranslationSandwichInPlace(matrixB: Matrix4d, ax: number, ay: number, az: number, scale: number) {
     const bx = matrixB._coffs[3];
     const by = matrixB._coffs[7];
     const bz = matrixB._coffs[11];
@@ -1143,28 +865,19 @@ export class Matrix4d implements BeJSONFunctions {
     const axBeta = ax * beta;
     const ayBeta = ay * beta;
     const azBeta = az * beta;
-    this._coffs[0] +=
-      scale * (matrixB._coffs[0] + ax * bx + cx * ax + ax * axBeta);
-    this._coffs[1] +=
-      scale * (matrixB._coffs[1] + ay * bx + cy * ax + ax * ayBeta);
-    this._coffs[2] +=
-      scale * (matrixB._coffs[2] + az * bx + cz * ax + ax * azBeta);
+    this._coffs[0] += scale * (matrixB._coffs[0] + ax * bx + cx * ax + ax * axBeta);
+    this._coffs[1] += scale * (matrixB._coffs[1] + ay * bx + cy * ax + ax * ayBeta);
+    this._coffs[2] += scale * (matrixB._coffs[2] + az * bx + cz * ax + ax * azBeta);
     this._coffs[3] += scale * (bx + axBeta);
 
-    this._coffs[4] +=
-      scale * (matrixB._coffs[4] + ax * by + cx * ay + ay * axBeta);
-    this._coffs[5] +=
-      scale * (matrixB._coffs[5] + ay * by + cy * ay + ay * ayBeta);
-    this._coffs[6] +=
-      scale * (matrixB._coffs[6] + az * by + cz * ay + ay * azBeta);
+    this._coffs[4] += scale * (matrixB._coffs[4] + ax * by + cx * ay + ay * axBeta);
+    this._coffs[5] += scale * (matrixB._coffs[5] + ay * by + cy * ay + ay * ayBeta);
+    this._coffs[6] += scale * (matrixB._coffs[6] + az * by + cz * ay + ay * azBeta);
     this._coffs[7] += scale * (by + ayBeta);
 
-    this._coffs[8] +=
-      scale * (matrixB._coffs[8] + ax * bz + cx * az + az * axBeta);
-    this._coffs[9] +=
-      scale * (matrixB._coffs[9] + ay * bz + cy * az + az * ayBeta);
-    this._coffs[10] +=
-      scale * (matrixB._coffs[10] + az * bz + cz * az + az * azBeta);
+    this._coffs[8] += scale * (matrixB._coffs[8] + ax * bz + cx * az + az * axBeta);
+    this._coffs[9] += scale * (matrixB._coffs[9] + ay * bz + cy * az + az * ayBeta);
+    this._coffs[10] += scale * (matrixB._coffs[10] + az * bz + cz * az + az * azBeta);
     this._coffs[11] += scale * (bz + azBeta);
 
     this._coffs[12] += scale * (cx + axBeta);
@@ -1184,11 +897,7 @@ export class Matrix4d implements BeJSONFunctions {
    * @param az z part of translation
    * @param scale scale factor for entire product
    */
-  public multiplyTranslationSandwichInPlace(
-    ax: number,
-    ay: number,
-    az: number
-  ) {
+  public multiplyTranslationSandwichInPlace(ax: number, ay: number, az: number) {
     const bx = this._coffs[3];
     const by = this._coffs[7];
     const bz = this._coffs[11];

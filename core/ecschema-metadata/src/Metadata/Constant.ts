@@ -58,13 +58,9 @@ export class Constant extends SchemaItem {
    * @param standalone Serialization includes only this object (as opposed to the full schema).
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
    */
-  public override toJSON(
-    standalone: boolean,
-    includeSchemaVersion: boolean
-  ): ConstantProps {
+  public override toJSON(standalone: boolean, includeSchemaVersion: boolean): ConstantProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
-    if (this.phenomenon !== undefined)
-      schemaJson.phenomenon = this.phenomenon.fullName;
+    if (this.phenomenon !== undefined) schemaJson.phenomenon = this.phenomenon.fullName;
     schemaJson.definition = this.definition;
     if (this.hasNumerator) schemaJson.numerator = this.numerator;
     if (this.hasDenominator) schemaJson.denominator = this.denominator;
@@ -75,18 +71,12 @@ export class Constant extends SchemaItem {
   public override async toXml(schemaXml: Document): Promise<Element> {
     const itemElement = await super.toXml(schemaXml);
     itemElement.setAttribute("definition", this.definition);
-    if (this.hasNumerator)
-      itemElement.setAttribute("numerator", this.numerator.toString());
-    if (this.hasDenominator)
-      itemElement.setAttribute("denominator", this.denominator.toString());
+    if (this.hasNumerator) itemElement.setAttribute("numerator", this.numerator.toString());
+    if (this.hasDenominator) itemElement.setAttribute("denominator", this.denominator.toString());
 
     const phenomenon = await this.phenomenon;
     if (undefined !== phenomenon) {
-      const phenomenonName = XmlSerializationUtils.createXmlTypedName(
-        this.schema,
-        phenomenon.schema,
-        phenomenon.name
-      );
+      const phenomenonName = XmlSerializationUtils.createXmlTypedName(this.schema, phenomenon.schema, phenomenon.name);
       itemElement.setAttribute("phenomenon", phenomenonName);
     }
 
@@ -96,46 +86,35 @@ export class Constant extends SchemaItem {
   public override fromJSONSync(constantProps: ConstantProps) {
     super.fromJSONSync(constantProps);
 
-    const schemaItemKey = this.schema.getSchemaItemKey(
-      constantProps.phenomenon
-    );
+    const schemaItemKey = this.schema.getSchemaItemKey(constantProps.phenomenon);
     if (!schemaItemKey)
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `Unable to locate the phenomenon ${constantProps.phenomenon}.`
       );
-    this._phenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(
-      schemaItemKey,
-      async () => {
-        const phenom = await this.schema.lookupItem<Phenomenon>(schemaItemKey);
-        if (undefined === phenom)
-          throw new ECObjectsError(
-            ECObjectsStatus.InvalidECJson,
-            `Unable to locate the phenomenon ${constantProps.phenomenon}.`
-          );
-        return phenom;
-      }
-    );
+    this._phenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(schemaItemKey, async () => {
+      const phenom = await this.schema.lookupItem<Phenomenon>(schemaItemKey);
+      if (undefined === phenom)
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidECJson,
+          `Unable to locate the phenomenon ${constantProps.phenomenon}.`
+        );
+      return phenom;
+    });
 
-    if (
-      this._definition !== "" &&
-      constantProps.definition.toLowerCase() !== this._definition.toLowerCase()
-    )
+    if (this._definition !== "" && constantProps.definition.toLowerCase() !== this._definition.toLowerCase())
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `The Constant ${this.name} has an invalid 'definition' attribute.`
       );
-    else if (this._definition === "")
-      this._definition = constantProps.definition;
+    else if (this._definition === "") this._definition = constantProps.definition;
 
     if (undefined !== constantProps.numerator) {
-      if (constantProps.numerator !== this._numerator)
-        this._numerator = constantProps.numerator;
+      if (constantProps.numerator !== this._numerator) this._numerator = constantProps.numerator;
     }
 
     if (undefined !== constantProps.denominator) {
-      if (constantProps.denominator !== this._denominator)
-        this._denominator = constantProps.denominator;
+      if (constantProps.denominator !== this._denominator) this._denominator = constantProps.denominator;
     }
   }
 
@@ -177,9 +156,7 @@ export class Constant extends SchemaItem {
  * An abstract class used for schema editing.
  */
 export abstract class MutableConstant extends Constant {
-  public abstract override setPhenomenon(
-    phenomenon: LazyLoadedPhenomenon
-  ): void;
+  public abstract override setPhenomenon(phenomenon: LazyLoadedPhenomenon): void;
   public abstract override setDefinition(definition: string): void;
   public abstract override setNumerator(numerator: number): void;
   public abstract override setDenominator(denominator: number): void;

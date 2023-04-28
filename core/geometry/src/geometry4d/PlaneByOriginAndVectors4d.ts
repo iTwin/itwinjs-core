@@ -35,11 +35,7 @@ export class PlaneByOriginAndVectors4d {
       result.setFrom(this);
       return result;
     }
-    return new PlaneByOriginAndVectors4d(
-      this.origin.clone(),
-      this.vectorU.clone(),
-      this.vectorV.clone()
-    );
+    return new PlaneByOriginAndVectors4d(this.origin.clone(), this.vectorU.clone(), this.vectorV.clone());
   }
   /** copy all content from other plane */
   public setFrom(other: PlaneByOriginAndVectors4d): void {
@@ -67,11 +63,7 @@ export class PlaneByOriginAndVectors4d {
       result.setOriginAndVectors(origin, vectorU, vectorV);
       return result;
     }
-    return new PlaneByOriginAndVectors4d(
-      origin.clone(),
-      vectorU.clone(),
-      vectorV.clone()
-    );
+    return new PlaneByOriginAndVectors4d(origin.clone(), vectorU.clone(), vectorV.clone());
   }
   /** Set all numeric data from complete list of (x,y,z,w) in origin, vectorU, and vectorV */
   public setOriginAndVectorsXYZW(
@@ -94,11 +86,7 @@ export class PlaneByOriginAndVectors4d {
     return this;
   }
   /** Copy the contents of origin, vectorU, vectorV parameters to respective member variables */
-  public setOriginAndVectors(
-    origin: Point4d,
-    vectorU: Point4d,
-    vectorV: Point4d
-  ): PlaneByOriginAndVectors4d {
+  public setOriginAndVectors(origin: Point4d, vectorU: Point4d, vectorV: Point4d): PlaneByOriginAndVectors4d {
     this.origin.setFrom(origin);
     this.vectorU.setFrom(vectorU);
     this.vectorV.setFrom(vectorV);
@@ -120,21 +108,7 @@ export class PlaneByOriginAndVectors4d {
     vw: number,
     result?: PlaneByOriginAndVectors4d
   ): PlaneByOriginAndVectors4d {
-    if (result)
-      return result.setOriginAndVectorsXYZW(
-        x0,
-        y0,
-        z0,
-        w0,
-        ux,
-        uy,
-        uz,
-        uw,
-        vx,
-        vy,
-        vz,
-        vw
-      );
+    if (result) return result.setOriginAndVectorsXYZW(x0, y0, z0, w0, ux, uy, uz, uw, vx, vy, vz, vw);
     return new PlaneByOriginAndVectors4d(
       Point4d.create(x0, y0, z0, w0),
       Point4d.create(ux, uy, uz, uw),
@@ -169,23 +143,7 @@ export class PlaneByOriginAndVectors4d {
     return this.origin.plus2Scaled(this.vectorU, u, this.vectorV, v, result);
   }
   /** create a new plane which maps to the cartesian xy plane. */
-  public static createXYPlane(
-    result?: PlaneByOriginAndVectors4d
-  ): PlaneByOriginAndVectors4d {
-    return PlaneByOriginAndVectors4d.createOriginAndVectorsXYZW(
-      0,
-      0,
-      0,
-      1,
-      1,
-      0,
-      0,
-      0,
-      0,
-      1,
-      0,
-      0,
-      result
-    );
+  public static createXYPlane(result?: PlaneByOriginAndVectors4d): PlaneByOriginAndVectors4d {
+    return PlaneByOriginAndVectors4d.createOriginAndVectorsXYZW(0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, result);
   }
 }

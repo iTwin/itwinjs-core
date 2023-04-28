@@ -10,18 +10,12 @@ export class UndoAllTool extends Tool {
   public static override toolId = "UndoAll";
   public override async run(): Promise<boolean> {
     const imodel = IModelApp.viewManager.selectedView?.view.iModel;
-    if (
-      undefined === imodel ||
-      imodel.isReadonly ||
-      !imodel.isBriefcaseConnection
-    )
-      return true;
+    if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection) return true;
 
     await IpcApp.appFunctionIpc.reverseAllTxn(imodel.key);
 
     // ### TODO Restart of primitive tool should be handled by Txn event listener...needs to happen even if not the active tool...
-    if (undefined !== IModelApp.toolAdmin.primitiveTool)
-      await IModelApp.toolAdmin.primitiveTool.onRestartTool();
+    if (undefined !== IModelApp.toolAdmin.primitiveTool) await IModelApp.toolAdmin.primitiveTool.onRestartTool();
     return true;
   }
 }

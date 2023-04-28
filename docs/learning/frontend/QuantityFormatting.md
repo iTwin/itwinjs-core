@@ -52,9 +52,7 @@ try {
   const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
   const context = new SchemaContext();
   context.addLocater(schemaLocater);
-  await IModelApp.quantityFormatter.setUnitsProvider(
-    new SchemaUnitProvider(context)
-  );
+  await IModelApp.quantityFormatter.setUnitsProvider(new SchemaUnitProvider(context));
 } catch (_) {
   // in case IModel does not have a Units schema reset to use BasicUnitsProvider
   await IModelApp.quantityFormatter.resetToUseInternalUnitsProvider();
@@ -98,15 +96,9 @@ Below is example converting totalDistance, in persistence units of meters, to th
 formatterSpec contains all the unit conversions necessary to convert the persistence unit to the units specified in the FormatProps.
 
 ```ts
-const formatterSpec =
-  IModelApp.quantityFormatter.findFormatterSpecByQuantityType(
-    QuantityType.Length
-  );
+const formatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
 if (undefined === formatterSpec) return;
-const formattedTotalDistance = IModelApp.quantityFormatter.formatQuantity(
-  totalDistance,
-  formatterSpec
-);
+const formattedTotalDistance = IModelApp.quantityFormatter.formatQuantity(totalDistance, formatterSpec);
 ```
 
 If the unit system is `"imperial"` then the following format (FormatProps) would typically be applied. This format specifies to create a string in the format of `X'-X"`, where inches would be shown to the nearest 1/8 inch.
@@ -148,9 +140,7 @@ contains all the unit conversions necessary to convert from any angular unit to 
 
 ```ts
 inString = `24^34.5'`;
-const parserSpec = IModelApp.quantityFormatter.findParserSpecByQuantityType(
-  QuantityType.Angle
-);
+const parserSpec = IModelApp.quantityFormatter.findParserSpecByQuantityType(QuantityType.Angle);
 if (parserSpec) return parserSpec.parseToQuantityValue(inString);
 ```
 
@@ -192,9 +182,7 @@ It is possible to retrieve `Units` from schemas stored in IModels. The new [Sche
 ```ts
 // Provide the QuantityFormatter with the iModelConnection so it can find the unit definitions defined in the iModel
 const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
-await IModelApp.quantityFormatter.setUnitsProvider(
-  new SchemaUnitProvider(schemaLocater)
-);
+await IModelApp.quantityFormatter.setUnitsProvider(new SchemaUnitProvider(schemaLocater));
 ```
 
 > IMPORTANT: the `core-quantity` package is not a peer dependency of the `ecschema-metadata` package
@@ -228,13 +216,7 @@ The example below uses a simple numeric format and generates formatted string wi
 
 ```ts
 const formatData = {
-  formatTraits: [
-    "keepSingleZero",
-    "applyRounding",
-    "showUnitLabel",
-    "trailZeroes",
-    "use1000Separator",
-  ],
+  formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel", "trailZeroes", "use1000Separator"],
   precision: 4,
   type: "Decimal",
   uomSeparator: " ",
@@ -342,12 +324,7 @@ await format.fromJSON(unitsProvider, formatData);
 const inString = "2FT 6IN";
 
 // create the parserSpec spec which will hold all unit conversions from possible units to the output unit
-const parserSpec = await ParserSpec.create(
-  format,
-  unitsProvider,
-  outUnit,
-  unitsProvider
-);
+const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit, unitsProvider);
 const parseResult = parserSpec.parseToQuantityValue(inString);
 //  parseResult.value 0.762  (value in meters)
 ```

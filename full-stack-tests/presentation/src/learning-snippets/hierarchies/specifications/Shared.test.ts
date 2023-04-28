@@ -5,11 +5,7 @@
 import { expect } from "chai";
 import { assert } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import {
-  NodeKey,
-  Ruleset,
-  StandardNodeTypes,
-} from "@itwin/presentation-common";
+import { NodeKey, Ruleset, StandardNodeTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
@@ -19,9 +15,7 @@ describe("Learning Snippets", () => {
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile(
-      "assets/datasets/Properties_60InstancesWithUrl2.ibim"
-    );
+    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {
@@ -363,19 +357,16 @@ describe("Learning Snippets", () => {
           {
             key: {
               type: StandardNodeTypes.ECInstancesNode,
-              instanceKeys: [
-                { className: "BisCore:RepositoryModel", id: "0x1" },
-              ],
+              instanceKeys: [{ className: "BisCore:RepositoryModel", id: "0x1" }],
             },
           },
         ]);
 
-      const repositoryModelChildNodes =
-        await Presentation.presentation.getNodes({
-          imodel,
-          rulesetOrId: ruleset,
-          parentKey: rootSubjectChildNodes[0].key,
-        });
+      const repositoryModelChildNodes = await Presentation.presentation.getNodes({
+        imodel,
+        rulesetOrId: ruleset,
+        parentKey: rootSubjectChildNodes[0].key,
+      });
       expect(repositoryModelChildNodes)
         .to.have.lengthOf(11)
         .and.to.containSubset([
@@ -393,8 +384,7 @@ describe("Learning Snippets", () => {
           },
           {
             label: {
-              displayValue:
-                "DgnV8Bridge:D:\\Temp\\Properties_60InstancesWithUrl2.dgn, Default",
+              displayValue: "DgnV8Bridge:D:\\Temp\\Properties_60InstancesWithUrl2.dgn, Default",
             },
           },
           {
@@ -408,8 +398,7 @@ describe("Learning Snippets", () => {
           },
           {
             label: {
-              displayValue:
-                "Definition Model For DgnV8Bridge:D:\\Temp\\Properties_60InstancesWithUrl2.dgn, Default",
+              displayValue: "Definition Model For DgnV8Bridge:D:\\Temp\\Properties_60InstancesWithUrl2.dgn, Default",
             },
           },
           {
@@ -423,9 +412,7 @@ describe("Learning Snippets", () => {
       const repositoryModelNodes2 = await Presentation.presentation.getNodes({
         imodel,
         rulesetOrId: ruleset,
-        parentKey: repositoryModelChildNodes.find(
-          (n) => n.label.displayValue === "DgnV8Bridge"
-        )!.key,
+        parentKey: repositoryModelChildNodes.find((n) => n.label.displayValue === "DgnV8Bridge")!.key,
       });
       expect(repositoryModelNodes2)
         .to.have.lengthOf(1)
@@ -433,9 +420,7 @@ describe("Learning Snippets", () => {
           {
             key: {
               type: StandardNodeTypes.ECInstancesNode,
-              instanceKeys: [
-                { className: "BisCore:RepositoryModel", id: "0x1" },
-              ],
+              instanceKeys: [{ className: "BisCore:RepositoryModel", id: "0x1" }],
             },
           },
         ]);
@@ -522,9 +507,7 @@ describe("Learning Snippets", () => {
         imodel,
         rulesetOrId: ruleset,
       });
-      const sorted = [...nodes].sort((lhs, rhs) =>
-        lhs.label.displayValue.localeCompare(rhs.label.displayValue)
-      );
+      const sorted = [...nodes].sort((lhs, rhs) => lhs.label.displayValue.localeCompare(rhs.label.displayValue));
       expect(nodes).to.not.deep.eq(sorted);
     });
 
@@ -562,9 +545,7 @@ describe("Learning Snippets", () => {
         rulesetOrId: ruleset,
       });
       expect(nodes).to.not.be.empty;
-      nodes.forEach(
-        (node) => expect(NodeKey.isClassGroupingNodeKey(node.key)).to.be.false
-      );
+      nodes.forEach((node) => expect(NodeKey.isClassGroupingNodeKey(node.key)).to.be.false);
     });
 
     it("uses `groupByLabel` attribute", async () => {
@@ -579,9 +560,7 @@ describe("Learning Snippets", () => {
             specifications: [
               {
                 specType: "InstanceNodesOfSpecificClasses",
-                classes: [
-                  { schemaName: "ECDbMeta", classNames: ["ECPropertyDef"] },
-                ],
+                classes: [{ schemaName: "ECDbMeta", classNames: ["ECPropertyDef"] }],
                 groupByLabel: false,
               },
             ],
@@ -606,9 +585,7 @@ describe("Learning Snippets", () => {
         parentKey: classGroupingNode.key,
       });
       expect(nodes).to.not.be.empty;
-      nodes.forEach(
-        (node) => expect(NodeKey.isLabelGroupingNodeKey(node.key)).to.be.false
-      );
+      nodes.forEach((node) => expect(NodeKey.isLabelGroupingNodeKey(node.key)).to.be.false);
     });
 
     it("uses `hasChildren` attribute", async () => {
@@ -786,16 +763,12 @@ describe("Learning Snippets", () => {
             specifications: [
               {
                 specType: "InstanceNodesOfSpecificClasses",
-                classes: [
-                  { schemaName: "BisCore", classNames: ["SpatialCategory"] },
-                ],
+                classes: [{ schemaName: "BisCore", classNames: ["SpatialCategory"] }],
                 groupByClass: false,
               },
               {
                 specType: "InstanceNodesOfSpecificClasses",
-                classes: [
-                  { schemaName: "BisCore", classNames: ["PhysicalModel"] },
-                ],
+                classes: [{ schemaName: "BisCore", classNames: ["PhysicalModel"] }],
                 groupByClass: false,
                 nestedRules: [
                   {

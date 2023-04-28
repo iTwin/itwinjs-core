@@ -101,8 +101,7 @@ module.exports = {
     process: false,
   },
   externals: {
-    "@bentley/imodeljs-native/package.json":
-      "@bentley/imodeljs-native/package.json",
+    "@bentley/imodeljs-native/package.json": "@bentley/imodeljs-native/package.json",
     electron: "electron",
     IModelJsFs: "IModelJsFs",
     "./IModelJsFs": "IModelJsFs",

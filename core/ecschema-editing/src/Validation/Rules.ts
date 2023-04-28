@@ -78,9 +78,7 @@ export interface IRuleSet {
   /** The rules that apply to [CustomAttributeContainerProps]($ecschema-metadata) objects. */
   customAttributeContainerRules?: Array<IRule<CustomAttributeContainerProps>>;
   /** The rules that apply to [CustomAttribute]($ecschema-metadata) objects. */
-  customAttributeInstanceRules?: Array<
-    BaseRule<CustomAttributeContainerProps, CustomAttribute>
-  >;
+  customAttributeInstanceRules?: Array<BaseRule<CustomAttributeContainerProps, CustomAttribute>>;
   /** The rules that apply to [Enumeration]($ecschema-metadata) objects. */
   enumerationRules?: Array<IRule<Enumeration>>;
   /** The rules that apply to [KindOfQuantity]($ecschema-metadata) objects. */

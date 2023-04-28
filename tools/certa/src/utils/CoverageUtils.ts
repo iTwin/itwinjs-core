@@ -21,10 +21,7 @@ export async function relaunchForCoverage(): Promise<number> {
   const instrumentedStatus = await onExit(instrumentedProcess);
 
   // Now create a *combined* report for everything in `nyc`'s temp directory.
-  const reporterProcess = spawnChildProcess("node", [
-    require.resolve("nyc/bin/nyc"),
-    "report",
-  ]);
+  const reporterProcess = spawnChildProcess("node", [require.resolve("nyc/bin/nyc"), "report"]);
   const reporterStatus = await onExit(reporterProcess);
 
   // Certa should exit with an error code if _either_ step failed.
@@ -48,19 +45,13 @@ export function writeCoverageData(coverageData: any): void {
   const nycConfig = getNycConfig();
   const nycCWD = nycConfig.cwd;
   const nycTempDir = nycConfig["temp-dir"] || nycConfig["temp-directory"];
-  if (!nycCWD || !nycTempDir)
-    throw new Error("Failed to determine nyc temp directory.");
+  if (!nycCWD || !nycTempDir) throw new Error("Failed to determine nyc temp directory.");
 
   const nycTempDirAbsolute = path.resolve(nycCWD, nycTempDir);
   if (!fs.existsSync(nycTempDirAbsolute))
-    throw new Error(
-      `Cannot save coverage data - nyc temp directory "${nycTempDirAbsolute}" does not exist.`
-    );
+    throw new Error(`Cannot save coverage data - nyc temp directory "${nycTempDirAbsolute}" does not exist.`);
 
   // Generate a unique filename, just like `nyc` does.
-  const coverageFileName = path.join(
-    nycTempDirAbsolute,
-    `${Math.random().toString(36).substring(2)}.json`
-  );
+  const coverageFileName = path.join(nycTempDirAbsolute, `${Math.random().toString(36).substring(2)}.json`);
   fs.writeFileSync(coverageFileName, JSON.stringify(coverageData));
 }

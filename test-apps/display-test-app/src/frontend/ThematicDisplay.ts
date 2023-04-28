@@ -60,8 +60,7 @@ export class ThematicDisplayEditor {
     const sensorGridYLength = 32;
 
     const sensorValues: number[] = [
-      0.1, 0.9, 0.25, 0.15, 0.8, 0.34, 0.78, 0.32, 0.15, 0.29, 0.878, 0.95, 0.5,
-      0.278, 0.44, 0.33, 0.71,
+      0.1, 0.9, 0.25, 0.15, 0.8, 0.34, 0.78, 0.32, 0.15, 0.29, 0.878, 0.95, 0.5, 0.278, 0.44, 0.33, 0.71,
     ];
 
     const extents = this._vp.view.iModel.projectExtents;
@@ -89,10 +88,7 @@ export class ThematicDisplayEditor {
     }
   }
 
-  private _pushNewSensor(
-    sensors: ThematicDisplaySensorProps[],
-    sensorProps?: ThematicDisplaySensorProps
-  ) {
+  private _pushNewSensor(sensors: ThematicDisplaySensorProps[], sensorProps?: ThematicDisplaySensorProps) {
     if (undefined !== sensorProps) {
       sensors.push(sensorProps);
       return;
@@ -115,8 +111,7 @@ export class ThematicDisplayEditor {
     const select = this._thematicSensor.select;
     while (select.length > 0) select.remove(0);
 
-    for (let i = 0; i < count; i++)
-      this._appendSensorEntry(`Sensor ${i.toString()}`);
+    for (let i = 0; i < count; i++) this._appendSensorEntry(`Sensor ${i.toString()}`);
   }
 
   private _appendSensorEntry(name: string) {
@@ -162,10 +157,7 @@ export class ThematicDisplayEditor {
     { name: "Stepped", value: ThematicGradientMode.Stepped },
   ];
 
-  private static _appendComboBoxEntry(
-    select: HTMLSelectElement,
-    entry: ComboBoxEntry
-  ) {
+  private static _appendComboBoxEntry(select: HTMLSelectElement, entry: ComboBoxEntry) {
     const option = document.createElement("option");
     option.innerText = entry.name;
     if (undefined !== entry.value) option.value = entry.value.toString();
@@ -195,8 +187,7 @@ export class ThematicDisplayEditor {
     this._vp = vp;
 
     const isThematicDisplaySupported = (view: ViewState) => view.is3d();
-    const isThematicDisplayEnabled = (view: ViewState) =>
-      view.viewFlags.thematicDisplay;
+    const isThematicDisplayEnabled = (view: ViewState) => view.viewFlags.thematicDisplay;
 
     const div = document.createElement("div");
 
@@ -230,8 +221,7 @@ export class ThematicDisplayEditor {
 
       this._resetSensorEntries(4);
 
-      const displaySettings = (this._vp.view as ViewState3d).getDisplayStyle3d()
-        .settings;
+      const displaySettings = (this._vp.view as ViewState3d).getDisplayStyle3d().settings;
       displaySettings.thematic = ThematicDisplay.fromJSON(defaultSettings);
       this._vp.viewFlags = this._vp.viewFlags.with("thematicDisplay", enabled);
       showHideControls(enabled);
@@ -267,10 +257,7 @@ export class ThematicDisplayEditor {
         this.updateThematicDisplay((view): ThematicDisplayProps => {
           const props = this.getThematicSettingsProps(view);
           const prevDisplayMode = props.displayMode;
-          const newDisplayMode = (props.displayMode = Number.parseInt(
-            thing.value,
-            10
-          ));
+          const newDisplayMode = (props.displayMode = Number.parseInt(thing.value, 10));
           if (ThematicDisplayMode.Slope === newDisplayMode) {
             props.range = { low: 0.0, high: 90.0 };
           } else if (ThematicDisplayMode.Slope === prevDisplayMode) {
@@ -334,16 +321,10 @@ export class ThematicDisplayEditor {
       handler: (thing) =>
         this.updateThematicDisplay((view): ThematicDisplayProps => {
           const props = this.getThematicSettingsProps(view);
-          props.gradientSettings!.colorScheme = Number.parseInt(
-            thing.value,
-            10
-          );
+          props.gradientSettings!.colorScheme = Number.parseInt(thing.value, 10);
 
           // For now, we just hard code a custom color scheme in here. ###TODO - allow user to specify their own custom values.
-          if (
-            props.gradientSettings!.colorScheme ===
-            ThematicGradientColorScheme.Custom
-          ) {
+          if (props.gradientSettings!.colorScheme === ThematicGradientColorScheme.Custom) {
             const customKeyValues = [
               [0.0, 255, 255, 0],
               [0.5, 255, 0, 255],
@@ -353,11 +334,7 @@ export class ThematicDisplayEditor {
             customKeyValues.forEach((key) =>
               props.gradientSettings!.customKeys!.push({
                 value: key[0],
-                color: ColorDef.computeTbgrFromComponents(
-                  key[1],
-                  key[2],
-                  key[3]
-                ),
+                color: ColorDef.computeTbgrFromComponents(key[1], key[2], key[3]),
               })
             );
           }
@@ -481,9 +458,7 @@ export class ThematicDisplayEditor {
       handler: (_) =>
         this.updateThematicDisplay((view): ThematicDisplayProps => {
           const props = this.getThematicSettingsProps(view);
-          props.gradientSettings!.colorMix = parseFloat(
-            this._thematicColorMix.slider.value
-          );
+          props.gradientSettings!.colorMix = parseFloat(this._thematicColorMix.slider.value);
           return props;
         }),
     });
@@ -590,14 +565,10 @@ export class ThematicDisplayEditor {
       handler: (value, _) =>
         this.updateThematicDisplay((view): ThematicDisplayProps => {
           const props = this.getThematicSettingsProps(view);
-          const selectedSensor =
-            this._thematicSensor.select.options.selectedIndex;
-          const pos = Point3d.fromJSON(
-            props.sensorSettings!.sensors![selectedSensor].position
-          );
+          const selectedSensor = this._thematicSensor.select.options.selectedIndex;
+          const pos = Point3d.fromJSON(props.sensorSettings!.sensors![selectedSensor].position);
           pos.x = value;
-          props.sensorSettings!.sensors![selectedSensor].position =
-            pos.toJSON();
+          props.sensorSettings!.sensors![selectedSensor].position = pos.toJSON();
           return props;
         }),
       min: -999999.0,
@@ -615,14 +586,10 @@ export class ThematicDisplayEditor {
       handler: (value, _) =>
         this.updateThematicDisplay((view): ThematicDisplayProps => {
           const props = this.getThematicSettingsProps(view);
-          const selectedSensor =
-            this._thematicSensor.select.options.selectedIndex;
-          const pos = Point3d.fromJSON(
-            props.sensorSettings!.sensors![selectedSensor].position
-          );
+          const selectedSensor = this._thematicSensor.select.options.selectedIndex;
+          const pos = Point3d.fromJSON(props.sensorSettings!.sensors![selectedSensor].position);
           pos.y = value;
-          props.sensorSettings!.sensors![selectedSensor].position =
-            pos.toJSON();
+          props.sensorSettings!.sensors![selectedSensor].position = pos.toJSON();
           return props;
         }),
       min: -999999.0,
@@ -640,14 +607,10 @@ export class ThematicDisplayEditor {
       handler: (value, _) =>
         this.updateThematicDisplay((view): ThematicDisplayProps => {
           const props = this.getThematicSettingsProps(view);
-          const selectedSensor =
-            this._thematicSensor.select.options.selectedIndex;
-          const pos = Point3d.fromJSON(
-            props.sensorSettings!.sensors![selectedSensor].position
-          );
+          const selectedSensor = this._thematicSensor.select.options.selectedIndex;
+          const pos = Point3d.fromJSON(props.sensorSettings!.sensors![selectedSensor].position);
           pos.z = value;
-          props.sensorSettings!.sensors![selectedSensor].position =
-            pos.toJSON();
+          props.sensorSettings!.sensors![selectedSensor].position = pos.toJSON();
           return props;
         }),
       min: -999999.0,
@@ -664,8 +627,7 @@ export class ThematicDisplayEditor {
       handler: (value, _) =>
         this.updateThematicDisplay((view): ThematicDisplayProps => {
           const props = this.getThematicSettingsProps(view);
-          const selectedSensor =
-            this._thematicSensor.select.options.selectedIndex;
+          const selectedSensor = this._thematicSensor.select.options.selectedIndex;
           props.sensorSettings!.sensors![selectedSensor].value = value;
           return props;
         }),
@@ -689,8 +651,7 @@ export class ThematicDisplayEditor {
           if (props.sensorSettings!.sensors !== undefined) {
             this._pushNewSensor(props.sensorSettings!.sensors);
             this._resetSensorEntries(props.sensorSettings!.sensors.length);
-            this._thematicSensor.select.selectedIndex =
-              props.sensorSettings!.sensors.length - 1;
+            this._thematicSensor.select.selectedIndex = props.sensorSettings!.sensors.length - 1;
           }
           return props;
         }),
@@ -704,15 +665,10 @@ export class ThematicDisplayEditor {
       handler: () =>
         this.updateThematicDisplay((view): ThematicDisplayProps => {
           const props = this.getThematicSettingsProps(view);
-          if (
-            props.sensorSettings!.sensors !== undefined &&
-            props.sensorSettings!.sensors.length > 1
-          ) {
-            const selectedSensorIndex =
-              this._thematicSensor.select.options.selectedIndex;
+          if (props.sensorSettings!.sensors !== undefined && props.sensorSettings!.sensors.length > 1) {
+            const selectedSensorIndex = this._thematicSensor.select.options.selectedIndex;
             props.sensorSettings!.sensors.splice(selectedSensorIndex, 1);
-            if (props.sensorSettings!.sensors === undefined)
-              props.sensorSettings!.sensors = [];
+            if (props.sensorSettings!.sensors === undefined) props.sensorSettings!.sensors = [];
             this._thematicSensor.select.options.remove(selectedSensorIndex);
           }
           return props;
@@ -731,8 +687,7 @@ export class ThematicDisplayEditor {
             props.sensorSettings!.sensors = [];
             this._createSensorGrid(props.sensorSettings!.sensors);
             this._resetSensorEntries(props.sensorSettings!.sensors.length);
-            this._thematicSensor.select.selectedIndex =
-              props.sensorSettings!.sensors.length - 1;
+            this._thematicSensor.select.selectedIndex = props.sensorSettings!.sensors.length - 1;
           }
           return props;
         }),
@@ -796,10 +751,7 @@ export class ThematicDisplayEditor {
 
     this._thematicDisplayMode.select.value = settings.displayMode.toString();
 
-    const displayMode = Number.parseInt(
-      this._thematicDisplayMode.select.value,
-      10
-    );
+    const displayMode = Number.parseInt(this._thematicDisplayMode.select.value, 10);
     if (ThematicDisplayMode.Height === displayMode) {
       ThematicDisplayEditor._setComboBoxEntries(
         this._thematicGradientMode,
@@ -812,15 +764,11 @@ export class ThematicDisplayEditor {
       );
     }
 
-    this._thematicGradientMode.select.value =
-      settings.gradientSettings.mode.toString();
-    this._thematicStepCount.input.value =
-      settings.gradientSettings.stepCount.toString();
-    this._thematicColorScheme.select.value =
-      settings.gradientSettings.colorScheme.toString();
-    this._thematicColorMix.slider.value =
-      this._thematicColorMix.readout.innerText =
-        settings.gradientSettings.colorMix.toString();
+    this._thematicGradientMode.select.value = settings.gradientSettings.mode.toString();
+    this._thematicStepCount.input.value = settings.gradientSettings.stepCount.toString();
+    this._thematicColorScheme.select.value = settings.gradientSettings.colorScheme.toString();
+    this._thematicColorMix.slider.value = this._thematicColorMix.readout.innerText =
+      settings.gradientSettings.colorMix.toString();
 
     this._thematicAxisX.input.value = settings.axis.x.toString();
     this._thematicAxisY.input.value = settings.axis.y.toString();
@@ -830,36 +778,29 @@ export class ThematicDisplayEditor {
     this._thematicSunDirY.input.value = settings.sunDirection.y.toString();
     this._thematicSunDirZ.input.value = settings.sunDirection.z.toString();
 
-    this._thematicDistanceCutoff.input.value =
-      settings.sensorSettings.distanceCutoff.toString();
+    this._thematicDistanceCutoff.input.value = settings.sensorSettings.distanceCutoff.toString();
     const sensors = settings.sensorSettings.sensors;
     if (sensors.length > 0) {
-      if (this._thematicSensor.select.length < 1)
-        this._resetSensorEntries(sensors.length);
+      if (this._thematicSensor.select.length < 1) this._resetSensorEntries(sensors.length);
 
       const selectedSensor = this._thematicSensor.select.options.selectedIndex;
       const pos = Point3d.fromJSON(sensors[selectedSensor].position);
       this._thematicSensorX.input.value = pos.x.toString();
       this._thematicSensorY.input.value = pos.y.toString();
       this._thematicSensorZ.input.value = pos.z.toString();
-      this._thematicSensorValue.input.value =
-        sensors[selectedSensor].value.toString();
+      this._thematicSensorValue.input.value = sensors[selectedSensor].value.toString();
     }
   }
 
-  private updateThematicDisplay(
-    updateFunction: (view: ViewState) => ThematicDisplayProps
-  ) {
+  private updateThematicDisplay(updateFunction: (view: ViewState) => ThematicDisplayProps) {
     const props = updateFunction(this._vp.view);
-    (this._vp.view as ViewState3d).getDisplayStyle3d().settings.thematic =
-      ThematicDisplay.fromJSON(props);
+    (this._vp.view as ViewState3d).getDisplayStyle3d().settings.thematic = ThematicDisplay.fromJSON(props);
     this.sync();
   }
 
   private resetThematicDisplay(): void {
     const thematicDisplay = ThematicDisplay.fromJSON(defaultSettings);
-    (this._vp.view as ViewState3d).getDisplayStyle3d().settings.thematic =
-      thematicDisplay;
+    (this._vp.view as ViewState3d).getDisplayStyle3d().settings.thematic = thematicDisplay;
     this._resetSensorEntries(thematicDisplay.sensorSettings.sensors.length);
     this.sync();
     this.updateThematicDisplayUI(this._vp.view);

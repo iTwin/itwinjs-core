@@ -95,8 +95,7 @@ export class Frustum {
 
   /** Initialize this Frustum to the 8 corners of the NPC cube. */
   public initNpc() {
-    for (let i = 0; i < 8; ++i)
-      Point3d.createFrom(NpcCorners[i], this.points[i]);
+    for (let i = 0; i < 8; ++i) Point3d.createFrom(NpcCorners[i], this.points[i]);
 
     return this;
   }
@@ -107,10 +106,7 @@ export class Frustum {
   }
   /** Get the point at the center of this Frustum (halfway between RightTopFront and LeftBottomRear. */
   public getCenter(): Point3d {
-    return this.getCorner(Npc.RightTopFront).interpolate(
-      0.5,
-      this.getCorner(Npc.LeftBottomRear)
-    );
+    return this.getCorner(Npc.RightTopFront).interpolate(0.5, this.getCorner(Npc.LeftBottomRear));
   }
 
   /** Get the distance between two corners of this Frustum. */
@@ -171,108 +167,38 @@ export class Frustum {
   public scaleAboutCenter(scale: number): void {
     const orig = this.clone();
     const f = 0.5 * (1.0 + scale);
-    orig.points[Npc._111].interpolate(
-      f,
-      orig.points[Npc._000],
-      this.points[Npc._000]
-    );
-    orig.points[Npc._011].interpolate(
-      f,
-      orig.points[Npc._100],
-      this.points[Npc._100]
-    );
-    orig.points[Npc._101].interpolate(
-      f,
-      orig.points[Npc._010],
-      this.points[Npc._010]
-    );
-    orig.points[Npc._001].interpolate(
-      f,
-      orig.points[Npc._110],
-      this.points[Npc._110]
-    );
-    orig.points[Npc._110].interpolate(
-      f,
-      orig.points[Npc._001],
-      this.points[Npc._001]
-    );
-    orig.points[Npc._010].interpolate(
-      f,
-      orig.points[Npc._101],
-      this.points[Npc._101]
-    );
-    orig.points[Npc._100].interpolate(
-      f,
-      orig.points[Npc._011],
-      this.points[Npc._011]
-    );
-    orig.points[Npc._000].interpolate(
-      f,
-      orig.points[Npc._111],
-      this.points[Npc._111]
-    );
+    orig.points[Npc._111].interpolate(f, orig.points[Npc._000], this.points[Npc._000]);
+    orig.points[Npc._011].interpolate(f, orig.points[Npc._100], this.points[Npc._100]);
+    orig.points[Npc._101].interpolate(f, orig.points[Npc._010], this.points[Npc._010]);
+    orig.points[Npc._001].interpolate(f, orig.points[Npc._110], this.points[Npc._110]);
+    orig.points[Npc._110].interpolate(f, orig.points[Npc._001], this.points[Npc._001]);
+    orig.points[Npc._010].interpolate(f, orig.points[Npc._101], this.points[Npc._101]);
+    orig.points[Npc._100].interpolate(f, orig.points[Npc._011], this.points[Npc._011]);
+    orig.points[Npc._000].interpolate(f, orig.points[Npc._111], this.points[Npc._111]);
   }
   /** The point at the center of the front face of this frustum */
   public get frontCenter() {
-    return this.getCorner(Npc.LeftBottomFront).interpolate(
-      0.5,
-      this.getCorner(Npc.RightTopFront)
-    );
+    return this.getCorner(Npc.LeftBottomFront).interpolate(0.5, this.getCorner(Npc.RightTopFront));
   }
 
   /** The point at the center of the rear face of this frustum */
   public get rearCenter() {
-    return this.getCorner(Npc.LeftBottomRear).interpolate(
-      0.5,
-      this.getCorner(Npc.RightTopRear)
-    );
+    return this.getCorner(Npc.LeftBottomRear).interpolate(0.5, this.getCorner(Npc.RightTopRear));
   }
 
   /** Scale this frustum's XY (viewing) plane about its center */
   public scaleXYAboutCenter(scale: number) {
     const frontCenter = this.frontCenter,
       rearCenter = this.rearCenter;
-    frontCenter.interpolate(
-      scale,
-      this.points[Npc.LeftTopFront],
-      this.points[Npc.LeftTopFront]
-    );
-    frontCenter.interpolate(
-      scale,
-      this.points[Npc.RightTopFront],
-      this.points[Npc.RightTopFront]
-    );
-    frontCenter.interpolate(
-      scale,
-      this.points[Npc.LeftBottomFront],
-      this.points[Npc.LeftBottomFront]
-    );
-    frontCenter.interpolate(
-      scale,
-      this.points[Npc.RightBottomFront],
-      this.points[Npc.RightBottomFront]
-    );
+    frontCenter.interpolate(scale, this.points[Npc.LeftTopFront], this.points[Npc.LeftTopFront]);
+    frontCenter.interpolate(scale, this.points[Npc.RightTopFront], this.points[Npc.RightTopFront]);
+    frontCenter.interpolate(scale, this.points[Npc.LeftBottomFront], this.points[Npc.LeftBottomFront]);
+    frontCenter.interpolate(scale, this.points[Npc.RightBottomFront], this.points[Npc.RightBottomFront]);
 
-    rearCenter.interpolate(
-      scale,
-      this.points[Npc.LeftTopRear],
-      this.points[Npc.LeftTopRear]
-    );
-    rearCenter.interpolate(
-      scale,
-      this.points[Npc.RightTopRear],
-      this.points[Npc.RightTopRear]
-    );
-    rearCenter.interpolate(
-      scale,
-      this.points[Npc.LeftBottomRear],
-      this.points[Npc.LeftBottomRear]
-    );
-    rearCenter.interpolate(
-      scale,
-      this.points[Npc.RightBottomRear],
-      this.points[Npc.RightBottomRear]
-    );
+    rearCenter.interpolate(scale, this.points[Npc.LeftTopRear], this.points[Npc.LeftTopRear]);
+    rearCenter.interpolate(scale, this.points[Npc.RightTopRear], this.points[Npc.RightTopRear]);
+    rearCenter.interpolate(scale, this.points[Npc.LeftBottomRear], this.points[Npc.LeftBottomRear]);
+    rearCenter.interpolate(scale, this.points[Npc.RightBottomRear], this.points[Npc.RightBottomRear]);
   }
 
   /** Create a Map4d that converts world coordinates to/from [[Npc]] coordinates of this Frustum. */
@@ -289,12 +215,7 @@ export class Frustum {
     const org = this.getCorner(Npc.LeftBottomRear);
     const xVec = org.vectorTo(this.getCorner(Npc.RightBottomRear));
     const yVec = org.vectorTo(this.getCorner(Npc.LeftTopRear));
-    const matrix = Matrix3d.createRigidFromColumns(
-      xVec,
-      yVec,
-      AxisOrder.XYZ,
-      result
-    );
+    const matrix = Matrix3d.createRigidFromColumns(xVec, yVec, AxisOrder.XYZ, result);
     if (matrix) matrix.transposeInPlace();
     return matrix;
   }
@@ -347,10 +268,7 @@ export class Frustum {
   }
 
   /** Create a new Frustum from a Range3d */
-  public static fromRange(
-    range: LowAndHighXYZ | LowAndHighXY,
-    out?: Frustum
-  ): Frustum {
+  public static fromRange(range: LowAndHighXYZ | LowAndHighXY, out?: Frustum): Frustum {
     const frustum = undefined !== out ? out : new Frustum();
     frustum.initFromRange(range);
     return frustum;
@@ -378,73 +296,32 @@ export class Frustum {
   }
 
   /** Get a convex set of clipping planes bounding the region contained by this Frustum. */
-  public getRangePlanes(
-    clipFront: boolean,
-    clipBack: boolean,
-    expandPlaneDistance: number
-  ): ConvexClipPlaneSet {
+  public getRangePlanes(clipFront: boolean, clipBack: boolean, expandPlaneDistance: number): ConvexClipPlaneSet {
     const convexSet = ConvexClipPlaneSet.createEmpty();
     const scratchNormal = Vector3d.create();
-    Vector3d.createCrossProductToPoints(
-      this.points[5],
-      this.points[3],
-      this.points[1],
-      scratchNormal
-    );
+    Vector3d.createCrossProductToPoints(this.points[5], this.points[3], this.points[1], scratchNormal);
     if (scratchNormal.normalizeInPlace())
       convexSet.addPlaneToConvexSet(
-        ClipPlane.createNormalAndDistance(
-          scratchNormal,
-          scratchNormal.dotProduct(this.points[1]) - expandPlaneDistance
-        )
+        ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[1]) - expandPlaneDistance)
       );
-    Vector3d.createCrossProductToPoints(
-      this.points[2],
-      this.points[4],
-      this.points[0],
-      scratchNormal
-    );
+    Vector3d.createCrossProductToPoints(this.points[2], this.points[4], this.points[0], scratchNormal);
     if (scratchNormal.normalizeInPlace())
       convexSet.addPlaneToConvexSet(
-        ClipPlane.createNormalAndDistance(
-          scratchNormal,
-          scratchNormal.dotProduct(this.points[0]) - expandPlaneDistance
-        )
+        ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[0]) - expandPlaneDistance)
       );
-    Vector3d.createCrossProductToPoints(
-      this.points[3],
-      this.points[6],
-      this.points[2],
-      scratchNormal
-    );
+    Vector3d.createCrossProductToPoints(this.points[3], this.points[6], this.points[2], scratchNormal);
     if (scratchNormal.normalizeInPlace())
       convexSet.addPlaneToConvexSet(
-        ClipPlane.createNormalAndDistance(
-          scratchNormal,
-          scratchNormal.dotProduct(this.points[2]) - expandPlaneDistance
-        )
+        ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[2]) - expandPlaneDistance)
       );
-    Vector3d.createCrossProductToPoints(
-      this.points[4],
-      this.points[1],
-      this.points[0],
-      scratchNormal
-    );
+    Vector3d.createCrossProductToPoints(this.points[4], this.points[1], this.points[0], scratchNormal);
     if (scratchNormal.normalizeInPlace())
       convexSet.addPlaneToConvexSet(
-        ClipPlane.createNormalAndDistance(
-          scratchNormal,
-          scratchNormal.dotProduct(this.points[0]) - expandPlaneDistance
-        )
+        ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[0]) - expandPlaneDistance)
       );
 
     if (clipBack) {
-      Vector3d.createCrossProductToPoints(
-        this.points[1],
-        this.points[2],
-        this.points[0],
-        scratchNormal
-      );
+      Vector3d.createCrossProductToPoints(this.points[1], this.points[2], this.points[0], scratchNormal);
       if (scratchNormal.normalizeInPlace())
         convexSet.addPlaneToConvexSet(
           ClipPlane.createNormalAndDistance(
@@ -454,12 +331,7 @@ export class Frustum {
         );
     }
     if (clipFront) {
-      Vector3d.createCrossProductToPoints(
-        this.points[6],
-        this.points[5],
-        this.points[4],
-        scratchNormal
-      );
+      Vector3d.createCrossProductToPoints(this.points[6], this.points[5], this.points[4], scratchNormal);
       if (scratchNormal.normalizeInPlace())
         convexSet.addPlaneToConvexSet(
           ClipPlane.createNormalAndDistance(
@@ -472,9 +344,7 @@ export class Frustum {
   }
 
   /** Get a (convex) polygon that represents the intersection of this frustum with a plane, or undefined if no intersection exists */
-  public getIntersectionWithPlane(
-    plane: Plane3dByOriginAndUnitNormal
-  ): Point3d[] | undefined {
+  public getIntersectionWithPlane(plane: Plane3dByOriginAndUnitNormal): Point3d[] | undefined {
     const clipPlane = ClipPlane.createPlane(plane);
     const loopPoints = clipPlane.intersectRange(this.toRange(), true);
     if (undefined === loopPoints) return undefined;

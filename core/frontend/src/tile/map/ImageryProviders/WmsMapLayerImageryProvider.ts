@@ -6,12 +6,7 @@
  * @module Tiles
  */
 import { IModelStatus } from "@itwin/core-bentley";
-import {
-  Cartographic,
-  ImageMapLayerSettings,
-  MapSubLayerSettings,
-  ServerError,
-} from "@itwin/core-common";
+import { Cartographic, ImageMapLayerSettings, MapSubLayerSettings, ServerError } from "@itwin/core-common";
 import { Point2d } from "@itwin/core-geometry";
 import {
   ImageryMapTileTree,
@@ -55,30 +50,17 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
         this._settings.userName && this._settings.password
           ? { user: this._settings.userName, password: this._settings.password }
           : undefined;
-      this._capabilities = await WmsCapabilities.create(
-        this._baseUrl,
-        credentials
-      );
+      this._capabilities = await WmsCapabilities.create(this._baseUrl, credentials);
       if (undefined !== this._capabilities) {
         this._allLayersRange = this._capabilities.cartoRange;
-        if (
-          this._capabilities.layer &&
-          Array.isArray(this._capabilities.layer.subLayers)
-        ) {
+        if (this._capabilities.layer && Array.isArray(this._capabilities.layer.subLayers)) {
           const mapCartoRanges = (subLayer: WmsCapability.SubLayer) => {
-            if (Array.isArray(subLayer.children))
-              subLayer.children.forEach((child) => mapCartoRanges(child));
-            else if (subLayer.cartoRange)
-              this._subLayerRanges.set(subLayer.name, subLayer.cartoRange);
+            if (Array.isArray(subLayer.children)) subLayer.children.forEach((child) => mapCartoRanges(child));
+            else if (subLayer.cartoRange) this._subLayerRanges.set(subLayer.name, subLayer.cartoRange);
           };
-          this._capabilities.layer.subLayers.forEach((subLayer) =>
-            mapCartoRanges(subLayer)
-          );
+          this._capabilities.layer.subLayers.forEach((subLayer) => mapCartoRanges(subLayer));
           this._settings.subLayers.forEach((subLayer) => {
-            if (
-              subLayer.isNamed &&
-              this._settings.isSubLayerVisible(subLayer)
-            ) {
+            if (subLayer.isNamed && this._settings.isSubLayerVisible(subLayer)) {
               const subLayerRange = this._subLayerRanges.get(subLayer.name);
               if (subLayerRange)
                 if (this.cartoRange) this.cartoRange.extendRange(subLayerRange);
@@ -110,8 +92,7 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
 
   private getVisibleLayers(): MapSubLayerSettings[] {
     return this._settings.subLayers.filter(
-      (subLayer) =>
-        this._settings.isSubLayerVisible(subLayer) && subLayer.isNamed
+      (subLayer) => this._settings.isSubLayerVisible(subLayer) && subLayer.isNamed
     );
   }
 
@@ -128,23 +109,17 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
 
       if (subLayer.queryable) layerNames.push(subLayer.name);
 
-      subLayer.children?.forEach((childSubLayer) =>
-        getQueryableSubLayers(childSubLayer)
-      );
+      subLayer.children?.forEach((childSubLayer) => getQueryableSubLayers(childSubLayer));
     };
 
-    this._capabilities?.layer?.subLayers?.forEach((subLayer) =>
-      getQueryableSubLayers(subLayer)
-    );
+    this._capabilities?.layer?.subLayers?.forEach((subLayer) => getQueryableSubLayers(subLayer));
     return layerNames;
   }
 
   private getVisibleQueryableLayersString(): string {
     const layers = new Array<string>();
     const queryable = this.getQueryableLayers();
-    const visibleLayerNames = this.getVisibleLayers().map(
-      (layer) => layer.name
-    );
+    const visibleLayerNames = this.getVisibleLayers().map((layer) => layer.name);
     queryable.forEach((layer: string) => {
       if (visibleLayerNames.includes(layer)) layers.push(layer);
     });
@@ -185,11 +160,7 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
   }
 
   // construct the Url from the desired Tile
-  public async constructUrl(
-    row: number,
-    column: number,
-    zoomLevel: number
-  ): Promise<string> {
+  public async constructUrl(row: number, column: number, zoomLevel: number): Promise<string> {
     let bboxString = "";
     let crsString = "";
 
@@ -202,24 +173,14 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
       // For instance, for EPSG:4326 the axis ordering is latitude/longitude, or north/east.
       // WMS 1.1.0 always requires the axis ordering to be longitude/latitude. *sigh*
       if (this._capabilities !== undefined) {
-        bboxString = this.getEPSG4326ExtentString(
-          row,
-          column,
-          zoomLevel,
-          this._capabilities?.isVersion13
-        ); // lat/long ordering
+        bboxString = this.getEPSG4326ExtentString(row, column, zoomLevel, this._capabilities?.isVersion13); // lat/long ordering
         crsString = "EPSG%3A4326";
       }
     }
 
     const layerString = this.getVisibleLayerString();
 
-    if (
-      bboxString.length === 0 ||
-      crsString.length === 0 ||
-      layerString.length === 0
-    )
-      return "";
+    if (bboxString.length === 0 || crsString.length === 0 || layerString.length === 0) return "";
 
     const crsParamName = this._capabilities?.isVersion13 ? "CRS" : "SRS";
     return `${this._baseUrl}?SERVICE=WMS&VERSION=${this._capabilities?.version}&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=${this.transparentBackgroundString}&LAYERS=${layerString}&WIDTH=${this.tileSize}&HEIGHT=${this.tileSize}&${crsParamName}=${crsString}&STYLES=&BBOX=${bboxString}`;
@@ -237,22 +198,14 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
     let formatString = infoFormats.find((format) => format === "text/html");
     if (!formatString) formatString = infoFormats[0];
 
-    const bboxString = this.getEPSG3857ExtentString(
-      quadId.row,
-      quadId.column,
-      quadId.level
-    );
+    const bboxString = this.getEPSG3857ExtentString(quadId.row, quadId.column, quadId.level);
     const layerString = this.getVisibleQueryableLayersString();
     if (layerString.length === 0) return;
     const rectangle = tree.getTileRectangle(quadId);
-    const fraction = rectangle.worldToLocal(
-      Point2d.create(carto.longitude, carto.latitude, scratchPoint2d)
-    )!;
+    const fraction = rectangle.worldToLocal(Point2d.create(carto.longitude, carto.latitude, scratchPoint2d))!;
     const x = Math.floor(0.5 + fraction.x * this.tileSize);
     const y = Math.floor(0.5 + (1.0 - fraction.y) * this.tileSize);
-    const coordinateString = this._capabilities?.isVersion13
-      ? `&i=${x}&j=${y}`
-      : `&x=${x}&y=${y}`;
+    const coordinateString = this._capabilities?.isVersion13 ? `&i=${x}&j=${y}` : `&x=${x}&y=${y}`;
     const crsParamName = this._capabilities?.isVersion13 ? "CRS" : "SRS";
     const getFeatureUrl = `${this._baseUrl}?SERVICE=WMS&VERSION=${this._capabilities?.version}&REQUEST=GetFeatureInfo&LAYERS=${layerString}&WIDTH=${this.tileSize}&HEIGHT=${this.tileSize}&${crsParamName}=EPSG%3A3857&BBOX=${bboxString}&QUERY_LAYERS=${layerString}${coordinateString}&info_format=${formatString}`;
     return this.toolTipFromUrl(strings, getFeatureUrl);

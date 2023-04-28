@@ -90,8 +90,7 @@ const opts = {
 
 const configFilePath = path.resolve(process.cwd(), yargs.argv.config);
 let config;
-if (fs.existsSync(configFilePath))
-  config = CertaConfig.fromConfigFile(configFilePath, opts);
+if (fs.existsSync(configFilePath)) config = CertaConfig.fromConfigFile(configFilePath, opts);
 else config = CertaConfig.fromObject(opts);
 
 (async () => {

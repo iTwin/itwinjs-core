@@ -244,20 +244,12 @@ export class GroupModel extends GroupInformationModel {
    * @returns The Id of the newly inserted GroupModel.
    * @throws [[IModelError]] if there is an insert problem.
    */
-  public static insert(
-    iModelDb: IModelDb,
-    parentSubjectId: Id64String,
-    name: string
-  ): Id64String {
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
     const partitionProps: InformationPartitionElementProps = {
       classFullName: GroupInformationPartition.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
-      code: GroupInformationPartition.createCode(
-        iModelDb,
-        parentSubjectId,
-        name
-      ),
+      code: GroupInformationPartition.createCode(iModelDb, parentSubjectId, name),
     };
     const partitionId = iModelDb.elements.insertElement(partitionProps);
     return iModelDb.models.insertModel({

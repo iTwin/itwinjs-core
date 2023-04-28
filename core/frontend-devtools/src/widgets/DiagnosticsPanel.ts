@@ -51,8 +51,7 @@ export class DiagnosticsPanel {
   public readonly keyinField?: KeyinField;
 
   public constructor(vp: Viewport, props?: DiagnosticsPanelProps) {
-    const exclude =
-      undefined !== props && undefined !== props.exclude ? props.exclude : {};
+    const exclude = undefined !== props && undefined !== props.exclude ? props.exclude : {};
 
     this._element = document.createElement("div");
     this._element.className = "debugPanel";
@@ -99,8 +98,7 @@ export class DiagnosticsPanel {
       this.addSeparator();
     }
 
-    if (true !== exclude.toolSettings)
-      this._toolSettingsTracker = new ToolSettingsTracker(this._element, vp);
+    if (true !== exclude.toolSettings) this._toolSettingsTracker = new ToolSettingsTracker(this._element, vp);
   }
 
   public get element(): HTMLElement {
@@ -116,8 +114,7 @@ export class DiagnosticsPanel {
     dispose(this._gpuProfiler);
     dispose(this._toolSettingsTracker);
 
-    if (undefined !== this._parentElement)
-      this._parentElement.removeChild(this._element);
+    if (undefined !== this._parentElement) this._parentElement.removeChild(this._element);
   }
 
   private addSeparator(): void {

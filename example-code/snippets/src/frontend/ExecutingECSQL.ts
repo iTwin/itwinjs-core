@@ -3,19 +3,13 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@itwin/core-bentley";
-import {
-  NavigationValue,
-  QueryBinder,
-  QueryRowFormat,
-} from "@itwin/core-common";
+import { NavigationValue, QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/naming-convention */
 
-async function executeECSql_SampleMethod(
-  iModel: IModelConnection
-): Promise<void> {
+async function executeECSql_SampleMethod(iModel: IModelConnection): Promise<void> {
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_Positional
     for await (const row of iModel.createQueryReader(
@@ -114,9 +108,7 @@ async function executeECSql_SampleMethod(
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_WorkingWithRowFormat
-    console.log(
-      "ECInstanceId | ClassName | Parent Id | Parent RelClassName | LastMod"
-    );
+    console.log("ECInstanceId | ClassName | Parent Id | Parent RelClassName | LastMod");
     for await (const row of iModel.createQueryReader(
       "SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?",
       QueryBinder.from(["0x113"]),
@@ -127,9 +119,7 @@ async function executeECSql_SampleMethod(
       const parent: NavigationValue = row.parent;
       const lastMod: string = row.lastMod;
 
-      console.log(
-        `${id}|${className}|${parent.id}|${parent.relClassName}|${lastMod}`
-      );
+      console.log(`${id}|${className}|${parent.id}|${parent.relClassName}|${lastMod}`);
     }
     // __PUBLISH_EXTRACT_END__
   }

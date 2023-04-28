@@ -106,9 +106,7 @@ export class IndexMap<T> {
   }
 
   protected lowerBound(value: T): { index: number; equal: boolean } {
-    return lowerBound(value, this._array, (lhs: T, rhs: IndexedValue<T>) =>
-      this._compareValues(lhs, rhs.value)
-    );
+    return lowerBound(value, this._array, (lhs: T, rhs: IndexedValue<T>) => this._compareValues(lhs, rhs.value));
   }
 
   /** Return an array of the elements in this map in which the array index of each element corresponds to the index assigned to it by the map. */

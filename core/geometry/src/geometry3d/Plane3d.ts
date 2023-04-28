@@ -60,20 +60,14 @@ export abstract class Plane3d implements PlaneAltitudeEvaluator {
   public abstract altitude(spacePoint: Point3d): number;
 
   /** Returns true if spacePoint is within distance tolerance of the plane. */
-  public isPointInPlane(
-    spacePoint: Point3d,
-    tolerance: number = Geometry.smallMetricDistance
-  ): boolean {
+  public isPointInPlane(spacePoint: Point3d, tolerance: number = Geometry.smallMetricDistance): boolean {
     return Math.abs(this.altitude(spacePoint)) <= tolerance;
   }
   /** return a value -1, 0, 1 giving a signed indicator of whether the toleranced altitude of the point is
    *    negative, near zero, or positive.
    *
    */
-  public classifyAltitude(
-    point: Point3d,
-    tolerance: number = Geometry.smallMetricDistance
-  ): -1 | 0 | 1 {
+  public classifyAltitude(point: Point3d, tolerance: number = Geometry.smallMetricDistance): -1 | 0 | 1 {
     return Geometry.split3Way01(this.altitude(point), tolerance);
   }
   /** return a value -1, 0, 1 giving a signed indicator of whether the toleranced altitude of x,y,z is
@@ -113,12 +107,7 @@ export abstract class Plane3d implements PlaneAltitudeEvaluator {
    * @param result
    */
   public getUnitNormal(result?: Vector3d): Vector3d | undefined {
-    return Vector3d.createNormalized(
-      this.normalX(),
-      this.normalY(),
-      this.normalZ(),
-      result
-    );
+    return Vector3d.createNormalized(this.normalX(), this.normalY(), this.normalZ(), result);
   }
   /**
    * Return any point on the plane.
@@ -156,8 +145,5 @@ export abstract class Plane3d implements PlaneAltitudeEvaluator {
   /** Return the projection of spacePoint onto the plane.
    * * MUST BE IMPLEMENTED BY DERIVED CLASSES
    */
-  public abstract projectPointToPlane(
-    spacePoint: Point3d,
-    result?: Point3d
-  ): Point3d;
+  public abstract projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
 }

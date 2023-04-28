@@ -3,11 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  ScreenViewport,
-  SnapshotConnection,
-  SpatialViewState,
-} from "@itwin/core-frontend";
+import { ScreenViewport, SnapshotConnection, SpatialViewState } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
 describe("ViewState attached to Viewport", async () => {
@@ -102,22 +98,15 @@ describe("ViewState attached to Viewport", async () => {
     let modelsChanged = false;
     let styleChanged = false;
 
-    const reset = () =>
-      (categoriesChanged = modelsChanged = styleChanged = false);
-    const expectChanges = (
-      categories: boolean,
-      models: boolean,
-      style: boolean
-    ) => {
+    const reset = () => (categoriesChanged = modelsChanged = styleChanged = false);
+    const expectChanges = (categories: boolean, models: boolean, style: boolean) => {
       expect(categoriesChanged).to.equal(categories);
       expect(modelsChanged).to.equal(models);
       expect(styleChanged).to.equal(style);
     };
 
     const view = await loadView();
-    view.onViewedCategoriesChanged.addListener(
-      () => (categoriesChanged = true)
-    );
+    view.onViewedCategoriesChanged.addListener(() => (categoriesChanged = true));
     view.onViewedModelsChanged.addListener(() => (modelsChanged = true));
     view.onDisplayStyleChanged.addListener(() => (styleChanged = true));
 
@@ -177,9 +166,7 @@ describe("ViewState attached to Viewport", async () => {
 
     const view = await loadView();
     vp = ScreenViewport.create(div, view);
-    view.onViewedCategoriesChanged.addListener(
-      () => (categoriesChanged = true)
-    );
+    view.onViewedCategoriesChanged.addListener(() => (categoriesChanged = true));
     view.onViewedModelsChanged.addListener(() => (modelsChanged = true));
 
     const categories1 = view.categorySelector;

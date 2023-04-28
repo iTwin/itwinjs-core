@@ -8,10 +8,7 @@
  */
 
 /** @alpha */
-export type NumericInputHandler = (
-  value: number,
-  input: HTMLInputElement
-) => void;
+export type NumericInputHandler = (value: number, input: HTMLInputElement) => void;
 
 /** @alpha */
 export interface NumericInputProps {
@@ -29,19 +26,14 @@ export interface NumericInputProps {
 }
 
 /** @alpha */
-export function createNumericInput(
-  props: NumericInputProps,
-  useFloat: boolean = false
-): HTMLInputElement {
+export function createNumericInput(props: NumericInputProps, useFloat: boolean = false): HTMLInputElement {
   const input = document.createElement("input");
   input.type = "number";
   input.value = props.value.toString();
 
   input.onchange = () => {
     try {
-      const value = useFloat
-        ? parseFloat(input.value)
-        : parseInt(input.value, 10);
+      const value = useFloat ? parseFloat(input.value) : parseInt(input.value, 10);
       if (!Number.isNaN(value)) props.handler(value, input);
     } catch (_ex) {
       //
@@ -75,9 +67,7 @@ export interface LabeledNumericInput {
 }
 
 /** @alpha */
-export function createLabeledNumericInput(
-  props: LabeledNumericInputProps
-): LabeledNumericInput {
+export function createLabeledNumericInput(props: LabeledNumericInputProps): LabeledNumericInput {
   const div = document.createElement("div");
   if (props.divDisplay) div.style.display = props.divDisplay;
 

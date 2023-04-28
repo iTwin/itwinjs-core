@@ -57,11 +57,7 @@ export class LambertConical1SP extends OperationMethod {
    * @param parameters the values of the parameters.
    */
   public constructor(parameters: ParameterValueList) {
-    super(
-      LambertConical1SP.METHOD_CODE,
-      "Lambert Conic Conformal (1SP)",
-      parameters
-    );
+    super(LambertConical1SP.METHOD_CODE, "Lambert Conic Conformal (1SP)", parameters);
     /* Store the parameters */
     this._latN = parameters.getValue(8801);
     this._lonN = parameters.getValue(8802);
@@ -81,9 +77,7 @@ export class LambertConical1SP extends OperationMethod {
    * Calculate M.
    */
   private static calcM(e: float64, lat: float64): float64 {
-    return (
-      Math.cos(lat) / Math.pow(1.0 - Math.pow(e * Math.sin(lat), 2.0), 0.5)
-    );
+    return Math.cos(lat) / Math.pow(1.0 - Math.pow(e * Math.sin(lat), 2.0), 0.5);
   }
 
   /**
@@ -91,21 +85,14 @@ export class LambertConical1SP extends OperationMethod {
    */
   private static calcT(e: float64, lat: float64): float64 {
     return (
-      Math.tan(Math.PI * 0.25 - lat * 0.5) /
-      Math.pow((1.0 - e * Math.sin(lat)) / (1.0 + e * Math.sin(lat)), e * 0.5)
+      Math.tan(Math.PI * 0.25 - lat * 0.5) / Math.pow((1.0 - e * Math.sin(lat)) / (1.0 + e * Math.sin(lat)), e * 0.5)
     );
   }
 
   /**
    * Calculate R.
    */
-  private static calcR(
-    a: float64,
-    F: float64,
-    t: float64,
-    n: float64,
-    k0: float64
-  ): float64 {
+  private static calcR(a: float64, F: float64, t: float64, n: float64, k0: float64): float64 {
     if (Math.abs(t) < 1.0e-6) return 0.0;
     return a * F * Math.pow(t, n) * k0;
   }
@@ -114,12 +101,7 @@ export class LambertConical1SP extends OperationMethod {
    * OperationMethod interface method.
    * @see OperationMethod#forward
    */
-  public forward(
-    sourceCRS: CRS,
-    source: Coordinate,
-    targetCRS: CRS,
-    target: Coordinate
-  ): void {
+  public forward(sourceCRS: CRS, source: Coordinate, targetCRS: CRS, target: Coordinate): void {
     /* Get the parameters */
     let lon: float64 = source.getX();
     let lat: float64 = source.getY();
@@ -147,12 +129,7 @@ export class LambertConical1SP extends OperationMethod {
    * OperationMethod interface method.
    * @see OperationMethod#reverse
    */
-  public reverse(
-    sourceCRS: CRS,
-    source: Coordinate,
-    targetCRS: CRS,
-    target: Coordinate
-  ): void {
+  public reverse(sourceCRS: CRS, source: Coordinate, targetCRS: CRS, target: Coordinate): void {
     /* Get the parameters */
     let E: float64 = target.getX();
     let N: float64 = target.getY();
@@ -166,25 +143,13 @@ export class LambertConical1SP extends OperationMethod {
     let F: float64 = m0 / (n * Math.pow(t0, n));
     let r0: float64 = LambertConical1SP.calcR(a, F, t0, n, this._k0);
     let r_: float64 =
-      LambertConical1SP.sign(n) *
-      Math.pow(
-        Math.pow(E - this._fE, 2.0) + Math.pow(r0 - (N - this._fN), 2.0),
-        0.5
-      );
+      LambertConical1SP.sign(n) * Math.pow(Math.pow(E - this._fE, 2.0) + Math.pow(r0 - (N - this._fN), 2.0), 0.5);
     let t_: float64 = Math.pow(r_ / (a * this._k0 * F), 1.0 / n);
     let theta_: float64 = Math.atan((E - this._fE) / (r0 - (N - this._fN)));
     let lat: float64 = Math.PI * 0.5 - 2.0 * Math.atan(t_);
     for (let i: number = 0; i < 7; i++)
       lat =
-        Math.PI * 0.5 -
-        2.0 *
-          Math.atan(
-            t_ *
-              Math.pow(
-                (1.0 - e * Math.sin(lat)) / (1.0 + e * Math.sin(lat)),
-                e * 0.5
-              )
-          ); // recursive formula
+        Math.PI * 0.5 - 2.0 * Math.atan(t_ * Math.pow((1.0 - e * Math.sin(lat)) / (1.0 + e * Math.sin(lat)), e * 0.5)); // recursive formula
     let lon: float64 = theta_ / n + this._lonN;
     /* Save the position */
     source.setX(lon);

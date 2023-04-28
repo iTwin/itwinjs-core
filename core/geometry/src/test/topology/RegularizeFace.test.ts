@@ -21,10 +21,7 @@ import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { Sample } from "../../serialization/GeometrySamples";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
-import {
-  HalfEdgeGraphSearch,
-  HalfEdgeMaskTester,
-} from "../../topology/HalfEdgeGraphSearch";
+import { HalfEdgeGraphSearch, HalfEdgeMaskTester } from "../../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphOps } from "../../topology/Merging";
 import { RegularizationContext } from "../../topology/RegularizeFace";
 import { Triangulator } from "../../topology/Triangulation";
@@ -32,46 +29,25 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 /** Treat each xy as (r, radians) */
-function mapThetaR(
-  points: Point3d[],
-  scaleX: number,
-  scaleY: number
-): Point3d[] {
+function mapThetaR(points: Point3d[], scaleX: number, scaleY: number): Point3d[] {
   const outPoints = [];
   for (const rTheta of points) {
     const r = rTheta.y;
     const radians = rTheta.x;
     const z = rTheta.z;
-    outPoints.push(
-      Point3d.create(
-        scaleX * r * Math.cos(radians),
-        scaleY * r * Math.sin(radians),
-        z
-      )
-    );
+    outPoints.push(Point3d.create(scaleX * r * Math.cos(radians), scaleY * r * Math.sin(radians), z));
   }
   return outPoints;
 }
 
 /** Treat each xy as (r + pitch * radians/2PI, radians) */
-function mapThetaRWithPitch(
-  points: Point3d[],
-  scaleX: number,
-  scaleY: number,
-  pitch: number
-): Point3d[] {
+function mapThetaRWithPitch(points: Point3d[], scaleX: number, scaleY: number, pitch: number): Point3d[] {
   const outPoints = [];
   for (const rTheta of points) {
     const radians = rTheta.x;
     const r = rTheta.y + (radians * pitch) / (2 * Math.PI);
     const z = rTheta.z;
-    outPoints.push(
-      Point3d.create(
-        scaleX * r * Math.cos(radians),
-        scaleY * r * Math.sin(radians),
-        z
-      )
-    );
+    outPoints.push(Point3d.create(scaleX * r * Math.cos(radians), scaleY * r * Math.sin(radians), z));
   }
   return outPoints;
 }
@@ -105,17 +81,9 @@ class VerticalStaggerData {
     ck.testExactNumber(this.numUpEdge, context.upEdges.length, "up edge");
     ck.testExactNumber(this.numDownEdge, context.downEdges.length, "down edge");
     ck.testExactNumber(this.numUpChain, context.localMin.length, "up chain");
-    ck.testExactNumber(
-      this.numDownChain,
-      context.localMax.length,
-      "down chain"
-    );
+    ck.testExactNumber(this.numDownChain, context.localMax.length, "down chain");
     ck.testExactNumber(this.numTopPeaks, context.topPeaks.length, "top peaks");
-    ck.testExactNumber(
-      this.numBottomPeaks,
-      context.bottomPeaks.length,
-      "bottom peaks"
-    );
+    ck.testExactNumber(this.numBottomPeaks, context.bottomPeaks.length, "bottom peaks");
   }
 }
 describe("Regularize", () => {
@@ -124,59 +92,14 @@ describe("Regularize", () => {
     const ax = 6;
     const ay = 10;
     for (const data of [
-      new VerticalStaggerData(
-        Sample.createVerticalStaggerPolygon(-1, -2, -2, -1, ax, ay, 0, 0),
-        3,
-        3,
-        0,
-        0,
-        1,
-        1
-      ),
-      new VerticalStaggerData(
-        Sample.createVerticalStaggerPolygon(-1, 0, -2, -1, ax, ay, 0, 0),
-        4,
-        2,
-        0,
-        0,
-        1,
-        1
-      ),
-      new VerticalStaggerData(
-        Sample.createVerticalStaggerPolygon(1, 0, -2, -1, ax, ay, 0, 0),
-        4,
-        2,
-        1,
-        0,
-        2,
-        1
-      ),
-      new VerticalStaggerData(
-        Sample.createVerticalStaggerPolygon(1, 0, 2, -1, ax, ay, 0, 0),
-        3,
-        3,
-        1,
-        1,
-        2,
-        2
-      ),
-      new VerticalStaggerData(
-        Sample.createVerticalStaggerPolygon(1, 0, 0, 1, ax, ay, 0, 0),
-        3,
-        3,
-        1,
-        0,
-        2,
-        1
-      ),
+      new VerticalStaggerData(Sample.createVerticalStaggerPolygon(-1, -2, -2, -1, ax, ay, 0, 0), 3, 3, 0, 0, 1, 1),
+      new VerticalStaggerData(Sample.createVerticalStaggerPolygon(-1, 0, -2, -1, ax, ay, 0, 0), 4, 2, 0, 0, 1, 1),
+      new VerticalStaggerData(Sample.createVerticalStaggerPolygon(1, 0, -2, -1, ax, ay, 0, 0), 4, 2, 1, 0, 2, 1),
+      new VerticalStaggerData(Sample.createVerticalStaggerPolygon(1, 0, 2, -1, ax, ay, 0, 0), 3, 3, 1, 1, 2, 2),
+      new VerticalStaggerData(Sample.createVerticalStaggerPolygon(1, 0, 0, 1, ax, ay, 0, 0), 3, 3, 1, 0, 2, 1),
     ]) {
       const graph = new HalfEdgeGraph();
-      const seed = Triangulator.createFaceLoopFromCoordinates(
-        graph,
-        data.points,
-        true,
-        false
-      );
+      const seed = Triangulator.createFaceLoopFromCoordinates(graph, data.points, true, false);
       const context = new RegularizationContext(graph);
       context.collectVerticalEventsAroundFace(seed!);
       data.validateCounts(ck, context);
@@ -201,10 +124,7 @@ describe("Regularize", () => {
         Sample.createVerticalStaggerPolygon(-1, -2, 0, -3, ax, ay, 0, 0),
         Sample.createVerticalStaggerPolygon(1, 0, 0, -2, ax, ay, 0, 0),
       ]) {
-        const points = Point3dArray.cloneWithMaxEdgeLength(
-          basePoints,
-          maxEdgeLength
-        );
+        const points = Point3dArray.cloneWithMaxEdgeLength(basePoints, maxEdgeLength);
         const graph = new HalfEdgeGraph();
         GeometryCoreTestIO.captureGeometry(
           allGeometry,
@@ -212,21 +132,11 @@ describe("Regularize", () => {
           outputX0,
           (outputY0 += outputStepY)
         );
-        const seed = Triangulator.createFaceLoopFromCoordinates(
-          graph,
-          points,
-          true,
-          false
-        )!;
+        const seed = Triangulator.createFaceLoopFromCoordinates(graph, points, true, false)!;
         const context = new RegularizationContext(graph);
         context.regularizeFace(seed);
         const mesh = PolyfaceBuilder.graphToPolyface(graph);
-        GeometryCoreTestIO.captureGeometry(
-          allGeometry,
-          mesh,
-          outputX0,
-          (outputY0 += outputStepY)
-        );
+        GeometryCoreTestIO.captureGeometry(allGeometry, mesh, outputX0, (outputY0 += outputStepY));
         outputX0 += outputStepX;
         outputY0 = 0.0;
       }
@@ -251,20 +161,8 @@ describe("Regularize", () => {
     const allGeometry: GeometryQuery[] = [];
     for (const numPhase of [2, 4]) {
       for (const maxEdgeLength of [4.0, 2.0, 1.2, 20.0]) {
-        for (const basePoints of [
-          Sample.createSquareWave(
-            Point3d.create(0, 0, 0),
-            1,
-            0.5,
-            2,
-            numPhase,
-            1
-          ),
-        ]) {
-          const points = Point3dArray.cloneWithMaxEdgeLength(
-            basePoints,
-            maxEdgeLength
-          );
+        for (const basePoints of [Sample.createSquareWave(Point3d.create(0, 0, 0), 1, 0.5, 2, numPhase, 1)]) {
+          const points = Point3dArray.cloneWithMaxEdgeLength(basePoints, maxEdgeLength);
           transform.multiplyPoint3dArray(points, points);
           const graph = new HalfEdgeGraph();
           GeometryCoreTestIO.captureGeometry(
@@ -273,21 +171,11 @@ describe("Regularize", () => {
             outputX0,
             (outputY0 += outputStepY)
           );
-          const seed = Triangulator.createFaceLoopFromCoordinates(
-            graph,
-            points,
-            true,
-            false
-          )!;
+          const seed = Triangulator.createFaceLoopFromCoordinates(graph, points, true, false)!;
           const context = new RegularizationContext(graph);
           context.regularizeFace(seed);
           const mesh = PolyfaceBuilder.graphToPolyface(graph);
-          GeometryCoreTestIO.captureGeometry(
-            allGeometry,
-            mesh,
-            outputX0,
-            (outputY0 += outputStepY)
-          );
+          GeometryCoreTestIO.captureGeometry(allGeometry, mesh, outputX0, (outputY0 += outputStepY));
           outputX0 += outputStepX;
           outputY0 = outputY1;
         }
@@ -342,14 +230,7 @@ describe("Regularize", () => {
             // [1,-1]
             for (const basePoints of [
               // Sample.createSquareWave(Point3d.create(radians0, 4, 0), 2 * dx0Wave, 0.5, 2 * dx1Wave, numPhase, 1),
-              Sample.createSquareWave(
-                Point3d.create(radians0, 4, 0),
-                dx0Wave,
-                0.5,
-                dx1Wave,
-                numPhase,
-                1
-              ),
+              Sample.createSquareWave(Point3d.create(radians0, 4, 0), dx0Wave, 0.5, dx1Wave, numPhase, 1),
               Sample.createBidirectionalSawtooth(
                 Point3d.create(radians0, 4, 0),
                 dx0Wave,
@@ -377,10 +258,7 @@ describe("Regularize", () => {
                 0
               ),
             ]) {
-              const pointsRTheta = Point3dArray.cloneWithMaxEdgeLength(
-                basePoints,
-                maxEdgeLength
-              );
+              const pointsRTheta = Point3dArray.cloneWithMaxEdgeLength(basePoints, maxEdgeLength);
               GeometryCoreTestIO.captureGeometry(
                 allGeometry,
                 LineString3d.create(pointsRTheta),
@@ -389,17 +267,7 @@ describe("Regularize", () => {
               );
               const points = mapThetaR(pointsRTheta, s, s);
 
-              if (
-                testRegularize(
-                  ck,
-                  allGeometry,
-                  outputX0,
-                  (outputY0 += outputStepY),
-                  pointsRTheta,
-                  true,
-                  true
-                )
-              ) {
+              if (testRegularize(ck, allGeometry, outputX0, (outputY0 += outputStepY), pointsRTheta, true, true)) {
                 outputY0 += 2 * outputStepY;
               } else {
                 GeometryCoreTestIO.captureGeometry(
@@ -408,39 +276,13 @@ describe("Regularize", () => {
                   outputX0 - hardLoopXStep,
                   outputY0
                 );
-                testRegularize(
-                  ck,
-                  allGeometry,
-                  outputX0,
-                  (outputY0 += outputStepY),
-                  pointsRTheta,
-                  true,
-                  false
-                );
-                testRegularize(
-                  ck,
-                  allGeometry,
-                  outputX0,
-                  (outputY0 += outputStepY),
-                  pointsRTheta,
-                  false,
-                  true
-                );
+                testRegularize(ck, allGeometry, outputX0, (outputY0 += outputStepY), pointsRTheta, true, false);
+                testRegularize(ck, allGeometry, outputX0, (outputY0 += outputStepY), pointsRTheta, false, true);
               }
 
               for (let i = 0; i < 3; i++) {
                 transformA.multiplyPoint3dArrayInPlace(pointsRTheta);
-                if (
-                  testRegularize(
-                    ck,
-                    allGeometry,
-                    outputX0,
-                    (outputY0 += outputStepY),
-                    pointsRTheta,
-                    true,
-                    true
-                  )
-                ) {
+                if (testRegularize(ck, allGeometry, outputX0, (outputY0 += outputStepY), pointsRTheta, true, true)) {
                   outputY0 += 2 * outputStepY;
                 } else {
                   GeometryCoreTestIO.captureGeometry(
@@ -449,24 +291,8 @@ describe("Regularize", () => {
                     outputX0 - hardLoopXStep,
                     outputY0
                   );
-                  testRegularize(
-                    ck,
-                    allGeometry,
-                    outputX0,
-                    (outputY0 += outputStepY),
-                    pointsRTheta,
-                    true,
-                    false
-                  );
-                  testRegularize(
-                    ck,
-                    allGeometry,
-                    outputX0,
-                    (outputY0 += outputStepY),
-                    pointsRTheta,
-                    false,
-                    true
-                  );
+                  testRegularize(ck, allGeometry, outputX0, (outputY0 += outputStepY), pointsRTheta, true, false);
+                  testRegularize(ck, allGeometry, outputX0, (outputY0 += outputStepY), pointsRTheta, false, true);
                 }
               }
 
@@ -477,17 +303,7 @@ describe("Regularize", () => {
                 (outputY0 += outputStepY)
               );
 
-              if (
-                testRegularize(
-                  ck,
-                  allGeometry,
-                  outputX0,
-                  (outputY0 += outputStepY),
-                  points,
-                  true,
-                  true
-                )
-              ) {
+              if (testRegularize(ck, allGeometry, outputX0, (outputY0 += outputStepY), points, true, true)) {
                 outputY0 += 2 * outputStepY;
               } else {
                 GeometryCoreTestIO.captureGeometry(
@@ -496,24 +312,8 @@ describe("Regularize", () => {
                   outputX0 - hardLoopXStep,
                   outputY0
                 );
-                testRegularize(
-                  ck,
-                  allGeometry,
-                  outputX0,
-                  (outputY0 += outputStepY),
-                  points,
-                  true,
-                  false
-                );
-                testRegularize(
-                  ck,
-                  allGeometry,
-                  outputX0,
-                  (outputY0 += outputStepY),
-                  points,
-                  false,
-                  true
-                );
+                testRegularize(ck, allGeometry, outputX0, (outputY0 += outputStepY), points, true, false);
+                testRegularize(ck, allGeometry, outputX0, (outputY0 += outputStepY), points, false, true);
               }
 
               outputY0 = outputY1;
@@ -535,11 +335,7 @@ describe("Regularize", () => {
       hardLoops.length,
       `See RegularizationC.HardLoops for ${hardLoops.length} regularization failure cases `
     );
-    GeometryCoreTestIO.saveGeometry(
-      hardLoops,
-      "Graph",
-      "RegularizeC.HardLoops"
-    );
+    GeometryCoreTestIO.saveGeometry(hardLoops, "Graph", "RegularizeC.HardLoops");
     expect(ck.getNumErrors()).equals(0);
   });
   /**
@@ -560,19 +356,9 @@ describe("Regularize", () => {
     const hardLoops: GeometryQuery[] = [];
     const maxEdgeLength = 19;
     const numPhase = 4;
-    const basePoints = Sample.createSquareWave(
-      Point3d.create(0, 0, 0),
-      dx0Wave,
-      dyWave,
-      dx1Wave,
-      numPhase,
-      2 * dyWave
-    );
+    const basePoints = Sample.createSquareWave(Point3d.create(0, 0, 0), dx0Wave, dyWave, dx1Wave, numPhase, 2 * dyWave);
 
-    const pointsRTheta = Point3dArray.cloneWithMaxEdgeLength(
-      basePoints,
-      maxEdgeLength
-    );
+    const pointsRTheta = Point3dArray.cloneWithMaxEdgeLength(basePoints, maxEdgeLength);
     GeometryCoreTestIO.captureGeometry(
       allGeometry,
       LineString3d.create(pointsRTheta),
@@ -580,17 +366,7 @@ describe("Regularize", () => {
       (outputY0 += outputStepY)
     );
 
-    if (
-      testRegularize(
-        ck,
-        allGeometry,
-        outputX0,
-        (outputY0 += outputStepY),
-        pointsRTheta,
-        true,
-        true
-      )
-    ) {
+    if (testRegularize(ck, allGeometry, outputX0, (outputY0 += outputStepY), pointsRTheta, true, true)) {
       outputY0 += 2 * outputStepY;
     } else {
       GeometryCoreTestIO.captureGeometry(
@@ -599,24 +375,8 @@ describe("Regularize", () => {
         outputX0 - hardLoopXStep,
         outputY0
       );
-      testRegularize(
-        ck,
-        allGeometry,
-        outputX0,
-        (outputY0 += outputStepY),
-        pointsRTheta,
-        true,
-        false
-      );
-      testRegularize(
-        ck,
-        allGeometry,
-        outputX0,
-        (outputY0 += outputStepY),
-        pointsRTheta,
-        false,
-        true
-      );
+      testRegularize(ck, allGeometry, outputX0, (outputY0 += outputStepY), pointsRTheta, true, false);
+      testRegularize(ck, allGeometry, outputX0, (outputY0 += outputStepY), pointsRTheta, false, true);
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "RegularizeD");
@@ -647,10 +407,7 @@ describe("Regularize", () => {
             const points = generatorFunction(numRecursion, perpendicularFactor);
             const transform0 = Transform.createFixedPointAndMatrix(
               points[0],
-              Matrix3d.createRotationAroundAxisIndex(
-                2,
-                Angle.createDegrees(degrees)
-              )
+              Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(degrees))
             );
             transform0.multiplyPoint3dArrayInPlace(points);
             const range = Range3d.createArray(points);
@@ -681,12 +438,7 @@ function testRegularize(
   sweepDown: boolean
 ): boolean {
   const graph = new HalfEdgeGraph();
-  const seed = Triangulator.createFaceLoopFromCoordinates(
-    graph,
-    points,
-    true,
-    false
-  )!;
+  const seed = Triangulator.createFaceLoopFromCoordinates(graph, points, true, false)!;
   const context = new RegularizationContext(graph);
   context.regularizeFace(seed, sweepUp, sweepDown);
   const range = HalfEdgeGraphOps.graphRange(graph);
@@ -716,13 +468,7 @@ function testRegularize(
         range.xLength() + 2 * ex,
         range.yLength() + 2 * ey
       )!;
-      GeometryCoreTestIO.captureGeometry(
-        allGeometry,
-        LineString3d.create(ls1),
-        dx + ax,
-        dy,
-        0.0
-      );
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(ls1), dx + ax, dy, 0.0);
     }
     GeometryCoreTestIO.captureGeometry(allGeometry, mesh1, dx + ax, dy, 0.0);
   }
@@ -737,15 +483,10 @@ function testRegularize(
       for (const f of nonMonotoneFaces) {
         if (!RegularizationContext.isMonotoneFace(f)) numBad++;
       }
-      GeometryCoreTestIO.consoleLog(
-        ` nonMonotone faces ${numBad} of ${nonMonotoneFaces.length}`
-      );
+      GeometryCoreTestIO.consoleLog(` nonMonotone faces ${numBad} of ${nonMonotoneFaces.length}`);
       GeometryCoreTestIO.captureGeometry(
         allGeometry,
-        LineSegment3d.create(
-          range.fractionToPoint(r0, r0, 0),
-          range.fractionToPoint(r1, r1, 0)
-        ),
+        LineSegment3d.create(range.fractionToPoint(r0, r0, 0), range.fractionToPoint(r1, r1, 0)),
         dx + bx,
         dy,
         0.0
@@ -759,14 +500,7 @@ function testRegularize(
       if (edge.id < edge.edgeMate.id)
         GeometryCoreTestIO.captureGeometry(
           allGeometry,
-          LineSegment3d.createXYZXYZ(
-            edge.x,
-            edge.y,
-            0,
-            edge.faceSuccessor.x,
-            edge.faceSuccessor.y,
-            0
-          ),
+          LineSegment3d.createXYZXYZ(edge.x, edge.y, 0, edge.faceSuccessor.x, edge.faceSuccessor.y, 0),
           dx + ax + bx,
           dy,
           0.0
@@ -839,21 +573,9 @@ function testFullGraphRegularize(
         range.xLength() + 2 * ex,
         range.yLength() + 2 * ey
       )!;
-      GeometryCoreTestIO.captureGeometry(
-        allGeometry,
-        LineString3d.create(ls1),
-        dx + ax,
-        dy,
-        0.0
-      );
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(ls1), dx + ax, dy, 0.0);
     }
-    GeometryCoreTestIO.captureGeometry(
-      allGeometry,
-      mesh1.clone(),
-      dx + ax,
-      dy,
-      0.0
-    );
+    GeometryCoreTestIO.captureGeometry(allGeometry, mesh1.clone(), dx + ax, dy, 0.0);
   }
   const r0 = -0.25;
   const r1 = 1.25; // fractions for non-monotone face annotation line.
@@ -866,15 +588,10 @@ function testFullGraphRegularize(
       for (const f of nonMonotoneFaces) {
         if (!RegularizationContext.isMonotoneFace(f)) numBad++;
       }
-      GeometryCoreTestIO.consoleLog(
-        ` nonMonotone faces ${numBad} of ${nonMonotoneFaces.length}`
-      );
+      GeometryCoreTestIO.consoleLog(` nonMonotone faces ${numBad} of ${nonMonotoneFaces.length}`);
       GeometryCoreTestIO.captureGeometry(
         allGeometry,
-        LineSegment3d.create(
-          range.fractionToPoint(r0, r0, 0),
-          range.fractionToPoint(r1, r1, 0)
-        ),
+        LineSegment3d.create(range.fractionToPoint(r0, r0, 0), range.fractionToPoint(r1, r1, 0)),
         dx + bx,
         dy,
         0.0
@@ -888,39 +605,24 @@ function testFullGraphRegularize(
       if (edge.id < edge.edgeMate.id)
         GeometryCoreTestIO.captureGeometry(
           allGeometry,
-          LineSegment3d.createXYZXYZ(
-            edge.x,
-            edge.y,
-            0,
-            edge.faceSuccessor.x,
-            edge.faceSuccessor.y,
-            0
-          ),
+          LineSegment3d.createXYZXYZ(edge.x, edge.y, 0, edge.faceSuccessor.x, edge.faceSuccessor.y, 0),
           dx + ax + bx,
           dy,
           0.0
         );
     }
   if (showParity) {
-    const components =
-      HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks(
-        graph,
-        new HalfEdgeMaskTester(HalfEdgeMask.BOUNDARY_EDGE),
-        HalfEdgeMask.EXTERIOR
-      );
+    const components = HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks(
+      graph,
+      new HalfEdgeMaskTester(HalfEdgeMask.BOUNDARY_EDGE),
+      HalfEdgeMask.EXTERIOR
+    );
     for (const component of components) {
       const interiorFaces = [];
-      for (const f of component)
-        if (!f.isMaskSet(HalfEdgeMask.EXTERIOR)) interiorFaces.push(f);
+      for (const f of component) if (!f.isMaskSet(HalfEdgeMask.EXTERIOR)) interiorFaces.push(f);
       const mesh2 = PolyfaceBuilder.graphFacesToPolyface(graph, interiorFaces);
 
-      GeometryCoreTestIO.captureGeometry(
-        allGeometry,
-        mesh2,
-        dx + 2.0 * ax,
-        dy,
-        0.0
-      );
+      GeometryCoreTestIO.captureGeometry(allGeometry, mesh2, dx + 2.0 * ax, dy, 0.0);
     }
   }
   return monotoneFaces.length > 0 && nonMonotoneFaces.length === 0;
@@ -958,14 +660,7 @@ it("RegularizeSpiralBand", () => {
         // [0.25, 0.35]
         const s = 1.0;
         for (const basePoints of [
-          Sample.createSquareWave(
-            Point3d.create(radians0, 4, 0),
-            dx0Wave,
-            0.5,
-            dx1Wave,
-            numPhase,
-            1
-          ),
+          Sample.createSquareWave(Point3d.create(radians0, 4, 0), dx0Wave, 0.5, dx1Wave, numPhase, 1),
           Sample.createBidirectionalSawtooth(
             Point3d.create(radians0, 4, 0),
             dx0Wave,
@@ -980,10 +675,7 @@ it("RegularizeSpiralBand", () => {
             0
           ),
         ]) {
-          const pointsRTheta = Point3dArray.cloneWithMaxEdgeLength(
-            basePoints,
-            maxEdgeLength
-          );
+          const pointsRTheta = Point3dArray.cloneWithMaxEdgeLength(basePoints, maxEdgeLength);
           GeometryCoreTestIO.captureGeometry(
             allGeometry,
             LineString3d.create(pointsRTheta),
@@ -992,17 +684,7 @@ it("RegularizeSpiralBand", () => {
           );
           const points = mapThetaRWithPitch(pointsRTheta, s, s, 4.0);
 
-          if (
-            testRegularize(
-              ck,
-              allGeometry,
-              outputX0,
-              (outputY0 += outputStepY),
-              points,
-              true,
-              true
-            )
-          ) {
+          if (testRegularize(ck, allGeometry, outputX0, (outputY0 += outputStepY), points, true, true)) {
             outputY0 += 2 * outputStepY;
           } else {
             GeometryCoreTestIO.captureGeometry(
@@ -1011,24 +693,8 @@ it("RegularizeSpiralBand", () => {
               outputX0 - hardLoopXStep,
               outputY0
             );
-            testRegularize(
-              ck,
-              allGeometry,
-              outputX0,
-              (outputY0 += outputStepY),
-              pointsRTheta,
-              true,
-              false
-            );
-            testRegularize(
-              ck,
-              allGeometry,
-              outputX0,
-              (outputY0 += outputStepY),
-              pointsRTheta,
-              false,
-              true
-            );
+            testRegularize(ck, allGeometry, outputX0, (outputY0 += outputStepY), pointsRTheta, true, false);
+            testRegularize(ck, allGeometry, outputX0, (outputY0 += outputStepY), pointsRTheta, false, true);
           }
           GeometryCoreTestIO.captureGeometry(
             allGeometry,
@@ -1077,106 +743,26 @@ function testStars(method: number, filename: string) {
     );
     for (const numOuterStarPoint of [5, 7]) {
       for (const loops of [
-        Sample.createStarsInStars(
-          25,
-          10,
-          numOuterStarPoint,
-          1,
-          0.5,
-          3,
-          2,
-          0,
-          true
-        ),
-        Sample.createStarsInStars(
-          25,
-          10,
-          numOuterStarPoint,
-          1,
-          0.5,
-          3,
-          2,
-          1,
-          true
-        ),
-        Sample.createStarsInStars(
-          25,
-          10,
-          numOuterStarPoint,
-          0.9,
-          0.2,
-          3,
-          2,
-          3,
-          true
-        ),
-        Sample.createStarsInStars(
-          25,
-          10,
-          numOuterStarPoint,
-          0.9,
-          0.2,
-          3,
-          2,
-          5,
-          true
-        ),
+        Sample.createStarsInStars(25, 10, numOuterStarPoint, 1, 0.5, 3, 2, 0, true),
+        Sample.createStarsInStars(25, 10, numOuterStarPoint, 1, 0.5, 3, 2, 1, true),
+        Sample.createStarsInStars(25, 10, numOuterStarPoint, 0.9, 0.2, 3, 2, 3, true),
+        Sample.createStarsInStars(25, 10, numOuterStarPoint, 0.9, 0.2, 3, 2, 5, true),
       ]) {
         // GeometryCoreTestIO.consoleLog([outputX0, outputY0]);
         transform.multiplyPoint3dArrayArrayInPlace(loops);
         for (const loop of loops)
-          GeometryCoreTestIO.captureGeometry(
-            allGeometry,
-            LineString3d.create(loop),
-            outputX0,
-            outputY0
-          );
+          GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(loop), outputX0, outputY0);
         outputY0 += outputStepY;
         if (method === 1) {
-          testFullGraphRegularizeAndTriangulate(
-            ck,
-            allGeometry,
-            outputX0,
-            (outputY0 += outputStepY),
-            loops
-          );
+          testFullGraphRegularizeAndTriangulate(ck, allGeometry, outputX0, (outputY0 += outputStepY), loops);
         } else {
-          if (
-            !testFullGraphRegularize(
-              ck,
-              allGeometry,
-              outputX0,
-              (outputY0 += outputStepY),
-              loops,
-              true,
-              true,
-              true
-            )
-          ) {
+          if (!testFullGraphRegularize(ck, allGeometry, outputX0, (outputY0 += outputStepY), loops, true, true, true)) {
             if (
-              testFullGraphRegularize(
-                ck,
-                allGeometry,
-                outputX0,
-                (outputY0 += outputStepY),
-                loops,
-                true,
-                false,
-                false
-              )
+              testFullGraphRegularize(ck, allGeometry, outputX0, (outputY0 += outputStepY), loops, true, false, false)
             ) {
             }
             if (
-              testFullGraphRegularize(
-                ck,
-                allGeometry,
-                outputX0,
-                (outputY0 += outputStepY),
-                loops,
-                false,
-                true,
-                false
-              )
+              testFullGraphRegularize(ck, allGeometry, outputX0, (outputY0 += outputStepY), loops, false, true, false)
             ) {
             }
           }
@@ -1247,25 +833,16 @@ function testFullGraphRegularizeAndTriangulate(
     nonMonotoneFaces
   );
   for (const seed of monotoneFaces) {
-    if (!seed.isMaskSet(HalfEdgeMask.EXTERIOR))
-      Triangulator.triangulateSingleMonotoneFace(graph, seed);
+    if (!seed.isMaskSet(HalfEdgeMask.EXTERIOR)) Triangulator.triangulateSingleMonotoneFace(graph, seed);
   }
-  const mesh2 = PolyfaceBuilder.graphToPolyface(
-    graph,
-    undefined,
-    (faceSeed: HalfEdge) => {
-      return !faceSeed.isMaskSet(HalfEdgeMask.EXTERIOR);
-    }
-  );
+  const mesh2 = PolyfaceBuilder.graphToPolyface(graph, undefined, (faceSeed: HalfEdge) => {
+    return !faceSeed.isMaskSet(HalfEdgeMask.EXTERIOR);
+  });
   GeometryCoreTestIO.captureGeometry(allGeometry, mesh2, dx, dy + by, 0.0);
   Triangulator.flipTriangles(graph);
-  const mesh3 = PolyfaceBuilder.graphToPolyface(
-    graph,
-    undefined,
-    (faceSeed: HalfEdge) => {
-      return !faceSeed.isMaskSet(HalfEdgeMask.EXTERIOR);
-    }
-  );
+  const mesh3 = PolyfaceBuilder.graphToPolyface(graph, undefined, (faceSeed: HalfEdge) => {
+    return !faceSeed.isMaskSet(HalfEdgeMask.EXTERIOR);
+  });
   GeometryCoreTestIO.captureGeometry(allGeometry, mesh3, dx, dy + 2 * by, 0.0);
   return true;
 }
@@ -1281,63 +858,17 @@ it("SingleFaceTriangulation", () => {
   let dx = 0.0;
   let dy = 0.0;
   for (const data of [
-    new VerticalStaggerData(
-      Sample.createVerticalStaggerPolygon(-1, -2, -2, -1, ax, ay, 0, 0),
-      3,
-      3,
-      0,
-      0,
-      1,
-      1
-    ),
-    new VerticalStaggerData(
-      Sample.createVerticalStaggerPolygon(-1, 0, -2, -1, ax, ay, 0, 0),
-      4,
-      2,
-      0,
-      0,
-      1,
-      1
-    ),
-    new VerticalStaggerData(
-      Sample.createVerticalStaggerPolygon(1, 0, -2, -1, ax, ay, 0, 0),
-      4,
-      2,
-      1,
-      0,
-      2,
-      1
-    ),
-    new VerticalStaggerData(
-      Sample.createVerticalStaggerPolygon(1, 0, 2, -1, ax, ay, 0, 0),
-      3,
-      3,
-      1,
-      1,
-      2,
-      2
-    ),
-    new VerticalStaggerData(
-      Sample.createVerticalStaggerPolygon(1, 0, 0, 1, ax, ay, 0, 0),
-      3,
-      3,
-      1,
-      0,
-      2,
-      1
-    ),
+    new VerticalStaggerData(Sample.createVerticalStaggerPolygon(-1, -2, -2, -1, ax, ay, 0, 0), 3, 3, 0, 0, 1, 1),
+    new VerticalStaggerData(Sample.createVerticalStaggerPolygon(-1, 0, -2, -1, ax, ay, 0, 0), 4, 2, 0, 0, 1, 1),
+    new VerticalStaggerData(Sample.createVerticalStaggerPolygon(1, 0, -2, -1, ax, ay, 0, 0), 4, 2, 1, 0, 2, 1),
+    new VerticalStaggerData(Sample.createVerticalStaggerPolygon(1, 0, 2, -1, ax, ay, 0, 0), 3, 3, 1, 1, 2, 2),
+    new VerticalStaggerData(Sample.createVerticalStaggerPolygon(1, 0, 0, 1, ax, ay, 0, 0), 3, 3, 1, 0, 2, 1),
   ]) {
-    testFullGraphRegularizeAndTriangulate(ck, allGeometry, dx, dy, [
-      data.points,
-    ]);
+    testFullGraphRegularizeAndTriangulate(ck, allGeometry, dx, dy, [data.points]);
     dx += 20.0;
     dy = 0.0;
   }
-  GeometryCoreTestIO.saveGeometry(
-    allGeometry,
-    "Graph",
-    "SingleFaceTriangulation"
-  );
+  GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "SingleFaceTriangulation");
   expect(ck.getNumErrors()).equals(0);
 });
 
@@ -1399,14 +930,8 @@ it("SingleFaceTriangulation", () => {
   ];
 
   // placement points for replicating the hole:
-  const placementA: Point3d = outerCurvePts[7].interpolate(
-    0.65,
-    outerCurvePts[15]
-  );
-  const placementB: Point3d = outerCurvePts[15].interpolate(
-    0.35,
-    outerCurvePts[5]
-  );
+  const placementA: Point3d = outerCurvePts[7].interpolate(0.65, outerCurvePts[15]);
+  const placementB: Point3d = outerCurvePts[15].interpolate(0.35, outerCurvePts[5]);
   const extraPlacements = [placementA, placementB];
   let x0 = 0;
   let y0 = 0;
@@ -1433,12 +958,7 @@ it("SingleFaceTriangulation", () => {
   faceBuilderEx.addTriangulatedRegion(parityRegion);
   const pMesh1: IndexedPolyface = faceBuilderEx.claimPolyface();
 
-  GeometryCoreTestIO.captureCloneGeometry(
-    allGeometry,
-    pMesh1,
-    x0,
-    (y0 += yStep)
-  );
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, pMesh1, x0, (y0 += yStep));
 
   y0 = 0;
   x0 += range.xLength() * 2;
@@ -1450,12 +970,7 @@ it("SingleFaceTriangulation", () => {
     parityRegion.tryAddChild(Loop.createPolygon(newInner));
     faceBuilder.addTriangulatedRegion(parityRegion);
     const meshA: IndexedPolyface = faceBuilder.claimPolyface();
-    GeometryCoreTestIO.captureCloneGeometry(
-      allGeometry,
-      meshA,
-      x0,
-      (y0 += yStep)
-    );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshA, x0, (y0 += yStep));
   }
   /*
     const rotateAroundX = Transform.createFixedPointAndMatrix(outerCurvePts[0], Matrix3d.createRotationAroundAxisIndex(AxisIndex.X, Angle.createDegrees(90)));

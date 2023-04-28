@@ -34,28 +34,15 @@ export class PointInOnOutContext {
    * @param x tested x coordinate
    * @param y tested y coordinate
    */
-  public static testPointInOnOutLoopXY(
-    loop: Loop,
-    x: number,
-    y: number
-  ): number {
+  public static testPointInOnOutLoopXY(loop: Loop, x: number, y: number): number {
     let plane: Plane3dByOriginAndUnitNormal;
     const xy = Point3d.create(x, y);
-    for (
-      let radians = 0.0;
-      Math.abs(radians) < 6.0;
-      radians = -1.2313 * (radians + 0.3212897)
-    ) {
-      plane = Plane3dByOriginAndUnitNormal.createXYAngle(
-        x,
-        y,
-        Angle.createRadians(radians)
-      )!;
+    for (let radians = 0.0; Math.abs(radians) < 6.0; radians = -1.2313 * (radians + 0.3212897)) {
+      plane = Plane3dByOriginAndUnitNormal.createXYAngle(x, y, Angle.createRadians(radians))!;
       const normal = plane.getNormalRef();
       const intersections: CurveLocationDetail[] = [];
       for (const cp of loop.children) {
-        if (cp instanceof CurvePrimitive)
-          cp.appendPlaneIntersectionPoints(plane, intersections);
+        if (cp instanceof CurvePrimitive) cp.appendPlaneIntersectionPoints(plane, intersections);
       }
       CurvePrimitive.snapAndRestrictDetails(intersections, false, true);
       let numLeft = 0;
@@ -67,10 +54,7 @@ export class PointInOnOutContext {
       // If there are any tricky ones, go around with a different plane.
       // A intently devious tester could make every plane hit tricky things.
       for (const intersection of intersections) {
-        if (
-          intersection.intervalRole !== CurveIntervalRole.isolated &&
-          intersection.intervalRole !== undefined
-        ) {
+        if (intersection.intervalRole !== CurveIntervalRole.isolated && intersection.intervalRole !== undefined) {
           numTricky++;
         }
         wx = intersection.point.x - x;
@@ -96,11 +80,7 @@ export class PointInOnOutContext {
    * @param x
    * @param y
    */
-  public static testPointInOnOutParityRegionXY(
-    parent: ParityRegion,
-    x: number,
-    y: number
-  ): number {
+  public static testPointInOnOutParityRegionXY(parent: ParityRegion, x: number, y: number): number {
     let result = -1;
     for (const loop of parent.children) {
       if (loop instanceof Loop) {
@@ -111,28 +91,17 @@ export class PointInOnOutContext {
     }
     return result;
   }
-  public static testPointInOnOutUnionRegionXY(
-    parent: UnionRegion,
-    x: number,
-    y: number
-  ): number {
+  public static testPointInOnOutUnionRegionXY(parent: UnionRegion, x: number, y: number): number {
     for (const loop of parent.children) {
       const classify = this.testPointInOnOutRegionXY(loop, x, y);
       if (classify >= 0) return classify;
     }
     return -1;
   }
-  public static testPointInOnOutRegionXY(
-    parent: AnyRegion,
-    x: number,
-    y: number
-  ): number {
-    if (parent instanceof Loop)
-      return this.testPointInOnOutLoopXY(parent, x, y);
-    else if (parent instanceof ParityRegion)
-      return this.testPointInOnOutParityRegionXY(parent, x, y);
-    else if (parent instanceof UnionRegion)
-      return this.testPointInOnOutUnionRegionXY(parent, x, y);
+  public static testPointInOnOutRegionXY(parent: AnyRegion, x: number, y: number): number {
+    if (parent instanceof Loop) return this.testPointInOnOutLoopXY(parent, x, y);
+    else if (parent instanceof ParityRegion) return this.testPointInOnOutParityRegionXY(parent, x, y);
+    else if (parent instanceof UnionRegion) return this.testPointInOnOutUnionRegionXY(parent, x, y);
     return -1;
   }
 }

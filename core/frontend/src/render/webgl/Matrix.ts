@@ -7,13 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import {
-  Matrix3d,
-  Matrix4d,
-  Point3d,
-  Transform,
-  Vector3d,
-} from "@itwin/core-geometry";
+import { Matrix3d, Matrix4d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 
 /** @internal */
 export class Matrix3 {
@@ -99,17 +93,7 @@ export class Matrix3 {
   }
   public toMatrix3d(): Matrix3d {
     const data = this.data;
-    return Matrix3d.createRowValues(
-      data[0],
-      data[3],
-      data[6],
-      data[1],
-      data[4],
-      data[7],
-      data[2],
-      data[5],
-      data[8]
-    );
+    return Matrix3d.createRowValues(data[0], data[3], data[6], data[1], data[4], data[7], data[2], data[5], data[8]);
   }
 
   public swap(firstIndex: number, secondIndex: number) {
@@ -287,40 +271,13 @@ export class Matrix4 {
     out?: Matrix4
   ): Matrix4 {
     const mat = undefined !== out ? out : new Matrix4();
-    mat.setValues(
-      m00,
-      m01,
-      m02,
-      m03,
-      m10,
-      m11,
-      m12,
-      m13,
-      m20,
-      m21,
-      m22,
-      m23,
-      m30,
-      m31,
-      m32,
-      m33
-    );
+    mat.setValues(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33);
     return mat;
   }
 
   public getRotation(out?: Matrix3): Matrix3 {
     const rot = undefined !== out ? out : new Matrix3();
-    rot.setValues(
-      this.m00,
-      this.m01,
-      this.m02,
-      this.m10,
-      this.m11,
-      this.m12,
-      this.m20,
-      this.m21,
-      this.m22
-    );
+    rot.setValues(this.m00, this.m01, this.m02, this.m10, this.m11, this.m12, this.m20, this.m21, this.m22);
     return rot;
   }
 
@@ -353,13 +310,10 @@ export class Matrix4 {
   }
   public toTransform(): Transform {
     const data = this.data;
-    assert(
-      0.0 === data[3] && 0.0 === data[7] && 0.0 === data[11] && 1.0 === data[15]
-    );
+    assert(0.0 === data[3] && 0.0 === data[7] && 0.0 === data[11] && 1.0 === data[15]);
     const origin = new Point3d(data[12], data[13], data[14]);
     const rotMat = Matrix3d.createIdentity();
-    for (let i = 0; i < 3; i++)
-      for (let j = 0; j < 3; j++) rotMat.setAt(i, j, data[i + j * 4]);
+    for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) rotMat.setAt(i, j, data[i + j * 4]);
 
     return Transform.createRefs(origin, rotMat);
   }
@@ -444,25 +398,13 @@ export class Matrix4 {
     );
     return true;
   }
-  public static fromLookAt(
-    eye: Point3d,
-    center: Point3d,
-    up: Vector3d,
-    out?: Matrix4
-  ): Matrix4 | undefined {
+  public static fromLookAt(eye: Point3d, center: Point3d, up: Vector3d, out?: Matrix4): Matrix4 | undefined {
     const mat = undefined !== out ? out : new Matrix4();
     return mat.lookAt(eye, center, up) ? mat : undefined;
   }
 
   // left, right, bottom, top, near, far
-  public frustum(
-    l: number,
-    r: number,
-    b: number,
-    t: number,
-    n: number,
-    f: number
-  ): void {
+  public frustum(l: number, r: number, b: number, t: number, n: number, f: number): void {
     this.setValues(
       (2 * n) / (r - l),
       0,
@@ -482,36 +424,16 @@ export class Matrix4 {
       0
     );
   }
-  public static fromFrustum(
-    l: number,
-    r: number,
-    b: number,
-    t: number,
-    n: number,
-    f: number,
-    out?: Matrix4
-  ): Matrix4 {
+  public static fromFrustum(l: number, r: number, b: number, t: number, n: number, f: number, out?: Matrix4): Matrix4 {
     const mat = undefined !== out ? out : new Matrix4();
     mat.frustum(l, r, b, t, n, f);
     return mat;
   }
 
-  public perspective(
-    fovY: number,
-    aspectRatio: number,
-    nearZ: number,
-    farZ: number
-  ): void {
+  public perspective(fovY: number, aspectRatio: number, nearZ: number, farZ: number): void {
     const frustumHeight = Math.tan((fovY / 360) * Math.PI) * nearZ;
     const frustumWidth = frustumHeight * aspectRatio;
-    this.frustum(
-      -frustumWidth,
-      frustumWidth,
-      -frustumHeight,
-      frustumHeight,
-      nearZ,
-      farZ
-    );
+    this.frustum(-frustumWidth, frustumWidth, -frustumHeight, frustumHeight, nearZ, farZ);
   }
   public static fromPerspective(
     fovY: number,
@@ -525,14 +447,7 @@ export class Matrix4 {
     return mat;
   }
 
-  public ortho(
-    l: number,
-    r: number,
-    b: number,
-    t: number,
-    n: number,
-    f: number
-  ): void {
+  public ortho(l: number, r: number, b: number, t: number, n: number, f: number): void {
     this.setValues(
       2 / (r - l),
       0,
@@ -552,15 +467,7 @@ export class Matrix4 {
       1
     );
   }
-  public static fromOrtho(
-    l: number,
-    r: number,
-    b: number,
-    t: number,
-    n: number,
-    f: number,
-    out?: Matrix4
-  ): Matrix4 {
+  public static fromOrtho(l: number, r: number, b: number, t: number, n: number, f: number, out?: Matrix4): Matrix4 {
     const mat = undefined !== out ? out : new Matrix4();
     mat.ortho(l, r, b, t, n, f);
     return mat;
@@ -862,17 +769,11 @@ export class Matrix4 {
 // missing Vector3d functions
 
 /** @internal */
-export function fromNormalizedCrossProduct(
-  vec0: Vector3d,
-  vec1: Vector3d
-): Vector3d | undefined {
+export function fromNormalizedCrossProduct(vec0: Vector3d, vec1: Vector3d): Vector3d | undefined {
   return vec0.unitCrossProduct(vec1);
 }
 
 /** @internal */
-export function normalizedDifference(
-  target: Point3d,
-  origin: Point3d
-): Vector3d | undefined {
+export function normalizedDifference(target: Point3d, origin: Point3d): Vector3d | undefined {
   return Vector3d.createStartEnd(origin, target).normalize();
 }

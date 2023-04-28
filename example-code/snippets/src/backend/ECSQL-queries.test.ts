@@ -4,14 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult, Id64Set, Id64String } from "@itwin/core-bentley";
-import {
-  ECSqlStatement,
-  Element,
-  IModelDb,
-  PhysicalPartition,
-  SnapshotDb,
-  Subject,
-} from "@itwin/core-backend";
+import { ECSqlStatement, Element, IModelDb, PhysicalPartition, SnapshotDb, Subject } from "@itwin/core-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Useful ECSQL queries organized as tests to make sure that they build and run successfully. */
@@ -53,8 +46,7 @@ describe("Useful ECSQL queries", () => {
         stmt.bindValue("parentName", "Subject1");
         stmt.bindValue("partitionName", "Physical");
         const ids: Id64Set = new Set<Id64String>();
-        while (stmt.step() === DbResult.BE_SQLITE_ROW)
-          ids.add(stmt.getValue(0).getId());
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) ids.add(stmt.getValue(0).getId());
         return ids;
       }
     );

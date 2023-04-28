@@ -8,12 +8,7 @@
 
 import { PlanarGridTransparency } from "../../RenderSystem";
 import { AttributeMap } from "../AttributeMap";
-import {
-  FragmentShaderComponent,
-  ProgramBuilder,
-  VariableType,
-  VertexShaderComponent,
-} from "../ShaderBuilder";
+import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { System } from "../System";
 import { TechniqueId } from "../TechniqueId";
@@ -56,12 +51,8 @@ const fwidth2d = `\nvec2 screenSpaceDeriv(vec2 screenXY) { return fwidth(screenX
 
 const defaultTransparency = new PlanarGridTransparency();
 /** @internal */
-export default function createPlanarGridProgram(
-  context: WebGL2RenderingContext
-): ShaderProgram {
-  const builder = new ProgramBuilder(
-    AttributeMap.findAttributeMap(TechniqueId.PlanarGrid, false)
-  );
+export default function createPlanarGridProgram(context: WebGL2RenderingContext): ShaderProgram {
+  const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.PlanarGrid, false));
   const vert = builder.vert;
   const frag = builder.frag;
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
@@ -81,12 +72,7 @@ export default function createPlanarGridProgram(
   frag.headerComment = `//!F! PlanarGrid`;
 
   vert.addFunction(unquantize2d);
-  builder.addFunctionComputedVarying(
-    "v_texCoord",
-    VariableType.Vec2,
-    "computeTexCoord",
-    computeTexCoord
-  );
+  builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", computeTexCoord);
   vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
       const planarGrid = params.geometry.asPlanarGrid!;
@@ -103,9 +89,7 @@ export default function createPlanarGridProgram(
   frag.addUniform("u_gridProps", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_gridProps", (uniform, params) => {
       const planarGridProps = params.geometry.asPlanarGrid!.props;
-      const transparency = planarGridProps.transparency
-        ? planarGridProps.transparency
-        : defaultTransparency;
+      const transparency = planarGridProps.transparency ? planarGridProps.transparency : defaultTransparency;
       uniform.setUniform4fv([
         planarGridProps.gridsPerRef,
         1.0 - transparency.planeTransparency,

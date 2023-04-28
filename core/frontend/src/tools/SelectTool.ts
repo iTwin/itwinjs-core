@@ -203,9 +203,7 @@ export class SelectionTool extends PrimitiveTool {
                 iconSpec: "icon-select-minus",
                 isEnabledFunction: () => {
                   const tool = IModelApp.toolAdmin.activeTool;
-                  return tool instanceof PrimitiveTool
-                    ? tool.iModel.selectionSet.isActive
-                    : false;
+                  return tool instanceof PrimitiveTool ? tool.iModel.selectionSet.isActive : false;
                 },
               },
             ],
@@ -249,10 +247,7 @@ export class SelectionTool extends PrimitiveTool {
         break;
     }
 
-    const mainInstruction = ToolAssistance.createInstruction(
-      this.iconSpec,
-      CoreTools.translate(mainMsg)
-    );
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, CoreTools.translate(mainMsg));
     const sections: ToolAssistanceSection[] = [];
 
     switch (method) {
@@ -309,17 +304,10 @@ export class SelectionTool extends PrimitiveTool {
             )
           );
         }
-        sections.push(
-          ToolAssistance.createSection(
-            mousePickInstructions,
-            ToolAssistance.inputsLabel
-          )
-        );
+        sections.push(ToolAssistance.createSection(mousePickInstructions, ToolAssistance.inputsLabel));
 
         const touchPickInstructions: ToolAssistanceInstruction[] = [];
-        if (
-          !ToolAssistance.createTouchCursorInstructions(touchPickInstructions)
-        )
+        if (!ToolAssistance.createTouchCursorInstructions(touchPickInstructions))
           touchPickInstructions.push(
             ToolAssistance.createInstruction(
               ToolAssistanceImage.OneTouchTap,
@@ -328,12 +316,7 @@ export class SelectionTool extends PrimitiveTool {
               ToolAssistanceInputMethod.Touch
             )
           );
-        sections.push(
-          ToolAssistance.createSection(
-            touchPickInstructions,
-            ToolAssistance.inputsLabel
-          )
-        );
+        sections.push(ToolAssistance.createSection(touchPickInstructions, ToolAssistance.inputsLabel));
         break;
       case SelectionMethod.Line:
         const mouseLineInstructions: ToolAssistanceInstruction[] = [];
@@ -355,12 +338,7 @@ export class SelectionTool extends PrimitiveTool {
               ToolAssistanceInputMethod.Mouse
             )
           );
-        sections.push(
-          ToolAssistance.createSection(
-            mouseLineInstructions,
-            ToolAssistance.inputsLabel
-          )
-        );
+        sections.push(ToolAssistance.createSection(mouseLineInstructions, ToolAssistance.inputsLabel));
 
         const touchLineInstructions: ToolAssistanceInstruction[] = [];
         touchLineInstructions.push(
@@ -371,12 +349,7 @@ export class SelectionTool extends PrimitiveTool {
             ToolAssistanceInputMethod.Touch
           )
         );
-        sections.push(
-          ToolAssistance.createSection(
-            touchLineInstructions,
-            ToolAssistance.inputsLabel
-          )
-        );
+        sections.push(ToolAssistance.createSection(touchLineInstructions, ToolAssistance.inputsLabel));
         break;
       case SelectionMethod.Box:
         const mouseBoxInstructions: ToolAssistanceInstruction[] = [];
@@ -407,12 +380,7 @@ export class SelectionTool extends PrimitiveTool {
               ToolAssistanceInputMethod.Mouse
             )
           );
-        sections.push(
-          ToolAssistance.createSection(
-            mouseBoxInstructions,
-            ToolAssistance.inputsLabel
-          )
-        );
+        sections.push(ToolAssistance.createSection(mouseBoxInstructions, ToolAssistance.inputsLabel));
 
         const touchBoxInstructions: ToolAssistanceInstruction[] = [];
         touchBoxInstructions.push(
@@ -423,19 +391,11 @@ export class SelectionTool extends PrimitiveTool {
             ToolAssistanceInputMethod.Touch
           )
         );
-        sections.push(
-          ToolAssistance.createSection(
-            touchBoxInstructions,
-            ToolAssistance.inputsLabel
-          )
-        );
+        sections.push(ToolAssistance.createSection(touchBoxInstructions, ToolAssistance.inputsLabel));
         break;
     }
 
-    const instructions = ToolAssistance.createInstructions(
-      mainInstruction,
-      sections
-    );
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
     IModelApp.notifications.setToolAssistance(instructions);
   }
 
@@ -463,10 +423,7 @@ export class SelectionTool extends PrimitiveTool {
     return true;
   }
 
-  public updateSelection(
-    elementId: Id64Arg,
-    process: SelectionProcessing
-  ): boolean {
+  public updateSelection(elementId: Id64Arg, process: SelectionProcessing): boolean {
     let returnValue = false;
     switch (process) {
       case SelectionProcessing.AddElementToSelection:
@@ -490,10 +447,7 @@ export class SelectionTool extends PrimitiveTool {
     return returnValue;
   }
 
-  public async processSelection(
-    elementId: Id64Arg,
-    process: SelectionProcessing
-  ): Promise<boolean> {
+  public async processSelection(elementId: Id64Arg, process: SelectionProcessing): Promise<boolean> {
     return this.updateSelection(elementId, process);
   }
 
@@ -513,12 +467,10 @@ export class SelectionTool extends PrimitiveTool {
     if (undefined === ev.viewport) return;
 
     const vp = context.viewport;
-    const bestContrastIsBlack =
-      ColorDef.black === vp.getContrastToBackgroundColor();
+    const bestContrastIsBlack = ColorDef.black === vp.getContrastToBackgroundColor();
     const crossingLine =
       SelectionMethod.Line === this.selectionMethod ||
-      (SelectionMethod.Pick === this.selectionMethod &&
-        BeButton.Reset === ev.button);
+      (SelectionMethod.Pick === this.selectionMethod && BeButton.Reset === ev.button);
     const overlapSelection = crossingLine || this.useOverlapSelection(ev);
 
     const position = vp.worldToView(this._points[0]);
@@ -541,9 +493,7 @@ export class SelectionTool extends PrimitiveTool {
         ctx.stroke();
       } else {
         ctx.strokeRect(0, 0, offset.x, offset.y);
-        ctx.fillStyle = bestContrastIsBlack
-          ? "rgba(0,0,0,.06)"
-          : "rgba(255,255,255,.06)";
+        ctx.fillStyle = bestContrastIsBlack ? "rgba(0,0,0,.06)" : "rgba(255,255,255,.06)";
         ctx.fillRect(0, 0, offset.x, offset.y);
       }
     };
@@ -561,14 +511,8 @@ export class SelectionTool extends PrimitiveTool {
     if (!vp) return;
 
     const pts: Point2d[] = [];
-    pts[0] = new Point2d(
-      Math.floor(origin.x + 0.5),
-      Math.floor(origin.y + 0.5)
-    );
-    pts[1] = new Point2d(
-      Math.floor(corner.x + 0.5),
-      Math.floor(corner.y + 0.5)
-    );
+    pts[0] = new Point2d(Math.floor(origin.x + 0.5), Math.floor(origin.y + 0.5));
+    pts[1] = new Point2d(Math.floor(corner.x + 0.5), Math.floor(corner.y + 0.5));
     const range = Range2d.createArray(pts);
 
     const rect = new ViewRect();
@@ -583,16 +527,10 @@ export class SelectionTool extends PrimitiveTool {
 
         const sRange = Range2d.createNull();
         sRange.extendPoint(
-          Point2d.create(
-            vp.cssPixelsToDevicePixels(range.low.x),
-            vp.cssPixelsToDevicePixels(range.low.y)
-          )
+          Point2d.create(vp.cssPixelsToDevicePixels(range.low.x), vp.cssPixelsToDevicePixels(range.low.y))
         );
         sRange.extendPoint(
-          Point2d.create(
-            vp.cssPixelsToDevicePixels(range.high.x),
-            vp.cssPixelsToDevicePixels(range.high.y)
-          )
+          Point2d.create(vp.cssPixelsToDevicePixels(range.high.x), vp.cssPixelsToDevicePixels(range.high.y))
         );
 
         pts[0].x = vp.cssPixelsToDevicePixels(pts[0].x);
@@ -605,11 +543,9 @@ export class SelectionTool extends PrimitiveTool {
         const testPoint = Point2d.createZero();
 
         const getPixelElementId = (pixel: Pixel.Data) => {
-          if (undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
-            return undefined; // no geometry at this location...
+          if (undefined === pixel.elementId || Id64.isInvalid(pixel.elementId)) return undefined; // no geometry at this location...
 
-          if (!allowTransients && Id64.isTransient(pixel.elementId))
-            return undefined; // tool didn't request pickable decorations...
+          if (!allowTransients && Id64.isTransient(pixel.elementId)) return undefined; // tool didn't request pickable decorations...
 
           if (!vp.isPixelSelectable(pixel)) return undefined; // reality model, terrain, etc - not selectable
 
@@ -620,22 +556,13 @@ export class SelectionTool extends PrimitiveTool {
           const outline = overlap ? undefined : new Set<string>();
           const offset = sRange.clone();
           offset.expandInPlace(-2);
-          for (
-            testPoint.x = sRange.low.x;
-            testPoint.x <= sRange.high.x;
-            ++testPoint.x
-          ) {
-            for (
-              testPoint.y = sRange.low.y;
-              testPoint.y <= sRange.high.y;
-              ++testPoint.y
-            ) {
+          for (testPoint.x = sRange.low.x; testPoint.x <= sRange.high.x; ++testPoint.x) {
+            for (testPoint.y = sRange.low.y; testPoint.y <= sRange.high.y; ++testPoint.y) {
               const pixel = pixels.getPixel(testPoint.x, testPoint.y);
               const elementId = getPixelElementId(pixel);
               if (undefined === elementId) continue;
 
-              if (undefined !== outline && !offset.containsPoint(testPoint))
-                outline.add(elementId.toString());
+              if (undefined !== outline && !offset.containsPoint(testPoint)) outline.add(elementId.toString());
               else contents.add(elementId.toString());
             }
           }
@@ -649,67 +576,35 @@ export class SelectionTool extends PrimitiveTool {
           }
         } else {
           const closePoint = Point2d.createZero();
-          for (
-            testPoint.x = sRange.low.x;
-            testPoint.x <= sRange.high.x;
-            ++testPoint.x
-          ) {
-            for (
-              testPoint.y = sRange.low.y;
-              testPoint.y <= sRange.high.y;
-              ++testPoint.y
-            ) {
+          for (testPoint.x = sRange.low.x; testPoint.x <= sRange.high.x; ++testPoint.x) {
+            for (testPoint.y = sRange.low.y; testPoint.y <= sRange.high.y; ++testPoint.y) {
               const pixel = pixels.getPixel(testPoint.x, testPoint.y);
               const elementId = getPixelElementId(pixel);
               if (undefined === elementId) continue;
 
-              const fraction = testPoint.fractionOfProjectionToLine(
-                pts[0],
-                pts[1],
-                0.0
-              );
+              const fraction = testPoint.fractionOfProjectionToLine(pts[0], pts[1], 0.0);
               pts[0].interpolate(fraction, pts[1], closePoint);
-              if (closePoint.distance(testPoint) < 1.5)
-                contents.add(elementId.toString());
+              if (closePoint.distance(testPoint) < 1.5) contents.add(elementId.toString());
             }
           }
         }
 
         if (0 === contents.size) {
-          if (
-            !ev.isControlKey &&
-            this.wantSelectionClearOnMiss(ev) &&
-            this.processMiss(ev)
-          )
-            this.syncSelectionMode();
+          if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev) && this.processMiss(ev)) this.syncSelectionMode();
           return;
         }
 
         switch (this.selectionMode) {
           case SelectionMode.Replace:
-            if (!ev.isControlKey)
-              this.processSelection(
-                contents,
-                SelectionProcessing.ReplaceSelectionWithElement
-              );
+            if (!ev.isControlKey) this.processSelection(contents, SelectionProcessing.ReplaceSelectionWithElement);
             // eslint-disable-line @typescript-eslint/no-floating-promises
-            else
-              this.processSelection(
-                contents,
-                SelectionProcessing.InvertElementInSelection
-              ); // eslint-disable-line @typescript-eslint/no-floating-promises
+            else this.processSelection(contents, SelectionProcessing.InvertElementInSelection); // eslint-disable-line @typescript-eslint/no-floating-promises
             break;
           case SelectionMode.Add:
-            this.processSelection(
-              contents,
-              SelectionProcessing.AddElementToSelection
-            ); // eslint-disable-line @typescript-eslint/no-floating-promises
+            this.processSelection(contents, SelectionProcessing.AddElementToSelection); // eslint-disable-line @typescript-eslint/no-floating-promises
             break;
           case SelectionMode.Remove:
-            this.processSelection(
-              contents,
-              SelectionProcessing.RemoveElementFromSelection
-            ); // eslint-disable-line @typescript-eslint/no-floating-promises
+            this.processSelection(contents, SelectionProcessing.RemoveElementFromSelection); // eslint-disable-line @typescript-eslint/no-floating-promises
             break;
         }
       },
@@ -718,8 +613,7 @@ export class SelectionTool extends PrimitiveTool {
   }
 
   protected selectByPointsStart(ev: BeButtonEvent): boolean {
-    if (BeButton.Data !== ev.button && BeButton.Reset !== ev.button)
-      return false;
+    if (BeButton.Data !== ev.button && BeButton.Reset !== ev.button) return false;
     this._points.length = 0;
     this._points.push(ev.point.clone());
     this._isSelectByPoints = true;
@@ -742,24 +636,10 @@ export class SelectionTool extends PrimitiveTool {
     const corner = vp.worldToView(ev.point);
     if (
       SelectionMethod.Line === this.selectionMethod ||
-      (SelectionMethod.Pick === this.selectionMethod &&
-        BeButton.Reset === ev.button)
+      (SelectionMethod.Pick === this.selectionMethod && BeButton.Reset === ev.button)
     )
-      this.selectByPointsProcess(
-        origin,
-        corner,
-        ev,
-        SelectionMethod.Line,
-        true
-      );
-    else
-      this.selectByPointsProcess(
-        origin,
-        corner,
-        ev,
-        SelectionMethod.Box,
-        this.useOverlapSelection(ev)
-      );
+      this.selectByPointsProcess(origin, corner, ev, SelectionMethod.Line, true);
+    else this.selectByPointsProcess(origin, corner, ev, SelectionMethod.Box, this.useOverlapSelection(ev));
 
     this.initSelectTool();
     vp.invalidateDecorations();
@@ -767,14 +647,10 @@ export class SelectionTool extends PrimitiveTool {
   }
 
   public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
-    if (undefined !== ev.viewport && this._isSelectByPoints)
-      ev.viewport.invalidateDecorations();
+    if (undefined !== ev.viewport && this._isSelectByPoints) ev.viewport.invalidateDecorations();
   }
 
-  public async selectDecoration(
-    ev: BeButtonEvent,
-    currHit?: HitDetail
-  ): Promise<EventHandled> {
+  public async selectDecoration(ev: BeButtonEvent, currHit?: HitDetail): Promise<EventHandled> {
     if (undefined === currHit)
       currHit = await IModelApp.locateManager.doLocate(
         new LocateResponse(),
@@ -792,40 +668,24 @@ export class SelectionTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public override async onMouseStartDrag(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
     IModelApp.accuSnap.clear(); // Need to test hit at start drag location, not current AccuSnap...
-    if (EventHandled.Yes === (await this.selectDecoration(ev)))
-      return EventHandled.Yes;
-    if (
-      InputSource.Touch === ev.inputSource &&
-      SelectionMethod.Pick === this.selectionMethod
-    )
-      return EventHandled.No; // Require method change for line/box selection...allow IdleTool to handle touch move...
+    if (EventHandled.Yes === (await this.selectDecoration(ev))) return EventHandled.Yes;
+    if (InputSource.Touch === ev.inputSource && SelectionMethod.Pick === this.selectionMethod) return EventHandled.No; // Require method change for line/box selection...allow IdleTool to handle touch move...
     return this.selectByPointsStart(ev) ? EventHandled.Yes : EventHandled.No;
   }
 
-  public override async onMouseEndDrag(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled> {
     return this.selectByPointsEnd(ev) ? EventHandled.Yes : EventHandled.No;
   }
 
-  public override async onDataButtonUp(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onDataButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     if (undefined === ev.viewport) return EventHandled.No;
 
     if (this.selectByPointsEnd(ev)) return EventHandled.Yes;
 
     if (SelectionMethod.Pick !== this.selectionMethod) {
-      if (
-        !ev.isControlKey &&
-        this.wantSelectionClearOnMiss(ev) &&
-        this.processMiss(ev)
-      )
-        this.syncSelectionMode();
+      if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev) && this.processMiss(ev)) this.syncSelectionMode();
       if (InputSource.Touch !== ev.inputSource) this.selectByPointsStart(ev); // Require touch move and not tap to start crossing line/box selection...
       return EventHandled.Yes;
     }
@@ -839,8 +699,7 @@ export class SelectionTool extends PrimitiveTool {
     );
     if (hit !== undefined && !hit.isModelHit && !hit.isMapHit) {
       // model hit = terrain, reality models, background maps, etc - not selectable
-      if (EventHandled.Yes === (await this.selectDecoration(ev, hit)))
-        return EventHandled.Yes;
+      if (EventHandled.Yes === (await this.selectDecoration(ev, hit))) return EventHandled.Yes;
 
       switch (this.selectionMode) {
         case SelectionMode.Replace:
@@ -853,35 +712,22 @@ export class SelectionTool extends PrimitiveTool {
           break;
 
         case SelectionMode.Add:
-          await this.processSelection(
-            hit.sourceId,
-            SelectionProcessing.AddElementToSelection
-          );
+          await this.processSelection(hit.sourceId, SelectionProcessing.AddElementToSelection);
           break;
 
         case SelectionMode.Remove:
-          await this.processSelection(
-            hit.sourceId,
-            SelectionProcessing.RemoveElementFromSelection
-          );
+          await this.processSelection(hit.sourceId, SelectionProcessing.RemoveElementFromSelection);
           break;
       }
       return EventHandled.Yes;
     }
 
-    if (
-      !ev.isControlKey &&
-      this.wantSelectionClearOnMiss(ev) &&
-      this.processMiss(ev)
-    )
-      this.syncSelectionMode();
+    if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev) && this.processMiss(ev)) this.syncSelectionMode();
 
     return EventHandled.Yes;
   }
 
-  public override async onResetButtonUp(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     if (this._isSelectByPoints) {
       if (undefined !== ev.viewport) ev.viewport.invalidateDecorations();
       this.initSelectTool();
@@ -889,10 +735,7 @@ export class SelectionTool extends PrimitiveTool {
     }
 
     // Check for overlapping hits...
-    const lastHit =
-      SelectionMode.Remove === this.selectionMode
-        ? undefined
-        : IModelApp.locateManager.currHit;
+    const lastHit = SelectionMode.Remove === this.selectionMode ? undefined : IModelApp.locateManager.currHit;
     if (lastHit && this.iModel.selectionSet.has(lastHit.sourceId)) {
       const autoHit = IModelApp.accuSnap.currHit;
 
@@ -901,44 +744,22 @@ export class SelectionTool extends PrimitiveTool {
         const response = new LocateResponse();
         let nextHit;
         do {
-          nextHit = await IModelApp.locateManager.doLocate(
-            response,
-            false,
-            ev.point,
-            ev.viewport,
-            ev.inputSource
-          );
-        } while (
-          undefined !== nextHit &&
-          (nextHit.isModelHit || nextHit.isMapHit)
-        ); // Ignore reality models, terrain, maps, etc.
+          nextHit = await IModelApp.locateManager.doLocate(response, false, ev.point, ev.viewport, ev.inputSource);
+        } while (undefined !== nextHit && (nextHit.isModelHit || nextHit.isMapHit)); // Ignore reality models, terrain, maps, etc.
 
         // remove element(s) previously selected if in replace mode, or if we have a next element in add mode
-        if (
-          SelectionMode.Replace === this.selectionMode ||
-          undefined !== nextHit
-        )
-          await this.processSelection(
-            lastHit.sourceId,
-            SelectionProcessing.RemoveElementFromSelection
-          );
+        if (SelectionMode.Replace === this.selectionMode || undefined !== nextHit)
+          await this.processSelection(lastHit.sourceId, SelectionProcessing.RemoveElementFromSelection);
 
         // add element(s) located via reset button
         if (undefined !== nextHit)
-          await this.processSelection(
-            nextHit.sourceId,
-            SelectionProcessing.AddElementToSelection
-          );
+          await this.processSelection(nextHit.sourceId, SelectionProcessing.AddElementToSelection);
 
         return EventHandled.Yes;
       }
     }
 
-    if (
-      EventHandled.Yes ===
-      (await this.selectDecoration(ev, IModelApp.accuSnap.currHit))
-    )
-      return EventHandled.Yes;
+    if (EventHandled.Yes === (await this.selectDecoration(ev, IModelApp.accuSnap.currHit))) return EventHandled.Yes;
 
     await IModelApp.accuSnap.resetButton();
     return EventHandled.Yes;
@@ -947,50 +768,33 @@ export class SelectionTool extends PrimitiveTool {
   public override async onSuspend() {
     this._isSuspended = true;
     if (this.wantEditManipulators())
-      IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(
-        this,
-        ManipulatorToolEvent.Suspend
-      );
+      IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Suspend);
   }
 
   public override async onUnsuspend() {
     this._isSuspended = false;
     if (this.wantEditManipulators())
-      IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(
-        this,
-        ManipulatorToolEvent.Unsuspend
-      );
+      IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Unsuspend);
 
     this.showPrompt(this.selectionMode, this.selectionMethod);
   }
 
-  public override async onTouchMoveStart(
-    ev: BeTouchEvent,
-    startEv: BeTouchEvent
-  ): Promise<EventHandled> {
+  public override async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> {
     if (startEv.isSingleTouch && !this._isSelectByPoints)
-      await IModelApp.toolAdmin.convertTouchMoveStartToButtonDownAndMotion(
-        startEv,
-        ev
-      );
-    return this._isSuspended || this._isSelectByPoints
-      ? EventHandled.Yes
-      : EventHandled.No;
+      await IModelApp.toolAdmin.convertTouchMoveStartToButtonDownAndMotion(startEv, ev);
+    return this._isSuspended || this._isSelectByPoints ? EventHandled.Yes : EventHandled.No;
   }
 
   public override async onTouchMove(ev: BeTouchEvent): Promise<void> {
-    if (this._isSelectByPoints)
-      return IModelApp.toolAdmin.convertTouchMoveToMotion(ev);
+    if (this._isSelectByPoints) return IModelApp.toolAdmin.convertTouchMoveToMotion(ev);
   }
 
   public override async onTouchComplete(ev: BeTouchEvent): Promise<void> {
-    if (this._isSelectByPoints)
-      return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev);
+    if (this._isSelectByPoints) return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev);
   }
 
   public override async onTouchCancel(ev: BeTouchEvent): Promise<void> {
-    if (this._isSelectByPoints)
-      return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset);
+    if (this._isSelectByPoints) return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset);
   }
 
   public override decorate(context: DecorateContext): void {
@@ -1002,17 +806,11 @@ export class SelectionTool extends PrimitiveTool {
     modifier: BeModifierKeys,
     _event: KeyboardEvent
   ): Promise<EventHandled> {
-    return modifier === BeModifierKeys.Shift && this._isSelectByPoints
-      ? EventHandled.Yes
-      : EventHandled.No;
+    return modifier === BeModifierKeys.Shift && this._isSelectByPoints ? EventHandled.Yes : EventHandled.No;
   }
 
-  public override async filterHit(
-    hit: HitDetail,
-    out?: LocateResponse
-  ): Promise<LocateFilterStatus> {
-    if (!this.wantPickableDecorations() && !hit.isElementHit)
-      return LocateFilterStatus.Reject;
+  public override async filterHit(hit: HitDetail, out?: LocateResponse): Promise<LocateFilterStatus> {
+    if (!this.wantPickableDecorations() && !hit.isElementHit) return LocateFilterStatus.Reject;
 
     const mode = this.selectionMode;
     if (SelectionMode.Replace === mode) return LocateFilterStatus.Accept;
@@ -1022,9 +820,7 @@ export class SelectionTool extends PrimitiveTool {
       ? LocateFilterStatus.Accept
       : LocateFilterStatus.Reject;
     if (out && LocateFilterStatus.Reject === status)
-      out.explanation = CoreTools.translate(
-        `ElementSet.Error.${isSelected ? "AlreadySelected" : "NotSelected"}`
-      );
+      out.explanation = CoreTools.translate(`ElementSet.Error.${isSelected ? "AlreadySelected" : "NotSelected"}`);
     return status;
   }
 
@@ -1034,20 +830,14 @@ export class SelectionTool extends PrimitiveTool {
 
   public override async onCleanup() {
     if (this.wantEditManipulators())
-      IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(
-        this,
-        ManipulatorToolEvent.Stop
-      );
+      IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Stop);
   }
 
   public override async onPostInstall() {
     await super.onPostInstall();
     if (!this.targetView) return;
     if (this.wantEditManipulators())
-      IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(
-        this,
-        ManipulatorToolEvent.Start
-      );
+      IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Start);
     this.initSelectTool();
   }
 
@@ -1056,10 +846,7 @@ export class SelectionTool extends PrimitiveTool {
   }
 
   private syncSelectionMode(): void {
-    if (
-      SelectionMode.Remove === this.selectionMode &&
-      !this.iModel.selectionSet.isActive
-    ) {
+    if (SelectionMode.Remove === this.selectionMode && !this.iModel.selectionSet.isActive) {
       // No selection active resetting selection mode since there is nothing to Remove
       this.selectionMode = SelectionMode.Replace;
       this.initSelectTool();
@@ -1069,10 +856,7 @@ export class SelectionTool extends PrimitiveTool {
         value: this._selectionModeValue,
         propertyName: SelectionTool._modesName,
       };
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(
-        this.toolId,
-        syncMode
-      );
+      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, syncMode);
       this.syncToolSettingsProperties([syncMode]);
     }
   }
@@ -1087,23 +871,16 @@ export class SelectionTool extends PrimitiveTool {
     IModelApp.toolAdmin.toolSettingsState
       .getInitialToolSettingValues(this.toolId, [SelectionTool._modesName])
       ?.forEach((value) => {
-        if (value.propertyName === SelectionTool._modesName)
-          this._selectionModeValue = value.value;
+        if (value.propertyName === SelectionTool._modesName) this._selectionModeValue = value.value;
       });
 
     // Make sure a mode of SelectionMode.Remove is valid
-    if (
-      SelectionMode.Remove === this.selectionMode &&
-      !this.iModel.selectionSet.isActive
-    ) {
+    if (SelectionMode.Remove === this.selectionMode && !this.iModel.selectionSet.isActive) {
       this.selectionMode = SelectionMode.Replace;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(
-        this.toolId,
-        {
-          propertyName: SelectionTool._modesName,
-          value: this._selectionModeValue,
-        }
-      );
+      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, {
+        propertyName: SelectionTool._modesName,
+        value: this._selectionModeValue,
+      });
     }
 
     const toolSettings = new Array<DialogItem>();
@@ -1124,9 +901,7 @@ export class SelectionTool extends PrimitiveTool {
   /** Used to send changes from UI back to Tool
    * @beta
    */
-  public override async applyToolSettingPropertyChange(
-    updatedValue: DialogPropertySyncItem
-  ): Promise<boolean> {
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     let changed = false;
     if (updatedValue.propertyName === SelectionTool._methodsName) {
       const saveWantManipulators = this.wantEditManipulators();
@@ -1136,9 +911,7 @@ export class SelectionTool extends PrimitiveTool {
         if (saveWantManipulators !== currWantManipulators)
           IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(
             this,
-            currWantManipulators
-              ? ManipulatorToolEvent.Start
-              : ManipulatorToolEvent.Stop
+            currWantManipulators ? ManipulatorToolEvent.Start : ManipulatorToolEvent.Stop
           );
         changed = true;
       }
@@ -1147,13 +920,10 @@ export class SelectionTool extends PrimitiveTool {
       this._selectionModeValue = updatedValue.value;
       if (this._selectionModeValue) {
         if (this.wantToolSettings())
-          IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(
-            this.toolId,
-            {
-              propertyName: SelectionTool._modesName,
-              value: this._selectionModeValue,
-            }
-          );
+          IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, {
+            propertyName: SelectionTool._modesName,
+            value: this._selectionModeValue,
+          });
         changed = true;
       }
     }

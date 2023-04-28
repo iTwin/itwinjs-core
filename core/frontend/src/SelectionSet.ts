@@ -77,10 +77,7 @@ export interface SelectReplaceEvent {
  * @public
  * @extensions
  */
-export type SelectionSetEvent =
-  | SelectAddEvent
-  | SelectRemoveEvent
-  | SelectReplaceEvent;
+export type SelectionSetEvent = SelectAddEvent | SelectRemoveEvent | SelectReplaceEvent;
 
 /** Tracks a set of hilited entities. When the set changes, notifies ViewManager so that symbology overrides can be updated in active Viewports.
  * @internal
@@ -118,8 +115,7 @@ class HilitedIds extends Id64.Uint32Set {
   }
 
   protected onChanged() {
-    if (!this._changing)
-      IModelApp.viewManager.onSelectionSetChanged(this._iModel);
+    if (!this._changing) IModelApp.viewManager.onSelectionSetChanged(this._iModel);
   }
 
   protected change(func: () => void) {
@@ -150,9 +146,7 @@ class HilitedElementIds extends HilitedIds {
 
     if (want) {
       const set = this._iModel.selectionSet;
-      this._removeListener = set.onChanged.addListener((ev) =>
-        this.change(() => this.processSelectionSetEvent(ev))
-      );
+      this._removeListener = set.onChanged.addListener((ev) => this.change(() => this.processSelectionSetEvent(ev)));
       this.processSelectionSetEvent({
         set,
         type: SelectionSetEventType.Add,
@@ -167,11 +161,7 @@ class HilitedElementIds extends HilitedIds {
   private processSelectionSetEvent(ev: SelectionSetEvent): void {
     if (SelectionSetEventType.Add !== ev.type) this.deleteIds(ev.removed);
 
-    if (
-      ev.type === SelectionSetEventType.Add ||
-      ev.type === SelectionSetEventType.Replace
-    )
-      this.addIds(ev.added);
+    if (ev.type === SelectionSetEventType.Add || ev.type === SelectionSetEventType.Replace) this.addIds(ev.added);
   }
 }
 
@@ -239,18 +229,13 @@ export class HiliteSet {
   }
 
   /** Event raised just before changing the value of [[modelSubCategoryMode]]. */
-  public readonly onModelSubCategoryModeChanged = new BeEvent<
-    (newMode: ModelSubCategoryHiliteMode) => void
-  >();
+  public readonly onModelSubCategoryModeChanged = new BeEvent<(newMode: ModelSubCategoryHiliteMode) => void>();
 
   /** Construct a HiliteSet
    * @param iModel The iModel containing the entities to be hilited.
    * @param syncWithSelectionSet If true, the contents of the `elements` set will be synchronized with those in the `iModel`'s [[SelectionSet]].
    */
-  public constructor(
-    public iModel: IModelConnection,
-    syncWithSelectionSet = true
-  ) {
+  public constructor(public iModel: IModelConnection, syncWithSelectionSet = true) {
     this._elements = new HilitedElementIds(iModel, syncWithSelectionSet);
     this.subcategories = new HilitedIds(iModel);
     this.models = new HilitedIds(iModel);
@@ -277,9 +262,7 @@ export class HiliteSet {
 
   /** Returns true if nothing is hilited. */
   public get isEmpty(): boolean {
-    return (
-      this.elements.isEmpty && this.subcategories.isEmpty && this.models.isEmpty
-    );
+    return this.elements.isEmpty && this.subcategories.isEmpty && this.models.isEmpty;
   }
 
   /** Toggle the hilited state of one or more elements.
@@ -294,8 +277,7 @@ export class HiliteSet {
       else this.elements.deleteId(id);
     }
 
-    if (oldSize !== this.elements.size)
-      IModelApp.viewManager.onSelectionSetChanged(this.iModel);
+    if (oldSize !== this.elements.size) IModelApp.viewManager.onSelectionSetChanged(this.iModel);
   }
 }
 

@@ -32,9 +32,7 @@ describe("MockRender", () => {
   it("Should override mock render system", () => {
     expect(IModelApp.hasRenderSystem).to.be.true;
     expect(IModelApp.renderSystem).instanceof(MySystem);
-    expect(
-      IModelApp.renderSystem.createOffscreenTarget(new ViewRect(0, 0, 10, 20))
-    ).instanceof(MyTarget);
+    expect(IModelApp.renderSystem.createOffscreenTarget(new ViewRect(0, 0, 10, 20))).instanceof(MyTarget);
     expect(IModelApp.renderSystem.createGraphicList([])).instanceof(MyList);
   });
 });

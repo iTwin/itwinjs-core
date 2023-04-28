@@ -3,12 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64String } from "@itwin/core-bentley";
-import {
-  DisplayStyle,
-  DrawingViewDefinition,
-  IModelDb,
-  ViewDefinition,
-} from "@itwin/core-backend";
+import { DisplayStyle, DrawingViewDefinition, IModelDb, ViewDefinition } from "@itwin/core-backend";
 import { ColorDef, ViewQueryParams } from "@itwin/core-common";
 
 // __PUBLISH_EXTRACT_START__ IModelDb.Views.iterateViews

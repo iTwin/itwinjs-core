@@ -132,8 +132,7 @@ export class ECJsNames {
   public static toJsName(propName: string, isSystemProperty?: boolean) {
     assert(propName !== undefined, "propName must not be undefined");
 
-    const propTypeUnknown: boolean =
-      isSystemProperty === undefined || isSystemProperty === null;
+    const propTypeUnknown: boolean = isSystemProperty === undefined || isSystemProperty === null;
 
     const accessStringTokens: string[] = propName.split(".");
     const tokenCount: number = accessStringTokens.length;
@@ -141,35 +140,21 @@ export class ECJsNames {
 
     if (tokenCount === 1) {
       if (propTypeUnknown || isSystemProperty!) {
-        if (propName === "ECInstanceId")
-          return ECJsNames.systemPropertyToJsName(
-            ECSqlSystemProperty.ECInstanceId
-          );
+        if (propName === "ECInstanceId") return ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.ECInstanceId);
 
-        if (propName === "ECClassId")
-          return ECJsNames.systemPropertyToJsName(
-            ECSqlSystemProperty.ECClassId
-          );
+        if (propName === "ECClassId") return ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.ECClassId);
 
         if (propName === "SourceECInstanceId")
-          return ECJsNames.systemPropertyToJsName(
-            ECSqlSystemProperty.SourceECInstanceId
-          );
+          return ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.SourceECInstanceId);
 
         if (propName === "TargetECInstanceId")
-          return ECJsNames.systemPropertyToJsName(
-            ECSqlSystemProperty.TargetECInstanceId
-          );
+          return ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.TargetECInstanceId);
 
         if (propName === "SourceECClassId")
-          return ECJsNames.systemPropertyToJsName(
-            ECSqlSystemProperty.SourceECClassId
-          );
+          return ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.SourceECClassId);
 
         if (propName === "TargetECClassId")
-          return ECJsNames.systemPropertyToJsName(
-            ECSqlSystemProperty.TargetECClassId
-          );
+          return ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.TargetECClassId);
 
         return ECJsNames.lowerFirstChar(propName);
       }
@@ -187,25 +172,14 @@ export class ECJsNames {
     const leafToken: string = accessStringTokens[tokenCount - 1];
 
     if (propTypeUnknown || isSystemProperty!) {
-      if (leafToken === "Id")
-        jsName += ECJsNames.systemPropertyToJsName(
-          ECSqlSystemProperty.NavigationId
-        );
+      if (leafToken === "Id") jsName += ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.NavigationId);
       else if (leafToken === "RelECClassId")
-        jsName += ECJsNames.systemPropertyToJsName(
-          ECSqlSystemProperty.NavigationRelClassId
-        );
-      else if (leafToken === "X")
-        jsName += ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.PointX);
-      else if (leafToken === "Y")
-        jsName += ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.PointY);
-      else if (leafToken === "Z")
-        jsName += ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.PointZ);
+        jsName += ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.NavigationRelClassId);
+      else if (leafToken === "X") jsName += ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.PointX);
+      else if (leafToken === "Y") jsName += ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.PointY);
+      else if (leafToken === "Z") jsName += ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.PointZ);
       else if (propTypeUnknown) jsName += ECJsNames.lowerFirstChar(leafToken);
-      else
-        throw new Error(
-          `Property ${leafToken} of access string ${propName} is no ECSQL system property.`
-        );
+      else throw new Error(`Property ${leafToken} of access string ${propName} is no ECSQL system property.`);
     } else jsName += leafToken;
 
     return jsName;
@@ -217,9 +191,7 @@ export class ECJsNames {
    *  See [ECSQL Row Format]($docs/learning/ECSQLRowFormat) which describes the formatting rules.
    * @param systemPropertyType System property type
    */
-  public static systemPropertyToJsName(
-    systemPropertyType: ECSqlSystemProperty
-  ): string {
+  public static systemPropertyToJsName(systemPropertyType: ECSqlSystemProperty): string {
     switch (systemPropertyType) {
       case ECSqlSystemProperty.ECInstanceId:
       case ECSqlSystemProperty.NavigationId:
@@ -243,9 +215,7 @@ export class ECJsNames {
       case ECSqlSystemProperty.PointZ:
         return "z";
       default:
-        throw new Error(
-          `Unknown ECSqlSystemProperty enum value ${systemPropertyType}.`
-        );
+        throw new Error(`Unknown ECSqlSystemProperty enum value ${systemPropertyType}.`);
     }
   }
 

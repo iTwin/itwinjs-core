@@ -104,10 +104,7 @@ namespace Utf8ToString {
         result += String.fromCharCode(cp);
       } else {
         cp -= 0x10000;
-        result += String.fromCharCode(
-          (cp >> 10) + 0xd800,
-          (cp & 0x3ff) + 0xdc00
-        );
+        result += String.fromCharCode((cp >> 10) + 0xd800, (cp & 0x3ff) + 0xdc00);
       }
     }
 

@@ -6,15 +6,7 @@
  * @module SQLite
  */
 
-import {
-  assert,
-  BentleyError,
-  DbResult,
-  GuidString,
-  Id64String,
-  IDisposable,
-  LRUMap,
-} from "@itwin/core-bentley";
+import { assert, BentleyError, DbResult, GuidString, Id64String, IDisposable, LRUMap } from "@itwin/core-bentley";
 import { ECJsNames, IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelHost } from "./IModelHost";
@@ -39,8 +31,7 @@ export interface StringParam {
 export type BindParameter = number | string;
 
 function checkBind(stat: DbResult) {
-  if (stat !== DbResult.BE_SQLITE_OK)
-    throw new IModelError(stat, "SQLite Bind error");
+  if (stat !== DbResult.BE_SQLITE_OK) throw new IModelError(stat, "SQLite Bind error");
 }
 
 /** Executes SQLite SQL statements.
@@ -157,8 +148,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     if (value === undefined || value === null) {
       stat = this.stmt.bindNull(parameter);
     } else if (typeof value === "number") {
-      if (Number.isInteger(value))
-        stat = this.stmt.bindInteger(parameter, value);
+      if (Number.isInteger(value)) stat = this.stmt.bindInteger(parameter, value);
       else stat = this.stmt.bindDouble(parameter, value);
     } else if (typeof value === "boolean") {
       stat = this.stmt.bindInteger(parameter, value ? 1 : 0);
@@ -170,14 +160,9 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
       stat = this.stmt.bindGuid(parameter, value.guid);
     } else if (value instanceof Uint8Array) {
       stat = this.stmt.bindBlob(parameter, value);
-    } else
-      throw new IModelError(
-        DbResult.BE_SQLITE_ERROR,
-        `Parameter value ${value} is of an unsupported data type.`
-      );
+    } else throw new IModelError(DbResult.BE_SQLITE_ERROR, `Parameter value ${value} is of an unsupported data type.`);
 
-    if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error in bindValue");
+    if (stat !== DbResult.BE_SQLITE_OK) throw new IModelError(stat, "Error in bindValue");
   }
 
   /** Bind an integer parameter
@@ -320,8 +305,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    */
   public clearBindings(): void {
     const stat = this.stmt.clearBindings();
-    if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error in clearBindings");
+    if (stat !== DbResult.BE_SQLITE_OK) throw new IModelError(stat, "Error in clearBindings");
   }
 
   /** Step this statement to the next row.
@@ -382,9 +366,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * @param colIndex Index of SQL column in query result (0-based)
    */
   public getValueDoubleMaybe(colIndex: number): number | undefined {
-    return this.isValueNull(colIndex)
-      ? undefined
-      : this.getValueDouble(colIndex);
+    return this.isValueNull(colIndex) ? undefined : this.getValueDouble(colIndex);
   }
   /** Get a value as a integer
    * @param colIndex Index of SQL column in query result (0-based)
@@ -396,9 +378,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * @param colIndex Index of SQL column in query result (0-based)
    */
   public getValueIntegerMaybe(colIndex: number): number | undefined {
-    return this.isValueNull(colIndex)
-      ? undefined
-      : this.getValueInteger(colIndex);
+    return this.isValueNull(colIndex) ? undefined : this.getValueInteger(colIndex);
   }
   /** Get a value as a string
    * @param colIndex Index of SQL column in query result (0-based)
@@ -410,9 +390,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * @param colIndex Index of SQL column in query result (0-based)
    */
   public getValueStringMaybe(colIndex: number): string | undefined {
-    return this.isValueNull(colIndex)
-      ? undefined
-      : this.getValueString(colIndex);
+    return this.isValueNull(colIndex) ? undefined : this.getValueString(colIndex);
   }
   /** Get a value as an Id
    * @param colIndex Index of SQL column in query result (0-based)
@@ -430,18 +408,14 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * @param colIndex Index of SQL column in query result (0-based)
    */
   public getValueBoolean(colIndex: number) {
-    return this.isValueNull(colIndex)
-      ? false
-      : 0 !== this.getValueInteger(colIndex);
+    return this.isValueNull(colIndex) ? false : 0 !== this.getValueInteger(colIndex);
   }
   /** Get the value of a [julianday](https://www.sqlite.org/lang_datefunc.html) column as a JavaScript `Date`.
    * @param colIndex Index of SQL column in query result (0-based)
    * @beta
    */
   public getValueDate(colIndex: number) {
-    return new Date(
-      (this.stmt.getValueDouble(colIndex) - 2440587.5) * 86400000
-    ); // conversion from julian day ms to unix epoch ms
+    return new Date((this.stmt.getValueDouble(colIndex) - 2440587.5) * 86400000); // conversion from julian day ms to unix epoch ms
   }
   /** Get the value as a "props" JSON string, then parse it and return the object
    * @param colIndex Index of SQL column in query result (0-based)
@@ -479,10 +453,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     for (let i = 0; i < colCount; i++) {
       const sqliteValue = this.getValue(i);
       if (!sqliteValue.isNull) {
-        const propName: string = SqliteStatement.determineResultRowPropertyName(
-          duplicatePropNames,
-          sqliteValue
-        );
+        const propName: string = SqliteStatement.determineResultRowPropertyName(duplicatePropNames, sqliteValue);
         let val: any;
         switch (sqliteValue.type) {
           case SqliteValueType.Blob:

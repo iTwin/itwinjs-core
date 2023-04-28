@@ -59,6 +59,4 @@ export interface CommandHandler {
 /** Definition for an item that executes and action.
  * @public
  */
-export interface AbstractActionItemProps
-  extends CommonItemProps,
-    CommandHandler {}
+export interface AbstractActionItemProps extends CommonItemProps, CommandHandler {}

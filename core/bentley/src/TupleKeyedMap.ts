@@ -42,9 +42,7 @@ export class TupleKeyedMap<K extends readonly any[], V> {
   }
 
   private makeKeyError() {
-    return Error(
-      "A Bad key was used, it didn't match the key type of the the map."
-    );
+    return Error("A Bad key was used, it didn't match the key type of the the map.");
   }
 
   public get(key: K): V | undefined {
@@ -81,10 +79,7 @@ export class TupleKeyedMap<K extends readonly any[], V> {
   }
 
   public *[Symbol.iterator](): IterableIterator<[K, V]> {
-    function* impl(
-      map: Map<any, any>,
-      keyPrefix: readonly any[]
-    ): IterableIterator<[K, V]> {
+    function* impl(map: Map<any, any>, keyPrefix: readonly any[]): IterableIterator<[K, V]> {
       for (const [k, v] of map) {
         const nextKey = [...keyPrefix, k];
         if (v instanceof Map) {

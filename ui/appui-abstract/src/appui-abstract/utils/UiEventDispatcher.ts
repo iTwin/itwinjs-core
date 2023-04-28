@@ -151,12 +151,7 @@ export class UiEventDispatcher {
   /** Checks to see if an eventId of interest is contained in the set of eventIds */
   public hasEventOfInterest(eventIds: Set<string>, idsOfInterest: string[]) {
     /* istanbul ignore else */
-    if (
-      idsOfInterest.length > 0 &&
-      idsOfInterest.some((value: string): boolean =>
-        eventIds.has(value.toLowerCase())
-      )
-    )
+    if (idsOfInterest.length > 0 && idsOfInterest.some((value: string): boolean => eventIds.has(value.toLowerCase())))
       return true;
     return false;
   }

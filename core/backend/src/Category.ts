@@ -46,8 +46,7 @@ export class SubCategory extends DefinitionElement {
   public override toJSON(): SubCategoryProps {
     const val = super.toJSON() as SubCategoryProps;
     val.appearance = this.appearance.toJSON();
-    if (this.description && this.description.length > 0)
-      val.description = this.description;
+    if (this.description && this.description.length > 0) val.description = this.description;
     return val;
   }
 
@@ -65,10 +64,7 @@ export class SubCategory extends DefinitionElement {
   }
   /** Check if this is the default SubCategory of its parent Category. */
   public get isDefaultSubCategory(): boolean {
-    return (
-      IModelDb.getDefaultSubCategoryId(this.getCategoryId()) ===
-      this.getSubCategoryId()
-    );
+    return IModelDb.getDefaultSubCategoryId(this.getCategoryId()) === this.getSubCategoryId();
   }
 
   /** Create a Code for a SubCategory given a name that is meant to be unique within the scope of the specified parent Category.
@@ -76,14 +72,8 @@ export class SubCategory extends DefinitionElement {
    * @param parentCategoryId The Id of the parent Category that owns the SubCategory and provides the scope for its name.
    * @param codeValue The name of the SubCategory
    */
-  public static createCode(
-    iModel: IModelDb,
-    parentCategoryId: CodeScopeProps,
-    codeValue: string
-  ): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(
-      BisCodeSpec.subCategory
-    );
+  public static createCode(iModel: IModelDb, parentCategoryId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.subCategory);
     return new Code({
       spec: codeSpec.id,
       scope: parentCategoryId,
@@ -105,11 +95,9 @@ export class SubCategory extends DefinitionElement {
     name: string,
     appearance: SubCategoryAppearance.Props | SubCategoryAppearance
   ): SubCategory {
-    if (appearance instanceof SubCategoryAppearance)
-      appearance = appearance.toJSON();
+    if (appearance instanceof SubCategoryAppearance) appearance = appearance.toJSON();
 
-    const parentCategory =
-      iModelDb.elements.getElement<Category>(parentCategoryId);
+    const parentCategory = iModelDb.elements.getElement<Category>(parentCategoryId);
     const subCategoryProps: SubCategoryProps = {
       classFullName: this.classFullName,
       model: parentCategory.model,
@@ -134,12 +122,7 @@ export class SubCategory extends DefinitionElement {
     name: string,
     appearance: SubCategoryAppearance.Props | SubCategoryAppearance
   ): Id64String {
-    const subCategory = this.create(
-      iModelDb,
-      parentCategoryId,
-      name,
-      appearance
-    );
+    const subCategory = this.create(iModelDb, parentCategoryId, name, appearance);
     return iModelDb.elements.insertElement(subCategory.toJSON());
   }
 }
@@ -166,8 +149,7 @@ export class Category extends DefinitionElement {
   public override toJSON(): CategoryProps {
     const val = super.toJSON() as CategoryProps;
     val.rank = this.rank;
-    if (this.description && this.description.length > 0)
-      val.description = this.description;
+    if (this.description && this.description.length > 0) val.description = this.description;
     return val;
   }
 
@@ -177,14 +159,10 @@ export class Category extends DefinitionElement {
   }
 
   /** Set the appearance of the default SubCategory for this Category */
-  public setDefaultAppearance(
-    props: SubCategoryAppearance.Props | SubCategoryAppearance
-  ): void {
+  public setDefaultAppearance(props: SubCategoryAppearance.Props | SubCategoryAppearance): void {
     if (props instanceof SubCategoryAppearance) props = props.toJSON();
 
-    const subCat = this.iModel.elements.getElement<SubCategory>(
-      this.myDefaultSubCategoryId()
-    );
+    const subCat = this.iModel.elements.getElement<SubCategory>(this.myDefaultSubCategoryId());
     subCat.appearance = new SubCategoryAppearance(props);
     this.iModel.elements.updateElement(subCat.toJSON());
   }
@@ -219,11 +197,7 @@ export class DrawingCategory extends Category {
     scopeModelId: Id64String,
     categoryName: string
   ): Id64String | undefined {
-    const code: Code = DrawingCategory.createCode(
-      iModel,
-      scopeModelId,
-      categoryName
-    );
+    const code: Code = DrawingCategory.createCode(iModel, scopeModelId, categoryName);
     return iModel.elements.queryElementIdByCode(code);
   }
 
@@ -233,14 +207,8 @@ export class DrawingCategory extends Category {
    * @param codeValue The name of the category
    * @return A drawing category Code
    */
-  public static createCode(
-    iModel: IModelDb,
-    scopeModelId: CodeScopeProps,
-    codeValue: string
-  ): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(
-      DrawingCategory.getCodeSpecName()
-    );
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(DrawingCategory.getCodeSpecName());
     return new Code({
       spec: codeSpec.id,
       scope: scopeModelId,
@@ -255,11 +223,7 @@ export class DrawingCategory extends Category {
    * @returns The newly constructed DrawingCategory element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static create(
-    iModelDb: IModelDb,
-    definitionModelId: Id64String,
-    name: string
-  ): DrawingCategory {
+  public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string): DrawingCategory {
     const categoryProps: CategoryProps = {
       classFullName: this.classFullName,
       model: definitionModelId,
@@ -319,11 +283,7 @@ export class SpatialCategory extends Category {
     scopeModelId: Id64String,
     categoryName: string
   ): Id64String | undefined {
-    const code: Code = SpatialCategory.createCode(
-      iModel,
-      scopeModelId,
-      categoryName
-    );
+    const code: Code = SpatialCategory.createCode(iModel, scopeModelId, categoryName);
     return iModel.elements.queryElementIdByCode(code);
   }
 
@@ -333,14 +293,8 @@ export class SpatialCategory extends Category {
    * @param codeValue The name of the category
    * @return A spatial category Code
    */
-  public static createCode(
-    iModel: IModelDb,
-    scopeModelId: CodeScopeProps,
-    codeValue: string
-  ): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(
-      SpatialCategory.getCodeSpecName()
-    );
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(SpatialCategory.getCodeSpecName());
     return new Code({
       spec: codeSpec.id,
       scope: scopeModelId,
@@ -355,11 +309,7 @@ export class SpatialCategory extends Category {
    * @returns The newly constructed SpatialCategory element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static create(
-    iModelDb: IModelDb,
-    definitionModelId: Id64String,
-    name: string
-  ): SpatialCategory {
+  public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string): SpatialCategory {
     const categoryProps: CategoryProps = {
       classFullName: this.classFullName,
       model: definitionModelId,

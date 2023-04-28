@@ -91,16 +91,11 @@ describe("JsonParser", () => {
       parser = new JsonParser(createSchemaJsonWithItems(json));
       const findResult = parser.findItem("TestEntityClass");
       if (findResult === undefined)
-        throw new Error(
-          "Expected finding EntityClass with PrimitiveProperty to be successful"
-        );
+        throw new Error("Expected finding EntityClass with PrimitiveProperty to be successful");
 
       const [, , parentElement] = findResult;
       assert.throws(
-        () =>
-          Array.from(
-            parser.getProperties(parentElement, "TestSchema.TestEntityClass")
-          ),
+        () => Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass")),
         ECObjectsError,
         `The ECProperty TestSchema.TestEntityClass.TestProp has an invalid 'type' attribute. 'BadType' is not a valid type.`
       );
@@ -111,9 +106,7 @@ describe("JsonParser", () => {
     const baseJson = { schemaItemType: "CustomAttributeClass" };
 
     beforeEach(() => {
-      parser = new JsonParser(
-        createSchemaJsonWithItems({ TestCustomAttribute: baseJson })
-      );
+      parser = new JsonParser(createSchemaJsonWithItems({ TestCustomAttribute: baseJson }));
       parser.findItem("TestCustomAttribute");
     });
 
@@ -142,17 +135,11 @@ describe("JsonParser", () => {
     const baseJson = { schemaItemType: "EntityClass" };
 
     beforeEach(() => {
-      parser = new JsonParser(
-        createSchemaJsonWithItems({ TestEntity: baseJson })
-      );
+      parser = new JsonParser(createSchemaJsonWithItems({ TestEntity: baseJson }));
       parser.findItem("TestEntity");
     });
 
-    function testInvalidAttribute(
-      attributeName: string,
-      expectedType: string,
-      value: any
-    ) {
+    function testInvalidAttribute(attributeName: string, expectedType: string, value: any) {
       const json: any = {
         ...baseJson,
         [attributeName]: value,
@@ -164,10 +151,8 @@ describe("JsonParser", () => {
       );
     }
 
-    it("should throw for invalid description", () =>
-      testInvalidAttribute("description", "string", 0));
-    it("should throw for invalid label", () =>
-      testInvalidAttribute("label", "string", 0));
+    it("should throw for invalid description", () => testInvalidAttribute("description", "string", 0));
+    it("should throw for invalid label", () => testInvalidAttribute("label", "string", 0));
 
     it("should throw for invalid modifier", async () => {
       const json: any = { ...baseJson, modifier: 0 };
@@ -208,9 +193,7 @@ describe("JsonParser", () => {
     const baseJson = { schemaItemType: "Enumeration" };
 
     beforeEach(() => {
-      parser = new JsonParser(
-        createSchemaJsonWithItems({ TestEnumeration: baseJson })
-      );
+      parser = new JsonParser(createSchemaJsonWithItems({ TestEnumeration: baseJson }));
       parser.findItem("TestEnumeration");
     });
 
@@ -386,9 +369,7 @@ describe("JsonParser", () => {
     };
 
     beforeEach(() => {
-      parser = new JsonParser(
-        createSchemaJsonWithItems({ AmerMYFI4: baseJson })
-      );
+      parser = new JsonParser(createSchemaJsonWithItems({ AmerMYFI4: baseJson }));
       parser.findItem("AmerMYFI4");
     });
 
@@ -458,9 +439,7 @@ describe("JsonParser", () => {
     const baseJson = { schemaItemType: "InvertedUnit" };
 
     beforeEach(() => {
-      parser = new JsonParser(
-        createSchemaJsonWithItems({ HORIZONTAL_PER_VERTICAL: baseJson })
-      );
+      parser = new JsonParser(createSchemaJsonWithItems({ HORIZONTAL_PER_VERTICAL: baseJson }));
       parser.findItem("HORIZONTAL_PER_VERTICAL");
     });
 
@@ -526,17 +505,11 @@ describe("JsonParser", () => {
     };
 
     beforeEach(() => {
-      parser = new JsonParser(
-        createSchemaJsonWithItems({ TestKindOfQuantity: baseJson })
-      );
+      parser = new JsonParser(createSchemaJsonWithItems({ TestKindOfQuantity: baseJson }));
       parser.findItem("TestKindOfQuantity");
     });
 
-    function testInvalidAttribute(
-      attributeName: string,
-      expectedType: string,
-      value: any
-    ) {
+    function testInvalidAttribute(attributeName: string, expectedType: string, value: any) {
       const json: any = {
         ...baseJson,
         relativeError: 0,
@@ -551,12 +524,10 @@ describe("JsonParser", () => {
       );
     }
 
-    it("should throw for invalid relativeError", () =>
-      testInvalidAttribute("relativeError", "number", false));
+    it("should throw for invalid relativeError", () => testInvalidAttribute("relativeError", "number", false));
     it("should throw for invalid presentationUnits", () =>
       testInvalidAttribute("presentationUnits", `string' or 'string[]`, false));
-    it("should throw for invalid persistenceUnit", () =>
-      testInvalidAttribute("persistenceUnit", "string", false));
+    it("should throw for invalid persistenceUnit", () => testInvalidAttribute("persistenceUnit", "string", false));
 
     // should throw for missing relativeError
     const missingRelativeError = {
@@ -591,9 +562,7 @@ describe("JsonParser", () => {
     const baseJson = { schemaItemType: "Mixin" };
 
     beforeEach(() => {
-      parser = new JsonParser(
-        createSchemaJsonWithItems({ TestMixin: baseJson })
-      );
+      parser = new JsonParser(createSchemaJsonWithItems({ TestMixin: baseJson }));
       parser.findItem("TestMixin");
     });
 
@@ -677,9 +646,7 @@ describe("JsonParser", () => {
     const baseJson = { schemaItemType: "EntityClass" };
 
     beforeEach(() => {
-      parser = new JsonParser(
-        createSchemaJsonWithItems({ TestClass: baseJson })
-      );
+      parser = new JsonParser(createSchemaJsonWithItems({ TestClass: baseJson }));
       parser.findItem("TestClass");
     });
 
@@ -699,11 +666,7 @@ describe("JsonParser", () => {
       );
     });
 
-    function testInvalidAttribute(
-      attributeName: string,
-      expectedType: string,
-      value: any
-    ) {
+    function testInvalidAttribute(attributeName: string, expectedType: string, value: any) {
       const json: any = {
         name: "TestProp",
         type: "PrimitiveProperty",
@@ -723,50 +686,30 @@ describe("JsonParser", () => {
           ? `An ECProperty in TestSchema.TestClass `
           : `The ECProperty TestSchema.TestClass.TestProp `;
       err += `has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`;
-      assert.throws(
-        () => parser.parsePrimitiveProperty(json),
-        ECObjectsError,
-        err
-      );
+      assert.throws(() => parser.parsePrimitiveProperty(json), ECObjectsError, err);
     }
 
-    it("should throw for invalid label", () =>
-      testInvalidAttribute("label", "string", false));
-    it("should throw for invalid description", () =>
-      testInvalidAttribute("description", "string", false));
-    it("should throw for invalid priority", () =>
-      testInvalidAttribute("priority", "number", false));
-    it("should throw for invalid isReadOnly", () =>
-      testInvalidAttribute("isReadOnly", "boolean", 1.234));
-    it("should throw for invalid category", () =>
-      testInvalidAttribute("category", "string", false));
-    it("should throw for invalid kindOfQuantity", () =>
-      testInvalidAttribute("kindOfQuantity", "string", false));
-    it("should throw for invalid inherited", () =>
-      testInvalidAttribute("inherited", "boolean", 1.234));
-    it("should throw for invalid customAttributes", () =>
-      testInvalidAttribute("category", "string", false));
-    it("should throw for invalid typeName", () =>
-      testInvalidAttribute("typeName", "string", 0));
-    it("should throw for invalid minLength", () =>
-      testInvalidAttribute("minLength", "number", "0"));
-    it("should throw for invalid maxLength", () =>
-      testInvalidAttribute("maxLength", "number", "0"));
-    it("should throw for invalid minValue", () =>
-      testInvalidAttribute("minValue", "number", "0"));
-    it("should throw for invalid maxValue", () =>
-      testInvalidAttribute("maxValue", "number", "0"));
-    it("should throw for invalid extendedTypeName", () =>
-      testInvalidAttribute("extendedTypeName", "string", 0));
+    it("should throw for invalid label", () => testInvalidAttribute("label", "string", false));
+    it("should throw for invalid description", () => testInvalidAttribute("description", "string", false));
+    it("should throw for invalid priority", () => testInvalidAttribute("priority", "number", false));
+    it("should throw for invalid isReadOnly", () => testInvalidAttribute("isReadOnly", "boolean", 1.234));
+    it("should throw for invalid category", () => testInvalidAttribute("category", "string", false));
+    it("should throw for invalid kindOfQuantity", () => testInvalidAttribute("kindOfQuantity", "string", false));
+    it("should throw for invalid inherited", () => testInvalidAttribute("inherited", "boolean", 1.234));
+    it("should throw for invalid customAttributes", () => testInvalidAttribute("category", "string", false));
+    it("should throw for invalid typeName", () => testInvalidAttribute("typeName", "string", 0));
+    it("should throw for invalid minLength", () => testInvalidAttribute("minLength", "number", "0"));
+    it("should throw for invalid maxLength", () => testInvalidAttribute("maxLength", "number", "0"));
+    it("should throw for invalid minValue", () => testInvalidAttribute("minValue", "number", "0"));
+    it("should throw for invalid maxValue", () => testInvalidAttribute("maxValue", "number", "0"));
+    it("should throw for invalid extendedTypeName", () => testInvalidAttribute("extendedTypeName", "string", 0));
   });
 
   describe("parsePrimitiveArrayProperty", () => {
     const baseJson = { schemaItemType: "EntityClass" };
 
     beforeEach(() => {
-      parser = new JsonParser(
-        createSchemaJsonWithItems({ TestClass: baseJson })
-      );
+      parser = new JsonParser(createSchemaJsonWithItems({ TestClass: baseJson }));
       parser.findItem("TestClass");
     });
 
@@ -776,10 +719,7 @@ describe("JsonParser", () => {
         type: "PrimitiveProperty",
         minOccurs: "0",
       };
-      assert.throws(
-        () => parser.parsePrimitiveArrayProperty(json),
-        ECObjectsError
-      );
+      assert.throws(() => parser.parsePrimitiveArrayProperty(json), ECObjectsError);
     });
 
     it("should throw for invalid maxOccurs", () => {
@@ -788,10 +728,7 @@ describe("JsonParser", () => {
         type: "PrimitiveProperty",
         maxOccurs: "0",
       };
-      assert.throws(
-        () => parser.parsePrimitiveArrayProperty(json),
-        ECObjectsError
-      );
+      assert.throws(() => parser.parsePrimitiveArrayProperty(json), ECObjectsError);
     });
   });
 
@@ -799,9 +736,7 @@ describe("JsonParser", () => {
     const baseJson = { schemaItemType: "PropertyCategory" };
 
     beforeEach(() => {
-      parser = new JsonParser(
-        createSchemaJsonWithItems({ TestCategory: baseJson })
-      );
+      parser = new JsonParser(createSchemaJsonWithItems({ TestCategory: baseJson }));
       parser.findItem("TestCategory");
     });
 
@@ -841,9 +776,7 @@ describe("JsonParser", () => {
     }
 
     beforeEach(() => {
-      parser = new JsonParser(
-        createSchemaJsonWithItems({ TestRelationship: baseJson })
-      );
+      parser = new JsonParser(createSchemaJsonWithItems({ TestRelationship: baseJson }));
       parser.findItem("TestRelationship");
     });
 
@@ -874,14 +807,12 @@ describe("JsonParser", () => {
     it("should throw for invalid roleLabel", () => {
       const json = { roleLabel: 0 };
       assert.throws(
-        () =>
-          parser.parseRelationshipClass(withInvalidConstraint("source", json)),
+        () => parser.parseRelationshipClass(withInvalidConstraint("source", json)),
         ECObjectsError,
         `The Source Constraint of TestSchema.TestRelationship has an invalid 'roleLabel' attribute. It should be of type 'string'.`
       );
       assert.throws(
-        () =>
-          parser.parseRelationshipClass(withInvalidConstraint("target", json)),
+        () => parser.parseRelationshipClass(withInvalidConstraint("target", json)),
         ECObjectsError,
         `The Target Constraint of TestSchema.TestRelationship has an invalid 'roleLabel' attribute. It should be of type 'string'.`
       );
@@ -890,14 +821,12 @@ describe("JsonParser", () => {
     it("should throw for invalid polymorphic", () => {
       const json = { polymorphic: "0" };
       assert.throws(
-        () =>
-          parser.parseRelationshipClass(withInvalidConstraint("source", json)),
+        () => parser.parseRelationshipClass(withInvalidConstraint("source", json)),
         ECObjectsError,
         `The Source Constraint of TestSchema.TestRelationship has an invalid 'polymorphic' attribute. It should be of type 'boolean'.`
       );
       assert.throws(
-        () =>
-          parser.parseRelationshipClass(withInvalidConstraint("target", json)),
+        () => parser.parseRelationshipClass(withInvalidConstraint("target", json)),
         ECObjectsError,
         `The Target Constraint of TestSchema.TestRelationship has an invalid 'polymorphic' attribute. It should be of type 'boolean'.`
       );
@@ -906,14 +835,12 @@ describe("JsonParser", () => {
     it("should throw for invalid multiplicity", () => {
       const json = { multiplicity: 0 };
       assert.throws(
-        () =>
-          parser.parseRelationshipClass(withInvalidConstraint("source", json)),
+        () => parser.parseRelationshipClass(withInvalidConstraint("source", json)),
         ECObjectsError,
         `The Source Constraint of TestSchema.TestRelationship has an invalid 'multiplicity' attribute. It should be of type 'string'.`
       );
       assert.throws(
-        () =>
-          parser.parseRelationshipClass(withInvalidConstraint("target", json)),
+        () => parser.parseRelationshipClass(withInvalidConstraint("target", json)),
         ECObjectsError,
         `The Target Constraint of TestSchema.TestRelationship has an invalid 'multiplicity' attribute. It should be of type 'string'.`
       );
@@ -921,46 +848,26 @@ describe("JsonParser", () => {
 
     it("should throw for invalid abstractConstraint", () => {
       const json = { abstractConstraint: 0 };
-      assert.throws(
-        () =>
-          parser.parseRelationshipClass(withInvalidConstraint("source", json)),
-        ECObjectsError
-      );
-      assert.throws(
-        () =>
-          parser.parseRelationshipClass(withInvalidConstraint("target", json)),
-        ECObjectsError
-      );
+      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("source", json)), ECObjectsError);
+      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("target", json)), ECObjectsError);
     });
 
     it("should throw for invalid constraintClasses", () => {
       assert.throws(
-        () =>
-          parser.parseRelationshipClass(
-            withInvalidConstraint("source", { constraintClasses: 0 })
-          ),
+        () => parser.parseRelationshipClass(withInvalidConstraint("source", { constraintClasses: 0 })),
         ECObjectsError
       );
       assert.throws(
-        () =>
-          parser.parseRelationshipClass(
-            withInvalidConstraint("source", { constraintClasses: [0] })
-          ),
+        () => parser.parseRelationshipClass(withInvalidConstraint("source", { constraintClasses: [0] })),
         ECObjectsError
       );
 
       assert.throws(
-        () =>
-          parser.parseRelationshipClass(
-            withInvalidConstraint("target", { constraintClasses: 0 })
-          ),
+        () => parser.parseRelationshipClass(withInvalidConstraint("target", { constraintClasses: 0 })),
         ECObjectsError
       );
       assert.throws(
-        () =>
-          parser.parseRelationshipClass(
-            withInvalidConstraint("target", { constraintClasses: [0] })
-          ),
+        () => parser.parseRelationshipClass(withInvalidConstraint("target", { constraintClasses: [0] })),
         ECObjectsError
       );
     });
@@ -970,14 +877,12 @@ describe("JsonParser", () => {
         customAttributes: "array",
       };
       assert.throws(
-        () =>
-          parser.parseRelationshipClass(withInvalidConstraint("source", json)),
+        () => parser.parseRelationshipClass(withInvalidConstraint("source", json)),
         ECObjectsError,
         `The Source Constraint of TestSchema.TestRelationship has an invalid 'customAttributes' attribute. It should be of type 'array'.`
       );
       assert.throws(
-        () =>
-          parser.parseRelationshipClass(withInvalidConstraint("target", json)),
+        () => parser.parseRelationshipClass(withInvalidConstraint("target", json)),
         ECObjectsError,
         `The Target Constraint of TestSchema.TestRelationship has an invalid 'customAttributes' attribute. It should be of type 'array'.`
       );
@@ -1045,11 +950,7 @@ describe("JsonParser", () => {
       );
     });
 
-    function testInvalidAttribute(
-      attributeName: string,
-      expectedType: string,
-      value: any
-    ) {
+    function testInvalidAttribute(attributeName: string, expectedType: string, value: any) {
       const json = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "TestSchema",
@@ -1064,12 +965,9 @@ describe("JsonParser", () => {
       );
     }
 
-    it("should throw for invalid alias", () =>
-      testInvalidAttribute("alias", "string", 0));
-    it("should throw for invalid label", () =>
-      testInvalidAttribute("label", "string", 0));
-    it("should throw for invalid description", () =>
-      testInvalidAttribute("description", "string", 0));
+    it("should throw for invalid alias", () => testInvalidAttribute("alias", "string", 0));
+    it("should throw for invalid label", () => testInvalidAttribute("label", "string", 0));
+    it("should throw for invalid description", () => testInvalidAttribute("description", "string", 0));
   });
 
   describe("getSchemaCustomAttributes", () => {

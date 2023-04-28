@@ -8,10 +8,7 @@ import { ECClass } from "../Metadata/Class";
 import { RelationshipClass } from "../Metadata/RelationshipClass";
 import { Schema } from "../Metadata/Schema";
 import { SchemaItem } from "../Metadata/SchemaItem";
-import {
-  ISchemaPartVisitor,
-  SchemaPartVisitorDelegate,
-} from "../SchemaPartVisitorDelegate";
+import { ISchemaPartVisitor, SchemaPartVisitorDelegate } from "../SchemaPartVisitorDelegate";
 
 /**
  * The purpose of this class is to traverse a given schema, allowing clients to hook into
@@ -43,8 +40,7 @@ export class SchemaWalker {
     await this._visitorHelper.visitSchema(schema);
     await this._visitorHelper.visitSchemaPart(schema);
 
-    for (const item of this._schema.getItems())
-      await this.traverseSchemaItem(item);
+    for (const item of this._schema.getItems()) await this.traverseSchemaItem(item);
     return schema;
   }
 
@@ -62,12 +58,8 @@ export class SchemaWalker {
     }
 
     if (ecClass.schemaItemType === SchemaItemType.RelationshipClass) {
-      await this._visitorHelper.visitSchemaPart(
-        (ecClass as RelationshipClass).source
-      );
-      await this._visitorHelper.visitSchemaPart(
-        (ecClass as RelationshipClass).target
-      );
+      await this._visitorHelper.visitSchemaPart((ecClass as RelationshipClass).source);
+      await this._visitorHelper.visitSchemaPart((ecClass as RelationshipClass).target);
     }
   }
 }

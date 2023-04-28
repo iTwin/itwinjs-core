@@ -48,12 +48,7 @@ export class TriDiagonalSystem {
     this._dataState = DataState.RawMatrix;
     const n = this._aDiag.length;
     for (let i = 0; i < n; i++) {
-      this._aLeft[i] =
-        this._aRight[i] =
-        this._aDiag[i] =
-        this._b[i] =
-        this._x[i] =
-          0.0;
+      this._aLeft[i] = this._aRight[i] = this._aDiag[i] = this._b[i] = this._x[i] = 0.0;
     }
   }
   /** Install data in a row of the matrix */
@@ -100,8 +95,7 @@ export class TriDiagonalSystem {
       const n = this._aDiag.length;
       const nm1 = n - 1;
       for (let i = 0; i < nm1; i++) {
-        this._b[i] =
-          this._aDiag[i] * this._x[i] + this._aRight[i] * this._x[i + 1];
+        this._b[i] = this._aDiag[i] * this._x[i] + this._aRight[i] * this._x[i + 1];
       }
       this._b[nm1] = this._aDiag[nm1] * this._x[nm1];
 
@@ -116,13 +110,9 @@ export class TriDiagonalSystem {
       this._b[0] = this._aDiag[0] * this._x[0] + this._aRight[0] * this._x[1];
       let i;
       for (i = 1; i < nm1; i++) {
-        this._b[i] =
-          this._aLeft[i] * this._x[i - 1] +
-          this._aDiag[i] * this._x[i] +
-          this._aRight[i] * this._x[i + 1];
+        this._b[i] = this._aLeft[i] * this._x[i - 1] + this._aDiag[i] * this._x[i] + this._aRight[i] * this._x[i + 1];
       }
-      this._b[nm1] =
-        this._aLeft[nm1] * this._x[n - 2] + this._aDiag[i] * this._x[nm1];
+      this._b[nm1] = this._aLeft[nm1] * this._x[n - 2] + this._aDiag[i] * this._x[nm1];
       return true;
     }
   }
@@ -139,13 +129,7 @@ export class TriDiagonalSystem {
       const n = this._aDiag.length;
       const nm1 = n - 1;
       for (let i = 0; i < nm1; i++) {
-        Point3d.createAdd2Scaled(
-          pointX[i],
-          this._aDiag[i],
-          pointX[i + 1],
-          this._aRight[i],
-          pointB[i]
-        );
+        Point3d.createAdd2Scaled(pointX[i], this._aDiag[i], pointX[i + 1], this._aRight[i], pointB[i]);
       }
       Point3d.createScale(pointX[nm1], this._aDiag[nm1], pointB[nm1]);
 
@@ -157,13 +141,7 @@ export class TriDiagonalSystem {
     } else {
       const n = this._aDiag.length;
       const nm1 = n - 1;
-      Point3d.createAdd2Scaled(
-        pointX[0],
-        this._aDiag[0],
-        pointX[1],
-        this._aRight[0],
-        pointB[0]
-      );
+      Point3d.createAdd2Scaled(pointX[0], this._aDiag[0], pointX[1], this._aRight[0], pointB[0]);
       let i;
       for (i = 1; i < nm1; i++) {
         Point3d.createAdd3Scaled(
@@ -176,13 +154,7 @@ export class TriDiagonalSystem {
           pointB[i]
         );
       }
-      Point3d.createAdd2Scaled(
-        pointX[n - 2],
-        this._aLeft[nm1],
-        pointX[nm1],
-        this._aDiag[nm1],
-        pointB[nm1]
-      );
+      Point3d.createAdd2Scaled(pointX[n - 2], this._aLeft[nm1], pointX[nm1], this._aDiag[nm1], pointB[nm1]);
       return true;
     }
   }
@@ -218,10 +190,7 @@ export class TriDiagonalSystem {
     const n1 = this._aDiag.length - 1; // Last pivot index
     // Eliminate in subdiagonal.
     for (let i = 0; i < n1; i++) {
-      const r = Geometry.conditionalDivideFraction(
-        this._aLeft[i + 1],
-        this._aDiag[i]
-      );
+      const r = Geometry.conditionalDivideFraction(this._aLeft[i + 1], this._aDiag[i]);
       if (r === undefined) return false;
       this._aLeft[i + 1] = r;
       this._aDiag[i + 1] -= r * this._aRight[i];
@@ -249,17 +218,13 @@ export class TriDiagonalSystem {
     this._x[n1] /= this._aDiag[n1];
 
     for (let i = n1 - 1; i >= 0; i--) {
-      this._x[i] =
-        (this._x[i] - this._aRight[i] * this._x[i + 1]) / this._aDiag[i];
+      this._x[i] = (this._x[i] - this._aRight[i] * this._x[i + 1]) / this._aDiag[i];
     }
 
     return true;
   }
   /** Solve AX=B. A is left in factored state. B unchanged. vectorB and vectorX may be the same array */
-  public factorAndBackSubstitutePointArrays(
-    vectorB: Point3d[],
-    vectorX: Point3d[]
-  ): boolean {
+  public factorAndBackSubstitutePointArrays(vectorB: Point3d[], vectorX: Point3d[]): boolean {
     const n = this._aDiag.length;
     if (vectorB.length < n) return false;
 
@@ -323,12 +288,7 @@ export class TriDiagonalSystem {
     const data = [];
 
     for (let i = 0; i < n; i++) {
-      data.push([
-        i,
-        [this._aLeft[i], this._aDiag[i], this._aRight[i]],
-        this._x[i],
-        this._b[i],
-      ]);
+      data.push([i, [this._aLeft[i], this._aDiag[i], this._aRight[i]], this._x[i], this._b[i]]);
     }
     return data;
   }
@@ -339,12 +299,7 @@ export class TriDiagonalSystem {
     const data = [];
 
     for (let i = 0; i < n; i++) {
-      data.push([
-        i,
-        [this._aLeft[i], this._aDiag[i], this._aRight[i]],
-        this._x[i],
-        xyzB[i].toJSON(),
-      ]);
+      data.push([i, [this._aLeft[i], this._aDiag[i], this._aRight[i]], this._x[i], xyzB[i].toJSON()]);
     }
     return data;
   }

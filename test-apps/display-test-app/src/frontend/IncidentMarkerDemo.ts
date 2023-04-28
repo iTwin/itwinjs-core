@@ -3,14 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { Logger } from "@itwin/core-bentley";
-import {
-  AngleSweep,
-  Arc3d,
-  Point2d,
-  Point3d,
-  XAndY,
-  XYAndZ,
-} from "@itwin/core-geometry";
+import { AngleSweep, Arc3d, Point2d, Point3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { AxisAlignedBox3d, ColorByName, ColorDef } from "@itwin/core-common";
 import {
   BeButton,
@@ -64,12 +57,7 @@ class IncidentMarker extends Marker {
   }
 
   /** Create a new IncidentMarker */
-  constructor(
-    location: XYAndZ,
-    public severity: number,
-    public id: number,
-    icon: HTMLImageElement
-  ) {
+  constructor(location: XYAndZ, public severity: number, public id: number, icon: HTMLImageElement) {
     super(location, IncidentMarker._size);
     this._color = IncidentMarker.makeColor(severity); // color interpolated from severity
     this.setImage(icon); // save icon
@@ -139,10 +127,7 @@ class IncidentClusterMarker extends Marker {
     const sorted: IncidentMarker[] = [];
     const maxLen = 10;
     cluster.markers.forEach((marker) => {
-      if (
-        maxLen > sorted.length ||
-        marker.severity > sorted[sorted.length - 1].severity
-      ) {
+      if (maxLen > sorted.length || marker.severity > sorted[sorted.length - 1].severity) {
         const index = sorted.findIndex((val) => val.severity < marker.severity);
         if (index === -1) sorted.push(marker);
         else sorted.splice(index, 0, marker);
@@ -167,9 +152,7 @@ class IncidentClusterMarker extends Marker {
     const div = document.createElement("div"); // Use HTML as markup isn't supported for string.
     div.innerHTML = title;
     this.title = div;
-    this._clusterColor = IncidentMarker.makeColor(
-      sorted[0].severity
-    ).toHexString();
+    this._clusterColor = IncidentMarker.makeColor(sorted[0].severity).toHexString();
     if (image) this.setImage(image);
   }
 }
@@ -237,9 +220,7 @@ export class IncidentMarkerDemo {
       pos.z = extents.low.z + Math.random() * extents.zLength();
       const img = this._images[(i % len) + 1];
       if (undefined !== img)
-        this.incidents.markers.add(
-          new IncidentMarker(pos, 1 + Math.round(Math.random() * 29), i, img)
-        );
+        this.incidents.markers.add(new IncidentMarker(pos, 1 + Math.round(Math.random() * 29), i, img));
     }
     this._loading = undefined;
   }
@@ -278,15 +259,12 @@ export class IncidentMarkerDemo {
     IModelApp.viewManager.addDecorator(IncidentMarkerDemo.decorator);
 
     // hook the event for viewport changing and stop the demo. This is called when the view is closed too. */
-    IncidentMarkerDemo.decorator.incidents.viewport!.onChangeView.addOnce(() =>
-      this.stop()
-    );
+    IncidentMarkerDemo.decorator.incidents.viewport!.onChangeView.addOnce(() => this.stop());
   }
 
   /** stop the demo */
   private static stop() {
-    if (IncidentMarkerDemo.decorator)
-      IModelApp.viewManager.dropDecorator(IncidentMarkerDemo.decorator);
+    if (IncidentMarkerDemo.decorator) IModelApp.viewManager.dropDecorator(IncidentMarkerDemo.decorator);
     IncidentMarkerDemo.decorator = undefined;
   }
 
@@ -301,8 +279,7 @@ export class IncidentMarkerDemoTool extends Tool {
   public static override toolId = "ToggleIncidentMarkers";
   public override async run(_args: any[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp && vp.view.isSpatialView())
-      IncidentMarkerDemo.toggle(vp.view.iModel.projectExtents);
+    if (undefined !== vp && vp.view.isSpatialView()) IncidentMarkerDemo.toggle(vp.view.iModel.projectExtents);
 
     return true;
   }

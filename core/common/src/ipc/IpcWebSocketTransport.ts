@@ -28,15 +28,10 @@ export abstract class IpcWebSocketTransport {
   public abstract send(message: IpcWebSocketMessage): void;
 
   protected unwrap(data: any) {
-    return typeof Blob !== "undefined" && data instanceof Blob
-      ? data.arrayBuffer()
-      : data;
+    return typeof Blob !== "undefined" && data instanceof Blob ? data.arrayBuffer() : data;
   }
 
-  protected async notifyIncoming(
-    data: any,
-    connection: any
-  ): Promise<IpcWebSocketMessage> {
+  protected async notifyIncoming(data: any, connection: any): Promise<IpcWebSocketMessage> {
     if (this._partial) {
       this._received.push(data);
       --this._outstanding;
@@ -46,9 +41,7 @@ export abstract class IpcWebSocketTransport {
         const received = this._received;
         this._partial = undefined;
         this._received = [];
-        await Promise.all(
-          received.map(async (v, i, a) => (a[i] = await this.unwrap(v)))
-        );
+        await Promise.all(received.map(async (v, i, a) => (a[i] = await this.unwrap(v))));
 
         parts = received;
         const message: IpcWebSocketMessage = JSON.parse(partial, reviver);
@@ -120,12 +113,7 @@ function replacer(this: any, _key: string, value: any) {
 }
 
 function reviver(_key: string, value: any) {
-  if (
-    typeof value === "object" &&
-    value !== null &&
-    value.hasOwnProperty("ipc") &&
-    value.ipc === "binary"
-  ) {
+  if (typeof value === "object" && value !== null && value.hasOwnProperty("ipc") && value.ipc === "binary") {
     return reviveBinary(value);
   }
 
@@ -162,15 +150,9 @@ function makePromise<T>() {
 /* Reconstructing the sequence in which messages were sent is necessary since
    the binary data for a message has to be awaited in IpcWebSocketTransport.unwrap. */
 class InSentOrder {
-  private static _connections: Map<
-    any,
-    { queue: InSentOrder[]; last: number }
-  > = new Map();
+  private static _connections: Map<any, { queue: InSentOrder[]; last: number }> = new Map();
 
-  public static async deliver(
-    message: IpcWebSocketMessage,
-    connection: any
-  ): Promise<IpcWebSocketMessage> {
+  public static async deliver(message: IpcWebSocketMessage, connection: any): Promise<IpcWebSocketMessage> {
     let context = this._connections.get(connection);
     if (!context) {
       context = { queue: [], last: -1 };

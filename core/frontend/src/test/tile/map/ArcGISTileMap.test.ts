@@ -70,9 +70,8 @@ const dataset6 = {
     adjusted: false,
     location: { left: 7, top: 7, width: 8, height: 8 },
     data: [
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     ],
   },
   available1: [true, true, true, true], // first parent, fully visible
@@ -144,9 +143,7 @@ describe("ArcGISTileMap", () => {
 
     const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings);
     tileMap.tileMapRequestSize = 4;
-    let available = await tileMap.getChildrenAvailability(
-      parentQuadId.getChildIds()
-    );
+    let available = await tileMap.getChildrenAvailability(parentQuadId.getChildIds());
 
     // [10,10,10], 10,11,11] should be visible
     expect(available).to.eql(dataset1.available);
@@ -154,10 +151,7 @@ describe("ArcGISTileMap", () => {
     expect(getTileMapStub.calledOnce).to.be.true;
 
     // Make sure that tile [10,10,10] was put in the middle of tilemap, so the request tile should be [10,9,9], size: 4x4
-    const requestTile1 = getRequestTile(
-      parentQuadId,
-      tileMap.tileMapRequestSize
-    );
+    const requestTile1 = getRequestTile(parentQuadId, tileMap.tileMapRequestSize);
     expect(
       getTileMapStub.calledWithExactly(
         requestTile1.level,
@@ -184,13 +178,8 @@ describe("ArcGISTileMap", () => {
 
     // Request parent tile next to the initial one, so 9,6,5, a server quest should be made.
     const nextParentTile = QuadId.createFromContentId("9_5_6");
-    available = await tileMap.getChildrenAvailability(
-      nextParentTile.getChildIds()
-    );
-    const requestTile2 = getRequestTile(
-      nextParentTile,
-      tileMap.tileMapRequestSize
-    );
+    available = await tileMap.getChildrenAvailability(nextParentTile.getChildIds());
+    const requestTile2 = getRequestTile(nextParentTile, tileMap.tileMapRequestSize);
     expect(
       getTileMapStub.calledWithExactly(
         requestTile2.level,
@@ -219,17 +208,12 @@ describe("ArcGISTileMap", () => {
 
     const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings, 24);
     tileMap.tileMapRequestSize = 4;
-    const available = await tileMap.getChildrenAvailability(
-      parentQuadId.getChildIds()
-    );
+    const available = await tileMap.getChildrenAvailability(parentQuadId.getChildIds());
 
     expect(available).to.eql(dataset1.available);
 
     // Make sure that tile [10,10,10] was put in the middle of tilemap, so the request tile should be [10,9,9], size: 4x4
-    const requestTile1 = getRequestTile(
-      parentQuadId,
-      tileMap.tileMapRequestSize
-    );
+    const requestTile1 = getRequestTile(parentQuadId, tileMap.tileMapRequestSize);
     expect(
       getTileMapStub.calledWithExactly(
         requestTile1.level,
@@ -260,16 +244,11 @@ describe("ArcGISTileMap", () => {
 
     const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings, 24);
     tileMap.tileMapRequestSize = 4;
-    const available = await tileMap.getChildrenAvailability(
-      parentQuadId.getChildIds()
-    );
+    const available = await tileMap.getChildrenAvailability(parentQuadId.getChildIds());
 
     expect(available).to.eql(dataset3.available);
 
-    const requestTile1 = getRequestTile(
-      parentQuadId,
-      tileMap.tileMapRequestSize
-    );
+    const requestTile1 = getRequestTile(parentQuadId, tileMap.tileMapRequestSize);
     expect(
       getTileMapStub.calledWithExactly(
         requestTile1.level,
@@ -323,14 +302,9 @@ describe("ArcGISTileMap", () => {
     const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings);
     tileMap.tileMapRequestSize = 4;
     const parentQuadId = QuadId.createFromContentId(dataset4.parentContentId);
-    const available = await tileMap.getChildrenAvailability(
-      parentQuadId.getChildIds()
-    );
+    const available = await tileMap.getChildrenAvailability(parentQuadId.getChildIds());
     expect(getTileMapStub.calledTwice).to.be.true;
-    const requestTile = getRequestTile(
-      parentQuadId,
-      tileMap.fallbackTileMapRequestSize
-    );
+    const requestTile = getRequestTile(parentQuadId, tileMap.fallbackTileMapRequestSize);
 
     expect(
       getTileMapStub.lastCall.calledWithExactly(
@@ -368,10 +342,7 @@ describe("ArcGISTileMap", () => {
     );
     expect(getTileMapStub.calledTwice).to.be.true;
     expect(available).to.eql([true, false, false, false]);
-    const requestTile1 = getRequestTile(
-      parentQuadId,
-      tileMap.tileMapRequestSize
-    );
+    const requestTile1 = getRequestTile(parentQuadId, tileMap.tileMapRequestSize);
     expect(
       getTileMapStub
         .getCalls()[0]
@@ -441,9 +412,7 @@ describe("ArcGISTileMap", () => {
     expect(getTileMapStub.calledOnce).to.be.true;
     expect(available).to.eql(allFalse);
 
-    const children = QuadId.createFromContentId(
-      dataset1.parentContentId
-    ).getChildIds();
+    const children = QuadId.createFromContentId(dataset1.parentContentId).getChildIds();
     const tileInfo = (tileMap as any).getAvailableTilesFromCache(children);
     expect(tileInfo.allTilesFound).to.be.true;
     expect(tileInfo.available).to.eql(allFalse);
@@ -464,17 +433,12 @@ describe("ArcGISTileMap", () => {
     const parentQuadId = QuadId.createFromContentId(dataset6.parentContentId1);
     const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings);
     tileMap.tileMapRequestSize = 8;
-    let available = await tileMap.getChildrenAvailability(
-      parentQuadId.getChildIds()
-    );
+    let available = await tileMap.getChildrenAvailability(parentQuadId.getChildIds());
     expect(available).to.eql(dataset6.available1);
     expect(getTileMapStub.calledOnce).to.be.true;
 
     // Make sure the request tile was put in the middle of the tilemap
-    const requestTile1 = getRequestTile(
-      parentQuadId,
-      tileMap.tileMapRequestSize
-    );
+    const requestTile1 = getRequestTile(parentQuadId, tileMap.tileMapRequestSize);
     expect(
       getTileMapStub.calledWithExactly(
         requestTile1.level,
@@ -488,13 +452,9 @@ describe("ArcGISTileMap", () => {
     // Request parent tile next to the initial one (on the right), only the bottom,right child should exist
     // no server request should be made
     getTileMapStub.resetHistory();
-    const reqParentTile2 = QuadId.createFromContentId(
-      dataset6.parentContentId2
-    );
+    const reqParentTile2 = QuadId.createFromContentId(dataset6.parentContentId2);
     expect(getTileMapStub.called).to.be.false;
-    available = await tileMap.getChildrenAvailability(
-      reqParentTile2.getChildIds()
-    );
+    available = await tileMap.getChildrenAvailability(reqParentTile2.getChildIds());
     expect(available).to.eql(dataset6.available2);
     expect(getTileMapStub.calledOnce).to.be.false;
   });

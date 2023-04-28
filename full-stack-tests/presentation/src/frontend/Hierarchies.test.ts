@@ -28,10 +28,7 @@ import {
   RulesetVariable,
   RuleTypes,
 } from "@itwin/presentation-common";
-import {
-  Presentation,
-  PresentationManager,
-} from "@itwin/presentation-frontend";
+import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
 import { initialize, resetBackend, terminate } from "../IntegrationTests";
 import { buildTestIModelConnection } from "../Utils";
 
@@ -48,15 +45,9 @@ describe("Hierarchies", () => {
     it("filters root instance nodes hierarchy level", async function () {
       // set up imodel with 2 DocumentPartition elements "a" and "b"
       const imodelElementKeys: InstanceKey[] = [];
-      const imodel = await buildTestIModelConnection(
-        this.test!.fullTitle(),
-        (db) => {
-          imodelElementKeys.push(
-            insertDocumentPartition(db, "a"),
-            insertDocumentPartition(db, "b")
-          );
-        }
-      );
+      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), (db) => {
+        imodelElementKeys.push(insertDocumentPartition(db, "a"), insertDocumentPartition(db, "b"));
+      });
 
       // set up ruleset
       const ruleset: Ruleset = {
@@ -66,8 +57,7 @@ describe("Hierarchies", () => {
             ruleType: RuleTypes.RootNodes,
             specifications: [
               {
-                specType:
-                  ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
                 classes: [
                   {
                     schemaName: "BisCore",
@@ -156,15 +146,9 @@ describe("Hierarchies", () => {
     it("filters child instance nodes hierarchy level", async function () {
       // set up imodel with 2 DocumentPartition elements "a" and "b"
       const imodelElementKeys: InstanceKey[] = [];
-      const imodel = await buildTestIModelConnection(
-        this.test!.fullTitle(),
-        (db) => {
-          imodelElementKeys.push(
-            insertDocumentPartition(db, "a"),
-            insertDocumentPartition(db, "b")
-          );
-        }
-      );
+      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), (db) => {
+        imodelElementKeys.push(insertDocumentPartition(db, "a"), insertDocumentPartition(db, "b"));
+      });
 
       // set up ruleset
       const ruleset: Ruleset = {
@@ -174,8 +158,7 @@ describe("Hierarchies", () => {
             ruleType: RuleTypes.RootNodes,
             specifications: [
               {
-                specType:
-                  ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
                 classes: [
                   {
                     schemaName: "BisCore",
@@ -218,9 +201,7 @@ describe("Hierarchies", () => {
         requestParams: { imodel, rulesetOrId: ruleset },
         expectedHierarchy: [
           NodeValidators.createForInstanceNode({
-            instanceKeys: [
-              { className: "BisCore:Subject", id: IModel.rootSubjectId },
-            ],
+            instanceKeys: [{ className: "BisCore:Subject", id: IModel.rootSubjectId }],
             children: [
               NodeValidators.createForInstanceNode({
                 instanceKeys: [imodelElementKeys[0]],
@@ -244,9 +225,7 @@ describe("Hierarchies", () => {
           if (
             params.parentKey &&
             NodeKey.isInstancesNodeKey(params.parentKey) &&
-            params.parentKey.instanceKeys.some(
-              (k) => k.className === "BisCore:Subject"
-            )
+            params.parentKey.instanceKeys.some((k) => k.className === "BisCore:Subject")
           ) {
             params.instanceFilter = {
               selectClassName: imodelElementKeys[0].className,
@@ -256,9 +235,7 @@ describe("Hierarchies", () => {
         },
         expectedHierarchy: [
           NodeValidators.createForInstanceNode({
-            instanceKeys: [
-              { className: "BisCore:Subject", id: IModel.rootSubjectId },
-            ],
+            instanceKeys: [{ className: "BisCore:Subject", id: IModel.rootSubjectId }],
             children: [
               NodeValidators.createForInstanceNode({
                 instanceKeys: [imodelElementKeys[1]],
@@ -276,9 +253,7 @@ describe("Hierarchies", () => {
           if (
             params.parentKey &&
             NodeKey.isInstancesNodeKey(params.parentKey) &&
-            params.parentKey.instanceKeys.some(
-              (k) => k.className === "BisCore:Subject"
-            )
+            params.parentKey.instanceKeys.some((k) => k.className === "BisCore:Subject")
           ) {
             params.instanceFilter = {
               selectClassName: imodelElementKeys[0].className,
@@ -288,9 +263,7 @@ describe("Hierarchies", () => {
         },
         expectedHierarchy: [
           NodeValidators.createForInstanceNode({
-            instanceKeys: [
-              { className: "BisCore:Subject", id: IModel.rootSubjectId },
-            ],
+            instanceKeys: [{ className: "BisCore:Subject", id: IModel.rootSubjectId }],
             children: [
               NodeValidators.createForInstanceNode({
                 instanceKeys: [imodelElementKeys[0]],
@@ -312,9 +285,7 @@ describe("Hierarchies", () => {
           if (
             params.parentKey &&
             NodeKey.isInstancesNodeKey(params.parentKey) &&
-            params.parentKey.instanceKeys.some(
-              (k) => k.className === "BisCore:Subject"
-            )
+            params.parentKey.instanceKeys.some((k) => k.className === "BisCore:Subject")
           ) {
             params.instanceFilter = {
               selectClassName: imodelElementKeys[0].className,
@@ -324,9 +295,7 @@ describe("Hierarchies", () => {
         },
         expectedHierarchy: [
           NodeValidators.createForInstanceNode({
-            instanceKeys: [
-              { className: "BisCore:Subject", id: IModel.rootSubjectId },
-            ],
+            instanceKeys: [{ className: "BisCore:Subject", id: IModel.rootSubjectId }],
             expectChildren: true,
             children: [],
           }),
@@ -337,16 +306,13 @@ describe("Hierarchies", () => {
     it("filters grouped hierarchy levels", async function () {
       // set up imodel with 3 DocumentPartition elements: "a", "a" and "b"
       const imodelElementKeys: InstanceKey[] = [];
-      const imodel = await buildTestIModelConnection(
-        this.test!.fullTitle(),
-        (db) => {
-          imodelElementKeys.push(
-            insertDocumentPartition(db, "a1", "a"),
-            insertDocumentPartition(db, "a2", "a"),
-            insertDocumentPartition(db, "b")
-          );
-        }
-      );
+      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), (db) => {
+        imodelElementKeys.push(
+          insertDocumentPartition(db, "a1", "a"),
+          insertDocumentPartition(db, "a2", "a"),
+          insertDocumentPartition(db, "b")
+        );
+      });
 
       // set up ruleset for a hierarchy that looks like this:
       // - Document Partition (DocumentPartition class grouping node)
@@ -362,8 +328,7 @@ describe("Hierarchies", () => {
             ruleType: RuleTypes.RootNodes,
             specifications: [
               {
-                specType:
-                  ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
                 classes: [
                   {
                     schemaName: "BisCore",
@@ -520,10 +485,7 @@ describe("Hierarchies", () => {
 
     it("throws when attempting to filter non-filterable hierarchy level", async function () {
       // set up an empty imodel - we'll use the root Subject for this test
-      const imodel = await buildTestIModelConnection(
-        this.test!.fullTitle(),
-        (_) => {}
-      );
+      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), (_) => {});
 
       // set up ruleset
       const ruleset: Ruleset = {
@@ -533,8 +495,7 @@ describe("Hierarchies", () => {
             ruleType: RuleTypes.RootNodes,
             specifications: [
               {
-                specType:
-                  ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
                 classes: [
                   {
                     schemaName: "BisCore",
@@ -563,11 +524,7 @@ describe("Hierarchies", () => {
       });
 
       // ensure requesting the hierarchy level with an instance filter throws
-      const requestParams: HierarchyRequestOptions<
-        IModelConnection,
-        NodeKey,
-        RulesetVariable
-      > = {
+      const requestParams: HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable> = {
         imodel,
         rulesetOrId: ruleset,
         instanceFilter: {
@@ -575,9 +532,7 @@ describe("Hierarchies", () => {
           expression: `TRUE`,
         },
       };
-      await expect(
-        Presentation.presentation.getNodes(requestParams)
-      ).to.eventually.be.rejectedWith(PresentationError);
+      await expect(Presentation.presentation.getNodes(requestParams)).to.eventually.be.rejectedWith(PresentationError);
     });
   });
 
@@ -590,15 +545,9 @@ describe("Hierarchies", () => {
       before(async function () {
         // set up imodel with 2 DocumentPartition elements "a" and "b"
         expectedInstanceKeys = [];
-        imodel = await buildTestIModelConnection(
-          this.test!.fullTitle(),
-          (db) => {
-            expectedInstanceKeys.push(
-              insertDocumentPartition(db, "a"),
-              insertDocumentPartition(db, "b")
-            );
-          }
-        );
+        imodel = await buildTestIModelConnection(this.test!.fullTitle(), (db) => {
+          expectedInstanceKeys.push(insertDocumentPartition(db, "a"), insertDocumentPartition(db, "b"));
+        });
 
         // set up ruleset
         ruleset = {
@@ -608,8 +557,7 @@ describe("Hierarchies", () => {
               ruleType: RuleTypes.RootNodes,
               specifications: [
                 {
-                  specType:
-                    ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                  specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
                   classes: [
                     {
                       schemaName: "BisCore",
@@ -676,15 +624,9 @@ describe("Hierarchies", () => {
       before(async function () {
         // set up imodel with 2 DocumentPartition elements "a" and "b"
         expectedInstanceKeys = [];
-        imodel = await buildTestIModelConnection(
-          this.test!.fullTitle(),
-          (db) => {
-            expectedInstanceKeys.push(
-              insertDocumentPartition(db, "a"),
-              insertDocumentPartition(db, "b")
-            );
-          }
-        );
+        imodel = await buildTestIModelConnection(this.test!.fullTitle(), (db) => {
+          expectedInstanceKeys.push(insertDocumentPartition(db, "a"), insertDocumentPartition(db, "b"));
+        });
 
         // set up ruleset
         ruleset = {
@@ -694,8 +636,7 @@ describe("Hierarchies", () => {
               ruleType: RuleTypes.RootNodes,
               specifications: [
                 {
-                  specType:
-                    ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                  specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
                   classes: [
                     {
                       schemaName: "BisCore",
@@ -739,9 +680,7 @@ describe("Hierarchies", () => {
           requestParams: { imodel, rulesetOrId: ruleset },
           expectedHierarchy: [
             NodeValidators.createForInstanceNode({
-              instanceKeys: [
-                { className: "BisCore:Subject", id: IModel.rootSubjectId },
-              ],
+              instanceKeys: [{ className: "BisCore:Subject", id: IModel.rootSubjectId }],
               children: [
                 NodeValidators.createForInstanceNode({
                   instanceKeys: [expectedInstanceKeys[0]],
@@ -762,9 +701,7 @@ describe("Hierarchies", () => {
           requestParams: { imodel, rulesetOrId: ruleset, sizeLimit: 2 },
           expectedHierarchy: [
             NodeValidators.createForInstanceNode({
-              instanceKeys: [
-                { className: "BisCore:Subject", id: IModel.rootSubjectId },
-              ],
+              instanceKeys: [{ className: "BisCore:Subject", id: IModel.rootSubjectId }],
               children: [
                 NodeValidators.createForInstanceNode({
                   instanceKeys: [expectedInstanceKeys[0]],
@@ -805,16 +742,13 @@ describe("Hierarchies", () => {
       before(async function () {
         // set up imodel with 2 DocumentPartition elements "a" and "b"
         expectedInstanceKeys = [];
-        imodel = await buildTestIModelConnection(
-          this.test!.fullTitle(),
-          (db) => {
-            expectedInstanceKeys.push(
-              insertDocumentPartition(db, "a1", "a"),
-              insertDocumentPartition(db, "a2", "a"),
-              insertDocumentPartition(db, "b")
-            );
-          }
-        );
+        imodel = await buildTestIModelConnection(this.test!.fullTitle(), (db) => {
+          expectedInstanceKeys.push(
+            insertDocumentPartition(db, "a1", "a"),
+            insertDocumentPartition(db, "a2", "a"),
+            insertDocumentPartition(db, "b")
+          );
+        });
 
         // set up ruleset for a hierarchy that looks like this:
         // - Document Partition (DocumentPartition class grouping node)
@@ -830,8 +764,7 @@ describe("Hierarchies", () => {
               ruleType: RuleTypes.RootNodes,
               specifications: [
                 {
-                  specType:
-                    ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                  specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
                   classes: [
                     {
                       schemaName: "BisCore",
@@ -981,10 +914,7 @@ describe("Hierarchies", () => {
   describe("Getting hierarchy level descriptors", () => {
     it("creates descriptor for root hierarchy level", async function () {
       // create an "empty" iModel - we'll use the root Subject for our test
-      const imodel = await buildTestIModelConnection(
-        this.test!.fullTitle(),
-        (_) => {}
-      );
+      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), (_) => {});
 
       // set up ruleset
       const ruleset: Ruleset = {
@@ -994,8 +924,7 @@ describe("Hierarchies", () => {
             ruleType: RuleTypes.RootNodes,
             specifications: [
               {
-                specType:
-                  ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
                 classes: [
                   {
                     schemaName: "BisCore",
@@ -1056,10 +985,7 @@ describe("Hierarchies", () => {
 
     it("creates descriptor for child hierarchy level", async function () {
       // create an "empty" iModel - we'll use the root Subject and default Models for our test
-      const imodel = await buildTestIModelConnection(
-        this.test!.fullTitle(),
-        (_) => {}
-      );
+      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), (_) => {});
 
       // set up ruleset
       const ruleset: Ruleset = {
@@ -1069,8 +995,7 @@ describe("Hierarchies", () => {
             ruleType: RuleTypes.RootNodes,
             specifications: [
               {
-                specType:
-                  ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
                 classes: [
                   {
                     schemaName: "BisCore",
@@ -1147,10 +1072,7 @@ describe("Hierarchies", () => {
 
     it("throws when attempting to get descriptor non-filterable hierarchy level", async function () {
       // set up an empty imodel - we'll use the root Subject for this test
-      const imodel = await buildTestIModelConnection(
-        this.test!.fullTitle(),
-        (_) => {}
-      );
+      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), (_) => {});
 
       // set up ruleset
       const ruleset: Ruleset = {
@@ -1160,8 +1082,7 @@ describe("Hierarchies", () => {
             ruleType: RuleTypes.RootNodes,
             specifications: [
               {
-                specType:
-                  ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
                 classes: [
                   {
                     schemaName: "BisCore",
@@ -1192,8 +1113,7 @@ describe("Hierarchies", () => {
     let imodel: IModelConnection;
 
     before(async () => {
-      const testIModelName: string =
-        "assets/datasets/Properties_60InstancesWithUrl2.ibim";
+      const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
       imodel = await SnapshotConnection.openFile(testIModelName);
     });
 
@@ -1235,8 +1155,7 @@ describe("Hierarchies", () => {
                             ruleType: RuleTypes.ChildNodes,
                             specifications: [
                               {
-                                specType:
-                                  ChildNodeSpecificationTypes.CustomNode,
+                                specType: ChildNodeSpecificationTypes.CustomNode,
                                 type: "nodeType131",
                                 label: "filter ch4",
                               },
@@ -1295,8 +1214,7 @@ describe("Hierarchies", () => {
             ruleType: RuleTypes.RootNodes,
             specifications: [
               {
-                specType:
-                  ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
                 classes: [
                   {
                     schemaName: "BisCore",
@@ -1309,8 +1227,7 @@ describe("Hierarchies", () => {
                     ruleType: RuleTypes.ChildNodes,
                     specifications: [
                       {
-                        specType:
-                          ChildNodeSpecificationTypes.RelatedInstanceNodes,
+                        specType: ChildNodeSpecificationTypes.RelatedInstanceNodes,
                         relationshipPaths: [
                           {
                             relationship: {
@@ -1331,8 +1248,7 @@ describe("Hierarchies", () => {
                             ruleType: RuleTypes.ChildNodes,
                             specifications: [
                               {
-                                specType:
-                                  ChildNodeSpecificationTypes.RelatedInstanceNodes,
+                                specType: ChildNodeSpecificationTypes.RelatedInstanceNodes,
                                 relationshipPaths: [
                                   {
                                     relationship: {
@@ -1399,8 +1315,7 @@ describe("Hierarchies", () => {
     let imodel: IModelConnection;
 
     before(async () => {
-      const testIModelName: string =
-        "assets/datasets/Properties_60InstancesWithUrl2.ibim";
+      const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
       imodel = await SnapshotConnection.openFile(testIModelName);
     });
 
@@ -1416,8 +1331,7 @@ describe("Hierarchies", () => {
             ruleType: RuleTypes.RootNodes,
             specifications: [
               {
-                specType:
-                  ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
                 classes: { schemaName: "BisCore", classNames: ["Model"] },
                 arePolymorphic: true,
                 groupByClass: true,
@@ -1453,20 +1367,16 @@ describe("Hierarchies", () => {
         the result should be 1 + 1 + 2 = 4
         */
 
-          const definitionModelNodes = await Presentation.presentation.getNodes(
-            {
-              imodel,
-              rulesetOrId: ruleset.id,
-              parentKey: rootNodes[0].key,
-            }
-          );
-          const dictionaryModelNodes = await Presentation.presentation.getNodes(
-            {
-              imodel,
-              rulesetOrId: ruleset.id,
-              parentKey: rootNodes[1].key,
-            }
-          );
+          const definitionModelNodes = await Presentation.presentation.getNodes({
+            imodel,
+            rulesetOrId: ruleset.id,
+            parentKey: rootNodes[0].key,
+          });
+          const dictionaryModelNodes = await Presentation.presentation.getNodes({
+            imodel,
+            rulesetOrId: ruleset.id,
+            parentKey: rootNodes[1].key,
+          });
 
           const keys = new KeySet([
             definitionModelNodes[0].key,
@@ -1486,8 +1396,7 @@ describe("Hierarchies", () => {
     let frontend: PresentationManager;
 
     before(async () => {
-      const testIModelName: string =
-        "assets/datasets/Properties_60InstancesWithUrl2.ibim";
+      const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
       imodel = await SnapshotConnection.openFile(testIModelName);
     });
 
@@ -1566,24 +1475,16 @@ namespace NodeValidators {
     }
   ) {
     if (expectations.label && node.label.displayValue !== expectations.label) {
-      throw new Error(
-        `Expected node label to be "${expectations.label}", got "${node.label.displayValue}"`
-      );
+      throw new Error(`Expected node label to be "${expectations.label}", got "${node.label.displayValue}"`);
     }
-    if (
-      expectations.hasChildren !== undefined &&
-      node.hasChildren !== expectations.hasChildren
-    ) {
+    if (expectations.hasChildren !== undefined && node.hasChildren !== expectations.hasChildren) {
       throw new Error(
         `Expected node's \`hasChildren\` flag to be ${optionalBooleanToString(
           expectations.hasChildren
         )}, got ${optionalBooleanToString(node.hasChildren)}`
       );
     }
-    if (
-      expectations.supportsFiltering !== undefined &&
-      node.supportsFiltering !== expectations.supportsFiltering
-    ) {
+    if (expectations.supportsFiltering !== undefined && node.supportsFiltering !== expectations.supportsFiltering) {
       throw new Error(
         `Expected node's \`supportsFiltering\` flag to be "${optionalBooleanToString(
           expectations.supportsFiltering
@@ -1605,21 +1506,17 @@ namespace NodeValidators {
         }
         if (
           node.key.instanceKeys.length !== props.instanceKeys.length ||
-          !node.key.instanceKeys.every((nk) =>
-            props.instanceKeys.some((ek) => 0 === InstanceKey.compare(nk, ek))
-          )
+          !node.key.instanceKeys.every((nk) => props.instanceKeys.some((ek) => 0 === InstanceKey.compare(nk, ek)))
         ) {
           throw new Error(
-            `Expected node to represent instance keys ${JSON.stringify(
-              props.instanceKeys
-            )}, got ${JSON.stringify(node.key.instanceKeys)}`
+            `Expected node to represent instance keys ${JSON.stringify(props.instanceKeys)}, got ${JSON.stringify(
+              node.key.instanceKeys
+            )}`
           );
         }
         validateBaseNodeAttributes(node, {
           label: props.label,
-          hasChildren:
-            props.expectChildren ??
-            (props.children && props.children.length > 0),
+          hasChildren: props.expectChildren ?? (props.children && props.children.length > 0),
           supportsFiltering: props.supportsFiltering,
         });
       },
@@ -1636,20 +1533,14 @@ namespace NodeValidators {
     return {
       node: (node) => {
         if (!NodeKey.isClassGroupingNodeKey(node.key)) {
-          throw new Error(
-            `Expected a class grouping node, got "${node.key.type}"`
-          );
+          throw new Error(`Expected a class grouping node, got "${node.key.type}"`);
         }
         if (node.key.className !== props.className) {
-          throw new Error(
-            `Expected node to represent class "${props.className}", got "${node.key.className}"`
-          );
+          throw new Error(`Expected node to represent class "${props.className}", got "${node.key.className}"`);
         }
         validateBaseNodeAttributes(node, {
           label: props.label,
-          hasChildren:
-            props.expectChildren ??
-            (props.children && props.children.length > 0),
+          hasChildren: props.expectChildren ?? (props.children && props.children.length > 0),
           supportsFiltering: props.supportsFiltering,
         });
       },
@@ -1668,9 +1559,7 @@ namespace NodeValidators {
     return {
       node: (node) => {
         if (!NodeKey.isPropertyGroupingNodeKey(node.key)) {
-          throw new Error(
-            `Expected a property grouping node, got "${node.key.type}"`
-          );
+          throw new Error(`Expected a property grouping node, got "${node.key.type}"`);
         }
         if (node.key.className !== props.className) {
           throw new Error(
@@ -1685,21 +1574,17 @@ namespace NodeValidators {
         if (
           props.groupingValues &&
           (node.key.groupingValues.length !== props.groupingValues.length ||
-            !node.key.groupingValues.every((v) =>
-              props.groupingValues!.includes(v)
-            ))
+            !node.key.groupingValues.every((v) => props.groupingValues!.includes(v)))
         ) {
           throw new Error(
-            `Expected node to group values ${JSON.stringify(
-              props.groupingValues
-            )}, got ${JSON.stringify(node.key.groupingValues)}`
+            `Expected node to group values ${JSON.stringify(props.groupingValues)}, got ${JSON.stringify(
+              node.key.groupingValues
+            )}`
           );
         }
         validateBaseNodeAttributes(node, {
           label: props.label,
-          hasChildren:
-            props.expectChildren ??
-            (props.children && props.children.length > 0),
+          hasChildren: props.expectChildren ?? (props.children && props.children.length > 0),
           supportsFiltering: props.supportsFiltering,
         });
       },
@@ -1715,15 +1600,11 @@ namespace NodeValidators {
     return {
       node: (node) => {
         if (!NodeKey.isLabelGroupingNodeKey(node.key)) {
-          throw new Error(
-            `Expected a label grouping node, got "${node.key.type}"`
-          );
+          throw new Error(`Expected a label grouping node, got "${node.key.type}"`);
         }
         validateBaseNodeAttributes(node, {
           label: props.label,
-          hasChildren:
-            props.expectChildren ??
-            (props.children && props.children.length > 0),
+          hasChildren: props.expectChildren ?? (props.children && props.children.length > 0),
           supportsFiltering: props.supportsFiltering,
         });
       },
@@ -1734,14 +1615,8 @@ namespace NodeValidators {
 
 async function validateHierarchy(props: {
   manager?: PresentationManager;
-  requestParams: HierarchyRequestOptions<
-    IModelConnection,
-    NodeKey,
-    RulesetVariable
-  >;
-  configureParams?: (
-    params: HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>
-  ) => void;
+  requestParams: HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>;
+  configureParams?: (params: HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>) => void;
   expectedHierarchy: ExpectedHierarchyDef[];
   supportsFiltering?: boolean;
 }) {
@@ -1753,9 +1628,7 @@ async function validateHierarchy(props: {
   const nodes = await manager.getNodes(requestParams);
 
   if (nodes.length !== props.expectedHierarchy.length) {
-    throw new Error(
-      `Expected ${props.expectedHierarchy.length} nodes, got ${nodes.length}`
-    );
+    throw new Error(`Expected ${props.expectedHierarchy.length} nodes, got ${nodes.length}`);
   }
 
   if (props.supportsFiltering !== undefined) {
@@ -1772,15 +1645,13 @@ async function validateHierarchy(props: {
     expectation.node(actualNode);
 
     const childrenParams = { ...requestParams, parentKey: actualNode.key };
-    if (!NodeKey.isGroupingNodeKey(actualNode.key))
-      delete childrenParams.instanceFilter;
+    if (!NodeKey.isGroupingNodeKey(actualNode.key)) delete childrenParams.instanceFilter;
 
-    resultHierarchy[resultHierarchy.length - 1].children =
-      await validateHierarchy({
-        ...props,
-        requestParams: childrenParams,
-        expectedHierarchy: expectation.children ?? [],
-      });
+    resultHierarchy[resultHierarchy.length - 1].children = await validateHierarchy({
+      ...props,
+      requestParams: childrenParams,
+      expectedHierarchy: expectation.children ?? [],
+    });
   }
 
   return resultHierarchy;

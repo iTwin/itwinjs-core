@@ -43,9 +43,7 @@ describe("ContentTraverser", () => {
     }
     public finishContent(): void {}
 
-    public processFieldHierarchies(
-      _props: ProcessFieldHierarchiesProps
-    ): void {}
+    public processFieldHierarchies(_props: ProcessFieldHierarchiesProps): void {}
 
     public startItem(_props: StartItemProps): boolean {
       return true;
@@ -182,10 +180,7 @@ describe("ContentTraverser", () => {
 
     it("doesn't process content item if `visitor.startItem` returns `false`", () => {
       sinon.stub(visitor, "startItem").returns(false);
-      const spies = [
-        sinon.spy(visitor, "startField"),
-        sinon.spy(visitor, "finishItem"),
-      ];
+      const spies = [sinon.spy(visitor, "startField"), sinon.spy(visitor, "finishItem")];
       const descriptor = createTestContentDescriptor({
         fields: [createTestSimpleContentField()],
       });
@@ -196,10 +191,7 @@ describe("ContentTraverser", () => {
 
     it("processes content item if `visitor.startItem` returns `true`", () => {
       sinon.stub(visitor, "startItem").returns(true);
-      const spies = [
-        sinon.spy(visitor, "startField"),
-        sinon.spy(visitor, "finishItem"),
-      ];
+      const spies = [sinon.spy(visitor, "startField"), sinon.spy(visitor, "finishItem")];
       const descriptor = createTestContentDescriptor({
         fields: [createTestSimpleContentField()],
       });
@@ -224,12 +216,7 @@ describe("ContentTraverser", () => {
     });
 
     it("doesn't process content field if `visitor.startCategory` returns `false` for nested category", () => {
-      sinon
-        .stub(visitor, "startCategory")
-        .onFirstCall()
-        .returns(true)
-        .onSecondCall()
-        .returns(false);
+      sinon.stub(visitor, "startCategory").onFirstCall().returns(true).onSecondCall().returns(false);
       const finishCategorySpy = sinon.spy(visitor, "finishCategory");
       const spies = [
         sinon.spy(visitor, "startField"),
@@ -268,10 +255,7 @@ describe("ContentTraverser", () => {
 
     it("doesn't process content field if `visitor.startField` returns `false`", () => {
       sinon.stub(visitor, "startField").returns(false);
-      const spies = [
-        sinon.spy(visitor, "processPrimitiveValue"),
-        sinon.spy(visitor, "finishField"),
-      ];
+      const spies = [sinon.spy(visitor, "processPrimitiveValue"), sinon.spy(visitor, "finishField")];
       const descriptor = createTestContentDescriptor({
         fields: [createTestSimpleContentField()],
       });
@@ -282,10 +266,7 @@ describe("ContentTraverser", () => {
 
     it("processes content field if `visitor.startField` returns `true`", () => {
       sinon.stub(visitor, "startField").returns(true);
-      const spies = [
-        sinon.spy(visitor, "processPrimitiveValue"),
-        sinon.spy(visitor, "finishField"),
-      ];
+      const spies = [sinon.spy(visitor, "processPrimitiveValue"), sinon.spy(visitor, "finishField")];
       const descriptor = createTestContentDescriptor({
         fields: [createTestSimpleContentField()],
       });
@@ -296,10 +277,7 @@ describe("ContentTraverser", () => {
 
     it("doesn't process array value if `visitor.startArray` returns `false`", () => {
       sinon.stub(visitor, "startArray").returns(false);
-      const spies = [
-        sinon.spy(visitor, "processPrimitiveValue"),
-        sinon.spy(visitor, "finishArray"),
-      ];
+      const spies = [sinon.spy(visitor, "processPrimitiveValue"), sinon.spy(visitor, "finishArray")];
       const primitiveField = createTestSimpleContentField();
       const arrayField = createTestSimpleContentField({
         type: {
@@ -323,10 +301,7 @@ describe("ContentTraverser", () => {
 
     it("processes array value if `visitor.startArray` returns `true`", () => {
       sinon.stub(visitor, "startArray").returns(true);
-      const spies = [
-        sinon.spy(visitor, "processPrimitiveValue"),
-        sinon.spy(visitor, "finishArray"),
-      ];
+      const spies = [sinon.spy(visitor, "processPrimitiveValue"), sinon.spy(visitor, "finishArray")];
       const primitiveField = createTestSimpleContentField();
       const arrayField = createTestSimpleContentField({
         type: {
@@ -350,10 +325,7 @@ describe("ContentTraverser", () => {
 
     it("doesn't process struct value if `visitor.startStruct` returns `false`", () => {
       sinon.stub(visitor, "startStruct").returns(false);
-      const spies = [
-        sinon.spy(visitor, "processPrimitiveValue"),
-        sinon.spy(visitor, "finishStruct"),
-      ];
+      const spies = [sinon.spy(visitor, "processPrimitiveValue"), sinon.spy(visitor, "finishStruct")];
       const memberField = createTestSimpleContentField();
       const structField = createTestSimpleContentField({
         type: {
@@ -385,10 +357,7 @@ describe("ContentTraverser", () => {
 
     it("process struct value if `visitor.startStruct` returns `true`", () => {
       sinon.stub(visitor, "startStruct").returns(true);
-      const spies = [
-        sinon.spy(visitor, "processPrimitiveValue"),
-        sinon.spy(visitor, "finishStruct"),
-      ];
+      const spies = [sinon.spy(visitor, "processPrimitiveValue"), sinon.spy(visitor, "finishStruct")];
       const memberField = createTestSimpleContentField();
       const structField = createTestSimpleContentField({
         type: {
@@ -457,10 +426,7 @@ describe("ContentTraverser", () => {
 
     it("doesn't process empty nested content item", () => {
       const startArraySpy = sinon.spy(visitor, "startArray");
-      const processPrimitiveValueSpy = sinon.spy(
-        visitor,
-        "processPrimitiveValue"
-      );
+      const processPrimitiveValueSpy = sinon.spy(visitor, "processPrimitiveValue");
       const category = createTestCategoryDescription();
       const primitiveField = createTestSimpleContentField({ category });
       const parentField = createTestNestedContentField({
@@ -488,10 +454,7 @@ describe("ContentTraverser", () => {
     it("processes primitive value nested under nested content item as array value", () => {
       const startArraySpy = sinon.spy(visitor, "startArray");
       const finishArraySpy = sinon.spy(visitor, "finishArray");
-      const processPrimitiveValueSpy = sinon.spy(
-        visitor,
-        "processPrimitiveValue"
-      );
+      const processPrimitiveValueSpy = sinon.spy(visitor, "processPrimitiveValue");
       const primitiveField = createTestSimpleContentField();
       const parentField = createTestNestedContentField({
         nestedFields: [primitiveField],
@@ -569,10 +532,7 @@ describe("ContentTraverser", () => {
       const finishArraySpy = sinon.spy(visitor, "finishArray");
       const startStructSpy = sinon.spy(visitor, "startStruct");
       const finishStructSpy = sinon.spy(visitor, "finishStruct");
-      const processPrimitiveValueSpy = sinon.spy(
-        visitor,
-        "processPrimitiveValue"
-      );
+      const processPrimitiveValueSpy = sinon.spy(visitor, "processPrimitiveValue");
       const category = createTestCategoryDescription();
       const primitiveField1 = createTestSimpleContentField({
         name: "primitive1",
@@ -733,10 +693,7 @@ describe("ContentTraverser", () => {
     it("processes deeply nested primitive value as array value", () => {
       const startArraySpy = sinon.spy(visitor, "startArray");
       const finishArraySpy = sinon.spy(visitor, "finishArray");
-      const processPrimitiveValueSpy = sinon.spy(
-        visitor,
-        "processPrimitiveValue"
-      );
+      const processPrimitiveValueSpy = sinon.spy(visitor, "processPrimitiveValue");
       const category1 = createTestCategoryDescription();
       const category2 = createTestCategoryDescription();
       const primitiveField = createTestSimpleContentField({
@@ -851,10 +808,7 @@ describe("ContentTraverser", () => {
       const finishArraySpy = sinon.spy(visitor, "finishArray");
       const startStructSpy = sinon.spy(visitor, "startStruct");
       const finishStructSpy = sinon.spy(visitor, "finishStruct");
-      const processPrimitiveValueSpy = sinon.spy(
-        visitor,
-        "processPrimitiveValue"
-      );
+      const processPrimitiveValueSpy = sinon.spy(visitor, "processPrimitiveValue");
       const category1 = createTestCategoryDescription();
       const category2 = createTestCategoryDescription();
       const primitiveField = createTestSimpleContentField({
@@ -1006,10 +960,7 @@ describe("ContentTraverser", () => {
       const finishArraySpy = sinon.spy(visitor, "finishArray");
       const startStructSpy = sinon.spy(visitor, "startStruct");
       const finishStructSpy = sinon.spy(visitor, "finishStruct");
-      const processPrimitiveValueSpy = sinon.spy(
-        visitor,
-        "processPrimitiveValue"
-      );
+      const processPrimitiveValueSpy = sinon.spy(visitor, "processPrimitiveValue");
       const category = createTestCategoryDescription();
       const primitiveField = createTestSimpleContentField({
         name: "primitive",
@@ -1247,10 +1198,7 @@ describe("ContentTraverser", () => {
 
     it("doesn't process primitive value nested under empty nested content item", () => {
       const startArraySpy = sinon.spy(visitor, "startArray");
-      const processPrimitiveValueSpy = sinon.spy(
-        visitor,
-        "processPrimitiveValue"
-      );
+      const processPrimitiveValueSpy = sinon.spy(visitor, "processPrimitiveValue");
       const category1 = createTestCategoryDescription();
       const category2 = createTestCategoryDescription();
       const primitiveField = createTestSimpleContentField({
@@ -1282,10 +1230,7 @@ describe("ContentTraverser", () => {
 
     it("doesn't process primitive value deeply nested under empty nested content item", () => {
       const startArraySpy = sinon.spy(visitor, "startArray");
-      const processPrimitiveValueSpy = sinon.spy(
-        visitor,
-        "processPrimitiveValue"
-      );
+      const processPrimitiveValueSpy = sinon.spy(visitor, "processPrimitiveValue");
       const category1 = createTestCategoryDescription();
       const category2 = createTestCategoryDescription();
       const primitiveField = createTestSimpleContentField({
@@ -1817,10 +1762,7 @@ describe("addFieldHierarchy", () => {
 
 describe("createFieldHierarchies", () => {
   it("creates field hierarchy with all nested fields under parent field's child fields even though their categories differ, when `ignoreCategories` parameter is set to true", () => {
-    const nestedFields = [
-      createTestSimpleContentField(),
-      createTestSimpleContentField(),
-    ];
+    const nestedFields = [createTestSimpleContentField(), createTestSimpleContentField()];
     const nestedContentField = createTestNestedContentField({ nestedFields });
     const fieldHierarchies = createFieldHierarchies([nestedContentField], true);
 
@@ -1854,10 +1796,7 @@ describe("combineFieldNames", () => {
 
 describe("parseCombinedFieldNames", () => {
   it("returns parsed field names", () => {
-    expect(parseCombinedFieldNames(`y${FIELD_NAMES_SEPARATOR}x`)).to.deep.eq([
-      "y",
-      "x",
-    ]);
+    expect(parseCombinedFieldNames(`y${FIELD_NAMES_SEPARATOR}x`)).to.deep.eq(["y", "x"]);
   });
 
   it("returns empty array on empty string input", () => {

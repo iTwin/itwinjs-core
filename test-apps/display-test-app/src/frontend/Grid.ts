@@ -26,8 +26,7 @@ export class ChangeGridSettingsTool extends Tool {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp) return false;
 
-    if (undefined !== spacing)
-      vp.view.details.gridSpacing = { x: spacing, y: spacing };
+    if (undefined !== spacing) vp.view.details.gridSpacing = { x: spacing, y: spacing };
 
     if (undefined !== ratio)
       vp.view.details.gridSpacing = {
@@ -37,8 +36,7 @@ export class ChangeGridSettingsTool extends Tool {
 
     if (undefined !== gridsPerRef) vp.view.details.gridsPerRef = gridsPerRef;
 
-    if (undefined !== orientation)
-      vp.view.details.gridOrientation = orientation;
+    if (undefined !== orientation) vp.view.details.gridOrientation = orientation;
 
     vp.invalidateScene(); // Needed to clear cached grid decoration...
     return true;

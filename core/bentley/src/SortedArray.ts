@@ -42,10 +42,7 @@ export function lowerBound<T, U = T>(
   return lowerBoundOfEquivalent(list, (element: U) => compare(value, element));
 }
 
-function lowerBoundOfEquivalent<T>(
-  list: T[],
-  criterion: (element: T) => number
-): { index: number; equal: boolean } {
+function lowerBoundOfEquivalent<T>(list: T[], criterion: (element: T) => number): { index: number; equal: boolean } {
   let low = 0;
   let high = list.length;
   while (low < high) {
@@ -117,9 +114,7 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
     this._compare = compare;
     this._clone = clone;
     if (typeof duplicatePolicy === "boolean")
-      duplicatePolicy = duplicatePolicy
-        ? DuplicatePolicy.Allow
-        : DuplicatePolicy.Retain;
+      duplicatePolicy = duplicatePolicy ? DuplicatePolicy.Allow : DuplicatePolicy.Retain;
 
     this._duplicatePolicy = duplicatePolicy;
   }
@@ -190,10 +185,7 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
    */
   public indexOfEquivalent(criterion: (element: T) => number): number {
     // NB: Must invert the ordering.
-    const bound = lowerBoundOfEquivalent(
-      this._array,
-      (elem: T) => 0 - criterion(elem)
-    );
+    const bound = lowerBoundOfEquivalent(this._array, (elem: T) => 0 - criterion(elem));
     return bound.equal ? bound.index : -1;
   }
 
@@ -215,11 +207,7 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
 
   /** The equivalent of [Array.slice](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice). */
   public slice(start?: number, end?: number): ReadonlySortedArray<T> {
-    const slice = new ReadonlySortedArray<T>(
-      this._compare,
-      this._duplicatePolicy,
-      this._clone
-    );
+    const slice = new ReadonlySortedArray<T>(this._compare, this._duplicatePolicy, this._clone);
     slice._array = this._array.slice(start, end);
     return slice;
   }
@@ -383,11 +371,7 @@ export class SortedArray<T> extends ReadonlySortedArray<T> {
 
   /** The equivalent of [Array.slice](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice). */
   public override slice(start?: number, end?: number): SortedArray<T> {
-    const slice = new SortedArray<T>(
-      this._compare,
-      this._duplicatePolicy,
-      this._clone
-    );
+    const slice = new SortedArray<T>(this._compare, this._duplicatePolicy, this._clone);
     slice._array = this._array.slice(start, end);
     return slice;
   }

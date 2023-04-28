@@ -63,10 +63,7 @@ export class RegionMomentsXY extends NullGeometryHandler {
     const centerToCentroid = (4.0 * s * s * s) / (3.0 * (sweepRadians - s1));
     const midRadians = arc.sweep.fractionToRadians(0.5);
     const centralPlane = arc.radiansToRotatedBasis(midRadians);
-    const centroid = centralPlane.origin.plusScaled(
-      centralPlane.vectorU,
-      centerToCentroid
-    );
+    const centroid = centralPlane.origin.plusScaled(centralPlane.vectorU, centerToCentroid);
     momentData.accumulateXYProductsInCentroidalFrame(
       productXX,
       0.0,
@@ -84,21 +81,14 @@ export class RegionMomentsXY extends NullGeometryHandler {
   /** Accumulate integrals over the (triangular) areas from the origin to each line segment */
   public override handleLineString3d(ls: LineString3d): void {
     const momentData = this._activeMomentData!;
-    momentData.accumulateTriangleToLineStringMomentsXY(
-      undefined,
-      ls.packedPoints
-    );
+    momentData.accumulateTriangleToLineStringMomentsXY(undefined, ls.packedPoints);
   }
   /** Accumulate integrals over the (triangular) area from the origin to this line segment */
   public override handleLineSegment3d(segment: LineSegment3d): void {
     const momentData = this._activeMomentData!;
     segment.startPoint(this._point0);
     segment.endPoint(this._point1);
-    momentData.accumulateTriangleMomentsXY(
-      undefined,
-      this._point0,
-      this._point1
-    );
+    momentData.accumulateTriangleMomentsXY(undefined, this._point0, this._point1);
   }
   /** Accumulate integrals from origin to all primitives in the chain. */
   public override handleLoop(loop: Loop): MomentData | undefined {
@@ -117,9 +107,7 @@ export class RegionMomentsXY extends NullGeometryHandler {
    * * Outer area signs must be positive -- negate all integrations as needed
    * @param region
    */
-  public override handleParityRegion(
-    region: ParityRegion
-  ): MomentData | undefined {
+  public override handleParityRegion(region: ParityRegion): MomentData | undefined {
     const allChildMoments: MomentData[] = [];
     let maxAbsArea = 0.0;
     let largestChildMoments: MomentData | undefined;
@@ -151,9 +139,7 @@ export class RegionMomentsXY extends NullGeometryHandler {
     return undefined;
   }
   /** Accumulate (as simple addition) products over each component of the union region. */
-  public override handleUnionRegion(
-    region: UnionRegion
-  ): MomentData | undefined {
+  public override handleUnionRegion(region: UnionRegion): MomentData | undefined {
     const summedMoments = MomentData.create();
     for (const child of region.children) {
       const childMoments = child.dispatchToGeometryHandler(this);

@@ -42,14 +42,7 @@ export type SolidPrimitiveType =
 /** Union type of all subclasses of [[SolidPrimitive]].
  * @public
  */
-export type AnySolidPrimitive =
-  | Box
-  | Cone
-  | Sphere
-  | LinearSweep
-  | RotationalSweep
-  | RuledSweep
-  | TorusPipe;
+export type AnySolidPrimitive = Box | Cone | Sphere | LinearSweep | RotationalSweep | RuledSweep | TorusPipe;
 
 /**
  * Base class for SolidPrimitive variants.
@@ -77,9 +70,7 @@ export abstract class SolidPrimitive extends GeometryQuery {
     this._capped = capped;
   }
   /** Return a cross section at specified vFraction. */
-  public abstract constantVSection(
-    _vFraction: number
-  ): CurveCollection | undefined;
+  public abstract constantVSection(_vFraction: number): CurveCollection | undefined;
   /** Return a Transform from the local system of the solid to world.
    * * The particulars of origin and orientation are specific to each SolidPrimitive type.
    */

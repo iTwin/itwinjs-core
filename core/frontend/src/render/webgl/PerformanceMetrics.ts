@@ -33,11 +33,7 @@ export class PerformanceMetrics {
   public fpsTimer: StopWatch = new StopWatch(undefined, true);
   public fpsTimerStart: number = 0;
 
-  public constructor(
-    gatherGlFinish = false,
-    gatherCurPerformanceMetrics = false,
-    gpuResults?: GLTimerResultCallback
-  ) {
+  public constructor(gatherGlFinish = false, gatherCurPerformanceMetrics = false, gpuResults?: GLTimerResultCallback) {
     this.gatherGlFinish = gatherGlFinish;
     this.gatherCurPerformanceMetrics = gatherCurPerformanceMetrics;
     if (gpuResults) System.instance.debugControl.resultsCallback = gpuResults;
@@ -62,10 +58,7 @@ export class PerformanceMetrics {
 
   public endOperation() {
     const endTimePoint = BeTimePoint.now();
-    const beginTimePoint =
-      this._beginTimePoints.length > 0
-        ? this._beginTimePoints.pop()!
-        : endTimePoint;
+    const beginTimePoint = this._beginTimePoints.length > 0 ? this._beginTimePoints.pop()! : endTimePoint;
     const operationName = this._operationNames.pop();
     if (operationName) {
       // Add data to queue now, calculate time later; helps eliminate time spent timing things in 'Total Time'
@@ -93,18 +86,12 @@ export class PerformanceMetrics {
     if (this._updateallTimePoints1) {
       // Get data from the old buffer that was just completed
       this._allTimePoints2.forEach((record: AllTimePoints) =>
-        this.frameTimings.set(
-          record.name,
-          record.end.milliseconds - record.begin.milliseconds
-        )
+        this.frameTimings.set(record.name, record.end.milliseconds - record.begin.milliseconds)
       );
       this._allTimePoints2 = []; // Reset to empty
     } else {
       this._allTimePoints1.forEach((record: AllTimePoints) =>
-        this.frameTimings.set(
-          record.name,
-          record.end.milliseconds - record.begin.milliseconds
-        )
+        this.frameTimings.set(record.name, record.end.milliseconds - record.begin.milliseconds)
       );
       this._allTimePoints1 = []; // Reset to empty
     }
@@ -115,8 +102,7 @@ export class PerformanceMetrics {
   public completeFrameTimings(fbo: FrameBuffer): void {
     if (this.gatherCurPerformanceMetrics) {
       const fpsTimerElapsed = this.fpsTimer.currentSeconds - this.fpsTimerStart;
-      if (this.spfTimes[this.curSpfTimeIndex])
-        this.spfSum -= this.spfTimes[this.curSpfTimeIndex];
+      if (this.spfTimes[this.curSpfTimeIndex]) this.spfSum -= this.spfTimes[this.curSpfTimeIndex];
 
       this.spfSum += fpsTimerElapsed;
       this.spfTimes[this.curSpfTimeIndex] = fpsTimerElapsed;

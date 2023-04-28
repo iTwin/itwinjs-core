@@ -23,10 +23,7 @@ export class DownloaderXhr extends Downloader {
 
   // read the response headers
   //
-  private static readResponseHeaders(
-    request: XMLHttpRequest,
-    responseHeaders: StringMap<string>
-  ): void {
+  private static readResponseHeaders(request: XMLHttpRequest, responseHeaders: StringMap<string>): void {
     // console.log("reading response headers");
     const headerLines: Array<string> = request
       .getAllResponseHeaders()
@@ -83,11 +80,9 @@ export class DownloaderXhr extends Downloader {
       // console.log("download '"+requestURL+"' response code: "+this.status);
       if (this.status >= 200 && this.status < 400) {
         // read the response headers?
-        if (responseHeaders != null)
-          DownloaderXhr.readResponseHeaders(this, responseHeaders);
+        if (responseHeaders != null) DownloaderXhr.readResponseHeaders(this, responseHeaders);
         // read the reponse body
-        if (this.responseType == "arraybuffer")
-          callback(ABuffer.wrap(this.response));
+        if (this.responseType == "arraybuffer") callback(ABuffer.wrap(this.response));
         else callback(this.responseText);
       } else {
         // invalid response

@@ -93,9 +93,7 @@ describe("ContextRealityModelState", () => {
       expect(trees.map((tree) => tree.id)).to.deep.equal(modelIds);
 
       // Any context reality models with the same modelId should point to the same TileTreeOwner.
-      for (const a of trees)
-        for (const b of trees)
-          expect(a.id === b.id).to.equal(a.owner === b.owner);
+      for (const a of trees) for (const b of trees) expect(a.id === b.id).to.equal(a.owner === b.owner);
     }
   }
 
@@ -198,17 +196,13 @@ describe("ContextRealityModelState", () => {
       const a = style.trees[0].owner;
 
       style.forEachRealityModel(
-        (model) =>
-          (model.planarClipMaskSettings =
-            PlanarClipMaskSettings.fromJSON(planarClipMask))
+        (model) => (model.planarClipMaskSettings = PlanarClipMaskSettings.fromJSON(planarClipMask))
       );
       style.expectTrees([id]);
       const b = style.trees[0].owner;
       expect(b).not.to.equal(a);
 
-      style.forEachRealityModel(
-        (model) => (model.planarClipMaskSettings = undefined)
-      );
+      style.forEachRealityModel((model) => (model.planarClipMaskSettings = undefined));
       style.expectTrees([id]);
       expect(style.trees[0].owner).to.equal(a);
     });

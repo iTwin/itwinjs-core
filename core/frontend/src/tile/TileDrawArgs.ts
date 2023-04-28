@@ -19,12 +19,7 @@ import {
   Transform,
   Vector3d,
 } from "@itwin/core-geometry";
-import {
-  FeatureAppearanceProvider,
-  FrustumPlanes,
-  HiddenLine,
-  ViewFlagOverrides,
-} from "@itwin/core-common";
+import { FeatureAppearanceProvider, FrustumPlanes, HiddenLine, ViewFlagOverrides } from "@itwin/core-common";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderClipVolume } from "../render/RenderClipVolume";
@@ -152,13 +147,8 @@ export class TileDrawArgs {
     const radius = this.getTileRadius(tile); // use a sphere to test pixel size. We don't know the orientation of the image within the bounding box.
     const center = this.getTileCenter(tile);
 
-    const pixelSizeAtPt = this.computePixelSizeInMetersAtClosestPoint(
-      center,
-      radius
-    );
-    return 0 !== pixelSizeAtPt
-      ? this.context.adjustPixelSizeForLOD(radius / pixelSizeAtPt)
-      : 1.0e-3;
+    const pixelSizeAtPt = this.computePixelSizeInMetersAtClosestPoint(center, radius);
+    return 0 !== pixelSizeAtPt ? this.context.adjustPixelSizeForLOD(radius / pixelSizeAtPt) : 1.0e-3;
   }
 
   /** If the tile provides corners (from an OBB) then this produces most accurate representation of the tile size */
@@ -189,9 +179,7 @@ export class TileDrawArgs {
 
     return scratchXRange.isNull
       ? 1.0e-3
-      : this.context.adjustPixelSizeForLOD(
-          Math.sqrt(scratchXRange.length() * scratchYRange.length())
-        );
+      : this.context.adjustPixelSizeForLOD(Math.sqrt(scratchXRange.length() * scratchYRange.length()));
   }
 
   /** Compute the size in meters of one pixel at the point on the tile's bounding sphere closest to the camera. */
@@ -199,27 +187,15 @@ export class TileDrawArgs {
     const radius = this.getTileRadius(tile); // use a sphere to test pixel size. We don't know the orientation of the image within the bounding box.
     const center = this.getTileCenter(tile);
 
-    const pixelSizeAtPt = this.computePixelSizeInMetersAtClosestPoint(
-      center,
-      radius
-    );
-    return 0 !== pixelSizeAtPt
-      ? this.context.adjustPixelSizeForLOD(pixelSizeAtPt)
-      : 1.0e-3;
+    const pixelSizeAtPt = this.computePixelSizeInMetersAtClosestPoint(center, radius);
+    return 0 !== pixelSizeAtPt ? this.context.adjustPixelSizeForLOD(pixelSizeAtPt) : 1.0e-3;
   }
 
   /** Compute the size in meters of one pixel at the point on a sphere closest to the camera.
    * Device scaling is not applied.
    */
-  public computePixelSizeInMetersAtClosestPoint(
-    center: Point3d,
-    radius: number
-  ): number {
-    if (
-      this.context.viewport.view.is3d() &&
-      this.context.viewport.isCameraOn &&
-      this._nearFrontCenter
-    ) {
+  public computePixelSizeInMetersAtClosestPoint(center: Point3d, radius: number): number {
+    if (this.context.viewport.view.is3d() && this.context.viewport.isCameraOn && this._nearFrontCenter) {
       const toFront = Vector3d.createStartEnd(center, this._nearFrontCenter);
       const viewZ = this.context.viewport.rotation.rowZ();
       // If the sphere overlaps the near front plane just use near front point.  This also handles behind eye conditions.
@@ -227,9 +203,7 @@ export class TileDrawArgs {
         center = this._nearFrontCenter;
       } else {
         // Find point on sphere closest to eye.
-        const toEye = center.unitVectorTo(
-          this.context.viewport.view.camera.eye
-        );
+        const toEye = center.unitVectorTo(this.context.viewport.view.camera.eye);
 
         if (toEye) {
           // Only if tile is not already behind the eye.
@@ -239,35 +213,24 @@ export class TileDrawArgs {
       }
     }
 
-    const viewPt =
-      this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(center);
+    const viewPt = this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(center);
     const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
     return this.worldToViewMap.transform1
       .multiplyPoint3dQuietNormalize(viewPt)
-      .distance(
-        this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2)
-      );
+      .distance(this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2));
   }
 
   /** Compute this size of a sphere on screen in pixels */
   public getRangePixelSize(range: Range3d): number {
     const transformedRange = this.location.multiplyRange(range, scratchRange);
-    const center = transformedRange.localXYZToWorld(
-      0.5,
-      0.5,
-      0.5,
-      scratchPoint
-    )!;
+    const center = transformedRange.localXYZToWorld(0.5, 0.5, 0.5, scratchPoint)!;
     const radius = transformedRange.diagonal().magnitude();
 
-    const viewPt =
-      this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(center);
+    const viewPt = this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(center);
     const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
     const pixelSizeAtPt = this.worldToViewMap.transform1
       .multiplyPoint3dQuietNormalize(viewPt)
-      .distance(
-        this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2)
-      );
+      .distance(this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2));
     return 0 !== pixelSizeAtPt ? radius / pixelSizeAtPt : 1.0e-3;
   }
 
@@ -278,9 +241,7 @@ export class TileDrawArgs {
 
   /** The planes of the viewing frustum, used for frustum culling. */
   public get frustumPlanes(): FrustumPlanes {
-    return this._frustumPlanes !== undefined
-      ? this._frustumPlanes
-      : this.context.frustumPlanes;
+    return this._frustumPlanes !== undefined ? this._frustumPlanes : this.context.frustumPlanes;
   }
 
   /** Provides conversions between [[CoordSystem.World]] and [[CoordSystem.View]]. */
@@ -290,10 +251,9 @@ export class TileDrawArgs {
 
   private computePixelSizeScaleFactor(): number {
     // Check to see if a model display transform with non-uniform scaling is being used.
-    const mat =
-      this.context.viewport.view.modelDisplayTransformProvider?.getModelDisplayTransform(
-        this.tree.modelId
-      )?.matrix;
+    const mat = this.context.viewport.view.modelDisplayTransformProvider?.getModelDisplayTransform(
+      this.tree.modelId
+    )?.matrix;
     if (!mat) return 1;
 
     const scale = [0, 1, 2].map((x) => mat.getColumn(x).magnitude());
@@ -339,10 +299,7 @@ export class TileDrawArgs {
     this.maximumScreenSpaceError = params.maximumScreenSpaceError ?? 16; // 16 is Cesium's default.
 
     // Do not cull tiles based on clip volume if tiles outside clip are supposed to be drawn but in a different color.
-    if (
-      undefined !== clipVolume &&
-      !context.viewport.view.displayStyle.settings.clipStyle.outsideColor
-    )
+    if (undefined !== clipVolume && !context.viewport.view.displayStyle.settings.clipStyle.outsideColor)
       this.clipVolume = clipVolume;
 
     this.graphics.setViewFlagOverrides(viewFlagOverrides);
@@ -350,32 +307,19 @@ export class TileDrawArgs {
     this.graphics.animationId = tree.modelId;
 
     this.viewingSpace = context.viewingSpace;
-    this._frustumPlanes = FrustumPlanes.fromFrustum(
-      this.viewingSpace.getFrustum()
-    );
+    this._frustumPlanes = FrustumPlanes.fromFrustum(this.viewingSpace.getFrustum());
 
     this.planarClassifier = context.getPlanarClassifierForModel(tree.modelId);
     this.drape = context.getTextureDrapeForModel(tree.modelId);
 
     // NB: If the tile tree has its own clip, do not also apply the view's clip.
-    if (
-      context.viewFlags.clipVolume &&
-      false !== viewFlagOverrides.clipVolume &&
-      undefined === clipVolume
-    ) {
-      const outsideClipColor =
-        context.viewport.displayStyle.settings.clipStyle.outsideColor;
-      this.viewClip =
-        undefined === outsideClipColor
-          ? context.viewport.view.getViewClip()
-          : undefined;
+    if (context.viewFlags.clipVolume && false !== viewFlagOverrides.clipVolume && undefined === clipVolume) {
+      const outsideClipColor = context.viewport.displayStyle.settings.clipStyle.outsideColor;
+      this.viewClip = undefined === outsideClipColor ? context.viewport.view.getViewClip() : undefined;
     }
 
     this.parentsAndChildrenExclusive = parentsAndChildrenExclusive;
-    if (context.viewport.isCameraOn)
-      this._nearFrontCenter = context.viewport.getFrustum(
-        CoordSystem.World
-      ).frontCenter;
+    if (context.viewport.isCameraOn) this._nearFrontCenter = context.viewport.getFrustum(CoordSystem.World).frontCenter;
 
     this.pixelSizeScaleFactor = this.computePixelSizeScaleFactor();
   }
@@ -407,9 +351,7 @@ export class TileDrawArgs {
 
   /** @internal */
   public get clip(): ClipVector | undefined {
-    return undefined !== this.clipVolume
-      ? this.clipVolume.clipVector
-      : undefined;
+    return undefined !== this.clipVolume ? this.clipVolume.clipVector : undefined;
   }
 
   /** Add a provider to supplement or override the symbology overrides for the view.
@@ -433,16 +375,12 @@ export class TileDrawArgs {
     return this._produceGraphicBranch(this.graphics);
   }
   /** @internal */
-  public get secondaryClassifiers():
-    | Map<number, RenderPlanarClassifier>
-    | undefined {
+  public get secondaryClassifiers(): Map<number, RenderPlanarClassifier> | undefined {
     return undefined;
   }
 
   /** @internal */
-  private _produceGraphicBranch(
-    graphics: GraphicBranch
-  ): RenderGraphic | undefined {
+  private _produceGraphicBranch(graphics: GraphicBranch): RenderGraphic | undefined {
     if (graphics.isEmpty) return undefined;
 
     const opts = {
@@ -454,16 +392,9 @@ export class TileDrawArgs {
       secondaryClassifiers: this.secondaryClassifiers,
     };
 
-    let graphic = this.context.createGraphicBranch(
-      graphics,
-      this.location,
-      opts
-    );
+    let graphic = this.context.createGraphicBranch(graphics, this.location, opts);
     if (undefined !== this.animationTransformNodeId)
-      graphic = this.context.renderSystem.createAnimationTransformNode(
-        graphic,
-        this.animationTransformNodeId
-      );
+      graphic = this.context.renderSystem.createAnimationTransformNode(graphic, this.animationTransformNodeId);
 
     return graphic;
   }
@@ -475,15 +406,9 @@ export class TileDrawArgs {
   }
 
   /** Output graphics of the specified type for all accumulated tiles. */
-  public drawGraphicsWithType(
-    graphicType: TileGraphicType,
-    graphics: GraphicBranch
-  ): void {
+  public drawGraphicsWithType(graphicType: TileGraphicType, graphics: GraphicBranch): void {
     const branch = this._produceGraphicBranch(graphics);
-    if (undefined !== branch)
-      this.context.withGraphicType(graphicType, () =>
-        this.context.outputGraphic(branch)
-      );
+    if (undefined !== branch) this.context.withGraphicType(graphicType, () => this.context.outputGraphic(branch));
   }
 
   /** Indicate that graphics for the specified tile are desired but not yet available. Subsequently a request will be enqueued to load the tile's graphics. */

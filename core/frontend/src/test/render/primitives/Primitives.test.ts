@@ -3,15 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import {
-  LineString3d,
-  Loop,
-  Point3d,
-  Range3d,
-  Sample,
-  Transform,
-  Vector3d,
-} from "@itwin/core-geometry";
+import { LineString3d, Loop, Point3d, Range3d, Sample, Transform, Vector3d } from "@itwin/core-geometry";
 import { GraphicParams } from "@itwin/core-common";
 import { DisplayParams } from "../../../render/primitives/DisplayParams";
 import { GeometryList } from "../../../render/primitives/geometry/GeometryList";
@@ -47,34 +39,17 @@ describe("GeometryOptions", () => {
     const a = new GeometryOptions(GenerateEdges.Yes);
     assert.isTrue(a.normals === NormalMode.Always, "default normals correct");
     assert.isTrue(a.surfaces === SurfacesOnly.No, "default surfaces correct");
-    assert.isTrue(
-      a.preserveOrder === PreserveOrder.No,
-      "default preserveOrder correct"
-    );
+    assert.isTrue(a.preserveOrder === PreserveOrder.No, "default preserveOrder correct");
     assert.isTrue(a.edges === GenerateEdges.Yes, "default edges correct");
 
-    assert.isTrue(
-      a.wantSurfacesOnly === false,
-      "default wantSurfacesOnly correct"
-    );
-    assert.isTrue(
-      a.wantPreserveOrder === false,
-      "default wantPreserveOrder correct"
-    );
+    assert.isTrue(a.wantSurfacesOnly === false, "default wantSurfacesOnly correct");
+    assert.isTrue(a.wantPreserveOrder === false, "default wantPreserveOrder correct");
     assert.isTrue(a.wantEdges === true, "default wantEdges correct");
 
-    const b = new GeometryOptions(
-      GenerateEdges.No,
-      NormalMode.Never,
-      SurfacesOnly.Yes,
-      PreserveOrder.Yes
-    );
+    const b = new GeometryOptions(GenerateEdges.No, NormalMode.Never, SurfacesOnly.Yes, PreserveOrder.Yes);
     assert.isTrue(b.normals === NormalMode.Never, "normals correct");
     assert.isTrue(b.surfaces === SurfacesOnly.Yes, "surfaces correct");
-    assert.isTrue(
-      b.preserveOrder === PreserveOrder.Yes,
-      "preserveOrder correct"
-    );
+    assert.isTrue(b.preserveOrder === PreserveOrder.Yes, "preserveOrder correct");
     assert.isTrue(b.edges === GenerateEdges.No, "edges correct");
 
     // const gbcp = new GraphicBuilderCreateParams(Transform.createIdentity(), GraphicType.ViewOverlay);
@@ -107,11 +82,7 @@ describe("GeometryList", () => {
     const gp = new GraphicParams();
     const dp = DisplayParams.createForLinear(gp);
     const g0 = Geometry.createFromLineString(
-      [
-        Point3d.create(0, 0, 0),
-        Point3d.create(1, 0, 0),
-        Point3d.create(1, 1, 0),
-      ],
+      [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0)],
       Transform.createIdentity(),
       Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1),
       dp,
@@ -120,11 +91,7 @@ describe("GeometryList", () => {
     assert.isUndefined(g0.getPolyfaces(0.001));
 
     const g1 = Geometry.createFromPointString(
-      [
-        Point3d.create(0, 0, 0),
-        Point3d.create(1, 0, 0),
-        Point3d.create(1, 1, 0),
-      ],
+      [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0)],
       Transform.createIdentity(),
       Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1),
       dp,
@@ -205,14 +172,7 @@ describe("GeometryList", () => {
     const gp = new GraphicParams();
     const dp = DisplayParams.createForLinear(gp);
     const loop = Loop.create(LineString3d.create(Sample.createUnitCircle(5)));
-    const loopG0 = Geometry.createFromLoop(
-      loop,
-      Transform.createIdentity(),
-      loop.range(),
-      dp,
-      false,
-      undefined
-    );
+    const loopG0 = Geometry.createFromLoop(loop, Transform.createIdentity(), loop.range(), dp, false, undefined);
     glist0.push(loopG0);
     verifyGeometryQueries(loopG0, false, true, false); // maybe this has to change someday?
     const strokes = loopG0.getStrokes(0.001);

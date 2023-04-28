@@ -28,11 +28,7 @@ export class RgbColor {
    * @param g Green
    * @param b Blue
    */
-  public constructor(
-    public readonly r: number,
-    public readonly g: number,
-    public readonly b: number
-  ) {
+  public constructor(public readonly r: number, public readonly g: number, public readonly b: number) {
     this.r = Math.max(0, Math.min(this.r, 0xff));
     this.g = Math.max(0, Math.min(this.g, 0xff));
     this.b = Math.max(0, Math.min(this.b, 0xff));
@@ -81,11 +77,7 @@ export class RgbColor {
 
   /** Compare this color to another color using the rules of an [OrderedComparator]($bentley). */
   public compareTo(other: RgbColor): number {
-    return (
-      compareNumbers(this.r, other.r) ||
-      compareNumbers(this.g, other.g) ||
-      compareNumbers(this.b, other.b)
-    );
+    return compareNumbers(this.r, other.r) || compareNumbers(this.g, other.g) || compareNumbers(this.b, other.b);
   }
 
   /** Convert this color to a string in the form "#rrggbb" where the values are the hex digits of the respective color components. */

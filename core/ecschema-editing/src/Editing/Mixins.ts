@@ -19,11 +19,7 @@ import {
   SchemaKey,
   StrengthDirection,
 } from "@itwin/ecschema-metadata";
-import {
-  PropertyEditResults,
-  SchemaContextEditor,
-  SchemaItemEditResults,
-} from "./Editor";
+import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { ECClasses } from "./ECClasses";
 import { MutableMixin } from "./Mutable/MutableMixin";
 import { MutableEntityClass } from "./Mutable/MutableEntityClass";
@@ -47,17 +43,13 @@ export class Mixins extends ECClasses {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       return {
-        errorMessage: `Schema Key ${schemaKey.toString(
-          true
-        )} not found in context`,
+        errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context`,
       };
 
     const newClass = (await schema.createMixinClass(name)) as MutableMixin;
     if (newClass === undefined)
       return {
-        errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(
-          true
-        )}.`,
+        errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.`,
       };
 
     if (baseClass !== undefined) {
@@ -72,29 +64,17 @@ export class Mixins extends ECClasses {
           errorMessage: `${baseClassItem.fullName} is not of type Mixin.`,
         };
 
-      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, Mixin>(
-        baseClass,
-        async () => baseClassItem
-      );
+      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, Mixin>(baseClass, async () => baseClassItem);
     }
 
-    const newAppliesTo =
-      await this._schemaEditor.schemaContext.getSchemaItem<EntityClass>(
-        appliesTo
-      );
-    if (
-      newAppliesTo === undefined ||
-      newAppliesTo.schemaItemType !== SchemaItemType.EntityClass
-    )
+    const newAppliesTo = await this._schemaEditor.schemaContext.getSchemaItem<EntityClass>(appliesTo);
+    if (newAppliesTo === undefined || newAppliesTo.schemaItemType !== SchemaItemType.EntityClass)
       return {
         errorMessage: `Failed to locate the appliedTo entity class ${appliesTo.name}.`,
       };
 
     newClass.setAppliesTo(
-      new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(
-        newAppliesTo.key,
-        async () => newAppliesTo
-      )
+      new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(newAppliesTo.key, async () => newAppliesTo)
     );
 
     if (displayLabel) newClass.setDisplayLabel(displayLabel);
@@ -107,46 +87,28 @@ export class Mixins extends ECClasses {
    * @param schemaKey a SchemaKey of the Schema that will house the new object.
    * @param mixinProps a json object that will be used to populate the new MixinClass. Needs a name value passed in.
    */
-  public async createFromProps(
-    schemaKey: SchemaKey,
-    mixinProps: MixinProps
-  ): Promise<SchemaItemEditResults> {
+  public async createFromProps(schemaKey: SchemaKey, mixinProps: MixinProps): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       return {
-        errorMessage: `Schema Key ${schemaKey.toString(
-          true
-        )} not found in context`,
+        errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context`,
       };
 
-    if (mixinProps.name === undefined)
-      return { errorMessage: `No name was supplied within props.` };
+    if (mixinProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
 
-    const newClass = (await schema.createMixinClass(
-      mixinProps.name
-    )) as MutableMixin;
+    const newClass = (await schema.createMixinClass(mixinProps.name)) as MutableMixin;
     if (newClass === undefined)
       return {
-        errorMessage: `Failed to create class ${
-          mixinProps.name
-        } in schema ${schemaKey.toString(true)}.`,
+        errorMessage: `Failed to create class ${mixinProps.name} in schema ${schemaKey.toString(true)}.`,
       };
 
     await newClass.fromJSON(mixinProps);
     return { itemKey: newClass.key };
   }
 
-  public async addMixin(
-    entityKey: SchemaItemKey,
-    mixinKey: SchemaItemKey
-  ): Promise<void> {
-    const entity =
-      await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(
-        entityKey
-      );
-    const mixin = await this._schemaEditor.schemaContext.getSchemaItem<Mixin>(
-      mixinKey
-    );
+  public async addMixin(entityKey: SchemaItemKey, mixinKey: SchemaItemKey): Promise<void> {
+    const entity = await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(entityKey);
+    const mixin = await this._schemaEditor.schemaContext.getSchemaItem<Mixin>(mixinKey);
 
     if (entity === undefined)
       throw new ECObjectsError(
@@ -181,10 +143,7 @@ export class Mixins extends ECClasses {
     relationship: string | RelationshipClass,
     direction: string | StrengthDirection
   ): Promise<PropertyEditResults> {
-    const mixin =
-      await this._schemaEditor.schemaContext.getSchemaItem<MutableMixin>(
-        mixinKey
-      );
+    const mixin = await this._schemaEditor.schemaContext.getSchemaItem<MutableMixin>(mixinKey);
 
     if (mixin === undefined)
       throw new ECObjectsError(

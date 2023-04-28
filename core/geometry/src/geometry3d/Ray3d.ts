@@ -6,11 +6,7 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import {
-  CurveCurveApproachType,
-  CurveLocationDetail,
-  CurveLocationDetailPair,
-} from "../curve/CurveLocationDetail";
+import { CurveCurveApproachType, CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
 import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
 import { SmallSystem } from "../numerics/Polynomials";
 import { Matrix3d } from "./Matrix3d";
@@ -41,14 +37,7 @@ export class Ray3d implements BeJSONFunctions {
     this.direction = direction;
     this.a = undefined;
   }
-  private static _create(
-    x: number,
-    y: number,
-    z: number,
-    u: number,
-    v: number,
-    w: number
-  ) {
+  private static _create(x: number, y: number, z: number, u: number, v: number, w: number) {
     return new Ray3d(Point3d.create(x, y, z), Vector3d.create(u, v, w));
   }
   /** Create a ray on the x axis. */
@@ -79,10 +68,7 @@ export class Ray3d implements BeJSONFunctions {
    * directions to be scaled or opposing.
    */
   public isAlmostEqual(other: Ray3d): boolean {
-    return (
-      this.origin.isAlmostEqual(other.origin) &&
-      this.direction.isAlmostEqual(other.direction)
-    );
+    return this.origin.isAlmostEqual(other.origin) && this.direction.isAlmostEqual(other.direction);
   }
   /** Return the dot product of the ray's direction vector with a vector from the ray origin to the `spacePoint`. */
   public dotProductToPoint(spacePoint: Point3d): number {
@@ -90,11 +76,7 @@ export class Ray3d implements BeJSONFunctions {
   }
   /** Return the fractional coordinate (along the direction vector) of the `spacePoint` projected to the ray. */
   public pointToFraction(spacePoint: Point3d): number {
-    return Geometry.safeDivideFraction(
-      this.dotProductToPoint(spacePoint),
-      this.direction.magnitudeSquared(),
-      0
-    );
+    return Geometry.safeDivideFraction(this.dotProductToPoint(spacePoint), this.direction.magnitudeSquared(), 0);
   }
   /** Return the `spacePoint` projected onto the ray. */
   public projectPointToRay(spacePoint: Point3d): Point3d {
@@ -105,10 +87,7 @@ export class Ray3d implements BeJSONFunctions {
      * Note: If r is the normal of a plane, then projection length "(v.r)/||r||" is the signed altitude of the
      * spacePoint with respect to the plane.
      */
-    return this.origin.plusScaled(
-      this.direction,
-      this.pointToFraction(spacePoint)
-    );
+    return this.origin.plusScaled(this.direction, this.pointToFraction(spacePoint));
   }
   /**
    * Test for nearly equal rays, allowing origin float and direction scaling.
@@ -133,11 +112,7 @@ export class Ray3d implements BeJSONFunctions {
     return true;
   }
   /** Create a ray from origin and direction. */
-  public static create(
-    origin: Point3d,
-    direction: Vector3d,
-    result?: Ray3d
-  ): Ray3d {
+  public static create(origin: Point3d, direction: Vector3d, result?: Ray3d): Ray3d {
     if (result) {
       result.set(origin, direction);
       return result;
@@ -167,15 +142,7 @@ export class Ray3d implements BeJSONFunctions {
     if (Geometry.isSmallMetricDistance(w)) return undefined;
     const divW = 1.0 / w;
     const divWW = divW * divW;
-    return Ray3d.createXYZUVW(
-      x * divW,
-      y * divW,
-      z * divW,
-      dx * divWW,
-      dy * divWW,
-      dz * divWW,
-      result
-    );
+    return Ray3d.createXYZUVW(x * divW, y * divW, z * divW, dx * divWW, dy * divWW, dz * divWW, result);
   }
   /** Create from coordinates of the origin and direction. */
   public static createXYZUVW(
@@ -192,22 +159,14 @@ export class Ray3d implements BeJSONFunctions {
       result.getDirectionRef().set(directionX, directionY, directionZ);
       return result;
     }
-    return new Ray3d(
-      Point3d.create(originX, originY, originZ),
-      Vector3d.create(directionX, directionY, directionZ)
-    );
+    return new Ray3d(Point3d.create(originX, originY, originZ), Vector3d.create(directionX, directionY, directionZ));
   }
   /** Capture origin and direction in a new Ray3d. */
   public static createCapture(origin: Point3d, direction: Vector3d): Ray3d {
     return new Ray3d(origin, direction);
   }
   /** Create from (clones of) origin, direction, and numeric weight. */
-  public static createPointVectorNumber(
-    origin: Point3d,
-    direction: Vector3d,
-    a: number,
-    result?: Ray3d
-  ): Ray3d {
+  public static createPointVectorNumber(origin: Point3d, direction: Vector3d, a: number, result?: Ray3d): Ray3d {
     if (result) {
       result.origin.setFrom(origin);
       result.direction.setFrom(direction);
@@ -219,11 +178,7 @@ export class Ray3d implements BeJSONFunctions {
     return result;
   }
   /** Create from origin and target. The direction vector is the full length (non-unit) vector from origin to target. */
-  public static createStartEnd(
-    origin: Point3d,
-    target: Point3d,
-    result?: Ray3d
-  ): Ray3d {
+  public static createStartEnd(origin: Point3d, target: Point3d, result?: Ray3d): Ray3d {
     if (result) {
       result.origin.setFrom(origin);
       result.direction.setStartEnd(origin, target);
@@ -254,10 +209,7 @@ export class Ray3d implements BeJSONFunctions {
   }
   /** Create a clone and return the transform of the clone. */
   public cloneTransformed(transform: Transform): Ray3d {
-    return new Ray3d(
-      transform.multiplyPoint3d(this.origin),
-      transform.multiplyVector(this.direction)
-    );
+    return new Ray3d(transform.multiplyPoint3d(this.origin), transform.multiplyVector(this.direction));
   }
   /** Create a clone and return the inverse transform of the clone. */
   public cloneInverseTransformed(transform: Transform): Ray3d | undefined {
@@ -267,8 +219,7 @@ export class Ray3d implements BeJSONFunctions {
       this.direction.y,
       this.direction.z
     );
-    if (undefined !== origin && undefined !== direction)
-      return new Ray3d(origin, direction);
+    if (undefined !== origin && undefined !== direction) return new Ray3d(origin, direction);
     return undefined;
   }
   /** Apply a transform in place. */
@@ -346,11 +297,7 @@ export class Ray3d implements BeJSONFunctions {
   public tryNormalizeInPlaceWithAreaWeight(a: number): boolean {
     const tolerance = Geometry.smallMetricDistanceSquared;
     this.a = a;
-    if (
-      Math.abs(a) > tolerance &&
-      this.direction.tryNormalizeInPlace(tolerance)
-    )
-      return true;
+    if (Math.abs(a) > tolerance && this.direction.tryNormalizeInPlace(tolerance)) return true;
     this.direction.setZero();
     this.a = 0.0;
     return false;
@@ -360,8 +307,7 @@ export class Ray3d implements BeJSONFunctions {
     const uu = this.direction.magnitudeSquared();
     const uv = this.dotProductToPoint(spacePoint);
     const aa = Geometry.inverseMetricDistanceSquared(uu);
-    if (aa)
-      return Math.sqrt(this.origin.distanceSquared(spacePoint) - uv * uv * aa);
+    if (aa) return Math.sqrt(this.origin.distanceSquared(spacePoint) - uv * uv * aa);
     else return Math.sqrt(this.origin.distanceSquared(spacePoint));
   }
   /**
@@ -375,10 +321,7 @@ export class Ray3d implements BeJSONFunctions {
    *    * if intersects after `ray.origin + ray.direction`, the function returns f > 1.
    * * Returns `undefined` if the ray and plane are parallel or coplanar.
    */
-  public intersectionWithPlane(
-    plane: Plane3dByOriginAndUnitNormal,
-    result?: Point3d
-  ): number | undefined {
+  public intersectionWithPlane(plane: Plane3dByOriginAndUnitNormal, result?: Point3d): number | undefined {
     const vectorA = Vector3d.createStartEnd(plane.getOriginRef(), this.origin);
     const uDotN = this.direction.dotProduct(plane.getNormalRef());
     const nDotN = this.direction.magnitudeSquared();
@@ -399,30 +342,11 @@ export class Ray3d implements BeJSONFunctions {
    */
   public intersectionWithRange3d(range: Range3d, result?: Range1d): Range1d {
     if (range.isNull) return Range1d.createNull(result);
-    const interval = Range1d.createXX(
-      -Geometry.largeCoordinateResult,
-      Geometry.largeCoordinateResult,
-      result
-    );
+    const interval = Range1d.createXX(-Geometry.largeCoordinateResult, Geometry.largeCoordinateResult, result);
     if (
-      interval.clipLinearMapToInterval(
-        this.origin.x,
-        this.direction.x,
-        range.low.x,
-        range.high.x
-      ) &&
-      interval.clipLinearMapToInterval(
-        this.origin.y,
-        this.direction.y,
-        range.low.y,
-        range.high.y
-      ) &&
-      interval.clipLinearMapToInterval(
-        this.origin.z,
-        this.direction.z,
-        range.low.z,
-        range.high.z
-      )
+      interval.clipLinearMapToInterval(this.origin.x, this.direction.x, range.low.x, range.high.x) &&
+      interval.clipLinearMapToInterval(this.origin.y, this.direction.y, range.low.y, range.high.y) &&
+      interval.clipLinearMapToInterval(this.origin.z, this.direction.z, range.low.z, range.high.z)
     )
       return interval;
     return interval;
@@ -431,10 +355,7 @@ export class Ray3d implements BeJSONFunctions {
    * Return the shortest vector `v` to `targetPoint` from the line defined by this ray.
    * * If the projection of `targetPoint` onto the line defined by this ray is q, then `v  = targetPoint - q`.
    */
-  public perpendicularPartOfVectorToTarget(
-    targetPoint: XYAndZ,
-    result?: Vector3d
-  ): Vector3d {
+  public perpendicularPartOfVectorToTarget(targetPoint: XYAndZ, result?: Vector3d): Vector3d {
     const vectorV = Vector3d.createStartEnd(this.origin, targetPoint);
     const uu = this.direction.magnitudeSquared();
     const uv = this.direction.dotProductStartEnd(this.origin, targetPoint);
@@ -454,10 +375,7 @@ export class Ray3d implements BeJSONFunctions {
    *   * CurveCurveApproachType.Parallel -- the rays are parallel (and not coincident). The two points are
    * at the minimum distance
    */
-  public static closestApproachRay3dRay3d(
-    rayA: Ray3d,
-    rayB: Ray3d
-  ): CurveLocationDetailPair {
+  public static closestApproachRay3dRay3d(rayA: Ray3d, rayB: Ray3d): CurveLocationDetailPair {
     const intersectionFractions = Vector2d.create();
     let fractionA, fractionB;
     let pointA, pointB;
@@ -496,16 +414,8 @@ export class Ray3d implements BeJSONFunctions {
         : CurveCurveApproachType.ParallelGeometry;
     }
     const pair = CurveLocationDetailPair.createCapture(
-      CurveLocationDetail.createRayFractionPoint(
-        rayA,
-        fractionA,
-        rayA.fractionToPoint(fractionA)
-      ),
-      CurveLocationDetail.createRayFractionPoint(
-        rayB,
-        fractionB,
-        rayB.fractionToPoint(fractionB)
-      )
+      CurveLocationDetail.createRayFractionPoint(rayA, fractionA, rayA.fractionToPoint(fractionA)),
+      CurveLocationDetail.createRayFractionPoint(rayB, fractionB, rayB.fractionToPoint(fractionB))
     );
     pair.approachType = pairType;
     return pair;
@@ -530,17 +440,8 @@ export class Ray3d implements BeJSONFunctions {
     const dx = pt2.x - pt1.x;
     const dy = pt2.y - pt1.y;
     const dz = pt2.z - pt1.z;
-    result.direction.set(
-      tangentScale * dx,
-      tangentScale * dy,
-      tangentScale * dz
-    );
-    if (fraction <= 0.5)
-      result.origin.set(
-        pt1.x + fraction * dx,
-        pt1.y + fraction * dy,
-        pt1.z + fraction * dz
-      );
+    result.direction.set(tangentScale * dx, tangentScale * dy, tangentScale * dz);
+    if (fraction <= 0.5) result.origin.set(pt1.x + fraction * dx, pt1.y + fraction * dy, pt1.z + fraction * dz);
     else {
       const t: number = fraction - 1.0;
       result.origin.set(pt2.x + t * dx, pt2.y + t * dy, pt2.z + t * dz);

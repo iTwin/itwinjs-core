@@ -14,9 +14,7 @@ describe("Learning Snippets", () => {
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile(
-      "assets/datasets/Properties_60InstancesWithUrl2.ibim"
-    );
+    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {
@@ -46,8 +44,7 @@ describe("Learning Snippets", () => {
             {
               ruleType: "ExtendedData",
               requiredSchemas: [{ name: "BisCore", minVersion: "1.0.2" }],
-              condition:
-                'ThisNode.IsOfClass("ExternalSourceAspect", "BisCore")',
+              condition: 'ThisNode.IsOfClass("ExternalSourceAspect", "BisCore")',
               items: {
                 iconName: '"external-source-icon"',
               },
@@ -65,9 +62,7 @@ describe("Learning Snippets", () => {
         });
         expect(content?.contentSet)
           .to.be.lengthOf(1)
-          .and.to.not.containSubset([
-            { extendedData: { iconName: "external-source-icon" } },
-          ]);
+          .and.to.not.containSubset([{ extendedData: { iconName: "external-source-icon" } }]);
       });
 
       it("uses `condition` attribute", async () => {

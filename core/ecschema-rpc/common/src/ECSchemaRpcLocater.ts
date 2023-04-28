@@ -35,18 +35,9 @@ export class ECSchemaRpcLocater implements ISchemaLocater {
     matchType: SchemaMatchType,
     context: SchemaContext
   ): Promise<T | undefined> {
-    const schemaJson = await ECSchemaRpcInterface.getClient().getSchemaJSON(
-      this.token,
-      schemaKey.name
-    );
-    const schema = await Schema.fromJson(
-      schemaJson,
-      context || new SchemaContext()
-    );
-    if (
-      schema !== undefined &&
-      schema.schemaKey.matches(schemaKey, matchType)
-    ) {
+    const schemaJson = await ECSchemaRpcInterface.getClient().getSchemaJSON(this.token, schemaKey.name);
+    const schema = await Schema.fromJson(schemaJson, context || new SchemaContext());
+    if (schema !== undefined && schema.schemaKey.matches(schemaKey, matchType)) {
       return schema as T;
     }
     return undefined;
@@ -68,14 +59,8 @@ export class ECSchemaRpcLocater implements ISchemaLocater {
       .then((props: SchemaProps) => {
         return props;
       });
-    const schema = Schema.fromJsonSync(
-      schemaJson,
-      context || new SchemaContext()
-    );
-    if (
-      schema !== undefined &&
-      schema.schemaKey.matches(schemaKey, matchType)
-    ) {
+    const schema = Schema.fromJsonSync(schemaJson, context || new SchemaContext());
+    if (schema !== undefined && schema.schemaKey.matches(schemaKey, matchType)) {
       return schema as T;
     }
     return undefined;

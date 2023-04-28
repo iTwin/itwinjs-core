@@ -21,10 +21,7 @@ if (ProcessDetector.isElectronAppFrontend) {
     });
 
     it("openStandalone properties", async () => {
-      const filePath = path.join(
-        process.env.IMODELJS_CORE_DIRNAME!,
-        "core/backend/lib/cjs/test/assets/test.bim"
-      );
+      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/test.bim");
       const connection = await BriefcaseConnection.openStandalone(filePath);
 
       assert.isTrue(connection.isOpen);
@@ -41,21 +38,11 @@ if (ProcessDetector.isElectronAppFrontend) {
       assert.isFalse(connection.isSnapshot);
       assert.isFalse(connection.isBlank);
 
-      assert.equal(
-        connection.iTwinId,
-        Guid.empty,
-        "standalone imodels have empty iTwinId"
-      );
-      await expect(connection.pushChanges("bad")).to.eventually.be.rejectedWith(
-        IModelError
-      ); // standalone imodels can't push changes
-      await expect(connection.pullChanges()).to.eventually.be.rejectedWith(
-        IModelError
-      ); // standalone imodels can't pull changes
+      assert.equal(connection.iTwinId, Guid.empty, "standalone imodels have empty iTwinId");
+      await expect(connection.pushChanges("bad")).to.eventually.be.rejectedWith(IModelError); // standalone imodels can't push changes
+      await expect(connection.pullChanges()).to.eventually.be.rejectedWith(IModelError); // standalone imodels can't pull changes
 
-      const elementProps = await connection.elements.getProps(
-        IModel.rootSubjectId
-      );
+      const elementProps = await connection.elements.getProps(IModel.rootSubjectId);
       assert.equal(1, elementProps.length);
       assert.equal(elementProps[0].id, IModel.rootSubjectId);
       await connection.close();
@@ -63,10 +50,7 @@ if (ProcessDetector.isElectronAppFrontend) {
       assert.isFalse(connection.isOpen);
       assert.isTrue(connection.isClosed);
 
-      const readOnlyConnection = await BriefcaseConnection.openStandalone(
-        filePath,
-        OpenMode.Readonly
-      );
+      const readOnlyConnection = await BriefcaseConnection.openStandalone(filePath, OpenMode.Readonly);
       assert.equal(readOnlyConnection.openMode, OpenMode.Readonly);
       await readOnlyConnection.close();
     });

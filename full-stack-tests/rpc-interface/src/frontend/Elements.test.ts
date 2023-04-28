@@ -56,8 +56,7 @@ describe("Operational: Execute Query", () => {
     if (!testContext.settings.runiModelReadRpcTests) this.skip();
 
     const iModel = await testContext.iModelWithChangesets!.getConnection();
-    const query =
-      "select count(*) nRows from(SELECT ECInstanceId FROM Bis.Element LIMIT 50)";
+    const query = "select count(*) nRows from(SELECT ECInstanceId FROM Bis.Element LIMIT 50)";
 
     const rows = [];
     for await (const row of iModel.createQueryReader(query, undefined, {

@@ -21,8 +21,7 @@ export class MobileAuthorizationFrontend implements AuthorizationClient {
 
   private get _hasExpired(): boolean {
     return (
-      this._expirationDate !== undefined &&
-      this._expirationDate.getTime() - Date.now() <= this._expiryBuffer * 1000
+      this._expirationDate !== undefined && this._expirationDate.getTime() - Date.now() <= this._expiryBuffer * 1000
     );
   }
 
@@ -52,8 +51,6 @@ export class MobileAuthorizationFrontend implements AuthorizationClient {
 
   public setAccessToken(accessToken?: string, expirationDate?: string) {
     this._accessToken = accessToken ?? "";
-    this._expirationDate = expirationDate
-      ? new Date(expirationDate)
-      : undefined;
+    this._expirationDate = expirationDate ? new Date(expirationDate) : undefined;
   }
 }

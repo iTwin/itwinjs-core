@@ -73,12 +73,7 @@ export async function relaunchInElectron(): Promise<number> {
   const debugIdx = args.indexOf("--debug");
   if (debugIdx >= 0) args[debugIdx] = "--debug-electron";
 
-  const child = spawnChildProcess(
-    require("electron/index.js"),
-    args,
-    undefined,
-    true
-  );
+  const child = spawnChildProcess(require("electron/index.js"), args, undefined, true);
   return onExitElectronApp(child);
 }
 

@@ -24,13 +24,7 @@ import {
   ViewFlags,
   WhiteOnWhiteReversalSettings,
 } from "@itwin/core-common";
-import {
-  ClipVector,
-  Constant,
-  Matrix3d,
-  Point3d,
-  Vector3d,
-} from "@itwin/core-geometry";
+import { ClipVector, Constant, Matrix3d, Point3d, Vector3d } from "@itwin/core-geometry";
 import { FlashSettings } from "../FlashSettings";
 import { Viewport } from "../Viewport";
 import { ViewState3d } from "../ViewState";
@@ -47,11 +41,7 @@ export class RenderPlanEllipsoid {
   public readonly ellipsoidRotation: Matrix3d;
   public readonly ellipsoidRadii: Point3d;
 
-  constructor(
-    ellipsoidCenter: Point3d,
-    ellipsoidRotation: Matrix3d,
-    ellipsoidRadii: Point3d
-  ) {
+  constructor(ellipsoidCenter: Point3d, ellipsoidRotation: Matrix3d, ellipsoidRadii: Point3d) {
     this.ellipsoidCenter = ellipsoidCenter;
     this.ellipsoidRotation = ellipsoidRotation;
     this.ellipsoidRadii = ellipsoidRadii;
@@ -59,8 +49,7 @@ export class RenderPlanEllipsoid {
 
   public equals(other: RenderPlanEllipsoid): boolean {
     if (this.ellipsoidCenter.isAlmostEqual(other.ellipsoidCenter)) return false;
-    if (this.ellipsoidRotation.isAlmostEqual(other.ellipsoidRotation))
-      return false;
+    if (this.ellipsoidRotation.isAlmostEqual(other.ellipsoidRotation)) return false;
     if (this.ellipsoidRadii.isAlmostEqual(other.ellipsoidRadii)) return false;
     return true;
   }
@@ -150,17 +139,10 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   const hline = style.is3d() ? style.settings.hiddenLineSettings : undefined;
   const ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
   const analysisStyle = style.settings.analysisStyle;
-  const thematic =
-    style.is3d() && view.displayStyle.viewFlags.thematicDisplay
-      ? style.settings.thematic
-      : undefined;
+  const thematic = style.is3d() && view.displayStyle.viewFlags.thematicDisplay ? style.settings.thematic : undefined;
   const shouldDisplayAtmosphere =
-    style.is3d() &&
-    GlobeMode.Ellipsoid === view.globeMode &&
-    vp.iModel.isGeoLocated &&
-    style.viewFlags.backgroundMap
-      ? (vp.view as ViewState3d).getDisplayStyle3d().environment
-          .displayAtmosphere
+    style.is3d() && GlobeMode.Ellipsoid === view.globeMode && vp.iModel.isGeoLocated && style.viewFlags.backgroundMap
+      ? (vp.view as ViewState3d).getDisplayStyle3d().environment.displayAtmosphere
       : false;
   const atmosphere = shouldDisplayAtmosphere
     ? (vp.view as ViewState3d).getDisplayStyle3d().environment.atmosphere
@@ -182,10 +164,7 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
 
   let analysisTexture;
   if (analysisStyle?.thematic)
-    analysisTexture = vp.target.renderSystem.getGradientTexture(
-      analysisStyle.thematic.gradient,
-      vp.iModel
-    );
+    analysisTexture = vp.target.renderSystem.getGradientTexture(analysisStyle.thematic.gradient, vp.iModel);
 
   let ellipsoid: RenderPlanEllipsoid | undefined;
   if (GlobeMode.Ellipsoid === view.globeMode) {

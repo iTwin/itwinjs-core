@@ -20,10 +20,7 @@ describe("ArcGisTokenGenerator", () => {
   it("should make proper info request and extract tokenServicesUrl from response", async () => {
     const fetchStub = sandbox
       .stub(global, "fetch")
-      .callsFake(async function (
-        _input: RequestInfo | URL,
-        _init?: RequestInit
-      ) {
+      .callsFake(async function (_input: RequestInfo | URL, _init?: RequestInit) {
         return Promise.resolve({
           status: 200,
           json: async () => {
@@ -37,13 +34,9 @@ describe("ArcGisTokenGenerator", () => {
         } as unknown as Response);
       });
 
-    const tokenServiceUrl = await ArcGisTokenGenerator.fetchTokenServiceUrl(
-      sampleServiceUrl
-    );
+    const tokenServiceUrl = await ArcGisTokenGenerator.fetchTokenServiceUrl(sampleServiceUrl);
     expect(fetchStub.calledOnce).to.be.true;
-    expect(fetchStub.getCalls()[0].args[0]).to.be.equals(
-      `${sampleBaseRestUrl}info?f=pjson`
-    );
+    expect(fetchStub.getCalls()[0].args[0]).to.be.equals(`${sampleBaseRestUrl}info?f=pjson`);
 
     expect(sampleGenerateTokenUrl).to.be.equals(tokenServiceUrl);
   });

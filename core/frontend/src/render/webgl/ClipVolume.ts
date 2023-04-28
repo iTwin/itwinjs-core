@@ -7,13 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import {
-  ClipVector,
-  Point3d,
-  Transform,
-  UnionOfConvexClipPlaneSets,
-  Vector3d,
-} from "@itwin/core-geometry";
+import { ClipVector, Point3d, Transform, UnionOfConvexClipPlaneSets, Vector3d } from "@itwin/core-geometry";
 import { RenderClipVolume } from "../RenderClipVolume";
 
 const scratch = {
@@ -44,8 +38,7 @@ class ClipPlanesBuffer {
   public readonly numRows: number;
 
   public getData(viewMatrix: Transform): Uint8Array {
-    if (!viewMatrix.isAlmostEqual(this._viewMatrix))
-      this.updateData(viewMatrix);
+    if (!viewMatrix.isAlmostEqual(this._viewMatrix)) this.updateData(viewMatrix);
 
     return this._data;
   }
@@ -54,10 +47,7 @@ class ClipPlanesBuffer {
     return this._view.buffer.byteLength;
   }
 
-  public static create(
-    clips: UnionOfConvexClipPlaneSets[],
-    numRows: number
-  ): ClipPlanesBuffer {
+  public static create(clips: UnionOfConvexClipPlaneSets[], numRows: number): ClipPlanesBuffer {
     assert(numRows > 1); // at least one plane, plus a union boundary.
     return new ClipPlanesBuffer(clips, numRows);
   }

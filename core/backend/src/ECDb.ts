@@ -5,13 +5,7 @@
 /** @packageDocumentation
  * @module ECDb
  */
-import {
-  assert,
-  DbResult,
-  IDisposable,
-  Logger,
-  OpenMode,
-} from "@itwin/core-bentley";
+import { assert, DbResult, IDisposable, Logger, OpenMode } from "@itwin/core-bentley";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
   DbQueryRequest,
@@ -75,8 +69,7 @@ export class ECDb implements IDisposable {
    */
   public createDb(pathName: string): void {
     const status: DbResult = this.nativeDb.createDb(pathName);
-    if (status !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(status, "Failed to created ECDb");
+    if (status !== DbResult.BE_SQLITE_OK) throw new IModelError(status, "Failed to created ECDb");
   }
 
   /** Open the ECDb.
@@ -84,22 +77,11 @@ export class ECDb implements IDisposable {
    * @param openMode Open mode
    * @throws [IModelError]($common) if the operation failed.
    */
-  public openDb(
-    pathName: string,
-    openMode: ECDbOpenMode = ECDbOpenMode.Readonly
-  ): void {
-    const nativeOpenMode: OpenMode =
-      openMode === ECDbOpenMode.Readonly
-        ? OpenMode.Readonly
-        : OpenMode.ReadWrite;
+  public openDb(pathName: string, openMode: ECDbOpenMode = ECDbOpenMode.Readonly): void {
+    const nativeOpenMode: OpenMode = openMode === ECDbOpenMode.Readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
     const tryUpgrade: boolean = openMode === ECDbOpenMode.FileUpgrade;
-    const status: DbResult = this.nativeDb.openDb(
-      pathName,
-      nativeOpenMode,
-      tryUpgrade
-    );
-    if (status !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(status, "Failed to open ECDb");
+    const status: DbResult = this.nativeDb.openDb(pathName, nativeOpenMode, tryUpgrade);
+    if (status !== DbResult.BE_SQLITE_OK) throw new IModelError(status, "Failed to open ECDb");
   }
 
   /** Returns true if the ECDb is open */
@@ -132,8 +114,7 @@ export class ECDb implements IDisposable {
    */
   public saveChanges(changesetName?: string): void {
     const status: DbResult = this.nativeDb.saveChanges(changesetName);
-    if (status !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(status, "Failed to save changes");
+    if (status !== DbResult.BE_SQLITE_OK) throw new IModelError(status, "Failed to save changes");
   }
 
   /** Abandon (cancel) the outermost transaction, discarding all changes since last save. Then, restart the transaction.
@@ -141,8 +122,7 @@ export class ECDb implements IDisposable {
    */
   public abandonChanges(): void {
     const status: DbResult = this.nativeDb.abandonChanges();
-    if (status !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(status, "Failed to abandon changes");
+    if (status !== DbResult.BE_SQLITE_OK) throw new IModelError(status, "Failed to abandon changes");
   }
 
   /** Import a schema.
@@ -154,14 +134,8 @@ export class ECDb implements IDisposable {
   public importSchema(pathName: string): void {
     const status: DbResult = this.nativeDb.importSchema(pathName);
     if (status !== DbResult.BE_SQLITE_OK) {
-      Logger.logError(
-        loggerCategory,
-        `Failed to import schema from '${pathName}'.`
-      );
-      throw new IModelError(
-        status,
-        `Failed to import schema from '${pathName}'.`
-      );
+      Logger.logError(loggerCategory, `Failed to import schema from '${pathName}'.`);
+      throw new IModelError(status, `Failed to import schema from '${pathName}'.`);
     }
   }
 
@@ -178,14 +152,8 @@ export class ECDb implements IDisposable {
    * @see [[withStatement]]
    * @public
    */
-  public withPreparedStatement<T>(
-    ecsql: string,
-    callback: (stmt: ECSqlStatement) => T,
-    logErrors = true
-  ): T {
-    const stmt =
-      this._statementCache.findAndRemove(ecsql) ??
-      this.prepareStatement(ecsql, logErrors);
+  public withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
+    const stmt = this._statementCache.findAndRemove(ecsql) ?? this.prepareStatement(ecsql, logErrors);
     const release = () => this._statementCache.addOrDispose(stmt);
     try {
       const val = callback(stmt);
@@ -212,11 +180,7 @@ export class ECDb implements IDisposable {
    * @see [[withPreparedStatement]]
    * @public
    */
-  public withStatement<T>(
-    ecsql: string,
-    callback: (stmt: ECSqlStatement) => T,
-    logErrors = true
-  ): T {
+  public withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
     const stmt = this.prepareStatement(ecsql, logErrors);
     const release = () => stmt.dispose();
     try {
@@ -257,14 +221,8 @@ export class ECDb implements IDisposable {
    * @see [[withPreparedStatement]]
    * @public
    */
-  public withPreparedSqliteStatement<T>(
-    sql: string,
-    callback: (stmt: SqliteStatement) => T,
-    logErrors = true
-  ): T {
-    const stmt =
-      this._sqliteStatementCache.findAndRemove(sql) ??
-      this.prepareSqliteStatement(sql, logErrors);
+  public withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors = true): T {
+    const stmt = this._sqliteStatementCache.findAndRemove(sql) ?? this.prepareSqliteStatement(sql, logErrors);
     const release = () => this._sqliteStatementCache.addOrDispose(stmt);
     try {
       const val: T = callback(stmt);
@@ -290,11 +248,7 @@ export class ECDb implements IDisposable {
    * @returns the value returned by `callback`.
    * @public
    */
-  public withSqliteStatement<T>(
-    sql: string,
-    callback: (stmt: SqliteStatement) => T,
-    logErrors = true
-  ): T {
+  public withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors = true): T {
     const stmt = this.prepareSqliteStatement(sql, logErrors);
     const release = () => stmt.dispose();
     try {
@@ -317,10 +271,7 @@ export class ECDb implements IDisposable {
    * @throws [IModelError]($common) if there is a problem preparing the statement.
    * @internal
    */
-  public prepareSqliteStatement(
-    sql: string,
-    logErrors = true
-  ): SqliteStatement {
+  public prepareSqliteStatement(sql: string, logErrors = true): SqliteStatement {
     const stmt = new SqliteStatement(sql);
     stmt.prepare(this.nativeDb, logErrors);
     return stmt;
@@ -338,11 +289,7 @@ export class ECDb implements IDisposable {
    * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
    * @beta
    * */
-  public createQueryReader(
-    ecsql: string,
-    params?: QueryBinder,
-    config?: QueryOptions
-  ): ECSqlReader {
+  public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
     if (!this._nativeDb || !this._nativeDb.isOpen()) {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
     }
@@ -370,11 +317,7 @@ export class ECDb implements IDisposable {
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    * @deprecated in 3.7. Use [[createQueryReader]] instead; it accepts the same parameters.
    */
-  public async *query(
-    ecsql: string,
-    params?: QueryBinder,
-    options?: QueryOptions
-  ): AsyncIterableIterator<any> {
+  public async *query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
     const builder = new QueryOptionsBuilder(options);
     const reader = this.createQueryReader(ecsql, params, builder.getOptions());
     while (await reader.step()) yield reader.formatCurrentRow();
@@ -392,14 +335,8 @@ export class ECDb implements IDisposable {
    * @throws [IModelError]($common) If the statement is invalid
    * @deprecated in 3.7. Count the number of results using `count(*)` where the original query is a subquery instead. E.g., `SELECT count(*) FROM (<query-whose-rows-to-count>)`.
    */
-  public async queryRowCount(
-    ecsql: string,
-    params?: QueryBinder
-  ): Promise<number> {
-    for await (const row of this.createQueryReader(
-      `SELECT count(*) FROM (${ecsql})`,
-      params
-    )) {
+  public async queryRowCount(ecsql: string, params?: QueryBinder): Promise<number> {
+    for await (const row of this.createQueryReader(`SELECT count(*) FROM (${ecsql})`, params)) {
       return row[0] as number;
     }
     throw new IModelError(DbResult.BE_SQLITE_ERROR, "Failed to get row count");

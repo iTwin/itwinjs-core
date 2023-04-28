@@ -40,9 +40,7 @@ export async function initializeBackend() {
   const iModelHost: IModelHostOptions = {};
   const iModelClient = new IModelsClient({
     api: {
-      baseUrl: `https://${
-        process.env.IMJS_URL_PREFIX ?? ""
-      }api.bentley.com/imodels`,
+      baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`,
     },
   });
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
@@ -64,15 +62,11 @@ export async function initializeBackend() {
       iModelHost,
     });
     if (iModelHost.authorizationClient)
-      await (
-        iModelHost.authorizationClient as ElectronMainAuthorization
-      ).signInSilent();
+      await (iModelHost.authorizationClient as ElectronMainAuthorization).signInSilent();
   } else await IModelHost.startup(iModelHost);
 }
 
-async function initializeAuthorizationClient(): Promise<
-  AuthorizationClient | undefined
-> {
+async function initializeAuthorizationClient(): Promise<AuthorizationClient | undefined> {
   if (process.env.IMJS_OIDC_HEADLESS) {
     if (
       !checkEnvVars(
@@ -97,8 +91,7 @@ async function initializeAuthorizationClient(): Promise<
       }
     );
   } else {
-    if (!checkEnvVars("IMJS_OIDC_CLIENT_ID", "IMJS_OIDC_SCOPE"))
-      return undefined;
+    if (!checkEnvVars("IMJS_OIDC_CLIENT_ID", "IMJS_OIDC_SCOPE")) return undefined;
     if (ProcessDetector.isElectronAppBackend) {
       return new ElectronMainAuthorization({
         clientId: process.env.IMJS_OIDC_CLIENT_ID!,

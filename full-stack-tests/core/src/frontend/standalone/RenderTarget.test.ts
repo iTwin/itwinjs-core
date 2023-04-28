@@ -104,15 +104,8 @@ describe("Vertex buffer objects", () => {
       const pixels = vp.readUniquePixelData();
       expect(pixels.length).to.equal(3);
       expect(pixels.containsFeature(elemId, subcatId));
-      expect(
-        pixels.containsGeometry(
-          Pixel.GeometryType.Surface,
-          Pixel.Planarity.Planar
-        )
-      );
-      expect(
-        pixels.containsGeometry(Pixel.GeometryType.Edge, Pixel.Planarity.Planar)
-      );
+      expect(pixels.containsGeometry(Pixel.GeometryType.Surface, Pixel.Planarity.Planar));
+      expect(pixels.containsGeometry(Pixel.GeometryType.Edge, Pixel.Planarity.Planar));
     });
   });
 });
@@ -235,15 +228,8 @@ describe("RenderTarget", () => {
       let pixels = vp.readUniquePixelData();
       expect(pixels.length).to.equal(3);
       expect(pixels.containsFeature(elemId, subcatId));
-      expect(
-        pixels.containsGeometry(
-          Pixel.GeometryType.Surface,
-          Pixel.Planarity.Planar
-        )
-      );
-      expect(
-        pixels.containsGeometry(Pixel.GeometryType.Edge, Pixel.Planarity.Planar)
-      );
+      expect(pixels.containsGeometry(Pixel.GeometryType.Surface, Pixel.Planarity.Planar));
+      expect(pixels.containsGeometry(Pixel.GeometryType.Edge, Pixel.Planarity.Planar));
 
       // With lighting off, pixels should be either pure black (background) or pure white (rectangle)
       // NB: Shouldn't really modify view flags in place but meh.
@@ -271,9 +257,7 @@ describe("RenderTarget", () => {
       pixels = vp.readUniquePixelData();
       expect(pixels.length).to.equal(2);
       expect(pixels.containsFeature(elemId, subcatId));
-      expect(
-        pixels.containsGeometry(Pixel.GeometryType.Edge, Pixel.Planarity.Planar)
-      );
+      expect(pixels.containsGeometry(Pixel.GeometryType.Edge, Pixel.Planarity.Planar));
     });
   });
 
@@ -298,18 +282,8 @@ describe("RenderTarget", () => {
       const devRect = vp.target.viewRect;
 
       // Read full image, no resize
-      expectImageDimensions(
-        undefined,
-        undefined,
-        devRect.width,
-        devRect.height
-      );
-      expectImageDimensions(
-        undefined,
-        new Point2d(devRect.width, devRect.height),
-        devRect.width,
-        devRect.height
-      );
+      expectImageDimensions(undefined, undefined, devRect.width, devRect.height);
+      expectImageDimensions(undefined, new Point2d(devRect.width, devRect.height), devRect.width, devRect.height);
 
       // Read sub-image, no resize
       const cssHalfWidth = cssRect.width / 2;
@@ -323,41 +297,21 @@ describe("RenderTarget", () => {
         devQuarterHeight
       );
       expectImageDimensions(
-        new ViewRect(
-          cssHalfWidth,
-          cssQuarterHeight,
-          cssRect.right,
-          cssRect.bottom
-        ),
+        new ViewRect(cssHalfWidth, cssQuarterHeight, cssRect.right, cssRect.bottom),
         undefined,
         devRect.width - devHalfWidth,
         devRect.height - devQuarterHeight
       );
-      expectImageDimensions(
-        new ViewRect(0, 0, cssHalfWidth, cssRect.bottom),
-        undefined,
-        devHalfWidth,
-        devRect.height
-      );
+      expectImageDimensions(new ViewRect(0, 0, cssHalfWidth, cssRect.bottom), undefined, devHalfWidth, devRect.height);
 
       // Read full image and resize
       expectImageDimensions(undefined, new Point2d(256, 128), 256, 128);
       expectImageDimensions(undefined, new Point2d(50, 200), 50, 200);
       expectImageDimensions(cssRect, new Point2d(10, 10), 10, 10);
-      expectImageDimensions(
-        undefined,
-        new Point2d(devRect.width, devRect.height),
-        devRect.width,
-        devRect.height
-      );
+      expectImageDimensions(undefined, new Point2d(devRect.width, devRect.height), devRect.width, devRect.height);
 
       // Read sub-image and resize
-      expectImageDimensions(
-        new ViewRect(0, 0, cssHalfWidth, cssQuarterHeight),
-        new Point2d(512, 768),
-        512,
-        768
-      );
+      expectImageDimensions(new ViewRect(0, 0, cssHalfWidth, cssQuarterHeight), new Point2d(512, 768), 512, 768);
     });
   });
 
@@ -373,16 +327,10 @@ describe("RenderTarget", () => {
         lighting: false,
       });
 
-      type AddFeatureOverrides = (
-        overrides: FeatureSymbology.Overrides,
-        viewport: Viewport
-      ) => void;
+      type AddFeatureOverrides = (overrides: FeatureSymbology.Overrides, viewport: Viewport) => void;
       class RenderTestOverrideProvider implements FeatureOverrideProvider {
         public ovrFunc?: AddFeatureOverrides;
-        public addFeatureOverrides(
-          overrides: FeatureSymbology.Overrides,
-          viewport: Viewport
-        ): void {
+        public addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void {
           if (undefined !== this.ovrFunc) this.ovrFunc(overrides, viewport);
         }
       }
@@ -430,8 +378,7 @@ describe("RenderTarget", () => {
       expect(colors.contains(Color.fromRgba(0, 0, 0xff, 0xff))).to.be.true;
 
       // Specify default overrides
-      ovrProvider.ovrFunc = (ovrs, _) =>
-        ovrs.setDefaultOverrides(FeatureAppearance.fromRgb(ColorDef.red));
+      ovrProvider.ovrFunc = (ovrs, _) => ovrs.setDefaultOverrides(FeatureAppearance.fromRgb(ColorDef.red));
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
@@ -542,12 +489,7 @@ describe("RenderTarget", () => {
         expect(colors.length).to.equal(2);
         expect(colors.contains(Color.fromRgba(0, 0, 0, 0xff))).to.be.true;
 
-        const expected = Color.fromRgba(
-          color.colors.r,
-          color.colors.g,
-          color.colors.b,
-          0xff
-        );
+        const expected = Color.fromRgba(color.colors.r, color.colors.g, color.colors.b, 0xff);
         expect(colors.contains(expected)).to.be.true;
       };
 
@@ -555,8 +497,7 @@ describe("RenderTarget", () => {
       await expectSurfaceColor(ColorDef.white);
 
       // Override System.createGraphicBranch to use an AppearanceProvider that always overrides color to red.
-      const overrideColor = (color: ColorDef) => () =>
-        FeatureAppearance.fromRgb(color);
+      const overrideColor = (color: ColorDef) => () => FeatureAppearance.fromRgb(color);
       const appearanceProvider: FeatureAppearanceProvider = {
         getFeatureAppearance: overrideColor(ColorDef.red),
       };
@@ -567,12 +508,7 @@ describe("RenderTarget", () => {
         options?: GraphicBranchOptions
       ) => {
         options = options ?? {};
-        return createGraphicBranch.call(
-          IModelApp.renderSystem,
-          branch,
-          transform,
-          { ...options, appearanceProvider }
-        );
+        return createGraphicBranch.call(IModelApp.renderSystem, branch, transform, { ...options, appearanceProvider });
       };
 
       // The viewport doesn't yet know its overrides need updating.
@@ -599,24 +535,15 @@ describe("RenderTarget", () => {
         ovr?: ColorDef;
         aug?: ColorDef;
       }
-      const testNestedBranch = async (
-        parent: OvrAug | undefined,
-        child: OvrAug | undefined,
-        expected: ColorDef
-      ) => {
+      const testNestedBranch = async (parent: OvrAug | undefined, child: OvrAug | undefined, expected: ColorDef) => {
         const applyOvrs = (branch: GraphicBranch, ovraug?: OvrAug) => {
           if (ovraug?.ovr) {
             branch.symbologyOverrides = new FeatureSymbology.Overrides(vp);
-            branch.symbologyOverrides.setDefaultOverrides(
-              FeatureAppearance.fromRgb(ovraug.ovr)
-            );
+            branch.symbologyOverrides.setDefaultOverrides(FeatureAppearance.fromRgb(ovraug.ovr));
           }
         };
 
-        const getBranchOptions = (
-          opts?: GraphicBranchOptions,
-          ovraug?: OvrAug
-        ) => {
+        const getBranchOptions = (opts?: GraphicBranchOptions, ovraug?: OvrAug) => {
           if (ovraug?.aug)
             opts = {
               ...opts,
@@ -637,12 +564,7 @@ describe("RenderTarget", () => {
           options = options ?? {};
           const childOptions = getBranchOptions(options, child);
           applyOvrs(branch, child);
-          const childBranch = createGraphicBranch.call(
-            IModelApp.renderSystem,
-            branch,
-            transform,
-            childOptions
-          );
+          const childBranch = createGraphicBranch.call(IModelApp.renderSystem, branch, transform, childOptions);
 
           const childGraphics = new GraphicBranch();
           childGraphics.add(childBranch);
@@ -702,8 +624,7 @@ describe("RenderTarget", () => {
         },
       ];
 
-      for (const testCase of testCases)
-        await testNestedBranch(testCase.parent, testCase.child, testCase.color);
+      for (const testCase of testCases) await testNestedBranch(testCase.parent, testCase.child, testCase.color);
 
       // Reset System.createGraphicBranch.
       IModelApp.renderSystem.createGraphicBranch = createGraphicBranch;
@@ -712,41 +633,30 @@ describe("RenderTarget", () => {
 
   it("should show transparency for polylines", async () => {
     const rect = new ViewRect(0, 0, 200, 150);
-    await testOnScreenViewport(
-      "0x24",
-      imodel,
-      rect.width,
-      rect.height,
-      async (vp) => {
-        class TestPolylineDecorator implements Decorator {
-          public decorate(context: DecorateContext) {
-            expect(context.viewport === vp);
-            // draw semi-transparent polyline from top left to bottom right of vp
-            const overlayBuilder = context.createGraphicBuilder(
-              GraphicType.ViewOverlay
-            );
-            const polylineColor = ColorDef.from(0, 255, 0, 128);
-            overlayBuilder.setSymbology(polylineColor, polylineColor, 4);
-            overlayBuilder.addLineString([
-              new Point3d(0, 0, 0),
-              new Point3d(rect.width - 1, rect.height - 1, 0),
-            ]);
-            context.addDecorationFromBuilder(overlayBuilder);
-          }
+    await testOnScreenViewport("0x24", imodel, rect.width, rect.height, async (vp) => {
+      class TestPolylineDecorator implements Decorator {
+        public decorate(context: DecorateContext) {
+          expect(context.viewport === vp);
+          // draw semi-transparent polyline from top left to bottom right of vp
+          const overlayBuilder = context.createGraphicBuilder(GraphicType.ViewOverlay);
+          const polylineColor = ColorDef.from(0, 255, 0, 128);
+          overlayBuilder.setSymbology(polylineColor, polylineColor, 4);
+          overlayBuilder.addLineString([new Point3d(0, 0, 0), new Point3d(rect.width - 1, rect.height - 1, 0)]);
+          context.addDecorationFromBuilder(overlayBuilder);
         }
-
-        const decorator = new TestPolylineDecorator();
-        IModelApp.viewManager.addDecorator(decorator);
-        await vp.drawFrame();
-        IModelApp.viewManager.dropDecorator(decorator);
-
-        // expect green blended with black background
-        const testColor = vp.readColor(0, 0); // top left pixel
-        expect(testColor.r).equals(0);
-        expect(testColor.g).approximately(128, 3);
-        expect(testColor.b).equals(0);
       }
-    );
+
+      const decorator = new TestPolylineDecorator();
+      IModelApp.viewManager.addDecorator(decorator);
+      await vp.drawFrame();
+      IModelApp.viewManager.dropDecorator(decorator);
+
+      // expect green blended with black background
+      const testColor = vp.readColor(0, 0); // top left pixel
+      expect(testColor.r).equals(0);
+      expect(testColor.g).approximately(128, 3);
+      expect(testColor.b).equals(0);
+    });
   });
 
   it("should render hilite", async () => {
@@ -757,12 +667,7 @@ describe("RenderTarget", () => {
         hiddenEdges: false,
         lighting: false,
       });
-      vp.hilite = new Hilite.Settings(
-        ColorDef.red,
-        1.0,
-        0.0,
-        Hilite.Silhouette.Thin
-      );
+      vp.hilite = new Hilite.Settings(ColorDef.red, 1.0, 0.0, Hilite.Silhouette.Thin);
 
       await vp.waitForAllTilesToRender();
 
@@ -774,10 +679,7 @@ describe("RenderTarget", () => {
       ];
 
       // OffScreenViewports are not managed by ViewManager so not notified when hilite set changes.
-      const update =
-        vp instanceof OffScreenViewport
-          ? () => ((vp as any)._selectionSetDirty = true)
-          : () => undefined;
+      const update = vp instanceof OffScreenViewport ? () => ((vp as any)._selectionSetDirty = true) : () => undefined;
 
       const white = Color.from(0xffffffff);
       const black = Color.from(0xff000000);
@@ -861,55 +763,31 @@ describe("RenderTarget", () => {
       imodel.projectExtents = extents;
     }
 
-    expect(imodel.projectExtents.diagonal().magnitudeSquared()).least(
-      1000 * 1000
-    );
+    expect(imodel.projectExtents.diagonal().magnitudeSquared()).least(1000 * 1000);
 
     const fullRect = new ViewRect(0, 0, 100, 100);
-    await testViewports(
-      "0x24",
-      imodel,
-      fullRect.width,
-      fullRect.height,
-      async (vp) => {
-        vp.viewFlags = vp.viewFlags.with("backgroundMap", true);
+    await testViewports("0x24", imodel, fullRect.width, fullRect.height, async (vp) => {
+      vp.viewFlags = vp.viewFlags.with("backgroundMap", true);
 
-        await vp.waitForAllTilesToRender();
-        const mapTreeRef = vp.backgroundMap!;
-        const mapTree = mapTreeRef.treeOwner.tileTree!;
-        expect(mapTree).not.to.be.undefined;
-      }
-    );
+      await vp.waitForAllTilesToRender();
+      const mapTreeRef = vp.backgroundMap!;
+      const mapTree = mapTreeRef.treeOwner.tileTree!;
+      expect(mapTree).not.to.be.undefined;
+    });
   });
 
   it("should render to screen if only a single viewport exists", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
-    await testOnScreenViewport(
-      "0x24",
-      imodel,
-      rect.width,
-      rect.height,
-      async (vp) => {
-        expect(vp.rendersToScreen).to.be.true;
-      }
-    );
+    await testOnScreenViewport("0x24", imodel, rect.width, rect.height, async (vp) => {
+      expect(vp.rendersToScreen).to.be.true;
+    });
   });
 
   it("should render off-screen if multiple viewports exist", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
-    const vp0 = await createOnScreenTestViewport(
-      "0x24",
-      imodel,
-      rect.width,
-      rect.height
-    );
+    const vp0 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
     expect(vp0.rendersToScreen).to.be.true; // when only one viewport is on the view manager, it should render using system canvas.
-    const vp1 = await createOnScreenTestViewport(
-      "0x24",
-      imodel,
-      rect.width,
-      rect.height
-    );
+    const vp1 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
     expect(vp0.rendersToScreen).to.be.false;
     expect(vp1.rendersToScreen).to.be.false;
 
@@ -990,9 +868,7 @@ describe("RenderTarget", () => {
       const colors = vp.readUniqueColors();
       expect(colors.length === 2);
       expect(colors.contains(bgColor)).to.be.true; // black background
-      colors.forEach((color) =>
-        expect(color.r < 20 && color.b < 20 && color.g < 20)
-      );
+      colors.forEach((color) => expect(color.r < 20 && color.b < 20 && color.g < 20));
     }
 
     it("should override color", async () => {
@@ -1003,9 +879,7 @@ describe("RenderTarget", () => {
           rgb: new RgbColor(0xff, 0, 0),
         });
 
-        vp.view.forEachModel((model) =>
-          vp.overrideModelAppearance(model.id, colorOverride)
-        );
+        vp.view.forEachModel((model) => vp.overrideModelAppearance(model.id, colorOverride));
 
         await vp.waitForAllTilesToRender();
         expect(vp.numRequestedTiles).to.equal(0);
@@ -1023,9 +897,7 @@ describe("RenderTarget", () => {
           transparency: 0.95,
         });
 
-        vp.view.forEachModel((model) =>
-          vp.overrideModelAppearance(model.id, colorOverride)
-        );
+        vp.view.forEachModel((model) => vp.overrideModelAppearance(model.id, colorOverride));
 
         await vp.waitForAllTilesToRender();
         expect(vp.numRequestedTiles).to.equal(0);

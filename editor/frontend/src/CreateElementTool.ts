@@ -3,13 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
-import {
-  Constant,
-  Point3d,
-  Range3d,
-  Transform,
-  Vector3d,
-} from "@itwin/core-geometry";
+import { Constant, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import {
   DynamicGraphicsRequest2dProps,
   DynamicGraphicsRequest3dProps,
@@ -41,11 +35,7 @@ import {
   Viewport,
 } from "@itwin/core-frontend";
 
-function computeChordToleranceFromPointAndRadius(
-  vp: Viewport,
-  center: Point3d,
-  radius: number
-): number {
+function computeChordToleranceFromPointAndRadius(vp: Viewport, center: Point3d, radius: number): number {
   if (vp.view.is3d() && vp.view.isCameraOn) {
     const nearFrontCenter = vp.getFrustum(CoordSystem.World).frontCenter;
     const toFront = Vector3d.createStartEnd(center, nearFrontCenter);
@@ -66,42 +56,24 @@ function computeChordToleranceFromPointAndRadius(
     }
   }
 
-  const viewPt =
-    vp.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(center);
+  const viewPt = vp.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(center);
   const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
   const pixelSize = vp.worldToViewMap.transform1
     .multiplyPoint3dQuietNormalize(viewPt)
-    .distance(
-      vp.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2)
-    );
+    .distance(vp.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2));
 
   // Return size of a physical pixel in meters.
   return 0.0 !== pixelSize ? vp.target.adjustPixelSizeForLOD(pixelSize) : 0.001;
 }
 
 /** @alpha */
-export function computeChordToleranceFromPoint(
-  vp: Viewport,
-  pt: Point3d,
-  radius?: number
-): number {
-  return computeChordToleranceFromPointAndRadius(
-    vp,
-    pt,
-    radius ? radius : Constant.oneCentimeter
-  );
+export function computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius?: number): number {
+  return computeChordToleranceFromPointAndRadius(vp, pt, radius ? radius : Constant.oneCentimeter);
 }
 
 /** @alpha */
-export function computeChordToleranceFromRange(
-  vp: Viewport,
-  range: Range3d
-): number {
-  return computeChordToleranceFromPointAndRadius(
-    vp,
-    range.center,
-    0.5 * range.low.distance(range.high)
-  );
+export function computeChordToleranceFromRange(vp: Viewport, range: Range3d): number {
+  return computeChordToleranceFromPointAndRadius(vp, range.center, 0.5 * range.low.distance(range.high));
 }
 
 /** @alpha */
@@ -149,10 +121,7 @@ export class DynamicGraphicsProvider {
         categoryId,
         geometry,
       };
-      graphicData = await IModelApp.tileAdmin.requestElementGraphics(
-        this.iModel,
-        requestProps
-      );
+      graphicData = await IModelApp.tileAdmin.requestElementGraphics(this.iModel, requestProps);
       is3d = true;
     } else {
       const requestProps: DynamicGraphicsRequest2dProps = {
@@ -165,10 +134,7 @@ export class DynamicGraphicsProvider {
         categoryId,
         geometry,
       };
-      graphicData = await IModelApp.tileAdmin.requestElementGraphics(
-        this.iModel,
-        requestProps
-      );
+      graphicData = await IModelApp.tileAdmin.requestElementGraphics(this.iModel, requestProps);
     }
 
     if (undefined === graphicData) return;
@@ -212,11 +178,7 @@ export class DynamicGraphicsProvider {
     placement: PlacementProps,
     geometry: JsonGeometryStream | FlatBufferGeometryStream
   ): void {
-    const promise = (this._graphicPromise = this.createGraphic(
-      categoryId,
-      placement,
-      geometry
-    ));
+    const promise = (this._graphicPromise = this.createGraphic(categoryId, placement, geometry));
 
     promise
       .then(() => {
@@ -256,8 +218,7 @@ export class DynamicGraphicsProvider {
 export abstract class CreateElementTool extends PrimitiveTool {
   public get targetCategory(): Id64String {
     const category = this.briefcase?.editorToolSettings.category;
-    if (undefined === category)
-      throw new IModelError(IModelStatus.InvalidCategory, "");
+    if (undefined === category) throw new IModelError(IModelStatus.InvalidCategory, "");
 
     return category;
   }
@@ -269,16 +230,10 @@ export abstract class CreateElementTool extends PrimitiveTool {
     return model;
   }
 
-  public override isCompatibleViewport(
-    vp: Viewport | undefined,
-    isSelectedViewChange: boolean
-  ): boolean {
+  public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean {
     if (!vp?.iModel.isBriefcaseConnection()) return false;
 
-    return (
-      undefined !== vp.iModel.editorToolSettings.model &&
-      super.isCompatibleViewport(vp, isSelectedViewChange)
-    );
+    return undefined !== vp.iModel.editorToolSettings.model && super.isCompatibleViewport(vp, isSelectedViewChange);
   }
 
   /** Whether [[setupAndPromptForNextAction]] should call [[AccuSnap.enableSnap]] for current tool phase.
@@ -325,15 +280,11 @@ export abstract class CreateElementTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public override async onDataButtonDown(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     return this.processDataButton(ev);
   }
 
-  public override async onResetButtonUp(
-    _ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
     await this.onReinitialize();
     return EventHandled.No;
   }
@@ -356,10 +307,7 @@ export abstract class CreateElementTool extends PrimitiveTool {
   }
 
   /** Sub-classes should override to provide tool specific instructions. */
-  protected provideToolAssistance(
-    mainInstrText?: string,
-    additionalInstr?: ToolAssistanceInstruction[]
-  ): void {
+  protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void {
     const mainMsg = "ElementSet.Prompts.IdentifyPoint";
     const leftMsg = "ElementSet.Inputs.AcceptPoint";
     const rightMsg = "ElementSet.Inputs.Cancel";
@@ -404,34 +352,20 @@ export abstract class CreateElementTool extends PrimitiveTool {
 
     if (undefined !== additionalInstr) {
       for (const instr of additionalInstr) {
-        if (ToolAssistanceInputMethod.Touch === instr.inputMethod)
-          touchInstructions.push(instr);
+        if (ToolAssistanceInputMethod.Touch === instr.inputMethod) touchInstructions.push(instr);
         else mouseInstructions.push(instr);
       }
     }
 
     const sections: ToolAssistanceSection[] = [];
-    sections.push(
-      ToolAssistance.createSection(
-        mouseInstructions,
-        ToolAssistance.inputsLabel
-      )
-    );
-    sections.push(
-      ToolAssistance.createSection(
-        touchInstructions,
-        ToolAssistance.inputsLabel
-      )
-    );
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
 
     const mainInstruction = ToolAssistance.createInstruction(
       this.iconSpec,
       undefined !== mainInstrText ? mainInstrText : CoreTools.translate(mainMsg)
     );
-    const instructions = ToolAssistance.createInstructions(
-      mainInstruction,
-      sections
-    );
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
     IModelApp.notifications.setToolAssistance(instructions);
   }
 }
@@ -463,31 +397,16 @@ export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
     if (undefined === geometry) return;
 
     if (undefined === this._graphicsProvider)
-      this._graphicsProvider = new DynamicGraphicsProvider(
-        this.iModel,
-        this.toolId
-      );
+      this._graphicsProvider = new DynamicGraphicsProvider(this.iModel, this.toolId);
 
     // Set chord tolerance for curved surfaces...
-    if (ev.viewport)
-      this._graphicsProvider.chordTolerance = computeChordToleranceFromPoint(
-        ev.viewport,
-        ev.point
-      );
+    if (ev.viewport) this._graphicsProvider.chordTolerance = computeChordToleranceFromPoint(ev.viewport, ev.point);
 
-    await this._graphicsProvider.createGraphic(
-      this.targetCategory,
-      placement,
-      geometry
-    );
+    await this._graphicsProvider.createGraphic(this.targetCategory, placement, geometry);
   }
 
-  public override onDynamicFrame(
-    _ev: BeButtonEvent,
-    context: DynamicsContext
-  ): void {
-    if (undefined !== this._graphicsProvider)
-      this._graphicsProvider.addGraphic(context);
+  public override onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void {
+    if (undefined !== this._graphicsProvider) this._graphicsProvider.addGraphic(context);
   }
 
   public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
@@ -498,18 +417,10 @@ export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
   protected abstract getGeometryProps(
     placement: PlacementProps
   ): JsonGeometryStream | FlatBufferGeometryStream | undefined;
-  protected abstract getElementProps(
-    placement: PlacementProps
-  ): GeometricElementProps | undefined;
+  protected abstract getElementProps(placement: PlacementProps): GeometricElementProps | undefined;
 
-  protected async doCreateElement(
-    _props: GeometricElementProps,
-    _data?: ElementGeometryBuilderParams
-  ): Promise<void> {}
-  protected async updateElementData(
-    _ev: BeButtonEvent,
-    _isDynamics: boolean
-  ): Promise<void> {}
+  protected async doCreateElement(_props: GeometricElementProps, _data?: ElementGeometryBuilderParams): Promise<void> {}
+  protected async updateElementData(_ev: BeButtonEvent, _isDynamics: boolean): Promise<void> {}
 
   protected async updateDynamicData(ev: BeButtonEvent): Promise<boolean> {
     if (!IModelApp.viewManager.inDynamicsMode) return false; // Don't need to create graphic if dynamics aren't yet active...
@@ -551,9 +462,7 @@ export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
     return true;
   }
 
-  public override async onDataButtonDown(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (!(await this.acceptPoint(ev))) return EventHandled.Yes;
     return super.onDataButtonDown(ev);
   }
@@ -562,9 +471,7 @@ export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
     return true;
   }
 
-  public override async onResetButtonUp(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     if (!(await this.cancelPoint(ev))) return EventHandled.Yes;
     return super.onResetButtonUp(ev);
   }

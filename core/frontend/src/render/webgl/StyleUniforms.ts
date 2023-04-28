@@ -49,12 +49,8 @@ export class StyleUniforms {
     this._bgColor = bgColor;
     this._bgRgba.setColorDef(bgColor);
     this._bgRgb.setColorDef(bgColor);
-    this._wantWoWReversal =
-      this._wowReversalSettings.ignoreBackgroundColor || this._bgRgb.isWhite;
-    this._bgIntensity =
-      this._bgRgb.red * 0.3 +
-      this._bgRgb.green * 0.59 +
-      this._bgRgb.blue * 0.11;
+    this._wantWoWReversal = this._wowReversalSettings.ignoreBackgroundColor || this._bgRgb.isWhite;
+    this._bgIntensity = this._bgRgb.red * 0.3 + this._bgRgb.green * 0.59 + this._bgRgb.blue * 0.11;
   }
 
   public changeBackgroundColor(bgColor: ColorDef): void {

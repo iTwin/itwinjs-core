@@ -6,17 +6,8 @@
  * @module Elements
  */
 
-import {
-  DbResult,
-  Id64String,
-  IModelStatus,
-  RepositoryStatus,
-} from "@itwin/core-bentley";
-import {
-  ChannelRootAspectProps,
-  IModel,
-  IModelError,
-} from "@itwin/core-common";
+import { DbResult, Id64String, IModelStatus, RepositoryStatus } from "@itwin/core-bentley";
+import { ChannelRootAspectProps, IModel, IModelError } from "@itwin/core-common";
 import { Subject } from "./Element";
 import { IModelDb } from "./IModelDb";
 
@@ -101,16 +92,13 @@ export class ChannelAdmin implements ChannelControl {
     return this._hasChannels;
   }
   public getChannelKey(elementId: Id64String): ChannelKey {
-    if (!this.hasChannels || elementId === IModel.rootSubjectId)
-      return ChannelAdmin.sharedChannel;
+    if (!this.hasChannels || elementId === IModel.rootSubjectId) return ChannelAdmin.sharedChannel;
 
     const channel = this._iModel.withPreparedStatement(
       `SELECT Owner FROM ${ChannelAdmin.channelClassName} WHERE Element.Id=?`,
       (stmt) => {
         stmt.bindId(1, elementId);
-        return DbResult.BE_SQLITE_ROW === stmt.step()
-          ? stmt.getValue(0).getString()
-          : undefined;
+        return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValue(0).getString() : undefined;
       }
     );
     if (channel !== undefined) return channel;
@@ -119,10 +107,7 @@ export class ChannelAdmin implements ChannelControl {
       (stmt) => {
         stmt.bindId(1, elementId);
         if (DbResult.BE_SQLITE_ROW !== stmt.step())
-          throw new IModelError(
-            IModelStatus.NotFound,
-            "Element does not exist"
-          );
+          throw new IModelError(IModelStatus.NotFound, "Element does not exist");
         return stmt.getValueId(0) ?? stmt.getValueId(1); // if parent is undefined, use modelId
       }
     );
@@ -130,19 +115,11 @@ export class ChannelAdmin implements ChannelControl {
   }
   public verifyChannel(modelId: Id64String): void {
     // Note: indirect changes are permitted to change any channel
-    if (
-      !this.hasChannels ||
-      this._allowedModels.has(modelId) ||
-      this._iModel.nativeDb.isIndirectChanges()
-    )
-      return;
+    if (!this.hasChannels || this._allowedModels.has(modelId) || this._iModel.nativeDb.isIndirectChanges()) return;
 
     const deniedChannel = this._deniedModels.get(modelId);
     if (undefined !== deniedChannel)
-      throw new IModelError(
-        RepositoryStatus.ChannelConstraintViolation,
-        `channel "${deniedChannel}" is not allowed`
-      );
+      throw new IModelError(RepositoryStatus.ChannelConstraintViolation, `channel "${deniedChannel}" is not allowed`);
 
     const channel = this.getChannelKey(modelId);
     if (this._allowedChannels.has(channel)) {
@@ -158,10 +135,7 @@ export class ChannelAdmin implements ChannelControl {
     parentSubjectId?: Id64String;
     description?: string;
   }): Id64String {
-    if (
-      args.parentSubjectId &&
-      ChannelAdmin.sharedChannel !== this.getChannelKey(args.parentSubjectId)
-    )
+    if (args.parentSubjectId && ChannelAdmin.sharedChannel !== this.getChannelKey(args.parentSubjectId))
       throw new Error("channels may not nest");
 
     const subjectId = Subject.insert(

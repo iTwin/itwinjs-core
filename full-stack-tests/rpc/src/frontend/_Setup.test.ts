@@ -76,18 +76,14 @@ function initializeMultipleClientsTest(path: string) {
   config2.protocol.pathPrefix = path;
 }
 
-function initializeAttachedInterfacesTest(
-  config: BentleyCloudRpcConfiguration
-) {
+function initializeAttachedInterfacesTest(config: BentleyCloudRpcConfiguration) {
   config.attach(AttachedInterface);
 }
 
 export let currentEnvironment: string;
 
 before(async () => {
-  currentEnvironment = await executeBackendCallback(
-    BackendTestCallbacks.getEnvironment
-  );
+  currentEnvironment = await executeBackendCallback(BackendTestCallbacks.getEnvironment);
   switch (currentEnvironment) {
     case "http":
       return initializeCloud("http");
@@ -103,10 +99,7 @@ before(async () => {
       socketUrl.port = (parseInt(socketUrl.port, 10) + 2000).toString();
       socketUrl = LocalhostIpcApp.buildUrlForSocket(socketUrl);
 
-      BentleyCloudRpcManager.initializeClient(
-        { info: { title: "", version: "" } },
-        rpcInterfaces
-      );
+      BentleyCloudRpcManager.initializeClient({ info: { title: "", version: "" } }, rpcInterfaces);
       return LocalhostIpcApp.startup({
         localhostIpcApp: { socketUrl },
         iModelApp: { localization: new EmptyLocalization() },

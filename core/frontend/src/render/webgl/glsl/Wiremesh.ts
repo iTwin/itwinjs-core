@@ -6,11 +6,7 @@
  * @module WebGL
  */
 
-import {
-  FragmentShaderComponent,
-  ProgramBuilder,
-  VariableType,
-} from "../ShaderBuilder";
+import { FragmentShaderComponent, ProgramBuilder, VariableType } from "../ShaderBuilder";
 
 // Vertex shader produces barycentric coordinate for corner of triangle to be smoothly interpolated over face of triangle.
 // This requires WebGL 2 because gl_VertexID.
@@ -36,10 +32,6 @@ const applyWiremesh = `
  * @internal
  */
 export function addWiremesh(builder: ProgramBuilder): void {
-  builder.addInlineComputedVarying(
-    "v_barycentric",
-    VariableType.Vec3,
-    computeBarycentric
-  );
+  builder.addInlineComputedVarying("v_barycentric", VariableType.Vec3, computeBarycentric);
   builder.frag.set(FragmentShaderComponent.ApplyWiremesh, applyWiremesh);
 }

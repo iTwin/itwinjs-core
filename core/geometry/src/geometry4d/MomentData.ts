@@ -119,10 +119,7 @@ export class MomentData {
    *   * (origin, true) the "true" is meaningless
    *   * (undefined, false) makes 000 the durable origin
    */
-  public static create(
-    origin?: Point3d | undefined,
-    needOrigin: boolean = false
-  ): MomentData {
+  public static create(origin?: Point3d | undefined, needOrigin: boolean = false): MomentData {
     const data = new MomentData();
     data.needOrigin = needOrigin;
     if (origin) {
@@ -142,10 +139,7 @@ export class MomentData {
     return result;
   }
   /** Sort the columns of the matrix for increasing moments. */
-  public static sortColumnsForIncreasingMoments(
-    axes: Matrix3d,
-    moments: Vector3d
-  ) {
+  public static sortColumnsForIncreasingMoments(axes: Matrix3d, moments: Vector3d) {
     const points = [
       axes.indexedColumnWithWeight(0, moments.x),
       axes.indexedColumnWithWeight(1, moments.y),
@@ -167,9 +161,7 @@ export class MomentData {
    * Return the principal moment data for an array of points.
    * @param points array of points
    */
-  public static pointsToPrincipalAxes(
-    points: Point3d[]
-  ): MomentData | undefined {
+  public static pointsToPrincipalAxes(points: Point3d[]): MomentData | undefined {
     const moments = new MomentData();
     if (points.length === 0) return moments;
     moments.clearSums(points[0]);
@@ -184,10 +176,7 @@ export class MomentData {
    * @param origin The origin used for the inertia products.
    * @param inertiaProducts The inertia products -- sums or integrals of [xx,xy,xz,xw; yx,yy, yz,yw; zx,zy,zz,zw; wx,wy,wz,w]
    */
-  public static inertiaProductsToPrincipalAxes(
-    origin: XYZ,
-    inertiaProducts: Matrix4d
-  ): MomentData | undefined {
+  public static inertiaProductsToPrincipalAxes(origin: XYZ, inertiaProducts: Matrix4d): MomentData | undefined {
     const moments = new MomentData();
     moments.sums.setFrom(inertiaProducts);
     moments.origin.setFrom(origin);
@@ -202,10 +191,7 @@ export class MomentData {
     if (moment2.x < 0.0) return undefined;
     MomentData.sortColumnsForIncreasingMoments(axisVectors, moment2);
     if (w < 0.0) axisVectors.scaleColumnsInPlace(1, -1, -1);
-    moments.localToWorldMap = Transform.createOriginAndMatrix(
-      moments.origin,
-      axisVectors
-    );
+    moments.localToWorldMap = Transform.createOriginAndMatrix(moments.origin, axisVectors);
     moments.radiusOfGyration.set(
       Math.sqrt(Math.abs(moment2.x)),
       Math.sqrt(Math.abs(moment2.y)),
@@ -229,36 +215,16 @@ export class MomentData {
    * @param dataA first set of moments
    * @param dataB second set of moments
    */
-  public static areEquivalentPrincipalAxes(
-    dataA: MomentData | undefined,
-    dataB: MomentData | undefined
-  ): boolean {
-    if (
-      dataA &&
-      dataB &&
-      Geometry.isSameCoordinate(dataA.quantitySum, dataB.quantitySum)
-    ) {
+  public static areEquivalentPrincipalAxes(dataA: MomentData | undefined, dataB: MomentData | undefined): boolean {
+    if (dataA && dataB && Geometry.isSameCoordinate(dataA.quantitySum, dataB.quantitySum)) {
       // um.. need different tolerance for area, volume?)
       if (
-        dataA.localToWorldMap
-          .getOrigin()
-          .isAlmostEqual(dataB.localToWorldMap.getOrigin()) &&
+        dataA.localToWorldMap.getOrigin().isAlmostEqual(dataB.localToWorldMap.getOrigin()) &&
         dataA.radiusOfGyration.isAlmostEqual(dataB.radiusOfGyration)
       ) {
-        if (
-          Geometry.isSameCoordinate(
-            dataA.radiusOfGyration.x,
-            dataA.radiusOfGyration.y
-          )
-        ) {
+        if (Geometry.isSameCoordinate(dataA.radiusOfGyration.x, dataA.radiusOfGyration.y)) {
           // We have at least xy symmetry ....
-          if (
-            Geometry.isSameCoordinate(
-              dataA.radiusOfGyration.x,
-              dataA.radiusOfGyration.z
-            )
-          )
-            return true;
+          if (Geometry.isSameCoordinate(dataA.radiusOfGyration.x, dataA.radiusOfGyration.z)) return true;
           // just xy.
           // allow opposite z directions.
           // If the z's are aligned, x an dy can spin freely.
@@ -289,12 +255,7 @@ export class MomentData {
   /** Accumulate products-of-components for given points. */
   public accumulatePointMomentsFromOrigin(points: Point3d[]) {
     for (const p of points) {
-      this.sums.addMomentsInPlace(
-        p.x - this.origin.x,
-        p.y - this.origin.y,
-        p.z - this.origin.z,
-        1.0
-      );
+      this.sums.addMomentsInPlace(p.x - this.origin.x, p.y - this.origin.y, p.z - this.origin.z, 1.0);
     }
   }
   /** revise the accumulated sums to be "around the centroid" */
@@ -317,11 +278,7 @@ export class MomentData {
   }
   /** revise the accumulated sums so they are based at a specified origin. */
   public shiftOriginAndSumsToNewOrigin(newOrigin: XYAndZ) {
-    this.shiftOriginAndSumsByXYZ(
-      newOrigin.x - this.origin.x,
-      newOrigin.y - this.origin.y,
-      newOrigin.z - this.origin.z
-    );
+    this.shiftOriginAndSumsByXYZ(newOrigin.x - this.origin.x, newOrigin.y - this.origin.y, newOrigin.z - this.origin.z);
   }
   private static _vectorA?: Point4d;
   private static _vectorB?: Point4d;
@@ -332,44 +289,16 @@ export class MomentData {
    * * If `pointA` is undefined, use `this.origin` as pointA.
    * * If `this.needOrigin` is set, pointB is used
    */
-  public accumulateTriangleMomentsXY(
-    pointA: XAndY | undefined,
-    pointB: XAndY,
-    pointC: XAndY
-  ) {
+  public accumulateTriangleMomentsXY(pointA: XAndY | undefined, pointB: XAndY, pointC: XAndY) {
     this.setOriginXYZIfNeeded(pointB.x, pointB.y, 0.0);
     const x0 = this.origin.x;
     const y0 = this.origin.y;
     const vectorA = (MomentData._vectorA =
       pointA !== undefined
-        ? Point4d.create(
-            pointA.x - x0,
-            pointA.y - y0,
-            0.0,
-            1.0,
-            MomentData._vectorA
-          )
-        : Point4d.create(
-            this.origin.x,
-            this.origin.y,
-            0.0,
-            1.0,
-            MomentData._vectorA
-          ));
-    const vectorB = (MomentData._vectorB = Point4d.create(
-      pointB.x - x0,
-      pointB.y - y0,
-      0.0,
-      1.0,
-      MomentData._vectorB
-    ));
-    const vectorC = (MomentData._vectorC = Point4d.create(
-      pointC.x - x0,
-      pointC.y - y0,
-      0.0,
-      1.0,
-      MomentData._vectorC
-    ));
+        ? Point4d.create(pointA.x - x0, pointA.y - y0, 0.0, 1.0, MomentData._vectorA)
+        : Point4d.create(this.origin.x, this.origin.y, 0.0, 1.0, MomentData._vectorA));
+    const vectorB = (MomentData._vectorB = Point4d.create(pointB.x - x0, pointB.y - y0, 0.0, 1.0, MomentData._vectorB));
+    const vectorC = (MomentData._vectorC = Point4d.create(pointC.x - x0, pointC.y - y0, 0.0, 1.0, MomentData._vectorC));
 
     // accumulate Return product integrals I(0<=u<=1) I (0<=v<= u)  (w*W + u *U + v * V)(w*W + u *U + v * V)^  du dv
     //  where w = 1-u-v
@@ -446,10 +375,7 @@ export class MomentData {
    * * If `this.needOrigin` is set, the first point of the array is captured as local origin for subsequent sums.
    *
    */
-  public accumulateTriangleToLineStringMomentsXY(
-    sweepBase: XAndY | undefined,
-    points: GrowableXYZArray
-  ) {
+  public accumulateTriangleToLineStringMomentsXY(sweepBase: XAndY | undefined, points: GrowableXYZArray) {
     const n = points.length;
     if (n > 1) {
       points.getPoint3dAtUncheckedPointIndex(0, this._point0);
@@ -500,12 +426,7 @@ export class MomentData {
       0,
       area
     );
-    const detJ = Geometry.crossProductXYXY(
-      vectorU.x,
-      vectorV.x,
-      vectorU.y,
-      vectorV.y
-    );
+    const detJ = Geometry.crossProductXYXY(vectorU.x, vectorV.x, vectorU.y, vectorV.y);
     const placement = Matrix4d.createRowValues(
       vectorU.x,
       vectorV.x,
@@ -551,11 +472,7 @@ export class MomentData {
    * * trap the origin if `this` needs an origin.
    * *
    */
-  public accumulateProductsFromOrigin(
-    origin: Point3d,
-    products: Matrix4d,
-    scale: number
-  ) {
+  public accumulateProductsFromOrigin(origin: Point3d, products: Matrix4d, scale: number) {
     this.setOriginIfNeeded(origin);
     this.sums.addTranslationSandwichInPlace(
       products,

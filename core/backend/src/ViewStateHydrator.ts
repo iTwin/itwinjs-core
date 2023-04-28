@@ -2,12 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import {
-  BentleyError,
-  CompressedId64Set,
-  Id64String,
-  Logger,
-} from "@itwin/core-bentley";
+import { BentleyError, CompressedId64Set, Id64String, Logger } from "@itwin/core-bentley";
 import {
   HydrateViewStateRequestProps,
   HydrateViewStateResponseProps,
@@ -25,64 +20,37 @@ export class ViewStateHydrator {
     this._imodel = iModel;
   }
 
-  public async getHydrateResponseProps(
-    options: HydrateViewStateRequestProps
-  ): Promise<HydrateViewStateResponseProps> {
+  public async getHydrateResponseProps(options: HydrateViewStateRequestProps): Promise<HydrateViewStateResponseProps> {
     const response: HydrateViewStateResponseProps = {};
     const promises = [];
     if (options.acsId) promises.push(this.handleAcsId(response, options.acsId));
     if (options.sheetViewAttachmentIds)
       promises.push(
-        this.handleSheetViewAttachmentIds(
-          response,
-          options.sheetViewAttachmentIds,
-          options.viewStateLoadProps
-        )
+        this.handleSheetViewAttachmentIds(response, options.sheetViewAttachmentIds, options.viewStateLoadProps)
       );
     // eslint-disable-next-line deprecation/deprecation
     if (options.notLoadedCategoryIds) {
       // eslint-disable-next-line deprecation/deprecation
-      promises.push(
-        this.handleCategoryIds(response, options.notLoadedCategoryIds)
-      );
+      promises.push(this.handleCategoryIds(response, options.notLoadedCategoryIds));
     }
     if (options.spatialViewId)
-      promises.push(
-        this.handleSpatialViewId(
-          response,
-          options.spatialViewId,
-          options.viewStateLoadProps
-        )
-      );
+      promises.push(this.handleSpatialViewId(response, options.spatialViewId, options.viewStateLoadProps));
     if (options.notLoadedModelSelectorStateModels)
-      promises.push(
-        this.handleModelSelectorStateModels(
-          response,
-          options.notLoadedModelSelectorStateModels
-        )
-      );
-    if (options.baseModelId)
-      promises.push(this.handleBaseModelId(response, options.baseModelId));
+      promises.push(this.handleModelSelectorStateModels(response, options.notLoadedModelSelectorStateModels));
+    if (options.baseModelId) promises.push(this.handleBaseModelId(response, options.baseModelId));
     await Promise.all(promises);
     return response;
   }
 
-  private async handleCategoryIds(
-    response: HydrateViewStateResponseProps,
-    categoryIds: CompressedId64Set
-  ) {
+  private async handleCategoryIds(response: HydrateViewStateResponseProps, categoryIds: CompressedId64Set) {
     const decompressedIds = CompressedId64Set.decompressArray(categoryIds);
-    const results: SubCategoryResultRow[] =
-      await this._imodel.querySubCategories(decompressedIds);
+    const results: SubCategoryResultRow[] = await this._imodel.querySubCategories(decompressedIds);
 
     // eslint-disable-next-line deprecation/deprecation
     response.categoryIdsResult = results;
   }
 
-  private async handleBaseModelId(
-    response: HydrateViewStateResponseProps,
-    baseModelId: Id64String
-  ) {
+  private async handleBaseModelId(response: HydrateViewStateResponseProps, baseModelId: Id64String) {
     let modelProps;
     try {
       modelProps = this._imodel.models.getModelJson({ id: baseModelId });
@@ -96,10 +64,7 @@ export class ViewStateHydrator {
     response.baseModelProps = modelProps;
   }
 
-  private async handleModelSelectorStateModels(
-    response: HydrateViewStateResponseProps,
-    models: CompressedId64Set
-  ) {
+  private async handleModelSelectorStateModels(response: HydrateViewStateResponseProps, models: CompressedId64Set) {
     const decompressedModelIds = CompressedId64Set.decompressSet(models);
 
     const modelJsonArray: ModelProps[] = [];
@@ -118,16 +83,10 @@ export class ViewStateHydrator {
     spatialViewId: Id64String,
     viewStateLoadProps?: ViewStateLoadProps
   ) {
-    response.spatialViewProps = await this._imodel.views.getViewStateProps(
-      spatialViewId,
-      viewStateLoadProps
-    );
+    response.spatialViewProps = await this._imodel.views.getViewStateProps(spatialViewId, viewStateLoadProps);
   }
 
-  private async handleAcsId(
-    response: HydrateViewStateResponseProps,
-    acsId: string
-  ) {
+  private async handleAcsId(response: HydrateViewStateResponseProps, acsId: string) {
     try {
       const props = this._imodel.elements.getElementProps(acsId);
       response.acsElementProps = props;
@@ -139,9 +98,7 @@ export class ViewStateHydrator {
     sheetViewAttachmentIds: CompressedId64Set,
     viewStateLoadProps?: ViewStateLoadProps
   ) {
-    const decompressedIds = CompressedId64Set.decompressSet(
-      sheetViewAttachmentIds
-    );
+    const decompressedIds = CompressedId64Set.decompressSet(sheetViewAttachmentIds);
     const attachmentProps: ViewAttachmentProps[] = [];
     for (const id of decompressedIds) {
       try {
@@ -153,10 +110,7 @@ export class ViewStateHydrator {
     for (const attachment of attachmentProps) {
       const loadView = async () => {
         try {
-          const view = await this._imodel.views.getViewStateProps(
-            attachment.view.id,
-            viewStateLoadProps
-          );
+          const view = await this._imodel.views.getViewStateProps(attachment.view.id, viewStateLoadProps);
           return view;
         } catch {
           return undefined;

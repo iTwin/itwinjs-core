@@ -35,24 +35,15 @@ The `getSize` method optionally overrides the default size of "64px".
 Each NavigationAidControl subclass should be registered by calling the `ConfigurableUiManager.registerControl` method.
 
 ```ts
-ConfigurableUiManager.registerControl(
-  SampleNavigationAidControl.navigationAidId,
-  SampleNavigationAidControl
-);
+ConfigurableUiManager.registerControl(SampleNavigationAidControl.navigationAidId, SampleNavigationAidControl);
 ```
 
 The `ConfigurableUiManager.initialize` function calls `ConfigurableUiManager.registerControl` for the
 two navigation aids provided in the `@itwin/appui-react` package:
 
 ```ts
-ConfigurableUiManager.registerControl(
-  DrawingNavigationAidControl.navigationAidId,
-  DrawingNavigationAidControl
-);
-ConfigurableUiManager.registerControl(
-  CubeNavigationAidControl.navigationAidId,
-  CubeNavigationAidControl
-);
+ConfigurableUiManager.registerControl(DrawingNavigationAidControl.navigationAidId, DrawingNavigationAidControl);
+ConfigurableUiManager.registerControl(CubeNavigationAidControl.navigationAidId, CubeNavigationAidControl);
 ```
 
 ### Sample Navigation Aid
@@ -83,12 +74,7 @@ export class SampleNavigationAidControl extends NavigationAidControl {
     super(info, options);
 
     // Provide iModelConnection and Viewport to Navigation Aid
-    this.reactNode = (
-      <SampleNavigationAid
-        iModelConnection={options.imodel}
-        viewport={options.viewport}
-      />
-    );
+    this.reactNode = <SampleNavigationAid iModelConnection={options.imodel} viewport={options.viewport} />;
   }
 
   // Override default size (64px)

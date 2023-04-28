@@ -79,8 +79,7 @@ async function processDirectory(dir: string) {
     if (isDirectory) {
       await processDirectory(fullPath);
     } else {
-      if (file.endsWith(".bim") || file.endsWith(".ibim"))
-        setToStandalone(fullPath);
+      if (file.endsWith(".bim") || file.endsWith(".ibim")) setToStandalone(fullPath);
     }
   }
 

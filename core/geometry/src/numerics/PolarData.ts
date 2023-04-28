@@ -102,9 +102,7 @@ export class PolarData {
         const xx = known.x * known.x;
         const yy = rr - xx;
         if (yy < 0.0) {
-          result.push(
-            known.cloneScalarsWithState(ConstraintState.impossibleValues)
-          );
+          result.push(known.cloneScalarsWithState(ConstraintState.impossibleValues));
         } else {
           const y = Math.sqrt(yy);
           result.push(
@@ -127,31 +125,15 @@ export class PolarData {
           );
         }
       } else if (known.theta !== undefined) {
-        const r = Geometry.conditionalDivideFraction(
-          known.x,
-          known.theta.cos()
-        );
+        const r = Geometry.conditionalDivideFraction(known.x, known.theta.cos());
         // test 4*theta to isolate either positive or negative PI/2 case ...
         if (r === undefined) {
           // Anywhere on y axis does has x=0, this angle . . .
           const q = known.cloneScalarsWithState(ConstraintState.onCurve);
-          q.geometry = LineSegment3d.createXYXY(
-            0,
-            PolarData._defaultRadius,
-            0,
-            PolarData._defaultRadius
-          );
+          q.geometry = LineSegment3d.createXYXY(0, PolarData._defaultRadius, 0, PolarData._defaultRadius);
         } else {
           const y = r * known.theta.sin();
-          result.push(
-            PolarData.createMixedScalars(
-              ConstraintState.singlePoint,
-              known.x,
-              y,
-              r,
-              known.theta
-            )
-          );
+          result.push(PolarData.createMixedScalars(ConstraintState.singlePoint, known.x, y, r, known.theta));
         }
       } else {
         // only x known --- fill out a vertical line
@@ -172,9 +154,7 @@ export class PolarData {
         const yy = known.y * known.y;
         const xx = rr - yy;
         if (xx < 0.0) {
-          result.push(
-            known.cloneScalarsWithState(ConstraintState.impossibleValues)
-          );
+          result.push(known.cloneScalarsWithState(ConstraintState.impossibleValues));
         } else {
           const x = Math.sqrt(xx);
           result.push(
@@ -197,33 +177,15 @@ export class PolarData {
           );
         }
       } else if (known.theta !== undefined) {
-        const r = Geometry.conditionalDivideFraction(
-          known.y,
-          known.theta.sin()
-        );
+        const r = Geometry.conditionalDivideFraction(known.y, known.theta.sin());
         // test 4*theta to isolate either positive or negative PI/2 case ...
         if (r === undefined) {
           // Anywhere on y axis does has x=0, this angle . . .
           const q = known.cloneScalarsWithState(ConstraintState.onCurve);
-          q.geometry = LineSegment3d.createXYZXYZ(
-            0,
-            PolarData._defaultRadius,
-            0,
-            0,
-            PolarData._defaultRadius,
-            0
-          );
+          q.geometry = LineSegment3d.createXYZXYZ(0, PolarData._defaultRadius, 0, 0, PolarData._defaultRadius, 0);
         } else {
           const x = r * known.theta.cos();
-          result.push(
-            PolarData.createMixedScalars(
-              ConstraintState.singlePoint,
-              x,
-              known.y,
-              r,
-              known.theta
-            )
-          );
+          result.push(PolarData.createMixedScalars(ConstraintState.singlePoint, x, known.y, r, known.theta));
         }
       } else {
         // only x known --- fill out a horizontal line

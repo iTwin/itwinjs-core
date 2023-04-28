@@ -7,10 +7,7 @@ import * as fs from "fs";
 import * as https from "https";
 import * as enableWs from "express-ws";
 import { Logger } from "@itwin/core-bentley";
-import {
-  BentleyCloudRpcConfiguration,
-  BentleyCloudRpcManager,
-} from "@itwin/core-common";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@itwin/core-common";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
 import { LocalhostIpcHost } from "@itwin/core-backend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
@@ -37,8 +34,7 @@ const dtaWebMain = async () => {
     } catch (_err) {}
   }
 
-  if (serverConfig === undefined)
-    serverConfig = { port: 3001, baseUrl: "https://localhost" };
+  if (serverConfig === undefined) serverConfig = { port: 3001, baseUrl: "https://localhost" };
 
   Logger.logTrace("SVT", `config = ${JSON.stringify(serverConfig)}`);
 
@@ -54,18 +50,9 @@ const dtaWebMain = async () => {
 
   // Enable CORS for all apis
   app.all("/*", (_req: any, res: any, next: any) => {
-    res.header(
-      "Access-Control-Allow-Origin",
-      BentleyCloudRpcConfiguration.accessControl.allowOrigin
-    );
-    res.header(
-      "Access-Control-Allow-Methods",
-      BentleyCloudRpcConfiguration.accessControl.allowMethods
-    );
-    res.header(
-      "Access-Control-Allow-Headers",
-      BentleyCloudRpcConfiguration.accessControl.allowHeaders
-    );
+    res.header("Access-Control-Allow-Origin", BentleyCloudRpcConfiguration.accessControl.allowOrigin);
+    res.header("Access-Control-Allow-Methods", BentleyCloudRpcConfiguration.accessControl.allowMethods);
+    res.header("Access-Control-Allow-Headers", BentleyCloudRpcConfiguration.accessControl.allowHeaders);
     next();
   });
 
@@ -73,37 +60,22 @@ const dtaWebMain = async () => {
   // Routes
   // --------------------------------------------
   (app as any).ws("/ipc", (ws: any, _req: any) => LocalhostIpcHost.connect(ws));
-  app.get("/v3/swagger.json", (req: any, res: any) =>
-    cloudConfig.protocol.handleOpenApiDescriptionRequest(req, res)
-  );
-  app.post("*", async (req: any, res: any) =>
-    cloudConfig.protocol.handleOperationPostRequest(req, res)
-  );
-  app.get(/\/imodel\//, async (req: any, res: any) =>
-    cloudConfig.protocol.handleOperationGetRequest(req, res)
-  );
-  app.use("*", (_req: any, res: any) =>
-    res.send("<h1>iTwin.js RPC Server</h1>")
-  );
+  app.get("/v3/swagger.json", (req: any, res: any) => cloudConfig.protocol.handleOpenApiDescriptionRequest(req, res));
+  app.post("*", async (req: any, res: any) => cloudConfig.protocol.handleOperationPostRequest(req, res));
+  app.get(/\/imodel\//, async (req: any, res: any) => cloudConfig.protocol.handleOperationGetRequest(req, res));
+  app.use("*", (_req: any, res: any) => res.send("<h1>iTwin.js RPC Server</h1>"));
 
   // ---------------------------------------------
   // Run the server...
   // ---------------------------------------------
   app.set("port", serverConfig.port);
 
-  const announce = () =>
-    console.log(
-      `***** display-test-app listening on ${serverConfig.baseUrl}:${app.get(
-        "port"
-      )}`
-    );
+  const announce = () => console.log(`***** display-test-app listening on ${serverConfig.baseUrl}:${app.get("port")}`);
 
   if (serverOptions === undefined) {
     DtaRpcInterface.backendServer = app.listen(app.get("port"), announce);
   } else {
-    DtaRpcInterface.backendServer = https
-      .createServer(serverOptions, app)
-      .listen(app.get("port"), announce);
+    DtaRpcInterface.backendServer = https.createServer(serverOptions, app).listen(app.get("port"), announce);
   }
 };
 

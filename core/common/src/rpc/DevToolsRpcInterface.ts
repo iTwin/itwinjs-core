@@ -50,10 +50,7 @@ export abstract class DevToolsRpcInterface extends RpcInterface {
   }
 
   // Returns JSON object with backend performance and memory statistics
-  public async stats(
-    _iModelToken: IModelRpcProps,
-    _options: DevToolsStatsOptions
-  ): Promise<any> {
+  public async stats(_iModelToken: IModelRpcProps, _options: DevToolsStatsOptions): Promise<any> {
     return this.forward(arguments);
   }
 

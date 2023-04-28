@@ -162,14 +162,8 @@ export class InterpolationCurve3dOptions {
     this._order = Geometry.resolveToUndefined(order, 0);
     this._closed = Geometry.resolveToUndefined(closed, false);
     this._isChordLenKnots = Geometry.resolveToUndefined(isChordLenKnots, 0);
-    this._isColinearTangents = Geometry.resolveToUndefined(
-      isColinearTangents,
-      0
-    );
-    this._isChordLenTangents = Geometry.resolveToUndefined(
-      isChordLenTangent,
-      0
-    );
+    this._isColinearTangents = Geometry.resolveToUndefined(isColinearTangents, 0);
+    this._isChordLenTangents = Geometry.resolveToUndefined(isChordLenTangent, 0);
     this._isNaturalTangents = Geometry.resolveToUndefined(isNaturalTangents, 0);
     this._startTangent = startTangent;
     this._endTangent = endTangent;
@@ -182,26 +176,17 @@ export class InterpolationCurve3dOptions {
     };
     if (this._order !== undefined) props.order = this._order;
     if (this._closed !== undefined) props.closed = this._closed;
-    if (this._isChordLenKnots !== undefined)
-      props.isChordLenKnots = this._isChordLenKnots;
-    if (this._isColinearTangents !== undefined)
-      props.isColinearTangents = this._isColinearTangents;
-    if (this._isChordLenTangents !== undefined)
-      props.isChordLenTangents = this._isChordLenTangents;
-    if (this._isNaturalTangents !== undefined)
-      props.isNaturalTangents = this._isNaturalTangents;
-    if (this._startTangent !== undefined)
-      props.startTangent = this._startTangent?.toArray();
-    if (this._endTangent !== undefined)
-      props.endTangent = this._endTangent?.toArray();
+    if (this._isChordLenKnots !== undefined) props.isChordLenKnots = this._isChordLenKnots;
+    if (this._isColinearTangents !== undefined) props.isColinearTangents = this._isColinearTangents;
+    if (this._isChordLenTangents !== undefined) props.isChordLenTangents = this._isChordLenTangents;
+    if (this._isNaturalTangents !== undefined) props.isNaturalTangents = this._isNaturalTangents;
+    if (this._startTangent !== undefined) props.startTangent = this._startTangent?.toArray();
+    if (this._endTangent !== undefined) props.endTangent = this._endTangent?.toArray();
     return props;
   }
   /** Clone with strongly typed members reduced to simple json. */
   public clone(): InterpolationCurve3dOptions {
-    const clone = new InterpolationCurve3dOptions(
-      Point3dArray.clonePoint3dArray(this.fitPoints),
-      this.knots?.slice()
-    );
+    const clone = new InterpolationCurve3dOptions(Point3dArray.clonePoint3dArray(this.fitPoints), this.knots?.slice());
     clone._order = this.order;
     clone._closed = this.closed;
     clone._isChordLenKnots = this.isChordLenKnots;
@@ -214,9 +199,7 @@ export class InterpolationCurve3dOptions {
   }
 
   /** Clone with strongly typed members reduced to simple json. */
-  public static create(
-    source: InterpolationCurve3dProps
-  ): InterpolationCurve3dOptions {
+  public static create(source: InterpolationCurve3dProps): InterpolationCurve3dOptions {
     const result = new InterpolationCurve3dOptions(
       Point3dArray.clonePoint3dArray(source.fitPoints),
       source.knots?.slice()
@@ -227,20 +210,13 @@ export class InterpolationCurve3dOptions {
     result._isColinearTangents = source.isColinearTangents;
     result._isChordLenTangents = source.isChordLenTangents;
     result._isNaturalTangents = source.isNaturalTangents;
-    result._startTangent = source.startTangent
-      ? Vector3d.fromJSON(source.startTangent)
-      : undefined;
-    result._endTangent = source.endTangent
-      ? Vector3d.fromJSON(source.endTangent)
-      : undefined;
+    result._startTangent = source.startTangent ? Vector3d.fromJSON(source.startTangent) : undefined;
+    result._endTangent = source.endTangent ? Vector3d.fromJSON(source.endTangent) : undefined;
     return result;
   }
   // ugh.
   // vector equality test with awkward rule that 000 matches undefined.
-  private static areAlmostEqualAllow000AsUndefined(
-    a: Vector3d | undefined,
-    b: Vector3d | undefined
-  ): boolean {
+  private static areAlmostEqualAllow000AsUndefined(a: Vector3d | undefined, b: Vector3d | undefined): boolean {
     if (a !== undefined && a.maxAbs() === 0) a = undefined;
     if (b !== undefined && b.maxAbs() === 0) b = undefined;
     if (a !== undefined && b !== undefined) return a.isAlmostEqual(b);
@@ -255,40 +231,14 @@ export class InterpolationCurve3dOptions {
       if (
         Geometry.areEqualAllowUndefined(dataA.order, dataB.order) &&
         Geometry.areEqualAllowUndefined(dataA.closed, dataB.closed) &&
-        Geometry.areEqualAllowUndefined(
-          dataA.isChordLenKnots,
-          dataB.isChordLenKnots
-        ) &&
-        Geometry.areEqualAllowUndefined(
-          dataA.isColinearTangents,
-          dataB.isColinearTangents
-        ) &&
-        Geometry.areEqualAllowUndefined(
-          dataA.isNaturalTangents,
-          dataB.isNaturalTangents
-        ) &&
-        this.areAlmostEqualAllow000AsUndefined(
-          dataA.startTangent,
-          dataB.startTangent
-        ) &&
-        this.areAlmostEqualAllow000AsUndefined(
-          dataA.endTangent,
-          dataB.endTangent
-        ) &&
-        Geometry.almostEqualArrays(
-          dataA.fitPoints,
-          dataB.fitPoints,
-          (a: Point3d, b: Point3d) => a.isAlmostEqual(b)
-        )
+        Geometry.areEqualAllowUndefined(dataA.isChordLenKnots, dataB.isChordLenKnots) &&
+        Geometry.areEqualAllowUndefined(dataA.isColinearTangents, dataB.isColinearTangents) &&
+        Geometry.areEqualAllowUndefined(dataA.isNaturalTangents, dataB.isNaturalTangents) &&
+        this.areAlmostEqualAllow000AsUndefined(dataA.startTangent, dataB.startTangent) &&
+        this.areAlmostEqualAllow000AsUndefined(dataA.endTangent, dataB.endTangent) &&
+        Geometry.almostEqualArrays(dataA.fitPoints, dataB.fitPoints, (a: Point3d, b: Point3d) => a.isAlmostEqual(b))
       ) {
-        if (
-          Geometry.almostEqualNumberArrays(
-            dataA.knots,
-            dataB.knots,
-            (a: number, b: number) => a === b
-          )
-        )
-          return true;
+        if (Geometry.almostEqualNumberArrays(dataA.knots, dataB.knots, (a: number, b: number) => a === b)) return true;
         if (dataA.knots === undefined && dataB.knots === undefined) return true;
         /* alas .. need to allow tricky mismatch of end replication */
         let knotsA = dataA.knots,
@@ -306,20 +256,10 @@ export class InterpolationCurve3dOptions {
             dataB.isChordLenKnots,
             dataB.closed
           );
-        knotsA = BSplineCurveOps.C2CubicFit.convertCubicKnotVectorToFitParams(
-          knotsA,
-          dataA.fitPoints.length,
-          false
-        );
-        knotsB = BSplineCurveOps.C2CubicFit.convertCubicKnotVectorToFitParams(
-          knotsB,
-          dataB.fitPoints.length,
-          false
-        );
-        return Geometry.almostEqualNumberArrays(
-          knotsA,
-          knotsB,
-          (a: number, b: number) => Geometry.isAlmostEqualNumber(a, b)
+        knotsA = BSplineCurveOps.C2CubicFit.convertCubicKnotVectorToFitParams(knotsA, dataA.fitPoints.length, false);
+        knotsB = BSplineCurveOps.C2CubicFit.convertCubicKnotVectorToFitParams(knotsB, dataB.fitPoints.length, false);
+        return Geometry.almostEqualNumberArrays(knotsA, knotsB, (a: number, b: number) =>
+          Geometry.isAlmostEqualNumber(a, b)
         );
       }
     }
@@ -349,10 +289,7 @@ export class InterpolationCurve3d extends ProxyCurve {
   /**
    * CAPTURE properties and proxy curve.
    */
-  private constructor(
-    properties: InterpolationCurve3dOptions,
-    proxyCurve: CurvePrimitive
-  ) {
+  private constructor(properties: InterpolationCurve3dOptions, proxyCurve: CurvePrimitive) {
     super(proxyCurve);
     this._options = properties;
   }
@@ -383,11 +320,8 @@ export class InterpolationCurve3d extends ProxyCurve {
   /** Create an [[InterpolationCurve3d]]
    * * The options object is captured into the new curve object (not copied)
    */
-  public static createCapture(
-    options: InterpolationCurve3dOptions
-  ): InterpolationCurve3d | undefined {
-    const proxyCurve =
-      BSplineCurve3d.createFromInterpolationCurve3dOptions(options);
+  public static createCapture(options: InterpolationCurve3dOptions): InterpolationCurve3d | undefined {
+    const proxyCurve = BSplineCurve3d.createFromInterpolationCurve3dOptions(options);
     if (proxyCurve) return new InterpolationCurve3d(options, proxyCurve);
     return undefined;
   }
@@ -428,28 +362,20 @@ export class InterpolationCurve3d extends ProxyCurve {
     const proxyOk = this._proxyCurve.tryTransformInPlace(transform);
     if (proxyOk) {
       transform.multiplyPoint3dArrayInPlace(this._options.fitPoints);
-      if (this._options.startTangent)
-        transform.multiplyVectorInPlace(this._options.startTangent);
-      if (this._options.endTangent)
-        transform.multiplyVectorInPlace(this._options.endTangent);
+      if (this._options.startTangent) transform.multiplyVectorInPlace(this._options.startTangent);
+      if (this._options.endTangent) transform.multiplyVectorInPlace(this._options.endTangent);
     }
     return proxyOk;
   }
 
   /** Return a deep clone */
   public override clone(): InterpolationCurve3d {
-    return new InterpolationCurve3d(
-      this._options.clone(),
-      this._proxyCurve.clone()
-    );
+    return new InterpolationCurve3d(this._options.clone(), this._proxyCurve.clone());
   }
 
   public override isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof InterpolationCurve3d) {
-      return InterpolationCurve3dOptions.areAlmostEqual(
-        this._options,
-        other._options
-      );
+      return InterpolationCurve3dOptions.areAlmostEqual(this._options, other._options);
     }
     return false;
   }

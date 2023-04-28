@@ -76,14 +76,8 @@ export class GroundPlane {
 
     return new this({
       elevation: props.elevation,
-      aboveColor:
-        undefined !== props.aboveColor
-          ? ColorDef.fromJSON(props.aboveColor)
-          : undefined,
-      belowColor:
-        undefined !== props.belowColor
-          ? ColorDef.fromJSON(props.belowColor)
-          : undefined,
+      aboveColor: undefined !== props.aboveColor ? ColorDef.fromJSON(props.aboveColor) : undefined,
+      belowColor: undefined !== props.belowColor ? ColorDef.fromJSON(props.belowColor) : undefined,
     });
   }
 

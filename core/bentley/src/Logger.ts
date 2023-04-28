@@ -13,11 +13,7 @@ import { IDisposable } from "./Disposable";
 /** Defines the *signature* for a log function.
  * @public
  */
-export type LogFunction = (
-  category: string,
-  message: string,
-  metaData: LoggingMetaData
-) => void;
+export type LogFunction = (category: string, message: string, metaData: LoggingMetaData) => void;
 
 /** Use to categorize logging messages by severity.
  * @public
@@ -91,21 +87,10 @@ export class Logger {
 
   /** Initialize the logger to output to the console. */
   public static initializeToConsole(): void {
-    const logConsole =
-      (level: string) =>
-      (category: string, message: string, metaData: LoggingMetaData) =>
-        console.log(
-          `${level} | ${category} | ${message} ${Logger.stringifyMetaData(
-            metaData
-          )}`
-        ); // eslint-disable-line no-console
+    const logConsole = (level: string) => (category: string, message: string, metaData: LoggingMetaData) =>
+      console.log(`${level} | ${category} | ${message} ${Logger.stringifyMetaData(metaData)}`); // eslint-disable-line no-console
 
-    Logger.initialize(
-      logConsole("Error"),
-      logConsole("Warning"),
-      logConsole("Info"),
-      logConsole("Trace")
-    );
+    Logger.initialize(logConsole("Error"), logConsole("Warning"), logConsole("Info"), logConsole("Trace"));
   }
 
   /** merge the supplied metadata with all static metadata into one object */
@@ -182,32 +167,22 @@ export class Logger {
     const validProps = ["defaultLevel", "categoryLevels"];
     for (const prop of Object.keys(config)) {
       if (!validProps.includes(prop))
-        throw new BentleyError(
-          IModelStatus.BadArg,
-          `LoggerLevelsConfig - unrecognized property: ${prop}`
-        );
+        throw new BentleyError(IModelStatus.BadArg, `LoggerLevelsConfig - unrecognized property: ${prop}`);
       if (prop === "defaultLevel") {
         if (!Logger.isLogLevel(config.defaultLevel))
           throw new BentleyError(
             IModelStatus.BadArg,
-            `LoggerLevelsConfig.defaultLevel must be a LogLevel. Invalid value: ${JSON.stringify(
-              config.defaultLevel
-            )}`
+            `LoggerLevelsConfig.defaultLevel must be a LogLevel. Invalid value: ${JSON.stringify(config.defaultLevel)}`
           );
       } else if (prop === "categoryLevels") {
         const value = config[prop];
         if (!Array.isArray(value))
           throw new BentleyError(
             IModelStatus.BadArg,
-            `LoggerLevelsConfig.categoryLevels must be an array. Invalid value: ${JSON.stringify(
-              value
-            )}`
+            `LoggerLevelsConfig.categoryLevels must be an array. Invalid value: ${JSON.stringify(value)}`
           );
         for (const item of config[prop]) {
-          if (
-            !item.hasOwnProperty("category") ||
-            !item.hasOwnProperty("logLevel")
-          )
+          if (!item.hasOwnProperty("category") || !item.hasOwnProperty("logLevel"))
             throw new BentleyError(
               IModelStatus.BadArg,
               `LoggerLevelsConfig.categoryLevels - each item must be a LoggerCategoryAndLevel {category: logLevel:}. Invalid value: ${JSON.stringify(
@@ -264,19 +239,12 @@ export class Logger {
    * @param message  The message.
    * @param metaData  Optional data for the message
    */
-  public static logError(
-    category: string,
-    message: string,
-    metaData?: LoggingMetaData
-  ): void {
-    if (Logger._logError && Logger.isEnabled(category, LogLevel.Error))
-      Logger._logError(category, message, metaData);
+  public static logError(category: string, message: string, metaData?: LoggingMetaData): void {
+    if (Logger._logError && Logger.isEnabled(category, LogLevel.Error)) Logger._logError(category, message, metaData);
   }
 
   private static getExceptionMessage(err: unknown): string {
-    const stack = Logger.logExceptionCallstacks
-      ? `\n${BentleyError.getErrorStack(err)}`
-      : "";
+    const stack = Logger.logExceptionCallstacks ? `\n${BentleyError.getErrorStack(err)}` : "";
     return BentleyError.getErrorMessage(err) + stack;
   }
 
@@ -288,11 +256,7 @@ export class Logger {
    * @param log The logger output function to use - defaults to Logger.logError
    * @param metaData  Optional data for the message
    */
-  public static logException(
-    category: string,
-    err: any,
-    log: LogFunction = Logger.logError
-  ): void {
+  public static logException(category: string, err: any, log: LogFunction = Logger.logError): void {
     log(category, Logger.getExceptionMessage(err), () => {
       return {
         ...BentleyError.getErrorMetadata(err),
@@ -306,11 +270,7 @@ export class Logger {
    * @param message  The message.
    * @param metaData  Optional data for the message
    */
-  public static logWarning(
-    category: string,
-    message: string,
-    metaData?: LoggingMetaData
-  ): void {
+  public static logWarning(category: string, message: string, metaData?: LoggingMetaData): void {
     if (Logger._logWarning && Logger.isEnabled(category, LogLevel.Warning))
       Logger._logWarning(category, message, metaData);
   }
@@ -320,13 +280,8 @@ export class Logger {
    * @param message  The message.
    * @param metaData  Optional data for the message
    */
-  public static logInfo(
-    category: string,
-    message: string,
-    metaData?: LoggingMetaData
-  ): void {
-    if (Logger._logInfo && Logger.isEnabled(category, LogLevel.Info))
-      Logger._logInfo(category, message, metaData);
+  public static logInfo(category: string, message: string, metaData?: LoggingMetaData): void {
+    if (Logger._logInfo && Logger.isEnabled(category, LogLevel.Info)) Logger._logInfo(category, message, metaData);
   }
 
   /** Log the specified message to the **trace** stream.
@@ -334,13 +289,8 @@ export class Logger {
    * @param message  The message.
    * @param metaData  Optional data for the message
    */
-  public static logTrace(
-    category: string,
-    message: string,
-    metaData?: LoggingMetaData
-  ): void {
-    if (Logger._logTrace && Logger.isEnabled(category, LogLevel.Trace))
-      Logger._logTrace(category, message, metaData);
+  public static logTrace(category: string, message: string, metaData?: LoggingMetaData): void {
+    if (Logger._logTrace && Logger.isEnabled(category, LogLevel.Trace)) Logger._logTrace(category, message, metaData);
   }
 }
 
@@ -364,41 +314,26 @@ export class PerfLogger implements IDisposable {
     this._operation = operation;
     this._metaData = metaData;
 
-    if (
-      !Logger.isEnabled(BentleyLoggerCategory.Performance, PerfLogger._severity)
-    ) {
+    if (!Logger.isEnabled(BentleyLoggerCategory.Performance, PerfLogger._severity)) {
       this._startTimeStamp = 0;
       return;
     }
 
-    Logger.logInfo(
-      BentleyLoggerCategory.Performance,
-      `${this._operation},START`,
-      this._metaData
-    );
+    Logger.logInfo(BentleyLoggerCategory.Performance, `${this._operation},START`, this._metaData);
     this._startTimeStamp = new Date().getTime(); // take timestamp
   }
 
   private logMessage(): void {
     const endTimeStamp: number = new Date().getTime();
-    if (
-      !Logger.isEnabled(BentleyLoggerCategory.Performance, PerfLogger._severity)
-    )
-      return;
+    if (!Logger.isEnabled(BentleyLoggerCategory.Performance, PerfLogger._severity)) return;
 
-    Logger.logInfo(
-      BentleyLoggerCategory.Performance,
-      `${this._operation},END`,
-      () => {
-        const mdata = this._metaData
-          ? BentleyError.getMetaData(this._metaData)
-          : {};
-        return {
-          ...mdata,
-          TimeElapsed: endTimeStamp - this._startTimeStamp, // eslint-disable-line @typescript-eslint/naming-convention
-        };
-      }
-    );
+    Logger.logInfo(BentleyLoggerCategory.Performance, `${this._operation},END`, () => {
+      const mdata = this._metaData ? BentleyError.getMetaData(this._metaData) : {};
+      return {
+        ...mdata,
+        TimeElapsed: endTimeStamp - this._startTimeStamp, // eslint-disable-line @typescript-eslint/naming-convention
+      };
+    });
   }
 
   public dispose(): void {

@@ -42,8 +42,7 @@ export class Debug {
   /** If [[Debug.evaluateEnabled]] is true, returns the status of the currently-bound framebuffer. */
   public static checkFrameBufferStatus(): GL.FrameBuffer.Status {
     return this.evaluate(
-      () =>
-        System.instance.context.checkFramebufferStatus(GL.FrameBuffer.TARGET),
+      () => System.instance.context.checkFramebufferStatus(GL.FrameBuffer.TARGET),
       GL.FrameBuffer.Status.Complete
     );
   }

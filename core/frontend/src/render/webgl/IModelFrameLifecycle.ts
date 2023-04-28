@@ -52,16 +52,8 @@ export interface FrameCameraViewData {
 
 /** @internal */
 export class IModelFrameLifecycle {
-  public static readonly onBeforeRender = new BeEvent<
-    (data: FrameBeforeRenderData) => void
-  >();
-  public static readonly onRenderOpaque = new BeEvent<
-    (data: FrameRenderData) => void
-  >();
-  public static readonly onChangeCameraFrustum = new BeEvent<
-    (data: FrameCameraFrustumData) => void
-  >();
-  public static readonly onChangeCameraView = new BeEvent<
-    (data: FrameCameraViewData) => void
-  >();
+  public static readonly onBeforeRender = new BeEvent<(data: FrameBeforeRenderData) => void>();
+  public static readonly onRenderOpaque = new BeEvent<(data: FrameRenderData) => void>();
+  public static readonly onChangeCameraFrustum = new BeEvent<(data: FrameCameraFrustumData) => void>();
+  public static readonly onChangeCameraView = new BeEvent<(data: FrameCameraViewData) => void>();
 }

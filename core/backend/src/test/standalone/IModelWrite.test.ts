@@ -5,13 +5,7 @@
 
 import { assert, expect } from "chai";
 import * as semver from "semver";
-import {
-  AccessToken,
-  DbResult,
-  GuidString,
-  Id64,
-  Id64String,
-} from "@itwin/core-bentley";
+import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import {
   Code,
   ColorDef,
@@ -46,32 +40,19 @@ import { ECSqlStatement } from "../../ECSqlStatement";
 import { HubMock } from "../../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 
-export async function createNewModelAndCategory(
-  rwIModel: BriefcaseDb,
-  parent?: Id64String
-) {
+export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
   // Create a new physical model.
-  const [, modelId] =
-    await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(
-      rwIModel,
-      IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"),
-      true,
-      parent
-    );
+  const [, modelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(
+    rwIModel,
+    IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"),
+    true,
+    parent
+  );
 
   // Find or create a SpatialCategory.
-  const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(
-    IModel.dictionaryId
-  );
-  const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(
-    dictionary,
-    "ThisTestSpatialCategory"
-  );
-  const category = SpatialCategory.create(
-    rwIModel,
-    IModel.dictionaryId,
-    newCategoryCode.value
-  );
+  const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
+  const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
+  const category = SpatialCategory.create(rwIModel, IModel.dictionaryId, newCategoryCode.value);
   const spatialCategoryId = rwIModel.elements.insertElement(category.toJSON());
   category.setDefaultAppearance(new SubCategoryAppearance({ color: 0xff0000 }));
   // const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
@@ -92,8 +73,7 @@ describe("IModelWriteTest", () => {
     HubMock.startup("IModelWriteTest", KnownTestLocations.outputDir);
 
     testITwinId = HubMock.iTwinId;
-    readWriteTestIModelName =
-      IModelTestUtils.generateUniqueName("ReadWriteTest");
+    readWriteTestIModelName = IModelTestUtils.generateUniqueName("ReadWriteTest");
     readWriteTestIModelId = await HubWrappers.recreateIModel({
       accessToken: managerAccessToken,
       iTwinId: testITwinId,
@@ -101,19 +81,12 @@ describe("IModelWriteTest", () => {
     });
 
     // Purge briefcases that are close to reaching the acquire limit
-    await HubWrappers.purgeAcquiredBriefcasesById(
-      managerAccessToken,
-      readWriteTestIModelId
-    );
+    await HubWrappers.purgeAcquiredBriefcasesById(managerAccessToken, readWriteTestIModelId);
   });
 
   after(async () => {
     try {
-      await HubWrappers.deleteIModel(
-        managerAccessToken,
-        "iModelJsIntegrationTest",
-        readWriteTestIModelName
-      );
+      await HubWrappers.deleteIModel(managerAccessToken, "iModelJsIntegrationTest", readWriteTestIModelName);
       HubMock.shutdown();
     } catch (err) {
       // eslint-disable-next-line no-console
@@ -122,9 +95,7 @@ describe("IModelWriteTest", () => {
   });
 
   it("should handle undo/redo", async () => {
-    const adminAccessToken = await HubWrappers.getAccessToken(
-      TestUserType.SuperManager
-    );
+    const adminAccessToken = await HubWrappers.getAccessToken(TestUserType.SuperManager);
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesUndoRedoPushTest";
     const iModelId = await IModelHost.hubAccess.queryIModelByName({
@@ -154,15 +125,8 @@ describe("IModelWriteTest", () => {
     });
 
     // create and insert a new model with code1
-    const code1 = IModelTestUtils.getUniqueModelCode(
-      rwIModel,
-      "newPhysicalModel1"
-    );
-    await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(
-      rwIModel,
-      code1,
-      true
-    );
+    const code1 = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel1");
+    await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(rwIModel, code1, true);
     assert.isTrue(rwIModel.elements.getElement(code1) !== undefined); // throws if element is not found
 
     // create a local txn with that change
@@ -181,15 +145,8 @@ describe("IModelWriteTest", () => {
     }
 
     // Create and insert a model with code2
-    const code2 = IModelTestUtils.getUniqueModelCode(
-      rwIModel,
-      "newPhysicalModel2"
-    );
-    await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(
-      rwIModel,
-      code2,
-      true
-    );
+    const code2 = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel2");
+    await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(rwIModel, code2, true);
     rwIModel.saveChanges("inserted generic objects");
 
     // The iModel should have a model with code1 and not code2
@@ -228,82 +185,66 @@ describe("IModelWriteTest", () => {
         }
       );
 
-      iModel.withPreparedSqliteStatement(
-        "INSERT INTO Test(Name,Code) VALUES(?,?)",
-        (stmt: SqliteStatement) => {
-          stmt.bindValue(1, "Dummy 1");
-          stmt.bindValue(2, 100);
-          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-        }
-      );
+      iModel.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(?,?)", (stmt: SqliteStatement) => {
+        stmt.bindValue(1, "Dummy 1");
+        stmt.bindValue(2, 100);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
 
-      iModel.withPreparedSqliteStatement(
-        "INSERT INTO Test(Name,Code) VALUES(?,?)",
-        (stmt: SqliteStatement) => {
-          stmt.bindValues(["Dummy 2", 200]);
-          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-        }
-      );
+      iModel.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(?,?)", (stmt: SqliteStatement) => {
+        stmt.bindValues(["Dummy 2", 200]);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
 
-      iModel.withPreparedSqliteStatement(
-        "INSERT INTO Test(Name,Code) VALUES(:p1,:p2)",
-        (stmt: SqliteStatement) => {
-          stmt.bindValue(":p1", "Dummy 3");
-          stmt.bindValue(":p2", 300);
-          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-        }
-      );
+      iModel.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(:p1,:p2)", (stmt: SqliteStatement) => {
+        stmt.bindValue(":p1", "Dummy 3");
+        stmt.bindValue(":p2", 300);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
 
-      iModel.withPreparedSqliteStatement(
-        "INSERT INTO Test(Name,Code) VALUES(:p1,:p2)",
-        (stmt: SqliteStatement) => {
-          stmt.bindValues({ ":p1": "Dummy 4", ":p2": 400 });
-          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-        }
-      );
+      iModel.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(:p1,:p2)", (stmt: SqliteStatement) => {
+        stmt.bindValues({ ":p1": "Dummy 4", ":p2": 400 });
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
 
       iModel.saveChanges();
 
-      iModel.withPreparedSqliteStatement(
-        "SELECT Id,Name,Code FROM Test ORDER BY Id",
-        (stmt: SqliteStatement) => {
-          for (let i: number = 1; i <= 4; i++) {
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            assert.equal(stmt.getColumnCount(), 3);
-            const val0: SqliteValue = stmt.getValue(0);
-            assert.equal(val0.columnName, "Id");
-            assert.equal(val0.type, SqliteValueType.Integer);
-            assert.isFalse(val0.isNull);
-            assert.equal(val0.getInteger(), i);
+      iModel.withPreparedSqliteStatement("SELECT Id,Name,Code FROM Test ORDER BY Id", (stmt: SqliteStatement) => {
+        for (let i: number = 1; i <= 4; i++) {
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          assert.equal(stmt.getColumnCount(), 3);
+          const val0: SqliteValue = stmt.getValue(0);
+          assert.equal(val0.columnName, "Id");
+          assert.equal(val0.type, SqliteValueType.Integer);
+          assert.isFalse(val0.isNull);
+          assert.equal(val0.getInteger(), i);
 
-            const val1: SqliteValue = stmt.getValue(1);
-            assert.equal(val1.columnName, "Name");
-            assert.equal(val1.type, SqliteValueType.String);
-            assert.isFalse(val1.isNull);
-            assert.equal(val1.getString(), `Dummy ${i}`);
+          const val1: SqliteValue = stmt.getValue(1);
+          assert.equal(val1.columnName, "Name");
+          assert.equal(val1.type, SqliteValueType.String);
+          assert.isFalse(val1.isNull);
+          assert.equal(val1.getString(), `Dummy ${i}`);
 
-            const val2: SqliteValue = stmt.getValue(2);
-            assert.equal(val2.columnName, "Code");
-            assert.equal(val2.type, SqliteValueType.Integer);
-            assert.isFalse(val2.isNull);
-            assert.equal(val2.getInteger(), i * 100);
+          const val2: SqliteValue = stmt.getValue(2);
+          assert.equal(val2.columnName, "Code");
+          assert.equal(val2.type, SqliteValueType.Integer);
+          assert.isFalse(val2.isNull);
+          assert.equal(val2.getInteger(), i * 100);
 
-            const row: any = stmt.getRow();
-            assert.equal(row.id, i);
-            assert.equal(row.name, `Dummy ${i}`);
-            assert.equal(row.code, i * 100);
-          }
-          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+          const row: any = stmt.getRow();
+          assert.equal(row.id, i);
+          assert.equal(row.name, `Dummy ${i}`);
+          assert.equal(row.code, i * 100);
         }
-      );
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
     } finally {
       // delete the briefcase as the test modified it locally.
       let briefcasePath: string | undefined;
       if (iModel.isOpen) briefcasePath = iModel.pathName;
 
       await HubWrappers.closeAndDeleteBriefcaseDb(managerAccessToken, iModel);
-      if (!!briefcasePath && IModelJsFs.existsSync(briefcasePath))
-        IModelJsFs.unlinkSync(briefcasePath);
+      if (!!briefcasePath && IModelJsFs.existsSync(briefcasePath)) IModelJsFs.unlinkSync(briefcasePath);
     }
   });
 
@@ -333,9 +274,7 @@ describe("IModelWriteTest", () => {
           assert.isFalse(versionVal.isNull);
           const profileVersion: any = JSON.parse(versionVal.getString());
 
-          assert.isTrue(
-            name === "SchemaVersion" || name === "InitialSchemaVersion"
-          );
+          assert.isTrue(name === "SchemaVersion" || name === "InitialSchemaVersion");
           if (name === "SchemaVersion") {
             assert.equal(profileVersion.major, 4);
             assert.equal(profileVersion.minor, 0);
@@ -364,17 +303,9 @@ describe("IModelWriteTest", () => {
      */
 
     /* Setup test - Push an iModel with an old BisCore schema up to the Hub */
-    const pathname = IModelTestUtils.resolveAssetFile(
-      "CompatibilityTestSeed.bim"
-    );
+    const pathname = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const hubName = IModelTestUtils.generateUniqueName("CompatibilityTest");
-    const iModelId = await HubWrappers.pushIModel(
-      managerAccessToken,
-      iTwinId,
-      pathname,
-      hubName,
-      true
-    );
+    const iModelId = await HubWrappers.pushIModel(managerAccessToken, iTwinId, pathname, hubName, true);
 
     // Download two copies of the briefcase - manager and super
     const args: RequestNewBriefcaseProps = { iTwinId, iModelId };
@@ -399,10 +330,7 @@ describe("IModelWriteTest", () => {
     iModel.close();
 
     // Validate that the BisCore schema is recognized as a recommended upgrade
-    let schemaState = BriefcaseDb.validateSchemas(
-      managerBriefcaseProps.fileName,
-      true
-    );
+    let schemaState = BriefcaseDb.validateSchemas(managerBriefcaseProps.fileName, true);
     assert.strictEqual(schemaState, SchemaState.UpgradeRecommended);
 
     // Upgrade the schemas
@@ -422,10 +350,7 @@ describe("IModelWriteTest", () => {
     /* User "super" can get the upgrade "manager" made */
 
     // Validate that the BisCore schema is recognized as a recommended upgrade
-    schemaState = BriefcaseDb.validateSchemas(
-      superBriefcaseProps.fileName,
-      true
-    );
+    schemaState = BriefcaseDb.validateSchemas(superBriefcaseProps.fileName, true);
     assert.strictEqual(schemaState, SchemaState.UpgradeRecommended);
 
     // SKIPPED FOR NOW - locking not mocked yet
@@ -452,10 +377,7 @@ describe("IModelWriteTest", () => {
     superIModel.close();
 
     // Validate that there are no upgrades required
-    schemaState = BriefcaseDb.validateSchemas(
-      superBriefcaseProps.fileName,
-      true
-    );
+    schemaState = BriefcaseDb.validateSchemas(superBriefcaseProps.fileName, true);
     assert.strictEqual(schemaState, SchemaState.UpToDate);
 
     // Upgrade the schemas - ensure this is a no-op
@@ -483,10 +405,7 @@ describe("IModelWriteTest", () => {
       iModelId: rwIModelId,
       accessToken: adminToken,
     });
-    assert.equal(
-      rwIModel.nativeDb.enableChangesetSizeStats(true),
-      DbResult.BE_SQLITE_OK
-    );
+    assert.equal(rwIModel.nativeDb.enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
         <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
@@ -517,17 +436,8 @@ describe("IModelWriteTest", () => {
     const codeProps = Code.createEmpty();
     codeProps.value = "DrawingModel";
     let totalEl = 0;
-    const [, drawingModelId] =
-      IModelTestUtils.createAndInsertDrawingPartitionAndModel(
-        rwIModel,
-        codeProps,
-        true
-      );
-    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(
-      rwIModel,
-      IModel.dictionaryId,
-      "MyDrawingCategory"
-    );
+    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
       drawingCategoryId = DrawingCategory.insert(
         rwIModel,
@@ -585,9 +495,7 @@ describe("IModelWriteTest", () => {
   });
 
   it("clear cache on schema changes", async () => {
-    const adminToken = await HubWrappers.getAccessToken(
-      TestUserType.SuperManager
-    );
+    const adminToken = await HubWrappers.getAccessToken(TestUserType.SuperManager);
     const userToken = await HubWrappers.getAccessToken(TestUserType.Super);
     const iTwinId = HubMock.iTwinId;
     // Delete any existing iModels with the same name as the OptimisticConcurrencyTest iModel
@@ -613,14 +521,8 @@ describe("IModelWriteTest", () => {
     });
 
     // enable change tracking
-    assert.equal(
-      rwIModel.nativeDb.enableChangesetSizeStats(true),
-      DbResult.BE_SQLITE_OK
-    );
-    assert.equal(
-      rwIModel2.nativeDb.enableChangesetSizeStats(true),
-      DbResult.BE_SQLITE_OK
-    );
+    assert.equal(rwIModel.nativeDb.enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
+    assert.equal(rwIModel2.nativeDb.enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
 
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -653,17 +555,8 @@ describe("IModelWriteTest", () => {
     codeProps.value = "DrawingModel";
     let totalEl = 0;
     await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
-    const [, drawingModelId] =
-      IModelTestUtils.createAndInsertDrawingPartitionAndModel(
-        rwIModel,
-        codeProps,
-        true
-      );
-    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(
-      rwIModel,
-      IModel.dictionaryId,
-      "MyDrawingCategory"
-    );
+    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
       drawingCategoryId = DrawingCategory.insert(
         rwIModel,
@@ -730,22 +623,17 @@ describe("IModelWriteTest", () => {
       assert.equal(changesets.length, 2);
     }
     let rows: any[] = [];
-    rwIModel.withPreparedStatement(
-      "SELECT * FROM TestDomain.Test2dElement",
-      (stmt: ECSqlStatement) => {
-        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-          rows.push(stmt.getRow());
-        }
+    rwIModel.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement", (stmt: ECSqlStatement) => {
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        rows.push(stmt.getRow());
       }
-    );
+    });
     assert.equal(rows.length, 10);
     assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
     rows = [];
-    for await (const queryRow of rwIModel.createQueryReader(
-      "SELECT * FROM TestDomain.Test2dElement",
-      undefined,
-      { rowFormat: QueryRowFormat.UseJsPropertyNames }
-    )) {
+    for await (const queryRow of rwIModel.createQueryReader("SELECT * FROM TestDomain.Test2dElement", undefined, {
+      rowFormat: QueryRowFormat.UseJsPropertyNames,
+    })) {
       rows.push(queryRow.toRow());
     }
     assert.equal(rows.length, 10);
@@ -755,22 +643,17 @@ describe("IModelWriteTest", () => {
       // pull and merge changes
       await rwIModel2.pullChanges({ accessToken: userToken });
       rows = [];
-      rwIModel2.withPreparedStatement(
-        "SELECT * FROM TestDomain.Test2dElement",
-        (stmt: ECSqlStatement) => {
-          while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-            rows.push(stmt.getRow());
-          }
+      rwIModel2.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement", (stmt: ECSqlStatement) => {
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          rows.push(stmt.getRow());
         }
-      );
+      });
       assert.equal(rows.length, 10);
       assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
       rows = [];
-      for await (const queryRow of rwIModel2.createQueryReader(
-        "SELECT * FROM TestDomain.Test2dElement",
-        undefined,
-        { rowFormat: QueryRowFormat.UseJsPropertyNames }
-      )) {
+      for await (const queryRow of rwIModel2.createQueryReader("SELECT * FROM TestDomain.Test2dElement", undefined, {
+        rowFormat: QueryRowFormat.UseJsPropertyNames,
+      })) {
         rows.push(queryRow.toRow());
       }
       assert.equal(rows.length, 10);
@@ -871,23 +754,18 @@ describe("IModelWriteTest", () => {
       assert.equal(changesets.length, 5);
     }
     rows = [];
-    rwIModel.withPreparedStatement(
-      "SELECT * FROM TestDomain.Test2dElement",
-      (stmt: ECSqlStatement) => {
-        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-          rows.push(stmt.getRow());
-        }
+    rwIModel.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement", (stmt: ECSqlStatement) => {
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        rows.push(stmt.getRow());
       }
-    );
+    });
     assert.equal(rows.length, 30);
     assert.equal(rows.map((r) => r.s).filter((v) => v).length, 30);
     assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
     rows = [];
-    for await (const queryRow of rwIModel.createQueryReader(
-      "SELECT * FROM TestDomain.Test2dElement",
-      undefined,
-      { rowFormat: QueryRowFormat.UseJsPropertyNames }
-    )) {
+    for await (const queryRow of rwIModel.createQueryReader("SELECT * FROM TestDomain.Test2dElement", undefined, {
+      rowFormat: QueryRowFormat.UseJsPropertyNames,
+    })) {
       rows.push(queryRow.toRow());
     }
     assert.equal(rows.length, 30);
@@ -895,23 +773,18 @@ describe("IModelWriteTest", () => {
     assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
 
     rows = [];
-    rwIModel.withPreparedStatement(
-      "SELECT * FROM TestDomain.Test2dElement2nd",
-      (stmt: ECSqlStatement) => {
-        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-          rows.push(stmt.getRow());
-        }
+    rwIModel.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement2nd", (stmt: ECSqlStatement) => {
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        rows.push(stmt.getRow());
       }
-    );
+    });
     assert.equal(rows.length, 10);
     assert.equal(rows.map((r) => r.t).filter((v) => v).length, 10);
     assert.equal(rows.map((r) => r.r).filter((v) => v).length, 10);
     rows = [];
-    for await (const queryRow of rwIModel.createQueryReader(
-      "SELECT * FROM TestDomain.Test2dElement2nd",
-      undefined,
-      { rowFormat: QueryRowFormat.UseJsPropertyNames }
-    )) {
+    for await (const queryRow of rwIModel.createQueryReader("SELECT * FROM TestDomain.Test2dElement2nd", undefined, {
+      rowFormat: QueryRowFormat.UseJsPropertyNames,
+    })) {
       rows.push(queryRow.toRow());
     }
     assert.equal(rows.length, 10);
@@ -924,24 +797,19 @@ describe("IModelWriteTest", () => {
       await rwIModel2.pullChanges({ accessToken: userToken });
       rows = [];
       // Following fail without the fix in briefcase manager where we clear statement cache on schema changeset apply
-      rwIModel2.withPreparedStatement(
-        "SELECT * FROM TestDomain.Test2dElement",
-        (stmt: ECSqlStatement) => {
-          while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-            rows.push(stmt.getRow());
-          }
+      rwIModel2.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement", (stmt: ECSqlStatement) => {
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          rows.push(stmt.getRow());
         }
-      );
+      });
       assert.equal(rows.length, 30);
       assert.equal(rows.map((r) => r.s).filter((v) => v).length, 30);
       assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
       rows = [];
       // Following fail without native side fix where we clear concurrent query cache on schema changeset apply
-      for await (const queryRow of rwIModel2.createQueryReader(
-        "SELECT * FROM TestDomain.Test2dElement",
-        undefined,
-        { rowFormat: QueryRowFormat.UseJsPropertyNames }
-      )) {
+      for await (const queryRow of rwIModel2.createQueryReader("SELECT * FROM TestDomain.Test2dElement", undefined, {
+        rowFormat: QueryRowFormat.UseJsPropertyNames,
+      })) {
         rows.push(queryRow.toRow());
       }
       assert.equal(rows.length, 30);
@@ -962,14 +830,11 @@ describe("IModelWriteTest", () => {
         }
       }
       rows = [];
-      rwIModel2.withPreparedStatement(
-        "SELECT * FROM TestDomain.Test2dElement2nd",
-        (stmt: ECSqlStatement) => {
-          while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-            rows.push(stmt.getRow());
-          }
+      rwIModel2.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement2nd", (stmt: ECSqlStatement) => {
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          rows.push(stmt.getRow());
         }
-      );
+      });
       assert.equal(rows.length, 10);
       assert.equal(rows.map((r) => r.t).filter((v) => v).length, 10);
       assert.equal(rows.map((r) => r.r).filter((v) => v).length, 10);
@@ -988,11 +853,9 @@ describe("IModelWriteTest", () => {
         }
       }
       rows = [];
-      for await (const queryRow of rwIModel2.createQueryReader(
-        "SELECT * FROM TestDomain.Test2dElement2nd",
-        undefined,
-        { rowFormat: QueryRowFormat.UseJsPropertyNames }
-      )) {
+      for await (const queryRow of rwIModel2.createQueryReader("SELECT * FROM TestDomain.Test2dElement2nd", undefined, {
+        rowFormat: QueryRowFormat.UseJsPropertyNames,
+      })) {
         rows.push(queryRow.toRow());
       }
       assert.equal(rows.length, 10);
@@ -1035,15 +898,8 @@ describe("IModelWriteTest", () => {
     */
 
     await iModel.locks.acquireLocks({ shared: IModel.repositoryModelId });
-    const jobSubjectId = IModelTestUtils.createJobSubjectElement(
-      iModel,
-      "JobSubject"
-    ).insert();
-    const definitionModelId = DefinitionModel.insert(
-      iModel,
-      jobSubjectId,
-      "Definition"
-    );
+    const jobSubjectId = IModelTestUtils.createJobSubjectElement(iModel, "JobSubject").insert();
+    const definitionModelId = DefinitionModel.insert(iModel, jobSubjectId, "Definition");
 
     iModel.saveChanges();
     await iModel.pushChanges({ description: "create model" });
@@ -1076,12 +932,8 @@ describe("IModelWriteTest", () => {
       new SubCategoryAppearance()
     );
 
-    assert.isTrue(
-      iModel.elements.getElement(spatialCategoryId).model === definitionModelId
-    );
-    assert.isTrue(
-      iModel.elements.getElement(drawingCategoryId).model === definitionModelId
-    );
+    assert.isTrue(iModel.elements.getElement(spatialCategoryId).model === definitionModelId);
+    assert.isTrue(iModel.elements.getElement(drawingCategoryId).model === definitionModelId);
 
     iModel.saveChanges();
     await iModel.pushChanges({ description: "insert category" });
@@ -1103,42 +955,17 @@ describe("IModelWriteTest", () => {
     iModel.locks.checkExclusiveLock(jobSubjectId, "", "");
     iModel.locks.checkSharedLock(IModel.repositoryModelId, "", "");
 
-    const childSubjectId = Subject.insert(
-      iModel,
-      jobSubjectId,
-      "Child Subject"
-    );
+    const childSubjectId = Subject.insert(iModel, jobSubjectId, "Child Subject");
 
-    const documentListModelId = DocumentListModel.insert(
-      iModel,
-      childSubjectId,
-      "Document"
-    ); // creates DocumentList and DocumentListModel
+    const documentListModelId = DocumentListModel.insert(iModel, childSubjectId, "Document"); // creates DocumentList and DocumentListModel
     assert.isTrue(Id64.isValidId64(documentListModelId));
-    const drawingModelId = Drawing.insert(
-      iModel,
-      documentListModelId,
-      "Drawing"
-    ); // creates Drawing and DrawingModel
+    const drawingModelId = Drawing.insert(iModel, documentListModelId, "Drawing"); // creates Drawing and DrawingModel
 
-    assert.isTrue(
-      iModel.elements.getElement(childSubjectId).parent?.id === jobSubjectId
-    );
-    assert.isTrue(
-      iModel.elements.getElement(childSubjectId).model ===
-        IModel.repositoryModelId
-    );
-    assert.isTrue(
-      iModel.elements.getElement(documentListModelId).parent?.id ===
-        childSubjectId
-    );
-    assert.isTrue(
-      iModel.elements.getElement(documentListModelId).model ===
-        IModel.repositoryModelId
-    );
-    assert.isTrue(
-      iModel.elements.getElement(drawingModelId).model === documentListModelId
-    );
+    assert.isTrue(iModel.elements.getElement(childSubjectId).parent?.id === jobSubjectId);
+    assert.isTrue(iModel.elements.getElement(childSubjectId).model === IModel.repositoryModelId);
+    assert.isTrue(iModel.elements.getElement(documentListModelId).parent?.id === childSubjectId);
+    assert.isTrue(iModel.elements.getElement(documentListModelId).model === IModel.repositoryModelId);
+    assert.isTrue(iModel.elements.getElement(drawingModelId).model === documentListModelId);
 
     iModel.saveChanges();
     await iModel.pushChanges({
@@ -1176,12 +1003,9 @@ describe("IModelWriteTest", () => {
       geom: IModelTestUtils.createRectangle(Point2d.create(1, 1)),
       placement: { origin: Point2d.create(2, 2), angle: 0 },
     };
-    const drawingGraphicId1 =
-      iModel.elements.insertElement(drawingGraphicProps1);
+    const drawingGraphicId1 = iModel.elements.insertElement(drawingGraphicProps1);
 
-    assert.isTrue(
-      iModel.elements.getElement(drawingGraphicId1).model === drawingModelId
-    );
+    assert.isTrue(iModel.elements.getElement(drawingGraphicId1).model === drawingModelId);
 
     iModel.saveChanges();
     await iModel.pushChanges({

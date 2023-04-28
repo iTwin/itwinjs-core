@@ -125,8 +125,7 @@ export class ParameterValueList {
    */
   public isCompatible(other: ParameterValueList): boolean {
     if (other.size() != this.size()) return false;
-    for (let i: number = 0; i < this.size(); i++)
-      if (other.get(i).isCompatible(this.get(i)) == false) return false;
+    for (let i: number = 0; i < this.size(); i++) if (other.get(i).isCompatible(this.get(i)) == false) return false;
     return true;
   }
 }

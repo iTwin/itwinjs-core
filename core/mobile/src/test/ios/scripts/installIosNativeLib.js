@@ -8,17 +8,13 @@ const path = require("path");
 const fs = require("fs-extra");
 const semver = require("semver");
 const packageRoot = findPackageRootDir();
-const requiredPkgVer = require(path.join(packageRoot, "package.json"))
-  .dependencies["@bentley/imodeljs-native"];
+const requiredPkgVer = require(path.join(packageRoot, "package.json")).dependencies["@bentley/imodeljs-native"];
 
 // platform/os is configured here
 const os = "ios";
 const platform = "arm64";
 
-const targetPkgDir = path.join(
-  packageRoot,
-  "node_modules/@bentley/imodeljs-native"
-);
+const targetPkgDir = path.join(packageRoot, "node_modules/@bentley/imodeljs-native");
 const targetNMDir = path.join(targetPkgDir, "node_modules");
 const currentPkgDir = path.join(targetPkgDir, `imodeljs-${os}-${platform}`);
 
@@ -42,19 +38,12 @@ function validatePackage() {
     if (fs.existsSync(targetNMDir)) {
       fs.removeSync(targetNMDir);
     }
-    const currentPkgVer = require(path.join(
-      currentPkgDir,
-      "package.json"
-    )).version;
+    const currentPkgVer = require(path.join(currentPkgDir, "package.json")).version;
     if (semver.eq(currentPkgVer, requiredPkgVer, false)) {
-      console.log(
-        `Already installed: @bentley/imodeljs-${os}-${platform}@${requiredPkgVer}`
-      );
+      console.log(`Already installed: @bentley/imodeljs-${os}-${platform}@${requiredPkgVer}`);
       return true;
     }
-    console.log(
-      `Removing: @bentley/imodeljs-${os}-${platform}@${currentPkgVer}`
-    );
+    console.log(`Removing: @bentley/imodeljs-${os}-${platform}@${currentPkgVer}`);
     fs.removeSync(currentPkgDir);
     return false;
   } catch {
@@ -70,13 +59,8 @@ if (!validatePackage()) {
     if (error) throw error;
     console.log(stdout);
     console.log(stderr);
-    fs.moveSync(
-      path.join(targetNMDir, "@bentley", `imodeljs-${os}-${platform}`),
-      currentPkgDir
-    );
+    fs.moveSync(path.join(targetNMDir, "@bentley", `imodeljs-${os}-${platform}`), currentPkgDir);
     fs.removeSync(targetNMDir);
-    console.log(
-      `Installed: @bentley/imodeljs-${os}-${platform}@${requiredPkgVer}`
-    );
+    console.log(`Installed: @bentley/imodeljs-${os}-${platform}@${requiredPkgVer}`);
   });
 }

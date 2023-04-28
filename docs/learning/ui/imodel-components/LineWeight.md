@@ -24,10 +24,7 @@ interface State {
 ### render() Method
 
 ```tsx
-<WeightPickerButton
-  activeWeight={this.state.weight}
-  onLineWeightPick={this._handleWeightChange}
-/>
+<WeightPickerButton activeWeight={this.state.weight} onLineWeightPick={this._handleWeightChange} />
 ```
 
 ### Handler Function

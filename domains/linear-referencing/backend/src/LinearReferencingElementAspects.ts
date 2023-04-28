@@ -30,18 +30,10 @@ export class DistanceExpression implements DistanceExpressionProps {
   public distanceAlongFromReferent?: number;
 
   constructor(props: DistanceExpressionProps) {
-    this.distanceAlongFromStart = JsonUtils.asDouble(
-      props.distanceAlongFromStart
-    );
-    this.lateralOffsetFromILinearElement = JsonUtils.asDouble(
-      props.lateralOffsetFromILinearElement
-    );
-    this.verticalOffsetFromILinearElement = JsonUtils.asDouble(
-      props.verticalOffsetFromILinearElement
-    );
-    this.distanceAlongFromReferent = JsonUtils.asDouble(
-      props.distanceAlongFromReferent
-    );
+    this.distanceAlongFromStart = JsonUtils.asDouble(props.distanceAlongFromStart);
+    this.lateralOffsetFromILinearElement = JsonUtils.asDouble(props.lateralOffsetFromILinearElement);
+    this.verticalOffsetFromILinearElement = JsonUtils.asDouble(props.verticalOffsetFromILinearElement);
+    this.distanceAlongFromReferent = JsonUtils.asDouble(props.distanceAlongFromReferent);
   }
 
   public static fromJSON(json: DistanceExpressionProps): DistanceExpression {
@@ -71,10 +63,7 @@ export class LinearlyReferencedAtLocation extends LinearlyReferencedLocation {
   public atPosition: DistanceExpression;
   public fromReferent?: LinearlyReferencedAtPositionRefersToReferent;
 
-  constructor(
-    props: LinearlyReferencedAtLocationAspectProps,
-    iModel: IModelDb
-  ) {
+  constructor(props: LinearlyReferencedAtLocationAspectProps, iModel: IModelDb) {
     super(props, iModel);
     this.atPosition = DistanceExpression.fromJSON(props.atPosition);
     this.fromReferent = RelatedElement.fromJSON(props.fromReferent);
@@ -90,9 +79,7 @@ export class LinearlyReferencedAtLocation extends LinearlyReferencedLocation {
       element: { id: locatedElementId },
       atPosition: at,
       fromReferent:
-        fromReferentId === undefined
-          ? undefined
-          : new LinearlyReferencedAtPositionRefersToReferent(fromReferentId),
+        fromReferentId === undefined ? undefined : new LinearlyReferencedAtPositionRefersToReferent(fromReferentId),
     };
 
     return props;
@@ -104,10 +91,7 @@ export class LinearlyReferencedAtLocation extends LinearlyReferencedLocation {
     at: DistanceExpression,
     fromReferentId?: Id64String
   ): LinearlyReferencedAtLocation {
-    return new LinearlyReferencedAtLocation(
-      this.toProps(locatedElementId, at, fromReferentId),
-      iModel
-    );
+    return new LinearlyReferencedAtLocation(this.toProps(locatedElementId, at, fromReferentId), iModel);
   }
 
   public static insert(
@@ -116,9 +100,7 @@ export class LinearlyReferencedAtLocation extends LinearlyReferencedLocation {
     at: DistanceExpression,
     fromReferentId?: Id64String
   ): void {
-    iModel.elements.insertAspect(
-      this.toProps(locatedElementId, at, fromReferentId)
-    );
+    iModel.elements.insertAspect(this.toProps(locatedElementId, at, fromReferentId));
   }
 }
 
@@ -136,19 +118,12 @@ export class LinearlyReferencedFromToLocation extends LinearlyReferencedLocation
   public toPosition: DistanceExpression;
   public toPositionFromReferent?: LinearlyReferencedToPositionRefersToReferent;
 
-  constructor(
-    props: LinearlyReferencedFromToLocationAspectProps,
-    iModel: IModelDb
-  ) {
+  constructor(props: LinearlyReferencedFromToLocationAspectProps, iModel: IModelDb) {
     super(props, iModel);
     this.fromPosition = DistanceExpression.fromJSON(props.fromPosition);
     this.toPosition = DistanceExpression.fromJSON(props.toPosition);
-    this.fromPositionFromReferent = RelatedElement.fromJSON(
-      props.fromPositionFromReferent
-    );
-    this.toPositionFromReferent = RelatedElement.fromJSON(
-      props.toPositionFromReferent
-    );
+    this.fromPositionFromReferent = RelatedElement.fromJSON(props.fromPositionFromReferent);
+    this.toPositionFromReferent = RelatedElement.fromJSON(props.toPositionFromReferent);
   }
 
   private static toProps(
@@ -163,14 +138,10 @@ export class LinearlyReferencedFromToLocation extends LinearlyReferencedLocation
       element: { id: locatedElementId },
       fromPosition: from,
       fromPositionFromReferent:
-        fromReferentId === undefined
-          ? undefined
-          : new LinearlyReferencedFromPositionRefersToReferent(fromReferentId),
+        fromReferentId === undefined ? undefined : new LinearlyReferencedFromPositionRefersToReferent(fromReferentId),
       toPosition: to,
       toPositionFromReferent:
-        toReferentId === undefined
-          ? undefined
-          : new LinearlyReferencedToPositionRefersToReferent(toReferentId),
+        toReferentId === undefined ? undefined : new LinearlyReferencedToPositionRefersToReferent(toReferentId),
     };
 
     return props;
@@ -198,8 +169,6 @@ export class LinearlyReferencedFromToLocation extends LinearlyReferencedLocation
     fromReferentId?: Id64String,
     toReferentId?: Id64String
   ): void {
-    iModel.elements.insertAspect(
-      this.toProps(locatedElementId, from, to, fromReferentId, toReferentId)
-    );
+    iModel.elements.insertAspect(this.toProps(locatedElementId, from, to, fromReferentId, toReferentId));
   }
 }

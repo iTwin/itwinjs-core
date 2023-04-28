@@ -34,12 +34,8 @@ export class ILinearLocationLocatesElement extends ElementRefersToElements {
  * @beta
  */
 export class ILinearElementProvidedBySource extends RelatedElement {
-  public static classFullName =
-    "LinearReferencing:ILinearElementProvidedBySource";
-  public constructor(
-    sourceId: Id64String,
-    relClassName: string = ILinearElementProvidedBySource.classFullName
-  ) {
+  public static classFullName = "LinearReferencing:ILinearElementProvidedBySource";
+  public constructor(sourceId: Id64String, relClassName: string = ILinearElementProvidedBySource.classFullName) {
     super({ id: sourceId, relClassName });
   }
 }
@@ -48,8 +44,7 @@ export class ILinearElementProvidedBySource extends RelatedElement {
  * @beta
  */
 export class ILinearlyLocatedAttributesElement extends RelatedElement {
-  public static classFullName =
-    "LinearReferencing:ILinearlyLocatedAttributesElement";
+  public static classFullName = "LinearReferencing:ILinearlyLocatedAttributesElement";
   public constructor(
     attributedElementId: Id64String,
     relClassName: string = ILinearlyLocatedAttributesElement.classFullName
@@ -63,10 +58,7 @@ export class ILinearlyLocatedAttributesElement extends RelatedElement {
  */
 export class IReferentReferencesElement extends RelatedElement {
   public static classFullName = "LinearReferencing:IReferentReferencesElement";
-  public constructor(
-    referencedElementId: Id64String,
-    relClassName: string = IReferentReferencesElement.classFullName
-  ) {
+  public constructor(referencedElementId: Id64String, relClassName: string = IReferentReferencesElement.classFullName) {
     super({ id: referencedElementId, relClassName });
   }
 }
@@ -75,12 +67,8 @@ export class IReferentReferencesElement extends RelatedElement {
  * @beta
  */
 export class LinearlyReferencedAtPositionRefersToReferent extends RelatedElement {
-  public static classFullName =
-    "LinearReferencing:LinearlyReferencedAtPositionRefersToReferent";
-  public constructor(
-    referentId: Id64String,
-    relClassName: string = IReferentReferencesElement.classFullName
-  ) {
+  public static classFullName = "LinearReferencing:LinearlyReferencedAtPositionRefersToReferent";
+  public constructor(referentId: Id64String, relClassName: string = IReferentReferencesElement.classFullName) {
     super({ id: referentId, relClassName });
   }
 }
@@ -89,8 +77,7 @@ export class LinearlyReferencedAtPositionRefersToReferent extends RelatedElement
  * @beta
  */
 export class LinearlyReferencedFromPositionRefersToReferent extends RelatedElement {
-  public static classFullName =
-    "LinearReferencing:LinearlyReferencedFromPositionRefersToReferent";
+  public static classFullName = "LinearReferencing:LinearlyReferencedFromPositionRefersToReferent";
   public constructor(
     referentId: Id64String,
     relClassName: string = LinearlyReferencedFromPositionRefersToReferent.classFullName
@@ -103,8 +90,7 @@ export class LinearlyReferencedFromPositionRefersToReferent extends RelatedEleme
  * @beta
  */
 export class LinearlyReferencedToPositionRefersToReferent extends RelatedElement {
-  public static classFullName =
-    "LinearReferencing:LinearlyReferencedToPositionRefersToReferent";
+  public static classFullName = "LinearReferencing:LinearlyReferencedToPositionRefersToReferent";
   public constructor(
     referentId: Id64String,
     relClassName: string = LinearlyReferencedToPositionRefersToReferent.classFullName

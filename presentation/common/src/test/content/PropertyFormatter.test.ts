@@ -32,8 +32,7 @@ import {
 
 describe("ContentPropertyValueFormatter", () => {
   let formatter: ContentFormatter;
-  const propertyValueFormatterMock =
-    moq.Mock.ofType<ContentPropertyValueFormatter>();
+  const propertyValueFormatterMock = moq.Mock.ofType<ContentPropertyValueFormatter>();
   const koqField = createTestPropertiesContentField({
     name: "koqFieldName",
     properties: [
@@ -60,9 +59,7 @@ describe("ContentPropertyValueFormatter", () => {
 
   beforeEach(() => {
     propertyValueFormatterMock
-      .setup(async (x) =>
-        x.formatPropertyValue(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())
-      )
+      .setup(async (x) => x.formatPropertyValue(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
       .returns(async () => "FormattedValue");
     formatter = new ContentFormatter(propertyValueFormatterMock.object);
   });
@@ -85,12 +82,8 @@ describe("ContentPropertyValueFormatter", () => {
     const content = new Content(descriptor, [contentItem]);
 
     const formattedContent = await formatter.formatContent(content);
-    expect(
-      formattedContent.contentSet[0].displayValues[koqField.name]
-    ).to.be.eq("FormattedValue");
-    expect(
-      formattedContent.contentSet[0].displayValues[simplePropField.name]
-    ).to.be.eq("FormattedValue");
+    expect(formattedContent.contentSet[0].displayValues[koqField.name]).to.be.eq("FormattedValue");
+    expect(formattedContent.contentSet[0].displayValues[simplePropField.name]).to.be.eq("FormattedValue");
   });
 
   it("formats nested content item value", async () => {
@@ -120,15 +113,9 @@ describe("ContentPropertyValueFormatter", () => {
     const content = new Content(descriptor, [contentItem]);
 
     const formattedContent = await formatter.formatContent(content);
-    const nestedContentValue = formattedContent.contentSet[0].values[
-      nestedContentField.name
-    ] as NestedContentValue[];
-    expect(nestedContentValue[0].displayValues[koqField.name]).to.be.eq(
-      "FormattedValue"
-    );
-    expect(nestedContentValue[0].displayValues[simplePropField.name]).to.be.eq(
-      "FormattedValue"
-    );
+    const nestedContentValue = formattedContent.contentSet[0].values[nestedContentField.name] as NestedContentValue[];
+    expect(nestedContentValue[0].displayValues[koqField.name]).to.be.eq("FormattedValue");
+    expect(nestedContentValue[0].displayValues[simplePropField.name]).to.be.eq("FormattedValue");
   });
 
   it("handles merged nested field", async () => {
@@ -150,12 +137,10 @@ describe("ContentPropertyValueFormatter", () => {
     const content = new Content(descriptor, [contentItem]);
 
     const formattedContent = await formatter.formatContent(content);
-    expect(
-      formattedContent.contentSet[0].displayValues[nestedContentField.name]
-    ).to.be.eq("@Presentation:label.varies@");
-    expect(
-      formattedContent.contentSet[0].displayValues[koqField.name]
-    ).to.be.eq("FormattedValue");
+    expect(formattedContent.contentSet[0].displayValues[nestedContentField.name]).to.be.eq(
+      "@Presentation:label.varies@"
+    );
+    expect(formattedContent.contentSet[0].displayValues[koqField.name]).to.be.eq("FormattedValue");
   });
 });
 
@@ -184,9 +169,7 @@ describe("ContentPropertyValueFormatter", () => {
         valueFormat: PropertyValueFormat.Primitive,
         typeName: "string",
       });
-      expect(await formatter.formatPropertyValue(field, undefined)).to.be.eq(
-        ""
-      );
+      expect(await formatter.formatPropertyValue(field, undefined)).to.be.eq("");
     });
 
     it("'string' value", async () => {
@@ -194,9 +177,7 @@ describe("ContentPropertyValueFormatter", () => {
         valueFormat: PropertyValueFormat.Primitive,
         typeName: "string",
       });
-      expect(await formatter.formatPropertyValue(field, "TestValue")).to.be.eq(
-        "TestValue"
-      );
+      expect(await formatter.formatPropertyValue(field, "TestValue")).to.be.eq("TestValue");
     });
 
     it("'bool' value", async () => {
@@ -204,12 +185,8 @@ describe("ContentPropertyValueFormatter", () => {
         valueFormat: PropertyValueFormat.Primitive,
         typeName: "bool",
       });
-      expect(await formatter.formatPropertyValue(field, true)).to.be.eq(
-        "@Presentation:value.true@"
-      );
-      expect(await formatter.formatPropertyValue(field, false)).to.be.eq(
-        "@Presentation:value.false@"
-      );
+      expect(await formatter.formatPropertyValue(field, true)).to.be.eq("@Presentation:value.true@");
+      expect(await formatter.formatPropertyValue(field, false)).to.be.eq("@Presentation:value.false@");
     });
 
     it("'double' value", async () => {
@@ -218,9 +195,7 @@ describe("ContentPropertyValueFormatter", () => {
         typeName: "double",
       });
       expect(await formatter.formatPropertyValue(field, 1.5)).to.be.eq("1.50");
-      expect(await formatter.formatPropertyValue(field, 1.2345)).to.be.eq(
-        "1.23"
-      );
+      expect(await formatter.formatPropertyValue(field, 1.2345)).to.be.eq("1.23");
     });
 
     it("'int' value", async () => {
@@ -236,9 +211,7 @@ describe("ContentPropertyValueFormatter", () => {
         valueFormat: PropertyValueFormat.Primitive,
         typeName: "dateTime",
       });
-      expect(
-        await formatter.formatPropertyValue(field, "2023-03-27:12:00:00")
-      ).to.be.eq("2023-03-27:12:00:00");
+      expect(await formatter.formatPropertyValue(field, "2023-03-27:12:00:00")).to.be.eq("2023-03-27:12:00:00");
     });
 
     it("'point2d' value", async () => {
@@ -246,9 +219,7 @@ describe("ContentPropertyValueFormatter", () => {
         valueFormat: PropertyValueFormat.Primitive,
         typeName: "point2d",
       });
-      expect(
-        await formatter.formatPropertyValue(field, { x: 1.234, y: 5.678 })
-      ).to.be.eq("X: 1.23 Y: 5.68");
+      expect(await formatter.formatPropertyValue(field, { x: 1.234, y: 5.678 })).to.be.eq("X: 1.23 Y: 5.68");
     });
 
     it("'point3d' value", async () => {
@@ -275,9 +246,7 @@ describe("ContentPropertyValueFormatter", () => {
         className: "Schema:Class",
         label: LabelDefinition.fromLabelString("Test Target Instance"),
       };
-      expect(await formatter.formatPropertyValue(field, value)).to.be.eq(
-        "Test Target Instance"
-      );
+      expect(await formatter.formatPropertyValue(field, value)).to.be.eq("Test Target Instance");
     });
 
     it("KOQ property value", async () => {
@@ -304,9 +273,7 @@ describe("ContentPropertyValueFormatter", () => {
           )
         )
         .returns(async () => "1.5 M");
-      expect(
-        await formatter.formatPropertyValue(field, 1.5, "metric")
-      ).to.be.eq("1.5 M");
+      expect(await formatter.formatPropertyValue(field, 1.5, "metric")).to.be.eq("1.5 M");
     });
 
     it("KOQ property value without KOQ metadata", async () => {
@@ -325,9 +292,7 @@ describe("ContentPropertyValueFormatter", () => {
           }),
         },
       ];
-      koqFormatterMock
-        .setup(async (x) => x.format(1.5, moq.It.isAny()))
-        .returns(async () => undefined);
+      koqFormatterMock.setup(async (x) => x.format(1.5, moq.It.isAny())).returns(async () => undefined);
       expect(await formatter.formatPropertyValue(field, 1.5)).to.be.eq("1.50");
     });
   });
@@ -348,10 +313,7 @@ describe("ContentPropertyValueFormatter", () => {
           },
         ],
       });
-      const formattedValue = (await formatter.formatPropertyValue(
-        field,
-        undefined
-      )) as DisplayValuesMap;
+      const formattedValue = (await formatter.formatPropertyValue(field, undefined)) as DisplayValuesMap;
       expect(Object.keys(formattedValue)).to.be.empty;
     });
 
@@ -361,10 +323,7 @@ describe("ContentPropertyValueFormatter", () => {
         typeName: "struct",
         members: [],
       });
-      const formattedValue = (await formatter.formatPropertyValue(
-        field,
-        {}
-      )) as DisplayValuesMap;
+      const formattedValue = (await formatter.formatPropertyValue(field, {})) as DisplayValuesMap;
       expect(Object.keys(formattedValue)).to.be.empty;
     });
 
@@ -407,10 +366,7 @@ describe("ContentPropertyValueFormatter", () => {
         pointProp: { x: 1.234, y: 4.567 },
       };
 
-      const formattedValue = (await formatter.formatPropertyValue(
-        field,
-        structValue
-      )) as DisplayValuesMap;
+      const formattedValue = (await formatter.formatPropertyValue(field, structValue)) as DisplayValuesMap;
       expect(Object.keys(formattedValue)).to.have.lengthOf(3);
       expect(formattedValue.doubleProp).to.be.eq("1.50");
       expect(formattedValue.intProp).to.be.eq("1");
@@ -467,10 +423,7 @@ describe("ContentPropertyValueFormatter", () => {
         },
       };
 
-      const formattedValue = (await formatter.formatPropertyValue(
-        field,
-        structValue
-      )) as DisplayValuesMap;
+      const formattedValue = (await formatter.formatPropertyValue(field, structValue)) as DisplayValuesMap;
       expect(Object.keys(formattedValue)).to.have.lengthOf(2);
       expect(formattedValue.doubleProp).to.be.eq("1.50");
       const structProp = formattedValue.structProp as DisplayValuesMap;
@@ -490,10 +443,7 @@ describe("ContentPropertyValueFormatter", () => {
           typeName: "double",
         },
       });
-      const formattedValue = (await formatter.formatPropertyValue(
-        field,
-        undefined
-      )) as DisplayValuesArray;
+      const formattedValue = (await formatter.formatPropertyValue(field, undefined)) as DisplayValuesArray;
       expect(formattedValue).to.be.empty;
     });
 
@@ -506,10 +456,7 @@ describe("ContentPropertyValueFormatter", () => {
           typeName: "double",
         },
       });
-      const formattedValue = (await formatter.formatPropertyValue(
-        field,
-        []
-      )) as DisplayValuesArray;
+      const formattedValue = (await formatter.formatPropertyValue(field, [])) as DisplayValuesArray;
       expect(formattedValue).to.be.empty;
     });
 
@@ -522,10 +469,7 @@ describe("ContentPropertyValueFormatter", () => {
           typeName: "double",
         },
       });
-      const formattedValue = (await formatter.formatPropertyValue(
-        field,
-        [1.234, 5.678]
-      )) as DisplayValuesArray;
+      const formattedValue = (await formatter.formatPropertyValue(field, [1.234, 5.678])) as DisplayValuesArray;
       expect(formattedValue).to.have.lengthOf(2);
       expect(formattedValue[0]).to.be.eq("1.23");
       expect(formattedValue[1]).to.be.eq("5.68");
@@ -570,10 +514,7 @@ describe("ContentPropertyValueFormatter", () => {
         },
       ];
 
-      const formattedValue = (await formatter.formatPropertyValue(
-        field,
-        value
-      )) as DisplayValuesArray;
+      const formattedValue = (await formatter.formatPropertyValue(field, value)) as DisplayValuesArray;
       expect(formattedValue).to.have.lengthOf(2);
       const item1 = formattedValue[0] as DisplayValuesMap;
       expect(item1.doubleProp).to.be.eq("1.23");

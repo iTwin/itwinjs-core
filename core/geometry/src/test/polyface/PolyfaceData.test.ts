@@ -11,22 +11,10 @@ import { Checker } from "../Checker";
 describe("PolyfaceData", () => {
   it("IndexArrays", () => {
     const ck = new Checker();
-    ck.testFalse(
-      PolyfaceData.isValidFacetStartIndexArray([]),
-      "Facet Start minimal index must have leading 0"
-    );
-    ck.testFalse(
-      PolyfaceData.isValidFacetStartIndexArray([2, 1]),
-      "Facet Start index must be sorted"
-    );
-    ck.testFalse(
-      PolyfaceData.isValidFacetStartIndexArray([0, 4, 7, 6]),
-      "Facet Start index must be sorted"
-    );
-    ck.testTrue(
-      PolyfaceData.isValidFacetStartIndexArray([0, 4, 6, 12]),
-      "Facet Start index must have trailing 0"
-    );
+    ck.testFalse(PolyfaceData.isValidFacetStartIndexArray([]), "Facet Start minimal index must have leading 0");
+    ck.testFalse(PolyfaceData.isValidFacetStartIndexArray([2, 1]), "Facet Start index must be sorted");
+    ck.testFalse(PolyfaceData.isValidFacetStartIndexArray([0, 4, 7, 6]), "Facet Start index must be sorted");
+    ck.testTrue(PolyfaceData.isValidFacetStartIndexArray([0, 4, 6, 12]), "Facet Start index must have trailing 0");
     expect(ck.getNumErrors()).equals(0);
   });
 

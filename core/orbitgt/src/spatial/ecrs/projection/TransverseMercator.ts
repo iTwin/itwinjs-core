@@ -101,8 +101,7 @@ export class TransverseMercator extends OperationMethod {
   private calcM(lat: float64): float64 {
     const M: float64 =
       lat * (1.0 - this._e2 / 4 - (3 * this._e4) / 64 - (5 * this._e6) / 256) -
-      Math.sin(2.0 * lat) *
-        ((3 * this._e2) / 8 + (3 * this._e4) / 32 + (45 * this._e6) / 1024) +
+      Math.sin(2.0 * lat) * ((3 * this._e2) / 8 + (3 * this._e4) / 32 + (45 * this._e6) / 1024) +
       Math.sin(4.0 * lat) * ((15 * this._e4) / 256 + (45 * this._e6) / 1024) -
       Math.sin(6.0 * lat) * ((35 * this._e6) / 3072);
     return this._a * M;
@@ -156,9 +155,7 @@ export class TransverseMercator extends OperationMethod {
     const temp1: float64 =
       A +
       ((1.0 - T + C) * TransverseMercator.pow(A, 3)) / 6 +
-      ((5 - 18 * T + T * T + 72 * C - 58 * this._e_2) *
-        TransverseMercator.pow(A, 5)) /
-        120.0;
+      ((5 - 18 * T + T * T + 72 * C - 58 * this._e_2) * TransverseMercator.pow(A, 5)) / 120.0;
     const E: float64 = this._fE + this._k0 * v * temp1;
     const temp2: float64 =
       m -
@@ -167,9 +164,7 @@ export class TransverseMercator extends OperationMethod {
         tan *
         ((A * A) / 2 +
           ((5 - T + 9 * C + 4 * C * C) * TransverseMercator.pow(A, 4)) / 24.0 +
-          ((61 - 58 * T + T * T + 600 * C - 330 * this._e_2) *
-            TransverseMercator.pow(A, 6)) /
-            720.0);
+          ((61 - 58 * T + T * T + 600 * C - 330 * this._e_2) * TransverseMercator.pow(A, 6)) / 720.0);
     const N: float64 = this._fN + this._k0 * temp2;
     /* Save the position */
     projected.setX(E);
@@ -188,10 +183,7 @@ export class TransverseMercator extends OperationMethod {
     const N: float64 = y;
     /* Calculate parameters */
     const m1: float64 = this._m0 + (N - this._fN) / this._k0;
-    const u1: float64 =
-      m1 /
-      (this._a *
-        (1.0 - this._e2 / 4 - (3 * this._e4) / 64 - (5 * this._e6) / 256));
+    const u1: float64 = m1 / (this._a * (1.0 - this._e2 / 4 - (3 * this._e4) / 64 - (5 * this._e6) / 256));
     const lat1: float64 =
       u1 +
       this._R1 * Math.sin(2 * u1) +
@@ -201,8 +193,7 @@ export class TransverseMercator extends OperationMethod {
     const eSin1: float64 = this._e * Math.sin(lat1);
     const temp: float64 = Math.sqrt(1.0 - eSin1 * eSin1);
     const v1: float64 = this._a / temp;
-    const rho1: float64 =
-      (this._a * (1.0 - this._e2)) / TransverseMercator.pow(temp, 3);
+    const rho1: float64 = (this._a * (1.0 - this._e2)) / TransverseMercator.pow(temp, 3);
     const tan: float64 = Math.tan(lat1);
     const T1: float64 = tan * tan;
     const T1_2: float64 = T1 * T1;
@@ -214,19 +205,13 @@ export class TransverseMercator extends OperationMethod {
     /* Make the calculation */
     const temp1: float64 =
       D_2 / 2 -
-      ((5 + 3 * T1 + 10 * C1 - 4 * C1_2 - 9 * this._e_2) *
-        TransverseMercator.pow(D, 4)) /
-        24.0 +
-      ((61 + 90 * T1 + 298 * C1 + 45 * T1_2 - 252 * this._e_2 - 3 * C1_2) *
-        TransverseMercator.pow(D, 6)) /
-        720.0;
+      ((5 + 3 * T1 + 10 * C1 - 4 * C1_2 - 9 * this._e_2) * TransverseMercator.pow(D, 4)) / 24.0 +
+      ((61 + 90 * T1 + 298 * C1 + 45 * T1_2 - 252 * this._e_2 - 3 * C1_2) * TransverseMercator.pow(D, 6)) / 720.0;
     const lat: float64 = lat1 - ((v1 * tan) / rho1) * temp1;
     const temp2: float64 =
       D -
       ((1 + 2 * T1 + C1) * TransverseMercator.pow(D, 3)) / 6 +
-      ((5 - 2 * C1 + 28 * T1 - 3 * C1_2 + 8 * this._e_2 + 24 * T1_2) *
-        TransverseMercator.pow(D, 5)) /
-        120;
+      ((5 - 2 * C1 + 28 * T1 - 3 * C1_2 + 8 * this._e_2 + 24 * T1_2) * TransverseMercator.pow(D, 5)) / 120;
     const lon: float64 = this._lonN + temp2 / cos;
     /* Save the position */
     geographic.setX(lon);
@@ -245,12 +230,7 @@ export class TransverseMercator extends OperationMethod {
    * OperationMethod interface method.
    * @see OperationMethod#forward
    */
-  public forward(
-    sourceCRS: CRS,
-    source: Coordinate,
-    targetCRS: CRS,
-    target: Coordinate
-  ): void {
+  public forward(sourceCRS: CRS, source: Coordinate, targetCRS: CRS, target: Coordinate): void {
     /* Get the parameters */
     const lon: float64 = source.getX();
     const lat: float64 = source.getY();
@@ -263,12 +243,7 @@ export class TransverseMercator extends OperationMethod {
    * OperationMethod interface method.
    * @see OperationMethod#reverse
    */
-  public reverse(
-    sourceCRS: CRS,
-    source: Coordinate,
-    targetCRS: CRS,
-    target: Coordinate
-  ): void {
+  public reverse(sourceCRS: CRS, source: Coordinate, targetCRS: CRS, target: Coordinate): void {
     /* Get the parameters */
     const E: float64 = target.getX();
     const N: float64 = target.getY();

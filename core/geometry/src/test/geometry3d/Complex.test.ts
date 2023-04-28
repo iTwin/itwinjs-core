@@ -22,8 +22,7 @@ class ComplexTests {
     const z3root = z3.sqrt();
     const z4 = z3.divide(z2);
     this.ck.testComplex(z2, z3root, "complex root");
-    if (this.ck.testPointer(z4, "Complex divide") && z4 !== undefined)
-      this.ck.testComplex(z2, z4, "complex divide");
+    if (this.ck.testPointer(z4, "Complex divide") && z4 !== undefined) this.ck.testComplex(z2, z4, "complex divide");
   }
 }
 
@@ -58,16 +57,8 @@ describe("Complex.HelloWorld", () => {
     ck.testTrue(z0.x === 0 && z0.y === 0);
     for (let i = 1; i < 20; i++) {
       z0.set(1, i);
-      ck.testCoordinate(
-        z0.angle().radians,
-        Math.atan(z0.y / z0.x),
-        "Complex angle check"
-      );
-      ck.testCoordinate(
-        z0.magnitude(),
-        Math.sqrt(z0.x * z0.x + z0.y * z0.y),
-        "Complex magnitude check"
-      );
+      ck.testCoordinate(z0.angle().radians, Math.atan(z0.y / z0.x), "Complex angle check");
+      ck.testCoordinate(z0.magnitude(), Math.sqrt(z0.x * z0.x + z0.y * z0.y), "Complex magnitude check");
     }
     const values = [-1.0, -0.9, -0.7, -0.5, 0.0, -0.1, 0.1, 0.3, 0.8, 1.0];
     for (const x of values) {

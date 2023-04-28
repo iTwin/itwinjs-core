@@ -425,9 +425,7 @@ For example, consider the following `ace-inc.settings.json` setting file:
 then, calling
 
 ```ts
-const wsdb = await IModelHost.appWorkspace.getWorkspaceDb(
-  "ace-inc/ws-structural"
-);
+const wsdb = await IModelHost.appWorkspace.getWorkspaceDb("ace-inc/ws-structural");
 ```
 
 Will attempt to load a `WorkspaceDb` with:

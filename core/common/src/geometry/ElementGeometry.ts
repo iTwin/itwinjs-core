@@ -35,24 +35,12 @@ import { EGFBAccessors } from "./ElementGeometryFB";
 import { Base64EncodedString } from "../Base64EncodedString";
 import { TextString, TextStringProps } from "./TextString";
 import { ColorDef } from "../ColorDef";
-import {
-  BackgroundFill,
-  FillDisplay,
-  GeometryClass,
-  GeometryParams,
-} from "../GeometryParams";
+import { BackgroundFill, FillDisplay, GeometryClass, GeometryParams } from "../GeometryParams";
 import { Gradient } from "../Gradient";
-import {
-  ThematicGradientSettings,
-  ThematicGradientSettingsProps,
-} from "../ThematicDisplay";
+import { ThematicGradientSettings, ThematicGradientSettingsProps } from "../ThematicDisplay";
 import { AreaPattern } from "./AreaPattern";
 import { BRepEntity } from "./GeometryStream";
-import {
-  ImageGraphic,
-  ImageGraphicCorners,
-  ImageGraphicProps,
-} from "./ImageGraphic";
+import { ImageGraphic, ImageGraphicCorners, ImageGraphicProps } from "./ImageGraphic";
 import { LineStyle } from "./LineStyle";
 import { ElementAlignedBox3d, Placement2d, Placement3d } from "./Placement";
 import { isPlacement2dProps, PlacementProps } from "../ElementProps";
@@ -271,12 +259,7 @@ export interface BRepGeometryCreate {
   /** Whether disjoint results should be returned as multiple entries or a single disjoint body */
   separateDisjoint?: boolean;
   /** Options and parameters for this operation */
-  parameters?:
-    | BRepCutProps
-    | BRepThickenProps
-    | BRepHollowProps
-    | BRepRoundProps
-    | BRepOffsetProps;
+  parameters?: BRepCutProps | BRepThickenProps | BRepHollowProps | BRepRoundProps | BRepOffsetProps;
 }
 
 /** Information provided to [[BRepGeometryFunction]].
@@ -319,14 +302,8 @@ export namespace ElementGeometry {
      * Can be called with undefined or identity transform to start appending geometry supplied in local coordinates again.
      */
     public setLocalToWorld(localToWorld?: Transform) {
-      this._localToWorld =
-        undefined === localToWorld || localToWorld.isIdentity
-          ? undefined
-          : localToWorld.clone();
-      this._worldToLocal =
-        undefined === this._localToWorld
-          ? undefined
-          : this._localToWorld.inverse();
+      this._localToWorld = undefined === localToWorld || localToWorld.isIdentity ? undefined : localToWorld.clone();
+      this._worldToLocal = undefined === this._localToWorld ? undefined : this._localToWorld.inverse();
     }
 
     /** Supply local to world transform from a Point3d and optional YawPitchRollAngles.
@@ -334,24 +311,15 @@ export namespace ElementGeometry {
      */
     public setLocalToWorld3d(
       origin: Point3d,
-      angles: YawPitchRollAngles = YawPitchRollAngles.createDegrees(
-        0.0,
-        0.0,
-        0.0
-      )
+      angles: YawPitchRollAngles = YawPitchRollAngles.createDegrees(0.0, 0.0, 0.0)
     ) {
-      this.setLocalToWorld(
-        Transform.createOriginAndMatrix(origin, angles.toMatrix3d())
-      );
+      this.setLocalToWorld(Transform.createOriginAndMatrix(origin, angles.toMatrix3d()));
     }
 
     /** Supply local to world transform from a Point2d and optional Angle.
      * @see [[Placement2d]]
      */
-    public setLocalToWorld2d(
-      origin: Point2d,
-      angle: Angle = Angle.createDegrees(0.0)
-    ) {
+    public setLocalToWorld2d(origin: Point2d, angle: Angle = Angle.createDegrees(0.0)) {
       this.setLocalToWorld(
         Transform.createOriginAndMatrix(
           Point3d.createFrom(origin),
@@ -364,9 +332,7 @@ export namespace ElementGeometry {
      * @see [[PlacementProps]]
      */
     public setLocalToWorldFromPlacement(props: PlacementProps) {
-      const placement = isPlacement2dProps(props)
-        ? Placement2d.fromJSON(props)
-        : Placement3d.fromJSON(props);
+      const placement = isPlacement2dProps(props) ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props);
       this.setLocalToWorld(placement.transform);
     }
 
@@ -387,12 +353,8 @@ export namespace ElementGeometry {
       // Check if points have a well defined normal to use instead of defaultUp...
       const frameTransform = FrameBuilder.createFrameToDistantPoints(pts);
       if (undefined !== frameTransform) {
-        const plane = Plane3dByOriginAndUnitNormal.create(
-          pts[0],
-          frameTransform.matrix.getColumn(2)
-        );
-        if (undefined !== plane && Point3dArray.isCloseToPlane(pts, plane))
-          zVec.setFrom(plane.getNormalRef());
+        const plane = Plane3dByOriginAndUnitNormal.create(pts[0], frameTransform.matrix.getColumn(2));
+        if (undefined !== plane && Point3dArray.isCloseToPlane(pts, plane)) zVec.setFrom(plane.getNormalRef());
       }
 
       const xVec = Vector3d.createStartEnd(pts[0], pts[1]);
@@ -402,21 +364,14 @@ export namespace ElementGeometry {
       if (undefined === yVec) return angles;
 
       Matrix3d.createColumns(xVec, yVec, zVec, matrix);
-      if (
-        undefined ===
-        Matrix3d.createRigidFromMatrix3d(matrix, undefined, matrix)
-      )
-        return angles;
+      if (undefined === Matrix3d.createRigidFromMatrix3d(matrix, undefined, matrix)) return angles;
 
       YawPitchRollAngles.createFromMatrix3d(matrix, angles);
       return angles;
     }
 
     /** Compute angle suitable for passing to [[setLocalToWorld2d]] from an array of xy plane points. */
-    public static placementAngleFromPoints(
-      pts: Point3d[],
-      result?: Angle
-    ): Angle {
+    public static placementAngleFromPoints(pts: Point3d[], result?: Angle): Angle {
       const angles = ElementGeometry.Builder.placementAnglesFromPoints(pts);
       if (undefined === result) return angles.yaw;
       result.setFrom(angles.yaw);
@@ -443,10 +398,7 @@ export namespace ElementGeometry {
 
     /** Append a [[GeometryQuery]] supplied in either local or world coordinates to the [[ElementGeometryDataEntry]] array */
     public appendGeometryQuery(geometry: GeometryQuery): boolean {
-      const entry = ElementGeometry.fromGeometryQuery(
-        geometry,
-        this._worldToLocal
-      );
+      const entry = ElementGeometry.fromGeometryQuery(geometry, this._worldToLocal);
       if (undefined === entry) return false;
       this.entries.push(entry);
       return true;
@@ -454,10 +406,7 @@ export namespace ElementGeometry {
 
     /** Append a [[TextString]] supplied in either local or world coordinates to the [[ElementGeometryDataEntry]] array */
     public appendTextString(text: TextString): boolean {
-      const entry = ElementGeometry.fromTextString(
-        text.toJSON(),
-        this._worldToLocal
-      );
+      const entry = ElementGeometry.fromTextString(text.toJSON(), this._worldToLocal);
       if (undefined === entry) return false;
       this.entries.push(entry);
       return true;
@@ -465,10 +414,7 @@ export namespace ElementGeometry {
 
     /** Append a [[ImageGraphic]] supplied in either local or world coordinates to the [[ElementGeometryDataEntry]] array */
     public appendImageGraphic(image: ImageGraphic): boolean {
-      const entry = ElementGeometry.fromImageGraphic(
-        image.toJSON(),
-        this._worldToLocal
-      );
+      const entry = ElementGeometry.fromImageGraphic(image.toJSON(), this._worldToLocal);
       if (undefined === entry) return false;
       this.entries.push(entry);
       return true;
@@ -488,15 +434,8 @@ export namespace ElementGeometry {
     /** Append a [[GeometryPart]] instance with relative transform to the [[ElementGeometryDataEntry]] array for creating a [[GeometricElement]].
      * Not valid when defining a [[GeometryPart]] as nesting of parts is not supported.
      */
-    public appendGeometryPart(
-      partId: Id64String,
-      partTransform?: Transform
-    ): boolean {
-      const entry = ElementGeometry.fromGeometryPart(
-        partId,
-        partTransform,
-        this._worldToLocal
-      );
+    public appendGeometryPart(partId: Id64String, partTransform?: Transform): boolean {
+      const entry = ElementGeometry.fromGeometryPart(partId, partTransform, this._worldToLocal);
       if (undefined === entry) return false;
       this.entries.push(entry);
       return true;
@@ -513,16 +452,10 @@ export namespace ElementGeometry {
     ): boolean {
       const partTransform = Transform.createOriginAndMatrix(
         instanceOrigin,
-        instanceRotation
-          ? instanceRotation.toMatrix3d()
-          : Matrix3d.createIdentity()
+        instanceRotation ? instanceRotation.toMatrix3d() : Matrix3d.createIdentity()
       );
       if (undefined !== instanceScale)
-        partTransform.matrix.scaleColumnsInPlace(
-          instanceScale,
-          instanceScale,
-          instanceScale
-        );
+        partTransform.matrix.scaleColumnsInPlace(instanceScale, instanceScale, instanceScale);
       return this.appendGeometryPart(partId, partTransform);
     }
 
@@ -563,16 +496,10 @@ export namespace ElementGeometry {
     private _value?: ElementGeometryDataEntry;
     private readonly _applyLocalToWorld: boolean;
 
-    public constructor(
-      geomParams: GeometryParams,
-      localToWorld: Transform,
-      applyLocalToWorld?: boolean
-    ) {
+    public constructor(geomParams: GeometryParams, localToWorld: Transform, applyLocalToWorld?: boolean) {
       this.geomParams = geomParams;
       this.localToWorld = localToWorld;
-      this._applyLocalToWorld = applyLocalToWorld
-        ? !localToWorld.isIdentity
-        : false;
+      this._applyLocalToWorld = applyLocalToWorld ? !localToWorld.isIdentity : false;
     }
 
     public get value() {
@@ -592,9 +519,7 @@ export namespace ElementGeometry {
     }
 
     /** Return the [[BRepEntity.DataProps]] representation for the current entry for checking brep type and face attachments. */
-    public toBRepData(
-      wantBRepData: boolean = false
-    ): BRepEntity.DataProps | undefined {
+    public toBRepData(wantBRepData: boolean = false): BRepEntity.DataProps | undefined {
       return toBRep(this.value, wantBRepData, this.outputTransform);
     }
 
@@ -611,23 +536,13 @@ export namespace ElementGeometry {
     }
 
     /** Return the GeometryPart information for the current entry */
-    public toGeometryPart(
-      partToLocal?: Transform,
-      partToWorld?: Transform
-    ): Id64String | undefined {
-      if (undefined === partToLocal && undefined !== partToWorld)
-        partToLocal = Transform.createIdentity();
+    public toGeometryPart(partToLocal?: Transform, partToWorld?: Transform): Id64String | undefined {
+      if (undefined === partToLocal && undefined !== partToWorld) partToLocal = Transform.createIdentity();
 
       const partId = toGeometryPart(this.value, partToLocal);
-      if (
-        undefined === partId ||
-        undefined === partToLocal ||
-        undefined === partToWorld
-      )
-        return partId;
+      if (undefined === partId || undefined === partToLocal || undefined === partToWorld) return partId;
 
-      if (undefined !== this.localToWorld)
-        this.localToWorld.multiplyTransformTransform(partToLocal, partToWorld);
+      if (undefined !== this.localToWorld) this.localToWorld.multiplyTransformTransform(partToLocal, partToWorld);
 
       return partId;
     }
@@ -667,8 +582,7 @@ export namespace ElementGeometry {
       this.viewIndependent = info.viewIndependent;
       this.brepsPresent = info.brepsPresent;
 
-      if (undefined !== info.categoryId)
-        categoryOrGeometryParams = info.categoryId;
+      if (undefined !== info.categoryId) categoryOrGeometryParams = info.categoryId;
 
       if (undefined !== categoryOrGeometryParams)
         this._appearance =
@@ -677,20 +591,15 @@ export namespace ElementGeometry {
             : categoryOrGeometryParams;
       else this._appearance = new GeometryParams(Id64.invalid);
 
-      if (undefined !== info.sourceToWorld)
-        localToWorld = ElementGeometry.toTransform(info.sourceToWorld);
+      if (undefined !== info.sourceToWorld) localToWorld = ElementGeometry.toTransform(info.sourceToWorld);
 
       if (undefined !== localToWorld) this._localToWorld = localToWorld;
       else this._localToWorld = Transform.createIdentity();
 
       const orgAng = YawPitchRollAngles.tryFromTransform(this._localToWorld);
-      if (undefined === orgAng.angles)
-        orgAng.angles = YawPitchRollAngles.createDegrees(0, 0, 0);
+      if (undefined === orgAng.angles) orgAng.angles = YawPitchRollAngles.createDegrees(0, 0, 0);
 
-      let bbox =
-        undefined !== info.bbox
-          ? ElementGeometry.toElementAlignedBox3d(info.bbox)
-          : undefined;
+      let bbox = undefined !== info.bbox ? ElementGeometry.toElementAlignedBox3d(info.bbox) : undefined;
       if (undefined === bbox) bbox = Range3d.createNull();
 
       this.placement = new Placement3d(orgAng.origin, orgAng.angles, bbox);
@@ -704,11 +613,7 @@ export namespace ElementGeometry {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private get entry() {
       if (undefined === this._entry)
-        this._entry = new IteratorEntry(
-          this._appearance,
-          this._localToWorld,
-          this._applyLocalToWorld
-        );
+        this._entry = new IteratorEntry(this._appearance, this._localToWorld, this._applyLocalToWorld);
 
       return this._entry;
     }
@@ -718,14 +623,8 @@ export namespace ElementGeometry {
       while (this._index < this.entryArray.length) {
         const value = this.entryArray[this._index++];
         if (ElementGeometry.isAppearanceEntry(value)) {
-          const localToWorld = this._applyLocalToWorld
-            ? this._localToWorld
-            : undefined;
-          ElementGeometry.updateGeometryParams(
-            value,
-            this.entry.geomParams,
-            localToWorld
-          );
+          const localToWorld = this._applyLocalToWorld ? this._localToWorld : undefined;
+          ElementGeometry.updateGeometryParams(value, this.entry.geomParams, localToWorld);
         } else if (ElementGeometryOpcode.SubGraphicRange === value.opcode) {
           // NOTE: localRange remains valid until the next sub-range entry is encountered...
           this.entry.localRange = ElementGeometry.toSubGraphicRange(value);
@@ -747,9 +646,7 @@ export namespace ElementGeometry {
   }
 
   /** Return whether the supplied entry can be represented as a [[GeometryQuery]] */
-  export function isGeometryQueryEntry(
-    entry: ElementGeometryDataEntry
-  ): boolean {
+  export function isGeometryQueryEntry(entry: ElementGeometryDataEntry): boolean {
     switch (entry.opcode) {
       case ElementGeometryOpcode.PointPrimitive:
       case ElementGeometryOpcode.PointPrimitive2d:
@@ -810,15 +707,13 @@ export namespace ElementGeometry {
     switch (entry.opcode) {
       case ElementGeometryOpcode.PointPrimitive: {
         const buffer = new flatbuffers.ByteBuffer(entry.data);
-        const ppfb =
-          EGFBAccessors.PointPrimitive.getRootAsPointPrimitive(buffer);
+        const ppfb = EGFBAccessors.PointPrimitive.getRootAsPointPrimitive(buffer);
         return EGFBAccessors.BoundaryType.Open === ppfb.boundary();
       }
 
       case ElementGeometryOpcode.PointPrimitive2d: {
         const buffer = new flatbuffers.ByteBuffer(entry.data);
-        const ppfb =
-          EGFBAccessors.PointPrimitive2d.getRootAsPointPrimitive2d(buffer);
+        const ppfb = EGFBAccessors.PointPrimitive2d.getRootAsPointPrimitive2d(buffer);
         return EGFBAccessors.BoundaryType.Open === ppfb.boundary();
       }
 
@@ -834,15 +729,9 @@ export namespace ElementGeometry {
       }
 
       case ElementGeometryOpcode.CurveCollection: {
-        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(
-          entry.data,
-          true
-        );
+        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(entry.data, true);
         if (undefined === geom || Array.isArray(geom)) return false;
-        return (
-          "curveCollection" === geom.geometryCategory &&
-          !(geom as CurveCollection).isAnyRegionType
-        );
+        return "curveCollection" === geom.geometryCategory && !(geom as CurveCollection).isAnyRegionType;
       }
 
       default:
@@ -855,15 +744,13 @@ export namespace ElementGeometry {
     switch (entry.opcode) {
       case ElementGeometryOpcode.PointPrimitive: {
         const buffer = new flatbuffers.ByteBuffer(entry.data);
-        const ppfb =
-          EGFBAccessors.PointPrimitive.getRootAsPointPrimitive(buffer);
+        const ppfb = EGFBAccessors.PointPrimitive.getRootAsPointPrimitive(buffer);
         return EGFBAccessors.BoundaryType.Closed === ppfb.boundary();
       }
 
       case ElementGeometryOpcode.PointPrimitive2d: {
         const buffer = new flatbuffers.ByteBuffer(entry.data);
-        const ppfb =
-          EGFBAccessors.PointPrimitive2d.getRootAsPointPrimitive2d(buffer);
+        const ppfb = EGFBAccessors.PointPrimitive2d.getRootAsPointPrimitive2d(buffer);
         return EGFBAccessors.BoundaryType.Closed === ppfb.boundary();
       }
 
@@ -879,34 +766,19 @@ export namespace ElementGeometry {
       }
 
       case ElementGeometryOpcode.CurveCollection: {
-        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(
-          entry.data,
-          true
-        );
+        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(entry.data, true);
         if (undefined === geom || Array.isArray(geom)) return false;
-        return (
-          "curveCollection" === geom.geometryCategory &&
-          (geom as CurveCollection).isAnyRegionType
-        );
+        return "curveCollection" === geom.geometryCategory && (geom as CurveCollection).isAnyRegionType;
       }
 
       case ElementGeometryOpcode.SolidPrimitive: {
-        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(
-          entry.data,
-          true
-        );
+        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(entry.data, true);
         if (undefined === geom || Array.isArray(geom)) return false;
-        return (
-          "solid" === geom.geometryCategory &&
-          !(geom as SolidPrimitive).isClosedVolume
-        );
+        return "solid" === geom.geometryCategory && !(geom as SolidPrimitive).isClosedVolume;
       }
 
       case ElementGeometryOpcode.Polyface: {
-        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(
-          entry.data,
-          true
-        );
+        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(entry.data, true);
         if (undefined === geom || Array.isArray(geom)) return false;
         if ("polyface" !== geom.geometryCategory) return false;
         const polyface = geom as Polyface;
@@ -941,22 +813,13 @@ export namespace ElementGeometry {
   export function isSolid(entry: ElementGeometryDataEntry): boolean {
     switch (entry.opcode) {
       case ElementGeometryOpcode.SolidPrimitive: {
-        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(
-          entry.data,
-          true
-        );
+        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(entry.data, true);
         if (undefined === geom || Array.isArray(geom)) return false;
-        return (
-          "solid" === geom.geometryCategory &&
-          (geom as SolidPrimitive).isClosedVolume
-        );
+        return "solid" === geom.geometryCategory && (geom as SolidPrimitive).isClosedVolume;
       }
 
       case ElementGeometryOpcode.Polyface: {
-        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(
-          entry.data,
-          true
-        );
+        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(entry.data, true);
         if (undefined === geom || Array.isArray(geom)) return false;
         if ("polyface" !== geom.geometryCategory) return false;
         const polyface = geom as Polyface;
@@ -983,38 +846,26 @@ export namespace ElementGeometry {
   }
 
   /** Return the body type that would be used to represent the supplied entry */
-  export function getBRepEntityType(
-    entry: ElementGeometryDataEntry
-  ): BRepEntity.Type | undefined {
+  export function getBRepEntityType(entry: ElementGeometryDataEntry): BRepEntity.Type | undefined {
     switch (entry.opcode) {
       case ElementGeometryOpcode.PointPrimitive: {
         const buffer = new flatbuffers.ByteBuffer(entry.data);
-        const ppfb =
-          EGFBAccessors.PointPrimitive.getRootAsPointPrimitive(buffer);
-        if (EGFBAccessors.BoundaryType.None === ppfb.boundary())
-          return undefined;
-        return EGFBAccessors.BoundaryType.Closed === ppfb.boundary()
-          ? BRepEntity.Type.Sheet
-          : BRepEntity.Type.Wire;
+        const ppfb = EGFBAccessors.PointPrimitive.getRootAsPointPrimitive(buffer);
+        if (EGFBAccessors.BoundaryType.None === ppfb.boundary()) return undefined;
+        return EGFBAccessors.BoundaryType.Closed === ppfb.boundary() ? BRepEntity.Type.Sheet : BRepEntity.Type.Wire;
       }
 
       case ElementGeometryOpcode.PointPrimitive2d: {
         const buffer = new flatbuffers.ByteBuffer(entry.data);
-        const ppfb =
-          EGFBAccessors.PointPrimitive2d.getRootAsPointPrimitive2d(buffer);
-        if (EGFBAccessors.BoundaryType.None === ppfb.boundary())
-          return undefined;
-        return EGFBAccessors.BoundaryType.Closed === ppfb.boundary()
-          ? BRepEntity.Type.Sheet
-          : BRepEntity.Type.Wire;
+        const ppfb = EGFBAccessors.PointPrimitive2d.getRootAsPointPrimitive2d(buffer);
+        if (EGFBAccessors.BoundaryType.None === ppfb.boundary()) return undefined;
+        return EGFBAccessors.BoundaryType.Closed === ppfb.boundary() ? BRepEntity.Type.Sheet : BRepEntity.Type.Wire;
       }
 
       case ElementGeometryOpcode.ArcPrimitive: {
         const buffer = new flatbuffers.ByteBuffer(entry.data);
         const ppfb = EGFBAccessors.ArcPrimitive.getRootAsArcPrimitive(buffer);
-        return EGFBAccessors.BoundaryType.Closed === ppfb.boundary()
-          ? BRepEntity.Type.Sheet
-          : BRepEntity.Type.Wire;
+        return EGFBAccessors.BoundaryType.Closed === ppfb.boundary() ? BRepEntity.Type.Sheet : BRepEntity.Type.Wire;
       }
 
       case ElementGeometryOpcode.CurvePrimitive: {
@@ -1023,29 +874,19 @@ export namespace ElementGeometry {
       }
 
       case ElementGeometryOpcode.CurveCollection: {
-        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(
-          entry.data,
-          true
-        );
+        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(entry.data, true);
         if (undefined === geom || Array.isArray(geom)) return undefined;
         if ("curveCollection" !== geom.geometryCategory) return undefined;
         const curves = geom as CurveCollection;
-        return curves.isAnyRegionType
-          ? BRepEntity.Type.Sheet
-          : BRepEntity.Type.Wire;
+        return curves.isAnyRegionType ? BRepEntity.Type.Sheet : BRepEntity.Type.Wire;
       }
 
       case ElementGeometryOpcode.SolidPrimitive: {
-        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(
-          entry.data,
-          true
-        );
+        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(entry.data, true);
         if (undefined === geom || Array.isArray(geom)) return undefined;
         if ("solid" !== geom.geometryCategory) return undefined;
         const solid = geom as SolidPrimitive;
-        return solid.isClosedVolume
-          ? BRepEntity.Type.Solid
-          : BRepEntity.Type.Sheet;
+        return solid.isClosedVolume ? BRepEntity.Type.Solid : BRepEntity.Type.Sheet;
       }
 
       case ElementGeometryOpcode.BsplineSurface: {
@@ -1054,10 +895,7 @@ export namespace ElementGeometry {
       }
 
       case ElementGeometryOpcode.Polyface: {
-        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(
-          entry.data,
-          true
-        );
+        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(entry.data, true);
         if (undefined === geom || Array.isArray(geom)) return undefined;
         if ("polyface" !== geom.geometryCategory) return undefined;
         const polyface = geom as Polyface;
@@ -1105,23 +943,15 @@ export namespace ElementGeometry {
     switch (entry.opcode) {
       case ElementGeometryOpcode.PointPrimitive: {
         const buffer = new flatbuffers.ByteBuffer(entry.data);
-        const ppfb =
-          EGFBAccessors.PointPrimitive.getRootAsPointPrimitive(buffer);
+        const ppfb = EGFBAccessors.PointPrimitive.getRootAsPointPrimitive(buffer);
 
         const pts: Point3d[] = [];
         for (let i = 0; i < ppfb.coordsLength(); i++)
-          pts.push(
-            Point3d.create(
-              ppfb.coords(i)!.x(),
-              ppfb.coords(i)!.y(),
-              ppfb.coords(i)!.z()
-            )
-          );
+          pts.push(Point3d.create(ppfb.coords(i)!.x(), ppfb.coords(i)!.y(), ppfb.coords(i)!.z()));
 
         if (0 === pts.length) return undefined;
 
-        if (undefined !== localToWorld)
-          localToWorld.multiplyPoint3dArrayInPlace(pts);
+        if (undefined !== localToWorld) localToWorld.multiplyPoint3dArrayInPlace(pts);
 
         switch (ppfb.boundary()) {
           case EGFBAccessors.BoundaryType.Open:
@@ -1135,8 +965,7 @@ export namespace ElementGeometry {
 
       case ElementGeometryOpcode.PointPrimitive2d: {
         const buffer = new flatbuffers.ByteBuffer(entry.data);
-        const ppfb =
-          EGFBAccessors.PointPrimitive2d.getRootAsPointPrimitive2d(buffer);
+        const ppfb = EGFBAccessors.PointPrimitive2d.getRootAsPointPrimitive2d(buffer);
 
         const pts: Point3d[] = [];
         for (let i = 0; i < ppfb.coordsLength(); i++)
@@ -1144,8 +973,7 @@ export namespace ElementGeometry {
 
         if (0 === pts.length) return undefined;
 
-        if (undefined !== localToWorld)
-          localToWorld.multiplyPoint3dArrayInPlace(pts);
+        if (undefined !== localToWorld) localToWorld.multiplyPoint3dArrayInPlace(pts);
 
         switch (ppfb.boundary()) {
           case EGFBAccessors.BoundaryType.Open:
@@ -1161,21 +989,9 @@ export namespace ElementGeometry {
         const buffer = new flatbuffers.ByteBuffer(entry.data);
         const ppfb = EGFBAccessors.ArcPrimitive.getRootAsArcPrimitive(buffer);
 
-        const center = Point3d.create(
-          ppfb.center()!.x(),
-          ppfb.center()!.y(),
-          ppfb.center()!.z()
-        );
-        const vector0 = Vector3d.create(
-          ppfb.vector0()!.x(),
-          ppfb.vector0()!.y(),
-          ppfb.vector0()!.z()
-        );
-        const vector90 = Vector3d.create(
-          ppfb.vector90()!.x(),
-          ppfb.vector90()!.y(),
-          ppfb.vector90()!.z()
-        );
+        const center = Point3d.create(ppfb.center()!.x(), ppfb.center()!.y(), ppfb.center()!.z());
+        const vector0 = Vector3d.create(ppfb.vector0()!.x(), ppfb.vector0()!.y(), ppfb.vector0()!.z());
+        const vector90 = Vector3d.create(ppfb.vector90()!.x(), ppfb.vector90()!.y(), ppfb.vector90()!.z());
         const arc = Arc3d.create(
           center,
           vector0,
@@ -1183,15 +999,9 @@ export namespace ElementGeometry {
           AngleSweep.createStartSweepRadians(ppfb.start(), ppfb.sweep())
         );
 
-        if (
-          undefined !== localToWorld &&
-          !arc.tryTransformInPlace(localToWorld)
-        )
-          return undefined;
+        if (undefined !== localToWorld && !arc.tryTransformInPlace(localToWorld)) return undefined;
 
-        return EGFBAccessors.BoundaryType.Closed === ppfb.boundary()
-          ? Loop.create(arc)
-          : arc;
+        return EGFBAccessors.BoundaryType.Closed === ppfb.boundary() ? Loop.create(arc) : arc;
       }
 
       case ElementGeometryOpcode.CurvePrimitive:
@@ -1199,16 +1009,9 @@ export namespace ElementGeometry {
       case ElementGeometryOpcode.SolidPrimitive:
       case ElementGeometryOpcode.BsplineSurface:
       case ElementGeometryOpcode.Polyface:
-        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(
-          entry.data,
-          true
-        );
+        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(entry.data, true);
         if (undefined === geom || Array.isArray(geom)) return undefined; // Should always be a single entry not an array...
-        if (
-          undefined !== localToWorld &&
-          !geom.tryTransformInPlace(localToWorld)
-        )
-          return undefined;
+        if (undefined !== localToWorld && !geom.tryTransformInPlace(localToWorld)) return undefined;
         return geom;
 
       default:
@@ -1256,10 +1059,7 @@ export namespace ElementGeometry {
   }
 
   /** Return entry as a [[TextString]] */
-  export function toTextString(
-    entry: ElementGeometryDataEntry,
-    localToWorld?: Transform
-  ): TextStringProps | undefined {
+  export function toTextString(entry: ElementGeometryDataEntry, localToWorld?: Transform): TextStringProps | undefined {
     if (ElementGeometryOpcode.TextString !== entry.opcode) return undefined;
 
     const buffer = new flatbuffers.ByteBuffer(entry.data);
@@ -1282,11 +1082,7 @@ export namespace ElementGeometry {
 
     const transform = ppfb.transform();
     if (null !== transform) {
-      props.origin = Point3d.create(
-        transform.form3d03(),
-        transform.form3d13(),
-        transform.form3d23()
-      );
+      props.origin = Point3d.create(transform.form3d03(), transform.form3d13(), transform.form3d23());
       props.rotation = YawPitchRollAngles.createFromMatrix3d(
         Matrix3d.createRowValues(
           transform.form3d00(),
@@ -1350,22 +1146,21 @@ export namespace ElementGeometry {
       const angles = YawPitchRollAngles.fromJSON(text.rotation);
       const matrix = angles.toMatrix3d();
       const coffs = matrix.coffs;
-      const transformOffset =
-        EGFBAccessors.TextStringTransform.createTextStringTransform(
-          fbb,
-          coffs[0],
-          coffs[1],
-          coffs[2],
-          origin.x,
-          coffs[3],
-          coffs[4],
-          coffs[5],
-          origin.y,
-          coffs[6],
-          coffs[7],
-          coffs[8],
-          origin.z
-        );
+      const transformOffset = EGFBAccessors.TextStringTransform.createTextStringTransform(
+        fbb,
+        coffs[0],
+        coffs[1],
+        coffs[2],
+        origin.x,
+        coffs[3],
+        coffs[4],
+        coffs[5],
+        origin.y,
+        coffs[6],
+        coffs[7],
+        coffs[8],
+        origin.z
+      );
       builder.addTransform(fbb, transformOffset);
     }
 
@@ -1401,14 +1196,10 @@ export namespace ElementGeometry {
     const corner2 = ppfb.tileCorner2();
     const corner3 = ppfb.tileCorner3();
 
-    if (null !== corner0)
-      corners[0].setFrom(Point3d.create(corner0.x(), corner0.y(), corner0.z()));
-    if (null !== corner1)
-      corners[1].setFrom(Point3d.create(corner1.x(), corner1.y(), corner1.z()));
-    if (null !== corner2)
-      corners[2].setFrom(Point3d.create(corner2.x(), corner2.y(), corner2.z()));
-    if (null !== corner3)
-      corners[3].setFrom(Point3d.create(corner3.x(), corner3.y(), corner3.z()));
+    if (null !== corner0) corners[0].setFrom(Point3d.create(corner0.x(), corner0.y(), corner0.z()));
+    if (null !== corner1) corners[1].setFrom(Point3d.create(corner1.x(), corner1.y(), corner1.z()));
+    if (null !== corner2) corners[2].setFrom(Point3d.create(corner2.x(), corner2.y(), corner2.z()));
+    if (null !== corner3) corners[3].setFrom(Point3d.create(corner3.x(), corner3.y(), corner3.z()));
 
     if (undefined !== localToWorld) {
       localToWorld.multiplyXYAndZInPlace(corners[0]);
@@ -1426,8 +1217,7 @@ export namespace ElementGeometry {
     worldToLocal?: Transform
   ): ElementGeometryDataEntry | undefined {
     if (undefined !== worldToLocal) {
-      const localImage =
-        ImageGraphic.fromJSON(image).cloneTransformed(worldToLocal);
+      const localImage = ImageGraphic.fromJSON(image).cloneTransformed(worldToLocal);
       image = localImage.toJSON();
     }
 
@@ -1436,40 +1226,17 @@ export namespace ElementGeometry {
     builder.startImage(fbb);
 
     const textudeIdPair = Id64.getUint32Pair(image.textureId);
-    builder.addTextureId(
-      fbb,
-      flatbuffers.Long.create(textudeIdPair.lower, textudeIdPair.upper)
-    );
+    builder.addTextureId(fbb, flatbuffers.Long.create(textudeIdPair.lower, textudeIdPair.upper));
     builder.addDrawBorder(fbb, image.hasBorder ? 1 : 0);
 
     const corners = ImageGraphicCorners.fromJSON(image.corners);
-    const cornerOffset0 = EGFBAccessors.DPoint3d.createDPoint3d(
-      fbb,
-      corners[0].x,
-      corners[0].y,
-      corners[0].z
-    );
+    const cornerOffset0 = EGFBAccessors.DPoint3d.createDPoint3d(fbb, corners[0].x, corners[0].y, corners[0].z);
     builder.addTileCorner0(fbb, cornerOffset0);
-    const cornerOffset1 = EGFBAccessors.DPoint3d.createDPoint3d(
-      fbb,
-      corners[1].x,
-      corners[1].y,
-      corners[1].z
-    );
+    const cornerOffset1 = EGFBAccessors.DPoint3d.createDPoint3d(fbb, corners[1].x, corners[1].y, corners[1].z);
     builder.addTileCorner1(fbb, cornerOffset1);
-    const cornerOffset2 = EGFBAccessors.DPoint3d.createDPoint3d(
-      fbb,
-      corners[2].x,
-      corners[2].y,
-      corners[2].z
-    );
+    const cornerOffset2 = EGFBAccessors.DPoint3d.createDPoint3d(fbb, corners[2].x, corners[2].y, corners[2].z);
     builder.addTileCorner2(fbb, cornerOffset2);
-    const cornerOffset3 = EGFBAccessors.DPoint3d.createDPoint3d(
-      fbb,
-      corners[3].x,
-      corners[3].y,
-      corners[3].z
-    );
+    const cornerOffset3 = EGFBAccessors.DPoint3d.createDPoint3d(fbb, corners[3].x, corners[3].y, corners[3].z);
     builder.addTileCorner3(fbb, cornerOffset3);
 
     const mLoc = builder.endImage(fbb);
@@ -1522,8 +1289,7 @@ export namespace ElementGeometry {
       );
 
     if (undefined !== localToWorld) {
-      if (undefined !== transform)
-        transform.multiplyTransformTransform(localToWorld, transform);
+      if (undefined !== transform) transform.multiplyTransformTransform(localToWorld, transform);
       else transform = localToWorld;
     }
 
@@ -1535,13 +1301,9 @@ export namespace ElementGeometry {
         const faceSymbFb = ppfb.symbology(index);
         const faceSymbProps: BRepEntity.FaceSymbologyProps = {};
         if (null !== faceSymbFb) {
-          if (1 === faceSymbFb.useColor())
-            faceSymbProps.color = faceSymbFb.color();
+          if (1 === faceSymbFb.useColor()) faceSymbProps.color = faceSymbFb.color();
           if (1 === faceSymbFb.useMaterial())
-            faceSymbProps.materialId = Id64.fromUint32Pair(
-              faceSymbFb.materialId().low,
-              faceSymbFb.materialId().high
-            );
+            faceSymbProps.materialId = Id64.fromUint32Pair(faceSymbFb.materialId().low, faceSymbFb.materialId().high);
           faceSymbProps.transparency = faceSymbFb.transparency();
         }
         faceSymbPropsArray.push(faceSymbProps);
@@ -1551,17 +1313,13 @@ export namespace ElementGeometry {
 
     let data;
     const entityData = ppfb.entityDataArray();
-    if (wantBRepData && null !== entityData)
-      data = Base64EncodedString.fromUint8Array(entityData);
+    if (wantBRepData && null !== entityData) data = Base64EncodedString.fromUint8Array(entityData);
 
     return { data, type, transform: transform?.toJSON(), faceSymbology };
   }
 
   /** Create entry from a [[BRepEntity.DataProps]]. Provided for compatibility with GeometryStreamBuilder only. */
-  export function fromBRep(
-    brep: BRepEntity.DataProps,
-    worldToLocal?: Transform
-  ): ElementGeometryDataEntry | undefined {
+  export function fromBRep(brep: BRepEntity.DataProps, worldToLocal?: Transform): ElementGeometryDataEntry | undefined {
     if (undefined !== worldToLocal) {
       const entityTrans = Transform.fromJSON(brep.transform);
       const localTrans = entityTrans.multiplyTransformTransform(worldToLocal);
@@ -1589,13 +1347,8 @@ export namespace ElementGeometry {
       builder.startSymbologyVector(fbb, brep.faceSymbology.length);
       for (let i = brep.faceSymbology.length - 1; i >= 0; i--) {
         const symb = brep.faceSymbology[i];
-        const materialIdPair = Id64.getUint32Pair(
-          symb.materialId ? symb.materialId : Id64.invalid
-        );
-        const matLong = flatbuffers.Long.create(
-          materialIdPair.lower,
-          materialIdPair.upper
-        );
+        const materialIdPair = Id64.getUint32Pair(symb.materialId ? symb.materialId : Id64.invalid);
+        const matLong = flatbuffers.Long.create(materialIdPair.lower, materialIdPair.upper);
         EGFBAccessors.FaceSymbology.createFaceSymbology(
           fbb,
           symb.color ? 1 : 0,
@@ -1623,8 +1376,7 @@ export namespace ElementGeometry {
       }
     };
 
-    if (undefined !== brep.type)
-      builder.addBrepType(fbb, toEGFBBRepType(brep.type));
+    if (undefined !== brep.type) builder.addBrepType(fbb, toEGFBBRepType(brep.type));
 
     if (undefined !== brep.transform) {
       const transform = Transform.fromJSON(brep.transform);
@@ -1658,10 +1410,7 @@ export namespace ElementGeometry {
   }
 
   /** Apply transform directly to ElementGeometryDataEntry for a BRep */
-  export function transformBRep(
-    entry: ElementGeometryDataEntry,
-    inputTransform: Transform
-  ): boolean {
+  export function transformBRep(entry: ElementGeometryDataEntry, inputTransform: Transform): boolean {
     if (ElementGeometryOpcode.BRep !== entry.opcode) return false;
 
     const buffer = new flatbuffers.ByteBuffer(entry.data);
@@ -1671,10 +1420,7 @@ export namespace ElementGeometry {
     const builder = EGFBAccessors.BRepData;
 
     const entityData = ppfb.entityDataArray();
-    const dataOffset =
-      null !== entityData
-        ? builder.createEntityDataVector(fbb, entityData)
-        : undefined;
+    const dataOffset = null !== entityData ? builder.createEntityDataVector(fbb, entityData) : undefined;
 
     let faceSymbOffset;
     const faceSymbLen = ppfb.symbologyLength();
@@ -1718,8 +1464,7 @@ export namespace ElementGeometry {
         entityTransform.tz()
       );
 
-    if (undefined !== transform)
-      transform.multiplyTransformTransform(inputTransform, transform);
+    if (undefined !== transform) transform.multiplyTransformTransform(inputTransform, transform);
     else transform = inputTransform;
 
     const transformOffset = EGFBAccessors.Transform.createTransform(
@@ -1780,8 +1525,7 @@ export namespace ElementGeometry {
     switch (entry.opcode) {
       case ElementGeometryOpcode.BasicSymbology: {
         const buffer = new flatbuffers.ByteBuffer(entry.data);
-        const ppfb =
-          EGFBAccessors.BasicSymbology.getRootAsBasicSymbology(buffer);
+        const ppfb = EGFBAccessors.BasicSymbology.getRootAsBasicSymbology(buffer);
 
         const subcatLong = ppfb.subCategoryId();
         let subcatId = Id64.fromUint32Pair(subcatLong.low, subcatLong.high);
@@ -1795,10 +1539,7 @@ export namespace ElementGeometry {
 
         if (ppfb.useColor()) {
           const lineColor = ColorDef.fromTbgr(ppfb.color());
-          if (
-            undefined === geomParams.lineColor ||
-            !lineColor.equals(geomParams.lineColor)
-          ) {
+          if (undefined === geomParams.lineColor || !lineColor.equals(geomParams.lineColor)) {
             geomParams.lineColor = lineColor;
             changed = true;
           }
@@ -1815,41 +1556,27 @@ export namespace ElementGeometry {
         if (ppfb.useStyle()) {
           const styleLong = ppfb.lineStyleId();
           const styleId = Id64.fromUint32Pair(styleLong.low, styleLong.high);
-          if (
-            undefined === geomParams.styleInfo ||
-            styleId !== geomParams.styleInfo.styleId
-          ) {
+          if (undefined === geomParams.styleInfo || styleId !== geomParams.styleInfo.styleId) {
             geomParams.styleInfo = new LineStyle.Info(styleId);
             changed = true;
           }
         }
 
         const transparency = ppfb.transparency();
-        if (
-          transparency !==
-          (undefined !== geomParams.elmTransparency
-            ? geomParams.elmTransparency
-            : 0)
-        ) {
+        if (transparency !== (undefined !== geomParams.elmTransparency ? geomParams.elmTransparency : 0)) {
           geomParams.elmTransparency = transparency;
           changed = true;
         }
 
         const displayPriority = ppfb.displayPriority();
-        if (
-          displayPriority !==
-          (undefined !== geomParams.elmPriority ? geomParams.elmPriority : 0)
-        ) {
+        if (displayPriority !== (undefined !== geomParams.elmPriority ? geomParams.elmPriority : 0)) {
           geomParams.elmPriority = displayPriority;
           changed = true;
         }
 
         const geometryClass = ppfb.geomClass();
         if (
-          geometryClass !==
-          (undefined !== geomParams.geometryClass
-            ? geomParams.geometryClass
-            : GeometryClass.Primary)
+          geometryClass !== (undefined !== geomParams.geometryClass ? geomParams.geometryClass : GeometryClass.Primary)
         ) {
           geomParams.geometryClass = geometryClass;
           changed = true;
@@ -1860,54 +1587,37 @@ export namespace ElementGeometry {
 
       case ElementGeometryOpcode.LineStyleModifiers: {
         const buffer = new flatbuffers.ByteBuffer(entry.data);
-        const ppfb =
-          EGFBAccessors.LineStyleModifiers.getRootAsLineStyleModifiers(buffer);
+        const ppfb = EGFBAccessors.LineStyleModifiers.getRootAsLineStyleModifiers(buffer);
         const props: LineStyle.ModifierProps = {};
 
-        if (0 !== (ppfb.modifiers() & StyleMod.Scale))
-          props.scale = ppfb.scale();
+        if (0 !== (ppfb.modifiers() & StyleMod.Scale)) props.scale = ppfb.scale();
 
-        if (0 !== (ppfb.modifiers() & StyleMod.GapScale))
-          props.gapScale = ppfb.gapScale();
+        if (0 !== (ppfb.modifiers() & StyleMod.GapScale)) props.gapScale = ppfb.gapScale();
 
-        if (0 !== (ppfb.modifiers() & StyleMod.DashScale))
-          props.dashScale = ppfb.dashScale();
+        if (0 !== (ppfb.modifiers() & StyleMod.DashScale)) props.dashScale = ppfb.dashScale();
 
-        if (0 !== (ppfb.modifiers() & StyleMod.StartWidth))
-          props.startWidth = ppfb.startWidth();
+        if (0 !== (ppfb.modifiers() & StyleMod.StartWidth)) props.startWidth = ppfb.startWidth();
 
-        if (0 !== (ppfb.modifiers() & StyleMod.EndWidth))
-          props.endWidth = ppfb.endWidth();
+        if (0 !== (ppfb.modifiers() & StyleMod.EndWidth)) props.endWidth = ppfb.endWidth();
 
-        if (0 !== (ppfb.modifiers() & StyleMod.DistPhase))
-          props.distPhase = ppfb.distPhase();
+        if (0 !== (ppfb.modifiers() & StyleMod.DistPhase)) props.distPhase = ppfb.distPhase();
 
-        if (0 !== (ppfb.modifiers() & StyleMod.FractPhase))
-          props.fractPhase = ppfb.fractPhase();
+        if (0 !== (ppfb.modifiers() & StyleMod.FractPhase)) props.fractPhase = ppfb.fractPhase();
 
-        if (0 !== (ppfb.modifiers() & StyleMod.CenterPhase))
-          props.centerPhase = true;
+        if (0 !== (ppfb.modifiers() & StyleMod.CenterPhase)) props.centerPhase = true;
 
-        if (0 !== (ppfb.modifiers() & StyleMod.SegMode))
-          props.segmentMode = true;
-        else if (0 !== (ppfb.modifiers() & StyleMod.NoSegMode))
-          props.segmentMode = false;
+        if (0 !== (ppfb.modifiers() & StyleMod.SegMode)) props.segmentMode = true;
+        else if (0 !== (ppfb.modifiers() & StyleMod.NoSegMode)) props.segmentMode = false;
 
-        if (0 !== (ppfb.modifiers() & StyleMod.PhysicalWidth))
-          props.physicalWidth = true;
+        if (0 !== (ppfb.modifiers() & StyleMod.PhysicalWidth)) props.physicalWidth = true;
 
         if (0 !== (ppfb.modifiers() & StyleMod.Normal)) {
           const normal = ppfb.normal();
-          if (null !== normal)
-            props.normal = Vector3d.create(normal.x(), normal.y(), normal.z());
+          if (null !== normal) props.normal = Vector3d.create(normal.x(), normal.y(), normal.z());
         }
 
         if (0 !== (ppfb.modifiers() & StyleMod.Rotation))
-          props.rotation = YawPitchRollAngles.createDegrees(
-            ppfb.yaw(),
-            ppfb.pitch(),
-            ppfb.roll()
-          );
+          props.rotation = YawPitchRollAngles.createDegrees(ppfb.yaw(), ppfb.pitch(), ppfb.roll());
 
         const styleMod = new LineStyle.Modifier(props);
         if (undefined !== localToWorld) styleMod.applyTransform(localToWorld);
@@ -1915,10 +1625,7 @@ export namespace ElementGeometry {
         if (undefined === geomParams.styleInfo) {
           geomParams.styleInfo = new LineStyle.Info(Id64.invalid, styleMod);
           changed = true;
-        } else if (
-          undefined === geomParams.styleInfo.styleMod ||
-          !styleMod.equals(geomParams.styleInfo.styleMod)
-        ) {
+        } else if (undefined === geomParams.styleInfo.styleMod || !styleMod.equals(geomParams.styleInfo.styleMod)) {
           geomParams.styleInfo.styleMod = styleMod;
           changed = true;
         }
@@ -1944,12 +1651,7 @@ export namespace ElementGeometry {
         };
 
         const fillDisplay = toFillDisplay(ppfb.fill());
-        if (
-          fillDisplay !==
-          (undefined !== geomParams.fillDisplay
-            ? geomParams.fillDisplay
-            : FillDisplay.Never)
-        ) {
+        if (fillDisplay !== (undefined !== geomParams.fillDisplay ? geomParams.fillDisplay : FillDisplay.Never)) {
           geomParams.fillDisplay = fillDisplay;
           changed = true;
         }
@@ -1957,12 +1659,7 @@ export namespace ElementGeometry {
         if (FillDisplay.Never === fillDisplay) return changed;
 
         const transparency = ppfb.transparency();
-        if (
-          transparency !==
-          (undefined !== geomParams.fillTransparency
-            ? geomParams.fillTransparency
-            : 0)
-        ) {
+        if (transparency !== (undefined !== geomParams.fillTransparency ? geomParams.fillTransparency : 0)) {
           geomParams.fillTransparency = transparency;
           changed = true;
         }
@@ -1990,13 +1687,8 @@ export namespace ElementGeometry {
           const keys: Gradient.KeyColorProps[] = [];
           const colors = ppfb.colorsArray();
           const values = ppfb.valuesArray();
-          if (
-            null !== colors &&
-            null !== values &&
-            colors.length === values.length
-          ) {
-            for (let iKey = 0; iKey < colors.length; ++iKey)
-              keys.push({ value: values[iKey], color: colors[iKey] });
+          if (null !== colors && null !== values && colors.length === values.length) {
+            for (let iKey = 0; iKey < colors.length; ++iKey) keys.push({ value: values[iKey], color: colors[iKey] });
           }
 
           const props: Gradient.SymbProps = {
@@ -2035,28 +1727,19 @@ export namespace ElementGeometry {
           }
 
           const gradient = Gradient.Symb.fromJSON(props);
-          if (
-            undefined === geomParams.gradient ||
-            !gradient.equals(geomParams.gradient)
-          ) {
+          if (undefined === geomParams.gradient || !gradient.equals(geomParams.gradient)) {
             geomParams.gradient = gradient;
             changed = true;
           }
         } else if (0 !== ppfb.backgroundFill()) {
-          const backgroundFill =
-            2 === ppfb.backgroundFill()
-              ? BackgroundFill.Outline
-              : BackgroundFill.Solid;
+          const backgroundFill = 2 === ppfb.backgroundFill() ? BackgroundFill.Outline : BackgroundFill.Solid;
           if (backgroundFill !== geomParams.backgroundFill) {
             geomParams.backgroundFill = backgroundFill;
             changed = true;
           }
         } else if (ppfb.useColor()) {
           const fillColor = ColorDef.fromTbgr(ppfb.color());
-          if (
-            undefined === geomParams.fillColor ||
-            !fillColor.equals(geomParams.fillColor)
-          ) {
+          if (undefined === geomParams.fillColor || !fillColor.equals(geomParams.fillColor)) {
             geomParams.fillColor = fillColor;
             changed = true;
           }
@@ -2091,8 +1774,7 @@ export namespace ElementGeometry {
               rotation.x22()
             )
           );
-          if (undefined !== angles && !angles.isIdentity())
-            props.rotation = angles;
+          if (undefined !== angles && !angles.isIdentity()) props.rotation = angles;
         }
 
         const space1 = ppfb.space1();
@@ -2111,14 +1793,10 @@ export namespace ElementGeometry {
 
         if (ppfb.useWeight()) props.weight = ppfb.weight();
 
-        props.invisibleBoundary =
-          1 === ppfb.invisibleBoundary() ? true : undefined;
+        props.invisibleBoundary = 1 === ppfb.invisibleBoundary() ? true : undefined;
         props.snappable = 1 === ppfb.snappable() ? true : undefined;
 
-        const symbolId = Id64.fromUint32Pair(
-          ppfb.symbolId().low,
-          ppfb.symbolId().high
-        );
+        const symbolId = Id64.fromUint32Pair(ppfb.symbolId().low, ppfb.symbolId().high);
         props.symbolId = Id64.isValid(symbolId) ? symbolId : undefined;
 
         const nDefLines = ppfb.defLineLength();
@@ -2164,10 +1842,7 @@ export namespace ElementGeometry {
         const pattern = AreaPattern.Params.fromJSON(props);
         if (undefined !== localToWorld) pattern.applyTransform(localToWorld);
 
-        if (
-          undefined === geomParams.pattern ||
-          !pattern.equals(geomParams.pattern)
-        ) {
+        if (undefined === geomParams.pattern || !pattern.equals(geomParams.pattern)) {
           geomParams.pattern = pattern;
           changed = true;
         }
@@ -2182,10 +1857,7 @@ export namespace ElementGeometry {
         if (ppfb.useMaterial()) {
           const matLong = ppfb.materialId();
           const materialId = Id64.fromUint32Pair(matLong.low, matLong.high);
-          if (
-            undefined === geomParams.materialId ||
-            materialId !== geomParams.materialId
-          ) {
+          if (undefined === geomParams.materialId || materialId !== geomParams.materialId) {
             geomParams.materialId = materialId;
             changed = true;
           }
@@ -2210,10 +1882,7 @@ export namespace ElementGeometry {
     builder.startBasicSymbology(fbbBas);
 
     const subcatIdPair = Id64.getUint32Pair(geomParams.subCategoryId);
-    builder.addSubCategoryId(
-      fbbBas,
-      flatbuffers.Long.create(subcatIdPair.lower, subcatIdPair.upper)
-    );
+    builder.addSubCategoryId(fbbBas, flatbuffers.Long.create(subcatIdPair.lower, subcatIdPair.upper));
 
     if (undefined !== geomParams.lineColor) {
       builder.addColor(fbbBas, geomParams.lineColor.tbgr);
@@ -2227,17 +1896,11 @@ export namespace ElementGeometry {
 
     if (undefined !== geomParams.styleInfo) {
       const styleIdPair = Id64.getUint32Pair(geomParams.styleInfo.styleId);
-      builder.addLineStyleId(
-        fbbBas,
-        flatbuffers.Long.create(styleIdPair.lower, styleIdPair.upper)
-      );
+      builder.addLineStyleId(fbbBas, flatbuffers.Long.create(styleIdPair.lower, styleIdPair.upper));
       builder.addUseStyle(fbbBas, 1);
     }
 
-    if (
-      undefined !== geomParams.elmTransparency &&
-      0 !== geomParams.elmTransparency
-    ) {
+    if (undefined !== geomParams.elmTransparency && 0 !== geomParams.elmTransparency) {
       builder.addTransparency(fbbBas, geomParams.elmTransparency);
     }
 
@@ -2245,10 +1908,7 @@ export namespace ElementGeometry {
       builder.addDisplayPriority(fbbBas, geomParams.elmPriority);
     }
 
-    if (
-      undefined !== geomParams.geometryClass &&
-      GeometryClass.Primary !== geomParams.geometryClass
-    ) {
+    if (undefined !== geomParams.geometryClass && GeometryClass.Primary !== geomParams.geometryClass) {
       builder.addGeomClass(fbbBas, geomParams.geometryClass);
     }
 
@@ -2258,10 +1918,7 @@ export namespace ElementGeometry {
 
     entries.push({ opcode: ElementGeometryOpcode.BasicSymbology, data });
 
-    if (
-      undefined !== geomParams.styleInfo &&
-      undefined !== geomParams.styleInfo.styleMod
-    ) {
+    if (undefined !== geomParams.styleInfo && undefined !== geomParams.styleInfo.styleMod) {
       const fbbLS = new flatbuffers.Builder();
       const builderLS = EGFBAccessors.LineStyleModifiers;
       builderLS.startLineStyleModifiers(fbbLS);
@@ -2352,10 +2009,7 @@ export namespace ElementGeometry {
         });
     }
 
-    if (
-      undefined !== geomParams.fillDisplay &&
-      FillDisplay.Never !== geomParams.fillDisplay
-    ) {
+    if (undefined !== geomParams.fillDisplay && FillDisplay.Never !== geomParams.fillDisplay) {
       const fbbFill = new flatbuffers.Builder();
       const builderFill = EGFBAccessors.AreaFill;
 
@@ -2375,10 +2029,7 @@ export namespace ElementGeometry {
         keyValuesOff = builderFill.createValuesVector(fbbFill, keyValues);
         keyColorsOff = builderFill.createColorsVector(fbbFill, keyColors);
 
-        if (
-          Gradient.Mode.Thematic === geomParams.gradient.mode &&
-          undefined !== geomParams.gradient.thematicSettings
-        ) {
+        if (Gradient.Mode.Thematic === geomParams.gradient.mode && undefined !== geomParams.gradient.thematicSettings) {
           const thematic = geomParams.gradient.thematicSettings;
           const builderThematic = EGFBAccessors.ThematicSettings;
           builderThematic.startThematicSettings(fbbFill);
@@ -2416,8 +2067,7 @@ export namespace ElementGeometry {
 
       builderFill.addFill(fbbFill, toEGFBFillDisplay(geomParams.fillDisplay));
 
-      if (undefined !== geomParams.fillTransparency)
-        builderFill.addTransparency(fbbFill, geomParams.fillTransparency);
+      if (undefined !== geomParams.fillTransparency) builderFill.addTransparency(fbbFill, geomParams.fillTransparency);
 
       if (undefined !== geomParams.gradient) {
         const toEGFBGradientMode = (mode: Gradient.Mode) => {
@@ -2439,36 +2089,22 @@ export namespace ElementGeometry {
           }
         };
 
-        builderFill.addMode(
-          fbbFill,
-          toEGFBGradientMode(geomParams.gradient.mode)
-        );
+        builderFill.addMode(fbbFill, toEGFBGradientMode(geomParams.gradient.mode));
 
         builderFill.addFlags(fbbFill, geomParams.gradient.flags);
         builderFill.addShift(fbbFill, geomParams.gradient.shift);
 
-        if (undefined !== geomParams.gradient.tint)
-          builderFill.addTint(fbbFill, geomParams.gradient.tint);
+        if (undefined !== geomParams.gradient.tint) builderFill.addTint(fbbFill, geomParams.gradient.tint);
 
-        if (undefined !== geomParams.gradient.angle)
-          builderFill.addAngle(fbbFill, geomParams.gradient.angle.radians);
+        if (undefined !== geomParams.gradient.angle) builderFill.addAngle(fbbFill, geomParams.gradient.angle.radians);
 
-        if (undefined !== keyValuesOff)
-          builderFill.addValues(fbbFill, keyValuesOff);
+        if (undefined !== keyValuesOff) builderFill.addValues(fbbFill, keyValuesOff);
 
-        if (undefined !== keyColorsOff)
-          builderFill.addColors(fbbFill, keyColorsOff);
+        if (undefined !== keyColorsOff) builderFill.addColors(fbbFill, keyColorsOff);
 
-        if (undefined !== thematicOffset)
-          builderFill.addThematicSettings(fbbFill, thematicOffset);
-      } else if (
-        undefined !== geomParams.backgroundFill &&
-        BackgroundFill.None !== geomParams.backgroundFill
-      ) {
-        builderFill.addBackgroundFill(
-          fbbFill,
-          BackgroundFill.Outline === geomParams.backgroundFill ? 2 : 1
-        );
+        if (undefined !== thematicOffset) builderFill.addThematicSettings(fbbFill, thematicOffset);
+      } else if (undefined !== geomParams.backgroundFill && BackgroundFill.None !== geomParams.backgroundFill) {
+        builderFill.addBackgroundFill(fbbFill, BackgroundFill.Outline === geomParams.backgroundFill ? 2 : 1);
       } else if (undefined !== geomParams.fillColor) {
         builderFill.addColor(fbbFill, geomParams.fillColor.tbgr);
         builderFill.addUseColor(fbbFill, 1);
@@ -2501,16 +2137,11 @@ export namespace ElementGeometry {
         for (const line of defLines) {
           let dashOffset;
 
-          if (undefined !== line.dashes)
-            dashOffset = builderDefLines.createDashesVector(
-              fbbPat,
-              line.dashes
-            );
+          if (undefined !== line.dashes) dashOffset = builderDefLines.createDashesVector(fbbPat, line.dashes);
 
           builderDefLines.startDwgHatchDefLine(fbbPat);
 
-          if (undefined !== line.angle)
-            builderDefLines.addAngle(fbbPat, line.angle.radians);
+          if (undefined !== line.angle) builderDefLines.addAngle(fbbPat, line.angle.radians);
 
           // NOTE: Backend requires through and offset to be present...
           const throughOffset = EGFBAccessors.DPoint2d.createDPoint2d(
@@ -2527,17 +2158,12 @@ export namespace ElementGeometry {
           );
           builderDefLines.addOffset(fbbPat, offsetOffset);
 
-          if (undefined !== dashOffset)
-            builderDefLines.addDashes(fbbPat, dashOffset);
+          if (undefined !== dashOffset) builderDefLines.addDashes(fbbPat, dashOffset);
 
           defLineOffsets.push(builderDefLines.endDwgHatchDefLine(fbbPat));
         }
 
-        if (0 !== defLineOffsets.length)
-          defLineVecOffset = builderPat.createDefLineVector(
-            fbbPat,
-            defLineOffsets
-          );
+        if (0 !== defLineOffsets.length) defLineVecOffset = builderPat.createDefLineVector(fbbPat, defLineOffsets);
       }
 
       builderPat.startAreaPattern(fbbPat);
@@ -2570,20 +2196,15 @@ export namespace ElementGeometry {
         builderPat.addRotation(fbbPat, rotationOffset);
       }
 
-      if (undefined !== pattern.space1)
-        builderPat.addSpace1(fbbPat, pattern.space1);
+      if (undefined !== pattern.space1) builderPat.addSpace1(fbbPat, pattern.space1);
 
-      if (undefined !== pattern.space2)
-        builderPat.addSpace2(fbbPat, pattern.space2);
+      if (undefined !== pattern.space2) builderPat.addSpace2(fbbPat, pattern.space2);
 
-      if (undefined !== pattern.angle1)
-        builderPat.addAngle1(fbbPat, pattern.angle1.radians);
+      if (undefined !== pattern.angle1) builderPat.addAngle1(fbbPat, pattern.angle1.radians);
 
-      if (undefined !== pattern.angle2)
-        builderPat.addAngle2(fbbPat, pattern.angle2.radians);
+      if (undefined !== pattern.angle2) builderPat.addAngle2(fbbPat, pattern.angle2.radians);
 
-      if (undefined !== pattern.scale)
-        builderPat.addScale(fbbPat, pattern.scale);
+      if (undefined !== pattern.scale) builderPat.addScale(fbbPat, pattern.scale);
 
       if (undefined !== pattern.color) {
         builderPat.addColor(fbbPat, pattern.color.tbgr);
@@ -2598,19 +2219,14 @@ export namespace ElementGeometry {
       if (undefined !== pattern.invisibleBoundary && pattern.invisibleBoundary)
         builderPat.addInvisibleBoundary(fbbPat, 1);
 
-      if (undefined !== pattern.snappable && pattern.snappable)
-        builderPat.addSnappable(fbbPat, 1);
+      if (undefined !== pattern.snappable && pattern.snappable) builderPat.addSnappable(fbbPat, 1);
 
       if (undefined !== pattern.symbolId) {
         const symbolIdPair = Id64.getUint32Pair(pattern.symbolId);
-        builderPat.addSymbolId(
-          fbbPat,
-          flatbuffers.Long.create(symbolIdPair.lower, symbolIdPair.upper)
-        );
+        builderPat.addSymbolId(fbbPat, flatbuffers.Long.create(symbolIdPair.lower, symbolIdPair.upper));
       }
 
-      if (undefined !== defLineVecOffset)
-        builderPat.addDefLine(fbbPat, defLineVecOffset);
+      if (undefined !== defLineVecOffset) builderPat.addDefLine(fbbPat, defLineVecOffset);
 
       const mLocPat = builderPat.endAreaPattern(fbbPat);
       fbbPat.finish(mLocPat);
@@ -2625,10 +2241,7 @@ export namespace ElementGeometry {
       builderMat.startMaterial(fbbMat);
 
       const matIdPair = Id64.getUint32Pair(geomParams.materialId);
-      builderMat.addMaterialId(
-        fbbMat,
-        flatbuffers.Long.create(matIdPair.lower, matIdPair.upper)
-      );
+      builderMat.addMaterialId(fbbMat, flatbuffers.Long.create(matIdPair.lower, matIdPair.upper));
       builderMat.addUseMaterial(fbbMat, 1);
 
       const mLocMat = builderMat.endMaterial(fbbMat);
@@ -2642,10 +2255,7 @@ export namespace ElementGeometry {
   }
 
   /** Return entry as [[GeometryPart]] id and instance transform */
-  export function toGeometryPart(
-    entry: ElementGeometryDataEntry,
-    partToElement?: Transform
-  ): Id64String | undefined {
+  export function toGeometryPart(entry: ElementGeometryDataEntry, partToElement?: Transform): Id64String | undefined {
     if (ElementGeometryOpcode.PartReference !== entry.opcode) return undefined;
 
     const buffer = new flatbuffers.ByteBuffer(entry.data);
@@ -2657,18 +2267,12 @@ export namespace ElementGeometry {
     if (undefined !== partToElement) {
       let origin;
       const originfb = ppfb.origin();
-      if (null !== originfb)
-        origin = Point3d.create(originfb.x(), originfb.y(), originfb.z());
+      if (null !== originfb) origin = Point3d.create(originfb.x(), originfb.y(), originfb.z());
       else origin = Point3d.createZero();
 
-      const angles = YawPitchRollAngles.createDegrees(
-        ppfb.yaw(),
-        ppfb.pitch(),
-        ppfb.roll()
-      );
+      const angles = YawPitchRollAngles.createDegrees(ppfb.yaw(), ppfb.pitch(), ppfb.roll());
       const matrix = angles.toMatrix3d();
-      if (1.0 !== ppfb.scale())
-        matrix.scaleColumnsInPlace(ppfb.scale(), ppfb.scale(), ppfb.scale());
+      if (1.0 !== ppfb.scale()) matrix.scaleColumnsInPlace(ppfb.scale(), ppfb.scale(), ppfb.scale());
 
       Transform.createOriginAndMatrix(origin, matrix, partToElement);
     }
@@ -2693,10 +2297,7 @@ export namespace ElementGeometry {
     builder.startGeometryPart(fbb);
 
     const idPair = Id64.getUint32Pair(partId);
-    builder.addGeomPartId(
-      fbb,
-      flatbuffers.Long.create(idPair.lower, idPair.upper)
-    );
+    builder.addGeomPartId(fbb, flatbuffers.Long.create(idPair.lower, idPair.upper));
 
     if (undefined !== partToElement && !partToElement.isIdentity) {
       const originOffset = EGFBAccessors.DPoint3d.createDPoint3d(
@@ -2707,9 +2308,7 @@ export namespace ElementGeometry {
       );
       builder.addOrigin(fbb, originOffset);
 
-      const angles = YawPitchRollAngles.createFromMatrix3d(
-        partToElement.matrix
-      );
+      const angles = YawPitchRollAngles.createFromMatrix3d(partToElement.matrix);
       if (undefined !== angles) {
         builder.addYaw(fbb, angles.yaw.degrees);
         builder.addPitch(fbb, angles.pitch.degrees);
@@ -2717,8 +2316,7 @@ export namespace ElementGeometry {
       }
 
       const result = partToElement.matrix.factorRigidWithSignedScale();
-      if (undefined !== result && result.scale > 0.0)
-        builder.addScale(fbb, result.scale);
+      if (undefined !== result && result.scale > 0.0) builder.addScale(fbb, result.scale);
     }
 
     const mLoc = builder.endGeometryPart(fbb);
@@ -2729,35 +2327,22 @@ export namespace ElementGeometry {
   }
 
   /** Return entry as a [[ElementAlignedBox3d]] representing the local range of a geometric entry */
-  export function toSubGraphicRange(
-    entry: ElementGeometryDataEntry
-  ): ElementAlignedBox3d | undefined {
-    if (ElementGeometryOpcode.SubGraphicRange !== entry.opcode)
-      return undefined;
+  export function toSubGraphicRange(entry: ElementGeometryDataEntry): ElementAlignedBox3d | undefined {
+    if (ElementGeometryOpcode.SubGraphicRange !== entry.opcode) return undefined;
 
     const buffer = new flatbuffers.ByteBuffer(entry.data);
     const ppfb = EGFBAccessors.PointPrimitive.getRootAsPointPrimitive(buffer);
 
     if (2 !== ppfb.coordsLength()) return undefined;
 
-    const low = Point3d.create(
-      ppfb.coords(0)!.x(),
-      ppfb.coords(0)!.y(),
-      ppfb.coords(0)!.z()
-    );
-    const high = Point3d.create(
-      ppfb.coords(1)!.x(),
-      ppfb.coords(1)!.y(),
-      ppfb.coords(1)!.z()
-    );
+    const low = Point3d.create(ppfb.coords(0)!.x(), ppfb.coords(0)!.y(), ppfb.coords(0)!.z());
+    const high = Point3d.create(ppfb.coords(1)!.x(), ppfb.coords(1)!.y(), ppfb.coords(1)!.z());
 
     return Range3d.create(low, high);
   }
 
   /** Create entry from a [[ElementAlignedBox3d]] to compute and store local ranges for subsequent geometric entries */
-  export function fromSubGraphicRange(
-    bbox: ElementAlignedBox3d
-  ): ElementGeometryDataEntry | undefined {
+  export function fromSubGraphicRange(bbox: ElementAlignedBox3d): ElementGeometryDataEntry | undefined {
     const fbb = new flatbuffers.Builder();
     const builder = EGFBAccessors.PointPrimitive;
 
@@ -2781,9 +2366,7 @@ export namespace ElementGeometry {
   }
 
   /** Create [[Transform]] from row-major storage 4x3 Float64Array */
-  export function toTransform(
-    sourceToWorld: Float64Array
-  ): Transform | undefined {
+  export function toTransform(sourceToWorld: Float64Array): Transform | undefined {
     if (12 !== sourceToWorld.length) return undefined;
     return Transform.createRowValues(
       sourceToWorld[0],
@@ -2802,9 +2385,7 @@ export namespace ElementGeometry {
   }
 
   /** Create [[ElementAlignedBox3d]] from lowX, lowY, lowZ, highX, highY, highZ Float64Array */
-  export function toElementAlignedBox3d(
-    bbox: Float64Array
-  ): ElementAlignedBox3d | undefined {
+  export function toElementAlignedBox3d(bbox: Float64Array): ElementAlignedBox3d | undefined {
     if (6 !== bbox.length) return undefined;
     return Range3d.fromFloat64Array(bbox);
   }

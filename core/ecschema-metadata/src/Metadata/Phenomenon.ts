@@ -32,10 +32,7 @@ export class Phenomenon extends SchemaItem {
    * @param standalone Serialization includes only this object (as opposed to the full schema).
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
    */
-  public override toJSON(
-    standalone: boolean = false,
-    includeSchemaVersion: boolean = false
-  ): PhenomenonProps {
+  public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): PhenomenonProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     schemaJson.definition = this.definition;
     return schemaJson;
@@ -50,17 +47,12 @@ export class Phenomenon extends SchemaItem {
 
   public override fromJSONSync(phenomenonProps: PhenomenonProps) {
     super.fromJSONSync(phenomenonProps);
-    if (
-      this._definition !== "" &&
-      phenomenonProps.definition.toLowerCase() !==
-        this._definition.toLowerCase()
-    )
+    if (this._definition !== "" && phenomenonProps.definition.toLowerCase() !== this._definition.toLowerCase())
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `The Phenomenon ${this.name} has an invalid 'definition' attribute.`
       );
-    else if (this._definition === "")
-      this._definition = phenomenonProps.definition;
+    else if (this._definition === "") this._definition = phenomenonProps.definition;
   }
 
   public override async fromJSON(phenomenonProps: PhenomenonProps) {

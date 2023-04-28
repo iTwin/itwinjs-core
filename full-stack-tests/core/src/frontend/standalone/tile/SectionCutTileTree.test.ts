@@ -4,17 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ClipStyle } from "@itwin/core-common";
-import {
-  IModelConnection,
-  SnapshotConnection,
-  SpatialViewState,
-  ViewState,
-} from "@itwin/core-frontend";
-import {
-  ClipPrimitive,
-  ClipVector,
-  ConvexClipPlaneSet,
-} from "@itwin/core-geometry";
+import { IModelConnection, SnapshotConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
+import { ClipPrimitive, ClipVector, ConvexClipPlaneSet } from "@itwin/core-geometry";
 import { TestUtility } from "../../TestUtility";
 
 function countTileTrees(view: ViewState): number {
@@ -23,13 +14,8 @@ function countTileTrees(view: ViewState): number {
   return numTrees;
 }
 
-function expectNumTreesPerModel(
-  numTreesPerModel: number,
-  view: SpatialViewState
-): void {
-  expect(countTileTrees(view)).to.equal(
-    view.modelSelector.models.size * numTreesPerModel
-  );
+function expectNumTreesPerModel(numTreesPerModel: number, view: SpatialViewState): void {
+  expect(countTileTrees(view)).to.equal(view.modelSelector.models.size * numTreesPerModel);
 }
 
 describe("Section-cut tile tree", () => {
@@ -61,9 +47,7 @@ describe("Section-cut tile tree", () => {
     verify: (view: SpatialViewState) => void
   ): Promise<void> {
     for (const testCase of testCases) {
-      const view = (await testCase.imodel.views.load(
-        testCase.viewId
-      )) as SpatialViewState;
+      const view = (await testCase.imodel.views.load(testCase.viewId)) as SpatialViewState;
       expect(view instanceof SpatialViewState).to.be.true;
       if (setup) setup(view);
 
@@ -75,11 +59,7 @@ describe("Section-cut tile tree", () => {
     ClipPrimitive.createCapture(ConvexClipPlaneSet.createPlanes([]), false),
   ]);
 
-  function enableClip(
-    view: ViewState,
-    produceCutGeometry: boolean,
-    clip: ClipVector | undefined
-  ): void {
+  function enableClip(view: ViewState, produceCutGeometry: boolean, clip: ClipVector | undefined): void {
     view.viewFlags = view.viewFlags.with("clipVolume", true);
     view.displayStyle.settings.clipStyle = ClipStyle.fromJSON({
       produceCutGeometry,

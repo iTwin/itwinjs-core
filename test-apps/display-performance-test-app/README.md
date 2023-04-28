@@ -180,10 +180,7 @@ Below is an example json config file:
           "testType": "timing",
           "viewName": "V0",
           "renderOptions": {
-            "disabledExtensions": [
-              "WEBGL_draw_buffers",
-              "OES_texture_half_float"
-            ],
+            "disabledExtensions": ["WEBGL_draw_buffers", "OES_texture_half_float"],
             "displaySolarShadows": true
           },
           "tileProps": {

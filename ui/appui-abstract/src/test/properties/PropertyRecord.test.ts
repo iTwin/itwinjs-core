@@ -10,11 +10,7 @@ import {
   PropertyValueFormat,
   StandardTypeNames,
 } from "../../appui-abstract";
-import {
-  ArrayValue,
-  PrimitiveValue,
-  StructValue,
-} from "../../appui-abstract/properties/Value";
+import { ArrayValue, PrimitiveValue, StructValue } from "../../appui-abstract/properties/Value";
 
 const value1: PropertyValue = {
   valueFormat: PropertyValueFormat.Primitive,
@@ -55,9 +51,7 @@ describe("PropertyRecord", () => {
       const newDescription = getUpdatedPropertyDescription();
       const newRecord = sut.copyWithNewValue(value2, newDescription);
       expect(newRecord.value).to.eq(value2);
-      expect(newRecord.property.displayLabel).to.eq(
-        newDescription.displayLabel
-      );
+      expect(newRecord.property.displayLabel).to.eq(newDescription.displayLabel);
     });
 
     it("should copy all attributes from source", () => {
@@ -85,10 +79,7 @@ describe("PropertyRecord", () => {
     });
 
     it("should create a valid PropertyRecord with provided description name", () => {
-      const record = PropertyRecord.fromString(
-        "test value",
-        "test description"
-      );
+      const record = PropertyRecord.fromString("test value", "test description");
       expect(record).to.matchSnapshot();
     });
 
@@ -114,10 +105,7 @@ describe("PropertyRecord", () => {
     it("should return array children for array record", () => {
       const arrayValue: ArrayValue = {
         valueFormat: PropertyValueFormat.Array,
-        items: [
-          PropertyRecord.fromString("ArrayChild1"),
-          PropertyRecord.fromString("ArrayChild2"),
-        ],
+        items: [PropertyRecord.fromString("ArrayChild1"), PropertyRecord.fromString("ArrayChild2")],
         itemsTypeName: StandardTypeNames.String,
       };
 

@@ -69,24 +69,16 @@ export enum CustomAttributeContainerType {
   CustomAttributeClass = 0x0001 << 2,
   StructClass = 0x0001 << 3,
   RelationshipClass = 0x0001 << 4,
-  AnyClass = EntityClass |
-    CustomAttributeClass |
-    StructClass |
-    RelationshipClass,
+  AnyClass = EntityClass | CustomAttributeClass | StructClass | RelationshipClass,
   PrimitiveProperty = 0x0001 << 5,
   StructProperty = 0x0001 << 6,
   PrimitiveArrayProperty = 0x0001 << 7,
   StructArrayProperty = 0x0001 << 8,
   NavigationProperty = 0x0001 << 9,
-  AnyProperty = PrimitiveProperty |
-    StructProperty |
-    PrimitiveArrayProperty |
-    StructArrayProperty |
-    NavigationProperty,
+  AnyProperty = PrimitiveProperty | StructProperty | PrimitiveArrayProperty | StructArrayProperty | NavigationProperty,
   SourceRelationshipConstraint = 0x0001 << 10,
   TargetRelationshipConstraint = 0x0001 << 11,
-  AnyRelationshipConstraint = SourceRelationshipConstraint |
-    TargetRelationshipConstraint,
+  AnyRelationshipConstraint = SourceRelationshipConstraint | TargetRelationshipConstraint,
   Any = Schema | AnyClass | AnyProperty | AnyRelationshipConstraint,
 }
 
@@ -136,9 +128,7 @@ export enum StrengthDirection {
  * @param modifier The modifier string to parse.
  * @beta
  */
-export function parseClassModifier(
-  modifier: string
-): ECClassModifier | undefined {
+export function parseClassModifier(modifier: string): ECClassModifier | undefined {
   const lowerModifier = modifier.toLowerCase();
   switch (lowerModifier) {
     case "abstract":
@@ -164,10 +154,7 @@ export function classModifierToString(modifier: ECClassModifier): string {
     case ECClassModifier.Sealed:
       return "Sealed";
     default:
-      throw new ECObjectsError(
-        ECObjectsStatus.InvalidModifier,
-        "An invalid ECClassModifier has been provided."
-      );
+      throw new ECObjectsError(ECObjectsStatus.InvalidModifier, "An invalid ECClassModifier has been provided.");
   }
 }
 
@@ -248,10 +235,7 @@ export function schemaItemTypeToString(value: SchemaItemType): string {
     case SchemaItemType.Format:
       return "Format";
     default:
-      throw new ECObjectsError(
-        ECObjectsStatus.InvalidSchemaItemType,
-        "An invalid SchemaItemType has been provided."
-      );
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, "An invalid SchemaItemType has been provided.");
   }
 }
 
@@ -287,10 +271,7 @@ export function schemaItemTypeToXmlString(value: SchemaItemType): string {
     case SchemaItemType.Format:
       return "Format";
     default:
-      throw new ECObjectsError(
-        ECObjectsStatus.InvalidSchemaItemType,
-        "An invalid SchemaItemType has been provided."
-      );
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, "An invalid SchemaItemType has been provided.");
   }
 }
 
@@ -352,10 +333,7 @@ export function primitiveTypeToString(type: PrimitiveType): string {
     case PrimitiveType.String:
       return "string";
     default:
-      throw new ECObjectsError(
-        ECObjectsStatus.InvalidPrimitiveType,
-        "An invalid PrimitiveType has been provided."
-      );
+      throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, "An invalid PrimitiveType has been provided.");
   }
 }
 
@@ -364,9 +342,7 @@ export function primitiveTypeToString(type: PrimitiveType): string {
  * @param type The container type string to parse.
  * @beta
  */
-export function parseCustomAttributeContainerType(
-  type: string
-): CustomAttributeContainerType | undefined {
+export function parseCustomAttributeContainerType(type: string): CustomAttributeContainerType | undefined {
   const typeTokens = type.split(/[|,;]+/);
 
   let containerType = 0;
@@ -381,62 +357,46 @@ export function parseCustomAttributeContainerType(
         containerType = containerType | CustomAttributeContainerType.Schema;
         break;
       case "entityclass":
-        containerType =
-          containerType | CustomAttributeContainerType.EntityClass;
+        containerType = containerType | CustomAttributeContainerType.EntityClass;
         break;
       case "customattributeclass":
-        containerType =
-          containerType | CustomAttributeContainerType.CustomAttributeClass;
+        containerType = containerType | CustomAttributeContainerType.CustomAttributeClass;
         break;
       case "structclass":
-        containerType =
-          containerType | CustomAttributeContainerType.StructClass;
+        containerType = containerType | CustomAttributeContainerType.StructClass;
         break;
       case "relationshipclass":
-        containerType =
-          containerType | CustomAttributeContainerType.RelationshipClass;
+        containerType = containerType | CustomAttributeContainerType.RelationshipClass;
         break;
       case "anyclass":
         containerType = containerType | CustomAttributeContainerType.AnyClass;
         break;
       case "primitiveproperty":
-        containerType =
-          containerType | CustomAttributeContainerType.PrimitiveProperty;
+        containerType = containerType | CustomAttributeContainerType.PrimitiveProperty;
         break;
       case "structproperty":
-        containerType =
-          containerType | CustomAttributeContainerType.StructProperty;
+        containerType = containerType | CustomAttributeContainerType.StructProperty;
         break;
       case "arrayproperty":
-        containerType =
-          containerType | CustomAttributeContainerType.PrimitiveArrayProperty;
+        containerType = containerType | CustomAttributeContainerType.PrimitiveArrayProperty;
         break;
       case "structarrayproperty":
-        containerType =
-          containerType | CustomAttributeContainerType.StructArrayProperty;
+        containerType = containerType | CustomAttributeContainerType.StructArrayProperty;
         break;
       case "navigationproperty":
-        containerType =
-          containerType | CustomAttributeContainerType.NavigationProperty;
+        containerType = containerType | CustomAttributeContainerType.NavigationProperty;
         break;
       case "anyproperty":
-        containerType =
-          containerType | CustomAttributeContainerType.AnyProperty;
+        containerType = containerType | CustomAttributeContainerType.AnyProperty;
         break;
       case "sourcerelationshipconstraint":
-        containerType =
-          containerType |
-          CustomAttributeContainerType.SourceRelationshipConstraint;
+        containerType = containerType | CustomAttributeContainerType.SourceRelationshipConstraint;
         break;
       case "targetrelationshipconstraint":
-        containerType =
-          containerType |
-          CustomAttributeContainerType.TargetRelationshipConstraint;
+        containerType = containerType | CustomAttributeContainerType.TargetRelationshipConstraint;
         break;
       case "anyrelationshipconstraint":
-        containerType =
-          containerType |
-          CustomAttributeContainerType.AnyRelationshipConstraint;
+        containerType = containerType | CustomAttributeContainerType.AnyRelationshipConstraint;
         break;
       case "any":
         containerType = containerType | CustomAttributeContainerType.Any;
@@ -458,9 +418,7 @@ export function parseCustomAttributeContainerType(
  * @return A string representing the provided CustomAttributeContainerType. If the type is not valid, an empty string is returned.
  * @beta
  */
-export function containerTypeToString(
-  type: CustomAttributeContainerType
-): string {
+export function containerTypeToString(type: CustomAttributeContainerType): string {
   const testContainerTypeValue = (
     compareType: CustomAttributeContainerType,
     otherType: CustomAttributeContainerType
@@ -468,8 +426,7 @@ export function containerTypeToString(
     return compareType === (compareType & otherType);
   };
 
-  if (testContainerTypeValue(CustomAttributeContainerType.Any, type))
-    return ECStringConstants.CONTAINERTYPE_ANY;
+  if (testContainerTypeValue(CustomAttributeContainerType.Any, type)) return ECStringConstants.CONTAINERTYPE_ANY;
 
   let containerType = "";
   const setOrAppend = (val: string) => {
@@ -477,90 +434,41 @@ export function containerTypeToString(
     else containerType = `${containerType}, ${val}`;
   };
 
-  if (testContainerTypeValue(CustomAttributeContainerType.Schema, type))
-    setOrAppend("Schema");
+  if (testContainerTypeValue(CustomAttributeContainerType.Schema, type)) setOrAppend("Schema");
 
-  if (testContainerTypeValue(CustomAttributeContainerType.AnyClass, type))
-    setOrAppend("AnyClass");
+  if (testContainerTypeValue(CustomAttributeContainerType.AnyClass, type)) setOrAppend("AnyClass");
   else {
     if (testContainerTypeValue(CustomAttributeContainerType.EntityClass, type))
       setOrAppend(ECStringConstants.CONTAINERTYPE_ENTITYCLASS);
-    if (
-      testContainerTypeValue(
-        CustomAttributeContainerType.CustomAttributeClass,
-        type
-      )
-    )
+    if (testContainerTypeValue(CustomAttributeContainerType.CustomAttributeClass, type))
       setOrAppend(ECStringConstants.CONTAINERTYPE_CUSTOMATTRIBUTECLASS);
     if (testContainerTypeValue(CustomAttributeContainerType.StructClass, type))
       setOrAppend(ECStringConstants.CONTAINERTYPE_STRUCTCLASS);
-    if (
-      testContainerTypeValue(
-        CustomAttributeContainerType.RelationshipClass,
-        type
-      )
-    )
+    if (testContainerTypeValue(CustomAttributeContainerType.RelationshipClass, type))
       setOrAppend(ECStringConstants.CONTAINERTYPE_RELATIONSHIPCLASS);
   }
 
   if (testContainerTypeValue(CustomAttributeContainerType.AnyProperty, type))
     setOrAppend(ECStringConstants.CONTAINERTYPE_ANYPROPERTY);
   else {
-    if (
-      testContainerTypeValue(
-        CustomAttributeContainerType.PrimitiveProperty,
-        type
-      )
-    )
+    if (testContainerTypeValue(CustomAttributeContainerType.PrimitiveProperty, type))
       setOrAppend(ECStringConstants.CONTAINERTYPE_PRIMITIVEPROPERTY);
-    if (
-      testContainerTypeValue(CustomAttributeContainerType.StructProperty, type)
-    )
+    if (testContainerTypeValue(CustomAttributeContainerType.StructProperty, type))
       setOrAppend(ECStringConstants.CONTAINERTYPE_STRUCTPROPERTY);
-    if (
-      testContainerTypeValue(
-        CustomAttributeContainerType.PrimitiveArrayProperty,
-        type
-      )
-    )
+    if (testContainerTypeValue(CustomAttributeContainerType.PrimitiveArrayProperty, type))
       setOrAppend(ECStringConstants.CONTAINERTYPE_PRIMITIVEARRAYPROPERTY);
-    if (
-      testContainerTypeValue(
-        CustomAttributeContainerType.StructArrayProperty,
-        type
-      )
-    )
+    if (testContainerTypeValue(CustomAttributeContainerType.StructArrayProperty, type))
       setOrAppend(ECStringConstants.CONTAINERTYPE_STRUCTARRAYPROPERTY);
-    if (
-      testContainerTypeValue(
-        CustomAttributeContainerType.NavigationProperty,
-        type
-      )
-    )
+    if (testContainerTypeValue(CustomAttributeContainerType.NavigationProperty, type))
       setOrAppend(ECStringConstants.CONTAINERTYPE_NAVIGATIONPROPERTY);
   }
 
-  if (
-    testContainerTypeValue(
-      CustomAttributeContainerType.AnyRelationshipConstraint,
-      type
-    )
-  )
+  if (testContainerTypeValue(CustomAttributeContainerType.AnyRelationshipConstraint, type))
     setOrAppend(ECStringConstants.CONTAINERTYPE_ANYRELATIONSHIPCONSTRAINT);
   else {
-    if (
-      testContainerTypeValue(
-        CustomAttributeContainerType.SourceRelationshipConstraint,
-        type
-      )
-    )
+    if (testContainerTypeValue(CustomAttributeContainerType.SourceRelationshipConstraint, type))
       setOrAppend(ECStringConstants.CONTAINERTYPE_SOURCERELATIONSHIPCONSTRAINT);
-    if (
-      testContainerTypeValue(
-        CustomAttributeContainerType.TargetRelationshipConstraint,
-        type
-      )
-    )
+    if (testContainerTypeValue(CustomAttributeContainerType.TargetRelationshipConstraint, type))
       setOrAppend(ECStringConstants.CONTAINERTYPE_TARGETRELATIONSHIPCONSTRAINT);
   }
 
@@ -586,10 +494,7 @@ export function relationshipEndToString(end: RelationshipEnd): string {
     case RelationshipEnd.Target:
       return ECStringConstants.RELATIONSHIP_END_TARGET;
     default:
-      throw new ECObjectsError(
-        ECObjectsStatus.InvalidRelationshipEnd,
-        `An invalid RelationshipEnd has been provided.`
-      );
+      throw new ECObjectsError(ECObjectsStatus.InvalidRelationshipEnd, `An invalid RelationshipEnd has been provided.`);
   }
 }
 
@@ -621,17 +526,12 @@ export function strengthToString(strength: StrengthType): string {
     case StrengthType.Referencing:
       return "Referencing";
     default:
-      throw new ECObjectsError(
-        ECObjectsStatus.InvalidStrength,
-        `An invalid Strength has been provided.`
-      );
+      throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `An invalid Strength has been provided.`);
   }
 }
 
 /** @beta */
-export function parseStrengthDirection(
-  direction: string
-): StrengthDirection | undefined {
+export function parseStrengthDirection(direction: string): StrengthDirection | undefined {
   switch (direction.toLowerCase()) {
     case "forward":
       return StrengthDirection.Forward;
@@ -642,9 +542,7 @@ export function parseStrengthDirection(
 }
 
 /** @beta */
-export function strengthDirectionToString(
-  direction: StrengthDirection
-): string {
+export function strengthDirectionToString(direction: StrengthDirection): string {
   switch (direction) {
     case StrengthDirection.Forward:
       return "Forward";

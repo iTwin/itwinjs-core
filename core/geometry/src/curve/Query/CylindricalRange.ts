@@ -43,11 +43,7 @@ export class CylindricalRangeQuery extends RecurseToCurvesGeometryHandler {
       this._maxDistance = distance;
       this._perpVector.setFromPoint3d(this._localPoint);
       this._perpVector.z = 0.0;
-      this._localToWorld.matrix.multiplyXY(
-        this._localPoint.x,
-        this._localPoint.y,
-        this._perpVector
-      );
+      this._localToWorld.matrix.multiplyXY(this._localPoint.x, this._localPoint.y, this._perpVector);
     }
   }
 
@@ -67,12 +63,7 @@ export class CylindricalRangeQuery extends RecurseToCurvesGeometryHandler {
     // exact solution is:
     //   project the arc to the z=0 plane of the local system.
     //   find max distance to origin.
-    const numStroke = StrokeOptions.applyAngleTol(
-      undefined,
-      3,
-      arc0.sweep.sweepRadians,
-      0.1
-    );
+    const numStroke = StrokeOptions.applyAngleTol(undefined, 3, arc0.sweep.sweepRadians, 0.1);
     const df = 1.0 / numStroke;
     for (let i = 0; i <= numStroke; i++) {
       arc0.fractionToPoint(i * df, this._worldPoint);
@@ -86,10 +77,7 @@ export class CylindricalRangeQuery extends RecurseToCurvesGeometryHandler {
    * @param geometry0 geometry to search
    * @returns vector from ray to geometry.
    */
-  public static computeMaxVectorFromRay(
-    ray: Ray3d,
-    geometry: GeometryQuery
-  ): Vector3d {
+  public static computeMaxVectorFromRay(ray: Ray3d, geometry: GeometryQuery): Vector3d {
     const accumulator = new CylindricalRangeQuery(ray);
     geometry.dispatchToGeometryHandler(accumulator);
     return accumulator._perpVector.clone();
@@ -105,11 +93,7 @@ export class CylindricalRangeQuery extends RecurseToCurvesGeometryHandler {
    * @param axis
    * @param defaultVectorV
    */
-  public static buildRotationalNormalsInLineStrings(
-    geometry: AnyCurve,
-    axis: Ray3d,
-    defaultVectorFromAxis: Vector3d
-  ) {
+  public static buildRotationalNormalsInLineStrings(geometry: AnyCurve, axis: Ray3d, defaultVectorFromAxis: Vector3d) {
     if (geometry instanceof LineString3d) {
       const points = geometry.packedPoints;
       const derivatives = geometry.packedDerivatives;
@@ -122,13 +106,9 @@ export class CylindricalRangeQuery extends RecurseToCurvesGeometryHandler {
         for (let i = 0; i < n; i++) {
           points.getPoint3dAtUncheckedPointIndex(i, xyz);
           axis.perpendicularPartOfVectorToTarget(xyz, vectorU);
-          if (vectorU.isAlmostZero)
-            axis.direction.crossProduct(defaultVectorFromAxis, vectorV);
+          if (vectorU.isAlmostZero) axis.direction.crossProduct(defaultVectorFromAxis, vectorV);
           else axis.direction.crossProduct(vectorU, vectorV);
-          geometry.packedDerivatives.getVector3dAtCheckedVectorIndex(
-            i,
-            vectorU
-          ); // reuse vector U as curve derivative
+          geometry.packedDerivatives.getVector3dAtCheckedVectorIndex(i, vectorU); // reuse vector U as curve derivative
           vectorU.crossProduct(vectorV, vectorV); // reuse vector V as normal!
           vectorV.normalizeInPlace();
           normals.push(vectorV);
@@ -137,11 +117,7 @@ export class CylindricalRangeQuery extends RecurseToCurvesGeometryHandler {
     } else if (geometry.children) {
       const children = geometry.children;
       for (const child of children) {
-        this.buildRotationalNormalsInLineStrings(
-          child as AnyCurve,
-          axis,
-          defaultVectorFromAxis
-        );
+        this.buildRotationalNormalsInLineStrings(child as AnyCurve, axis, defaultVectorFromAxis);
       }
     }
   }

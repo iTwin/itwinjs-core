@@ -24,8 +24,7 @@ The definition that produces the sample frontstage is shown below.
 
 ```tsx
 export class FrontstageUi2 {
-  private static _contentGroupProvider =
-    new FrontstageUi2ContentGroupProvider();
+  private static _contentGroupProvider = new FrontstageUi2ContentGroupProvider();
   private static showCornerButtons = true;
 
   public static supplyAppData(_id: string, _applicationData?: any) {
@@ -73,9 +72,7 @@ export class FrontstageUi2 {
       applicationData,
     };
 
-    ConfigurableUiManager.addFrontstageProvider(
-      new StandardFrontstageProvider(ui2StageProps)
-    );
+    ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(ui2StageProps));
     this.registerToolProviders();
   }
 
@@ -121,23 +118,15 @@ export class FrontstageUi2 {
 }
 
 export function MyCustomViewOverlay() {
-  const [syncIdsOfInterest] = React.useState([
-    SampleAppUiActionId.setTestProperty,
-  ]);
-  const [showOverlay, setShowOverlay] = React.useState(
-    SampleAppIModelApp.getTestProperty() !== "HIDE"
-  );
+  const [syncIdsOfInterest] = React.useState([SampleAppUiActionId.setTestProperty]);
+  const [showOverlay, setShowOverlay] = React.useState(SampleAppIModelApp.getTestProperty() !== "HIDE");
 
   React.useEffect(() => {
     const handleSyncUiEvent = (args: SyncUiEventArgs) => {
       if (0 === syncIdsOfInterest.length) return;
 
       // istanbul ignore else
-      if (
-        syncIdsOfInterest.some((value: string): boolean =>
-          args.eventIds.has(value)
-        )
-      ) {
+      if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value))) {
         const show = SampleAppIModelApp.getTestProperty() !== "HIDE";
         if (show !== showOverlay) setShowOverlay(show);
       }
@@ -164,10 +153,7 @@ export function MyCustomViewOverlay() {
         }}
       >
         <div>Hello World</div>
-        <div>
-          (turn off using Hide/Show items tool in horizontal toolbar at
-          top-left)
-        </div>
+        <div>(turn off using Hide/Show items tool in horizontal toolbar at top-left)</div>
       </div>
     </div>
   ) : null;
@@ -180,9 +166,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
   constructor(private toolWidgetDisplayCornerButton: boolean) {}
 
   public static register(toolWidgetDisplayCornerButton: boolean) {
-    UiItemsManager.register(
-      new AppUi2StageItemsProvider(toolWidgetDisplayCornerButton)
-    );
+    UiItemsManager.register(new AppUi2StageItemsProvider(toolWidgetDisplayCornerButton));
   }
 
   public static unregister() {
@@ -378,54 +362,30 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
   ): CommonToolbarItem[] {
     const allowedStages = ["Ui2"];
     if (allowedStages.includes(stageId)) {
-      if (
-        toolbarUsage === ToolbarUsage.ContentManipulation &&
-        toolbarOrientation === ToolbarOrientation.Horizontal
-      ) {
+      if (toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
         const items: CommonToolbarItem[] = [];
         items.push(
-          ToolbarHelper.createToolbarItemFromItemDef(
-            10,
-            AppTools.toggleHideShowItemsCommand,
-            { groupPriority: 3000 }
-          )
+          ToolbarHelper.createToolbarItemFromItemDef(10, AppTools.toggleHideShowItemsCommand, { groupPriority: 3000 })
         );
         items.push(
-          ToolbarHelper.createToolbarItemFromItemDef(
-            15,
-            AppTools.splitSingleViewportCommandDef,
-            { groupPriority: 3000 }
-          )
+          ToolbarHelper.createToolbarItemFromItemDef(15, AppTools.splitSingleViewportCommandDef, {
+            groupPriority: 3000,
+          })
         );
         if (!this.toolWidgetDisplayCornerButton)
           items.push(
             ToolbarHelper.createToolbarItemFromItemDef(
               20,
-              BackstageManager.getBackstageToggleCommand(
-                "icon-bentley-systems"
-              ),
+              BackstageManager.getBackstageToggleCommand("icon-bentley-systems"),
               { groupPriority: 3000 }
             )
           );
         return items;
-      } else if (
-        toolbarUsage === ToolbarUsage.ViewNavigation &&
-        toolbarOrientation === ToolbarOrientation.Vertical
-      ) {
+      } else if (toolbarUsage === ToolbarUsage.ViewNavigation && toolbarOrientation === ToolbarOrientation.Vertical) {
         const items: CommonToolbarItem[] = [];
+        items.push(ToolbarHelper.createToolbarItemFromItemDef(10, AppTools.saveContentLayout, { groupPriority: 3000 }));
         items.push(
-          ToolbarHelper.createToolbarItemFromItemDef(
-            10,
-            AppTools.saveContentLayout,
-            { groupPriority: 3000 }
-          )
-        );
-        items.push(
-          ToolbarHelper.createToolbarItemFromItemDef(
-            15,
-            AppTools.restoreSavedContentLayout,
-            { groupPriority: 3000 }
-          )
+          ToolbarHelper.createToolbarItemFromItemDef(15, AppTools.restoreSavedContentLayout, { groupPriority: 3000 })
         );
         return items;
       }
@@ -457,9 +417,7 @@ const ui2StageProps: StandardFrontstageProps = {
   applicationData,
 };
 
-ConfigurableUiManager.addFrontstageProvider(
-  new StandardFrontstageProvider(ui2StageProps)
-);
+ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(ui2StageProps));
 
 // Use standard provider to provide basic tool and statusbar items
 StandardContentToolsProvider.register("ui2-standardContentTools");
@@ -476,9 +434,7 @@ const frontstageProvider = new SampleFrontstage();
 FrontstageManager.addFrontstageProvider(frontstageProvider);
 
 // Set the Frontstage active
-FrontstageManager.setActiveFrontstage(
-  frontstageProvider.frontstage.props.id
-).then(() => {
+FrontstageManager.setActiveFrontstage(frontstageProvider.frontstage.props.id).then(() => {
   // Frontstage is ready
 });
 ```

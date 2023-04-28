@@ -29,9 +29,7 @@ export const formatStringRgx =
   /([\w.:]+)(\(([^\)]+)\))?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?/;
 
 /** @internal */
-export function* getItemNamesFromFormatString(
-  formatString: string
-): Iterable<string> {
+export function* getItemNamesFromFormatString(formatString: string): Iterable<string> {
   const match = formatString.split(formatStringRgx);
   yield match[1]; // the Format Name
   let index = 4;
@@ -138,10 +136,7 @@ export enum ShowSignOption {
 
 /**  @beta   */
 
-export function parseScientificType(
-  scientificType: string,
-  formatName: string
-): ScientificType {
+export function parseScientificType(scientificType: string, formatName: string): ScientificType {
   switch (scientificType.toLowerCase()) {
     case "normalized":
       return ScientificType.Normalized;
@@ -157,16 +152,11 @@ export function parseScientificType(
 
 /**  @beta   */
 export function scientificTypeToString(scientificType: ScientificType): string {
-  return scientificType === ScientificType.Normalized
-    ? "Normalized"
-    : "ZeroNormalized";
+  return scientificType === ScientificType.Normalized ? "Normalized" : "ZeroNormalized";
 }
 
 /** @beta    */
-export function parseShowSignOption(
-  showSignOption: string,
-  formatName: string
-): ShowSignOption {
+export function parseShowSignOption(showSignOption: string, formatName: string): ShowSignOption {
   switch (showSignOption.toLowerCase()) {
     case "nosign":
       return ShowSignOption.NoSign;
@@ -199,10 +189,7 @@ export function showSignOptionToString(showSign: ShowSignOption): string {
 }
 
 /**  @beta  */
-export function parseFormatTrait(
-  formatTraitsString: string,
-  formatName: string
-): FormatTraits {
+export function parseFormatTrait(formatTraitsString: string, formatName: string): FormatTraits {
   switch (formatTraitsString.toLowerCase()) {
     case "trailzeroes":
       return FormatTraits.TrailZeroes;
@@ -260,65 +247,31 @@ export function getTraitString(trait: FormatTraits) {
 }
 
 /**  @beta  */
-export function formatTraitsToArray(
-  currentFormatTrait: FormatTraits
-): string[] {
+export function formatTraitsToArray(currentFormatTrait: FormatTraits): string[] {
   const formatTraitsArr = Array<string>();
-  if (
-    (currentFormatTrait & FormatTraits.TrailZeroes) ===
-    FormatTraits.TrailZeroes
-  )
-    formatTraitsArr.push("TrailZeroes");
-  if (
-    (currentFormatTrait & FormatTraits.KeepSingleZero) ===
-    FormatTraits.KeepSingleZero
-  )
+  if ((currentFormatTrait & FormatTraits.TrailZeroes) === FormatTraits.TrailZeroes) formatTraitsArr.push("TrailZeroes");
+  if ((currentFormatTrait & FormatTraits.KeepSingleZero) === FormatTraits.KeepSingleZero)
     formatTraitsArr.push("KeepSingleZero");
-  if ((currentFormatTrait & FormatTraits.ZeroEmpty) === FormatTraits.ZeroEmpty)
-    formatTraitsArr.push("ZeroEmpty");
-  if (
-    (currentFormatTrait & FormatTraits.KeepDecimalPoint) ===
-    FormatTraits.KeepDecimalPoint
-  )
+  if ((currentFormatTrait & FormatTraits.ZeroEmpty) === FormatTraits.ZeroEmpty) formatTraitsArr.push("ZeroEmpty");
+  if ((currentFormatTrait & FormatTraits.KeepDecimalPoint) === FormatTraits.KeepDecimalPoint)
     formatTraitsArr.push("KeepDecimalPoint");
-  if (
-    (currentFormatTrait & FormatTraits.ApplyRounding) ===
-    FormatTraits.ApplyRounding
-  )
+  if ((currentFormatTrait & FormatTraits.ApplyRounding) === FormatTraits.ApplyRounding)
     formatTraitsArr.push("ApplyRounding");
-  if (
-    (currentFormatTrait & FormatTraits.FractionDash) ===
-    FormatTraits.FractionDash
-  )
+  if ((currentFormatTrait & FormatTraits.FractionDash) === FormatTraits.FractionDash)
     formatTraitsArr.push("FractionDash");
-  if (
-    (currentFormatTrait & FormatTraits.ShowUnitLabel) ===
-    FormatTraits.ShowUnitLabel
-  )
+  if ((currentFormatTrait & FormatTraits.ShowUnitLabel) === FormatTraits.ShowUnitLabel)
     formatTraitsArr.push("ShowUnitLabel");
-  if (
-    (currentFormatTrait & FormatTraits.PrependUnitLabel) ===
-    FormatTraits.PrependUnitLabel
-  )
+  if ((currentFormatTrait & FormatTraits.PrependUnitLabel) === FormatTraits.PrependUnitLabel)
     formatTraitsArr.push("PrependUnitLabel");
-  if (
-    (currentFormatTrait & FormatTraits.Use1000Separator) ===
-    FormatTraits.Use1000Separator
-  )
+  if ((currentFormatTrait & FormatTraits.Use1000Separator) === FormatTraits.Use1000Separator)
     formatTraitsArr.push("Use1000Separator");
-  if (
-    (currentFormatTrait & FormatTraits.ExponentOnlyNegative) ===
-    FormatTraits.ExponentOnlyNegative
-  )
+  if ((currentFormatTrait & FormatTraits.ExponentOnlyNegative) === FormatTraits.ExponentOnlyNegative)
     formatTraitsArr.push("ExponentOnlyNegative");
   return formatTraitsArr;
 }
 
 /**  @beta    */
-export function parseFormatType(
-  jsonObjType: string,
-  formatName: string
-): FormatType {
+export function parseFormatType(jsonObjType: string, formatName: string): FormatType {
   switch (jsonObjType.toLowerCase()) {
     case "decimal":
       return FormatType.Decimal;
@@ -329,10 +282,7 @@ export function parseFormatType(
     case "fractional":
       return FormatType.Fractional;
     default:
-      throw new QuantityError(
-        QuantityStatus.InvalidJson,
-        `The Format ${formatName} has an invalid 'type' attribute.`
-      );
+      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'type' attribute.`);
   }
 }
 
@@ -351,10 +301,7 @@ export function formatTypeToString(type: FormatType): string {
 }
 
 /**  @beta    */
-export function parseDecimalPrecision(
-  jsonObjPrecision: number,
-  formatName: string
-): DecimalPrecision {
+export function parseDecimalPrecision(jsonObjPrecision: number, formatName: string): DecimalPrecision {
   switch (jsonObjPrecision) {
     case 0:
       return DecimalPrecision.Zero;
@@ -391,10 +338,7 @@ export function parseDecimalPrecision(
 }
 
 /**  @beta validates the input value, that is typically extracted for persisted JSON data, is a valid FractionalPrecision */
-export function parseFractionalPrecision(
-  jsonObjPrecision: number,
-  formatName: string
-): FractionalPrecision {
+export function parseFractionalPrecision(jsonObjPrecision: number, formatName: string): FractionalPrecision {
   switch (jsonObjPrecision) {
     case 1:
       return FractionalPrecision.One;

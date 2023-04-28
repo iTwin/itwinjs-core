@@ -78,16 +78,10 @@ export const SchemaCompareCodes = {
  */
 export const SchemaCompareDiagnostics = {
   /** Required message parameters: property name, property A value, property B value */
-  SchemaDelta: createSchemaDiagnosticClass<[string, any, any]>(
-    SchemaCompareCodes.SchemaDelta,
-    ""
-  ),
+  SchemaDelta: createSchemaDiagnosticClass<[string, any, any]>(SchemaCompareCodes.SchemaDelta, ""),
 
   /** Required message parameters: reference schema name */
-  SchemaReferenceMissing: createSchemaDiagnosticClass<[Schema]>(
-    SchemaCompareCodes.SchemaReferenceMissing,
-    ""
-  ),
+  SchemaReferenceMissing: createSchemaDiagnosticClass<[Schema]>(SchemaCompareCodes.SchemaReferenceMissing, ""),
 
   /** Required message parameters: schema name, version A, version B */
   SchemaReferenceDelta: createSchemaDiagnosticClass<[Schema, string, string]>(
@@ -96,130 +90,106 @@ export const SchemaCompareDiagnostics = {
   ),
 
   /** Required message parameters: property name, property A value, property B value */
-  SchemaItemDelta: createSchemaItemDiagnosticClass<
-    SchemaItem,
-    [string, any, any]
-  >(SchemaCompareCodes.SchemaItemDelta, ""),
+  SchemaItemDelta: createSchemaItemDiagnosticClass<SchemaItem, [string, any, any]>(
+    SchemaCompareCodes.SchemaItemDelta,
+    ""
+  ),
 
   /** Required message parameters: none */
-  SchemaItemMissing: createSchemaItemDiagnosticClass<SchemaItem, []>(
-    SchemaCompareCodes.SchemaItemMissing,
-    ""
-  ),
+  SchemaItemMissing: createSchemaItemDiagnosticClass<SchemaItem, []>(SchemaCompareCodes.SchemaItemMissing, ""),
 
   /** Required message parameters: property name, property A value, property B value */
-  ClassDelta: createClassDiagnosticClass<[string, any, any]>(
-    SchemaCompareCodes.ClassDelta,
-    ""
-  ),
+  ClassDelta: createClassDiagnosticClass<[string, any, any]>(SchemaCompareCodes.ClassDelta, ""),
 
   /** Required message parameters: Class A base class, Class B base class */
-  BaseClassDelta: createClassDiagnosticClass<
-    [AnyClass | undefined, AnyClass | undefined]
-  >(SchemaCompareCodes.BaseClassDelta, ""),
-
-  /** Required message parameters: property name, property A value, property B value */
-  PropertyDelta: createPropertyDiagnosticClass<[string, any, any]>(
-    SchemaCompareCodes.PropertyDelta,
+  BaseClassDelta: createClassDiagnosticClass<[AnyClass | undefined, AnyClass | undefined]>(
+    SchemaCompareCodes.BaseClassDelta,
     ""
   ),
+
+  /** Required message parameters: property name, property A value, property B value */
+  PropertyDelta: createPropertyDiagnosticClass<[string, any, any]>(SchemaCompareCodes.PropertyDelta, ""),
 
   /** Required message parameters: none */
-  PropertyMissing: createPropertyDiagnosticClass<[]>(
-    SchemaCompareCodes.PropertyMissing,
-    ""
-  ),
+  PropertyMissing: createPropertyDiagnosticClass<[]>(SchemaCompareCodes.PropertyMissing, ""),
 
   /** Required message parameters: Mixin */
-  EntityMixinMissing: createSchemaItemDiagnosticClass<EntityClass, [Mixin]>(
-    SchemaCompareCodes.EntityMixinMissing,
+  EntityMixinMissing: createSchemaItemDiagnosticClass<EntityClass, [Mixin]>(SchemaCompareCodes.EntityMixinMissing, ""),
+
+  /** Required message parameters: property name, property A value, property B value */
+  MixinDelta: createSchemaItemDiagnosticClass<Mixin, [string, any, any]>(SchemaCompareCodes.MixinDelta, ""),
+
+  /** Required message parameters: property name, property A value, property B value */
+  RelationshipDelta: createSchemaItemDiagnosticClass<RelationshipClass, [string, any, any]>(
+    SchemaCompareCodes.RelationshipDelta,
     ""
   ),
 
   /** Required message parameters: property name, property A value, property B value */
-  MixinDelta: createSchemaItemDiagnosticClass<Mixin, [string, any, any]>(
-    SchemaCompareCodes.MixinDelta,
+  RelationshipConstraintDelta: createRelationshipConstraintDiagnosticClass<[string, any, any]>(
+    SchemaCompareCodes.RelationshipConstraintDelta,
     ""
   ),
-
-  /** Required message parameters: property name, property A value, property B value */
-  RelationshipDelta: createSchemaItemDiagnosticClass<
-    RelationshipClass,
-    [string, any, any]
-  >(SchemaCompareCodes.RelationshipDelta, ""),
-
-  /** Required message parameters: property name, property A value, property B value */
-  RelationshipConstraintDelta: createRelationshipConstraintDiagnosticClass<
-    [string, any, any]
-  >(SchemaCompareCodes.RelationshipConstraintDelta, ""),
 
   /** Required message parameters: constraint class */
-  RelationshipConstraintClassMissing:
-    createRelationshipConstraintDiagnosticClass<[AnyClass]>(
-      SchemaCompareCodes.RelationshipConstraintClassMissing,
-      ""
-    ),
+  RelationshipConstraintClassMissing: createRelationshipConstraintDiagnosticClass<[AnyClass]>(
+    SchemaCompareCodes.RelationshipConstraintClassMissing,
+    ""
+  ),
 
   /** Required message parameters: property name, property A value, property B value  */
-  CustomAttributeClassDelta: createSchemaItemDiagnosticClass<
-    CustomAttributeClass,
-    [string, any, any]
-  >(SchemaCompareCodes.CustomAttributeClassDelta, ""),
+  CustomAttributeClassDelta: createSchemaItemDiagnosticClass<CustomAttributeClass, [string, any, any]>(
+    SchemaCompareCodes.CustomAttributeClassDelta,
+    ""
+  ),
 
   /** Required message parameters: CustomAttributeClass name */
-  CustomAttributeInstanceClassMissing:
-    createCustomAttributeContainerDiagnosticClass<[CustomAttribute]>(
-      SchemaCompareCodes.CustomAttributeInstanceClassMissing,
-      ""
-    ),
+  CustomAttributeInstanceClassMissing: createCustomAttributeContainerDiagnosticClass<[CustomAttribute]>(
+    SchemaCompareCodes.CustomAttributeInstanceClassMissing,
+    ""
+  ),
 
   /** Required message parameters: property name, property A value, property B value  */
-  EnumerationDelta: createSchemaItemDiagnosticClass<
-    Enumeration,
-    [string, string, string]
-  >(SchemaCompareCodes.EnumerationDelta, ""),
+  EnumerationDelta: createSchemaItemDiagnosticClass<Enumeration, [string, string, string]>(
+    SchemaCompareCodes.EnumerationDelta,
+    ""
+  ),
 
   /** Required message parameters: Enumerator */
-  EnumeratorMissing: createSchemaItemDiagnosticClass<
-    Enumeration,
-    [AnyEnumerator]
-  >(SchemaCompareCodes.EnumeratorMissing, ""),
+  EnumeratorMissing: createSchemaItemDiagnosticClass<Enumeration, [AnyEnumerator]>(
+    SchemaCompareCodes.EnumeratorMissing,
+    ""
+  ),
 
   /** Required message parameters: Enumerator property name, property A value, property B value  */
-  EnumeratorDelta: createSchemaItemDiagnosticClass<
-    Enumeration,
-    [AnyEnumerator, string, any, any]
-  >(SchemaCompareCodes.EnumeratorDelta, ""),
-
-  /** Required message parameters: property name, property A value, property B value  */
-  KoqDelta: createSchemaItemDiagnosticClass<KindOfQuantity, [string, any, any]>(
-    SchemaCompareCodes.KoqDelta,
+  EnumeratorDelta: createSchemaItemDiagnosticClass<Enumeration, [AnyEnumerator, string, any, any]>(
+    SchemaCompareCodes.EnumeratorDelta,
     ""
   ),
+
+  /** Required message parameters: property name, property A value, property B value  */
+  KoqDelta: createSchemaItemDiagnosticClass<KindOfQuantity, [string, any, any]>(SchemaCompareCodes.KoqDelta, ""),
 
   /** Required message parameters: PresentationUnit (Format | OverrideFormat) */
-  PresentationUnitMissing: createSchemaItemDiagnosticClass<
-    KindOfQuantity,
-    [Format | OverrideFormat]
-  >(SchemaCompareCodes.PresentationUnitMissing, ""),
-
-  /** Required message parameters: property name, property A value, property B value  */
-  PropertyCategoryDelta: createSchemaItemDiagnosticClass<
-    PropertyCategory,
-    [string, any, any]
-  >(SchemaCompareCodes.PropertyCategoryDelta, ""),
-
-  /** Required message parameters: property name, property A value, property B value  */
-  FormatDelta: createSchemaItemDiagnosticClass<Format, [string, any, any]>(
-    SchemaCompareCodes.FormatDelta,
+  PresentationUnitMissing: createSchemaItemDiagnosticClass<KindOfQuantity, [Format | OverrideFormat]>(
+    SchemaCompareCodes.PresentationUnitMissing,
     ""
   ),
 
+  /** Required message parameters: property name, property A value, property B value  */
+  PropertyCategoryDelta: createSchemaItemDiagnosticClass<PropertyCategory, [string, any, any]>(
+    SchemaCompareCodes.PropertyCategoryDelta,
+    ""
+  ),
+
+  /** Required message parameters: property name, property A value, property B value  */
+  FormatDelta: createSchemaItemDiagnosticClass<Format, [string, any, any]>(SchemaCompareCodes.FormatDelta, ""),
+
   /** Required message parameters: Unit or InvertedUnit */
-  FormatUnitMissing: createSchemaItemDiagnosticClass<
-    Format,
-    [Unit | InvertedUnit]
-  >(SchemaCompareCodes.FormatUnitMissing, ""),
+  FormatUnitMissing: createSchemaItemDiagnosticClass<Format, [Unit | InvertedUnit]>(
+    SchemaCompareCodes.FormatUnitMissing,
+    ""
+  ),
 
   /** Required message parameters: Unit or InvertedUnit, label A, label B */
   UnitLabelOverrideDelta: createSchemaItemDiagnosticClass<
@@ -228,26 +198,23 @@ export const SchemaCompareDiagnostics = {
   >(SchemaCompareCodes.UnitLabelOverrideDelta, ""),
 
   /** Required message parameters: property name, property A value, property B value  */
-  UnitDelta: createSchemaItemDiagnosticClass<Format, [string, string, string]>(
-    SchemaCompareCodes.UnitDelta,
+  UnitDelta: createSchemaItemDiagnosticClass<Format, [string, string, string]>(SchemaCompareCodes.UnitDelta, ""),
+
+  /** Required message parameters: property name, property A value, property B value  */
+  InvertedUnitDelta: createSchemaItemDiagnosticClass<InvertedUnit, [string, string, string]>(
+    SchemaCompareCodes.InvertedUnitDelta,
     ""
   ),
 
   /** Required message parameters: property name, property A value, property B value  */
-  InvertedUnitDelta: createSchemaItemDiagnosticClass<
-    InvertedUnit,
-    [string, string, string]
-  >(SchemaCompareCodes.InvertedUnitDelta, ""),
+  PhenomenonDelta: createSchemaItemDiagnosticClass<InvertedUnit, [string, string, string]>(
+    SchemaCompareCodes.PhenomenonDelta,
+    ""
+  ),
 
   /** Required message parameters: property name, property A value, property B value  */
-  PhenomenonDelta: createSchemaItemDiagnosticClass<
-    InvertedUnit,
-    [string, string, string]
-  >(SchemaCompareCodes.PhenomenonDelta, ""),
-
-  /** Required message parameters: property name, property A value, property B value  */
-  ConstantDelta: createSchemaItemDiagnosticClass<
-    Constant,
-    [string, string, string]
-  >(SchemaCompareCodes.ConstantDelta, ""),
+  ConstantDelta: createSchemaItemDiagnosticClass<Constant, [string, string, string]>(
+    SchemaCompareCodes.ConstantDelta,
+    ""
+  ),
 };

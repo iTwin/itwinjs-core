@@ -62,10 +62,7 @@ export class ToolProvider implements UiItemsProvider {
 export class ExtensionImpl {
   constructor(private _id: string) {}
 
-  public async registerTool(
-    tool: ToolType,
-    onRegistered?: () => any
-  ): Promise<void> {
+  public async registerTool(tool: ToolType, onRegistered?: () => any): Promise<void> {
     try {
       IModelApp.tools.register(tool);
       UiItemsManager.register(new ToolProvider(tool)); // eslint-disable-line deprecation/deprecation

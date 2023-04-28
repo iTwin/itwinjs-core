@@ -7,12 +7,7 @@
  */
 
 import { assert, Logger } from "@itwin/core-bentley";
-import {
-  ImageMapLayerSettings,
-  MapLayerKey,
-  MapLayerSettings,
-  MapSubLayerProps,
-} from "@itwin/core-common";
+import { ImageMapLayerSettings, MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import {
@@ -57,9 +52,7 @@ export class MapLayerFormat {
   /** Create a [[MapLayerImageryProvider]] that will be used to feed data in a map-layer tile Tree.
    * @internal
    */
-  public static createImageryProvider(
-    _settings: MapLayerSettings
-  ): MapLayerImageryProvider | undefined {
+  public static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined {
     assert(false);
   }
 
@@ -137,10 +130,7 @@ export class MapLayerFormatRegistry {
   }
 
   /** @beta */
-  public setAccessClient(
-    formatId: string,
-    accessClient: MapLayerAccessClient
-  ): boolean {
+  public setAccessClient(formatId: string, accessClient: MapLayerAccessClient): boolean {
     const entry = this._formats.get(formatId);
     if (entry !== undefined) {
       entry.accessClient = accessClient;
@@ -169,25 +159,16 @@ export class MapLayerFormatRegistry {
     const entry = this._formats.get(layerSettings.formatId);
     const format = entry?.type;
     if (format === undefined) {
-      Logger.logError(
-        loggerCategory,
-        `Could not find format '${layerSettings.formatId}' in registry`
-      );
+      Logger.logError(loggerCategory, `Could not find format '${layerSettings.formatId}' in registry`);
       return undefined;
     }
-    return format.createMapLayerTree(
-      layerSettings,
-      layerIndex,
-      iModel
-    ) as ImageryMapLayerTreeReference;
+    return format.createMapLayerTree(layerSettings, layerIndex, iModel) as ImageryMapLayerTreeReference;
   }
 
   /** Returns a [[MapLayerImageryProvider]] based on the provided [[ImageMapLayerSettings]] object.
    * @internal
    */
-  public createImageryProvider(
-    layerSettings: ImageMapLayerSettings
-  ): MapLayerImageryProvider | undefined {
+  public createImageryProvider(layerSettings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     const entry = this._formats.get(layerSettings.formatId);
     const format = entry?.type;
     if (this._configOptions[layerSettings.formatId] !== undefined) {
@@ -198,9 +179,7 @@ export class MapLayerFormatRegistry {
       };
       layerSettings = layerSettings.clone({ accessKey: key });
     }
-    return format === undefined
-      ? undefined
-      : format.createImageryProvider(layerSettings);
+    return format === undefined ? undefined : format.createImageryProvider(layerSettings);
   }
 
   public async validateSource(

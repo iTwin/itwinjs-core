@@ -6,21 +6,12 @@
 /** @packageDocumentation
  * @module Curve
  */
-import {
-  HalfEdge,
-  HalfEdgeGraph,
-  HalfEdgeMask,
-  NodeToNumberFunction,
-} from "../topology/Graph";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, NodeToNumberFunction } from "../topology/Graph";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge } from "../topology/Merging";
 import { RegularizationContext } from "../topology/RegularizeFace";
 import { MultiLineStringDataVariant } from "../topology/Triangulation";
-import {
-  GraphCheckPointFunction,
-  RegionBinaryOpType,
-  RegionOps,
-} from "./RegionOps";
+import { GraphCheckPointFunction, RegionBinaryOpType, RegionOps } from "./RegionOps";
 import { ParityRegion } from "./ParityRegion";
 import { Loop } from "./Loop";
 import { CurvePrimitive } from "./CurvePrimitive";
@@ -64,39 +55,25 @@ abstract class RegionOpsFaceToFaceSearchCallbacks {
     return true;
   }
   /** Announce face entry */
-  public enterFace(
-    _facePathStack: HalfEdge[],
-    _newFaceNode: HalfEdge
-  ): boolean {
+  public enterFace(_facePathStack: HalfEdge[], _newFaceNode: HalfEdge): boolean {
     return true;
   }
   /** Announce face exit */
-  public leaveFace(
-    _facePathStack: HalfEdge[],
-    _newFaceNode: HalfEdge
-  ): boolean {
+  public leaveFace(_facePathStack: HalfEdge[], _newFaceNode: HalfEdge): boolean {
     return true;
   }
 }
 /** Function signature to test if a pair of boolean states is to be accepted by area booleans (during face-to-face sweeps)
  * @internal
  */
-type BinaryBooleanAcceptFunction = (
-  stateA: boolean,
-  stateB: boolean
-) => boolean;
+type BinaryBooleanAcceptFunction = (stateA: boolean, stateB: boolean) => boolean;
 /** Function signature ot announce classification of a face.
  * The `faceType` parameters are
  * * -1 for a fully exterior face.  This is a negative area face.
  * * 0 for a positive area face classified as "out" for the boolean.
  * * 1 for a positive area face classified as "in" for the boolean.
  */
-type AnnounceClassifiedFace = (
-  graph: HalfEdgeGraph,
-  faceSeed: HalfEdge,
-  faceType: -1 | 0 | 1,
-  area: number
-) => void;
+type AnnounceClassifiedFace = (graph: HalfEdgeGraph, faceSeed: HalfEdge, faceType: -1 | 0 | 1, area: number) => void;
 /**
  * Implementation of `RegionOpsFaceToFaceSearchCallbacks` for binary boolean sweep with polygonal regions.
  * * For this linear-boundary case the boundary geometry is carried entirely from the coordinates in the half edges.
@@ -122,10 +99,7 @@ class RegionOpsBinaryBooleanSweepCallbacks extends RegionOpsFaceToFaceSearchCall
   private _faceSelectFunction: BinaryBooleanAcceptFunction;
   private _inComponent: boolean[];
   private _exteriorMask: HalfEdgeMask;
-  public constructor(
-    acceptFaceFunction: BinaryBooleanAcceptFunction,
-    exteriorMask: HalfEdgeMask
-  ) {
+  public constructor(acceptFaceFunction: BinaryBooleanAcceptFunction, exteriorMask: HalfEdgeMask) {
     super();
     this._inComponent = [false, false, false]; // entry 0 is never reused.
     this._exteriorMask = exteriorMask;
@@ -140,13 +114,9 @@ class RegionOpsBinaryBooleanSweepCallbacks extends RegionOpsFaceToFaceSearchCall
    * * If necessary, toggle a term state.
    * * if indicated, mark this face exterior.
    */
-  public override enterFace(
-    _facePathStack: HalfEdge[],
-    node: HalfEdge
-  ): boolean {
+  public override enterFace(_facePathStack: HalfEdge[], node: HalfEdge): boolean {
     const thisFaceIndex = node.edgeTag;
-    if (node.edgeTag === 1 || node.edgeTag === 2)
-      this._inComponent[thisFaceIndex] = !this._inComponent[thisFaceIndex];
+    if (node.edgeTag === 1 || node.edgeTag === 2) this._inComponent[thisFaceIndex] = !this._inComponent[thisFaceIndex];
     if (!this._faceSelectFunction(this._inComponent[1], this._inComponent[2]))
       node.setMaskAroundFace(this._exteriorMask);
     return true;
@@ -154,13 +124,9 @@ class RegionOpsBinaryBooleanSweepCallbacks extends RegionOpsFaceToFaceSearchCall
   /**
    * * If necessary, toggle a term state.
    */
-  public override leaveFace(
-    _facePathStack: HalfEdge[],
-    node: HalfEdge
-  ): boolean {
+  public override leaveFace(_facePathStack: HalfEdge[], node: HalfEdge): boolean {
     const thisFaceIndex = node.edgeTag;
-    if (node.edgeTag === 1 || node.edgeTag === 2)
-      this._inComponent[thisFaceIndex] = !this._inComponent[thisFaceIndex];
+    if (node.edgeTag === 1 || node.edgeTag === 2) this._inComponent[thisFaceIndex] = !this._inComponent[thisFaceIndex];
     return true;
   }
 }
@@ -258,28 +224,16 @@ export class RegionOpsFaceToFaceSearch {
   ): HalfEdgeGraph | undefined {
     const graph = new HalfEdgeGraph();
     const baseMask = HalfEdgeMask.BOUNDARY_EDGE | HalfEdgeMask.PRIMARY_EDGE;
-    const seedA = RegionOps.addLoopsWithEdgeTagToGraph(
-      graph,
-      loopsA,
-      baseMask,
-      1
-    );
-    const seedB = RegionOps.addLoopsWithEdgeTagToGraph(
-      graph,
-      loopsB,
-      baseMask,
-      2
-    );
+    const seedA = RegionOps.addLoopsWithEdgeTagToGraph(graph, loopsA, baseMask, 1);
+    const seedB = RegionOps.addLoopsWithEdgeTagToGraph(graph, loopsB, baseMask, 2);
     if (graphCheckPoint) graphCheckPoint("unmerged loops", graph, "U");
     if (seedA || seedB) {
       // split edges where they cross . . .
       HalfEdgeGraphMerge.splitIntersectingEdges(graph);
-      if (graphCheckPoint)
-        graphCheckPoint("After splitIntersectingEdges", graph, "S");
+      if (graphCheckPoint) graphCheckPoint("After splitIntersectingEdges", graph, "S");
       // sort radially around vertices.
       HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph);
-      if (graphCheckPoint)
-        graphCheckPoint("After clusterAndMergeXYTheta", graph, "M");
+      if (graphCheckPoint) graphCheckPoint("After clusterAndMergeXYTheta", graph, "M");
       // add edges to connect various components  (e.g. holes!!!)
       const context = new RegularizationContext(graph);
       context.regularizeGraph(true, true);
@@ -291,19 +245,9 @@ export class RegionOpsFaceToFaceSearch {
       const nodeVisitedMask = graph.grabMask();
       const allMasksToClear = exteriorMask | faceVisitedMask | nodeVisitedMask;
       graph.clearMask(allMasksToClear);
-      const callbacks = new RegionOpsBinaryBooleanSweepCallbacks(
-        faceSelectFunction,
-        exteriorMask
-      );
-      this.faceToFaceSearchFromOuterLoop(
-        graph,
-        exteriorHalfEdge,
-        faceVisitedMask,
-        nodeVisitedMask,
-        callbacks
-      );
-      if (graphCheckPoint)
-        graphCheckPoint("After faceToFaceSearchFromOuterLoop", graph, "MRX");
+      const callbacks = new RegionOpsBinaryBooleanSweepCallbacks(faceSelectFunction, exteriorMask);
+      this.faceToFaceSearchFromOuterLoop(graph, exteriorHalfEdge, faceVisitedMask, nodeVisitedMask, callbacks);
+      if (graphCheckPoint) graphCheckPoint("After faceToFaceSearchFromOuterLoop", graph, "MRX");
       graph.dropMask(faceVisitedMask);
       graph.dropMask(nodeVisitedMask);
       return graph;
@@ -362,8 +306,7 @@ export class RegionOpsFaceToFaceSearch {
     const context = new RegularizationContext(graph);
     context.regularizeGraph(true, true);
     callbacks.runClassificationSweep(binaryOp);
-    if (purgeSliverExteriorFaces)
-      callbacks.unmaskMaskedNullFaces(HalfEdgeMask.EXTERIOR);
+    if (purgeSliverExteriorFaces) callbacks.unmaskMaskedNullFaces(HalfEdgeMask.EXTERIOR);
     return graph;
   }
 }
@@ -386,11 +329,7 @@ export enum RegionGroupOpType {
  * @internal
  */
 class RegionGroupMember {
-  public region:
-    | Loop
-    | ParityRegion
-    | CurvePrimitive
-    | MultiLineStringDataVariant;
+  public region: Loop | ParityRegion | CurvePrimitive | MultiLineStringDataVariant;
   public sweepState: number;
   public parentGroup: RegionGroup;
   public constructor(
@@ -418,10 +357,7 @@ export class RegionGroup {
   public groupOpType: RegionGroupOpType;
   public parent: RegionBooleanContext;
   private _numIn: number;
-  public constructor(
-    parent: RegionBooleanContext,
-    groupOpType: RegionGroupOpType
-  ) {
+  public constructor(parent: RegionBooleanContext, groupOpType: RegionGroupOpType) {
     this.members = [];
     this.parent = parent;
     this.groupOpType = groupOpType;
@@ -449,18 +385,13 @@ export class RegionGroup {
     // UNION is true if one or more members are IN
     if (this.groupOpType === RegionGroupOpType.Union) return this._numIn > 0;
     // PARITY is true if an odd number of regions are IN
-    if (this.groupOpType === RegionGroupOpType.Parity)
-      return Geometry.isOdd(this._numIn);
+    if (this.groupOpType === RegionGroupOpType.Parity) return Geometry.isOdd(this._numIn);
     // INTERSECTION is true if ALL the regions are IN
-    if (this.groupOpType === RegionGroupOpType.Intersection)
-      return this._numIn === this.members.length;
+    if (this.groupOpType === RegionGroupOpType.Intersection) return this._numIn === this.members.length;
     return false;
   }
   // push new members into the group.
-  public addMember(
-    data: AnyRegion | AnyRegion[] | LineSegment3d | undefined,
-    allowLineSegment: boolean = false
-  ) {
+  public addMember(data: AnyRegion | AnyRegion[] | LineSegment3d | undefined, allowLineSegment: boolean = false) {
     if (data instanceof Loop || data instanceof ParityRegion) {
       const cleanerData = data.clone() as ParityRegion | Loop;
       RegionOps.consolidateAdjacentPrimitives(cleanerData);
@@ -507,9 +438,7 @@ export class RegionGroup {
  *    * which can change the state of the context.
  * @internal
  */
-export class RegionBooleanContext
-  implements RegionOpsFaceToFaceSearchCallbacks
-{
+export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks {
   public groupA!: RegionGroup;
   public groupB!: RegionGroup;
   public extraGeometry!: RegionGroup;
@@ -517,10 +446,7 @@ export class RegionBooleanContext
   public faceAreaFunction!: NodeToNumberFunction;
   public binaryOp: RegionBinaryOpType;
 
-  private constructor(
-    groupTypeA: RegionGroupOpType,
-    groupTypeB: RegionGroupOpType
-  ) {
+  private constructor(groupTypeA: RegionGroupOpType, groupTypeB: RegionGroupOpType) {
     this.groupA = new RegionGroup(this, groupTypeA);
     this.groupB = new RegionGroup(this, groupTypeB);
     this.extraGeometry = new RegionGroup(this, RegionGroupOpType.NonBounding);
@@ -532,16 +458,10 @@ export class RegionBooleanContext
    * @param groupTypeA
    * @param groupTypeB
    */
-  public static create(
-    groupTypeA: RegionGroupOpType,
-    groupTypeB: RegionGroupOpType
-  ): RegionBooleanContext {
+  public static create(groupTypeA: RegionGroupOpType, groupTypeB: RegionGroupOpType): RegionBooleanContext {
     return new RegionBooleanContext(groupTypeA, groupTypeB);
   }
-  public addMembers(
-    dataA: AnyRegion | AnyRegion[] | undefined,
-    dataB: AnyRegion | AnyRegion[] | undefined
-  ) {
+  public addMembers(dataA: AnyRegion | AnyRegion[] | undefined, dataB: AnyRegion | AnyRegion[] | undefined) {
     this.groupA.addMember(dataA);
     this.groupB.addMember(dataB);
     // const doConnectives = 1;
@@ -550,10 +470,7 @@ export class RegionBooleanContext
   }
 
   private _workSegment?: LineSegment3d;
-  private static _bridgeDirection = Vector3d.createNormalized(
-    1.0,
-    -0.12328974132467
-  )!; // magic unit direction to minimize vertex hits
+  private static _bridgeDirection = Vector3d.createNormalized(1.0, -0.12328974132467)!; // magic unit direction to minimize vertex hits
   /**
    * The sweep operations require access to all geometry by edge crossings and face walk.
    * If input loops are non-overlapping, there may be disconnected islands not reachable.
@@ -573,21 +490,17 @@ export class RegionBooleanContext
       RegionBooleanContext._bridgeDirection,
       this._workSegment
     );
-    if (this._workSegment)
-      margin *= this._workSegment.point0Ref.distanceXY(
-        this._workSegment.point1Ref
-      ); // how much further to extend each bridge ray
+    if (this._workSegment) margin *= this._workSegment.point0Ref.distanceXY(this._workSegment.point1Ref); // how much further to extend each bridge ray
 
     const maxPoints: Point3d[] = [];
     const findExtremePointsInLoop = (region: Loop) => {
       const area = RegionOps.computeXYArea(region);
       if (area === undefined || Math.abs(area) < areaTol) return; // avoid bridging trivial faces
-      this._workSegment =
-        PlaneAltitudeRangeContext.findExtremePointsInDirection(
-          region,
-          RegionBooleanContext._bridgeDirection,
-          this._workSegment
-        );
+      this._workSegment = PlaneAltitudeRangeContext.findExtremePointsInDirection(
+        region,
+        RegionBooleanContext._bridgeDirection,
+        this._workSegment
+      );
       if (this._workSegment) maxPoints.push(this._workSegment.point1Ref);
     };
 
@@ -610,24 +523,9 @@ export class RegionBooleanContext
       //  1) create a bridge from the inner loop through any containing loops (always)
       //  2) avoid crossing any containing loop at a vertex. (with high probability, but not absolutely always)
       const bridgeLength =
-        margin +
-        Ray3d.create(
-          p,
-          RegionBooleanContext._bridgeDirection,
-          ray
-        ).intersectionWithRange3d(rangeAB).high;
-      const outside = Point3d.createAdd2Scaled(
-        p,
-        1.0,
-        RegionBooleanContext._bridgeDirection,
-        bridgeLength
-      );
-      const bridgeLine = LineSegment3d.createXYXY(
-        p.x,
-        p.y,
-        outside.x,
-        outside.y
-      );
+        margin + Ray3d.create(p, RegionBooleanContext._bridgeDirection, ray).intersectionWithRange3d(rangeAB).high;
+      const outside = Point3d.createAdd2Scaled(p, 1.0, RegionBooleanContext._bridgeDirection, bridgeLength);
+      const bridgeLine = LineSegment3d.createXYXY(p.x, p.y, outside.x, outside.y);
       this.extraGeometry.addMember(bridgeLine, true);
     }
   }
@@ -640,35 +538,21 @@ export class RegionBooleanContext
    * * assemble and merge the HalfEdgeGraph.
    * @param mergeTolerance absolute distance tolerance for merging loops
    */
-  public annotateAndMergeCurvesInGraph(
-    mergeTolerance: number = Geometry.smallMetricDistance
-  ) {
+  public annotateAndMergeCurvesInGraph(mergeTolerance: number = Geometry.smallMetricDistance) {
     const allPrimitives: CurvePrimitive[] = [];
     // ASSUME loops have fine-grained types -- no linestrings !!
     for (const group of [this.groupA, this.groupB, this.extraGeometry]) {
       for (const member of group.members) {
         let k = allPrimitives.length;
         if (member.region instanceof GeometryQuery) {
-          RegionOps.collectCurvePrimitives(
-            member.region,
-            allPrimitives,
-            true,
-            true
-          );
-          for (; k < allPrimitives.length; k++)
-            allPrimitives[k].parent = member;
+          RegionOps.collectCurvePrimitives(member.region, allPrimitives, true, true);
+          for (; k < allPrimitives.length; k++) allPrimitives[k].parent = member;
         }
       }
     }
     //    const range = RegionOps.curveArrayRange(allPrimitives);
-    const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(
-      allPrimitives,
-      mergeTolerance
-    );
-    const graph = PlanarSubdivision.assembleHalfEdgeGraph(
-      allPrimitives,
-      intersections
-    );
+    const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(allPrimitives, mergeTolerance);
+    const graph = PlanarSubdivision.assembleHalfEdgeGraph(allPrimitives, intersections);
     this.graph = graph;
     this.faceAreaFunction = faceAreaFromCurvedEdgeData;
   }
@@ -681,10 +565,7 @@ export class RegionBooleanContext
    * @param binaryOp
    * @param announceFaceFunction
    */
-  public runClassificationSweep(
-    binaryOp: RegionBinaryOpType,
-    announceFaceFunction?: AnnounceClassifiedFace
-  ) {
+  public runClassificationSweep(binaryOp: RegionBinaryOpType, announceFaceFunction?: AnnounceClassifiedFace) {
     this._announceFaceFunction = announceFaceFunction;
     this.binaryOp = binaryOp;
     this.graph.clearMask(HalfEdgeMask.EXTERIOR);
@@ -695,14 +576,10 @@ export class RegionBooleanContext
     const nodeHasBeenVisitedMask = this.graph.grabMask();
     const componentArray = GraphComponentArray.create(this.graph);
     for (const component of componentArray.components) {
-      const exteriorHalfEdge = HalfEdgeGraphSearch.findMinimumAreaFace(
-        component.faces,
-        this.faceAreaFunction
-      );
+      const exteriorHalfEdge = HalfEdgeGraphSearch.findMinimumAreaFace(component.faces, this.faceAreaFunction);
       if (exteriorHalfEdge) {
         const exteriorMask = HalfEdgeMask.EXTERIOR;
-        const allMasksToClear =
-          exteriorMask | faceHasBeenVisitedMask | nodeHasBeenVisitedMask;
+        const allMasksToClear = exteriorMask | faceHasBeenVisitedMask | nodeHasBeenVisitedMask;
         this.graph.clearMask(allMasksToClear);
         RegionOpsFaceToFaceSearch.faceToFaceSearchFromOuterLoop(
           this.graph,
@@ -735,16 +612,11 @@ export class RegionBooleanContext
     }
   }
   private getInOut(): boolean {
-    if (this.binaryOp === RegionBinaryOpType.Union)
-      return this.groupA.getInOut() || this.groupB.getInOut();
-    if (this.binaryOp === RegionBinaryOpType.Intersection)
-      return this.groupA.getInOut() && this.groupB.getInOut();
-    if (this.binaryOp === RegionBinaryOpType.AMinusB)
-      return this.groupA.getInOut() && !this.groupB.getInOut();
-    if (this.binaryOp === RegionBinaryOpType.BMinusA)
-      return !this.groupA.getInOut() && this.groupB.getInOut();
-    if (this.binaryOp === RegionBinaryOpType.Parity)
-      return this.groupA.getInOut() !== this.groupB.getInOut();
+    if (this.binaryOp === RegionBinaryOpType.Union) return this.groupA.getInOut() || this.groupB.getInOut();
+    if (this.binaryOp === RegionBinaryOpType.Intersection) return this.groupA.getInOut() && this.groupB.getInOut();
+    if (this.binaryOp === RegionBinaryOpType.AMinusB) return this.groupA.getInOut() && !this.groupB.getInOut();
+    if (this.binaryOp === RegionBinaryOpType.BMinusA) return !this.groupA.getInOut() && this.groupB.getInOut();
+    if (this.binaryOp === RegionBinaryOpType.Parity) return this.groupA.getInOut() !== this.groupB.getInOut();
     return false;
   }
   /**
@@ -758,35 +630,24 @@ export class RegionBooleanContext
    * @param node
    * @param delta
    */
-  private recordTransitionAcrossEdge(
-    node: HalfEdge,
-    delta: number
-  ): RegionGroupMember | undefined {
-    const updateRegionGroupMemberState = (
-      member: RegionGroupMember
-    ): RegionGroupMember => {
-      if (member.parentGroup.groupOpType === RegionGroupOpType.NonBounding)
-        return member; // no transition across a bridge edge
+  private recordTransitionAcrossEdge(node: HalfEdge, delta: number): RegionGroupMember | undefined {
+    const updateRegionGroupMemberState = (member: RegionGroupMember): RegionGroupMember => {
+      if (member.parentGroup.groupOpType === RegionGroupOpType.NonBounding) return member; // no transition across a bridge edge
       if (delta !== 0) {
         const oldSweepState = member.sweepState;
         member.sweepState += delta;
-        member.parentGroup.recordMemberStateChange(
-          oldSweepState,
-          member.sweepState
-        );
+        member.parentGroup.recordMemberStateChange(oldSweepState, member.sweepState);
       }
       return member;
     };
 
     const data = node.edgeTag;
-    if (data instanceof RegionGroupMember)
-      return updateRegionGroupMemberState(data);
+    if (data instanceof RegionGroupMember) return updateRegionGroupMemberState(data);
 
     if (data instanceof CurveLocationDetail) {
       // We trust that the caller has linked from the graph node to a curve which has a RegionGroupMember as its parent.
       const member = data.curve!.parent;
-      if (member instanceof RegionGroupMember)
-        return updateRegionGroupMemberState(member);
+      if (member instanceof RegionGroupMember) return updateRegionGroupMemberState(member);
     }
     return undefined;
   }
@@ -795,12 +656,7 @@ export class RegionBooleanContext
   public startComponent(outerFaceNode: HalfEdge): boolean {
     outerFaceNode.setMaskAroundFace(HalfEdgeMask.EXTERIOR);
     if (this._announceFaceFunction)
-      this._announceFaceFunction(
-        this.graph,
-        outerFaceNode,
-        -1,
-        faceAreaFromCurvedEdgeData(outerFaceNode)
-      );
+      this._announceFaceFunction(this.graph, outerFaceNode, -1, faceAreaFromCurvedEdgeData(outerFaceNode));
     return true;
   }
   /** Announce return to outer face */
@@ -818,12 +674,7 @@ export class RegionBooleanContext
     const state = this.getInOut();
     if (!state) newFaceNode.setMaskAroundFace(HalfEdgeMask.EXTERIOR);
     if (this._announceFaceFunction)
-      this._announceFaceFunction(
-        this.graph,
-        newFaceNode,
-        state ? 1 : 0,
-        faceAreaFromCurvedEdgeData(newFaceNode)
-      );
+      this._announceFaceFunction(this.graph, newFaceNode, state ? 1 : 0, faceAreaFromCurvedEdgeData(newFaceNode));
     return true;
   }
   /** Announce face exit */
@@ -844,22 +695,16 @@ function areaUnderPartialCurveXY(
   // area between trapezoid and axis
   let trapezoidArea;
   if (detail && detail.point1) {
-    trapezoidArea =
-      -(detail.point1.x - detail.point.x) *
-      (0.5 * (detail.point.y + detail.point1.y) - referencePoint.y);
+    trapezoidArea = -(detail.point1.x - detail.point.x) * (0.5 * (detail.point.y + detail.point1.y) - referencePoint.y);
   } else {
-    trapezoidArea =
-      -(xyEnd.x - xyStart.x) * (0.5 * (xyStart.y + xyEnd.y) - referencePoint.y);
+    trapezoidArea = -(xyEnd.x - xyStart.x) * (0.5 * (xyStart.y + xyEnd.y) - referencePoint.y);
   }
   let areaToChord = 0.0;
   if (detail && detail.curve && detail.hasFraction1) {
     if (detail.curve instanceof LineSegment3d) {
       // ah .. nothing to do for a line segment
     } else if (detail.curve instanceof Arc3d) {
-      areaToChord = detail.curve.areaToChordXY(
-        detail.fraction,
-        detail.fraction1!
-      );
+      areaToChord = detail.curve.areaToChordXY(detail.fraction, detail.fraction1!);
     }
   }
   return trapezoidArea + areaToChord;
@@ -871,12 +716,7 @@ function faceAreaFromCurvedEdgeData(faceSeed: HalfEdge): number {
   do {
     area +=
       (edge.sortData as number) *
-      areaUnderPartialCurveXY(
-        edge.edgeTag as CurveLocationDetail,
-        edge,
-        edge.faceSuccessor,
-        faceSeed
-      );
+      areaUnderPartialCurveXY(edge.edgeTag as CurveLocationDetail, edge, edge.faceSuccessor, faceSeed);
   } while ((edge = edge.faceSuccessor) !== faceSeed);
   return area;
 }
@@ -920,8 +760,7 @@ export class GraphComponent {
       f.sumAroundFace(vertexFunction);
     }
     this.faceAreas.length = 0;
-    if (!faceAreaFunction)
-      faceAreaFunction = HalfEdgeGraphSearch.signedFaceArea;
+    if (!faceAreaFunction) faceAreaFunction = HalfEdgeGraphSearch.signedFaceArea;
     for (const f of this.faces) {
       this.faceAreas.push(faceAreaFunction(f));
     }
@@ -942,11 +781,7 @@ export class GraphComponentArray {
     extendRangeForEdge?: (edge: HalfEdge, range: Range2d) => void
   ): GraphComponentArray {
     const result = new GraphComponentArray(graph);
-    const componentArrays =
-      HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks(
-        graph,
-        undefined
-      );
+    const componentArrays = HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks(graph, undefined);
     for (const componentFaces of componentArrays) {
       const component = new GraphComponent(componentFaces);
       component.buildFaceData(extendRangeForEdge, faceAreaFromCurvedEdgeData);

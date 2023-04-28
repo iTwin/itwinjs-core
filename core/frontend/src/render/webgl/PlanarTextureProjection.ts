@@ -91,30 +91,20 @@ export class PlanarTextureProjection {
       frustumY = textureX,
       frustumZ = textureY;
     const textureMatrix = Matrix3d.createRows(frustumX, frustumY, frustumZ);
-    const textureTransform = Transform.createRefs(
-      Point3d.createZero(),
-      textureMatrix
-    );
+    const textureTransform = Transform.createRefs(Point3d.createZero(), textureMatrix);
     const viewFrustum = viewingSpace.getFrustum().transformBy(textureTransform);
     const viewPlanes = FrustumPlanes.fromFrustum(viewFrustum);
     const viewClipPlanes = ConvexClipPlaneSet.createPlanes(viewPlanes.planes);
 
     let textureRange = Range3d.createNull();
-    const tileToTexture = textureTransform.multiplyTransformTransform(
-      target.location
-    );
+    const tileToTexture = textureTransform.multiplyTransformTransform(target.location);
     for (const tile of target.tiles) {
-      textureRange.extendRange(
-        tileToTexture.multiplyRange(tile.range, scratchRange)
-      );
+      textureRange.extendRange(tileToTexture.multiplyRange(tile.range, scratchRange));
     }
 
     if (textureRange.isNull) return {};
 
-    textureRange = ClipUtilities.rangeOfClipperIntersectionWithRange(
-      viewClipPlanes,
-      textureRange
-    );
+    textureRange = ClipUtilities.rangeOfClipperIntersectionWithRange(viewClipPlanes, textureRange);
 
     const drapeRange = Range3d.createNull();
     for (const drapeRef of drapeRefs) {
@@ -123,15 +113,12 @@ export class PlanarTextureProjection {
       if (!drapeTree) return {};
       if (drapeTree.isContentUnbounded) {
         let heightRange = viewingSpace.getTerrainHeightRange();
-        if (!heightRange)
-          heightRange = ApproximateTerrainHeights.instance.globalHeightRange;
+        if (!heightRange) heightRange = ApproximateTerrainHeights.instance.globalHeightRange;
 
         textureRange.low.x = Math.min(textureRange.low.x, heightRange.low);
         textureRange.high.x = Math.max(textureRange.high.x, heightRange.high);
       } else {
-        const contentRange = textureTransform.multiplyRange(
-          drapeRef.computeWorldContentRange()
-        );
+        const contentRange = textureTransform.multiplyRange(drapeRef.computeWorldContentRange());
         if (!contentRange.isNull) drapeRange.extendRange(contentRange);
       }
     }
@@ -153,36 +140,23 @@ export class PlanarTextureProjection {
 
     const textureFrustum = Frustum.fromRange(textureRange);
     const debugFrustum = textureFrustum.clone();
-    textureTransform.multiplyInversePoint3dArray(
-      debugFrustum.points,
-      debugFrustum.points
-    );
+    textureTransform.multiplyInversePoint3dArray(debugFrustum.points, debugFrustum.points);
 
     if (viewState.isCameraOn) {
       const eyeHeight = (textureRange.low.x + textureRange.high.x) / 2.0;
-      const eyePlane = Plane3dByOriginAndUnitNormal.create(
-        Point3d.createScale(textureZ, eyeHeight),
-        textureZ
-      ); // Centered in range - parallel to texture.
-      const projectionRay = Ray3d.create(
-        viewState.getEyePoint(),
-        viewZ.crossProduct(textureX).normalize()!
-      );
+      const eyePlane = Plane3dByOriginAndUnitNormal.create(Point3d.createScale(textureZ, eyeHeight), textureZ); // Centered in range - parallel to texture.
+      const projectionRay = Ray3d.create(viewState.getEyePoint(), viewZ.crossProduct(textureX).normalize()!);
       let projectionDistance = projectionRay.intersectionWithPlane(eyePlane!);
       const minNearToFarRatio = 0.01; // Smaller value allows texture projection to conform tightly to view frustum.
       if (undefined !== projectionDistance) {
         projectionDistance = Math.max(0.1, projectionDistance);
-        const eyePoint = textureTransform.multiplyPoint3d(
-          projectionRay.fractionToPoint(projectionDistance)
-        );
+        const eyePoint = textureTransform.multiplyPoint3d(projectionRay.fractionToPoint(projectionDistance));
         let near = eyePoint.z - textureRange.high.z;
         let far = eyePoint.z - textureRange.low.z;
 
         if (near / far < minNearToFarRatio) {
           // If the near-far ratio is less than minimum move the camera back.
-          far =
-            (textureRange.high.z - textureRange.low.z) /
-            (1.0 - minNearToFarRatio);
+          far = (textureRange.high.z - textureRange.low.z) / (1.0 - minNearToFarRatio);
           near = far * minNearToFarRatio;
           eyePoint.z = near + textureRange.high.z;
         }
@@ -191,10 +165,8 @@ export class PlanarTextureProjection {
         // Create a frustum that includes the entire view frustum and all Z values.
         nearRange.low.x = textureRange.low.x;
         nearRange.high.x = textureRange.high.x;
-        farRange.low.x =
-          eyePoint.x + (far / near) * (textureRange.low.x - eyePoint.x);
-        farRange.high.x =
-          eyePoint.x + (far / near) * (textureRange.high.x - eyePoint.x);
+        farRange.low.x = eyePoint.x + (far / near) * (textureRange.low.x - eyePoint.x);
+        farRange.high.x = eyePoint.x + (far / near) * (textureRange.high.x - eyePoint.x);
         ClipUtilities.announceLoopsOfConvexClipPlaneSetIntersectRange(
           viewClipPlanes,
           textureRange,
@@ -202,8 +174,7 @@ export class PlanarTextureProjection {
             points.getPoint3dArray().forEach((rangePoint) => {
               const farScale = far / (eyePoint.z - rangePoint.z);
               const nearScale = near / (eyePoint.z - rangePoint.z);
-              const nearY =
-                eyePoint.y + nearScale * (rangePoint.y - eyePoint.y);
+              const nearY = eyePoint.y + nearScale * (rangePoint.y - eyePoint.y);
               const farY = eyePoint.y + farScale * (rangePoint.y - eyePoint.y);
               nearRange.low.y = Math.min(nearRange.low.y, nearY);
               nearRange.high.y = Math.max(nearRange.high.y, nearY);
@@ -212,46 +183,14 @@ export class PlanarTextureProjection {
             });
           }
         );
-        textureFrustum.points[Npc._000].set(
-          farRange.low.x,
-          farRange.low.y,
-          eyePoint.z - far
-        );
-        textureFrustum.points[Npc._100].set(
-          farRange.high.x,
-          farRange.low.y,
-          eyePoint.z - far
-        );
-        textureFrustum.points[Npc._010].set(
-          farRange.low.x,
-          farRange.high.y,
-          eyePoint.z - far
-        );
-        textureFrustum.points[Npc._110].set(
-          farRange.high.x,
-          farRange.high.y,
-          eyePoint.z - far
-        );
-        textureFrustum.points[Npc._001].set(
-          nearRange.low.x,
-          nearRange.low.y,
-          eyePoint.z - near
-        );
-        textureFrustum.points[Npc._101].set(
-          nearRange.high.x,
-          nearRange.low.y,
-          eyePoint.z - near
-        );
-        textureFrustum.points[Npc._011].set(
-          nearRange.low.x,
-          nearRange.high.y,
-          eyePoint.z - near
-        );
-        textureFrustum.points[Npc._111].set(
-          nearRange.high.x,
-          nearRange.high.y,
-          eyePoint.z - near
-        );
+        textureFrustum.points[Npc._000].set(farRange.low.x, farRange.low.y, eyePoint.z - far);
+        textureFrustum.points[Npc._100].set(farRange.high.x, farRange.low.y, eyePoint.z - far);
+        textureFrustum.points[Npc._010].set(farRange.low.x, farRange.high.y, eyePoint.z - far);
+        textureFrustum.points[Npc._110].set(farRange.high.x, farRange.high.y, eyePoint.z - far);
+        textureFrustum.points[Npc._001].set(nearRange.low.x, nearRange.low.y, eyePoint.z - near);
+        textureFrustum.points[Npc._101].set(nearRange.high.x, nearRange.low.y, eyePoint.z - near);
+        textureFrustum.points[Npc._011].set(nearRange.low.x, nearRange.high.y, eyePoint.z - near);
+        textureFrustum.points[Npc._111].set(nearRange.high.x, nearRange.high.y, eyePoint.z - near);
       }
     }
     textureMatrix.transposeInPlace();
@@ -260,10 +199,7 @@ export class PlanarTextureProjection {
     if (undefined === frustumMap) {
       return {};
     }
-    const worldToNpc =
-      PlanarTextureProjection._postProjectionMatrixNpc.multiplyMatrixMatrix(
-        frustumMap.transform0
-      );
+    const worldToNpc = PlanarTextureProjection._postProjectionMatrixNpc.multiplyMatrixMatrix(frustumMap.transform0);
     const npcToView = Map4d.createBoxMap(
       Point3d.create(0, 0, 0),
       Point3d.create(1, 1, 1),

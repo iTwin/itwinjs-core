@@ -128,11 +128,7 @@ export class Grid {
   public scale(scale: float64): Grid {
     return new Grid(
       new Coordinate(this.p0.x, this.p0.y, this.p0.z),
-      new Coordinate(
-        scale * this.size.x,
-        scale * this.size.y,
-        scale * this.size.z
-      )
+      new Coordinate(scale * this.size.x, scale * this.size.y, scale * this.size.z)
     );
   }
 

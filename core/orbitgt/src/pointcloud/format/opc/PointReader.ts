@@ -66,14 +66,7 @@ export class PointReader {
     if (readRequest.readGeometry()) {
       /* Read all geometry data */
       geometryReader = reader.getGeometryReader(level);
-      geometryReader.readTileData2(
-        tileRecord,
-        pointOffset,
-        pointCount,
-        tileBuffer,
-        readRequest,
-        fileContents
-      );
+      geometryReader.readTileData2(tileRecord, pointOffset, pointCount, tileBuffer, readRequest, fileContents);
     }
     /* Read all attribute data */
     let attributeReaders: AList<AttributeReader> = attributeMask.readers;
@@ -124,9 +117,7 @@ export class PointReader {
     let cloudPointList: AList<CloudPoint> = new AList<CloudPoint>();
     for (let i: number = 0; i < pointCount; i++) {
       /* Create a point */
-      let cloudPoint: CloudPoint = CloudPoint.createWithAttributes(
-        attributeMask.attributes
-      );
+      let cloudPoint: CloudPoint = CloudPoint.createWithAttributes(attributeMask.attributes);
       /* Thinning? */
       if (thinning != 0 && i % thinning != 0) {
         /* Skip */
@@ -137,19 +128,11 @@ export class PointReader {
       /* Set the index */
       cloudPoint.setIndex(pointIndex);
       /* Set the geometry */
-      if (readRequest.readGeometry())
-        geometryReader.getPointData(tileRecord, tileBuffer, i, cloudPoint);
+      if (readRequest.readGeometry()) geometryReader.getPointData(tileRecord, tileBuffer, i, cloudPoint);
       /* Set the attributes */
       for (let j: number = 0; j < attributeReaders.size(); j++) {
         let attributeReader: AttributeReader = attributeReaders.get(j);
-        attributeReader.getPointData(
-          level,
-          tileRecord,
-          tileBuffer,
-          j,
-          i,
-          cloudPoint
-        );
+        attributeReader.getPointData(level, tileRecord, tileBuffer, j, i, cloudPoint);
       }
       /* Process the point */
       cloudPointList.add(cloudPoint);
@@ -223,18 +206,12 @@ export class PointReader {
     /* We should have the file content */
     if (fileContents.isAvailable() == false) return;
     /* Read the geometry */
-    let geometryReader: GeometryReader = reader.getGeometryReader(
-      tileRecord.level
-    );
+    let geometryReader: GeometryReader = reader.getGeometryReader(tileRecord.level);
     geometryReader.getPointDataRaw(tileRecord, tileBuffer, pointData);
     /* Read the color? */
     if (tileBuffer.getAttributeCount() > 0) {
       /* Little-endian encoding makes 24-bit RGB values to be written as BGR byte sequence */
-      pointData.colors = new Uint8Buffer(
-        tileBuffer.getAttributeBuffer(0),
-        0,
-        3 * tileRecord.pointCount
-      );
+      pointData.colors = new Uint8Buffer(tileBuffer.getAttributeBuffer(0), 0, 3 * tileRecord.pointCount);
     }
   }
 
@@ -272,14 +249,6 @@ export class PointReader {
       fileContents
     );
     /* Parse the tile data */
-    PointReader.parseTileDataRaw(
-      reader,
-      readRequest,
-      attributeMask,
-      tileRecord,
-      tileBuffer,
-      pointData,
-      fileContents
-    );
+    PointReader.parseTileDataRaw(reader, readRequest, attributeMask, tileRecord, tileBuffer, pointData, fileContents);
   }
 }

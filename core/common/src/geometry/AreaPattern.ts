@@ -107,9 +107,7 @@ export namespace AreaPattern {
       const result = new Params();
       if (!json) return result;
       result.origin = json.origin ? Point3d.fromJSON(json.origin) : undefined;
-      result.rotation = json.rotation
-        ? YawPitchRollAngles.fromJSON(json.rotation)
-        : undefined;
+      result.rotation = json.rotation ? YawPitchRollAngles.fromJSON(json.rotation) : undefined;
       result.space1 = json.space1;
       result.space2 = json.space2;
       result.angle1 = json.angle1 ? Angle.fromJSON(json.angle1) : undefined;
@@ -119,14 +117,10 @@ export namespace AreaPattern {
       result.weight = json.weight;
       result.invisibleBoundary = json.invisibleBoundary;
       result.snappable = json.snappable;
-      result.symbolId = json.symbolId
-        ? Id64.fromJSON(json.symbolId)
-        : undefined;
+      result.symbolId = json.symbolId ? Id64.fromJSON(json.symbolId) : undefined;
       if (!json.defLines) return result;
       const defLines: HatchDefLine[] = [];
-      json.defLines.forEach((defLine) =>
-        defLines.push(new HatchDefLine(defLine))
-      );
+      json.defLines.forEach((defLine) => defLines.push(new HatchDefLine(defLine)));
       result.defLines = defLines;
       return result;
     }
@@ -155,36 +149,25 @@ export namespace AreaPattern {
       )
         return false;
 
-      if ((this.color === undefined) !== (other.color === undefined))
-        return false;
+      if ((this.color === undefined) !== (other.color === undefined)) return false;
       if (this.color && !this.color.equals(other.color!)) return false;
 
-      if ((this.angle1 === undefined) !== (other.angle1 === undefined))
-        return false;
-      if (this.angle1 && !this.angle1.isAlmostEqualNoPeriodShift(other.angle1!))
-        return false;
+      if ((this.angle1 === undefined) !== (other.angle1 === undefined)) return false;
+      if (this.angle1 && !this.angle1.isAlmostEqualNoPeriodShift(other.angle1!)) return false;
 
-      if ((this.angle2 === undefined) !== (other.angle2 === undefined))
-        return false;
-      if (this.angle2 && !this.angle2.isAlmostEqualNoPeriodShift(other.angle2!))
-        return false;
+      if ((this.angle2 === undefined) !== (other.angle2 === undefined)) return false;
+      if (this.angle2 && !this.angle2.isAlmostEqualNoPeriodShift(other.angle2!)) return false;
 
-      if ((this.origin === undefined) !== (other.origin === undefined))
-        return false;
-      if (this.origin && !this.origin.isAlmostEqual(other.origin!))
-        return false;
+      if ((this.origin === undefined) !== (other.origin === undefined)) return false;
+      if (this.origin && !this.origin.isAlmostEqual(other.origin!)) return false;
 
-      if ((this.rotation === undefined) !== (other.rotation === undefined))
-        return false;
-      if (this.rotation && !this.rotation.isAlmostEqual(other.rotation!))
-        return false;
+      if ((this.rotation === undefined) !== (other.rotation === undefined)) return false;
+      if (this.rotation && !this.rotation.isAlmostEqual(other.rotation!)) return false;
 
-      if ((this.symbolId === undefined) !== (other.symbolId === undefined))
-        return false;
+      if ((this.symbolId === undefined) !== (other.symbolId === undefined)) return false;
       if (this.symbolId && !(this.symbolId === other.symbolId!)) return false;
 
-      if ((this.defLines === undefined) !== (other.defLines === undefined))
-        return false;
+      if ((this.defLines === undefined) !== (other.defLines === undefined)) return false;
       if (this.defLines) {
         if (this.defLines.length !== other.defLines!.length) return false;
 
@@ -192,58 +175,20 @@ export namespace AreaPattern {
           const otherLine = other.defLines![i];
           const thisLine = this.defLines[i];
 
-          if (
-            (thisLine.angle === undefined) !==
-            (otherLine.angle === undefined)
-          )
-            return false;
-          if (
-            thisLine.angle &&
-            !thisLine.angle.isAlmostEqualNoPeriodShift(otherLine.angle!)
-          )
-            return false;
+          if ((thisLine.angle === undefined) !== (otherLine.angle === undefined)) return false;
+          if (thisLine.angle && !thisLine.angle.isAlmostEqualNoPeriodShift(otherLine.angle!)) return false;
 
-          if (
-            (thisLine.through === undefined) !==
-            (otherLine.through === undefined)
-          )
-            return false;
-          if (
-            thisLine.through &&
-            !thisLine.through.isAlmostEqual(otherLine.through!)
-          )
-            return false;
+          if ((thisLine.through === undefined) !== (otherLine.through === undefined)) return false;
+          if (thisLine.through && !thisLine.through.isAlmostEqual(otherLine.through!)) return false;
 
-          if (
-            (thisLine.offset === undefined) !==
-            (otherLine.offset === undefined)
-          )
-            return false;
-          if (
-            thisLine.offset &&
-            !thisLine.offset.isAlmostEqual(otherLine.offset!)
-          )
-            return false;
+          if ((thisLine.offset === undefined) !== (otherLine.offset === undefined)) return false;
+          if (thisLine.offset && !thisLine.offset.isAlmostEqual(otherLine.offset!)) return false;
 
-          if (
-            (thisLine.dashes === undefined) !==
-            (otherLine.dashes === undefined)
-          )
-            return false;
-          if (
-            thisLine.dashes &&
-            thisLine.dashes.length !== otherLine.dashes!.length
-          )
-            return false;
+          if ((thisLine.dashes === undefined) !== (otherLine.dashes === undefined)) return false;
+          if (thisLine.dashes && thisLine.dashes.length !== otherLine.dashes!.length) return false;
           if (thisLine.dashes) {
             for (let dash = 0; dash < thisLine.dashes.length; ++dash) {
-              if (
-                !Geometry.isSameCoordinate(
-                  thisLine.dashes[dash],
-                  otherLine.dashes![dash]
-                )
-              )
-                return false;
+              if (!Geometry.isSameCoordinate(thisLine.dashes[dash], otherLine.dashes![dash])) return false;
             }
           }
         }
@@ -280,22 +225,10 @@ export namespace AreaPattern {
     public applyTransform(transform: Transform): boolean {
       if (transform.isIdentity) return true;
       const origin = this.origin ? this.origin : Point3d.createZero();
-      const rMatrix = this.rotation
-        ? this.rotation.toMatrix3d()
-        : Matrix3d.createIdentity();
+      const rMatrix = this.rotation ? this.rotation.toMatrix3d() : Matrix3d.createIdentity();
       if (this.symbolId !== undefined) {
-        this.space1 = Params.transformPatternSpace(
-          transform,
-          this.space1 ? this.space1 : 0.0,
-          rMatrix,
-          this.angle1
-        );
-        this.space2 = Params.transformPatternSpace(
-          transform,
-          this.space2 ? this.space2 : 0.0,
-          rMatrix,
-          this.angle2
-        );
+        this.space1 = Params.transformPatternSpace(transform, this.space1 ? this.space1 : 0.0, rMatrix, this.angle1);
+        this.space2 = Params.transformPatternSpace(transform, this.space2 ? this.space2 : 0.0, rMatrix, this.angle2);
         const scale = Params.getTransformPatternScale(transform);
         this.scale = this.scale ? this.scale * scale : scale;
       } else if (this.defLines) {
@@ -312,25 +245,14 @@ export namespace AreaPattern {
               line.offset.y *= scale;
             }
             if (line.dashes) {
-              for (let iDash = 0; iDash < line.dashes.length; iDash++)
-                line.dashes[iDash] *= scale;
+              for (let iDash = 0; iDash < line.dashes.length; iDash++) line.dashes[iDash] *= scale;
             }
           }
         }
       } else {
-        this.space1 = Params.transformPatternSpace(
-          transform,
-          this.space1 ? this.space1 : 0.0,
-          rMatrix,
-          this.angle1
-        );
+        this.space1 = Params.transformPatternSpace(transform, this.space1 ? this.space1 : 0.0, rMatrix, this.angle1);
         if (this.space2 && 0 !== this.space2)
-          this.space2 = Params.transformPatternSpace(
-            transform,
-            this.space2,
-            rMatrix,
-            this.angle2
-          );
+          this.space2 = Params.transformPatternSpace(transform, this.space2, rMatrix, this.angle2);
       }
 
       transform.multiplyPoint3d(origin);

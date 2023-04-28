@@ -3,21 +3,8 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import {
-  DbResult,
-  Guid,
-  GuidString,
-  Id64,
-  Id64String,
-  using,
-} from "@itwin/core-bentley";
-import {
-  NavigationValue,
-  QueryBinder,
-  QueryOptions,
-  QueryOptionsBuilder,
-  QueryRowFormat,
-} from "@itwin/core-common";
+import { DbResult, Guid, GuidString, Id64, Id64String, using } from "@itwin/core-bentley";
+import { NavigationValue, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { Point2d, Point3d, Range3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import {
   ECDb,
@@ -57,12 +44,7 @@ async function query(
   }
   return rowCount;
 }
-async function queryRows(
-  ecdb: ECDb,
-  ecsql: string,
-  params?: QueryBinder,
-  config?: QueryOptions
-) {
+async function queryRows(ecdb: ECDb, ecsql: string, params?: QueryBinder, config?: QueryOptions) {
   ecdb.saveChanges();
   const reader = ecdb.createQueryReader(ecsql, params, {
     ...config,
@@ -70,25 +52,18 @@ async function queryRows(
   });
   return reader.toArray();
 }
-async function queryCount(
-  ecdb: ECDb,
-  ecsql: string,
-  params?: QueryBinder,
-  config?: QueryOptions
-): Promise<number> {
+async function queryCount(ecdb: ECDb, ecsql: string, params?: QueryBinder, config?: QueryOptions): Promise<number> {
   ecdb.saveChanges();
-  for await (const row of ecdb.createQueryReader(
-    `SELECT COUNT(*) FROM (${ecsql})`,
-    params,
-    { ...config, rowFormat: QueryRowFormat.UseECSqlPropertyIndexes }
-  )) {
+  for await (const row of ecdb.createQueryReader(`SELECT COUNT(*) FROM (${ecsql})`, params, {
+    ...config,
+    rowFormat: QueryRowFormat.UseECSqlPropertyIndexes,
+  })) {
     return row[0] as number;
   }
   return -1;
 }
 function blobEqual(lhs: any, rhs: any) {
-  if (!(lhs instanceof Uint8Array) || !(rhs instanceof Uint8Array))
-    throw new Error("expecting uint8array");
+  if (!(lhs instanceof Uint8Array) || !(rhs instanceof Uint8Array)) throw new Error("expecting uint8array");
 
   if (lhs.byteLength !== rhs.byteLength) return false;
 
@@ -175,20 +150,14 @@ describe("ECSqlStatement", () => {
     );
   });
   it("null string accessor", async () => {
-    await using(
-      ECDbTestHelper.createECDb(outDir, "nullstring.ecdb"),
-      async (ecdb: ECDb) => {
-        assert.isTrue(ecdb.isOpen);
-        await ecdb.withPreparedStatement(
-          `VALUES(NULL)`,
-          async (stmt: ECSqlStatement) => {
-            stmt.step();
-            const str = stmt.getValue(0).getString();
-            assert.equal(str, "");
-          }
-        );
-      }
-    );
+    await using(ECDbTestHelper.createECDb(outDir, "nullstring.ecdb"), async (ecdb: ECDb) => {
+      assert.isTrue(ecdb.isOpen);
+      await ecdb.withPreparedStatement(`VALUES(NULL)`, async (stmt: ECSqlStatement) => {
+        stmt.step();
+        const str = stmt.getValue(0).getString();
+        assert.equal(str, "");
+      });
+    });
   });
   it("should page results", async () => {
     await using(
@@ -206,12 +175,9 @@ describe("ECSqlStatement", () => {
         const ROW_COUNT = 27;
         // insert test rows
         for (let i = 1; i <= ROW_COUNT; i++) {
-          const r = await ecdb.withStatement(
-            `insert into ts.Foo(n) values(${i})`,
-            async (stmt: ECSqlStatement) => {
-              return stmt.stepForInsert();
-            }
-          );
+          const r = await ecdb.withStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+            return stmt.stepForInsert();
+          });
           assert.equal(r.status, DbResult.BE_SQLITE_DONE);
         }
         ecdb.saveChanges();
@@ -224,10 +190,7 @@ describe("ECSqlStatement", () => {
           assert.equal(rowCount, i);
         }
 
-        const temp = await queryRows(
-          ecdb,
-          "SELECT ECInstanceId FROM ONLY ts.Foo"
-        );
+        const temp = await queryRows(ecdb, "SELECT ECInstanceId FROM ONLY ts.Foo");
         assert.equal(temp.length, ROW_COUNT);
         // query page by page
         const PAGE_SIZE = 5;
@@ -240,9 +203,7 @@ describe("ECSqlStatement", () => {
               ecdb,
               QUERY,
               undefined,
-              new QueryOptionsBuilder()
-                .setLimit({ offset: i * PAGE_SIZE, count: PAGE_SIZE })
-                .getOptions()
+              new QueryOptionsBuilder().setLimit({ offset: i * PAGE_SIZE, count: PAGE_SIZE }).getOptions()
             )
           );
         }
@@ -271,30 +232,22 @@ describe("ECSqlStatement", () => {
         const ROW_COUNT = 100;
         // insert test rows
         for (let i = 1; i <= ROW_COUNT; i++) {
-          const r = await ecdb.withStatement(
-            `insert into ts.Foo(n) values(${i})`,
-            async (stmt: ECSqlStatement) => {
-              return stmt.stepForInsert();
-            }
-          );
+          const r = await ecdb.withStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+            return stmt.stepForInsert();
+          });
           assert.equal(r.status, DbResult.BE_SQLITE_DONE);
         }
         ecdb.saveChanges();
         // check if varying page number does not require prepare new statements
         ecdb.clearStatementCache();
-        const rca = await queryRows(
-          ecdb,
-          "SELECT count(*) as nRows FROM ts.Foo"
-        );
+        const rca = await queryRows(ecdb, "SELECT count(*) as nRows FROM ts.Foo");
         assert.equal(rca[0].nRows, 100); // expe
         const rc = await queryCount(ecdb, "SELECT * FROM ts.Foo");
         assert.equal(rc, 100); // expe
         let rowNo = 0;
-        for await (const row of ecdb.createQueryReader(
-          "SELECT * FROM ts.Foo",
-          undefined,
-          { rowFormat: QueryRowFormat.UseJsPropertyNames }
-        )) {
+        for await (const row of ecdb.createQueryReader("SELECT * FROM ts.Foo", undefined, {
+          rowFormat: QueryRowFormat.UseJsPropertyNames,
+        })) {
           assert.equal(row.n, rowNo + 1);
           rowNo = rowNo + 1;
         }
@@ -319,12 +272,9 @@ describe("ECSqlStatement", () => {
         const ROW_COUNT = 100;
         // insert test rows
         for (let i = 1; i <= ROW_COUNT; i++) {
-          const r = await ecdb.withStatement(
-            `insert into ts.Foo(n) values(${i})`,
-            async (stmt: ECSqlStatement) => {
-              return stmt.stepForInsert();
-            }
-          );
+          const r = await ecdb.withStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+            return stmt.stepForInsert();
+          });
           assert.equal(r.status, DbResult.BE_SQLITE_DONE);
         }
         ecdb.saveChanges();
@@ -392,12 +342,9 @@ describe("ECSqlStatement", () => {
         const ROW_COUNT = 27;
         // insert test rows
         for (let i = 1; i <= ROW_COUNT; i++) {
-          const r = await ecdb.withStatement(
-            `insert into ts.Foo(n) values(${i})`,
-            async (stmt: ECSqlStatement) => {
-              return stmt.stepForInsert();
-            }
-          );
+          const r = await ecdb.withStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+            return stmt.stepForInsert();
+          });
           assert.equal(r.status, DbResult.BE_SQLITE_DONE);
         }
         ecdb.saveChanges();
@@ -458,19 +405,11 @@ describe("ECSqlStatement", () => {
           assert.equal(row.cnt, 3);
         }
         const slm = new SequentialLogMatcher();
-        slm
-          .append()
-          .error()
-          .category("ECDb")
-          .message("No parameter index found for parameter name: d.");
+        slm.append().error().category("ECDb").message("No parameter index found for parameter name: d.");
         try {
           for await (const row of ecdb.createQueryReader(
             "SELECT count(*) as cnt FROM ts.Foo WHERE n in (:a, :b, :c)",
-            new QueryBinder()
-              .bindInt("a", 1)
-              .bindInt("b", 2)
-              .bindInt("c", 3)
-              .bindInt("d", 3),
+            new QueryBinder().bindInt("a", 1).bindInt("b", 2).bindInt("c", 3).bindInt("d", 3),
             { rowFormat: QueryRowFormat.UseJsPropertyNames }
           )) {
             assert.equal(row.cnt, 3);
@@ -497,12 +436,9 @@ describe("ECSqlStatement", () => {
       async (ecdb: ECDb) => {
         assert.isTrue(ecdb.isOpen);
         for (let i = 1; i <= 2; i++) {
-          const r = await ecdb.withStatement(
-            `insert into ts.Foo(n) values(${i})`,
-            async (stmt: ECSqlStatement) => {
-              return stmt.stepForInsert();
-            }
-          );
+          const r = await ecdb.withStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+            return stmt.stepForInsert();
+          });
           assert.equal(r.status, DbResult.BE_SQLITE_DONE);
         }
         ecdb.saveChanges();
@@ -546,11 +482,9 @@ describe("ECSqlStatement", () => {
         ecdb.saveChanges();
 
         const uint8arrayToGuid = (guidArray: any) => {
-          if (!(guidArray instanceof Uint8Array))
-            throw new Error("Expecting a Uint8Array type argument");
+          if (!(guidArray instanceof Uint8Array)) throw new Error("Expecting a Uint8Array type argument");
 
-          if (guidArray.byteLength !== 16)
-            throw new Error("Expecting a Uint8Array of length 16");
+          if (guidArray.byteLength !== 16) throw new Error("Expecting a Uint8Array of length 16");
 
           let guidStr: string = "";
           const part = [0, 4, 6, 8, 10, 16];
@@ -564,9 +498,7 @@ describe("ECSqlStatement", () => {
         };
         const guidToUint8Array = (v: GuidString) => {
           if (v.length !== 36)
-            throw new Error(
-              "Guid is expected to have 36 characters xxxxxxxx-xxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-            );
+            throw new Error("Guid is expected to have 36 characters xxxxxxxx-xxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
 
           const ar = new Uint8Array(16);
           const t = v.split("-").join("");
@@ -581,15 +513,9 @@ describe("ECSqlStatement", () => {
         assert.equal(testGuid, uint8arrayToGuid(guidToUint8Array(testGuid)));
         let k = 0;
         assert.equal(
-          await query(
-            ecdb,
-            "SELECT guid FROM ts.Foo ORDER BY ECInstanceId",
-            undefined,
-            undefined,
-            (row: any) => {
-              assert.equal(row.guid, guids[k++]);
-            }
-          ),
+          await query(ecdb, "SELECT guid FROM ts.Foo ORDER BY ECInstanceId", undefined, undefined, (row: any) => {
+            assert.equal(row.guid, guids[k++]);
+          }),
           maxRows
         );
 
@@ -608,15 +534,9 @@ describe("ECSqlStatement", () => {
             1
           );
           assert.equal(
-            await query(
-              ecdb,
-              `SELECT guid FROM ts.Foo WHERE guid='${guid}'`,
-              undefined,
-              undefined,
-              (row: any) => {
-                assert.equal(row.guid, guid);
-              }
-            ),
+            await query(ecdb, `SELECT guid FROM ts.Foo WHERE guid='${guid}'`, undefined, undefined, (row: any) => {
+              assert.equal(row.guid, guid);
+            }),
             0
           );
           assert.equal(
@@ -696,105 +616,90 @@ describe("ECSqlStatement", () => {
     );
   });
   it("should bind Ids", async () => {
-    await using(
-      ECDbTestHelper.createECDb(outDir, "bindids.ecdb"),
-      async (ecdb: ECDb) => {
-        assert.isTrue(ecdb.isOpen);
+    await using(ECDbTestHelper.createECDb(outDir, "bindids.ecdb"), async (ecdb: ECDb) => {
+      assert.isTrue(ecdb.isOpen);
 
-        const verify = async (
-          ecdbToVerify: ECDb,
-          actualRes: ECSqlInsertResult,
-          expectedECInstanceId?: Id64String
-        ) => {
-          if (!expectedECInstanceId) {
-            assert.notEqual(actualRes.status, DbResult.BE_SQLITE_DONE);
-            assert.isUndefined(actualRes.id);
-            return;
-          }
+      const verify = async (ecdbToVerify: ECDb, actualRes: ECSqlInsertResult, expectedECInstanceId?: Id64String) => {
+        if (!expectedECInstanceId) {
+          assert.notEqual(actualRes.status, DbResult.BE_SQLITE_DONE);
+          assert.isUndefined(actualRes.id);
+          return;
+        }
 
-          assert.equal(actualRes.status, DbResult.BE_SQLITE_DONE);
-          assert.isDefined(actualRes.id);
-          assert.equal(actualRes.id!, expectedECInstanceId);
+        assert.equal(actualRes.status, DbResult.BE_SQLITE_DONE);
+        assert.isDefined(actualRes.id);
+        assert.equal(actualRes.id!, expectedECInstanceId);
 
-          ecdbToVerify.withPreparedStatement(
-            "SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=?",
-            (stmt: ECSqlStatement) => {
-              stmt.bindId(1, expectedId);
-              assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-              const row = stmt.getRow();
-              assert.equal(row.id, expectedECInstanceId);
-              assert.equal(row.className, "ECDbFileInfo.ExternalFileInfo");
-              assert.equal(
-                row.name,
-                `${Id64.getLocalId(expectedECInstanceId).toString()}.txt`
-              );
-            }
-          );
-          assert.equal(
-            await query(
-              ecdb,
-              "SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=?",
-              new QueryBinder().bindString(1, expectedId),
-              new QueryOptionsBuilder()
-                .setLimit({ count: 1, offset: -1 })
-                .getOptions(),
-              (row) => {
-                assert.equal(row.id, expectedECInstanceId);
-                assert.equal(row.className, "ECDbFileInfo.ExternalFileInfo");
-                assert.equal(
-                  row.name,
-                  `${Id64.getLocalId(expectedECInstanceId).toString()}.txt`
-                );
-              }
-            ),
-            1
-          );
-        };
-
-        let expectedId = Id64.fromLocalAndBriefcaseIds(4444, 0);
-        let r: ECSqlInsertResult = ecdb.withPreparedStatement(
-          "INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(?,?)",
+        ecdbToVerify.withPreparedStatement(
+          "SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=?",
           (stmt: ECSqlStatement) => {
             stmt.bindId(1, expectedId);
-            stmt.bindString(2, "4444.txt");
-            return stmt.stepForInsert();
+            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+            const row = stmt.getRow();
+            assert.equal(row.id, expectedECInstanceId);
+            assert.equal(row.className, "ECDbFileInfo.ExternalFileInfo");
+            assert.equal(row.name, `${Id64.getLocalId(expectedECInstanceId).toString()}.txt`);
           }
         );
-        await verify(ecdb, r, expectedId);
-
-        expectedId = Id64.fromLocalAndBriefcaseIds(4445, 0);
-        r = ecdb.withPreparedStatement(
-          "INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(:id,:name)",
-          (stmt: ECSqlStatement) => {
-            stmt.bindId("id", expectedId);
-            stmt.bindString("name", "4445.txt");
-
-            return stmt.stepForInsert();
-          }
+        assert.equal(
+          await query(
+            ecdb,
+            "SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=?",
+            new QueryBinder().bindString(1, expectedId),
+            new QueryOptionsBuilder().setLimit({ count: 1, offset: -1 }).getOptions(),
+            (row) => {
+              assert.equal(row.id, expectedECInstanceId);
+              assert.equal(row.className, "ECDbFileInfo.ExternalFileInfo");
+              assert.equal(row.name, `${Id64.getLocalId(expectedECInstanceId).toString()}.txt`);
+            }
+          ),
+          1
         );
-        await verify(ecdb, r, expectedId);
+      };
 
-        expectedId = Id64.fromLocalAndBriefcaseIds(4446, 0);
-        r = ecdb.withPreparedStatement(
-          "INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(?,?)",
-          (stmt: ECSqlStatement) => {
-            stmt.bindValues([expectedId, "4446.txt"]);
-            return stmt.stepForInsert();
-          }
-        );
-        await verify(ecdb, r, expectedId);
+      let expectedId = Id64.fromLocalAndBriefcaseIds(4444, 0);
+      let r: ECSqlInsertResult = ecdb.withPreparedStatement(
+        "INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(?,?)",
+        (stmt: ECSqlStatement) => {
+          stmt.bindId(1, expectedId);
+          stmt.bindString(2, "4444.txt");
+          return stmt.stepForInsert();
+        }
+      );
+      await verify(ecdb, r, expectedId);
 
-        expectedId = Id64.fromLocalAndBriefcaseIds(4447, 0);
-        r = ecdb.withPreparedStatement(
-          "INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(:id,:name)",
-          (stmt: ECSqlStatement) => {
-            stmt.bindValues({ id: expectedId, name: "4447.txt" });
-            return stmt.stepForInsert();
-          }
-        );
-        await verify(ecdb, r, expectedId);
-      }
-    );
+      expectedId = Id64.fromLocalAndBriefcaseIds(4445, 0);
+      r = ecdb.withPreparedStatement(
+        "INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(:id,:name)",
+        (stmt: ECSqlStatement) => {
+          stmt.bindId("id", expectedId);
+          stmt.bindString("name", "4445.txt");
+
+          return stmt.stepForInsert();
+        }
+      );
+      await verify(ecdb, r, expectedId);
+
+      expectedId = Id64.fromLocalAndBriefcaseIds(4446, 0);
+      r = ecdb.withPreparedStatement(
+        "INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(?,?)",
+        (stmt: ECSqlStatement) => {
+          stmt.bindValues([expectedId, "4446.txt"]);
+          return stmt.stepForInsert();
+        }
+      );
+      await verify(ecdb, r, expectedId);
+
+      expectedId = Id64.fromLocalAndBriefcaseIds(4447, 0);
+      r = ecdb.withPreparedStatement(
+        "INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(:id,:name)",
+        (stmt: ECSqlStatement) => {
+          stmt.bindValues({ id: expectedId, name: "4447.txt" });
+          return stmt.stepForInsert();
+        }
+      );
+      await verify(ecdb, r, expectedId);
+    });
   });
 
   it("should bind numeric and date strings", async () => {
@@ -803,37 +708,27 @@ describe("ECSqlStatement", () => {
       .append()
       .error()
       .category("ECDb")
-      .message(
-        "Type mismatch: only BindDateTime or BindText can be called for a column of the DateTime type."
-      );
+      .message("Type mismatch: only BindDateTime or BindText can be called for a column of the DateTime type.");
     slm
       .append()
       .error()
       .category("ECDb")
-      .message(
-        "Type mismatch: only BindDateTime or BindText can be called for a column of the DateTime type."
-      );
+      .message("Type mismatch: only BindDateTime or BindText can be called for a column of the DateTime type.");
     slm
       .append()
       .error()
       .category("ECDb")
-      .message(
-        "Type mismatch: only BindDateTime or BindText can be called for a column of the DateTime type."
-      );
+      .message("Type mismatch: only BindDateTime or BindText can be called for a column of the DateTime type.");
     slm
       .append()
       .error()
       .category("ECDb")
-      .message(
-        "Type mismatch: only BindDateTime or BindText can be called for a column of the DateTime type."
-      );
+      .message("Type mismatch: only BindDateTime or BindText can be called for a column of the DateTime type.");
     slm
       .append()
       .error()
       .category("ECDb")
-      .message(
-        "Type mismatch: only BindDateTime or BindText can be called for a column of the DateTime type."
-      );
+      .message("Type mismatch: only BindDateTime or BindText can be called for a column of the DateTime type.");
     slm
       .append()
       .error()
@@ -898,9 +793,7 @@ describe("ECSqlStatement", () => {
       .append()
       .error()
       .category("ECDb")
-      .message(
-        /only BindDateTime or BindText can be called for a column of the DateTime type/gm
-      );
+      .message(/only BindDateTime or BindText can be called for a column of the DateTime type/gm);
 
     await using(
       ECDbTestHelper.createECDb(
@@ -926,397 +819,328 @@ describe("ECSqlStatement", () => {
         ecdb.saveChanges();
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
         const ecsqln = "SELECT 1 FROM ts.Foo WHERE n=?";
-        await ecdb.withPreparedStatement(
-          ecsqln,
-          async (stmt: ECSqlStatement) => {
-            const nNum: number = 20;
-            const nStr: string = "20";
-            const nDt: string = "2019-01-21T12:00:00Z";
-            const nHexStr: string = "0x14";
+        await ecdb.withPreparedStatement(ecsqln, async (stmt: ECSqlStatement) => {
+          const nNum: number = 20;
+          const nStr: string = "20";
+          const nDt: string = "2019-01-21T12:00:00Z";
+          const nHexStr: string = "0x14";
 
-            stmt.bindInteger(1, nNum);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
-            assert.equal(
-              await queryCount(
-                ecdb,
-                ecsqln,
-                new QueryBinder().bindInt(1, nNum),
-                selectSingleRow
-              ),
-              1
-            );
+          stmt.bindInteger(1, nNum);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+          assert.equal(await queryCount(ecdb, ecsqln, new QueryBinder().bindInt(1, nNum), selectSingleRow), 1);
 
-            stmt.bindValue(1, nNum);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindValue(1, nNum);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.getBinder(1).bind(nNum);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.getBinder(1).bind(nNum);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.bindValues([nNum]);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindValues([nNum]);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.bindString(1, nStr);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindString(1, nStr);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            assert.equal(
-              await queryCount(
-                ecdb,
-                ecsqln,
-                new QueryBinder().bindString(1, nStr),
-                selectSingleRow
-              ),
-              1
-            );
+          assert.equal(await queryCount(ecdb, ecsqln, new QueryBinder().bindString(1, nStr), selectSingleRow), 1);
 
-            stmt.bindValue(1, nStr);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindValue(1, nStr);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.getBinder(1).bind(nStr);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.getBinder(1).bind(nStr);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.bindValues([nStr]);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindValues([nStr]);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.bindString(1, nDt);
-            assert.equal(
-              stmt.step(),
-              DbResult.BE_SQLITE_DONE,
-              "Date time string is not parsed. SQLite just converts it to something which does not match"
-            );
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindString(1, nDt);
+          assert.equal(
+            stmt.step(),
+            DbResult.BE_SQLITE_DONE,
+            "Date time string is not parsed. SQLite just converts it to something which does not match"
+          );
+          stmt.reset();
+          stmt.clearBindings();
 
-            assert.equal(
-              await queryCount(
-                ecdb,
-                ecsqln,
-                new QueryBinder().bindString(1, nDt),
-                selectSingleRow
-              ),
-              0
-            );
+          assert.equal(await queryCount(ecdb, ecsqln, new QueryBinder().bindString(1, nDt), selectSingleRow), 0);
 
-            stmt.bindValue(1, nDt);
-            assert.equal(
-              stmt.step(),
-              DbResult.BE_SQLITE_DONE,
-              "Date time string is not parsed. SQLite just converts it to something which does not match"
-            );
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindValue(1, nDt);
+          assert.equal(
+            stmt.step(),
+            DbResult.BE_SQLITE_DONE,
+            "Date time string is not parsed. SQLite just converts it to something which does not match"
+          );
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.getBinder(1).bind(nDt);
-            assert.equal(
-              stmt.step(),
-              DbResult.BE_SQLITE_DONE,
-              "Date time string is not parsed. SQLite just converts it to something which does not match"
-            );
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.getBinder(1).bind(nDt);
+          assert.equal(
+            stmt.step(),
+            DbResult.BE_SQLITE_DONE,
+            "Date time string is not parsed. SQLite just converts it to something which does not match"
+          );
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.bindValues([nDt]);
-            assert.equal(
-              stmt.step(),
-              DbResult.BE_SQLITE_DONE,
-              "Date time string is not parsed. SQLite just converts it to something which does not match"
-            );
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindValues([nDt]);
+          assert.equal(
+            stmt.step(),
+            DbResult.BE_SQLITE_DONE,
+            "Date time string is not parsed. SQLite just converts it to something which does not match"
+          );
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.bindString(1, nHexStr);
-            assert.equal(
-              stmt.step(),
-              DbResult.BE_SQLITE_DONE,
-              "Hex string is not parsed. SQLite just converts it to something which does not match"
-            );
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindString(1, nHexStr);
+          assert.equal(
+            stmt.step(),
+            DbResult.BE_SQLITE_DONE,
+            "Hex string is not parsed. SQLite just converts it to something which does not match"
+          );
+          stmt.reset();
+          stmt.clearBindings();
 
-            assert.equal(
-              await queryCount(
-                ecdb,
-                ecsqln,
-                new QueryBinder().bindString(1, nHexStr),
-                selectSingleRow
-              ),
-              0
-            );
+          assert.equal(await queryCount(ecdb, ecsqln, new QueryBinder().bindString(1, nHexStr), selectSingleRow), 0);
 
-            stmt.bindValue(1, nHexStr);
-            assert.equal(
-              stmt.step(),
-              DbResult.BE_SQLITE_DONE,
-              "Hex string is not parsed. SQLite just converts it to something which does not match"
-            );
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindValue(1, nHexStr);
+          assert.equal(
+            stmt.step(),
+            DbResult.BE_SQLITE_DONE,
+            "Hex string is not parsed. SQLite just converts it to something which does not match"
+          );
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.getBinder(1).bind(nHexStr);
-            assert.equal(
-              stmt.step(),
-              DbResult.BE_SQLITE_DONE,
-              "Hex string is not parsed. SQLite just converts it to something which does not match"
-            );
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.getBinder(1).bind(nHexStr);
+          assert.equal(
+            stmt.step(),
+            DbResult.BE_SQLITE_DONE,
+            "Hex string is not parsed. SQLite just converts it to something which does not match"
+          );
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.bindValues([nHexStr]);
-            assert.equal(
-              stmt.step(),
-              DbResult.BE_SQLITE_DONE,
-              "Hex string is not parsed. SQLite just converts it to something which does not match"
-            );
-            stmt.reset();
-            stmt.clearBindings();
-          }
-        );
+          stmt.bindValues([nHexStr]);
+          assert.equal(
+            stmt.step(),
+            DbResult.BE_SQLITE_DONE,
+            "Hex string is not parsed. SQLite just converts it to something which does not match"
+          );
+          stmt.reset();
+          stmt.clearBindings();
+        });
 
         const ecsqldt = "SELECT 1 FROM ts.Foo WHERE dt=?";
-        await ecdb.withPreparedStatement(
-          ecsqldt,
-          async (stmt: ECSqlStatement) => {
-            const dtStr: string = "2018-10-18T12:00:00Z";
-            const num: number = 2458410;
-            const str: string = "2458410";
-            const hexStr: string = "0x25832a";
+        await ecdb.withPreparedStatement(ecsqldt, async (stmt: ECSqlStatement) => {
+          const dtStr: string = "2018-10-18T12:00:00Z";
+          const num: number = 2458410;
+          const str: string = "2458410";
+          const hexStr: string = "0x25832a";
 
-            stmt.bindDateTime(1, dtStr);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindDateTime(1, dtStr);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            assert.equal(
-              await queryCount(
-                ecdb,
-                ecsqldt,
-                new QueryBinder().bindString(1, dtStr)
-              ),
-              1
-            );
-            stmt.bindString(1, dtStr);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          assert.equal(await queryCount(ecdb, ecsqldt, new QueryBinder().bindString(1, dtStr)), 1);
+          stmt.bindString(1, dtStr);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.bindValue(1, dtStr);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindValue(1, dtStr);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.getBinder(1).bind(dtStr);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.getBinder(1).bind(dtStr);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.bindValues([dtStr]);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindValues([dtStr]);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            assert.throw(() => stmt.bindInteger(1, num));
-            stmt.clearBindings();
+          assert.throw(() => stmt.bindInteger(1, num));
+          stmt.clearBindings();
 
-            assert.equal(
-              await queryCount(ecdb, ecsqldt, QueryBinder.from([num])),
-              0
-            );
-            assert.throw(() => stmt.bindValue(1, num));
-            stmt.clearBindings();
+          assert.equal(await queryCount(ecdb, ecsqldt, QueryBinder.from([num])), 0);
+          assert.throw(() => stmt.bindValue(1, num));
+          stmt.clearBindings();
 
-            assert.throw(() => stmt.getBinder(1).bind(num));
-            stmt.clearBindings();
+          assert.throw(() => stmt.getBinder(1).bind(num));
+          stmt.clearBindings();
 
-            assert.throw(() => stmt.bindValues([num]));
-            stmt.clearBindings();
+          assert.throw(() => stmt.bindValues([num]));
+          stmt.clearBindings();
 
-            assert.throw(() => stmt.bindString(1, str));
-            stmt.clearBindings();
+          assert.throw(() => stmt.bindString(1, str));
+          stmt.clearBindings();
 
-            assert.throw(() => stmt.bindValue(1, str));
-            stmt.clearBindings();
+          assert.throw(() => stmt.bindValue(1, str));
+          stmt.clearBindings();
 
-            assert.equal(
-              await queryCount(ecdb, ecsqldt, QueryBinder.from([str])),
-              0
-            );
+          assert.equal(await queryCount(ecdb, ecsqldt, QueryBinder.from([str])), 0);
 
-            assert.throw(() => stmt.getBinder(1).bind(str));
-            stmt.clearBindings();
+          assert.throw(() => stmt.getBinder(1).bind(str));
+          stmt.clearBindings();
 
-            assert.throw(() => stmt.bindValues([str]));
-            stmt.clearBindings();
+          assert.throw(() => stmt.bindValues([str]));
+          stmt.clearBindings();
 
-            assert.throw(() => stmt.bindString(1, hexStr));
-            stmt.clearBindings();
+          assert.throw(() => stmt.bindString(1, hexStr));
+          stmt.clearBindings();
 
-            assert.equal(
-              await queryCount(ecdb, ecsqldt, QueryBinder.from([hexStr])),
-              0
-            );
+          assert.equal(await queryCount(ecdb, ecsqldt, QueryBinder.from([hexStr])), 0);
 
-            assert.throw(() => stmt.bindValue(1, hexStr));
-            stmt.clearBindings();
+          assert.throw(() => stmt.bindValue(1, hexStr));
+          stmt.clearBindings();
 
-            assert.throw(() => stmt.getBinder(1).bind(hexStr));
-            stmt.clearBindings();
+          assert.throw(() => stmt.getBinder(1).bind(hexStr));
+          stmt.clearBindings();
 
-            assert.throw(() => stmt.bindValues([hexStr]));
-            stmt.clearBindings();
-          }
-        );
+          assert.throw(() => stmt.bindValues([hexStr]));
+          stmt.clearBindings();
+        });
 
         const ecsqlfooId = "SELECT 1 FROM ts.Foo WHERE fooId=?";
-        await ecdb.withPreparedStatement(
-          ecsqlfooId,
-          async (stmt: ECSqlStatement) => {
-            const num: number = 20;
-            const str: string = "20";
-            const dt: string = "2019-01-21T12:00:00Z";
-            const hexStr: string = "0x14";
+        await ecdb.withPreparedStatement(ecsqlfooId, async (stmt: ECSqlStatement) => {
+          const num: number = 20;
+          const str: string = "20";
+          const dt: string = "2019-01-21T12:00:00Z";
+          const hexStr: string = "0x14";
 
-            stmt.bindId(1, hexStr);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindId(1, hexStr);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            assert.equal(
-              await queryCount(ecdb, ecsqldt, QueryBinder.from([hexStr])),
-              0
-            );
+          assert.equal(await queryCount(ecdb, ecsqldt, QueryBinder.from([hexStr])), 0);
 
-            stmt.bindValues([hexStr]);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindValues([hexStr]);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.bindString(1, hexStr);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindString(1, hexStr);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.bindValue(1, hexStr);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindValue(1, hexStr);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.getBinder(1).bind(hexStr);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.getBinder(1).bind(hexStr);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.bindValues([hexStr]);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindValues([hexStr]);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.bindString(1, str);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindString(1, str);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            assert.equal(
-              await queryCount(ecdb, ecsqldt, QueryBinder.from([str])),
-              0
-            );
+          assert.equal(await queryCount(ecdb, ecsqldt, QueryBinder.from([str])), 0);
 
-            stmt.bindValue(1, str);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindValue(1, str);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.getBinder(1).bind(str);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.getBinder(1).bind(str);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.bindValues([str]);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindValues([str]);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.bindInteger(1, num);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindInteger(1, num);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            assert.equal(
-              await queryCount(ecdb, ecsqldt, QueryBinder.from([num])),
-              0
-            );
+          assert.equal(await queryCount(ecdb, ecsqldt, QueryBinder.from([num])), 0);
 
-            stmt.bindValue(1, num);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindValue(1, num);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.getBinder(1).bind(num);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.getBinder(1).bind(num);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.bindValues([num]);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindValues([num]);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.bindString(1, dt);
-            assert.equal(
-              stmt.step(),
-              DbResult.BE_SQLITE_DONE,
-              "DateTime string is not parsed into what it means. SQlite just uses its regular string conversion routines which don't match here"
-            );
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindString(1, dt);
+          assert.equal(
+            stmt.step(),
+            DbResult.BE_SQLITE_DONE,
+            "DateTime string is not parsed into what it means. SQlite just uses its regular string conversion routines which don't match here"
+          );
+          stmt.reset();
+          stmt.clearBindings();
 
-            assert.equal(
-              await queryCount(ecdb, ecsqldt, QueryBinder.from([dt])),
-              0
-            );
+          assert.equal(await queryCount(ecdb, ecsqldt, QueryBinder.from([dt])), 0);
 
-            stmt.bindValue(1, dt);
-            assert.equal(
-              stmt.step(),
-              DbResult.BE_SQLITE_DONE,
-              "DateTime string is not parsed into what it means. SQlite just uses its regular string conversion routines which don't match here"
-            );
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindValue(1, dt);
+          assert.equal(
+            stmt.step(),
+            DbResult.BE_SQLITE_DONE,
+            "DateTime string is not parsed into what it means. SQlite just uses its regular string conversion routines which don't match here"
+          );
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.getBinder(1).bind(dt);
-            assert.equal(
-              stmt.step(),
-              DbResult.BE_SQLITE_DONE,
-              "DateTime string is not parsed into what it means. SQlite just uses its regular string conversion routines which don't match here"
-            );
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.getBinder(1).bind(dt);
+          assert.equal(
+            stmt.step(),
+            DbResult.BE_SQLITE_DONE,
+            "DateTime string is not parsed into what it means. SQlite just uses its regular string conversion routines which don't match here"
+          );
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.bindValues([dt]);
-            assert.equal(
-              stmt.step(),
-              DbResult.BE_SQLITE_DONE,
-              "DateTime string is not parsed into what it means. SQlite just uses its regular string conversion routines which don't match here"
-            );
-            stmt.reset();
-            stmt.clearBindings();
-          }
-        );
+          stmt.bindValues([dt]);
+          assert.equal(
+            stmt.step(),
+            DbResult.BE_SQLITE_DONE,
+            "DateTime string is not parsed into what it means. SQlite just uses its regular string conversion routines which don't match here"
+          );
+          stmt.reset();
+          stmt.clearBindings();
+        });
       }
     );
     assert.isTrue(slm.finishAndDispose());
@@ -1397,18 +1221,15 @@ describe("ECSqlStatement", () => {
           }
         );
 
-        ecdb.withPreparedStatement(
-          "SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?",
-          (stmt: ECSqlStatement) => {
-            stmt.bindId(1, id);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            const row = stmt.getRow();
-            assert.equal(row.d, smallIntVal);
-            assert.equal(row.i, smallIntVal);
-            assert.equal(row.l, smallIntVal);
-            assert.equal(row.s, "3");
-          }
-        );
+        ecdb.withPreparedStatement("SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
+          stmt.bindId(1, id);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row = stmt.getRow();
+          assert.equal(row.d, smallIntVal);
+          assert.equal(row.i, smallIntVal);
+          assert.equal(row.l, smallIntVal);
+          assert.equal(row.s, "3");
+        });
 
         assert.equal(
           await query(
@@ -1512,18 +1333,15 @@ describe("ECSqlStatement", () => {
         );
 
         // uint64 cannot be bound as string in SQLite. They get converted to reals
-        ecdb.withPreparedStatement(
-          "SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?",
-          (stmt: ECSqlStatement) => {
-            stmt.bindId(1, id);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            const row = stmt.getRow();
-            assert.isNumber(row.d);
-            assert.isNumber(row.i);
-            assert.isNumber(row.l);
-            assert.equal(row.s, largeUnsafeNumberStr);
-          }
-        );
+        ecdb.withPreparedStatement("SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
+          stmt.bindId(1, id);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row = stmt.getRow();
+          assert.isNumber(row.d);
+          assert.isNumber(row.i);
+          assert.isNumber(row.l);
+          assert.equal(row.s, largeUnsafeNumberStr);
+        });
 
         assert.equal(
           await query(
@@ -1727,18 +1545,15 @@ describe("ECSqlStatement", () => {
           }
         );
 
-        ecdb.withPreparedStatement(
-          "SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?",
-          (stmt: ECSqlStatement) => {
-            stmt.bindId(1, id);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            const row = stmt.getRow();
-            assert.equal(row.d, largeSafeNumber);
-            assert.equal(row.i, largeSafeNumber);
-            assert.equal(row.l, largeSafeNumber);
-            assert.equal(row.s, largeSafeNumberStr);
-          }
-        );
+        ecdb.withPreparedStatement("SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
+          stmt.bindId(1, id);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row = stmt.getRow();
+          assert.equal(row.d, largeSafeNumber);
+          assert.equal(row.i, largeSafeNumber);
+          assert.equal(row.l, largeSafeNumber);
+          assert.equal(row.s, largeSafeNumberStr);
+        });
 
         assert.equal(
           await query(
@@ -1769,18 +1584,15 @@ describe("ECSqlStatement", () => {
           }
         );
 
-        ecdb.withPreparedStatement(
-          "SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?",
-          (stmt: ECSqlStatement) => {
-            stmt.bindId(1, id);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            const row = stmt.getRow();
-            assert.equal(row.d, largeSafeNumber);
-            assert.equal(row.i, largeSafeNumber);
-            assert.equal(row.l, largeSafeNumber);
-            assert.equal(row.s, largeSafeNumberStr); // even though it was bound as hex str, it gets converted to int64 before persisting
-          }
-        );
+        ecdb.withPreparedStatement("SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
+          stmt.bindId(1, id);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row = stmt.getRow();
+          assert.equal(row.d, largeSafeNumber);
+          assert.equal(row.i, largeSafeNumber);
+          assert.equal(row.l, largeSafeNumber);
+          assert.equal(row.s, largeSafeNumberStr); // even though it was bound as hex str, it gets converted to int64 before persisting
+        });
 
         assert.equal(
           await query(
@@ -1811,18 +1623,15 @@ describe("ECSqlStatement", () => {
           }
         );
 
-        ecdb.withPreparedStatement(
-          "SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?",
-          (stmt: ECSqlStatement) => {
-            stmt.bindId(1, id);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            const row = stmt.getRow();
-            assert.equal(row.d, largeSafeNumber);
-            assert.equal(row.i, largeSafeNumber);
-            assert.equal(row.l, largeSafeNumber);
-            assert.equal(row.s, largeSafeNumberStr);
-          }
-        );
+        ecdb.withPreparedStatement("SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
+          stmt.bindId(1, id);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row = stmt.getRow();
+          assert.equal(row.d, largeSafeNumber);
+          assert.equal(row.i, largeSafeNumber);
+          assert.equal(row.l, largeSafeNumber);
+          assert.equal(row.s, largeSafeNumberStr);
+        });
 
         assert.equal(
           await query(
@@ -1900,18 +1709,15 @@ describe("ECSqlStatement", () => {
           }
         );
 
-        ecdb.withPreparedStatement(
-          "SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?",
-          (stmt: ECSqlStatement) => {
-            stmt.bindId(1, id);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            const row = stmt.getRow();
-            assert.equal(row.d, largeNegSafeNumber);
-            assert.equal(row.i, largeNegSafeNumber);
-            assert.equal(row.l, largeNegSafeNumber);
-            assert.equal(row.s, largeNegSafeNumberStr);
-          }
-        );
+        ecdb.withPreparedStatement("SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
+          stmt.bindId(1, id);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row = stmt.getRow();
+          assert.equal(row.d, largeNegSafeNumber);
+          assert.equal(row.i, largeNegSafeNumber);
+          assert.equal(row.l, largeNegSafeNumber);
+          assert.equal(row.s, largeNegSafeNumberStr);
+        });
 
         assert.equal(
           await query(
@@ -1942,18 +1748,15 @@ describe("ECSqlStatement", () => {
           }
         );
 
-        ecdb.withPreparedStatement(
-          "SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?",
-          (stmt: ECSqlStatement) => {
-            stmt.bindId(1, id);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            const row = stmt.getRow();
-            assert.equal(row.d, largeNegSafeNumber);
-            assert.equal(row.i, largeNegSafeNumber);
-            assert.equal(row.l, largeNegSafeNumber);
-            assert.equal(row.s, largeNegSafeNumberStr);
-          }
-        );
+        ecdb.withPreparedStatement("SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
+          stmt.bindId(1, id);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row = stmt.getRow();
+          assert.equal(row.d, largeNegSafeNumber);
+          assert.equal(row.i, largeNegSafeNumber);
+          assert.equal(row.l, largeNegSafeNumber);
+          assert.equal(row.s, largeNegSafeNumberStr);
+        });
 
         await query(
           ecdb,
@@ -1981,18 +1784,15 @@ describe("ECSqlStatement", () => {
           }
         );
 
-        ecdb.withPreparedStatement(
-          "SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?",
-          (stmt: ECSqlStatement) => {
-            stmt.bindId(1, id);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            const row = stmt.getRow();
-            assert.equal(row.d, largeNegSafeNumber);
-            assert.equal(row.i, largeNegSafeNumber);
-            assert.equal(row.l, largeNegSafeNumber);
-            assert.equal(row.s, largeNegSafeNumberStr);
-          }
-        );
+        ecdb.withPreparedStatement("SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
+          stmt.bindId(1, id);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row = stmt.getRow();
+          assert.equal(row.d, largeNegSafeNumber);
+          assert.equal(row.i, largeNegSafeNumber);
+          assert.equal(row.l, largeNegSafeNumber);
+          assert.equal(row.s, largeNegSafeNumberStr);
+        });
 
         await query(
           ecdb,
@@ -2319,49 +2119,37 @@ describe("ECSqlStatement", () => {
             }
           );
         };
-        await ecdb.withPreparedStatement(
-          "INSERT INTO test.Foo(Struct) VALUES(?)",
-          async (stmt: ECSqlStatement) => {
-            stmt.bindStruct(1, structVal);
-            const res: ECSqlInsertResult = stmt.stepForInsert();
-            assert.equal(res.status, DbResult.BE_SQLITE_DONE);
-            assert.isDefined(res.id);
-            await verify(res.id!);
-          }
-        );
+        await ecdb.withPreparedStatement("INSERT INTO test.Foo(Struct) VALUES(?)", async (stmt: ECSqlStatement) => {
+          stmt.bindStruct(1, structVal);
+          const res: ECSqlInsertResult = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          await verify(res.id!);
+        });
 
-        await ecdb.withPreparedStatement(
-          "INSERT INTO test.Foo(Struct) VALUES(?)",
-          async (stmt: ECSqlStatement) => {
-            stmt.bindValues([structVal]);
-            const res: ECSqlInsertResult = stmt.stepForInsert();
-            assert.equal(res.status, DbResult.BE_SQLITE_DONE);
-            assert.isDefined(res.id);
-            await verify(res.id!);
-          }
-        );
+        await ecdb.withPreparedStatement("INSERT INTO test.Foo(Struct) VALUES(?)", async (stmt: ECSqlStatement) => {
+          stmt.bindValues([structVal]);
+          const res: ECSqlInsertResult = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          await verify(res.id!);
+        });
 
-        await ecdb.withPreparedStatement(
-          "INSERT INTO test.Foo(Struct) VALUES(:str)",
-          async (stmt: ECSqlStatement) => {
-            stmt.bindStruct("str", structVal);
-            const res: ECSqlInsertResult = stmt.stepForInsert();
-            assert.equal(res.status, DbResult.BE_SQLITE_DONE);
-            assert.isDefined(res.id);
-            await verify(res.id!);
-          }
-        );
+        await ecdb.withPreparedStatement("INSERT INTO test.Foo(Struct) VALUES(:str)", async (stmt: ECSqlStatement) => {
+          stmt.bindStruct("str", structVal);
+          const res: ECSqlInsertResult = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          await verify(res.id!);
+        });
 
-        await ecdb.withPreparedStatement(
-          "INSERT INTO test.Foo(Struct) VALUES(:str)",
-          async (stmt: ECSqlStatement) => {
-            stmt.bindValues({ str: structVal });
-            const res: ECSqlInsertResult = stmt.stepForInsert();
-            assert.equal(res.status, DbResult.BE_SQLITE_DONE);
-            assert.isDefined(res.id);
-            await verify(res.id!);
-          }
-        );
+        await ecdb.withPreparedStatement("INSERT INTO test.Foo(Struct) VALUES(:str)", async (stmt: ECSqlStatement) => {
+          stmt.bindValues({ str: structVal });
+          const res: ECSqlInsertResult = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          await verify(res.id!);
+        });
       }
     );
   });
@@ -2542,75 +2330,63 @@ describe("ECSqlStatement", () => {
         );
 
         const childIds = new Array<Id64String>();
-        ecdb.withStatement(
-          "INSERT INTO test.Child(Name,Parent) VALUES(?,?)",
-          (stmt: ECSqlStatement) => {
-            stmt.bindString(1, "Child 1");
-            stmt.bindNavigation(2, {
-              id: parentId,
-              relClassName: "Test.ParentHasChildren",
-            });
-            let res: ECSqlInsertResult = stmt.stepForInsert();
-            assert.equal(res.status, DbResult.BE_SQLITE_DONE);
-            assert.isDefined(res.id);
-            childIds.push(res.id!);
+        ecdb.withStatement("INSERT INTO test.Child(Name,Parent) VALUES(?,?)", (stmt: ECSqlStatement) => {
+          stmt.bindString(1, "Child 1");
+          stmt.bindNavigation(2, {
+            id: parentId,
+            relClassName: "Test.ParentHasChildren",
+          });
+          let res: ECSqlInsertResult = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          childIds.push(res.id!);
 
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.bindValues([
-              "Child 2",
-              { id: parentId, relClassName: "Test.ParentHasChildren" },
-            ]);
-            res = stmt.stepForInsert();
-            assert.equal(res.status, DbResult.BE_SQLITE_DONE);
-            assert.isDefined(res.id);
-            childIds.push(res.id!);
+          stmt.bindValues(["Child 2", { id: parentId, relClassName: "Test.ParentHasChildren" }]);
+          res = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          childIds.push(res.id!);
+        });
+
+        ecdb.withStatement("INSERT INTO test.Child(Name,Parent) VALUES(:name,:parent)", (stmt: ECSqlStatement) => {
+          stmt.bindString("name", "Child 3");
+          stmt.bindNavigation("parent", {
+            id: parentId,
+            relClassName: "Test.ParentHasChildren",
+          });
+          let res: ECSqlInsertResult = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          childIds.push(res.id!);
+
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindValues({
+            name: "Child 4",
+            parent: { id: parentId, relClassName: "Test.ParentHasChildren" },
+          });
+          res = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          childIds.push(res.id!);
+        });
+
+        ecdb.withPreparedStatement("SELECT Name,Parent FROM test.Child ORDER BY Name", (stmt: ECSqlStatement) => {
+          let rowCount: number = 0;
+          while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+            rowCount++;
+            const row = stmt.getRow();
+            assert.equal(row.name, `Child ${rowCount}`);
+            const parent: NavigationValue = row.parent as NavigationValue;
+            assert.equal(parent.id, parentId);
+            assert.equal(parent.relClassName, "Test.ParentHasChildren");
           }
-        );
-
-        ecdb.withStatement(
-          "INSERT INTO test.Child(Name,Parent) VALUES(:name,:parent)",
-          (stmt: ECSqlStatement) => {
-            stmt.bindString("name", "Child 3");
-            stmt.bindNavigation("parent", {
-              id: parentId,
-              relClassName: "Test.ParentHasChildren",
-            });
-            let res: ECSqlInsertResult = stmt.stepForInsert();
-            assert.equal(res.status, DbResult.BE_SQLITE_DONE);
-            assert.isDefined(res.id);
-            childIds.push(res.id!);
-
-            stmt.reset();
-            stmt.clearBindings();
-
-            stmt.bindValues({
-              name: "Child 4",
-              parent: { id: parentId, relClassName: "Test.ParentHasChildren" },
-            });
-            res = stmt.stepForInsert();
-            assert.equal(res.status, DbResult.BE_SQLITE_DONE);
-            assert.isDefined(res.id);
-            childIds.push(res.id!);
-          }
-        );
-
-        ecdb.withPreparedStatement(
-          "SELECT Name,Parent FROM test.Child ORDER BY Name",
-          (stmt: ECSqlStatement) => {
-            let rowCount: number = 0;
-            while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-              rowCount++;
-              const row = stmt.getRow();
-              assert.equal(row.name, `Child ${rowCount}`);
-              const parent: NavigationValue = row.parent as NavigationValue;
-              assert.equal(parent.id, parentId);
-              assert.equal(parent.relClassName, "Test.ParentHasChildren");
-            }
-            assert.equal(rowCount, 4);
-          }
-        );
+          assert.equal(rowCount, 4);
+        });
 
         let rowCount2: number = 0;
         assert.equal(
@@ -2634,18 +2410,14 @@ describe("ECSqlStatement", () => {
   });
 
   it("should bind Range3d for parameter in spatial sql function", async () => {
-    const iModel = SnapshotDb.createEmpty(
-      IModelTestUtils.prepareOutputFile("ECSqlStatement", "BindRange3d.bim"),
-      { rootSubject: { name: "BindRange3d" } }
-    );
+    const iModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ECSqlStatement", "BindRange3d.bim"), {
+      rootSubject: { name: "BindRange3d" },
+    });
     try {
       iModel.withPreparedStatement(
         "SELECT e.ECInstanceId FROM bis.Element e, bis.SpatialIndex rt WHERE rt.ECInstanceId MATCH DGN_spatial_overlap_aabb(?) AND e.ECInstanceId=rt.ECInstanceId",
         (stmt: ECSqlStatement) => {
-          stmt.bindRange3d(
-            1,
-            new Range3d(0.0, 0.0, 0.0, 1000.0, 1000.0, 1000.0)
-          );
+          stmt.bindRange3d(1, new Range3d(0.0, 0.0, 0.0, 1000.0, 1000.0, 1000.0));
           assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
         }
       );
@@ -2688,94 +2460,85 @@ describe("ECSqlStatement", () => {
           }
         );
         ecdb.saveChanges();
-        ecdb.withPreparedStatement(
-          "SELECT Range FROM test.Foo WHERE ECInstanceId=?",
-          (stmt: ECSqlStatement) => {
-            stmt.bindId(1, id);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            const rangeBlob: Uint8Array = stmt.getValue(0).getBlob();
-            const rangeFloatArray = new Float64Array(rangeBlob.buffer);
-            assert.equal(rangeFloatArray.length, 6);
-            const actualRange = new Range3d(...rangeFloatArray);
-            assert.isTrue(actualRange.isAlmostEqual(testRange));
-          }
-        );
+        ecdb.withPreparedStatement("SELECT Range FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
+          stmt.bindId(1, id);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const rangeBlob: Uint8Array = stmt.getValue(0).getBlob();
+          const rangeFloatArray = new Float64Array(rangeBlob.buffer);
+          assert.equal(rangeFloatArray.length, 6);
+          const actualRange = new Range3d(...rangeFloatArray);
+          assert.isTrue(actualRange.isAlmostEqual(testRange));
+        });
       }
     );
   });
 
   it("should bind IdSets", async () => {
-    await using(
-      ECDbTestHelper.createECDb(outDir, "bindids.ecdb"),
-      async (ecdb: ECDb) => {
-        assert.isTrue(ecdb.isOpen);
+    await using(ECDbTestHelper.createECDb(outDir, "bindids.ecdb"), async (ecdb: ECDb) => {
+      assert.isTrue(ecdb.isOpen);
 
-        const idNumbers: number[] = [4444, 4545, 1234, 6758, 1312];
-        ecdb.withPreparedStatement(
-          "INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(?,?)",
-          (stmt: ECSqlStatement) => {
-            idNumbers.forEach((idNum: number) => {
-              const expectedId = Id64.fromLocalAndBriefcaseIds(idNum, 0);
-              stmt.bindId(1, expectedId);
-              stmt.bindString(2, `${idNum}.txt`);
-              const r: ECSqlInsertResult = stmt.stepForInsert();
-              assert.equal(r.status, DbResult.BE_SQLITE_DONE);
-              assert.isDefined(r.id);
-              assert.equal(r.id!, expectedId);
-              ecdb.saveChanges();
+      const idNumbers: number[] = [4444, 4545, 1234, 6758, 1312];
+      ecdb.withPreparedStatement(
+        "INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(?,?)",
+        (stmt: ECSqlStatement) => {
+          idNumbers.forEach((idNum: number) => {
+            const expectedId = Id64.fromLocalAndBriefcaseIds(idNum, 0);
+            stmt.bindId(1, expectedId);
+            stmt.bindString(2, `${idNum}.txt`);
+            const r: ECSqlInsertResult = stmt.stepForInsert();
+            assert.equal(r.status, DbResult.BE_SQLITE_DONE);
+            assert.isDefined(r.id);
+            assert.equal(r.id!, expectedId);
+            ecdb.saveChanges();
 
-              ecdb.withStatement(
-                `SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=${expectedId}`,
-                (confstmt: ECSqlStatement) => {
-                  assert.equal(confstmt.step(), DbResult.BE_SQLITE_ROW);
-                  const row = confstmt.getRow();
-                  assert.equal(row.id, expectedId);
-                  assert.equal(row.className, "ECDbFileInfo.ExternalFileInfo");
-                  assert.equal(
-                    row.name,
-                    `${Id64.getLocalId(expectedId).toString()}.txt`
-                  );
-                }
-              );
-              stmt.reset();
-              stmt.clearBindings();
-            });
-          }
-        );
-
-        ecdb.withPreparedStatement(
-          "SELECT ECInstanceId, ECClassId, Name from ecdbf.ExternalFileInfo WHERE InVirtualSet(?, ECInstanceId)",
-          (stmt: ECSqlStatement) => {
-            let idSet: Id64String[] = [];
-            stmt.bindIdSet(1, idSet);
-            let result = stmt.step();
-            assert.equal(result, DbResult.BE_SQLITE_DONE);
+            ecdb.withStatement(
+              `SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=${expectedId}`,
+              (confstmt: ECSqlStatement) => {
+                assert.equal(confstmt.step(), DbResult.BE_SQLITE_ROW);
+                const row = confstmt.getRow();
+                assert.equal(row.id, expectedId);
+                assert.equal(row.className, "ECDbFileInfo.ExternalFileInfo");
+                assert.equal(row.name, `${Id64.getLocalId(expectedId).toString()}.txt`);
+              }
+            );
             stmt.reset();
             stmt.clearBindings();
+          });
+        }
+      );
 
-            idSet = [Id64.fromLocalAndBriefcaseIds(idNumbers[2], 0)];
-            stmt.bindIdSet(1, idSet);
-            result = stmt.step();
-            assert.equal(result, DbResult.BE_SQLITE_ROW);
-            let row = stmt.getRow();
-            assert.equal(row.name, `${idNumbers[2]}.txt`);
-            stmt.reset();
-            stmt.clearBindings();
+      ecdb.withPreparedStatement(
+        "SELECT ECInstanceId, ECClassId, Name from ecdbf.ExternalFileInfo WHERE InVirtualSet(?, ECInstanceId)",
+        (stmt: ECSqlStatement) => {
+          let idSet: Id64String[] = [];
+          stmt.bindIdSet(1, idSet);
+          let result = stmt.step();
+          assert.equal(result, DbResult.BE_SQLITE_DONE);
+          stmt.reset();
+          stmt.clearBindings();
 
-            idSet.push(idNumbers[0].toString());
-            stmt.bindIdSet(1, idSet);
-            result = stmt.step();
-            assert.equal(result, DbResult.BE_SQLITE_ROW);
-            row = stmt.getRow();
-            assert.equal(row.name, `${idNumbers[2]}.txt`);
-            result = stmt.step();
-            assert.equal(result, DbResult.BE_SQLITE_ROW);
-            row = stmt.getRow();
-            assert.equal(row.name, `${idNumbers[0]}.txt`);
-          }
-        );
-      }
-    );
+          idSet = [Id64.fromLocalAndBriefcaseIds(idNumbers[2], 0)];
+          stmt.bindIdSet(1, idSet);
+          result = stmt.step();
+          assert.equal(result, DbResult.BE_SQLITE_ROW);
+          let row = stmt.getRow();
+          assert.equal(row.name, `${idNumbers[2]}.txt`);
+          stmt.reset();
+          stmt.clearBindings();
+
+          idSet.push(idNumbers[0].toString());
+          stmt.bindIdSet(1, idSet);
+          result = stmt.step();
+          assert.equal(result, DbResult.BE_SQLITE_ROW);
+          row = stmt.getRow();
+          assert.equal(row.name, `${idNumbers[2]}.txt`);
+          result = stmt.step();
+          assert.equal(result, DbResult.BE_SQLITE_ROW);
+          row = stmt.getRow();
+          assert.equal(row.name, `${idNumbers[0]}.txt`);
+        }
+      );
+    });
   });
 
   /* This test doesn't do anything specific with the binder life time but just runs a few scenarios
@@ -2805,9 +2568,7 @@ describe("ECSqlStatement", () => {
 
         // *** test without statement cache
         using(
-          ecdb.prepareStatement(
-            "INSERT INTO test.Person(Name,Age,Location) VALUES(?,?,?)"
-          ),
+          ecdb.prepareStatement("INSERT INTO test.Person(Name,Age,Location) VALUES(?,?,?)"),
           (stmt: ECSqlStatement) => {
             stmt.bindString(1, "Mary Miller");
             stmt.bindInteger(2, 30);
@@ -3074,16 +2835,13 @@ describe("ECSqlStatement", () => {
           1
         );
 
-        ecdb.withPreparedStatement(
-          "SELECT count(*) cnt FROM meta.ECSchemaDef",
-          (stmt: ECSqlStatement) => {
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            const row = stmt.getRow();
-            assert.isDefined(row.cnt);
-            assert.equal(typeof row.cnt, "number");
-            assert.equal(row.cnt, 6);
-          }
-        );
+        ecdb.withPreparedStatement("SELECT count(*) cnt FROM meta.ECSchemaDef", (stmt: ECSqlStatement) => {
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row = stmt.getRow();
+          assert.isDefined(row.cnt);
+          assert.equal(typeof row.cnt, "number");
+          assert.equal(row.cnt, 6);
+        });
 
         assert.equal(
           await query(
@@ -3100,38 +2858,26 @@ describe("ECSqlStatement", () => {
           1
         );
 
-        ecdb.withPreparedStatement(
-          "SELECT 1 FROM meta.ECSchemaDef LIMIT 1",
-          (stmt: ECSqlStatement) => {
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            const row = stmt.getRow();
-            assert.equal(typeof row["1"], "number");
-            assert.equal(row["1"], 1);
-          }
-        );
+        ecdb.withPreparedStatement("SELECT 1 FROM meta.ECSchemaDef LIMIT 1", (stmt: ECSqlStatement) => {
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row = stmt.getRow();
+          assert.equal(typeof row["1"], "number");
+          assert.equal(row["1"], 1);
+        });
 
         assert.equal(
-          await query(
-            ecdb,
-            "SELECT 1 FROM meta.ECSchemaDef LIMIT 1",
-            QueryBinder.from([]),
-            undefined,
-            (row: any) => {
-              assert.equal(typeof row["1"], "number");
-              assert.equal(row["1"], 1);
-            }
-          ),
+          await query(ecdb, "SELECT 1 FROM meta.ECSchemaDef LIMIT 1", QueryBinder.from([]), undefined, (row: any) => {
+            assert.equal(typeof row["1"], "number");
+            assert.equal(row["1"], 1);
+          }),
           1
         );
 
-        ecdb.withPreparedStatement(
-          "SELECT NULL FROM meta.ECSchemaDef LIMIT 1",
-          (stmt: ECSqlStatement) => {
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            const row = stmt.getRow();
-            assert.equal(Object.entries(row).length, 0);
-          }
-        );
+        ecdb.withPreparedStatement("SELECT NULL FROM meta.ECSchemaDef LIMIT 1", (stmt: ECSqlStatement) => {
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row = stmt.getRow();
+          assert.equal(Object.entries(row).length, 0);
+        });
 
         assert.equal(
           await query(
@@ -3426,47 +3172,38 @@ describe("ECSqlStatement", () => {
         );
 
         const childIds = new Array<Id64String>();
-        ecdb.withPreparedStatement(
-          "INSERT INTO test.Child(Name,Parent) VALUES(?,?)",
-          (stmt: ECSqlStatement) => {
-            stmt.bindString(1, "Child 1");
-            stmt.bindNavigation(2, {
-              id: parentId,
-              relClassName: "Test.ParentHasChildren",
-            });
-            let res: ECSqlInsertResult = stmt.stepForInsert();
-            assert.equal(res.status, DbResult.BE_SQLITE_DONE);
-            assert.isDefined(res.id);
-            childIds.push(res.id!);
+        ecdb.withPreparedStatement("INSERT INTO test.Child(Name,Parent) VALUES(?,?)", (stmt: ECSqlStatement) => {
+          stmt.bindString(1, "Child 1");
+          stmt.bindNavigation(2, {
+            id: parentId,
+            relClassName: "Test.ParentHasChildren",
+          });
+          let res: ECSqlInsertResult = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          childIds.push(res.id!);
 
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.bindValues([
-              "Child 2",
-              { id: parentId, relClassName: "Test.ParentHasChildren" },
-            ]);
-            res = stmt.stepForInsert();
-            assert.equal(res.status, DbResult.BE_SQLITE_DONE);
-            assert.isDefined(res.id);
-            childIds.push(res.id!);
+          stmt.bindValues(["Child 2", { id: parentId, relClassName: "Test.ParentHasChildren" }]);
+          res = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          childIds.push(res.id!);
+        });
+
+        ecdb.withPreparedStatement("SELECT Name,Parent FROM test.Child ORDER BY Name", (stmt: ECSqlStatement) => {
+          rowCount = 0;
+          while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+            rowCount++;
+            const row = stmt.getRow();
+            assert.equal(row.name, `Child ${rowCount}`);
+            assert.equal(row.parent.id, parentId);
+            assert.equal(row.parent.relClassName, "Test.ParentHasChildren");
           }
-        );
-
-        ecdb.withPreparedStatement(
-          "SELECT Name,Parent FROM test.Child ORDER BY Name",
-          (stmt: ECSqlStatement) => {
-            rowCount = 0;
-            while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-              rowCount++;
-              const row = stmt.getRow();
-              assert.equal(row.name, `Child ${rowCount}`);
-              assert.equal(row.parent.id, parentId);
-              assert.equal(row.parent.relClassName, "Test.ParentHasChildren");
-            }
-            assert.equal(rowCount, 2);
-          }
-        );
+          assert.equal(rowCount, 2);
+        });
 
         rowCount = 0;
         assert.equal(
@@ -3494,10 +3231,7 @@ describe("ECSqlStatement", () => {
               const row = stmt.getRow();
               assert.equal(row.name, `Child ${rowCount}`);
               assert.equal(row["parent.id"], parentId);
-              assert.equal(
-                row["parent.relClassName"],
-                "Test.ParentHasChildren"
-              );
+              assert.equal(row["parent.relClassName"], "Test.ParentHasChildren");
               assert.equal(row.myParentId, parentId);
               assert.isTrue(Id64.isValidId64(row.myParentRelClassId));
             }
@@ -3516,10 +3250,7 @@ describe("ECSqlStatement", () => {
               rowCount++;
               assert.equal(row.name, `Child ${rowCount}`);
               assert.equal(row["parent.id"], parentId);
-              assert.equal(
-                row["parent.relClassName"],
-                "Test.ParentHasChildren"
-              );
+              assert.equal(row["parent.relClassName"], "Test.ParentHasChildren");
               assert.equal(row.myParentId, parentId);
               assert.isTrue(Id64.isValidId64(row.myParentRelClassId));
             }
@@ -3662,25 +3393,22 @@ describe("ECSqlStatement", () => {
           p3d: p3dVal,
           s: stringVal,
         };
-        ecdb.withPreparedStatement(
-          "SELECT Struct FROM test.Foo WHERE ECInstanceId=?",
-          (stmt: ECSqlStatement) => {
-            stmt.bindId(1, id);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            const row: any = stmt.getRow();
-            assert.deepEqual(row.struct.bl, expectedStruct.bl);
-            assert.equal(row.struct.bo, expectedStruct.bo);
-            assert.equal(row.struct.d, expectedStruct.d);
-            assert.equal(row.struct.dt, expectedStruct.dt);
-            assert.equal(row.struct.i, expectedStruct.i);
-            assert.equal(row.struct.p2d.x, expectedStruct.p2d.x);
-            assert.equal(row.struct.p2d.y, expectedStruct.p2d.y);
-            assert.equal(row.struct.p3d.x, expectedStruct.p3d.x);
-            assert.equal(row.struct.p3d.y, expectedStruct.p3d.y);
-            assert.equal(row.struct.p3d.z, expectedStruct.p3d.z);
-            assert.equal(row.struct.s, expectedStruct.s);
-          }
-        );
+        ecdb.withPreparedStatement("SELECT Struct FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
+          stmt.bindId(1, id);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row: any = stmt.getRow();
+          assert.deepEqual(row.struct.bl, expectedStruct.bl);
+          assert.equal(row.struct.bo, expectedStruct.bo);
+          assert.equal(row.struct.d, expectedStruct.d);
+          assert.equal(row.struct.dt, expectedStruct.dt);
+          assert.equal(row.struct.i, expectedStruct.i);
+          assert.equal(row.struct.p2d.x, expectedStruct.p2d.x);
+          assert.equal(row.struct.p2d.y, expectedStruct.p2d.y);
+          assert.equal(row.struct.p3d.x, expectedStruct.p3d.x);
+          assert.equal(row.struct.p3d.y, expectedStruct.p3d.y);
+          assert.equal(row.struct.p3d.z, expectedStruct.p3d.z);
+          assert.equal(row.struct.s, expectedStruct.s);
+        });
 
         assert.equal(
           await query(
@@ -3705,25 +3433,22 @@ describe("ECSqlStatement", () => {
           1
         );
 
-        ecdb.withPreparedStatement(
-          "SELECT Struct FROM test.Foo WHERE ECInstanceId=?",
-          (stmt: ECSqlStatement) => {
-            stmt.bindId(1, id);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            const actualStruct: any = stmt.getValue(0).getStruct();
-            assert.deepEqual(actualStruct.bl, expectedStruct.bl);
-            assert.equal(actualStruct.bo, expectedStruct.bo);
-            assert.equal(actualStruct.d, expectedStruct.d);
-            assert.equal(actualStruct.dt, expectedStruct.dt);
-            assert.equal(actualStruct.i, expectedStruct.i);
-            assert.equal(actualStruct.p2d.x, expectedStruct.p2d.x);
-            assert.equal(actualStruct.p2d.y, expectedStruct.p2d.y);
-            assert.equal(actualStruct.p3d.x, expectedStruct.p3d.x);
-            assert.equal(actualStruct.p3d.y, expectedStruct.p3d.y);
-            assert.equal(actualStruct.p3d.z, expectedStruct.p3d.z);
-            assert.equal(actualStruct.s, expectedStruct.s);
-          }
-        );
+        ecdb.withPreparedStatement("SELECT Struct FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
+          stmt.bindId(1, id);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const actualStruct: any = stmt.getValue(0).getStruct();
+          assert.deepEqual(actualStruct.bl, expectedStruct.bl);
+          assert.equal(actualStruct.bo, expectedStruct.bo);
+          assert.equal(actualStruct.d, expectedStruct.d);
+          assert.equal(actualStruct.dt, expectedStruct.dt);
+          assert.equal(actualStruct.i, expectedStruct.i);
+          assert.equal(actualStruct.p2d.x, expectedStruct.p2d.x);
+          assert.equal(actualStruct.p2d.y, expectedStruct.p2d.y);
+          assert.equal(actualStruct.p3d.x, expectedStruct.p3d.x);
+          assert.equal(actualStruct.p3d.y, expectedStruct.p3d.y);
+          assert.equal(actualStruct.p3d.z, expectedStruct.p3d.z);
+          assert.equal(actualStruct.s, expectedStruct.s);
+        });
 
         ecdb.withPreparedStatement(
           "SELECT Struct.Bl, Struct.Bo, Struct.D, Struct.Dt, Struct.I, Struct.P2d, Struct.P3d, Struct.S FROM test.Foo WHERE ECInstanceId=?",
@@ -3919,22 +3644,16 @@ describe("ECSqlStatement", () => {
 
         // SQL functions cannot take points. So here preparation already fails
         assert.throw(() =>
-          ecdb.withPreparedStatement(
-            "SELECT P2d, HexStr(P2d) hex FROM test.Foo WHERE ECInstanceId=?",
-            () => {
-              assert.fail();
-            }
-          )
+          ecdb.withPreparedStatement("SELECT P2d, HexStr(P2d) hex FROM test.Foo WHERE ECInstanceId=?", () => {
+            assert.fail();
+          })
         );
 
         // SQL functions cannot take points. So here preparation already fails
         assert.throw(() =>
-          ecdb.withPreparedStatement(
-            "SELECT P3d, HexStr(P3d) hex FROM test.Foo WHERE ECInstanceId=?",
-            () => {
-              assert.fail();
-            }
-          )
+          ecdb.withPreparedStatement("SELECT P3d, HexStr(P3d) hex FROM test.Foo WHERE ECInstanceId=?", () => {
+            assert.fail();
+          })
         );
 
         ecdb.withPreparedStatement(
@@ -4002,9 +3721,7 @@ describe("ECSqlStatement", () => {
             assert.isFalse(myStatVal.isNull);
             assert.isTrue(myStatVal.columnInfo.isEnum());
             assert.equal(myStatVal.getInteger(), 1);
-            assert.deepEqual(myStatVal.getEnum(), [
-              { schema: "Test", name: "Status", key: "On", value: 1 },
-            ]);
+            assert.deepEqual(myStatVal.getEnum(), [{ schema: "Test", name: "Status", key: "On", value: 1 }]);
 
             const myStatsVal: ECSqlValue = stmt.getValue(1);
             assert.isFalse(myStatsVal.isNull);
@@ -4015,20 +3732,14 @@ describe("ECSqlStatement", () => {
               actualStatsEnums.push(arrayElement.getEnum()!);
             }
             assert.equal(actualStatsEnums.length, 2);
-            assert.deepEqual(actualStatsEnums[0], [
-              { schema: "Test", name: "Status", key: "On", value: 1 },
-            ]);
-            assert.deepEqual(actualStatsEnums[1], [
-              { schema: "Test", name: "Status", key: "Off", value: 2 },
-            ]);
+            assert.deepEqual(actualStatsEnums[0], [{ schema: "Test", name: "Status", key: "On", value: 1 }]);
+            assert.deepEqual(actualStatsEnums[1], [{ schema: "Test", name: "Status", key: "Off", value: 2 }]);
 
             const myDomainVal: ECSqlValue = stmt.getValue(2);
             assert.isFalse(myDomainVal.isNull);
             assert.isTrue(myDomainVal.columnInfo.isEnum());
             assert.equal(myDomainVal.getString(), "Org");
-            assert.deepEqual(myDomainVal.getEnum(), [
-              { schema: "Test", name: "Domain", key: "Org", value: "Org" },
-            ]);
+            assert.deepEqual(myDomainVal.getEnum(), [{ schema: "Test", name: "Domain", key: "Org", value: "Org" }]);
 
             const myDomainsVal: ECSqlValue = stmt.getValue(3);
             assert.isFalse(myDomainsVal.isNull);
@@ -4039,12 +3750,8 @@ describe("ECSqlStatement", () => {
               actualDomainsEnums.push(arrayElement.getEnum()!);
             }
             assert.equal(actualDomainsEnums.length, 2);
-            assert.deepEqual(actualDomainsEnums[0], [
-              { schema: "Test", name: "Domain", key: "Org", value: "Org" },
-            ]);
-            assert.deepEqual(actualDomainsEnums[1], [
-              { schema: "Test", name: "Domain", key: "Com", value: "Com" },
-            ]);
+            assert.deepEqual(actualDomainsEnums[0], [{ schema: "Test", name: "Domain", key: "Org", value: "Org" }]);
+            assert.deepEqual(actualDomainsEnums[1], [{ schema: "Test", name: "Domain", key: "Com", value: "Com" }]);
           }
         );
 
@@ -4123,16 +3830,12 @@ describe("ECSqlStatement", () => {
       .append()
       .error()
       .category("ECDb")
-      .message(
-        /The value 9 cannot be broken down into a combination of ECEnumerators/gm
-      );
+      .message(/The value 9 cannot be broken down into a combination of ECEnumerators/gm);
     slm
       .append()
       .error()
       .category("ECDb")
-      .message(
-        /The value 'gov,de' cannot be broken down into a combination of ECEnumerators/gm
-      );
+      .message(/The value 'gov,de' cannot be broken down into a combination of ECEnumerators/gm);
 
     await using(
       ECDbTestHelper.createECDb(
@@ -4162,39 +3865,36 @@ describe("ECSqlStatement", () => {
           unored: Id64String;
           ored: Id64String;
           unmatched: Id64String;
-        } = ecdb.withPreparedStatement(
-          "INSERT INTO test.Foo(MyColor,MyDomain) VALUES(?,?)",
-          (stmt: ECSqlStatement) => {
-            stmt.bindValue(1, 4);
-            stmt.bindValue(2, "com");
-            let res: ECSqlInsertResult = stmt.stepForInsert();
-            assert.equal(res.status, DbResult.BE_SQLITE_DONE);
-            assert.isDefined(res.id);
-            const unored: Id64String = res.id!;
-            stmt.reset();
-            stmt.clearBindings();
+        } = ecdb.withPreparedStatement("INSERT INTO test.Foo(MyColor,MyDomain) VALUES(?,?)", (stmt: ECSqlStatement) => {
+          stmt.bindValue(1, 4);
+          stmt.bindValue(2, "com");
+          let res: ECSqlInsertResult = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          const unored: Id64String = res.id!;
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.bindValue(1, 5);
-            stmt.bindValue(2, "gov,com");
-            res = stmt.stepForInsert();
-            assert.equal(res.status, DbResult.BE_SQLITE_DONE);
-            assert.isDefined(res.id);
-            const ored: Id64String = res.id!;
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindValue(1, 5);
+          stmt.bindValue(2, "gov,com");
+          res = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          const ored: Id64String = res.id!;
+          stmt.reset();
+          stmt.clearBindings();
 
-            stmt.bindValue(1, 9);
-            stmt.bindValue(2, "gov,de");
-            res = stmt.stepForInsert();
-            assert.equal(res.status, DbResult.BE_SQLITE_DONE);
-            assert.isDefined(res.id);
-            const unmatched: Id64String = res.id!;
-            stmt.reset();
-            stmt.clearBindings();
+          stmt.bindValue(1, 9);
+          stmt.bindValue(2, "gov,de");
+          res = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          const unmatched: Id64String = res.id!;
+          stmt.reset();
+          stmt.clearBindings();
 
-            return { unored, ored, unmatched };
-          }
-        );
+          return { unored, ored, unmatched };
+        });
 
         ecdb.withPreparedStatement(
           "SELECT MyColor,MyDomain FROM test.Foo WHERE ECInstanceId=?",
@@ -4210,17 +3910,13 @@ describe("ECSqlStatement", () => {
             assert.isFalse(colVal.isNull);
             assert.isTrue(colVal.columnInfo.isEnum());
             assert.equal(colVal.getInteger(), 4);
-            assert.deepEqual(colVal.getEnum(), [
-              { schema: "Test", name: "Color", key: "Blue", value: 4 },
-            ]);
+            assert.deepEqual(colVal.getEnum(), [{ schema: "Test", name: "Color", key: "Blue", value: 4 }]);
 
             let domainVal: ECSqlValue = stmt.getValue(1);
             assert.isFalse(domainVal.isNull);
             assert.isTrue(domainVal.columnInfo.isEnum());
             assert.equal(domainVal.getString(), "com");
-            assert.deepEqual(domainVal.getEnum(), [
-              { schema: "Test", name: "Domain", key: "Com", value: "com" },
-            ]);
+            assert.deepEqual(domainVal.getEnum(), [{ schema: "Test", name: "Domain", key: "Com", value: "com" }]);
             stmt.reset();
             stmt.clearBindings();
 

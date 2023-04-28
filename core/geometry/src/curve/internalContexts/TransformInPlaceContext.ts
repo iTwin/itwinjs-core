@@ -23,18 +23,12 @@ export class TransformInPlaceContext extends RecursiveCurveProcessor {
     this.numOK = 0;
     this.transform = transform;
   }
-  public static tryTransformInPlace(
-    target: CurveCollection,
-    transform: Transform
-  ): boolean {
+  public static tryTransformInPlace(target: CurveCollection, transform: Transform): boolean {
     const context = new TransformInPlaceContext(transform);
     target.announceToCurveProcessor(context);
     return context.numFail === 0;
   }
-  public override announceCurvePrimitive(
-    curvePrimitive: CurvePrimitive,
-    _indexInParent: number
-  ): void {
+  public override announceCurvePrimitive(curvePrimitive: CurvePrimitive, _indexInParent: number): void {
     if (!curvePrimitive.tryTransformInPlace(this.transform)) this.numFail++;
     else this.numOK++;
   }

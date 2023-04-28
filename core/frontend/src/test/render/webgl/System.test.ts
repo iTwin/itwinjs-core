@@ -50,10 +50,7 @@ describe("Render Compatibility", () => {
 
 describe("Instancing", () => {
   class TestApp extends MockRender.App {
-    public static async test(
-      enableInstancing: boolean,
-      expectEnabled: boolean
-    ): Promise<void> {
+    public static async test(enableInstancing: boolean, expectEnabled: boolean): Promise<void> {
       const tileAdminProps: TileAdmin.Props = { enableInstancing };
 
       await IModelApp.startup({
@@ -82,10 +79,7 @@ describe("Instancing", () => {
 
 describe("ExternalTextures", () => {
   class TestApp extends MockRender.App {
-    public static async test(
-      enableExternalTextures: boolean,
-      expectEnabled: boolean
-    ): Promise<void> {
+    public static async test(enableExternalTextures: boolean, expectEnabled: boolean): Promise<void> {
       const tileAdminProps: TileAdmin.Props = { enableExternalTextures };
 
       await IModelApp.startup({
@@ -93,9 +87,7 @@ describe("ExternalTextures", () => {
         localization: new EmptyLocalization(),
       });
 
-      expect(IModelApp.tileAdmin.enableExternalTextures).to.equal(
-        expectEnabled
-      );
+      expect(IModelApp.tileAdmin.enableExternalTextures).to.equal(expectEnabled);
       await IModelApp.shutdown();
     }
   }
@@ -116,16 +108,11 @@ describe("ExternalTextures", () => {
 
 describe("System", () => {
   it("should override webgl context attributes", () => {
-    const expectAttributes = (
-      system: System,
-      expected: WebGLContextAttributes
-    ) => {
+    const expectAttributes = (system: System, expected: WebGLContextAttributes) => {
       const attrs = system.context.getContextAttributes()!;
       expect(attrs).not.to.be.null;
       expect(attrs.premultipliedAlpha).to.equal(expected.premultipliedAlpha);
-      expect(attrs.preserveDrawingBuffer).to.equal(
-        expected.preserveDrawingBuffer
-      );
+      expect(attrs.preserveDrawingBuffer).to.equal(expected.preserveDrawingBuffer);
       expect(attrs.antialias).to.equal(expected.antialias);
       expect(attrs.powerPreference).to.equal(expected.powerPreference);
     };
@@ -179,8 +166,7 @@ describe("System", () => {
         super(canvas, context, capabilities, options);
 
         const map = this.getIdMap(imodel);
-        const createTextureFromImageSource =
-          map.createTextureFromImageSource.bind(map);
+        const createTextureFromImageSource = map.createTextureFromImageSource.bind(map);
 
         // eslint-disable-next-line @typescript-eslint/unbound-method
         map.createTextureFromImageSource = async (args) => {
@@ -196,14 +182,11 @@ describe("System", () => {
     // bottom right pixel.  The rest of the square is red.
     const imageSource = new ImageSource(
       new Uint8Array([
-        137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0,
-        3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71,
-        66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143,
-        11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14,
-        195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99,
-        248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195,
-        90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66,
-        96, 130,
+        137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74,
+        34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11,
+        252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73,
+        68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246,
+        127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
       ]),
       ImageSourceFormat.Png
     );
@@ -261,10 +244,7 @@ describe("System", () => {
       g2!.dispose();
     });
 
-    async function requestTexture(
-      key: string | undefined,
-      source?: ImageSource
-    ): Promise<RenderTexture | undefined> {
+    async function requestTexture(key: string | undefined, source?: ImageSource): Promise<RenderTexture | undefined> {
       return IModelApp.renderSystem.createTextureFromSource({
         source: source ?? imageSource,
         transparency: TextureTransparency.Translucent,
@@ -357,10 +337,7 @@ describe("System", () => {
     });
 
     it("should return undefined and delete pending request on error", async () => {
-      const source = new ImageSource(
-        new Uint8Array([0, 1, 2, 3, 4]),
-        ImageSourceFormat.Png
-      );
+      const source = new ImageSource(new Uint8Array([0, 1, 2, 3, 4]), ImageSourceFormat.Png);
       const p1 = requestTexture("e", source);
       expectPendingRequests(1);
       expectRequestedIds(["e"]);
@@ -408,9 +385,7 @@ describe("System", () => {
       const sys = IModelApp.renderSystem;
       expect(sys.findMaterial("0x1", iModel)).to.be.undefined;
       const mat1 = sys.createRenderMaterial({ source: { id: "0x1", iModel } });
-      expect(
-        sys.createRenderMaterial({ source: { id: "0x1", iModel } })
-      ).to.equal(mat1);
+      expect(sys.createRenderMaterial({ source: { id: "0x1", iModel } })).to.equal(mat1);
 
       const mat2 = sys.createRenderMaterial({ source: { id: "0x2", iModel } });
       expect(mat2).not.to.be.undefined;
@@ -440,19 +415,13 @@ describe("System", () => {
 
     it("produces expected materials from input", () => {
       function unpackMaterial(mat: Material): CreateRenderMaterialArgs {
-        const unpackColor = (
-          r: number,
-          g: number,
-          b: number
-        ): RgbColorProps => {
+        const unpackColor = (r: number, g: number, b: number): RgbColorProps => {
           const unpack = (x: number) => Math.floor(x * 255 + 0.5);
           return { r: unpack(r), g: unpack(g), b: unpack(b) };
         };
 
         const weights = unpackAndNormalizeMaterialParam(mat.fragUniforms[0]);
-        const texWeightAndSpecR = unpackAndNormalizeMaterialParam(
-          mat.fragUniforms[1]
-        );
+        const texWeightAndSpecR = unpackAndNormalizeMaterialParam(mat.fragUniforms[1]);
         const specGB = unpackAndNormalizeMaterialParam(mat.fragUniforms[2]);
         const specExp = mat.fragUniforms[3];
 
@@ -465,12 +434,7 @@ describe("System", () => {
           },
         };
 
-        if (-1 !== mat.rgba[0])
-          args.diffuse!.color = unpackColor(
-            mat.rgba[0],
-            mat.rgba[1],
-            mat.rgba[2]
-          );
+        if (-1 !== mat.rgba[0]) args.diffuse!.color = unpackColor(mat.rgba[0], mat.rgba[1], mat.rgba[2]);
 
         if (-1 !== mat.rgba[3]) args.alpha = mat.rgba[3];
 
@@ -496,13 +460,8 @@ describe("System", () => {
         },
       };
 
-      const test = (
-        args: CreateRenderMaterialArgs,
-        expected?: CreateRenderMaterialArgs
-      ) => {
-        const mat = IModelApp.renderSystem.createRenderMaterial(
-          args
-        ) as Material;
+      const test = (args: CreateRenderMaterialArgs, expected?: CreateRenderMaterialArgs) => {
+        const mat = IModelApp.renderSystem.createRenderMaterial(args) as Material;
         expect(mat).not.to.be.undefined;
 
         const actual = unpackMaterial(mat);
@@ -512,12 +471,8 @@ describe("System", () => {
         expected = {
           ...defaults,
           ...expected,
-          diffuse: expected.diffuse
-            ? { ...defaults.diffuse, ...expected.diffuse }
-            : defaults.diffuse,
-          specular: expected.specular
-            ? { ...defaults.specular, ...expected.specular }
-            : defaults.specular,
+          diffuse: expected.diffuse ? { ...defaults.diffuse, ...expected.diffuse } : defaults.diffuse,
+          specular: expected.specular ? { ...defaults.specular, ...expected.specular } : defaults.specular,
         };
 
         if (expected.textureMapping) {
@@ -547,14 +502,8 @@ describe("System", () => {
       test({ diffuse: { color, weight: 0 } });
       test({ diffuse: { color, weight: 1 } });
       test({ diffuse: { color, weight: 0.5 } });
-      test(
-        { diffuse: { color, weight: -1 } },
-        { diffuse: { color, weight: 0 } }
-      );
-      test(
-        { diffuse: { color, weight: 2 } },
-        { diffuse: { color, weight: 1 } }
-      );
+      test({ diffuse: { color, weight: -1 } }, { diffuse: { color, weight: 0 } });
+      test({ diffuse: { color, weight: 2 } }, { diffuse: { color, weight: 1 } });
 
       test({ specular: { weight: 0 } });
       test({ specular: { weight: 1 } });
@@ -570,14 +519,8 @@ describe("System", () => {
       test({ textureMapping: { texture } });
       test({ textureMapping: { texture, weight: 0 } });
       test({ textureMapping: { texture, weight: 1 } });
-      test(
-        { textureMapping: { texture, weight: -1 } },
-        { textureMapping: { texture, weight: 0 } }
-      );
-      test(
-        { textureMapping: { texture, weight: 2 } },
-        { textureMapping: { texture, weight: 1 } }
-      );
+      test({ textureMapping: { texture, weight: -1 } }, { textureMapping: { texture, weight: 0 } });
+      test({ textureMapping: { texture, weight: 2 } }, { textureMapping: { texture, weight: 1 } });
       test({ textureMapping: { texture, weight: 0.5 } });
     });
   });

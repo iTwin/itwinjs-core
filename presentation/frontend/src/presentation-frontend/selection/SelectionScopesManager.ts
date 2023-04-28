@@ -37,17 +37,11 @@ export interface SelectionScopesManagerProps {
 export class SelectionScopesManager {
   private _rpcRequestsHandler: RpcRequestsHandler;
   private _getLocale: () => string | undefined;
-  private _activeScope:
-    | SelectionScopeProps
-    | SelectionScope
-    | string
-    | undefined;
+  private _activeScope: SelectionScopeProps | SelectionScope | string | undefined;
 
   public constructor(props: SelectionScopesManagerProps) {
     this._rpcRequestsHandler = props.rpcRequestsHandler;
-    this._getLocale = props.localeProvider
-      ? props.localeProvider
-      : () => undefined;
+    this._getLocale = props.localeProvider ? props.localeProvider : () => undefined;
   }
 
   /** Get active locale */
@@ -59,9 +53,7 @@ export class SelectionScopesManager {
   public get activeScope() {
     return this._activeScope;
   }
-  public set activeScope(
-    scope: SelectionScopeProps | SelectionScope | string | undefined
-  ) {
+  public set activeScope(scope: SelectionScopeProps | SelectionScope | string | undefined) {
     this._activeScope = scope;
   }
 
@@ -70,10 +62,7 @@ export class SelectionScopesManager {
    * @param imodel The iModel to get selection scopes for
    * @param locale Optional locale to use when localizing scopes' label and description
    */
-  public async getSelectionScopes(
-    imodel: IModelConnection,
-    locale?: string
-  ): Promise<SelectionScope[]> {
+  public async getSelectionScopes(imodel: IModelConnection, locale?: string): Promise<SelectionScope[]> {
     if (!locale) locale = this._getLocale();
     return this._rpcRequestsHandler.getSelectionScopes({
       imodel: imodel.getRpcProps(),
@@ -104,14 +93,8 @@ export class SelectionScopesManager {
     const batchKeyPromises = [];
     for (let batchIndex = 0; batchIndex < batchesCount; ++batchIndex) {
       const batchStart = batchSize * batchIndex;
-      const batchEnd =
-        batchStart + batchSize > ids.length
-          ? ids.length
-          : batchStart + batchSize;
-      const batchIds =
-        0 === batchIndex && ids.length <= batchEnd
-          ? ids
-          : ids.slice(batchStart, batchEnd);
+      const batchEnd = batchStart + batchSize > ids.length ? ids.length : batchStart + batchSize;
+      const batchIds = 0 === batchIndex && ids.length <= batchEnd ? ids : ids.slice(batchStart, batchEnd);
       batchKeyPromises.push(
         this._rpcRequestsHandler.computeSelection({
           imodel: imodel.getRpcProps(),
@@ -120,9 +103,7 @@ export class SelectionScopesManager {
         })
       );
     }
-    const batchKeys = (await Promise.all(batchKeyPromises)).map(
-      KeySet.fromJSON
-    );
+    const batchKeys = (await Promise.all(batchKeyPromises)).map(KeySet.fromJSON);
     batchKeys.forEach((bk) => keys.add(bk));
     return keys;
   }

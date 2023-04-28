@@ -16,9 +16,7 @@ describe("Learning Snippets", () => {
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile(
-      "assets/datasets/Properties_60InstancesWithUrl2.ibim"
-    );
+    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {
@@ -79,9 +77,7 @@ describe("Learning Snippets", () => {
                 // confirm the node is merged from more than 1 instance
                 node.key.instanceKeys.length > 1 &&
                 // confirm all instances are of SubCategory class
-                node.key.instanceKeys.every(
-                  (key) => key.className === "BisCore:SubCategory"
-                )
+                node.key.instanceKeys.every((key) => key.className === "BisCore:SubCategory")
               );
             })
         );
@@ -208,8 +204,7 @@ describe("Learning Snippets", () => {
                   ]),
               },
               label: {
-                displayValue:
-                  "Definition Model For DgnV8Bridge:D:\\Temp\\Properties_60InstancesWithUrl2.dgn, Default",
+                displayValue: "Definition Model For DgnV8Bridge:D:\\Temp\\Properties_60InstancesWithUrl2.dgn, Default",
               },
             },
             {
@@ -225,9 +220,7 @@ describe("Learning Snippets", () => {
             {
               key: {
                 instanceKeys: (actual: InstanceKey[]) =>
-                  deepEqual(sort(actual.map((ik) => ik.className)).asc(), [
-                    "BisCore:RepositoryModel",
-                  ]),
+                  deepEqual(sort(actual.map((ik) => ik.className)).asc(), ["BisCore:RepositoryModel"]),
               },
             },
           ]);

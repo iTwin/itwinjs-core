@@ -89,19 +89,13 @@ export abstract class BezierCurveBase extends CurvePrimitive {
    * * For 3d curve, this is simple a pole access, and only fails (return `undefined`) for invalid index
    * * For 4d curve, this deweights the homogeneous pole and can fail due to 0 weight.
    */
-  public abstract getPolePoint3d(
-    i: number,
-    point?: Point3d
-  ): Point3d | undefined;
+  public abstract getPolePoint3d(i: number, point?: Point3d): Point3d | undefined;
 
   /** Get pole `i` as a Point4d.
    * * For 3d curve, this accesses the simple pole and returns with weight 1.
    * * For 4d curve, this accesses the (weighted) pole.
    */
-  public abstract getPolePoint4d(
-    i: number,
-    point?: Point4d
-  ): Point4d | undefined;
+  public abstract getPolePoint4d(i: number, point?: Point4d): Point4d | undefined;
   /** Set mapping to parent curve (e.g. if this bezier is a span extracted from a bspline, this is the knot interval of the span) */
   public setInterval(a: number, b: number) {
     this._polygon.setInterval(a, b);
@@ -124,10 +118,7 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     }
   }
   /** announce intervals with stroke counts */
-  public emitStrokableParts(
-    handler: IStrokeHandler,
-    _options?: StrokeOptions
-  ): void {
+  public emitStrokableParts(handler: IStrokeHandler, _options?: StrokeOptions): void {
     const numPerSpan = this.computeStrokeCountForOptions(_options);
     handler.announceIntervalForUniformStepStrokes(this, numPerSpan, 0.0, 1.0);
   }
@@ -172,10 +163,7 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     return this.polygonLength();
   }
   /** Concrete classes must implement extendRange . . .  */
-  public abstract override extendRange(
-    rangeToExtend: Range3d,
-    transform?: Transform
-  ): void;
+  public abstract override extendRange(rangeToExtend: Range3d, transform?: Transform): void;
   /**
    * 1D bezier coefficients for use in range computations.
    * @internal
@@ -194,27 +182,18 @@ export abstract class BezierCurveBase extends CurvePrimitive {
    * @param orderA length of _workCoffsA (simple array)
    * @param orderB length of _workCoffsB (simple array)
    */
-  protected allocateAndZeroBezierWorkData(
-    primaryBezierOrder: number,
-    orderA: number,
-    orderB: number
-  ) {
+  protected allocateAndZeroBezierWorkData(primaryBezierOrder: number, orderA: number, orderB: number) {
     if (primaryBezierOrder > 0) {
-      if (
-        this._workBezier !== undefined &&
-        this._workBezier.order === primaryBezierOrder
-      ) {
+      if (this._workBezier !== undefined && this._workBezier.order === primaryBezierOrder) {
         this._workBezier.zero();
       } else this._workBezier = new UnivariateBezier(primaryBezierOrder);
     }
     if (orderA > 0) {
-      if (this._workCoffsA !== undefined && this._workCoffsA.length === orderA)
-        this._workCoffsA.fill(0);
+      if (this._workCoffsA !== undefined && this._workCoffsA.length === orderA) this._workCoffsA.fill(0);
       else this._workCoffsA = new Float64Array(orderA);
     }
     if (orderB > 0) {
-      if (this._workCoffsB !== undefined && this._workCoffsB.length === orderB)
-        this._workCoffsB.fill(0);
+      if (this._workCoffsB !== undefined && this._workCoffsB.length === orderB) this._workCoffsB.fill(0);
       else this._workCoffsB = new Float64Array(orderB);
     }
   }
@@ -245,14 +224,7 @@ export abstract class BezierCurveBase extends CurvePrimitive {
         dx1 = this._workPoint1.x - this._workPoint0.x;
         dy1 = this._workPoint1.y - this._workPoint0.y;
         dz1 = this._workPoint1.z - this._workPoint0.z;
-        thisRadians = Angle.radiansBetweenVectorsXYZ(
-          dx0,
-          dy0,
-          dz0,
-          dx1,
-          dy1,
-          dz1
-        );
+        thisRadians = Angle.radiansBetweenVectorsXYZ(dx0, dy0, dz0, dx1, dy1, dz1);
         sumRadians += thisRadians;
         maxRadians = Geometry.maxAbsXY(thisRadians, maxRadians);
         thisLength = Geometry.hypotenuseXYZ(dx1, dy1, dz1);
@@ -276,11 +248,7 @@ export abstract class BezierCurveBase extends CurvePrimitive {
         0.1
       );
       if (options) {
-        numStrokes = options.applyChordTolToLengthAndRadians(
-          numStrokes,
-          sumLength,
-          radians1
-        );
+        numStrokes = options.applyChordTolToLengthAndRadians(numStrokes, sumLength, radians1);
       }
     }
     return numStrokes;
@@ -315,10 +283,7 @@ export abstract class BezierCurveBase extends CurvePrimitive {
    * @param fractionA [in] start fraction
    * @param fractionB [in] end fraction
    */
-  public override clonePartialCurve(
-    fractionA: number,
-    fractionB: number
-  ): BezierCurveBase {
+  public override clonePartialCurve(fractionA: number, fractionB: number): BezierCurveBase {
     const partialCurve = this.clone();
     partialCurve._polygon.subdivideToIntervalInPlace(fractionA, fractionB);
     return partialCurve;
@@ -329,14 +294,7 @@ export abstract class BezierCurveBase extends CurvePrimitive {
    * @param lowHigh optional receiver for output
    * @returns range of fractional projection parameters onto the ray, where 0.0 is start of the ray and 1.0 is the end of the ray.
    */
-  public override projectedParameterRange(
-    ray: Vector3d | Ray3d,
-    lowHigh?: Range1d
-  ): Range1d | undefined {
-    return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(
-      this,
-      ray,
-      lowHigh
-    );
+  public override projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
+    return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(this, ray, lowHigh);
   }
 }

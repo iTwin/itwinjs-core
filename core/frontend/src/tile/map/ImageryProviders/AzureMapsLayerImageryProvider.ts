@@ -17,11 +17,7 @@ export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
   }
 
   // construct the Url from the desired Tile
-  public async constructUrl(
-    y: number,
-    x: number,
-    zoom: number
-  ): Promise<string> {
+  public async constructUrl(y: number, x: number, zoom: number): Promise<string> {
     if (!this._settings.accessKey) return "";
     return `${this._settings.url}&${this._settings.accessKey.key}=${this._settings.accessKey.value}&api-version=2.0&zoom=${zoom}&x=${x}&y=${y}`;
   }
@@ -32,9 +28,7 @@ export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
       cards.appendChild(
         IModelApp.makeLogoCard({
           heading: "Azure Maps",
-          notice: IModelApp.localization.getLocalizedString(
-            "iModelJs:BackgroundMap.AzureMapsCopyright"
-          ),
+          notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.AzureMapsCopyright"),
         })
       );
     }

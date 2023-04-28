@@ -3,13 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import {
-  Angle,
-  AxisIndex,
-  Matrix3d,
-  Point3d,
-  Transform,
-} from "@itwin/core-geometry";
+import { Angle, AxisIndex, Matrix3d, Point3d, Transform } from "@itwin/core-geometry";
 import { Element, G, Matrix, Svg, SVG } from "@svgdotjs/svg.js";
 import { MarkupApp } from "../Markup";
 import { initSvgExt } from "../SvgJsExt";
@@ -36,8 +30,7 @@ describe("Markup", () => {
     nested = svgContainer.group().addClass("svg-nested");
   });
 
-  const makeRect = (g: G) =>
-    g.rect(10, 10).move(3, 3).css(MarkupApp.props.active.element);
+  const makeRect = (g: G) => g.rect(10, 10).move(3, 3).css(MarkupApp.props.active.element);
 
   it("SVG Text", () => {
     const text = nested.plain("test"); // create a plain text element
@@ -60,13 +53,7 @@ describe("Markup", () => {
     assert.equal(trn, "matrix(1,0,0,1,20,15)", "transform of outline");
     const bbStr = outline.bbox().toString();
 
-    text.markupStretch(
-      22,
-      41,
-      37,
-      14,
-      new Matrix().rotateO(20).translateO(3, 2.1)
-    );
+    text.markupStretch(22, 41, 37, 14, new Matrix().rotateO(20).translateO(3, 2.1));
     outline = text.getOutline(1);
     trn = outline.attr("transform");
     assert.equal(
@@ -74,11 +61,7 @@ describe("Markup", () => {
       "matrix(0.9396926207859084,0.3420201433256687,-0.3420201433256687,0.9396926207859084,3,2.1)",
       "getOutline transform"
     );
-    assert.equal(
-      bbStr,
-      outline.bbox().toString(),
-      "markupStretch should not change bbox for text"
-    );
+    assert.equal(bbStr, outline.bbox().toString(), "markupStretch should not change bbox for text");
 
     const npcToVp = text.getNpcToVp();
     assert.isDefined(npcToVp, "npcToVp should work");
@@ -95,10 +78,7 @@ describe("Markup", () => {
   });
 
   it("SVG Matrix", () => {
-    const r = Matrix3d.createRotationAroundAxisIndex(
-      AxisIndex.Z,
-      Angle.createDegrees(30)
-    );
+    const r = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(30));
     const trans = Transform.createOriginAndMatrix(new Point3d(1, 2, 0), r);
     const m = new Matrix().fromIModelTransform(trans); // round trip transform through SVG Matrix
     const t2 = m.toIModelTransform();
@@ -132,31 +112,15 @@ describe("Markup", () => {
     const span = text.tspan("line 2");
 
     assert.equal(e0.getChildOrGroupOf(nested), e0, "pick element in root");
-    assert.equal(
-      e1.getChildOrGroupOf(nested),
-      g1,
-      "pick element in group, should get group"
-    );
-    assert.equal(
-      e2.getChildOrGroupOf(nested),
-      g1,
-      "pick element in nested group, should get outer group"
-    );
+    assert.equal(e1.getChildOrGroupOf(nested), g1, "pick element in group, should get group");
+    assert.equal(e2.getChildOrGroupOf(nested), g1, "pick element in nested group, should get outer group");
     assert.equal(span.getChildOrGroupOf(nested), text, "span should pick text");
-    assert.isUndefined(
-      e0.getChildOrGroupOf(g1),
-      "should not pick from other group"
-    );
+    assert.isUndefined(e0.getChildOrGroupOf(g1), "should not pick from other group");
   });
 
   it("Markup hiliting", () => {
     nested.clear();
-    const checkColor = (
-      elem: Element | Element[],
-      stroke: string,
-      fill: string,
-      msg: string
-    ) => {
+    const checkColor = (elem: Element | Element[], stroke: string, fill: string, msg: string) => {
       if (elem instanceof Element) elem = [elem];
 
       elem.forEach((e) => {

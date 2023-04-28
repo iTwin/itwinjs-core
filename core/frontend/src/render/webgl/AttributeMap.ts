@@ -95,9 +95,7 @@ export class AttributeMap {
       ["a_uvParam", 1, VariableType.Vec2],
     ]);
 
-    const screenPoints = new AttributeMapEntry([
-      ["a_pos", 0, VariableType.Vec2],
-    ]);
+    const screenPoints = new AttributeMapEntry([["a_pos", 0, VariableType.Vec2]]);
 
     this._attrMaps = new Map<TechniqueId | undefined, AttributeMapEntry>([
       [undefined, posOnly],
@@ -131,9 +129,7 @@ export class AttributeMap {
     techniqueId: TechniqueId | undefined,
     instanced: boolean
   ): AttributeDetails | undefined {
-    return AttributeMap.findAttributeMap(techniqueId, instanced).get(
-      attributeName
-    );
+    return AttributeMap.findAttributeMap(techniqueId, instanced).get(attributeName);
   }
 }
 

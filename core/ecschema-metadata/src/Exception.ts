@@ -43,10 +43,7 @@ export enum ECObjectsStatus {
 
 /** @internal */
 export class ECObjectsError extends BentleyError {
-  public constructor(
-    public override readonly errorNumber: number,
-    message?: string
-  ) {
+  public constructor(public override readonly errorNumber: number, message?: string) {
     super(errorNumber, message);
   }
 

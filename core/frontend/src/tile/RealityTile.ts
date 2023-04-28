@@ -7,14 +7,7 @@
  */
 
 import { BeTimePoint, dispose } from "@itwin/core-bentley";
-import {
-  ClipMaskXYZRangePlanes,
-  ClipShape,
-  ClipVector,
-  Point3d,
-  Polyface,
-  Transform,
-} from "@itwin/core-geometry";
+import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Polyface, Transform } from "@itwin/core-geometry";
 import { ColorDef, Frustum } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch, GraphicBranchOptions } from "../render/GraphicBranch";
@@ -104,10 +97,8 @@ export class RealityTile extends Tile {
   public constructor(props: RealityTileParams, tree: RealityTileTree) {
     super(props, tree);
     this.transformToRoot = props.transformToRoot;
-    this.additiveRefinement =
-      props.additiveRefinement ?? this.realityParent?.additiveRefinement;
-    this.noContentButTerminateOnSelection =
-      props.noContentButTerminateOnSelection;
+    this.additiveRefinement = props.additiveRefinement ?? this.realityParent?.additiveRefinement;
+    this.noContentButTerminateOnSelection = props.noContentButTerminateOnSelection;
     this.rangeCorners = props.rangeCorners;
     this.region = props.region;
     this._geometricError = props.geometricError;
@@ -118,14 +109,9 @@ export class RealityTile extends Tile {
     this.boundingSphere.transformBy(this.transformToRoot, this.boundingSphere);
     this.transformToRoot.multiplyRange(this.range, this.range);
 
-    if (this.rangeCorners)
-      this.transformToRoot.multiplyPoint3dArrayInPlace(this.rangeCorners);
+    if (this.rangeCorners) this.transformToRoot.multiplyPoint3dArrayInPlace(this.rangeCorners);
 
-    if (undefined !== this._contentRange)
-      this.transformToRoot.multiplyRange(
-        this._contentRange,
-        this._contentRange
-      );
+    if (undefined !== this._contentRange) this.transformToRoot.multiplyRange(this._contentRange, this._contentRange);
   }
 
   /** @internal */
@@ -194,9 +180,7 @@ export class RealityTile extends Tile {
   }
 
   /** @internal */
-  public async requestContent(
-    isCanceled: () => boolean
-  ): Promise<TileRequest.Response> {
+  public async requestContent(isCanceled: () => boolean): Promise<TileRequest.Response> {
     return this.realityRoot.loader.requestTileContent(this, isCanceled);
   }
 
@@ -204,9 +188,7 @@ export class RealityTile extends Tile {
   private useAdditiveRefinementStepchildren() {
     // Create additive stepchildren only if we are this tile is additive and we are re-projecting and the radius exceeds the additiveRefinementThreshold.
     // This criteria is currently only met by the Cesium OSM tileset.
-    const rangeDiagonal = this.rangeCorners
-      ? this.rangeCorners[0].distance(this.rangeCorners[3])
-      : 0;
+    const rangeDiagonal = this.rangeCorners ? this.rangeCorners[0].distance(this.rangeCorners[3]) : 0;
     return (
       this.additiveRefinement &&
       this.isDisplayable &&
@@ -217,10 +199,7 @@ export class RealityTile extends Tile {
   }
 
   /** @internal */
-  protected _loadChildren(
-    resolve: (children: Tile[] | undefined) => void,
-    reject: (error: Error) => void
-  ): void {
+  protected _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void {
     this.realityRoot.loader
       .loadChildren(this)
       .then((children: Tile[] | undefined) => {
@@ -249,36 +228,23 @@ export class RealityTile extends Tile {
     system: RenderSystem,
     isCanceled?: () => boolean
   ): Promise<TileContent> {
-    return this.realityRoot.loader.loadTileContent(
-      this,
-      data,
-      system,
-      isCanceled
-    );
+    return this.realityRoot.loader.loadTileContent(this, data, system, isCanceled);
   }
 
   /** @internal */
-  public override computeLoadPriority(
-    viewports: Iterable<Viewport>,
-    users: Iterable<TileUser>
-  ): number {
+  public override computeLoadPriority(viewports: Iterable<Viewport>, users: Iterable<TileUser>): number {
     return this.realityRoot.loader.computeTilePriority(this, viewports, users);
   }
 
   /** @internal */
   public getContentClip(): ClipVector | undefined {
-    return ClipVector.createCapture([
-      ClipShape.createBlock(this.contentRange, ClipMaskXYZRangePlanes.All),
-    ]);
+    return ClipVector.createCapture([ClipShape.createBlock(this.contentRange, ClipMaskXYZRangePlanes.All)]);
   }
 
   /** Allow tile to select additional tiles (Terrain Imagery...)
    * @internal
    */
-  public selectSecondaryTiles(
-    _args: TileDrawArgs,
-    _context: TraversalSelectionContext
-  ) {}
+  public selectSecondaryTiles(_args: TileDrawArgs, _context: TraversalSelectionContext) {}
 
   /** An upsampled tile is not loadable - will override to return loadable parent.
    * @internal
@@ -288,11 +254,7 @@ export class RealityTile extends Tile {
   }
 
   /** @internal */
-  public preloadRealityTilesAtDepth(
-    depth: number,
-    context: TraversalSelectionContext,
-    args: TileDrawArgs
-  ) {
+  public preloadRealityTilesAtDepth(depth: number, context: TraversalSelectionContext, args: TileDrawArgs) {
     if (this.depth === depth) {
       context.preload(this, args);
       return;
@@ -301,8 +263,7 @@ export class RealityTile extends Tile {
     this.loadChildren();
 
     if (undefined !== this.realityChildren) {
-      for (const child of this.realityChildren)
-        child.preloadRealityTilesAtDepth(depth, context, args);
+      for (const child of this.realityChildren) child.preloadRealityTilesAtDepth(depth, context, args);
     }
   }
 
@@ -310,24 +271,19 @@ export class RealityTile extends Tile {
   // * used tiles (where "used" may mean: selected/preloaded for display or content requested);
   // * parents and siblings of other protected tiles.
   /** @internal */
-  public preloadProtectedTiles(
-    args: TileDrawArgs,
-    context: TraversalSelectionContext
-  ): boolean {
+  public preloadProtectedTiles(args: TileDrawArgs, context: TraversalSelectionContext): boolean {
     const children = this.realityChildren;
     let hasProtectedChildren = false;
 
     if (children && !this.additiveRefinement) {
       for (const child of children) {
-        hasProtectedChildren =
-          child.preloadProtectedTiles(args, context) || hasProtectedChildren;
+        hasProtectedChildren = child.preloadProtectedTiles(args, context) || hasProtectedChildren;
       }
     }
 
     if (children && hasProtectedChildren) {
       for (const child of children) {
-        if (child.isDisplayable && !child.isLoaded)
-          context.preload(child, args);
+        if (child.isDisplayable && !child.isLoaded) context.preload(child, args);
       }
 
       return true; // Parents of protected tiles are protected
@@ -346,8 +302,7 @@ export class RealityTile extends Tile {
   public addBoundingGraphic(builder: GraphicBuilder, color: ColorDef) {
     builder.setSymbology(color, color, 3);
     let corners = this.rangeCorners ? this.rangeCorners : this.range.corners();
-    if (this._reprojectionTransform)
-      corners = this._reprojectionTransform.multiplyPoint3dArray(corners);
+    if (this._reprojectionTransform) corners = this._reprojectionTransform.multiplyPoint3dArray(corners);
     builder.addRangeBoxFromCorners(corners);
   }
 
@@ -356,27 +311,20 @@ export class RealityTile extends Tile {
     this._reprojectionTransform = rootReprojection;
     rootReprojection.multiplyRange(this.range, this.range);
     this.boundingSphere.transformBy(rootReprojection, this.boundingSphere);
-    if (this.contentRange)
-      rootReprojection.multiplyRange(this.contentRange, this.contentRange);
-    if (this.rangeCorners)
-      rootReprojection.multiplyPoint3dArrayInPlace(this.rangeCorners);
+    if (this.contentRange) rootReprojection.multiplyRange(this.contentRange, this.contentRange);
+    if (this.rangeCorners) rootReprojection.multiplyPoint3dArrayInPlace(this.rangeCorners);
   }
 
   /** @internal */
   public allChildrenIncluded(tiles: Tile[]) {
-    if (this.children === undefined || tiles.length !== this.children.length)
-      return false;
+    if (this.children === undefined || tiles.length !== this.children.length) return false;
     for (const tile of tiles) if (tile.parent !== this) return false;
     return true;
   }
 
   /** @internal */
   protected getLoadedRealityChildren(args: TileDrawArgs): boolean {
-    if (
-      this._childrenLoadStatus !== TileTreeLoadStatus.Loaded ||
-      this.realityChildren === undefined
-    )
-      return false;
+    if (this._childrenLoadStatus !== TileTreeLoadStatus.Loaded || this.realityChildren === undefined) return false;
 
     for (const child of this.realityChildren) {
       if (child.isReady && child.computeVisibilityFactor(args) > 0) {
@@ -419,10 +367,7 @@ export class RealityTile extends Tile {
     if (visibility >= 1 && this.noContentButTerminateOnSelection) return;
 
     const shouldSelectThisTile =
-      visibility >= 1 ||
-      this._anyChildNotFound ||
-      this.forceSelectRealityTile() ||
-      context.selectionCountExceeded;
+      visibility >= 1 || this._anyChildNotFound || this.forceSelectRealityTile() || context.selectionCountExceeded;
     if (shouldSelectThisTile && this.isDisplayable) {
       // Select this tile
 
@@ -433,25 +378,19 @@ export class RealityTile extends Tile {
       context.selectOrQueue(this, args, traversalDetails);
 
       // This tile is visible but not loaded - Use higher resolution children if present
-      if (!this.isReady)
-        this.selectRealityChildrenAsFallback(context, args, traversalDetails);
+      if (!this.isReady) this.selectRealityChildrenAsFallback(context, args, traversalDetails);
     } else {
       // Select children instead of this tile
 
       // With additive refinement it is necessary to display this tile along with any displayed children
-      if (
-        this.additiveRefinement &&
-        this.isDisplayable &&
-        !this.useAdditiveRefinementStepchildren()
-      )
+      if (this.additiveRefinement && this.isDisplayable && !this.useAdditiveRefinementStepchildren())
         context.selectOrQueue(this, args, traversalDetails);
 
       this.selectRealityChildren(context, args, traversalDetails);
 
       // Children are not ready: use this tile to avoid leaving a hole
       traversalDetails.shouldSelectParent =
-        traversalDetails.shouldSelectParent ||
-        traversalDetails.queuedChildren.length !== 0;
+        traversalDetails.shouldSelectParent || traversalDetails.queuedChildren.length !== 0;
 
       if (traversalDetails.shouldSelectParent) {
         // If the tile has not yet been displayed in this viewport -- display only if it is visible enough. Avoid overly tiles popping into view unexpectedly (terrain)
@@ -498,32 +437,22 @@ export class RealityTile extends Tile {
 
     if (this.realityChildren !== undefined) {
       // Attempt to select the children
-      const traversalChildren = this.realityRoot.getTraversalChildren(
-        this.depth
-      );
+      const traversalChildren = this.realityRoot.getTraversalChildren(this.depth);
       traversalChildren.initialize();
 
       for (let i = 0; i < this.children!.length; i++)
-        this.realityChildren[i].selectRealityTiles(
-          context,
-          args,
-          traversalChildren.getChildDetail(i)
-        );
+        this.realityChildren[i].selectRealityTiles(context, args, traversalChildren.getChildDetail(i));
 
       traversalChildren.combine(traversalDetails);
     }
   }
 
   /** @internal */
-  public purgeContents(
-    olderThan: BeTimePoint,
-    useProtectedTiles: boolean
-  ): void {
+  public purgeContents(olderThan: BeTimePoint, useProtectedTiles: boolean): void {
     const tilesToPurge = new Set<RealityTile>();
 
     // Get the list of tiles to purge
-    if (useProtectedTiles && !this.additiveRefinement)
-      this.getTilesToPurge(olderThan, tilesToPurge);
+    if (useProtectedTiles && !this.additiveRefinement) this.getTilesToPurge(olderThan, tilesToPurge);
     else this.getTilesToPurgeWithoutProtection(olderThan, tilesToPurge);
 
     // Discard contents of tiles that have been marked.
@@ -533,10 +462,7 @@ export class RealityTile extends Tile {
 
   // Populate a set with tiles that should be disposed. Prevent some tiles to be disposed to avoid holes when moving.
   // Return true if the current tile is "protected".
-  private getTilesToPurge(
-    olderThan: BeTimePoint,
-    tilesToPurge: Set<RealityTile>
-  ): boolean {
+  private getTilesToPurge(olderThan: BeTimePoint, tilesToPurge: Set<RealityTile>): boolean {
     const children = this.realityChildren;
 
     // Protected tiles cannot be purged. They are:
@@ -546,9 +472,7 @@ export class RealityTile extends Tile {
 
     if (children) {
       for (const child of children) {
-        hasProtectedChildren =
-          child.getTilesToPurge(olderThan, tilesToPurge) ||
-          hasProtectedChildren;
+        hasProtectedChildren = child.getTilesToPurge(olderThan, tilesToPurge) || hasProtectedChildren;
       }
 
       if (hasProtectedChildren) {
@@ -576,10 +500,7 @@ export class RealityTile extends Tile {
   // Populate a set with tiles that should be disposed. Does not prevent some tiles to be disposed to avoid holes when moving.
   // This method is simpler and more fitting for devices that has a bigger memory constraint, such as mobiles.
   // However, it causes the apparition of holes by letting important tiles to be purged.
-  private getTilesToPurgeWithoutProtection(
-    olderThan: BeTimePoint,
-    tilesToPurge: Set<RealityTile>
-  ): void {
+  private getTilesToPurgeWithoutProtection(olderThan: BeTimePoint, tilesToPurge: Set<RealityTile>): void {
     const children = this.realityChildren;
 
     if (children) {
@@ -600,8 +521,7 @@ export class RealityTile extends Tile {
     }
 
     if (this.realityChildren !== undefined) {
-      for (const child of this.realityChildren)
-        child.removeFirstDisplayableChildrenFromSet(set);
+      for (const child of this.realityChildren) child.removeFirstDisplayableChildrenFromSet(set);
     }
   }
 
@@ -612,22 +532,17 @@ export class RealityTile extends Tile {
     if (this.rangeCorners) scratchFrustum.setFromCorners(this.rangeCorners);
     else Frustum.fromRange(this.range, scratchFrustum);
 
-    if (this.isFrustumCulled(scratchFrustum, args, true, this.boundingSphere))
-      return -1;
+    if (this.isFrustumCulled(scratchFrustum, args, true, this.boundingSphere)) return -1;
 
     // some nodes are merely for structure and don't have any geometry
     if (0 === this.maximumSize) return 0;
 
-    if (this.isLeaf)
-      return this.hasContentRange && this.isContentCulled(args) ? -1 : 1;
+    if (this.isLeaf) return this.hasContentRange && this.isContentCulled(args) ? -1 : 1;
 
     if (undefined !== this._geometricError) {
       const radius = args.getTileRadius(this);
       const center = args.getTileCenter(this);
-      const pixelSize = args.computePixelSizeInMetersAtClosestPoint(
-        center,
-        radius
-      );
+      const pixelSize = args.computePixelSizeInMetersAtClosestPoint(center, radius);
 
       const sse = this._geometricError / pixelSize;
       return args.maximumScreenSpaceError / sse;
@@ -638,8 +553,7 @@ export class RealityTile extends Tile {
 
   /** @internal */
   protected get _anyChildNotFound(): boolean {
-    if (undefined !== this.children)
-      for (const child of this.children) if (child.isNotFound) return true;
+    if (undefined !== this.children) for (const child of this.children) if (child.isNotFound) return true;
 
     return this._childrenLoadStatus === TileTreeLoadStatus.NotFound;
   }
@@ -660,18 +574,14 @@ export class RealityTile extends Tile {
   }
 
   /** @internal */
-  protected loadAdditiveRefinementChildren(
-    resolve: (children: Tile[]) => void
-  ): void {
+  protected loadAdditiveRefinementChildren(resolve: (children: Tile[]) => void): void {
     const region = this.region;
     const corners = this.rangeCorners;
     if (!region || !corners) return;
 
     const maximumSize = this.maximumSize;
     const rangeDiagonal = corners[0].distance(corners[3]);
-    const isLeaf =
-      rangeDiagonal < additiveRefinementThreshold ||
-      this.depth > additiveRefinementDepthLimit;
+    const isLeaf = rangeDiagonal < additiveRefinementThreshold || this.depth > additiveRefinementDepthLimit;
 
     const stepChildren = new Array<AdditiveRefinementStepChild>();
     const latitudeDelta = (region.maxLatitude - region.minLatitude) / 2;
@@ -679,16 +589,8 @@ export class RealityTile extends Tile {
     const minHeight = region.minHeight;
     const maxHeight = region.maxHeight;
 
-    for (
-      let i = 0, minLongitude = region.minLongitude, step = 0;
-      i < 2;
-      i++, minLongitude += longitudeDelta, step++
-    ) {
-      for (
-        let j = 0, minLatitude = region.minLatitude;
-        j < 2;
-        j++, minLatitude += latitudeDelta
-      ) {
+    for (let i = 0, minLongitude = region.minLongitude, step = 0; i < 2; i++, minLongitude += longitudeDelta, step++) {
+      for (let j = 0, minLatitude = region.minLatitude; j < 2; j++, minLatitude += latitudeDelta) {
         const childRegion = new RealityTileRegion({
           minLatitude,
           maxLatitude: minLatitude + latitudeDelta,
@@ -711,9 +613,7 @@ export class RealityTile extends Tile {
           region: childRegion,
         };
 
-        stepChildren.push(
-          new AdditiveRefinementStepChild(childParams, this.realityRoot)
-        );
+        stepChildren.push(new AdditiveRefinementStepChild(childParams, this.realityRoot));
       }
     }
     resolve(stepChildren);
@@ -721,16 +621,12 @@ export class RealityTile extends Tile {
 
   /** @internal */
   public override produceGraphics(): RenderGraphic | undefined {
-    if (undefined === this._reprojectionTransform)
-      return super.produceGraphics();
+    if (undefined === this._reprojectionTransform) return super.produceGraphics();
 
     if (undefined === this._reprojectedGraphic && undefined !== this._graphic) {
       const branch = new GraphicBranch(false);
       branch.add(this._graphic);
-      this._reprojectedGraphic = IModelApp.renderSystem.createGraphicBranch(
-        branch,
-        this._reprojectionTransform
-      );
+      this._reprojectedGraphic = IModelApp.renderSystem.createGraphicBranch(branch, this._reprojectionTransform);
     }
     return this._reprojectedGraphic;
   }
@@ -759,12 +655,8 @@ export class RealityTile extends Tile {
           const childrenLoadStatus = this.loadChildren();
           if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
             collector.markLoading();
-          } else if (
-            undefined !== this.realityChildren &&
-            !this._anyChildNotFound
-          ) {
-            for (const child of this.realityChildren)
-              child.collectTileGeometry(collector);
+          } else if (undefined !== this.realityChildren && !this._anyChildNotFound) {
+            for (const child of this.realityChildren) child.collectTileGeometry(collector);
           }
 
           break;
@@ -772,8 +664,7 @@ export class RealityTile extends Tile {
       // eslint-disable-next-line no-fallthrough
       case "accept":
         if (!this.isReady) collector.addMissingTile(this.loadableTile);
-        else if (this.geometry?.polyfaces)
-          collector.polyfaces.push(...this.geometry.polyfaces);
+        else if (this.geometry?.polyfaces) collector.polyfaces.push(...this.geometry.polyfaces);
 
         break;
     }
@@ -794,11 +685,7 @@ class AdditiveRefinementStepChild extends RealityTile {
   public constructor(props: RealityTileParams, tree: RealityTileTree) {
     super(props, tree);
     this._loadableTile = this.realityParent;
-    for (
-      ;
-      this._loadableTile && this._loadableTile.isStepChild;
-      this._loadableTile = this._loadableTile.realityParent
-    );
+    for (; this._loadableTile && this._loadableTile.isStepChild; this._loadableTile = this._loadableTile.realityParent);
   }
   public override get loadableTile(): RealityTile {
     return this._loadableTile;
@@ -832,28 +719,12 @@ class AdditiveRefinementStepChild extends RealityTile {
       const renderSystem = IModelApp.renderSystem;
       const branchOptions: GraphicBranchOptions = {};
       if (this.rangeCorners) {
-        const clipPolygon = [
-          this.rangeCorners[0],
-          this.rangeCorners[1],
-          this.rangeCorners[3],
-          this.rangeCorners[2],
-        ];
+        const clipPolygon = [this.rangeCorners[0], this.rangeCorners[1], this.rangeCorners[3], this.rangeCorners[2]];
         branchOptions.clipVolume = renderSystem.createClipVolume(
-          ClipVector.create([
-            ClipShape.createShape(
-              clipPolygon,
-              undefined,
-              undefined,
-              this.tree.iModelTransform
-            )!,
-          ])
+          ClipVector.create([ClipShape.createShape(clipPolygon, undefined, undefined, this.tree.iModelTransform)!])
         );
       }
-      this._graphic = renderSystem.createGraphicBranch(
-        branch,
-        this._reprojectionTransform,
-        branchOptions
-      );
+      this._graphic = renderSystem.createGraphicBranch(branch, this._reprojectionTransform, branchOptions);
     }
     return this._graphic;
   }
@@ -867,12 +738,7 @@ class AdditiveRefinementStepChild extends RealityTile {
     _reject: (error: Error) => void
   ): void {
     this.loadAdditiveRefinementChildren((stepChildren: Tile[]) => {
-      if (stepChildren)
-        this.realityRoot.reprojectAndResolveChildren(
-          this,
-          stepChildren,
-          resolve
-        );
+      if (stepChildren) this.realityRoot.reprojectAndResolveChildren(this, stepChildren, resolve);
     });
   }
 }

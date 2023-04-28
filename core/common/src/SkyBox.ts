@@ -217,11 +217,9 @@ export class SkyGradient {
       zenithColor: this.zenithColor.toJSON(),
     };
 
-    if (this.groundExponent !== defaultExponent)
-      props.groundExponent = this.groundExponent;
+    if (this.groundExponent !== defaultExponent) props.groundExponent = this.groundExponent;
 
-    if (this.skyExponent !== defaultExponent)
-      props.skyExponent = this.skyExponent;
+    if (this.skyExponent !== defaultExponent) props.skyExponent = this.skyExponent;
 
     if (this.twoColor) props.twoColor = this.twoColor;
 
@@ -269,8 +267,7 @@ export class SkyBox {
     if (props?.image) {
       switch (props.image.type) {
         case SkyBoxImageType.Spherical:
-          if (undefined !== props.image.texture)
-            return new SkySphere(props.image.texture, gradient);
+          if (undefined !== props.image.texture) return new SkySphere(props.image.texture, gradient);
 
           break;
         case SkyBoxImageType.Cube: {
@@ -374,13 +371,6 @@ export class SkyCube extends SkyBox {
   /** @internal */
   public override get textureIds(): Iterable<Id64String> {
     const imgs = this.images;
-    return [
-      imgs.front,
-      imgs.back,
-      imgs.top,
-      imgs.bottom,
-      imgs.left,
-      imgs.right,
-    ].filter((x) => Id64.isValidId64(x));
+    return [imgs.front, imgs.back, imgs.top, imgs.bottom, imgs.left, imgs.right].filter((x) => Id64.isValidId64(x));
   }
 }

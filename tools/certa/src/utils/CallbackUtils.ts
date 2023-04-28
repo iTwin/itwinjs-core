@@ -35,26 +35,19 @@ export function getCallbacksRegisteredOnBackend(): {
 /** @internal */
 export function executeRegisteredCallback(name: string, args: any[]): any {
   const registeredCallbacks = getCallbacksRegisteredOnBackend();
-  if (!(name in registeredCallbacks))
-    throw new Error(`Unknown certa backend callback "${name}"`);
+  if (!(name in registeredCallbacks)) throw new Error(`Unknown certa backend callback "${name}"`);
 
   return registeredCallbacks[name](...args);
 }
 
-export function registerBackendCallback(
-  name: string,
-  cb: CertaBackendCallback
-): void {
+export function registerBackendCallback(name: string, cb: CertaBackendCallback): void {
   if (isFrontend) throw new Error("This should only be called on the backend!");
 
   global._CertaRegisteredCallbacks = global._CertaRegisteredCallbacks || {};
   global._CertaRegisteredCallbacks[name] = cb;
 }
 
-export async function executeBackendCallback(
-  name: string,
-  ...args: any[]
-): Promise<any> {
+export async function executeBackendCallback(name: string, ...args: any[]): Promise<any> {
   if (!isFrontend) return executeRegisteredCallback(name, args);
 
   return window._CertaSendToBackend(name, args);

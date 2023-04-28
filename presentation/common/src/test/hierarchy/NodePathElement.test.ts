@@ -5,10 +5,7 @@
 
 import { expect } from "chai";
 import { NodePathElement } from "../../presentation-common/hierarchy/NodePathElement";
-import {
-  createRandomNodePathElement,
-  createRandomNodePathElementJSON,
-} from "../_helpers/random";
+import { createRandomNodePathElement, createRandomNodePathElementJSON } from "../_helpers/random";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -52,19 +49,13 @@ describe("NodePathElement", () => {
 
   describe("listFromJSON", () => {
     it("creates valid NodePathElement[] from JSON", () => {
-      const json = [
-        createRandomNodePathElementJSON(),
-        createRandomNodePathElementJSON(),
-      ];
+      const json = [createRandomNodePathElementJSON(), createRandomNodePathElementJSON()];
       const nodes = NodePathElement.listFromJSON(json);
       expect(nodes).to.matchSnapshot();
     });
 
     it("creates valid NodePathElement[] from serialized JSON", () => {
-      const json = [
-        createRandomNodePathElementJSON(),
-        createRandomNodePathElementJSON(),
-      ];
+      const json = [createRandomNodePathElementJSON(), createRandomNodePathElementJSON()];
       const nodes = NodePathElement.listFromJSON(JSON.stringify(json));
       expect(nodes).to.matchSnapshot();
     });

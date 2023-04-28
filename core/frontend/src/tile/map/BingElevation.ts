@@ -73,10 +73,7 @@ export class BingElevationProvider {
    */
   public async getHeights(range: Range2d): Promise<number[] | undefined> {
     const boundingBox = `${range.low.y},${range.low.x},${range.high.y},${range.high.x}`;
-    const requestUrl = this._heightRangeRequestTemplate.replace(
-      "{boundingBox}",
-      boundingBox
-    );
+    const requestUrl = this._heightRangeRequestTemplate.replace("{boundingBox}", boundingBox);
 
     try {
       const tileResponseBody = await request(requestUrl, "json");
@@ -87,10 +84,7 @@ export class BingElevationProvider {
   }
 
   /** @internal */
-  public async getGeodeticToSeaLevelOffset(
-    point: Point3d,
-    iModel: IModelConnection
-  ): Promise<number> {
+  public async getGeodeticToSeaLevelOffset(point: Point3d, iModel: IModelConnection): Promise<number> {
     const carto = iModel.spatialToCartographicFromEcef(point);
     if (carto === undefined) return 0.0;
 
@@ -110,15 +104,8 @@ export class BingElevationProvider {
    *
    * @public
    */
-  public async getHeightValue(
-    point: Point3d,
-    iModel: IModelConnection,
-    geodetic = true
-  ): Promise<number> {
-    return this.getHeight(
-      iModel.spatialToCartographicFromEcef(point),
-      geodetic
-    );
+  public async getHeightValue(point: Point3d, iModel: IModelConnection, geodetic = true): Promise<number> {
+    return this.getHeight(iModel.spatialToCartographicFromEcef(point), geodetic);
   }
 
   /** Get the height (altitude) range for a given iModel project extents. The height values are  geodetic (WGS84 ellipsoid).

@@ -6,10 +6,7 @@ import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { AccessToken, BeEvent } from "@itwin/core-bentley";
-import {
-  AuthorizationClient,
-  InternetConnectivityStatus,
-} from "@itwin/core-common";
+import { AuthorizationClient, InternetConnectivityStatus } from "@itwin/core-common";
 import { IModelApp, UserPreferencesAccess } from "@itwin/core-frontend";
 import { ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
 import { IConnectivityInformationProvider } from "../../presentation-frontend/ConnectivityInformationProvider";
@@ -37,15 +34,11 @@ describe("IModelAppFavoritePropertiesStorage", () => {
 
   beforeEach(async () => {
     settingsAdminMock = moq.Mock.ofType<UserPreferencesAccess>();
-    sinon
-      .stub(IModelApp, "userPreferences")
-      .get(() => settingsAdminMock.object);
+    sinon.stub(IModelApp, "userPreferences").get(() => settingsAdminMock.object);
 
     authorizationClientMock = moq.Mock.ofType<AuthorizationClient>();
     const accessToken: AccessToken = "TestToken";
-    authorizationClientMock
-      .setup(async (x) => x.getAccessToken())
-      .returns(async () => Promise.resolve(accessToken));
+    authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(accessToken));
     IModelApp.authorizationClient = authorizationClientMock.object;
 
     storage = new IModelAppFavoritePropertiesStorage();
@@ -116,9 +109,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
 
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
-      authorizationClientMock
-        .setup(async (x) => x.getAccessToken())
-        .returns(async () => Promise.resolve(""));
+      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(""));
       await expect(storage.loadProperties()).to.eventually.be.rejected;
 
       IModelApp.authorizationClient = undefined;
@@ -139,15 +130,9 @@ describe("IModelAppFavoritePropertiesStorage", () => {
         )
         .returns(async () => {});
 
-      const properties = new Set<PropertyFullName>([
-        "propertyInfo1",
-        "propertyInfo2",
-      ]);
+      const properties = new Set<PropertyFullName>(["propertyInfo1", "propertyInfo2"]);
       await storage.saveProperties(properties);
-      settingsAdminMock.verify(
-        async (x) => x.save(moq.It.isAny()),
-        moq.Times.once()
-      );
+      settingsAdminMock.verify(async (x) => x.save(moq.It.isAny()), moq.Times.once());
     });
 
     it("throws when user preferences not set up", async () => {
@@ -157,9 +142,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
 
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
-      authorizationClientMock
-        .setup(async (x) => x.getAccessToken())
-        .returns(async () => Promise.resolve(""));
+      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(""));
       await expect(storage.saveProperties(new Set())).to.eventually.be.rejected;
 
       IModelApp.authorizationClient = undefined;
@@ -186,10 +169,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
         )
         .returns(async () => [orderInfo]);
 
-      const properties = await storage.loadPropertiesOrder(
-        "iTwinId",
-        "imodelId"
-      );
+      const properties = await storage.loadPropertiesOrder("iTwinId", "imodelId");
       expect(properties).to.be.not.undefined;
       expect(properties!.length).to.eq(1);
       expect(properties![0]).to.eq(orderInfo);
@@ -206,30 +186,21 @@ describe("IModelAppFavoritePropertiesStorage", () => {
           )
         )
         .returns(async () => undefined);
-      sinon
-        .stub(IModelApp, "userPreferences")
-        .get(() => settingsAdminMock.object);
+      sinon.stub(IModelApp, "userPreferences").get(() => settingsAdminMock.object);
 
-      const properties = await storage.loadPropertiesOrder(
-        "iTwinId",
-        "imodelId"
-      );
+      const properties = await storage.loadPropertiesOrder("iTwinId", "imodelId");
       expect(properties).to.be.undefined;
     });
 
     it("throws when user preferences not set up", async () => {
       sinon.stub(IModelApp, "userPreferences").get(() => undefined);
-      await expect(storage.loadPropertiesOrder("iTwinId", "imodelId")).to
-        .eventually.be.rejected;
+      await expect(storage.loadPropertiesOrder("iTwinId", "imodelId")).to.eventually.be.rejected;
     });
 
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
-      authorizationClientMock
-        .setup(async (x) => x.getAccessToken())
-        .returns(async () => Promise.resolve(""));
-      await expect(storage.loadPropertiesOrder("iTwinId", "imodelId")).to
-        .eventually.be.rejected;
+      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(""));
+      await expect(storage.loadPropertiesOrder("iTwinId", "imodelId")).to.eventually.be.rejected;
 
       IModelApp.authorizationClient = undefined;
       await expect(storage.loadProperties()).to.eventually.be.rejected;
@@ -266,17 +237,13 @@ describe("IModelAppFavoritePropertiesStorage", () => {
 
     it("throws when user preferences not set up", async () => {
       sinon.stub(IModelApp, "userPreferences").get(() => undefined);
-      await expect(storage.savePropertiesOrder([], "iTwinId", "imodelId")).to
-        .eventually.be.rejected;
+      await expect(storage.savePropertiesOrder([], "iTwinId", "imodelId")).to.eventually.be.rejected;
     });
 
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
-      authorizationClientMock
-        .setup(async (x) => x.getAccessToken())
-        .returns(async () => Promise.resolve(""));
-      await expect(storage.savePropertiesOrder([], "iTwinId", "imodelId")).to
-        .eventually.be.rejected;
+      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(""));
+      await expect(storage.savePropertiesOrder([], "iTwinId", "imodelId")).to.eventually.be.rejected;
 
       IModelApp.authorizationClient = undefined;
       await expect(storage.loadProperties()).to.eventually.be.rejected;
@@ -317,9 +284,7 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
   describe("saveProperties", () => {
     describe("when offline", () => {
       beforeEach(() => {
-        sinon
-          .stub(connectivityInfo, "status")
-          .get(() => InternetConnectivityStatus.Offline);
+        sinon.stub(connectivityInfo, "status").get(() => InternetConnectivityStatus.Offline);
       });
 
       it("saves properties to cache", async () => {
@@ -330,25 +295,19 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
 
     describe("when online", () => {
       beforeEach(() => {
-        sinon
-          .stub(connectivityInfo, "status")
-          .get(() => InternetConnectivityStatus.Online);
+        sinon.stub(connectivityInfo, "status").get(() => InternetConnectivityStatus.Online);
       });
 
       it("saves properties and clears offline cache when `impl` succeeds", async () => {
         // add something to offline cache
-        await offline(async () =>
-          storage.saveProperties(new Set(["a"]), "b", "c")
-        );
-        expect(await offline(async () => storage.loadProperties("b", "c"))).to
-          .not.be.undefined;
+        await offline(async () => storage.saveProperties(new Set(["a"]), "b", "c"));
+        expect(await offline(async () => storage.loadProperties("b", "c"))).to.not.be.undefined;
         // call save while online
         const set = new Set(["d"]);
         await storage.saveProperties(set, "b", "c");
         expect(impl.saveProperties).to.be.calledOnceWith(set, "b", "c");
         // verify the offline cache is empty
-        expect(await offline(async () => storage.loadProperties("b", "c"))).to
-          .be.undefined;
+        expect(await offline(async () => storage.loadProperties("b", "c"))).to.be.undefined;
       });
 
       it("saves properties and doesn't clear offline cache when `impl` request succeeds after offline call", async () => {
@@ -362,27 +321,20 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
         await implPromise.resolve();
         await result;
         // verify the offline cache now contains value of the most recent `saveProperties` call
-        expect(
-          await offline(async () => storage.loadProperties("x", "z"))
-        ).to.contain("2");
+        expect(await offline(async () => storage.loadProperties("x", "z"))).to.contain("2");
       });
 
       it("saves properties and puts them to offline cache when `impl` fails", async () => {
         // add something to offline cache
-        await offline(async () =>
-          storage.saveProperties(new Set(["a"]), "b", "c")
-        );
-        expect(await offline(async () => storage.loadProperties("b", "c"))).to
-          .not.be.undefined;
+        await offline(async () => storage.saveProperties(new Set(["a"]), "b", "c"));
+        expect(await offline(async () => storage.loadProperties("b", "c"))).to.not.be.undefined;
         // call save while online
         impl.saveProperties.returns(Promise.reject());
         const set = new Set(["d"]);
         await storage.saveProperties(set, "b", "c");
         expect(impl.saveProperties).to.be.calledOnceWith(set, "b", "c");
         // verify the offline cache now contains value of the most recent `saveProperties` call
-        const result = await offline(async () =>
-          storage.loadProperties("b", "c")
-        );
+        const result = await offline(async () => storage.loadProperties("b", "c"));
         expect(result?.size).to.eq(1);
         expect(result).to.contain("d");
       });
@@ -400,9 +352,7 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
         implPromises.forEach(async (promise) => promise.reject());
         await result;
         // verify the offline cache now contains value of the most recent `saveProperties` call
-        expect(
-          await offline(async () => storage.loadProperties("x", "z"))
-        ).to.contain("2");
+        expect(await offline(async () => storage.loadProperties("x", "z"))).to.contain("2");
       });
 
       it("stores properties to offline cache the last value when two `impl` requests fail in opposite order", async () => {
@@ -418,9 +368,7 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
         implPromises.reverse().forEach(async (promise) => promise.reject());
         await result;
         // verify the offline cache now contains value of the most recent `saveProperties` call
-        expect(
-          await offline(async () => storage.loadProperties("x", "z"))
-        ).to.contain("2");
+        expect(await offline(async () => storage.loadProperties("x", "z"))).to.contain("2");
       });
 
       it("stores properties to offline cache the last value when `impl` request fails before offline call", async () => {
@@ -432,9 +380,7 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
         expect(impl.saveProperties).to.be.calledOnce;
         await result;
         // verify the offline cache now contains value of the most recent `saveProperties` call
-        expect(
-          await offline(async () => storage.loadProperties("x", "z"))
-        ).to.contain("2");
+        expect(await offline(async () => storage.loadProperties("x", "z"))).to.contain("2");
       });
 
       it("stores properties to offline cache the last value when `impl` request fails after offline call", async () => {
@@ -448,9 +394,7 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
         await implPromise.reject();
         await result;
         // verify the offline cache now contains value of the most recent `saveProperties` call
-        expect(
-          await offline(async () => storage.loadProperties("x", "z"))
-        ).to.contain("2");
+        expect(await offline(async () => storage.loadProperties("x", "z"))).to.contain("2");
       });
     });
   });
@@ -458,9 +402,7 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
   describe("loadProperties", () => {
     describe("when offline", () => {
       beforeEach(() => {
-        sinon
-          .stub(connectivityInfo, "status")
-          .get(() => InternetConnectivityStatus.Offline);
+        sinon.stub(connectivityInfo, "status").get(() => InternetConnectivityStatus.Offline);
       });
 
       it("returns `undefined`and there's no cached value", async () => {
@@ -480,9 +422,7 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
 
     describe("when online", () => {
       beforeEach(() => {
-        sinon
-          .stub(connectivityInfo, "status")
-          .get(() => InternetConnectivityStatus.Online);
+        sinon.stub(connectivityInfo, "status").get(() => InternetConnectivityStatus.Online);
       });
 
       it("loads properties from `impl`", async () => {
@@ -492,9 +432,7 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
       });
 
       it("loads from cache if `impl` load fails", async () => {
-        await offline(async () =>
-          storage.saveProperties(new Set(["cached"]), "a", "b")
-        );
+        await offline(async () => storage.saveProperties(new Set(["cached"]), "a", "b"));
         impl.loadProperties.returns(Promise.reject());
         const result = await storage.loadProperties("a", "b");
         expect(impl.loadProperties).to.be.calledOnce;
@@ -507,50 +445,30 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
   describe("savePropertiesOrder", () => {
     describe("when offline", () => {
       beforeEach(() => {
-        sinon
-          .stub(connectivityInfo, "status")
-          .get(() => InternetConnectivityStatus.Offline);
+        sinon.stub(connectivityInfo, "status").get(() => InternetConnectivityStatus.Offline);
       });
 
       it("saves properties order to cache", async () => {
-        await storage.savePropertiesOrder(
-          [createRandomPropertiesOrderInfo()],
-          "a",
-          "b"
-        );
+        await storage.savePropertiesOrder([createRandomPropertiesOrderInfo()], "a", "b");
         expect(impl.savePropertiesOrder).to.not.be.called;
       });
     });
 
     describe("when online", () => {
       beforeEach(() => {
-        sinon
-          .stub(connectivityInfo, "status")
-          .get(() => InternetConnectivityStatus.Online);
+        sinon.stub(connectivityInfo, "status").get(() => InternetConnectivityStatus.Online);
       });
 
       it("saves properties order and clears offline cache when `impl` succeeds", async () => {
         // add something to offline cache
-        await offline(async () =>
-          storage.savePropertiesOrder(
-            [createRandomPropertiesOrderInfo()],
-            "b",
-            "c"
-          )
-        );
-        expect(await offline(async () => storage.loadPropertiesOrder("b", "c")))
-          .to.not.be.undefined;
+        await offline(async () => storage.savePropertiesOrder([createRandomPropertiesOrderInfo()], "b", "c"));
+        expect(await offline(async () => storage.loadPropertiesOrder("b", "c"))).to.not.be.undefined;
         // call save while online
         const order = createRandomPropertiesOrderInfo();
         await storage.savePropertiesOrder([order], "b", "c");
-        expect(impl.savePropertiesOrder).to.be.calledOnceWith(
-          [order],
-          "b",
-          "c"
-        );
+        expect(impl.savePropertiesOrder).to.be.calledOnceWith([order], "b", "c");
         // verify the offline cache is empty
-        expect(await offline(async () => storage.loadPropertiesOrder("b", "c")))
-          .to.be.undefined;
+        expect(await offline(async () => storage.loadPropertiesOrder("b", "c"))).to.be.undefined;
       });
 
       it("saves properties order and doesn't clear offline cache when `impl` request succeeds after offline call", async () => {
@@ -558,46 +476,27 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
         const implPromise = new ResolvablePromise<void>();
         impl.saveProperties.returns(implPromise);
         const result = Promise.all([
-          online(async () =>
-            storage.savePropertiesOrder([orderInfos[0]], "x", "z")
-          ),
-          offline(async () =>
-            storage.savePropertiesOrder([orderInfos[1]], "x", "z")
-          ),
+          online(async () => storage.savePropertiesOrder([orderInfos[0]], "x", "z")),
+          offline(async () => storage.savePropertiesOrder([orderInfos[1]], "x", "z")),
         ]);
         expect(impl.savePropertiesOrder).to.be.calledOnce;
         await implPromise.resolve();
         await result;
         // verify the offline cache now contains value of the most recent `savePropertiesOrder` call
-        expect(
-          await offline(async () => storage.loadPropertiesOrder("x", "z"))
-        ).to.contain(orderInfos[1]);
+        expect(await offline(async () => storage.loadPropertiesOrder("x", "z"))).to.contain(orderInfos[1]);
       });
 
       it("saves properties order and puts them to offline cache when `impl` fails", async () => {
         // add something to offline cache
-        await offline(async () =>
-          storage.savePropertiesOrder(
-            [createRandomPropertiesOrderInfo()],
-            "b",
-            "c"
-          )
-        );
-        expect(await offline(async () => storage.loadPropertiesOrder("b", "c")))
-          .to.not.be.undefined;
+        await offline(async () => storage.savePropertiesOrder([createRandomPropertiesOrderInfo()], "b", "c"));
+        expect(await offline(async () => storage.loadPropertiesOrder("b", "c"))).to.not.be.undefined;
         // call save while online
         impl.savePropertiesOrder.returns(Promise.reject());
         const order = createRandomPropertiesOrderInfo();
         await storage.savePropertiesOrder([order], "b", "c");
-        expect(impl.savePropertiesOrder).to.be.calledOnceWith(
-          [order],
-          "b",
-          "c"
-        );
+        expect(impl.savePropertiesOrder).to.be.calledOnceWith([order], "b", "c");
         // verify the offline cache now contains value of the most recent `savePropertiesOrder` call
-        const result = await offline(async () =>
-          storage.loadPropertiesOrder("b", "c")
-        );
+        const result = await offline(async () => storage.loadPropertiesOrder("b", "c"));
         expect(result?.length).to.eq(1);
         expect(result).to.contain(order);
       });
@@ -608,18 +507,12 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
         impl.savePropertiesOrder.resetBehavior();
         impl.savePropertiesOrder.onFirstCall().returns(implPromises[0]);
         impl.savePropertiesOrder.onSecondCall().returns(implPromises[1]);
-        const result = Promise.all(
-          orderInfos.map(async (order) =>
-            storage.savePropertiesOrder([order], "x", "z")
-          )
-        );
+        const result = Promise.all(orderInfos.map(async (order) => storage.savePropertiesOrder([order], "x", "z")));
         expect(impl.savePropertiesOrder).to.be.calledTwice;
         implPromises.forEach(async (promise) => promise.reject());
         await result;
         // verify the offline cache now contains value of the most recent `savePropertiesOrder` call
-        expect(
-          await offline(async () => storage.loadPropertiesOrder("x", "z"))
-        ).to.contain(orderInfos[1]);
+        expect(await offline(async () => storage.loadPropertiesOrder("x", "z"))).to.contain(orderInfos[1]);
       });
 
       it("stores properties order to offline cache the last value when two `impl` requests fail in opposite order", async () => {
@@ -628,37 +521,25 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
         impl.savePropertiesOrder.resetBehavior();
         impl.savePropertiesOrder.onFirstCall().returns(implPromises[0]);
         impl.savePropertiesOrder.onSecondCall().returns(implPromises[1]);
-        const result = Promise.all(
-          orderInfos.map(async (order) =>
-            storage.savePropertiesOrder([order], "x", "z")
-          )
-        );
+        const result = Promise.all(orderInfos.map(async (order) => storage.savePropertiesOrder([order], "x", "z")));
         expect(impl.savePropertiesOrder).to.be.calledTwice;
         implPromises.reverse().forEach(async (promise) => promise.reject());
         await result;
         // verify the offline cache now contains value of the most recent `savePropertiesOrder` call
-        expect(
-          await offline(async () => storage.loadPropertiesOrder("x", "z"))
-        ).to.contain(orderInfos[1]);
+        expect(await offline(async () => storage.loadPropertiesOrder("x", "z"))).to.contain(orderInfos[1]);
       });
 
       it("stores properties order to offline cache the last value when `impl` request fails before offline call", async () => {
         const orderInfos = [0, 1].map(() => createRandomPropertiesOrderInfo());
         impl.savePropertiesOrder.returns(Promise.reject());
         const result = Promise.all([
-          online(async () =>
-            storage.savePropertiesOrder([orderInfos[0]], "x", "z")
-          ),
-          offline(async () =>
-            storage.savePropertiesOrder([orderInfos[1]], "x", "z")
-          ),
+          online(async () => storage.savePropertiesOrder([orderInfos[0]], "x", "z")),
+          offline(async () => storage.savePropertiesOrder([orderInfos[1]], "x", "z")),
         ]);
         expect(impl.savePropertiesOrder).to.be.calledOnce;
         await result;
         // verify the offline cache now contains value of the most recent `savePropertiesOrder` call
-        expect(
-          await offline(async () => storage.loadPropertiesOrder("x", "z"))
-        ).to.contain(orderInfos[1]);
+        expect(await offline(async () => storage.loadPropertiesOrder("x", "z"))).to.contain(orderInfos[1]);
       });
 
       it("stores properties order to offline cache the last value when `impl` request fails after offline call", async () => {
@@ -666,20 +547,14 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
         const implPromise = new ResolvablePromise<void>();
         impl.savePropertiesOrder.returns(implPromise);
         const result = Promise.all([
-          online(async () =>
-            storage.savePropertiesOrder([orderInfos[0]], "x", "z")
-          ),
-          offline(async () =>
-            storage.savePropertiesOrder([orderInfos[1]], "x", "z")
-          ),
+          online(async () => storage.savePropertiesOrder([orderInfos[0]], "x", "z")),
+          offline(async () => storage.savePropertiesOrder([orderInfos[1]], "x", "z")),
         ]);
         expect(impl.savePropertiesOrder).to.be.calledOnce;
         await implPromise.reject();
         await result;
         // verify the offline cache now contains value of the most recent `savePropertiesOrder` call
-        expect(
-          await offline(async () => storage.loadPropertiesOrder("x", "z"))
-        ).to.contain(orderInfos[1]);
+        expect(await offline(async () => storage.loadPropertiesOrder("x", "z"))).to.contain(orderInfos[1]);
       });
     });
   });
@@ -687,9 +562,7 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
   describe("loadPropertiesOrder", () => {
     describe("when offline", () => {
       beforeEach(() => {
-        sinon
-          .stub(connectivityInfo, "status")
-          .get(() => InternetConnectivityStatus.Offline);
+        sinon.stub(connectivityInfo, "status").get(() => InternetConnectivityStatus.Offline);
       });
 
       it("returns `undefined` and there's no cached value", async () => {
@@ -709,9 +582,7 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
 
     describe("when online", () => {
       beforeEach(() => {
-        sinon
-          .stub(connectivityInfo, "status")
-          .get(() => InternetConnectivityStatus.Online);
+        sinon.stub(connectivityInfo, "status").get(() => InternetConnectivityStatus.Online);
       });
 
       it("loads properties from `impl`", async () => {
@@ -722,9 +593,7 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
 
       it("loads from cache if `impl` load fails", async () => {
         const order = createRandomPropertiesOrderInfo();
-        await offline(async () =>
-          storage.savePropertiesOrder([order], "a", "b")
-        );
+        await offline(async () => storage.savePropertiesOrder([order], "a", "b"));
         impl.loadPropertiesOrder.returns(Promise.reject());
         const result = await storage.loadPropertiesOrder("a", "b");
         expect(impl.loadPropertiesOrder).to.be.calledOnce;
@@ -739,34 +608,22 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
       // store some data to offline cache
       const propertiesSet = new Set(["a"]);
       const orderInfo = createRandomPropertiesOrderInfo();
-      await offline(async () =>
-        storage.saveProperties(propertiesSet, "b", "c")
-      );
-      await offline(async () =>
-        storage.savePropertiesOrder([orderInfo], "b", "c")
-      );
+      await offline(async () => storage.saveProperties(propertiesSet, "b", "c"));
+      await offline(async () => storage.savePropertiesOrder([orderInfo], "b", "c"));
       expect(impl.saveProperties).to.not.be.called;
       expect(impl.savePropertiesOrder).to.not.be.called;
 
       // notify the connection status changed to 'online'
-      sinon
-        .stub(connectivityInfo, "status")
-        .get(() => InternetConnectivityStatus.Online);
+      sinon.stub(connectivityInfo, "status").get(() => InternetConnectivityStatus.Online);
       connectivityInfo.onInternetConnectivityChanged.raiseEvent({
         status: InternetConnectivityStatus.Online,
       });
 
       // expect properties and order to be synced with `impl` and removed from offline cache
       expect(impl.saveProperties).to.be.calledOnceWith(propertiesSet, "b", "c");
-      expect(impl.savePropertiesOrder).to.be.calledOnceWith(
-        [orderInfo],
-        "b",
-        "c"
-      );
-      expect(await offline(async () => storage.loadProperties("b", "c"))).to.be
-        .undefined;
-      expect(await offline(async () => storage.loadPropertiesOrder("b", "c")))
-        .to.be.undefined;
+      expect(impl.savePropertiesOrder).to.be.calledOnceWith([orderInfo], "b", "c");
+      expect(await offline(async () => storage.loadProperties("b", "c"))).to.be.undefined;
+      expect(await offline(async () => storage.loadPropertiesOrder("b", "c"))).to.be.undefined;
     });
   });
 
@@ -784,13 +641,8 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
     expect(disposableConnectivityInfo.dispose).to.be.calledOnce;
   });
 
-  const callInConnectivityContext = async <T>(
-    cb: () => Promise<T>,
-    connectivityStatus: InternetConnectivityStatus
-  ) => {
-    const stub = sinon
-      .stub(connectivityInfo, "status")
-      .get(() => connectivityStatus);
+  const callInConnectivityContext = async <T>(cb: () => Promise<T>, connectivityStatus: InternetConnectivityStatus) => {
+    const stub = sinon.stub(connectivityInfo, "status").get(() => connectivityStatus);
     const result = await cb();
     stub.restore();
     return result;
@@ -824,11 +676,7 @@ describe("BrowserLocalFavoritePropertiesStorage", () => {
     it("saves properties to local storage", async () => {
       await storage.saveProperties(new Set(["test"]), "a", "b");
       storageMock.verify(
-        (x) =>
-          x.setItem(
-            storage.createFavoritesSettingItemKey("a", "b"),
-            `["test"]`
-          ),
+        (x) => x.setItem(storage.createFavoritesSettingItemKey("a", "b"), `["test"]`),
         moq.Times.once()
       );
     });
@@ -843,9 +691,7 @@ describe("BrowserLocalFavoritePropertiesStorage", () => {
 
     it("loads from local storage where there's a value", async () => {
       storageMock
-        .setup((x) =>
-          x.getItem(storage.createFavoritesSettingItemKey("a", "b"))
-        )
+        .setup((x) => x.getItem(storage.createFavoritesSettingItemKey("a", "b")))
         .returns(() => `["abc", "def"]`)
         .verifiable();
       const result = await storage.loadProperties("a", "b");
@@ -861,11 +707,7 @@ describe("BrowserLocalFavoritePropertiesStorage", () => {
       const orderInfos = [createRandomPropertiesOrderInfo()];
       await storage.savePropertiesOrder(orderInfos, "a", "b");
       storageMock.verify(
-        (x) =>
-          x.setItem(
-            storage.createOrderSettingItemKey("a", "b"),
-            JSON.stringify(orderInfos)
-          ),
+        (x) => x.setItem(storage.createOrderSettingItemKey("a", "b"), JSON.stringify(orderInfos)),
         moq.Times.once()
       );
     });
@@ -904,29 +746,21 @@ describe("createFavoritePropertiesStorage", () => {
   });
 
   it("creates noop storage", () => {
-    const result = createFavoritePropertiesStorage(
-      DefaultFavoritePropertiesStorageTypes.Noop
-    );
+    const result = createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.Noop);
     expect(result).to.be.instanceOf(NoopFavoritePropertiesStorage);
   });
 
   it("creates browser local storage", () => {
-    sinon
-      .stub(window, "localStorage")
-      .get(() => moq.Mock.ofType<Storage>().object);
-    const result = createFavoritePropertiesStorage(
-      DefaultFavoritePropertiesStorageTypes.BrowserLocalStorage
-    );
+    sinon.stub(window, "localStorage").get(() => moq.Mock.ofType<Storage>().object);
+    const result = createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.BrowserLocalStorage);
     expect(result).to.be.instanceOf(BrowserLocalFavoritePropertiesStorage);
   });
 
   it("creates user settings service storage", () => {
-    const result = createFavoritePropertiesStorage(
-      DefaultFavoritePropertiesStorageTypes.UserPreferencesStorage
-    );
+    const result = createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.UserPreferencesStorage);
     expect(result).to.be.instanceOf(OfflineCachingFavoritePropertiesStorage);
-    expect(
-      (result as OfflineCachingFavoritePropertiesStorage).impl
-    ).to.be.instanceOf(IModelAppFavoritePropertiesStorage);
+    expect((result as OfflineCachingFavoritePropertiesStorage).impl).to.be.instanceOf(
+      IModelAppFavoritePropertiesStorage
+    );
   });
 });

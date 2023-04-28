@@ -17,11 +17,10 @@ async function executeQuery(
   abbreviateBlobs?: boolean
 ): Promise<any[]> {
   const rows: any[] = [];
-  for await (const queryRow of iModel.createQueryReader(
-    ecsql,
-    QueryBinder.from(bindings),
-    { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs }
-  )) {
+  for await (const queryRow of iModel.createQueryReader(ecsql, QueryBinder.from(bindings), {
+    rowFormat: QueryRowFormat.UseJsPropertyNames,
+    abbreviateBlobs,
+  })) {
     rows.push(queryRow.toRow());
   }
   return rows;

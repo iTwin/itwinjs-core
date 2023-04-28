@@ -23,23 +23,13 @@ describe("Inverted Unit tests", () => {
     testUnit = new InvertedUnit(schema, "Test");
     it("should return correct item type and string", () => {
       assert.strictEqual(testUnit.schemaItemType, SchemaItemType.InvertedUnit);
-      assert.strictEqual(
-        schemaItemTypeToString(testUnit.schemaItemType),
-        "InvertedUnit"
-      );
+      assert.strictEqual(schemaItemTypeToString(testUnit.schemaItemType), "InvertedUnit");
     });
   });
 
   describe("Async fromJson", () => {
     beforeEach(() => {
-      const schema = new Schema(
-        new SchemaContext(),
-        "TestSchema",
-        "ts",
-        1,
-        0,
-        0
-      );
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       testUnit = new InvertedUnit(schema, "HORIZONTAL_PER_VERTICAL");
     });
 
@@ -117,14 +107,8 @@ describe("Inverted Unit tests", () => {
       assert.isTrue(testItem?.schemaItemType === SchemaItemType.InvertedUnit);
       const testInvertedUnit: InvertedUnit = testItem as InvertedUnit;
       assert.isDefined(testInvertedUnit);
-      assert.strictEqual(
-        testInvertedUnit.unitSystem!.fullName,
-        "TestSchema.INTERNATIONAL"
-      );
-      assert.strictEqual(
-        testInvertedUnit.invertsUnit!.fullName,
-        "TestSchema.VERTICAL_PER_HORIZONTAL"
-      );
+      assert.strictEqual(testInvertedUnit.unitSystem!.fullName, "TestSchema.INTERNATIONAL");
+      assert.strictEqual(testInvertedUnit.invertsUnit!.fullName, "TestSchema.VERTICAL_PER_HORIZONTAL");
     });
     it("unitSystem is required", async () => {
       const json = {
@@ -154,9 +138,7 @@ describe("Inverted Unit tests", () => {
           },
         },
       };
-      await expect(
-        Schema.fromJson(json, new SchemaContext())
-      ).to.be.rejectedWith(
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(
         ECObjectsError,
         `The InvertedUnit TestSchema.HORIZONTAL_PER_VERTICAL does not have the required 'unitSystem' attribute.`
       );
@@ -204,31 +186,18 @@ describe("Inverted Unit tests", () => {
       assert.isDefined(testUnitSys);
       assert.isTrue(testUnitSys?.schemaItemType === SchemaItemType.UnitSystem);
       const testUnitSysItem: UnitSystem = testUnitSys as UnitSystem;
-      assert.strictEqual(
-        unitSysFromInvertedUnit!.description,
-        testUnitSysItem.description
-      );
+      assert.strictEqual(unitSysFromInvertedUnit!.description, testUnitSysItem.description);
 
       const testInvertsUnit = await ecSchema.getItem("VERTICAL_PER_HORIZONTAL");
       assert.isDefined(testInvertsUnit);
       assert.isTrue(testInvertsUnit?.schemaItemType === SchemaItemType.Unit);
       const testInvertsUnitItem: Unit = testInvertsUnit as Unit;
-      assert.strictEqual(
-        invertsUnitFromInvertedUnit!.definition,
-        testInvertsUnitItem.definition
-      );
+      assert.strictEqual(invertsUnitFromInvertedUnit!.definition, testInvertsUnitItem.definition);
     });
   });
   describe("Sync fromJson", () => {
     beforeEach(() => {
-      const schema = new Schema(
-        new SchemaContext(),
-        "TestSchema",
-        "ts",
-        1,
-        0,
-        0
-      );
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       testUnit = new InvertedUnit(schema, "HORIZONTAL_PER_VERTICAL");
     });
 
@@ -306,14 +275,8 @@ describe("Inverted Unit tests", () => {
       assert.isTrue(testItem?.schemaItemType === SchemaItemType.InvertedUnit);
       const testInvertedUnit: InvertedUnit = testItem as InvertedUnit;
       assert.isDefined(testInvertedUnit);
-      assert.strictEqual(
-        testInvertedUnit.unitSystem!.fullName,
-        "TestSchema.INTERNATIONAL"
-      );
-      assert.strictEqual(
-        testInvertedUnit.invertsUnit!.fullName,
-        "TestSchema.VERTICAL_PER_HORIZONTAL"
-      );
+      assert.strictEqual(testInvertedUnit.unitSystem!.fullName, "TestSchema.INTERNATIONAL");
+      assert.strictEqual(testInvertedUnit.invertsUnit!.fullName, "TestSchema.VERTICAL_PER_HORIZONTAL");
     });
     it("Resolve all dependencies for inverts unit and unit system", async () => {
       const json = {
@@ -358,32 +321,19 @@ describe("Inverted Unit tests", () => {
       assert.isDefined(testUnitSys);
       assert.isTrue(testUnitSys?.schemaItemType === SchemaItemType.UnitSystem);
       const testUnitSysItem: UnitSystem = testUnitSys as UnitSystem;
-      assert.strictEqual(
-        unitSysFromInvertedUnit!.description,
-        testUnitSysItem.description
-      );
+      assert.strictEqual(unitSysFromInvertedUnit!.description, testUnitSysItem.description);
 
       const testInvertsUnit = await ecSchema.getItem("VERTICAL_PER_HORIZONTAL");
       assert.isDefined(testInvertsUnit);
       assert.isTrue(testInvertsUnit?.schemaItemType === SchemaItemType.Unit);
       const testInvertsUnitItem: Unit = testInvertsUnit as Unit;
-      assert.strictEqual(
-        invertsUnitFromInvertedUnit!.definition,
-        testInvertsUnitItem.definition
-      );
+      assert.strictEqual(invertsUnitFromInvertedUnit!.definition, testInvertsUnitItem.definition);
     });
   });
 
   describe("toJSON", () => {
     beforeEach(() => {
-      const schema = new Schema(
-        new SchemaContext(),
-        "TestSchema",
-        "ts",
-        1,
-        0,
-        0
-      );
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       testUnit = new InvertedUnit(schema, "HORIZONTAL_PER_VERTICAL");
     });
 
@@ -422,12 +372,8 @@ describe("Inverted Unit tests", () => {
       const testInvertedUnit: InvertedUnit = testItem as InvertedUnit;
       assert.isDefined(testInvertedUnit);
       const invertedUnitSerialization = testInvertedUnit.toJSON(true, true);
-      expect(invertedUnitSerialization.unitSystem).to.eql(
-        "TestSchema.INTERNATIONAL"
-      );
-      expect(invertedUnitSerialization.invertsUnit).to.eql(
-        "TestSchema.VERTICAL_PER_HORIZONTAL"
-      );
+      expect(invertedUnitSerialization.unitSystem).to.eql("TestSchema.INTERNATIONAL");
+      expect(invertedUnitSerialization.invertsUnit).to.eql("TestSchema.VERTICAL_PER_HORIZONTAL");
     });
     it("sync- Serialization of fully defined inverted unit", () => {
       const ecSchema = Schema.fromJsonSync(jsonOne, new SchemaContext());
@@ -437,12 +383,8 @@ describe("Inverted Unit tests", () => {
       const testInvertedUnit: InvertedUnit = testItem as InvertedUnit;
       assert.isDefined(testInvertedUnit);
       const invertedUnitSerialization = testInvertedUnit.toJSON(true, true);
-      expect(invertedUnitSerialization.unitSystem).to.eql(
-        "TestSchema.INTERNATIONAL"
-      );
-      expect(invertedUnitSerialization.invertsUnit).to.eql(
-        "TestSchema.VERTICAL_PER_HORIZONTAL"
-      );
+      expect(invertedUnitSerialization.unitSystem).to.eql("TestSchema.INTERNATIONAL");
+      expect(invertedUnitSerialization.invertsUnit).to.eql("TestSchema.VERTICAL_PER_HORIZONTAL");
     });
     it("async- JSON stringify serialization of fully defined inverted unit", async () => {
       const ecSchema = await Schema.fromJson(jsonOne, new SchemaContext());
@@ -453,12 +395,8 @@ describe("Inverted Unit tests", () => {
       assert.isDefined(testInvertedUnit);
       const json = JSON.stringify(testInvertedUnit);
       const invertedUnitSerialization = JSON.parse(json);
-      expect(invertedUnitSerialization.unitSystem).to.eql(
-        "TestSchema.INTERNATIONAL"
-      );
-      expect(invertedUnitSerialization.invertsUnit).to.eql(
-        "TestSchema.VERTICAL_PER_HORIZONTAL"
-      );
+      expect(invertedUnitSerialization.unitSystem).to.eql("TestSchema.INTERNATIONAL");
+      expect(invertedUnitSerialization.invertsUnit).to.eql("TestSchema.VERTICAL_PER_HORIZONTAL");
     });
     it("sync- JSON stringify serialization of fully defined inverted unit", () => {
       const ecSchema = Schema.fromJsonSync(jsonOne, new SchemaContext());
@@ -469,12 +407,8 @@ describe("Inverted Unit tests", () => {
       assert.isDefined(testInvertedUnit);
       const json = JSON.stringify(testInvertedUnit);
       const invertedUnitSerialization = JSON.parse(json);
-      expect(invertedUnitSerialization.unitSystem).to.eql(
-        "TestSchema.INTERNATIONAL"
-      );
-      expect(invertedUnitSerialization.invertsUnit).to.eql(
-        "TestSchema.VERTICAL_PER_HORIZONTAL"
-      );
+      expect(invertedUnitSerialization.unitSystem).to.eql("TestSchema.INTERNATIONAL");
+      expect(invertedUnitSerialization.invertsUnit).to.eql("TestSchema.VERTICAL_PER_HORIZONTAL");
     });
   });
 
@@ -511,20 +445,14 @@ describe("Inverted Unit tests", () => {
     it("should properly serialize", async () => {
       const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
       assert.isDefined(ecschema);
-      const testInvUnit = await ecschema.getItem<InvertedUnit>(
-        "HORIZONTAL_PER_VERTICAL"
-      );
+      const testInvUnit = await ecschema.getItem<InvertedUnit>("HORIZONTAL_PER_VERTICAL");
       assert.isDefined(testInvUnit);
 
       const serialized = await testInvUnit!.toXml(newDom);
       expect(serialized.nodeName).to.eql("InvertedUnit");
-      expect(serialized.getAttribute("typeName")).to.eql(
-        "HORIZONTAL_PER_VERTICAL"
-      );
+      expect(serialized.getAttribute("typeName")).to.eql("HORIZONTAL_PER_VERTICAL");
       expect(serialized.getAttribute("unitSystem")).to.eql("INTERNATIONAL");
-      expect(serialized.getAttribute("invertsUnit")).to.eql(
-        "VERTICAL_PER_HORIZONTAL"
-      );
+      expect(serialized.getAttribute("invertsUnit")).to.eql("VERTICAL_PER_HORIZONTAL");
     });
   });
 });

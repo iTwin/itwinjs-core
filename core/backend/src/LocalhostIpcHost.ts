@@ -33,9 +33,7 @@ class LocalTransport extends IpcWebSocketTransport {
 
     if (!opts.noServer) {
       this._server = new ws.Server({ port: opts.socketPort ?? 3002 });
-      this._server.on("connection", (connection) =>
-        LocalhostIpcHost.connect(connection)
-      );
+      this._server.on("connection", (connection) => LocalhostIpcHost.connect(connection));
     }
   }
 
@@ -75,9 +73,7 @@ class RpcHandler extends IpcHandler {
   public async request(info: InterceptedRpcRequest) {
     const invocation = RpcSessionInvocation.create(info);
     const fulfillment = await invocation.fulfillment;
-    return invocation.rejected
-      ? Promise.reject(fulfillment.rawResult)
-      : fulfillment.rawResult;
+    return invocation.rejected ? Promise.reject(fulfillment.rawResult) : fulfillment.rawResult;
   }
 }
 
@@ -90,10 +86,7 @@ export class LocalhostIpcHost {
     (IpcWebSocket.transport as LocalTransport).connect(connection);
   }
 
-  public static async startup(opts?: {
-    localhostIpcHost?: LocalhostIpcHostOpts;
-    iModelHost?: IModelHostOptions;
-  }) {
+  public static async startup(opts?: { localhostIpcHost?: LocalhostIpcHostOpts; iModelHost?: IModelHostOptions }) {
     let registerHandler = false;
 
     if (!this._initialized) {

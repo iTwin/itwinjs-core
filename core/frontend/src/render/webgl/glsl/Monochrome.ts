@@ -7,11 +7,7 @@
  */
 
 import { MonochromeMode } from "@itwin/core-common";
-import {
-  FragmentShaderBuilder,
-  FragmentShaderComponent,
-  VariableType,
-} from "../ShaderBuilder";
+import { FragmentShaderBuilder, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
 
 const applyUnlitMonochromeColor = `
   vec4 monoColor = vec4(u_monoRgb, baseColor.a);
@@ -58,8 +54,5 @@ export function addSurfaceMonochrome(frag: FragmentShaderBuilder): void {
     });
   });
 
-  frag.set(
-    FragmentShaderComponent.ApplyMonochrome,
-    applySurfaceMonochromeColor
-  );
+  frag.set(FragmentShaderComponent.ApplyMonochrome, applySurfaceMonochromeColor);
 }

@@ -4,19 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import {
-  Matrix3d,
-  Matrix4d,
-  Point3d,
-  Transform,
-  Vector3d,
-} from "@itwin/core-geometry";
-import {
-  fromNormalizedCrossProduct,
-  Matrix3,
-  Matrix4,
-  normalizedDifference,
-} from "../../../render/webgl/Matrix";
+import { Matrix3d, Matrix4d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { fromNormalizedCrossProduct, Matrix3, Matrix4, normalizedDifference } from "../../../render/webgl/Matrix";
 
 describe("Matrix3", () => {
   it("constructor works as expected", () => {
@@ -120,24 +109,7 @@ describe("Matrix4", () => {
     assert.isTrue(mat.data[15] === 1, "(3,3) --> 1");
   });
   it("getRotation works as expected", () => {
-    const mat4 = Matrix4.fromValues(
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
-      11,
-      12,
-      13,
-      14,
-      15,
-      16
-    );
+    const mat4 = Matrix4.fromValues(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
     const mat3 = mat4.getRotation();
     assert.isTrue(mat3.data[0] === mat4.data[0], "(0,0) is equivalent");
     assert.isTrue(mat3.data[3] === mat4.data[4], "(0,1) is equivalent");
@@ -173,24 +145,7 @@ describe("Matrix4", () => {
     assert.isTrue(mat4.data[15] === 1, "(3,3) --> 1");
   });
   it("toTransform works as expected", () => {
-    const validMat = Matrix4.fromValues(
-      1,
-      2,
-      3,
-      10,
-      4,
-      5,
-      6,
-      11,
-      7,
-      8,
-      9,
-      12,
-      0,
-      0,
-      0,
-      1
-    );
+    const validMat = Matrix4.fromValues(1, 2, 3, 10, 4, 5, 6, 11, 7, 8, 9, 12, 0, 0, 0, 1);
     const tran = validMat.toTransform();
     const mat = tran.matrix;
     const origin = tran.origin;
@@ -208,24 +163,7 @@ describe("Matrix4", () => {
     assert.isTrue(origin.z === 12, "(2,3) --> 12");
   });
   it("fromMatrix4d works as expected", () => {
-    const mat4d = Matrix4d.createRowValues(
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
-      11,
-      12,
-      13,
-      14,
-      15,
-      16
-    );
+    const mat4d = Matrix4d.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
     const mat4 = Matrix4.fromMatrix4d(mat4d);
     assert.isTrue(mat4.data[0] === mat4d.atIJ(0, 0), "(0,0) is equivalent");
     assert.isTrue(mat4.data[4] === mat4d.atIJ(0, 1), "(0,1) is equivalent");
@@ -245,24 +183,7 @@ describe("Matrix4", () => {
     assert.isTrue(mat4.data[15] === mat4d.atIJ(3, 3), "(3,3) is equivalent");
   });
   it("toMatrix4d works as expected", () => {
-    const mat4 = Matrix4.fromValues(
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
-      11,
-      12,
-      13,
-      14,
-      15,
-      16
-    );
+    const mat4 = Matrix4.fromValues(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
     const mat4d = mat4.toMatrix4d();
     assert.isTrue(mat4.data[0] === mat4d.atIJ(0, 0), "(0,0) is equivalent");
     assert.isTrue(mat4.data[4] === mat4d.atIJ(0, 1), "(0,1) is equivalent");
@@ -286,18 +207,8 @@ describe("Vector3d functions", () => {
   it("fromNormalizedCrossProduct", () => {
     const vec0 = new Vector3d(-1, 7, 4);
     const vec1 = new Vector3d(-5, 8, 4);
-    const vec = Vector3d.createCrossProduct(
-      vec0.x,
-      vec0.y,
-      vec0.z,
-      vec1.x,
-      vec1.y,
-      vec1.z
-    );
-    assert.isTrue(
-      vec.isExactEqual(new Vector3d(-4, -16, 27)),
-      "cross product is correct"
-    );
+    const vec = Vector3d.createCrossProduct(vec0.x, vec0.y, vec0.z, vec1.x, vec1.y, vec1.z);
+    assert.isTrue(vec.isExactEqual(new Vector3d(-4, -16, 27)), "cross product is correct");
     const nVec = vec.normalize();
     // (-0.126428, -0.505712, 0.853388)
     const expectedResult = new Vector3d(-0.126428, -0.505712, 0.853388);

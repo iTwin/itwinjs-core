@@ -4,11 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult, Id64 } from "@itwin/core-bentley";
-import {
-  QueryBinder,
-  QueryOptionsBuilder,
-  QueryRowFormat,
-} from "@itwin/core-common";
+import { QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
@@ -23,11 +19,10 @@ async function executeQuery(
   abbreviateBlobs?: boolean
 ): Promise<any[]> {
   const rows: any[] = [];
-  for await (const queryRow of iModel.createQueryReader(
-    ecsql,
-    QueryBinder.from(bindings),
-    { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs }
-  )) {
+  for await (const queryRow of iModel.createQueryReader(ecsql, QueryBinder.from(bindings), {
+    rowFormat: QueryRowFormat.UseJsPropertyNames,
+    abbreviateBlobs,
+  })) {
     rows.push(queryRow.toRow());
   }
   return rows;
@@ -42,18 +37,10 @@ describe("ECSql Query", () => {
 
   before(async () => {
     imodel1 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
-    imodel2 = SnapshotDb.openFile(
-      IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim")
-    );
-    imodel3 = SnapshotDb.openFile(
-      IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim")
-    );
-    imodel4 = SnapshotDb.openFile(
-      IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim")
-    );
-    imodel5 = SnapshotDb.openFile(
-      IModelTestUtils.resolveAssetFile("mirukuru.ibim")
-    );
+    imodel2 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+    imodel3 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
+    imodel4 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
+    imodel5 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
   });
 
   after(async () => {
@@ -79,11 +66,7 @@ describe("ECSql Query", () => {
     const geomStream: Uint8Array = row.geometryStream;
     assert.isAtLeast(geomStream.byteLength, 1);
 
-    rows = await executeQuery(
-      imodel1,
-      "SELECT 1 FROM bis.GeometricElement3d WHERE GeometryStream=?",
-      [geomStream]
-    );
+    rows = await executeQuery(imodel1, "SELECT 1 FROM bis.GeometricElement3d WHERE GeometryStream=?", [geomStream]);
     assert.equal(rows.length, 1);
 
     rows = await executeQuery(
@@ -104,9 +87,7 @@ describe("ECSql Query", () => {
       .append()
       .error()
       .category("BeSQLite")
-      .message(
-        'Error "no such table: def (BE_SQLITE_ERROR)" preparing SQL: SELECT abc FROM def'
-      );
+      .message('Error "no such table: def (BE_SQLITE_ERROR)" preparing SQL: SELECT abc FROM def');
     assert.throw(
       () => ecdb.withSqliteStatement("SELECT abc FROM def", () => {}),
       "no such table: def (BE_SQLITE_ERROR)"
@@ -119,27 +100,16 @@ describe("ECSql Query", () => {
       .append()
       .error()
       .category("BeSQLite")
-      .message(
-        'Error "no such table: def (BE_SQLITE_ERROR)" preparing SQL: SELECT abc FROM def'
-      );
+      .message('Error "no such table: def (BE_SQLITE_ERROR)" preparing SQL: SELECT abc FROM def');
     assert.throw(
-      () =>
-        ecdb.withSqliteStatement(
-          "SELECT abc FROM def",
-          () => {},
-          /* logErrors = */ false
-        ),
+      () => ecdb.withSqliteStatement("SELECT abc FROM def", () => {}, /* logErrors = */ false),
       "no such table: def (BE_SQLITE_ERROR)"
     );
     assert.isFalse(slm.finishAndDispose(), "logMatcher should not detect log");
 
     // expect log message when statement fails
     slm = new SequentialLogMatcher();
-    slm
-      .append()
-      .error()
-      .category("ECDb")
-      .message("ECClass 'abc.def' does not exist or could not be loaded.");
+    slm.append().error().category("ECDb").message("ECClass 'abc.def' does not exist or could not be loaded.");
     assert.throw(
       () => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => {}),
       "ECClass 'abc.def' does not exist or could not be loaded."
@@ -148,20 +118,8 @@ describe("ECSql Query", () => {
 
     // now pass suppress log error which mean we should not get the error
     slm = new SequentialLogMatcher();
-    slm
-      .append()
-      .error()
-      .category("ECDb")
-      .message("ECClass 'abc.def' does not exist or could not be loaded.");
-    assert.throw(
-      () =>
-        ecdb.withPreparedStatement(
-          "SELECT abc FROM abc.def",
-          () => {},
-          /* logErrors = */ false
-        ),
-      ""
-    );
+    slm.append().error().category("ECDb").message("ECClass 'abc.def' does not exist or could not be loaded.");
+    assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => {}, /* logErrors = */ false), "");
     assert.isFalse(slm.finishAndDispose(), "logMatcher should not detect log");
   });
   it("restart query", async () => {
@@ -218,11 +176,7 @@ describe("ECSql Query", () => {
     }
   });
   it("concurrent query use primary connection", async () => {
-    const reader = imodel1.createQueryReader(
-      "SELECT * FROM BisCore.element",
-      undefined,
-      { usePrimaryConn: true }
-    );
+    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { usePrimaryConn: true });
     let props = await reader.getMetaData();
     assert.equal(props.length, 11);
     let rows = 0;
@@ -239,9 +193,7 @@ describe("ECSql Query", () => {
   });
   it("concurrent query use idset", async () => {
     const ids: string[] = [];
-    for await (const row of imodel1.createQueryReader(
-      "SELECT ECInstanceId FROM BisCore.Element LIMIT 23"
-    )) {
+    for await (const row of imodel1.createQueryReader("SELECT ECInstanceId FROM BisCore.Element LIMIT 23")) {
       ids.push(row[0]);
     }
     const reader = imodel1.createQueryReader(
@@ -277,21 +229,13 @@ describe("ECSql Query", () => {
     assert.isTrue(reader.stats.backendMemUsed > 1000);
   });
   it("concurrent query quota", async () => {
-    let reader = imodel1.createQueryReader(
-      "SELECT * FROM BisCore.element",
-      undefined,
-      { limit: { count: 4 } }
-    );
+    let reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { limit: { count: 4 } });
     let rows = 0;
     while (await reader.step()) {
       rows++;
     }
     assert.equal(rows, 4);
-    reader = imodel1.createQueryReader(
-      "SELECT * FROM BisCore.element",
-      undefined,
-      { limit: { offset: 4, count: 4 } }
-    );
+    reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { limit: { offset: 4, count: 4 } });
     rows = 0;
     while (await reader.step()) {
       rows++;
@@ -311,14 +255,11 @@ describe("ECSql Query", () => {
     };
 
     const pageSize = 5;
-    const query =
-      "SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element";
+    const query = "SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element";
     const dbs = [imodel1, imodel2, imodel3, imodel4, imodel5];
     const pendingRowCount = [];
     for (const db of dbs) {
-      for await (const row of db.createQueryReader(
-        `SELECT count(*) FROM (${query})`
-      )) {
+      for await (const row of db.createQueryReader(`SELECT count(*) FROM (${query})`)) {
         pendingRowCount.push(row[0] as number);
       }
     }

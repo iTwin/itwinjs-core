@@ -48,17 +48,8 @@ export class TileRecord {
    * @param tileZ the tile Z index.
    * @return true if the tile has the index.
    */
-  public static isTile(
-    tile: TileIndex,
-    tileX: int32,
-    tileY: int32,
-    tileZ: int32
-  ): boolean {
-    return (
-      tileX == tile.gridIndex.x &&
-      tileY == tile.gridIndex.y &&
-      tileZ == tile.gridIndex.z
-    );
+  public static isTile(tile: TileIndex, tileX: int32, tileY: int32, tileZ: int32): boolean {
+    return tileX == tile.gridIndex.x && tileY == tile.gridIndex.y && tileZ == tile.gridIndex.z;
   }
 
   /**
@@ -68,12 +59,7 @@ export class TileRecord {
    * @param tileZ the tile Z index.
    * @return true if the tile is after the index.
    */
-  public static isAfterTile(
-    tile: TileIndex,
-    tileX: int32,
-    tileY: int32,
-    tileZ: int32
-  ): boolean {
+  public static isAfterTile(tile: TileIndex, tileX: int32, tileY: int32, tileZ: int32): boolean {
     if (tile.gridIndex.x < tileX) return false;
     if (tile.gridIndex.x > tileX) return true;
     if (tile.gridIndex.y < tileY) return false;
@@ -90,12 +76,7 @@ export class TileRecord {
    * @param tileZ the tile Z index.
    * @return true if the tile is before the index.
    */
-  public static isBeforeTile(
-    tile: TileIndex,
-    tileX: int32,
-    tileY: int32,
-    tileZ: int32
-  ): boolean {
+  public static isBeforeTile(tile: TileIndex, tileX: int32, tileY: int32, tileZ: int32): boolean {
     if (tile.gridIndex.x < tileX) return true;
     if (tile.gridIndex.x > tileX) return false;
     if (tile.gridIndex.y < tileY) return true;
@@ -140,13 +121,7 @@ export class TileRecord {
     let tileZ: int32 = LittleEndian.readStreamInt(stream);
     let pointCount: int32 = LittleEndian.readStreamInt(stream);
     /* Create the record */
-    return new TileIndex(
-      level,
-      tileIndex,
-      new GridIndex(tileX, tileY, tileZ),
-      pointIndex,
-      pointCount
-    );
+    return new TileIndex(level, tileIndex, new GridIndex(tileX, tileY, tileZ), pointIndex, pointCount);
   }
 
   /**

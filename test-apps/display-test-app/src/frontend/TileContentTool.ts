@@ -5,13 +5,7 @@
 
 import { assert, ByteStream, Guid } from "@itwin/core-bentley";
 import { PersistentGraphicsRequestProps } from "@itwin/core-common";
-import {
-  ImdlReader,
-  IModelApp,
-  IModelConnection,
-  IModelTileTree,
-  Tool,
-} from "@itwin/core-frontend";
+import { ImdlReader, IModelApp, IModelConnection, IModelTileTree, Tool } from "@itwin/core-frontend";
 import { parseArgs } from "@itwin/frontend-devtools";
 
 export class GenerateTileContentTool extends Tool {
@@ -23,10 +17,7 @@ export class GenerateTileContentTool extends Tool {
     return 2;
   }
 
-  public override async run(args?: {
-    tree: IModelTileTree;
-    contentId: string;
-  }) {
+  public override async run(args?: { tree: IModelTileTree; contentId: string }) {
     if (!args) return false;
 
     try {
@@ -70,8 +61,7 @@ export class GenerateTileContentTool extends Tool {
 
     for (const owner of iModel.tiles) {
       const tree = owner.owner.tileTree;
-      if (tree instanceof IModelTileTree && tree.modelId === modelId)
-        return this.run({ tree, contentId });
+      if (tree instanceof IModelTileTree && tree.modelId === modelId) return this.run({ tree, contentId });
     }
 
     return false;
@@ -87,10 +77,7 @@ export class GenerateElementGraphicsTool extends Tool {
     return 2;
   }
 
-  public override async run(
-    props?: PersistentGraphicsRequestProps,
-    iModel?: IModelConnection
-  ): Promise<boolean> {
+  public override async run(props?: PersistentGraphicsRequestProps, iModel?: IModelConnection): Promise<boolean> {
     if (!props || !iModel) return false;
 
     await IModelApp.tileAdmin.requestElementGraphics(iModel, props);

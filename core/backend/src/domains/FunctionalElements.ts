@@ -15,18 +15,11 @@ import {
   RelatedElement,
   TypeDefinitionElementProps,
 } from "@itwin/core-common";
-import {
-  InformationPartitionElement,
-  RoleElement,
-  TypeDefinitionElement,
-} from "../Element";
+import { InformationPartitionElement, RoleElement, TypeDefinitionElement } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { RoleModel } from "../Model";
 import { SubjectOwnsPartitionElements } from "../NavigationRelationship";
-import {
-  DrawingGraphicRepresentsElement,
-  ElementRefersToElements,
-} from "../Relationship";
+import { DrawingGraphicRepresentsElement, ElementRefersToElements } from "../Relationship";
 
 /** A FunctionalPartition element is a key part of the iModel information hierarchy and is always parented
  * to a Subject and broken down by a FunctionalModel.
@@ -38,10 +31,7 @@ export class FunctionalPartition extends InformationPartitionElement {
     return "FunctionalPartition";
   }
   /** @internal */
-  public constructor(
-    props: InformationPartitionElementProps,
-    iModel: IModelDb
-  ) {
+  public constructor(props: InformationPartitionElementProps, iModel: IModelDb) {
     super(props, iModel);
   }
 }
@@ -64,11 +54,7 @@ export class FunctionalModel extends RoleModel {
    * @returns The Id of the newly inserted FunctionalPartition and FunctionalModel (same value).
    * @throws [[IModelError]] if there is an insert problem.
    */
-  public static insert(
-    iModelDb: IModelDb,
-    parentSubjectId: Id64String,
-    name: string
-  ): Id64String {
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
     const partitionProps: InformationPartitionElementProps = {
       classFullName: FunctionalPartition.classFullName,
       model: IModel.repositoryModelId,
@@ -160,10 +146,7 @@ export class FunctionalElementIsOfType extends RelatedElement {
     return "FunctionalElementIsOfType";
   }
   public static classFullName = "Functional:FunctionalElementIsOfType";
-  public constructor(
-    id: Id64String,
-    relClassName: string = FunctionalElementIsOfType.classFullName
-  ) {
+  public constructor(id: Id64String, relClassName: string = FunctionalElementIsOfType.classFullName) {
     super({ id, relClassName });
   }
 }

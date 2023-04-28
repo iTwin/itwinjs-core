@@ -5,10 +5,7 @@
 
 import { expect } from "chai";
 // import { Sample } from "../serialization/GeometrySamples";
-import {
-  CurveLocationDetail,
-  CurveLocationDetailPair,
-} from "../../curve/CurveLocationDetail";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Geometry } from "../../Geometry";
 // import { Point3d, Transform } from "../PointVector";
@@ -20,16 +17,8 @@ describe("CurveLocationDetail", () => {
     const segmentA = LineSegment3d.createXYXY(1, 2, 5, 2);
     const f0 = 0.1;
     const f1 = 0.83;
-    const detailA0 = CurveLocationDetail.createCurveFractionPoint(
-      segmentA,
-      f0,
-      segmentA.fractionToPoint(f0)
-    );
-    const detailA1 = CurveLocationDetail.createCurveFractionPoint(
-      segmentA,
-      f1,
-      segmentA.fractionToPoint(f1)
-    );
+    const detailA0 = CurveLocationDetail.createCurveFractionPoint(segmentA, f0, segmentA.fractionToPoint(f0));
+    const detailA1 = CurveLocationDetail.createCurveFractionPoint(segmentA, f1, segmentA.fractionToPoint(f1));
     detailA0.setCurve(segmentA);
     detailA1.setCurve(segmentA);
     ck.testTrue(detailA0.isIsolated);
@@ -51,22 +40,14 @@ describe("CurveLocationDetail", () => {
     const f0 = 0.1;
     const f1 = 0.83;
     // a normal two-point detail ...
-    const detailA0 = CurveLocationDetail.createCurveEvaluatedFractionFraction(
-      segmentA,
-      f0,
-      f1
-    );
+    const detailA0 = CurveLocationDetail.createCurveEvaluatedFractionFraction(segmentA, f0, f1);
     const g0 = 1000.0;
     const g = 0.34;
     const f = Geometry.interpolate(detailA0.fraction, g, detailA0.fraction1!);
     const g1 = detailA0.inverseInterpolateFraction(f, g0);
     ck.testExactNumber(g, g1, "inverse interpolation in simple interval.");
     // a degenerate two-point detail
-    const detailA2 = CurveLocationDetail.createCurveEvaluatedFractionFraction(
-      segmentA,
-      f0,
-      f0
-    ); // degenerate !
+    const detailA2 = CurveLocationDetail.createCurveEvaluatedFractionFraction(segmentA, f0, f0); // degenerate !
     const g2 = detailA2.inverseInterpolateFraction(f0, g0);
     ck.testExactNumber(g0, g2, "inverse interpolate in degenerate interval");
 

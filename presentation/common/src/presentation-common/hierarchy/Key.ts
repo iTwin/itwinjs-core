@@ -55,51 +55,37 @@ export namespace NodeKey {
   export function isInstancesNodeKey(key: NodeKey): key is ECInstancesNodeKey;
   /** Checks if the supplied key is an [[ECInstancesNodeKey]]. @deprecated in 3.x. Use an override for [[NodeKey]]. */
   // eslint-disable-next-line deprecation/deprecation
-  export function isInstancesNodeKey(
-    key: NodeKeyJSON
-  ): key is ECInstancesNodeKeyJSON;
+  export function isInstancesNodeKey(key: NodeKeyJSON): key is ECInstancesNodeKeyJSON;
   // eslint-disable-next-line deprecation/deprecation
   export function isInstancesNodeKey(key: NodeKey | NodeKeyJSON) {
     return key.type === StandardNodeTypes.ECInstancesNode;
   }
 
   /** Checks if the supplied key is an [[ECClassGroupingNodeKey]] */
-  export function isClassGroupingNodeKey(
-    key: NodeKey
-  ): key is ECClassGroupingNodeKey;
+  export function isClassGroupingNodeKey(key: NodeKey): key is ECClassGroupingNodeKey;
   /** Checks if the supplied key is an [[ECClassGroupingNodeKey]]. @deprecated in 3.x. Use an override for [[NodeKey]]. */
   // eslint-disable-next-line deprecation/deprecation
-  export function isClassGroupingNodeKey(
-    key: NodeKeyJSON
-  ): key is ECClassGroupingNodeKeyJSON;
+  export function isClassGroupingNodeKey(key: NodeKeyJSON): key is ECClassGroupingNodeKeyJSON;
   // eslint-disable-next-line deprecation/deprecation
   export function isClassGroupingNodeKey(key: NodeKey | NodeKeyJSON) {
     return key.type === StandardNodeTypes.ECClassGroupingNode;
   }
 
   /** Checks if the supplied key is an [[ECPropertyGroupingNodeKey]] */
-  export function isPropertyGroupingNodeKey(
-    key: NodeKey
-  ): key is ECPropertyGroupingNodeKey;
+  export function isPropertyGroupingNodeKey(key: NodeKey): key is ECPropertyGroupingNodeKey;
   /** Checks if the supplied key is an [[ECPropertyGroupingNodeKey]]. @deprecated in 3.x. Use an override for [[NodeKey]]. */
   // eslint-disable-next-line deprecation/deprecation
-  export function isPropertyGroupingNodeKey(
-    key: NodeKeyJSON
-  ): key is ECPropertyGroupingNodeKeyJSON;
+  export function isPropertyGroupingNodeKey(key: NodeKeyJSON): key is ECPropertyGroupingNodeKeyJSON;
   // eslint-disable-next-line deprecation/deprecation
   export function isPropertyGroupingNodeKey(key: NodeKey | NodeKeyJSON) {
     return key.type === StandardNodeTypes.ECPropertyGroupingNode;
   }
 
   /** Checks if the supplied key is a [[LabelGroupingNodeKey]] */
-  export function isLabelGroupingNodeKey(
-    key: NodeKey
-  ): key is LabelGroupingNodeKey;
+  export function isLabelGroupingNodeKey(key: NodeKey): key is LabelGroupingNodeKey;
   /** Checks if the supplied key is a [[LabelGroupingNodeKey]]. @deprecated in 3.x. Use an override for [[NodeKey]]. */
   // eslint-disable-next-line deprecation/deprecation
-  export function isLabelGroupingNodeKey(
-    key: NodeKeyJSON
-  ): key is LabelGroupingNodeKeyJSON;
+  export function isLabelGroupingNodeKey(key: NodeKeyJSON): key is LabelGroupingNodeKeyJSON;
   // eslint-disable-next-line deprecation/deprecation
   export function isLabelGroupingNodeKey(key: NodeKey | NodeKeyJSON) {
     return key.type === StandardNodeTypes.DisplayLabelGroupingNode;
@@ -109,16 +95,10 @@ export namespace NodeKey {
   export function isGroupingNodeKey(key: NodeKey): key is GroupingNodeKey;
   /** Checks if the supplied key is a grouping node key. @deprecated in 3.x. Use an override for [[NodeKey]]. */
   // eslint-disable-next-line deprecation/deprecation
-  export function isGroupingNodeKey(
-    key: NodeKeyJSON
-  ): key is GroupingNodeKeyJSON;
+  export function isGroupingNodeKey(key: NodeKeyJSON): key is GroupingNodeKeyJSON;
   // eslint-disable-next-line deprecation/deprecation
   export function isGroupingNodeKey(key: NodeKey | NodeKeyJSON) {
-    return (
-      isClassGroupingNodeKey(key) ||
-      isPropertyGroupingNodeKey(key) ||
-      isLabelGroupingNodeKey(key)
-    );
+    return isClassGroupingNodeKey(key) || isPropertyGroupingNodeKey(key) || isLabelGroupingNodeKey(key);
   }
 
   /**
@@ -151,8 +131,7 @@ export namespace NodeKey {
       assert(isInstancesNodeKey(rhs));
       if (lhs.instanceKeys.length !== rhs.instanceKeys.length) return false;
       for (let i = 0; i < lhs.instanceKeys.length; ++i) {
-        if (0 !== InstanceKey.compare(lhs.instanceKeys[i], rhs.instanceKeys[i]))
-          return false;
+        if (0 !== InstanceKey.compare(lhs.instanceKeys[i], rhs.instanceKeys[i])) return false;
       }
       return true;
     }
@@ -162,9 +141,7 @@ export namespace NodeKey {
     }
     if (isPropertyGroupingNodeKey(lhs)) {
       assert(isPropertyGroupingNodeKey(rhs));
-      return (
-        lhs.className === rhs.className && lhs.propertyName === rhs.propertyName
-      );
+      return lhs.className === rhs.className && lhs.propertyName === rhs.propertyName;
     }
     if (isLabelGroupingNodeKey(lhs)) {
       assert(isLabelGroupingNodeKey(rhs));
@@ -380,8 +357,4 @@ export interface ECValueSetBinding extends BasePresentationQueryBinding {
  * One of the presentation query binding types
  * @alpha
  */
-export type PresentationQueryBinding =
-  | IdBinding
-  | IdSetBinding
-  | ECValueBinding
-  | ECValueSetBinding;
+export type PresentationQueryBinding = IdBinding | IdSetBinding | ECValueBinding | ECValueSetBinding;

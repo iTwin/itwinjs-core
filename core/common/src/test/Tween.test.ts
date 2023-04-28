@@ -368,10 +368,7 @@ describe("Tween", () => {
 
     t.update(1000);
 
-    assert.ok(
-      obj.x !== 1 && obj.x !== 2,
-      "Tween has started but hasn't finished yet"
-    );
+    assert.ok(obj.x !== 1 && obj.x !== 2, "Tween has started but hasn't finished yet");
 
     t.update(1500);
 
@@ -476,11 +473,7 @@ describe("Tween", () => {
     tweens.update(1000);
     tweens.update(1001);
 
-    assert.equal(
-      numChainedStarted,
-      numChained,
-      "All chained tweens have been started"
-    );
+    assert.equal(numChainedStarted, numChained, "All chained tweens have been started");
   });
 
   it("Test Tween.chain allows endless loops", () => {
@@ -606,30 +599,18 @@ describe("Tween", () => {
     t.stop();
     tweens.update(0);
 
-    assert.deepEqual(
-      counter,
-      0,
-      "onStop callback not called when the tween hasn't started yet"
-    );
+    assert.deepEqual(counter, 0, "onStop callback not called when the tween hasn't started yet");
 
     t.start(0);
     tweens.update(0);
     t.stop();
 
-    assert.deepEqual(
-      counter,
-      1,
-      "onStop callback is called if the tween has been started already and stop is invoked"
-    );
+    assert.deepEqual(counter, 1, "onStop callback is called if the tween has been started already and stop is invoked");
 
     tweens.update(500);
     t.stop();
 
-    assert.deepEqual(
-      counter,
-      1,
-      "onStop callback is not called again once the tween is stopped"
-    );
+    assert.deepEqual(counter, 1, "onStop callback is not called again once the tween is stopped");
   });
 
   it("Test Tween.onUpdate", () => {
@@ -659,11 +640,7 @@ describe("Tween", () => {
     assert.deepEqual(counter, 4);
 
     tweens.update(1500);
-    assert.deepEqual(
-      counter,
-      4,
-      "onUpdate callback should not be called after the tween has finished"
-    );
+    assert.deepEqual(counter, 4, "onUpdate callback should not be called after the tween has finished");
   });
 
   it("Test Tween.onComplete", () => {
@@ -693,11 +670,7 @@ describe("Tween", () => {
     assert.deepEqual(counter, 1);
 
     tweens.update(1500);
-    assert.deepEqual(
-      counter,
-      1,
-      "onComplete callback must be called only once"
-    );
+    assert.deepEqual(counter, 1, "onComplete callback must be called only once");
   });
 
   it("Tween does not repeat by default", () => {
@@ -979,12 +952,7 @@ describe("Tween", () => {
     tweens.removeAll();
 
     const obj = { x: 0 },
-      t = tweens
-        .create(obj)
-        .to({ x: 100 }, 100)
-        .delay(100)
-        .repeat(1)
-        .repeatDelay(200);
+      t = tweens.create(obj).to({ x: 100 }, 100).delay(100).repeat(1).repeatDelay(200);
 
     t.start(0);
 

@@ -19,10 +19,7 @@ import { PolyfaceData } from "./PolyfaceData";
  * * The visitor extends a `PolyfaceData ` class, so it can at any time hold all the data of a single facet.
  * @public
  */
-export class IndexedPolyfaceVisitor
-  extends PolyfaceData
-  implements PolyfaceVisitor
-{
+export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisitor {
   private _currentFacetIndex: number;
   private _nextFacetIndex: number;
   private _numWrap: number;
@@ -30,16 +27,10 @@ export class IndexedPolyfaceVisitor
   private _polyface: IndexedPolyface;
   // to be called from static factory method that validates the polyface ...
   protected constructor(facets: IndexedPolyface, numWrap: number) {
-    super(
-      facets.data.normalCount > 0,
-      facets.data.paramCount > 0,
-      facets.data.colorCount > 0,
-      facets.twoSided
-    );
+    super(facets.data.normalCount > 0, facets.data.paramCount > 0, facets.data.colorCount > 0, facets.twoSided);
     this._polyface = facets;
     this._numWrap = numWrap;
-    if (facets.data.auxData)
-      this.auxData = facets.data.auxData.createForVisitor();
+    if (facets.data.auxData) this.auxData = facets.data.auxData.createForVisitor();
 
     this.reset();
     this._numEdges = 0;
@@ -67,10 +58,7 @@ export class IndexedPolyfaceVisitor
    * * 1 -- add point 0 as closure point
    * * 2 -- add points 0 and 1 as closure and wrap point.  This is useful when vertex visit requires two adjacent vectors, e.g. for cross products.
    */
-  public static create(
-    polyface: IndexedPolyface,
-    numWrap: number
-  ): IndexedPolyfaceVisitor {
+  public static create(polyface: IndexedPolyface, numWrap: number): IndexedPolyfaceVisitor {
     return new IndexedPolyfaceVisitor(polyface, numWrap);
   }
   /** Advance the iterator to a particular facet in the client polyface */
@@ -90,8 +78,7 @@ export class IndexedPolyfaceVisitor
   }
   /** Advance the iterator to a the 'next' facet in the client polyface */
   public moveToNextFacet(): boolean {
-    if (this._nextFacetIndex !== this._currentFacetIndex)
-      return this.moveToReadIndex(this._nextFacetIndex);
+    if (this._nextFacetIndex !== this._currentFacetIndex) return this.moveToReadIndex(this._nextFacetIndex);
     this._nextFacetIndex++;
     return true;
   }
@@ -106,14 +93,10 @@ export class IndexedPolyfaceVisitor
    * Attempts to extract the distance parameter for the given vertex index on the current facet
    * Returns the distance parameter as a point. Returns undefined on failure.
    */
-  public tryGetDistanceParameter(
-    index: number,
-    result?: Point2d
-  ): Point2d | undefined {
+  public tryGetDistanceParameter(index: number, result?: Point2d): Point2d | undefined {
     if (index >= this.numEdgesThisFacet) return undefined;
 
-    if (this.param === undefined || this._polyface.data.face.length === 0)
-      return undefined;
+    if (this.param === undefined || this._polyface.data.face.length === 0) return undefined;
 
     const faceData = this._polyface.tryGetFaceData(this._currentFacetIndex);
     if (!faceData) return undefined;
@@ -128,14 +111,10 @@ export class IndexedPolyfaceVisitor
    * Attempts to extract the normalized parameter (0,1) for the given vertex index on the current facet.
    * Returns the normalized parameter as a point. Returns undefined on failure.
    */
-  public tryGetNormalizedParameter(
-    index: number,
-    result?: Point2d
-  ): Point2d | undefined {
+  public tryGetNormalizedParameter(index: number, result?: Point2d): Point2d | undefined {
     if (index >= this.numEdgesThisFacet) return undefined;
 
-    if (this.param === undefined || this._polyface.data.face.length === 0)
-      return undefined;
+    if (this.param === undefined || this._polyface.data.face.length === 0) return undefined;
 
     const faceData = this._polyface.tryGetFaceData(this._currentFacetIndex);
     if (!faceData) return undefined;
@@ -180,61 +159,22 @@ export class IndexedPolyfaceVisitor
   /** transfer data from a specified index of the other visitor as new data in this visitor. */
   public pushDataFrom(other: PolyfaceVisitor, index: number): void {
     this.point.pushFromGrowableXYZArray(other.point, index);
-    if (this.color && other.color && index < other.color.length)
-      this.color.push(other.color[index]);
-    if (this.param && other.param && index < other.param.length)
-      this.param.pushFromGrowableXYArray(other.param, index);
+    if (this.color && other.color && index < other.color.length) this.color.push(other.color[index]);
+    if (this.param && other.param && index < other.param.length) this.param.pushFromGrowableXYArray(other.param, index);
     if (this.normal && other.normal && index < other.normal.length)
       this.normal.pushFromGrowableXYZArray(other.normal, index);
   }
   /** transfer interpolated data from the other visitor.
    * * all data values are interpolated at `fraction` between `other` values at index0 and index1.
    */
-  public pushInterpolatedDataFrom(
-    other: PolyfaceVisitor,
-    index0: number,
-    fraction: number,
-    index1: number
-  ): void {
-    this.point.pushInterpolatedFromGrowableXYZArray(
-      other.point,
-      index0,
-      fraction,
-      index1
-    );
-    if (
-      this.color &&
-      other.color &&
-      index0 < other.color.length &&
-      index1 < other.color.length
-    )
-      this.color.push(
-        interpolateColor(other.color[index0], fraction, other.color[index1])
-      );
-    if (
-      this.param &&
-      other.param &&
-      index0 < other.param.length &&
-      index1 < other.param.length
-    )
-      this.param.pushInterpolatedFromGrowableXYArray(
-        other.param,
-        index0,
-        fraction,
-        index1
-      );
-    if (
-      this.normal &&
-      other.normal &&
-      index0 < other.normal.length &&
-      index1 < other.normal.length
-    )
-      this.normal.pushInterpolatedFromGrowableXYZArray(
-        other.normal,
-        index0,
-        fraction,
-        index1
-      );
+  public pushInterpolatedDataFrom(other: PolyfaceVisitor, index0: number, fraction: number, index1: number): void {
+    this.point.pushInterpolatedFromGrowableXYZArray(other.point, index0, fraction, index1);
+    if (this.color && other.color && index0 < other.color.length && index1 < other.color.length)
+      this.color.push(interpolateColor(other.color[index0], fraction, other.color[index1]));
+    if (this.param && other.param && index0 < other.param.length && index1 < other.param.length)
+      this.param.pushInterpolatedFromGrowableXYArray(other.param, index0, fraction, index1);
+    if (this.normal && other.normal && index0 < other.normal.length && index1 < other.normal.length)
+      this.normal.pushInterpolatedFromGrowableXYZArray(other.normal, index0, fraction, index1);
   }
 }
 /**
@@ -249,12 +189,7 @@ export class IndexedPolyfaceVisitor
  * @param color1
  * @param shiftBits
  */
-function interpolateByte(
-  color0: number,
-  fraction: number,
-  color1: number,
-  shiftBits: number
-): number {
+function interpolateByte(color0: number, fraction: number, color1: number, shiftBits: number): number {
   color0 = (color0 >>> shiftBits) & 0xff;
   color1 = (color1 >>> shiftBits) & 0xff;
   const color = Math.floor(color0 + fraction * (color1 - color0)) & 0xff;
@@ -269,11 +204,7 @@ function interpolateByte(
  * @param shiftBits
  * @internal
  */
-export function interpolateColor(
-  color0: number,
-  fraction: number,
-  color1: number
-) {
+export function interpolateColor(color0: number, fraction: number, color1: number) {
   // don't allow fractions outside the individual byte ranges.
   fraction = Geometry.clamp(fraction, 0, 1);
   // interpolate each byte in place ....
@@ -303,11 +234,7 @@ export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
   private _parentFacetIndices: number[];
   // index WITHIN THE _parentFacetIndices array.
   private _nextActiveIndex: number;
-  private constructor(
-    polyface: IndexedPolyface,
-    activeFacetIndices: number[],
-    numWrap: number
-  ) {
+  private constructor(polyface: IndexedPolyface, activeFacetIndices: number[], numWrap: number) {
     super(polyface, numWrap);
     this._parentFacetIndices = activeFacetIndices.slice();
     this._nextActiveIndex = 0;
@@ -324,11 +251,7 @@ export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
     activeFacetIndices: number[],
     numWrap: number
   ): IndexedPolyfaceSubsetVisitor {
-    return new IndexedPolyfaceSubsetVisitor(
-      polyface,
-      activeFacetIndices,
-      numWrap
-    );
+    return new IndexedPolyfaceSubsetVisitor(polyface, activeFacetIndices, numWrap);
   }
   /** Advance the iterator to a particular facet in the client polyface */
   public override moveToReadIndex(activeIndex: number): boolean {

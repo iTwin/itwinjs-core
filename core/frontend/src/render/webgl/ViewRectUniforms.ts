@@ -30,15 +30,7 @@ export class ViewRectUniforms {
     this._dimensions[0] = width;
     this._dimensions[1] = height;
 
-    Matrix4.fromOrtho(
-      0.0,
-      width,
-      height,
-      0.0,
-      -1.0,
-      1.0,
-      this.projectionMatrix32
-    );
+    Matrix4.fromOrtho(0.0, width, height, 0.0, -1.0, 1.0, this.projectionMatrix32);
     this.projectionMatrix32.toMatrix4d(this.projectionMatrix);
 
     this._inverseDimensions[0] = 1 / width;

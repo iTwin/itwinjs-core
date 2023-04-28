@@ -57,11 +57,7 @@ export class PositionVector extends OperationMethod {
    * @param parameters the values of the parameters.
    */
   public constructor(parameters: ParameterValueList) {
-    super(
-      PositionVector.METHOD_CODE,
-      "Position Vector 7-param. transformation",
-      parameters
-    );
+    super(PositionVector.METHOD_CODE, "Position Vector 7-param. transformation", parameters);
     /* Store the parameters */
     this._dX = parameters.getValue(8605);
     this._dY = parameters.getValue(8606);
@@ -147,12 +143,7 @@ export class PositionVector extends OperationMethod {
    * OperationMethod interface method.
    * @see OperationMethod#forward
    */
-  public forward(
-    sourceCRS: CRS,
-    source: Coordinate,
-    targetCRS: CRS,
-    target: Coordinate
-  ): void {
+  public forward(sourceCRS: CRS, source: Coordinate, targetCRS: CRS, target: Coordinate): void {
     this.transformForward(source, target);
   }
 
@@ -160,12 +151,7 @@ export class PositionVector extends OperationMethod {
    * OperationMethod interface method.
    * @see OperationMethod#reverse
    */
-  public reverse(
-    sourceCRS: CRS,
-    source: Coordinate,
-    targetCRS: CRS,
-    target: Coordinate
-  ): void {
+  public reverse(sourceCRS: CRS, source: Coordinate, targetCRS: CRS, target: Coordinate): void {
     this.transformReverse(source, target);
   }
 
@@ -174,14 +160,6 @@ export class PositionVector extends OperationMethod {
    * @return the inverse transformation.
    */
   public createInverse(): PositionVector {
-    return PositionVector.create(
-      -this._dX,
-      -this._dY,
-      -this._dZ,
-      -this._rX,
-      -this._rY,
-      -this._rZ,
-      -this._dS
-    );
+    return PositionVector.create(-this._dX, -this._dY, -this._dZ, -this._rX, -this._rY, -this._rZ, -this._dS);
   }
 }

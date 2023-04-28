@@ -63,11 +63,7 @@ export class YawPitchRollAngles {
    * @param pitch **clockwise** rotation angle around y
    * @param roll counterclockwise rotation angle around x
    */
-  constructor(
-    yaw: Angle = Angle.zero(),
-    pitch: Angle = Angle.zero(),
-    roll: Angle = Angle.zero()
-  ) {
+  constructor(yaw: Angle = Angle.zero(), pitch: Angle = Angle.zero(), roll: Angle = Angle.zero()) {
     this.yaw = yaw;
     this.pitch = pitch;
     this.roll = roll;
@@ -85,11 +81,7 @@ export class YawPitchRollAngles {
    * @param pitchDegrees **clockwise** rotation angle (in degrees) around y
    * @param rollDegrees counterclockwise rotation angle (in degrees) around x
    */
-  public static createDegrees(
-    yawDegrees: number,
-    pitchDegrees: number,
-    rollDegrees: number
-  ): YawPitchRollAngles {
+  public static createDegrees(yawDegrees: number, pitchDegrees: number, rollDegrees: number): YawPitchRollAngles {
     return new YawPitchRollAngles(
       Angle.createDegrees(yawDegrees),
       Angle.createDegrees(pitchDegrees),
@@ -102,11 +94,7 @@ export class YawPitchRollAngles {
    * @param pitchRadians **clockwise** rotation angle (in radians) around y
    * @param rollRadians counterclockwise rotation angle (in radians) around x
    */
-  public static createRadians(
-    yawRadians: number,
-    pitchRadians: number,
-    rollRadians: number
-  ): YawPitchRollAngles {
+  public static createRadians(yawRadians: number, pitchRadians: number, rollRadians: number): YawPitchRollAngles {
     return new YawPitchRollAngles(
       Angle.createRadians(yawRadians),
       Angle.createRadians(pitchRadians),
@@ -116,11 +104,7 @@ export class YawPitchRollAngles {
   /** Construct a `YawPitchRoll` object from an object with 3 named angles */
   public static fromJSON(json?: YawPitchRollProps): YawPitchRollAngles {
     json = json ? json : {};
-    return new YawPitchRollAngles(
-      Angle.fromJSON(json.yaw),
-      Angle.fromJSON(json.pitch),
-      Angle.fromJSON(json.roll)
-    );
+    return new YawPitchRollAngles(Angle.fromJSON(json.yaw), Angle.fromJSON(json.pitch), Angle.fromJSON(json.roll));
   }
   /** Populate yaw, pitch and roll fields using `Angle.fromJSON` */
   public setFromJSON(json?: YawPitchRollProps): void {
@@ -163,11 +147,7 @@ export class YawPitchRollAngles {
   }
   /** Make a copy of this YawPitchRollAngles */
   public clone() {
-    return new YawPitchRollAngles(
-      this.yaw.clone(),
-      this.pitch.clone(),
-      this.roll.clone()
-    );
+    return new YawPitchRollAngles(this.yaw.clone(), this.pitch.clone(), this.roll.clone());
   }
   /**
    * Expand the angles into a (rigid rotation) matrix.
@@ -239,19 +219,11 @@ export class YawPitchRollAngles {
   }
   /** Return the largest angle in radians */
   public maxAbsRadians(): number {
-    return Geometry.maxAbsXYZ(
-      this.yaw.radians,
-      this.pitch.radians,
-      this.roll.radians
-    );
+    return Geometry.maxAbsXYZ(this.yaw.radians, this.pitch.radians, this.roll.radians);
   }
   /** Return the sum of the angles in squared radians */
   public sumSquaredRadians(): number {
-    return Geometry.hypotenuseSquaredXYZ(
-      this.yaw.radians,
-      this.pitch.radians,
-      this.roll.radians
-    );
+    return Geometry.hypotenuseSquaredXYZ(this.yaw.radians, this.pitch.radians, this.roll.radians);
   }
   /** Return the largest difference of angles (in radians) between this and other */
   public maxDiffRadians(other: YawPitchRollAngles): number {
@@ -263,19 +235,11 @@ export class YawPitchRollAngles {
   }
   /** Return the largest angle in degrees. */
   public maxAbsDegrees(): number {
-    return Geometry.maxAbsXYZ(
-      this.yaw.degrees,
-      this.pitch.degrees,
-      this.roll.degrees
-    );
+    return Geometry.maxAbsXYZ(this.yaw.degrees, this.pitch.degrees, this.roll.degrees);
   }
   /** Return the sum of squared angles in degrees. */
   public sumSquaredDegrees(): number {
-    return Geometry.hypotenuseSquaredXYZ(
-      this.yaw.degrees,
-      this.pitch.degrees,
-      this.roll.degrees
-    );
+    return Geometry.hypotenuseSquaredXYZ(this.yaw.degrees, this.pitch.degrees, this.roll.degrees);
   }
   /** Return the largest difference of angles (in degrees) between this and other */
   public maxDiffDegrees(other: YawPitchRollAngles): number {
@@ -302,10 +266,7 @@ export class YawPitchRollAngles {
    * * In the failure case, if the optional result was supplied, that result will nonetheless be filled with
    * a set of angles.
    */
-  public static createFromMatrix3d(
-    matrix: Matrix3d,
-    result?: YawPitchRollAngles
-  ): YawPitchRollAngles | undefined {
+  public static createFromMatrix3d(matrix: Matrix3d, result?: YawPitchRollAngles): YawPitchRollAngles | undefined {
     /**
      * The rotation matrix for is
      *
@@ -318,9 +279,7 @@ export class YawPitchRollAngles {
      * where cx = cos(x), sx = sin(x), cy = cos(y), sy = sin(y), cz = cos(z), and sz = sin(z)
      */
     const sy = matrix.at(2, 0); // sin(y)
-    const cy = Math.sqrt(
-      matrix.at(2, 1) * matrix.at(2, 1) + matrix.at(2, 2) * matrix.at(2, 2)
-    ); // |cos(y)|
+    const cy = Math.sqrt(matrix.at(2, 1) * matrix.at(2, 1) + matrix.at(2, 2) * matrix.at(2, 2)); // |cos(y)|
     const pitchA = Angle.createAtan2(sy, cy); // with positive cosine
     const pitchB = Angle.createAtan2(sy, -cy); // with negative cosine
     const angles = result ? result : new YawPitchRollAngles();
@@ -379,8 +338,6 @@ export class YawPitchRollAngles {
     }
     // sanity check
     const matrix1 = angles.toMatrix3d();
-    return matrix.maxDiff(matrix1) < Geometry.smallAngleRadians
-      ? angles
-      : undefined;
+    return matrix.maxDiff(matrix1) < Geometry.smallAngleRadians ? angles : undefined;
   }
 }

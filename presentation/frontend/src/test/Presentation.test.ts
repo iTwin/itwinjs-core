@@ -37,10 +37,7 @@ describe("Presentation", () => {
   describe("initialize", () => {
     it("throws when initialized before IModelApp.startup()", async () => {
       await shutdownIModelApp();
-      expect(Presentation.initialize()).to.be.rejectedWith(
-        PresentationError,
-        "IModelApp.startup"
-      ); // eslint-disable-line @typescript-eslint/no-floating-promises
+      expect(Presentation.initialize()).to.be.rejectedWith(PresentationError, "IModelApp.startup"); // eslint-disable-line @typescript-eslint/no-floating-promises
     });
 
     it("creates manager instances", async () => {
@@ -50,12 +47,8 @@ describe("Presentation", () => {
       expect(() => Presentation.localization).to.throw();
       await Presentation.initialize();
       expect(Presentation.presentation).to.be.instanceof(PresentationManager);
-      expect(Presentation.selection).to.be.instanceof(
-        selection.SelectionManager
-      );
-      expect(Presentation.favoriteProperties).to.be.instanceof(
-        favorites.FavoritePropertiesManager
-      );
+      expect(Presentation.selection).to.be.instanceof(selection.SelectionManager);
+      expect(Presentation.favoriteProperties).to.be.instanceof(favorites.FavoritePropertiesManager);
     });
 
     it("initializes PresentationManager with given props", async () => {

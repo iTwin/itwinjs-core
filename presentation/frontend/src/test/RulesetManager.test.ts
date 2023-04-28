@@ -6,26 +6,16 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import {
-  RegisteredRuleset,
-  Rule,
-  Ruleset,
-  RuleTypes,
-} from "@itwin/presentation-common";
+import { RegisteredRuleset, Rule, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { createRandomRuleset } from "@itwin/presentation-common/lib/cjs/test";
 import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
 
 describe("RulesetManager", () => {
-  let onRulesetModifiedSpy: sinon.SinonSpy<
-    [RegisteredRuleset, Ruleset],
-    Promise<void>
-  >;
+  let onRulesetModifiedSpy: sinon.SinonSpy<[RegisteredRuleset, Ruleset], Promise<void>>;
   let manager: RulesetManagerImpl;
 
   beforeEach(() => {
-    onRulesetModifiedSpy = sinon
-      .stub<[RegisteredRuleset, Ruleset], Promise<void>>()
-      .resolves();
+    onRulesetModifiedSpy = sinon.stub<[RegisteredRuleset, Ruleset], Promise<void>>().resolves();
     manager = RulesetManagerImpl.create();
     manager.onRulesetModified.addListener(onRulesetModifiedSpy);
   });
@@ -54,10 +44,7 @@ describe("RulesetManager", () => {
 
     it("allows registering 2 rulesets with the same id", async () => {
       const rulesetId = faker.random.uuid();
-      const rulesets = [
-        await createRandomRuleset(),
-        await createRandomRuleset(),
-      ];
+      const rulesets = [await createRandomRuleset(), await createRandomRuleset()];
       await Promise.all(
         rulesets.map(async (r) => {
           r.id = rulesetId;
@@ -87,23 +74,20 @@ describe("RulesetManager", () => {
 
   describe("remove", () => {
     it("does nothing if ruleset with the specified id is not registered", async () => {
-      expect(await manager.remove([faker.random.uuid(), faker.random.uuid()]))
-        .to.be.false;
+      expect(await manager.remove([faker.random.uuid(), faker.random.uuid()])).to.be.false;
     });
 
     it("does nothing if ruleset with the specified uniqueIdentifier is not registered", async () => {
       const ruleset = await createRandomRuleset();
       await manager.add(ruleset);
-      expect(await manager.remove([ruleset.id, faker.random.uuid()])).to.be
-        .false;
+      expect(await manager.remove([ruleset.id, faker.random.uuid()])).to.be.false;
     });
 
     it("removes ruleset with [id, uniqueIdentifier] argument", async () => {
       const ruleset = await createRandomRuleset();
       const registered = await manager.add(ruleset);
       expect(await manager.get(ruleset.id)).to.not.be.undefined;
-      expect(await manager.remove([ruleset.id, registered.uniqueIdentifier])).to
-        .be.true;
+      expect(await manager.remove([ruleset.id, registered.uniqueIdentifier])).to.be.true;
       expect(await manager.get(ruleset.id)).to.be.undefined;
     });
 

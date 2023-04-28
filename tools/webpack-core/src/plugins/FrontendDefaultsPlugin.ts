@@ -3,18 +3,9 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import {
-  Compiler,
-  Configuration,
-  DefinePlugin,
-  ExternalsPlugin,
-  RuleSetRule,
-  WebpackOptionsNormalized,
-} from "webpack";
+import { Compiler, Configuration, DefinePlugin, ExternalsPlugin, RuleSetRule, WebpackOptionsNormalized } from "webpack";
 
-const isProductionLikeMode = (
-  options: Configuration | WebpackOptionsNormalized
-) => {
+const isProductionLikeMode = (options: Configuration | WebpackOptionsNormalized) => {
   return options.mode === "production" || !options.mode;
 };
 
@@ -38,36 +29,22 @@ export class FrontendDefaultsPlugin {
       });
     }
 
-    compiler.options.module.rules = [
-      ...defaultRules,
-      ...(compiler.options.module.rules || []),
-    ];
+    compiler.options.module.rules = [...defaultRules, ...(compiler.options.module.rules || [])];
 
     if (this._enableSourcemaps) {
-      compiler.options.output.devtoolModuleFilenameTemplate = (
-        value: any,
-        options: Configuration
-      ) => {
+      compiler.options.output.devtoolModuleFilenameTemplate = (value: any, options: Configuration) => {
         if (value) return value;
 
         if (isProductionLikeMode(options))
           return (info: any) =>
-            path
-              .relative(
-                options.output?.path || process.cwd(),
-                info.absoluteResourcePath
-              )
-              .replace(/\\/g, "/");
+            path.relative(options.output?.path || process.cwd(), info.absoluteResourcePath).replace(/\\/g, "/");
 
         return (info: any) => info.absoluteResourcePath.replace(/\\/g, "/");
       };
     }
 
-    if (compiler.options.ignoreWarnings === undefined)
-      compiler.options.ignoreWarnings = [];
-    compiler.options.ignoreWarnings.push((warn) =>
-      /Failed to parse source map/.test(warn.message)
-    );
+    if (compiler.options.ignoreWarnings === undefined) compiler.options.ignoreWarnings = [];
+    compiler.options.ignoreWarnings.push((warn) => /Failed to parse source map/.test(warn.message));
 
     // Add default plugins
     new DefinePlugin({

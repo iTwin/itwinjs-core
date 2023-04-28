@@ -43,21 +43,12 @@ import {
   FeatureSymbologyOptions,
   mixFeatureColor,
 } from "./glsl/FeatureSymbology";
-import {
-  addFragColorWithPreMultipliedAlpha,
-  addPickBufferOutputs,
-} from "./glsl/Fragment";
+import { addFragColorWithPreMultipliedAlpha, addPickBufferOutputs } from "./glsl/Fragment";
 import { addLogDepth } from "./glsl/LogarithmicDepthBuffer";
 import { addUnlitMonochrome } from "./glsl/Monochrome";
 import createPlanarGridProgram from "./glsl/PlanarGrid";
-import {
-  createPointCloudBuilder,
-  createPointCloudHiliter,
-} from "./glsl/PointCloud";
-import {
-  createPointStringBuilder,
-  createPointStringHiliter,
-} from "./glsl/PointString";
+import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
+import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
 import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
 import {
   addColorOverrideMix,
@@ -72,11 +63,7 @@ import { addTranslucency } from "./glsl/Translucency";
 import { addModelViewMatrix } from "./glsl/Vertex";
 import { RenderPass } from "./RenderFlags";
 import { ProgramBuilder, VertexShaderComponent } from "./ShaderBuilder";
-import {
-  CompileStatus,
-  ShaderProgram,
-  ShaderProgramExecutor,
-} from "./ShaderProgram";
+import { CompileStatus, ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
 import { Target } from "./Target";
 import {
@@ -144,19 +131,11 @@ function numFeatureVariants(numBaseShaders: number) {
 }
 
 const numHiliteVariants = 2; // instanced and non-instanced.
-const featureModes = [
-  FeatureMode.None,
-  FeatureMode.Pick,
-  FeatureMode.Overrides,
-];
+const featureModes = [FeatureMode.None, FeatureMode.Pick, FeatureMode.Overrides];
 const scratchTechniqueFlags = new TechniqueFlags();
 const scratchHiliteFlags = new TechniqueFlags();
 
-type CreateHiliter = (
-  instanced: IsInstanced,
-  classified: IsClassified,
-  posType: PositionType
-) => ProgramBuilder;
+type CreateHiliter = (instanced: IsInstanced, classified: IsClassified, posType: PositionType) => ProgramBuilder;
 
 /** A rendering technique implemented using multiple shader programs, selected based on TechniqueFlags.
  * @internal
@@ -177,8 +156,7 @@ export abstract class VariedTechnique implements Technique {
       if (program.compile() !== CompileStatus.Success) allCompiled = false;
     }
 
-    for (const clipper of this._clippingPrograms)
-      if (!clipper.compile()) allCompiled = false;
+    for (const clipper of this._clippingPrograms) if (!clipper.compile()) allCompiled = false;
 
     return allCompiled;
   }
@@ -189,10 +167,7 @@ export abstract class VariedTechnique implements Technique {
     // Confirm no empty entries in our array.
     let emptyShaderIndex = -1;
     assert(
-      -1 ===
-        (emptyShaderIndex = this._basicPrograms.findIndex(
-          (prog) => undefined === prog
-        )),
+      -1 === (emptyShaderIndex = this._basicPrograms.findIndex((prog) => undefined === prog)),
       `Shader index ${emptyShaderIndex} is undefined in ${this.constructor.name}`
     );
   }
@@ -227,11 +202,7 @@ export abstract class VariedTechnique implements Technique {
   protected abstract computeShaderIndex(flags: TechniqueFlags): number;
   protected abstract get _debugDescription(): string;
 
-  protected addShader(
-    builder: ProgramBuilder,
-    flags: TechniqueFlags,
-    gl: WebGL2RenderingContext
-  ): void {
+  protected addShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGL2RenderingContext): void {
     const descr = `${this._debugDescription}: ${flags.buildDescription()}`;
     builder.setDebugDescription(descr);
 
@@ -240,8 +211,7 @@ export abstract class VariedTechnique implements Technique {
 
       assert(!builder.frag.requiresEarlyZWorkaround);
       if (System.instance.fragDepthDoesNotDisableEarlyZ)
-        builder.frag.requiresEarlyZWorkaround =
-          -1 !== this._earlyZFlags.findIndex((x) => x.equals(flags));
+        builder.frag.requiresEarlyZWorkaround = -1 !== this._earlyZFlags.findIndex((x) => x.equals(flags));
     }
 
     const index = this.getShaderIndex(flags);
@@ -250,11 +220,7 @@ export abstract class VariedTechnique implements Technique {
     assert(!builder.frag.requiresEarlyZWorkaround);
   }
 
-  private addProgram(
-    builder: ProgramBuilder,
-    index: number,
-    gl: WebGL2RenderingContext
-  ): void {
+  private addProgram(builder: ProgramBuilder, index: number, gl: WebGL2RenderingContext): void {
     assert(this._basicPrograms[index] === undefined);
     this._basicPrograms[index] = builder.buildProgram(gl);
     assert(this._basicPrograms[index] !== undefined);
@@ -279,11 +245,7 @@ export abstract class VariedTechnique implements Technique {
     this.addShader(builder, scratchHiliteFlags, gl);
   }
 
-  protected addTranslucentShader(
-    builder: ProgramBuilder,
-    flags: TechniqueFlags,
-    gl: WebGL2RenderingContext
-  ): void {
+  protected addTranslucentShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGL2RenderingContext): void {
     flags.isTranslucent = true;
     addTranslucency(builder);
     this.addShader(builder, flags, gl);
@@ -306,9 +268,7 @@ export abstract class VariedTechnique implements Technique {
 
   private getShaderIndex(flags: TechniqueFlags) {
     assert(
-      !flags.isHilite ||
-        (!flags.isTranslucent &&
-          (flags.isClassified === IsClassified.Yes || flags.hasFeatures)),
+      !flags.isHilite || (!flags.isTranslucent && (flags.isClassified === IsClassified.Yes || flags.hasFeatures)),
       "invalid technique flags"
     );
     const index = this.computeShaderIndex(flags);
@@ -366,13 +326,11 @@ class SurfaceTechnique extends VariedTechnique {
   private static readonly _kFeature = 48;
 
   private static readonly _kEdgeTestNeeded = SurfaceTechnique._kFeature * 3; // only when hasFeatures
-  private static readonly _kHilite =
-    SurfaceTechnique._kEdgeTestNeeded + SurfaceTechnique._kFeature * 2;
+  private static readonly _kHilite = SurfaceTechnique._kEdgeTestNeeded + SurfaceTechnique._kFeature * 2;
 
   // Classifiers are never animated or instanced. They do support shadows, thematic display, and translucency.
   // There are 3 base variations - 1 per feature mode - each with translucent/shadowed/thematic variants; plus 1 for hilite.
-  private static readonly _kClassified =
-    SurfaceTechnique._kHilite + numHiliteVariants;
+  private static readonly _kClassified = SurfaceTechnique._kHilite + numHiliteVariants;
 
   // 3 base classified variations - 1 per feature mode.
   // Plus thematic variant of each and shadowable variant of each = 9
@@ -388,74 +346,29 @@ class SurfaceTechnique extends VariedTechnique {
       TechniqueFlags.fromDescription("Opaque-Instanced-Hilite-Overrides"),
       TechniqueFlags.fromDescription("Opaque-Hilite-Classified"),
       TechniqueFlags.fromDescription("Unquantized-Opaque-Hilite-Overrides"),
-      TechniqueFlags.fromDescription(
-        "Unquantized-Opaque-Instanced-Hilite-Overrides"
-      ),
+      TechniqueFlags.fromDescription("Unquantized-Opaque-Instanced-Hilite-Overrides"),
       TechniqueFlags.fromDescription("Unquantized-Opaque-Hilite-Classified"),
     ];
 
     const flags = scratchTechniqueFlags;
     for (const posType of positionTypes) {
-      for (
-        let instanced = IsInstanced.No;
-        instanced <= IsInstanced.Yes;
-        instanced++
-      ) {
-        this.addHiliteShader(
-          gl,
-          instanced,
-          IsClassified.No,
-          posType,
-          createSurfaceHiliter
-        );
-        for (
-          let iAnimate = IsAnimated.No;
-          iAnimate <= IsAnimated.Yes;
-          iAnimate++
-        ) {
-          for (
-            let shadowable = IsShadowable.No;
-            shadowable <= IsShadowable.Yes;
-            shadowable++
-          ) {
-            for (
-              let wiremesh = IsWiremesh.No;
-              wiremesh <= IsWiremesh.Yes;
-              wiremesh++
-            ) {
-              for (
-                let thematic = IsThematic.No;
-                thematic <= IsThematic.Yes;
-                thematic++
-              ) {
+      for (let instanced = IsInstanced.No; instanced <= IsInstanced.Yes; instanced++) {
+        this.addHiliteShader(gl, instanced, IsClassified.No, posType, createSurfaceHiliter);
+        for (let iAnimate = IsAnimated.No; iAnimate <= IsAnimated.Yes; iAnimate++) {
+          for (let shadowable = IsShadowable.No; shadowable <= IsShadowable.Yes; shadowable++) {
+            for (let wiremesh = IsWiremesh.No; wiremesh <= IsWiremesh.Yes; wiremesh++) {
+              for (let thematic = IsThematic.No; thematic <= IsThematic.Yes; thematic++) {
                 for (
                   let edgeTestNeeded = IsEdgeTestNeeded.No;
                   edgeTestNeeded <= IsEdgeTestNeeded.Yes;
                   edgeTestNeeded++
                 ) {
                   for (const featureMode of featureModes) {
-                    for (
-                      let iTranslucent = 0;
-                      iTranslucent <= 1;
-                      iTranslucent++
-                    ) {
-                      if (
-                        FeatureMode.None !== featureMode ||
-                        IsEdgeTestNeeded.No === edgeTestNeeded
-                      ) {
-                        if (
-                          IsThematic.Yes === thematic &&
-                          IsShadowable.Yes === shadowable
-                        )
-                          continue; // currently this combination is disallowed.
+                    for (let iTranslucent = 0; iTranslucent <= 1; iTranslucent++) {
+                      if (FeatureMode.None !== featureMode || IsEdgeTestNeeded.No === edgeTestNeeded) {
+                        if (IsThematic.Yes === thematic && IsShadowable.Yes === shadowable) continue; // currently this combination is disallowed.
 
-                        flags.reset(
-                          featureMode,
-                          instanced,
-                          shadowable,
-                          thematic,
-                          posType
-                        );
+                        flags.reset(featureMode, instanced, shadowable, thematic, posType);
                         flags.isAnimated = iAnimate;
                         flags.isEdgeTestNeeded = edgeTestNeeded;
                         flags.isTranslucent = 1 === iTranslucent;
@@ -474,47 +387,17 @@ class SurfaceTechnique extends VariedTechnique {
       }
     }
 
-    this.addHiliteShader(
-      gl,
-      IsInstanced.No,
-      IsClassified.Yes,
-      "quantized",
-      createSurfaceHiliter
-    );
-    this.addHiliteShader(
-      gl,
-      IsInstanced.No,
-      IsClassified.Yes,
-      "unquantized",
-      createSurfaceHiliter
-    );
+    this.addHiliteShader(gl, IsInstanced.No, IsClassified.Yes, "quantized", createSurfaceHiliter);
+    this.addHiliteShader(gl, IsInstanced.No, IsClassified.Yes, "unquantized", createSurfaceHiliter);
 
     for (const posType of positionTypes) {
       for (let translucent = 0; translucent < 2; translucent++) {
-        for (
-          let shadowable = IsShadowable.No;
-          shadowable <= IsShadowable.Yes;
-          shadowable++
-        ) {
-          for (
-            let thematic = IsThematic.No;
-            thematic <= IsThematic.Yes;
-            thematic++
-          ) {
+        for (let shadowable = IsShadowable.No; shadowable <= IsShadowable.Yes; shadowable++) {
+          for (let thematic = IsThematic.No; thematic <= IsThematic.Yes; thematic++) {
             for (const featureMode of featureModes) {
-              if (
-                IsThematic.Yes === thematic &&
-                IsShadowable.Yes === shadowable
-              )
-                continue; // currently this combination is disallowed.
+              if (IsThematic.Yes === thematic && IsShadowable.Yes === shadowable) continue; // currently this combination is disallowed.
 
-              flags.reset(
-                featureMode,
-                IsInstanced.No,
-                shadowable,
-                thematic,
-                posType
-              );
+              flags.reset(featureMode, IsInstanced.No, shadowable, thematic, posType);
               flags.isClassified = IsClassified.Yes;
               flags.isTranslucent = 0 !== translucent;
 
@@ -538,8 +421,7 @@ class SurfaceTechnique extends VariedTechnique {
   public computeShaderIndex(flags: TechniqueFlags): number {
     assert(!(flags.isThematic && flags.isShadowable));
 
-    const idxOffset =
-      flags.positionType === "unquantized" ? SurfaceTechnique._kUnquantized : 0;
+    const idxOffset = flags.positionType === "unquantized" ? SurfaceTechnique._kUnquantized : 0;
     if (flags.isClassified) {
       assert(!flags.isAnimated);
       assert(!flags.isInstanced);
@@ -563,9 +445,7 @@ class SurfaceTechnique extends VariedTechnique {
     }
 
     assert(flags.hasFeatures || flags.isEdgeTestNeeded === IsEdgeTestNeeded.No);
-    let index = flags.isTranslucent
-      ? SurfaceTechnique._kTranslucent
-      : SurfaceTechnique._kOpaque;
+    let index = flags.isTranslucent ? SurfaceTechnique._kTranslucent : SurfaceTechnique._kOpaque;
     index += SurfaceTechnique._kInstanced * flags.isInstanced;
     index += SurfaceTechnique._kAnimated * flags.isAnimated;
     index += SurfaceTechnique._kShadowable * flags.isShadowable;
@@ -573,9 +453,7 @@ class SurfaceTechnique extends VariedTechnique {
     index += SurfaceTechnique._kWiremesh * flags.isWiremesh;
 
     if (flags.isEdgeTestNeeded)
-      index +=
-        SurfaceTechnique._kEdgeTestNeeded +
-        (flags.featureMode - 1) * SurfaceTechnique._kFeature;
+      index += SurfaceTechnique._kEdgeTestNeeded + (flags.featureMode - 1) * SurfaceTechnique._kFeature;
     else index += SurfaceTechnique._kFeature * flags.featureMode;
 
     return index + idxOffset;
@@ -587,11 +465,8 @@ class PolylineTechnique extends VariedTechnique {
   private static readonly _kTranslucent = 1;
   private static readonly _kInstanced = 2;
   private static readonly _kFeature = 4;
-  private static readonly _kHilite = numFeatureVariants(
-    PolylineTechnique._kFeature
-  );
-  private static readonly _kUnquantized =
-    PolylineTechnique._kHilite + numHiliteVariants;
+  private static readonly _kHilite = numFeatureVariants(PolylineTechnique._kFeature);
+  private static readonly _kUnquantized = PolylineTechnique._kHilite + numHiliteVariants;
 
   public constructor(gl: WebGL2RenderingContext) {
     super(PolylineTechnique._kUnquantized * 2);
@@ -600,33 +475,17 @@ class PolylineTechnique extends VariedTechnique {
       TechniqueFlags.fromDescription("Opaque-Hilite-Overrides"),
       TechniqueFlags.fromDescription("Opaque-Instanced-Hilite-Overrides"),
       TechniqueFlags.fromDescription("Unquantized-Opaque-Hilite-Overrides"),
-      TechniqueFlags.fromDescription(
-        "Unquantized-Opaque-Instanced-Hilite-Overrides"
-      ),
+      TechniqueFlags.fromDescription("Unquantized-Opaque-Instanced-Hilite-Overrides"),
     ];
 
     const flags = scratchTechniqueFlags;
     for (const posType of positionTypes) {
-      for (
-        let instanced = IsInstanced.No;
-        instanced <= IsInstanced.Yes;
-        instanced++
-      ) {
-        this.addHiliteShader(
-          gl,
-          instanced,
-          IsClassified.No,
-          posType,
-          (inst, _class, pos) => createPolylineHiliter(inst, pos)
+      for (let instanced = IsInstanced.No; instanced <= IsInstanced.Yes; instanced++) {
+        this.addHiliteShader(gl, instanced, IsClassified.No, posType, (inst, _class, pos) =>
+          createPolylineHiliter(inst, pos)
         );
         for (const featureMode of featureModes) {
-          flags.reset(
-            featureMode,
-            instanced,
-            IsShadowable.No,
-            IsThematic.No,
-            posType
-          );
+          flags.reset(featureMode, instanced, IsShadowable.No, IsThematic.No, posType);
           const builder = createPolylineBuilder(instanced, posType);
           addUnlitMonochrome(builder.frag);
 
@@ -634,34 +493,16 @@ class PolylineTechnique extends VariedTechnique {
           const builderTrans = createPolylineBuilder(instanced, posType);
           addUnlitMonochrome(builderTrans.frag);
           if (FeatureMode.Overrides === featureMode) {
-            addFeatureSymbology(
-              builderTrans,
-              featureMode,
-              FeatureSymbologyOptions.Linear
-            );
-            addFeatureSymbology(
-              builder,
-              featureMode,
-              FeatureSymbologyOptions.Linear
-            );
+            addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Linear);
+            addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Linear);
             this.addTranslucentShader(builderTrans, flags, gl);
           } else {
             this.addTranslucentShader(builderTrans, flags, gl);
-            addFeatureSymbology(
-              builder,
-              featureMode,
-              FeatureSymbologyOptions.None
-            );
+            addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.None);
           }
 
           this.addFeatureId(builder, featureMode);
-          flags.reset(
-            featureMode,
-            instanced,
-            IsShadowable.No,
-            IsThematic.No,
-            posType
-          );
+          flags.reset(featureMode, instanced, IsShadowable.No, IsThematic.No, posType);
           this.addShader(builder, flags, gl);
         }
       }
@@ -675,18 +516,13 @@ class PolylineTechnique extends VariedTechnique {
   }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
-    const idxOffset =
-      flags.positionType === "unquantized"
-        ? PolylineTechnique._kUnquantized
-        : 0;
+    const idxOffset = flags.positionType === "unquantized" ? PolylineTechnique._kUnquantized : 0;
     if (flags.isHilite) {
       assert(flags.hasFeatures);
       return PolylineTechnique._kHilite + flags.isInstanced + idxOffset;
     }
 
-    let index = flags.isTranslucent
-      ? PolylineTechnique._kTranslucent
-      : PolylineTechnique._kOpaque;
+    let index = flags.isTranslucent ? PolylineTechnique._kTranslucent : PolylineTechnique._kOpaque;
     index += PolylineTechnique._kFeature * flags.featureMode;
     index += PolylineTechnique._kInstanced * flags.isInstanced;
     return index + idxOffset;
@@ -699,9 +535,7 @@ class EdgeTechnique extends VariedTechnique {
   private static readonly _kAnimated = 2;
   private static readonly _kInstanced = 4;
   private static readonly _kFeature = 8;
-  private static readonly _kUnquantized = numFeatureVariants(
-    EdgeTechnique._kFeature
-  );
+  private static readonly _kUnquantized = numFeatureVariants(EdgeTechnique._kFeature);
   private readonly _type: EdgeBuilderType;
 
   public constructor(gl: WebGL2RenderingContext, type: EdgeBuilderType) {
@@ -710,70 +544,28 @@ class EdgeTechnique extends VariedTechnique {
 
     const flags = scratchTechniqueFlags;
     for (const posType of positionTypes) {
-      for (
-        let instanced = IsInstanced.No;
-        instanced <= IsInstanced.Yes;
-        instanced++
-      ) {
-        for (
-          let iAnimate = IsAnimated.No;
-          iAnimate <= IsAnimated.Yes;
-          iAnimate++
-        ) {
+      for (let instanced = IsInstanced.No; instanced <= IsInstanced.Yes; instanced++) {
+        for (let iAnimate = IsAnimated.No; iAnimate <= IsAnimated.Yes; iAnimate++) {
           for (const featureMode of featureModes) {
-            flags.reset(
-              featureMode,
-              instanced,
-              IsShadowable.No,
-              IsThematic.No,
-              posType
-            );
+            flags.reset(featureMode, instanced, IsShadowable.No, IsThematic.No, posType);
             flags.isAnimated = iAnimate;
-            const builder = createEdgeBuilder(
-              type,
-              flags.isInstanced,
-              flags.isAnimated,
-              posType
-            );
+            const builder = createEdgeBuilder(type, flags.isInstanced, flags.isAnimated, posType);
             addUnlitMonochrome(builder.frag);
 
             // The translucent shaders do not need the element IDs.
-            const builderTrans = createEdgeBuilder(
-              type,
-              flags.isInstanced,
-              flags.isAnimated,
-              posType
-            );
+            const builderTrans = createEdgeBuilder(type, flags.isInstanced, flags.isAnimated, posType);
             addUnlitMonochrome(builderTrans.frag);
             if (FeatureMode.Overrides === featureMode) {
-              addFeatureSymbology(
-                builderTrans,
-                featureMode,
-                FeatureSymbologyOptions.Linear
-              );
-              addFeatureSymbology(
-                builder,
-                featureMode,
-                FeatureSymbologyOptions.Linear
-              );
+              addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Linear);
+              addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Linear);
               this.addTranslucentShader(builderTrans, flags, gl);
             } else {
               this.addTranslucentShader(builderTrans, flags, gl);
-              addFeatureSymbology(
-                builder,
-                featureMode,
-                FeatureSymbologyOptions.None
-              );
+              addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.None);
             }
 
             this.addFeatureId(builder, featureMode);
-            flags.reset(
-              featureMode,
-              instanced,
-              IsShadowable.No,
-              IsThematic.No,
-              posType
-            );
+            flags.reset(featureMode, instanced, IsShadowable.No, IsThematic.No, posType);
             flags.isAnimated = iAnimate;
             this.addShader(builder, flags, gl);
           }
@@ -789,16 +581,13 @@ class EdgeTechnique extends VariedTechnique {
   }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
-    let index = flags.isTranslucent
-      ? EdgeTechnique._kTranslucent
-      : EdgeTechnique._kOpaque;
+    let index = flags.isTranslucent ? EdgeTechnique._kTranslucent : EdgeTechnique._kOpaque;
     index += EdgeTechnique._kFeature * flags.featureMode;
     if (flags.isAnimated) index += EdgeTechnique._kAnimated;
 
     if (flags.isInstanced) index += EdgeTechnique._kInstanced;
 
-    if ("unquantized" === flags.positionType)
-      index += EdgeTechnique._kUnquantized;
+    if ("unquantized" === flags.positionType) index += EdgeTechnique._kUnquantized;
 
     return index;
   }
@@ -809,37 +598,20 @@ class PointStringTechnique extends VariedTechnique {
   private static readonly _kTranslucent = 1;
   private static readonly _kInstanced = 2;
   private static readonly _kFeature = 4;
-  private static readonly _kHilite = numFeatureVariants(
-    PointStringTechnique._kFeature
-  );
-  private static readonly _kUnquantized =
-    PointStringTechnique._kHilite + numHiliteVariants;
+  private static readonly _kHilite = numFeatureVariants(PointStringTechnique._kFeature);
+  private static readonly _kUnquantized = PointStringTechnique._kHilite + numHiliteVariants;
 
   public constructor(gl: WebGL2RenderingContext) {
     super(PointStringTechnique._kUnquantized * 2);
 
     const flags = scratchTechniqueFlags;
     for (const posType of positionTypes) {
-      for (
-        let instanced = IsInstanced.No;
-        instanced <= IsInstanced.Yes;
-        instanced++
-      ) {
-        this.addHiliteShader(
-          gl,
-          instanced,
-          IsClassified.No,
-          posType,
-          (inst, _class, pos) => createPointStringHiliter(inst, pos)
+      for (let instanced = IsInstanced.No; instanced <= IsInstanced.Yes; instanced++) {
+        this.addHiliteShader(gl, instanced, IsClassified.No, posType, (inst, _class, pos) =>
+          createPointStringHiliter(inst, pos)
         );
         for (const featureMode of featureModes) {
-          flags.reset(
-            featureMode,
-            instanced,
-            IsShadowable.No,
-            IsThematic.No,
-            posType
-          );
+          flags.reset(featureMode, instanced, IsShadowable.No, IsThematic.No, posType);
           const builder = createPointStringBuilder(instanced, posType);
           addUnlitMonochrome(builder.frag);
 
@@ -847,34 +619,16 @@ class PointStringTechnique extends VariedTechnique {
           const builderTrans = createPointStringBuilder(instanced, posType);
           addUnlitMonochrome(builderTrans.frag);
           if (FeatureMode.Overrides === featureMode) {
-            addFeatureSymbology(
-              builderTrans,
-              featureMode,
-              FeatureSymbologyOptions.Point
-            );
-            addFeatureSymbology(
-              builder,
-              featureMode,
-              FeatureSymbologyOptions.Point
-            );
+            addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Point);
+            addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Point);
             this.addTranslucentShader(builderTrans, flags, gl);
           } else {
             this.addTranslucentShader(builderTrans, flags, gl);
-            addFeatureSymbology(
-              builder,
-              featureMode,
-              FeatureSymbologyOptions.None
-            );
+            addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.None);
           }
 
           this.addFeatureId(builder, featureMode);
-          flags.reset(
-            featureMode,
-            instanced,
-            IsShadowable.No,
-            IsThematic.No,
-            posType
-          );
+          flags.reset(featureMode, instanced, IsShadowable.No, IsThematic.No, posType);
           this.addShader(builder, flags, gl);
         }
       }
@@ -888,18 +642,13 @@ class PointStringTechnique extends VariedTechnique {
   }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
-    const idxOffset =
-      "quantized" === flags.positionType
-        ? 0
-        : PointStringTechnique._kUnquantized;
+    const idxOffset = "quantized" === flags.positionType ? 0 : PointStringTechnique._kUnquantized;
     if (flags.isHilite) {
       assert(flags.hasFeatures);
       return PointStringTechnique._kHilite + flags.isInstanced + idxOffset;
     }
 
-    let index = flags.isTranslucent
-      ? PointStringTechnique._kTranslucent
-      : PointStringTechnique._kOpaque;
+    let index = flags.isTranslucent ? PointStringTechnique._kTranslucent : PointStringTechnique._kOpaque;
     index += PointStringTechnique._kFeature * flags.featureMode;
     index += PointStringTechnique._kInstanced * flags.isInstanced;
     return index + idxOffset;
@@ -912,49 +661,21 @@ class PointCloudTechnique extends VariedTechnique {
   public constructor(gl: WebGL2RenderingContext) {
     super(PointCloudTechnique._kHilite + 2);
 
-    for (
-      let iClassified = IsClassified.No;
-      iClassified <= IsClassified.Yes;
-      iClassified++
-    ) {
-      this.addHiliteShader(
-        gl,
-        IsInstanced.No,
-        iClassified,
-        "quantized",
-        (_inst, classified) => createPointCloudHiliter(classified)
+    for (let iClassified = IsClassified.No; iClassified <= IsClassified.Yes; iClassified++) {
+      this.addHiliteShader(gl, IsInstanced.No, iClassified, "quantized", (_inst, classified) =>
+        createPointCloudHiliter(classified)
       );
       const flags = scratchTechniqueFlags;
-      for (
-        let thematic = IsThematic.No;
-        thematic <= IsThematic.Yes;
-        thematic++
-      ) {
-        const pointCloudFeatureModes = [
-          FeatureMode.None,
-          FeatureMode.Overrides,
-        ];
+      for (let thematic = IsThematic.No; thematic <= IsThematic.Yes; thematic++) {
+        const pointCloudFeatureModes = [FeatureMode.None, FeatureMode.Overrides];
         for (const featureMode of pointCloudFeatureModes) {
-          flags.reset(
-            featureMode,
-            IsInstanced.No,
-            IsShadowable.No,
-            thematic,
-            "quantized"
-          );
+          flags.reset(featureMode, IsInstanced.No, IsShadowable.No, thematic, "quantized");
           flags.isClassified = iClassified;
-          const builder = createPointCloudBuilder(
-            flags.isClassified,
-            featureMode,
-            thematic
-          );
+          const builder = createPointCloudBuilder(flags.isClassified, featureMode, thematic);
           if (FeatureMode.Overrides === featureMode) {
             addUniformFeatureSymbology(builder, true);
             addColorOverrideMix(builder.vert);
-            builder.vert.set(
-              VertexShaderComponent.ApplyFeatureColor,
-              mixFeatureColor
-            );
+            builder.vert.set(VertexShaderComponent.ApplyFeatureColor, mixFeatureColor);
           }
 
           this.addFeatureId(builder, featureMode);
@@ -971,12 +692,8 @@ class PointCloudTechnique extends VariedTechnique {
   }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
-    assert(
-      flags.positionType === "quantized",
-      "Unquantized point cloud positions not currently supported"
-    );
-    if (flags.isHilite)
-      return PointCloudTechnique._kHilite + flags.isClassified;
+    assert(flags.positionType === "quantized", "Unquantized point cloud positions not currently supported");
+    if (flags.isHilite) return PointCloudTechnique._kHilite + flags.isClassified;
     else {
       let ndx = 0;
       if (flags.isClassified) ndx++;
@@ -997,41 +714,13 @@ class RealityMeshTechnique extends VariedTechnique {
       TechniqueFlags.fromDescription("Opaque-Hilite-Classified"),
     ];
 
-    this.addHiliteShader(
-      gl,
-      IsInstanced.No,
-      IsClassified.No,
-      "quantized",
-      createRealityMeshHiliter
-    );
-    this.addHiliteShader(
-      gl,
-      IsInstanced.No,
-      IsClassified.Yes,
-      "quantized",
-      createClassifierRealityMeshHiliter
-    );
-    for (
-      let iClassified = IsClassified.No;
-      iClassified <= IsClassified.Yes;
-      iClassified++
-    ) {
+    this.addHiliteShader(gl, IsInstanced.No, IsClassified.No, "quantized", createRealityMeshHiliter);
+    this.addHiliteShader(gl, IsInstanced.No, IsClassified.Yes, "quantized", createClassifierRealityMeshHiliter);
+    for (let iClassified = IsClassified.No; iClassified <= IsClassified.Yes; iClassified++) {
       for (let iTranslucent = 0; iTranslucent <= 1; iTranslucent++) {
-        for (
-          let shadowable = IsShadowable.No;
-          shadowable <= IsShadowable.Yes;
-          shadowable++
-        ) {
-          for (
-            let thematic = IsThematic.No;
-            thematic <= IsThematic.Yes;
-            thematic++
-          ) {
-            for (
-              let wiremesh = IsWiremesh.No;
-              wiremesh <= IsWiremesh.Yes;
-              wiremesh++
-            ) {
+        for (let shadowable = IsShadowable.No; shadowable <= IsShadowable.Yes; shadowable++) {
+          for (let thematic = IsThematic.No; thematic <= IsThematic.Yes; thematic++) {
+            for (let wiremesh = IsWiremesh.No; wiremesh <= IsWiremesh.Yes; wiremesh++) {
               for (
                 let enableAtmosphere = EnableAtmosphere.No;
                 enableAtmosphere <= EnableAtmosphere.Yes;
@@ -1039,13 +728,7 @@ class RealityMeshTechnique extends VariedTechnique {
               ) {
                 const flags = scratchTechniqueFlags;
                 for (const featureMode of featureModes) {
-                  flags.reset(
-                    featureMode,
-                    IsInstanced.No,
-                    shadowable,
-                    thematic,
-                    "quantized"
-                  );
+                  flags.reset(featureMode, IsInstanced.No, shadowable, thematic, "quantized");
                   flags.isClassified = iClassified;
                   flags.isWiremesh = wiremesh;
                   flags.isTranslucent = 1 === iTranslucent;
@@ -1074,10 +757,7 @@ class RealityMeshTechnique extends VariedTechnique {
   }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
-    assert(
-      "quantized" === flags.positionType,
-      "Unquantized reality mesh positions not currently supported."
-    );
+    assert("quantized" === flags.positionType, "Unquantized reality mesh positions not currently supported.");
 
     if (flags.isHilite) return flags.isClassified ? 1 : 0;
     let ndx = 2;
@@ -1112,9 +792,7 @@ abstract class MultipleTechnique implements Technique {
 
   private getShaderIndex(flags: TechniqueFlags) {
     assert(
-      !flags.isHilite ||
-        (!flags.isTranslucent &&
-          (flags.isClassified === IsClassified.Yes || flags.hasFeatures)),
+      !flags.isHilite || (!flags.isTranslucent && (flags.isClassified === IsClassified.Yes || flags.hasFeatures)),
       "invalid technique flags"
     );
     const index = this.computeShaderIndex(flags);
@@ -1161,11 +839,7 @@ abstract class MultipleTechnique implements Technique {
 
   protected abstract get _debugDescription(): string;
 
-  protected addShader(
-    builder: ProgramBuilder,
-    flags: TechniqueFlags,
-    gl: WebGL2RenderingContext
-  ): void {
+  protected addShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGL2RenderingContext): void {
     const descr = `${this._debugDescription}: ${flags.buildDescription()}`;
     builder.setDebugDescription(descr);
 
@@ -1175,11 +849,7 @@ abstract class MultipleTechnique implements Technique {
     assert(!builder.frag.requiresEarlyZWorkaround);
   }
 
-  private addProgram(
-    builder: ProgramBuilder,
-    index: number,
-    gl: WebGL2RenderingContext
-  ): void {
+  private addProgram(builder: ProgramBuilder, index: number, gl: WebGL2RenderingContext): void {
     assert(this._programs[index] === undefined);
     this._programs[index] = builder.buildProgram(gl);
     assert(this._programs[index] !== undefined);
@@ -1189,10 +859,7 @@ abstract class MultipleTechnique implements Technique {
     // Confirm no empty entries in our array.
     let emptyShaderIndex = -1;
     assert(
-      -1 ===
-        (emptyShaderIndex = this._programs.findIndex(
-          (prog) => undefined === prog
-        )),
+      -1 === (emptyShaderIndex = this._programs.findIndex((prog) => undefined === prog)),
       `Shader index ${emptyShaderIndex} is undefined in ${this.constructor.name}`
     );
   }
@@ -1206,20 +873,10 @@ class SkySphereTechnique extends MultipleTechnique {
     super(SkySphereTechnique._numVariants);
     this._isGradient = isGradient;
 
-    for (
-      let enableAtmosphere = EnableAtmosphere.No;
-      enableAtmosphere <= EnableAtmosphere.Yes;
-      enableAtmosphere++
-    ) {
+    for (let enableAtmosphere = EnableAtmosphere.No; enableAtmosphere <= EnableAtmosphere.Yes; enableAtmosphere++) {
       const tempFlags = scratchTechniqueFlags;
 
-      tempFlags.reset(
-        FeatureMode.None,
-        IsInstanced.No,
-        IsShadowable.No,
-        IsThematic.No,
-        "quantized"
-      );
+      tempFlags.reset(FeatureMode.None, IsInstanced.No, IsShadowable.No, IsThematic.No, "quantized");
       tempFlags.enableAtmosphere = enableAtmosphere;
       const builder = createSkySphereBuilder(isGradient, tempFlags);
 
@@ -1440,28 +1097,17 @@ export class Techniques implements WebGLDisposable {
   }
 
   /** Execute each command in the list */
-  public execute(
-    target: Target,
-    commands: DrawCommands,
-    renderPass: RenderPass
-  ) {
+  public execute(target: Target, commands: DrawCommands, renderPass: RenderPass) {
     assert(RenderPass.None !== renderPass, "invalid render pass");
 
-    using(
-      new ShaderProgramExecutor(target, renderPass),
-      (executor: ShaderProgramExecutor) => {
-        for (const command of commands) command.execute(executor);
-      }
-    );
+    using(new ShaderProgramExecutor(target, renderPass), (executor: ShaderProgramExecutor) => {
+      for (const command of commands) command.execute(executor);
+    });
     System.instance.frameBufferStack.markTargetsDirty();
   }
 
   /** Execute the commands for a single given classification primitive (the first 3 commands should be a push, the primitive, then a pop) */
-  public executeForIndexedClassifier(
-    target: Target,
-    cmdsByIndex: DrawCommands,
-    renderPass: RenderPass
-  ) {
+  public executeForIndexedClassifier(target: Target, cmdsByIndex: DrawCommands, renderPass: RenderPass) {
     // ###TODO: Disable shadows. Probably in the ClassifierTileTree's ViewFlagOverrides.
     this.execute(target, cmdsByIndex, renderPass);
   }
@@ -1470,15 +1116,12 @@ export class Techniques implements WebGLDisposable {
   public draw(params: DrawParams): void {
     const tech = this.getTechnique(params.geometry.techniqueId);
     const program = tech.getShader(TechniqueFlags.defaults);
-    using(
-      new ShaderProgramExecutor(params.target, params.renderPass, program),
-      (executor: ShaderProgramExecutor) => {
-        assert(executor.isValid);
-        if (executor.isValid) {
-          executor.draw(params);
-        }
+    using(new ShaderProgramExecutor(params.target, params.renderPass, program), (executor: ShaderProgramExecutor) => {
+      assert(executor.isValid);
+      if (executor.isValid) {
+        executor.draw(params);
       }
-    );
+    });
     System.instance.frameBufferStack.markTargetsDirty();
   }
 
@@ -1508,8 +1151,7 @@ export class Techniques implements WebGLDisposable {
     let wasPreviouslyCompiled = false;
 
     do {
-      if (this._techniqueByPriorityIndex >= numTechniquesByPriority)
-        return false;
+      if (this._techniqueByPriorityIndex >= numTechniquesByPriority) return false;
 
       let shader: ShaderProgram;
       let numShaders = 0;
@@ -1554,108 +1196,53 @@ export class Techniques implements WebGLDisposable {
 
   /** For tests. */
   public forEachVariedProgram(func: (program: ShaderProgram) => void): void {
-    for (const technique of this._list)
-      if (technique instanceof VariedTechnique) technique.forEachProgram(func);
+    for (const technique of this._list) if (technique instanceof VariedTechnique) technique.forEachProgram(func);
   }
 
   private constructor() {}
 
   private initializeBuiltIns(gl: WebGL2RenderingContext): void {
-    this._list[TechniqueId.OITClearTranslucent] = new SingularTechnique(
-      createClearTranslucentProgram(gl)
-    );
-    this._list[TechniqueId.ClearPickAndColor] = new SingularTechnique(
-      createClearPickAndColorProgram(gl)
-    );
-    this._list[TechniqueId.CopyColor] = new SingularTechnique(
-      createCopyColorProgram(gl)
-    );
-    this._list[TechniqueId.CopyColorNoAlpha] = new SingularTechnique(
-      createCopyColorProgram(gl, false)
-    );
-    this._list[TechniqueId.CopyPickBuffers] = new SingularTechnique(
-      createCopyPickBuffersProgram(gl)
-    );
-    this._list[TechniqueId.EVSMFromDepth] = new SingularTechnique(
-      createEVSMProgram(gl)
-    );
-    this._list[TechniqueId.SkyBox] = new SingularTechnique(
-      createSkyBoxProgram(gl)
-    );
-    this._list[TechniqueId.SkySphereGradient] = new SkySphereTechnique(
-      gl,
-      true
-    );
-    this._list[TechniqueId.SkySphereTexture] = new SkySphereTechnique(
-      gl,
-      false
-    );
-    this._list[TechniqueId.AmbientOcclusion] = new SingularTechnique(
-      createAmbientOcclusionProgram(gl)
-    );
-    this._list[TechniqueId.Blur] = new SingularTechnique(
-      createBlurProgram(gl, BlurType.NoTest)
-    );
-    this._list[TechniqueId.BlurTestOrder] = new SingularTechnique(
-      createBlurProgram(gl, BlurType.TestOrder)
-    );
-    this._list[TechniqueId.CombineTextures] = new SingularTechnique(
-      createCombineTexturesProgram(gl)
-    );
-    this._list[TechniqueId.Combine3Textures] = new SingularTechnique(
-      createCombine3TexturesProgram(gl)
-    );
+    this._list[TechniqueId.OITClearTranslucent] = new SingularTechnique(createClearTranslucentProgram(gl));
+    this._list[TechniqueId.ClearPickAndColor] = new SingularTechnique(createClearPickAndColorProgram(gl));
+    this._list[TechniqueId.CopyColor] = new SingularTechnique(createCopyColorProgram(gl));
+    this._list[TechniqueId.CopyColorNoAlpha] = new SingularTechnique(createCopyColorProgram(gl, false));
+    this._list[TechniqueId.CopyPickBuffers] = new SingularTechnique(createCopyPickBuffersProgram(gl));
+    this._list[TechniqueId.EVSMFromDepth] = new SingularTechnique(createEVSMProgram(gl));
+    this._list[TechniqueId.SkyBox] = new SingularTechnique(createSkyBoxProgram(gl));
+    this._list[TechniqueId.SkySphereGradient] = new SkySphereTechnique(gl, true);
+    this._list[TechniqueId.SkySphereTexture] = new SkySphereTechnique(gl, false);
+    this._list[TechniqueId.AmbientOcclusion] = new SingularTechnique(createAmbientOcclusionProgram(gl));
+    this._list[TechniqueId.Blur] = new SingularTechnique(createBlurProgram(gl, BlurType.NoTest));
+    this._list[TechniqueId.BlurTestOrder] = new SingularTechnique(createBlurProgram(gl, BlurType.TestOrder));
+    this._list[TechniqueId.CombineTextures] = new SingularTechnique(createCombineTexturesProgram(gl));
+    this._list[TechniqueId.Combine3Textures] = new SingularTechnique(createCombine3TexturesProgram(gl));
     this._list[TechniqueId.Surface] = new SurfaceTechnique(gl);
     this._list[TechniqueId.Edge] = new EdgeTechnique(gl, "SegmentEdge");
-    this._list[TechniqueId.SilhouetteEdge] = new EdgeTechnique(
-      gl,
-      "Silhouette"
-    );
+    this._list[TechniqueId.SilhouetteEdge] = new EdgeTechnique(gl, "Silhouette");
     this._list[TechniqueId.Polyline] = new PolylineTechnique(gl);
     this._list[TechniqueId.PointString] = new PointStringTechnique(gl);
     this._list[TechniqueId.PointCloud] = new PointCloudTechnique(gl);
     this._list[TechniqueId.RealityMesh] = new RealityMeshTechnique(gl);
-    this._list[TechniqueId.PlanarGrid] = new SingularTechnique(
-      createPlanarGridProgram(gl)
-    );
-    this._list[TechniqueId.EDLCalcBasic] = new SingularTechnique(
-      createEDLCalcBasicProgram(gl)
-    );
-    this._list[TechniqueId.EDLCalcFull] = new SingularTechnique(
-      createEDLCalcFullProgram(gl)
-    );
-    this._list[TechniqueId.EDLFilter] = new SingularTechnique(
-      createEDLFilterProgram(gl)
-    );
-    this._list[TechniqueId.EDLMix] = new SingularTechnique(
-      createEDLMixProgram(gl)
-    );
+    this._list[TechniqueId.PlanarGrid] = new SingularTechnique(createPlanarGridProgram(gl));
+    this._list[TechniqueId.EDLCalcBasic] = new SingularTechnique(createEDLCalcBasicProgram(gl));
+    this._list[TechniqueId.EDLCalcFull] = new SingularTechnique(createEDLCalcFullProgram(gl));
+    this._list[TechniqueId.EDLFilter] = new SingularTechnique(createEDLFilterProgram(gl));
+    this._list[TechniqueId.EDLMix] = new SingularTechnique(createEDLMixProgram(gl));
 
     this._list[TechniqueId.IndexedEdge] = new EdgeTechnique(gl, "IndexedEdge");
 
-    this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(
-      createVolClassCopyZProgram(gl)
-    );
-    this._list[TechniqueId.VolClassSetBlend] = new SingularTechnique(
-      createVolClassSetBlendProgram(gl)
-    );
-    this._list[TechniqueId.VolClassBlend] = new SingularTechnique(
-      createVolClassBlendProgram(gl)
-    );
+    this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(createVolClassCopyZProgram(gl));
+    this._list[TechniqueId.VolClassSetBlend] = new SingularTechnique(createVolClassSetBlendProgram(gl));
+    this._list[TechniqueId.VolClassBlend] = new SingularTechnique(createVolClassBlendProgram(gl));
     this._list[TechniqueId.VolClassColorUsingStencil] = new SingularTechnique(
       createVolClassColorUsingStencilProgram(gl)
     );
 
     for (let compositeFlags = 1; compositeFlags <= 7; compositeFlags++) {
       const techId = computeCompositeTechniqueId(compositeFlags);
-      this._list[techId] = new SingularTechnique(
-        createCompositeProgram(compositeFlags, gl)
-      );
+      this._list[techId] = new SingularTechnique(createCompositeProgram(compositeFlags, gl));
     }
 
-    assert(
-      this._list.length === TechniqueId.NumBuiltIn,
-      "unexpected number of built-in techniques"
-    );
+    assert(this._list.length === TechniqueId.NumBuiltIn, "unexpected number of built-in techniques");
   }
 }

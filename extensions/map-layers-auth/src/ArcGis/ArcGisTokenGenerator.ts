@@ -75,17 +75,13 @@ export class ArcGisTokenGenerator {
   // Cache info url to avoid fetching/parsing twice for the same base url.
   private static _tokenServiceUrlCache = new Map<string, string>();
 
-  public static async fetchTokenServiceUrl(
-    arcGisRestServiceUrl: string
-  ): Promise<string | undefined> {
+  public static async fetchTokenServiceUrl(arcGisRestServiceUrl: string): Promise<string | undefined> {
     const lowerUrl = arcGisRestServiceUrl.toLowerCase();
     const restApiIdx = lowerUrl.indexOf(ArcGisTokenGenerator.restApiPath);
     if (restApiIdx === -1) return undefined;
     const infoUrl =
-      arcGisRestServiceUrl.substring(
-        0,
-        restApiIdx + ArcGisTokenGenerator.restApiPath.length
-      ) + ArcGisTokenGenerator.restApiInfoPath;
+      arcGisRestServiceUrl.substring(0, restApiIdx + ArcGisTokenGenerator.restApiPath.length) +
+      ArcGisTokenGenerator.restApiInfoPath;
 
     let tokenServicesUrl: string | undefined;
     try {
@@ -97,22 +93,15 @@ export class ArcGisTokenGenerator {
   }
 
   public static getTokenServiceFromInfoJson(json: any): string | undefined {
-    return json.authInfo?.isTokenBasedSecurity
-      ? json?.authInfo?.tokenServicesUrl
-      : undefined;
+    return json.authInfo?.isTokenBasedSecurity ? json?.authInfo?.tokenServicesUrl : undefined;
   }
 
-  public async getTokenServiceUrl(
-    baseUrl: string
-  ): Promise<string | undefined> {
+  public async getTokenServiceUrl(baseUrl: string): Promise<string | undefined> {
     const cached = ArcGisTokenGenerator._tokenServiceUrlCache.get(baseUrl);
     if (cached !== undefined) return cached;
 
-    const tokenServiceUrl = await ArcGisTokenGenerator.fetchTokenServiceUrl(
-      baseUrl
-    );
-    if (tokenServiceUrl !== undefined)
-      ArcGisTokenGenerator._tokenServiceUrlCache.set(baseUrl, tokenServiceUrl);
+    const tokenServiceUrl = await ArcGisTokenGenerator.fetchTokenServiceUrl(baseUrl);
+    if (tokenServiceUrl !== undefined) ArcGisTokenGenerator._tokenServiceUrlCache.set(baseUrl, tokenServiceUrl);
 
     return tokenServiceUrl;
   }

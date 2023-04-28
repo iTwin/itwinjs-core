@@ -21,10 +21,7 @@ export class ViewRect {
   private _right!: number;
   private _bottom!: number;
 
-  private _set(
-    key: "_left" | "_right" | "_top" | "_bottom",
-    value: number
-  ): void {
+  private _set(key: "_left" | "_right" | "_top" | "_bottom", value: number): void {
     this[key] = Math.max(0, Math.floor(value));
   }
 
@@ -115,10 +112,7 @@ export class ViewRect {
    */
   public equals(other: ViewRect): boolean {
     return (
-      this.left === other.left &&
-      this.right === other.right &&
-      this.bottom === other.bottom &&
-      this.top === other.top
+      this.left === other.left && this.right === other.right && this.bottom === other.bottom && this.top === other.top
     );
   }
   /** Initialize this ViewRect from another ViewRect. */
@@ -187,12 +181,7 @@ export class ViewRect {
 
   /** Determine if this ViewRect is entirely contained within the bounds of another ViewRect. */
   public isContained(other: ViewRect): boolean {
-    return (
-      this.left >= other.left &&
-      this.right <= other.right &&
-      this.bottom <= other.bottom &&
-      this.top >= other.top
-    );
+    return this.left >= other.left && this.right <= other.right && this.bottom <= other.bottom && this.top >= other.top;
   }
 
   /** Return true if the supplied point is contained in this ViewRect.
@@ -200,22 +189,12 @@ export class ViewRect {
    * @note if the point is exactly on the left or top edges, this method returns true. If the point is exactly on the right or bottom edge, it returns false.
    */
   public containsPoint(point: XAndY): boolean {
-    return (
-      point.x >= this.left &&
-      point.x < this.right &&
-      point.y >= this.top &&
-      point.y < this.bottom
-    );
+    return point.x >= this.left && point.x < this.right && point.y >= this.top && point.y < this.bottom;
   }
 
   /** Determine whether this ViewRect overlaps another. */
   public overlaps(other: ViewRect): boolean {
-    return (
-      this.left <= other.right &&
-      this.top <= other.bottom &&
-      this.right >= other.left &&
-      this.bottom >= other.top
-    );
+    return this.left <= other.right && this.top <= other.bottom && this.right >= other.left && this.bottom >= other.top;
   }
 
   /** Return a ViewRect that is the overlap (intersection) of this ViewRect and another ViewRect.

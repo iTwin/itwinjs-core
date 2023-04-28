@@ -5,12 +5,7 @@
 import { assert } from "chai";
 import { QuantityError } from "../Exception";
 import { Format } from "../Formatter/Format";
-import {
-  DecimalPrecision,
-  FormatTraits,
-  formatTypeToString,
-  parseFormatTrait,
-} from "../Formatter/FormatEnums";
+import { DecimalPrecision, FormatTraits, formatTypeToString, parseFormatTrait } from "../Formatter/FormatEnums";
 import { FormatProps } from "../Formatter/Interfaces";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
 
@@ -27,10 +22,7 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(
-        err instanceof QuantityError &&
-          err.message === `The Format test has an invalid 'type' attribute.`
-      );
+      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'type' attribute.`);
     });
   });
 
@@ -47,8 +39,7 @@ describe("Formatting tests:", () => {
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
       assert.isTrue(
         err instanceof QuantityError &&
-          err.message ===
-            `The Format test does not have the required 'precision' attribute.`
+          err.message === `The Format test does not have the required 'precision' attribute.`
       );
     });
   });
@@ -67,8 +58,7 @@ describe("Formatting tests:", () => {
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
       assert.isTrue(
         err instanceof QuantityError &&
-          err.message ===
-            `The Format test has an invalid 'precision' attribute. It should be an integer.`
+          err.message === `The Format test has an invalid 'precision' attribute. It should be an integer.`
       );
     });
   });
@@ -86,9 +76,7 @@ describe("Formatting tests:", () => {
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
       assert.isTrue(
-        err instanceof QuantityError &&
-          err.message ===
-            `The Format test has an invalid 'precision' attribute.`
+        err instanceof QuantityError && err.message === `The Format test has an invalid 'precision' attribute.`
       );
     });
   });
@@ -107,9 +95,7 @@ describe("Formatting tests:", () => {
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
       assert.isTrue(
-        err instanceof QuantityError &&
-          err.message ===
-            `The Format test has an invalid 'showSignOption' attribute.`
+        err instanceof QuantityError && err.message === `The Format test has an invalid 'showSignOption' attribute.`
       );
     });
   });
@@ -127,9 +113,7 @@ describe("Formatting tests:", () => {
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
       assert.isTrue(
-        err instanceof QuantityError &&
-          err.message ===
-            `The Format test has an invalid 'precision' attribute.`
+        err instanceof QuantityError && err.message === `The Format test has an invalid 'precision' attribute.`
       );
     });
   });
@@ -147,9 +131,7 @@ describe("Formatting tests:", () => {
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
       assert.isTrue(
-        err instanceof QuantityError &&
-          err.message ===
-            `The Format test has an invalid 'formatTraits' attribute.`
+        err instanceof QuantityError && err.message === `The Format test has an invalid 'formatTraits' attribute.`
       );
     });
   });
@@ -199,8 +181,7 @@ describe("Formatting tests:", () => {
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
       assert.isTrue(
         err instanceof QuantityError &&
-          err.message ===
-            `The Format test has an invalid 'minWidth' attribute. It should be a positive integer.`
+          err.message === `The Format test has an invalid 'minWidth' attribute. It should be a positive integer.`
       );
     });
   });
@@ -380,8 +361,7 @@ describe("Formatting tests:", () => {
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
       assert.isTrue(
         err instanceof QuantityError &&
-          err.message ===
-            `The Format test is 'Scientific' type therefore the attribute 'scientificType' is required.`
+          err.message === `The Format test is 'Scientific' type therefore the attribute 'scientificType' is required.`
       );
     });
   });
@@ -400,9 +380,7 @@ describe("Formatting tests:", () => {
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
       assert.isTrue(
-        err instanceof QuantityError &&
-          err.message ===
-            `The Format test has an invalid 'scientificType' attribute.`
+        err instanceof QuantityError && err.message === `The Format test has an invalid 'scientificType' attribute.`
       );
     });
   });
@@ -425,9 +403,7 @@ describe("Formatting tests:", () => {
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
       assert.isTrue(
-        err instanceof QuantityError &&
-          err.message ===
-            `The Format test has a Composite with no valid 'units'`
+        err instanceof QuantityError && err.message === `The Format test has a Composite with no valid 'units'`
       );
     });
   });
@@ -453,10 +429,7 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(
-        err instanceof QuantityError &&
-          err.message === `Invalid unit name 'Units.F'.`
-      );
+      assert.isTrue(err instanceof QuantityError && err.message === `Invalid unit name 'Units.F'.`);
     });
   });
 
@@ -486,10 +459,7 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(
-        err instanceof QuantityError &&
-          err.message === `The unit Units.FT has a duplicate name.`
-      );
+      assert.isTrue(err instanceof QuantityError && err.message === `The unit Units.FT has a duplicate name.`);
     });
   });
 
@@ -497,12 +467,7 @@ describe("Formatting tests:", () => {
     const unitsProvider = new TestUnitsProvider();
 
     const json = {
-      formatTraits: [
-        "trailZeroes",
-        "keepSingleZero",
-        "keepDecimalPoint",
-        "showUnitLabel",
-      ],
+      formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
       minWidth: 2,
       precision: 2,
       type: "Station",
@@ -512,8 +477,7 @@ describe("Formatting tests:", () => {
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
       assert.isTrue(
         err instanceof QuantityError &&
-          err.message ===
-            `The Format test is 'Station' type therefore the attribute 'stationOffsetSize' is required.`
+          err.message === `The Format test is 'Station' type therefore the attribute 'stationOffsetSize' is required.`
       );
     });
   });
@@ -522,12 +486,7 @@ describe("Formatting tests:", () => {
     const unitsProvider = new TestUnitsProvider();
 
     const json = {
-      formatTraits: [
-        "trailZeroes",
-        "keepSingleZero",
-        "keepDecimalPoint",
-        "showUnitLabel",
-      ],
+      formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
       minWidth: 2,
       precision: 2,
       stationOffsetSize: 0,
@@ -602,9 +561,7 @@ describe("Formatting tests:", () => {
 
     await testFormat.fromJSON(unitsProvider, json);
     assert.isTrue(testFormat.hasFormatTraitSet(FormatTraits.ApplyRounding));
-    assert.isTrue(
-      testFormat.hasFormatTraitSet(FormatTraits.ExponentOnlyNegative)
-    );
+    assert.isTrue(testFormat.hasFormatTraitSet(FormatTraits.ExponentOnlyNegative));
     assert.isTrue(testFormat.hasFormatTraitSet(FormatTraits.FractionDash));
     assert.isTrue(testFormat.hasFormatTraitSet(FormatTraits.KeepDecimalPoint));
     assert.isTrue(testFormat.hasFormatTraitSet(FormatTraits.KeepSingleZero));
@@ -625,12 +582,8 @@ describe("Formatting tests:", () => {
     };
     const modifiedFormat = new Format("modified");
     await modifiedFormat.fromJSON(unitsProvider, modifiedFormatProps);
-    assert.isTrue(
-      modifiedFormat.hasFormatTraitSet(FormatTraits.KeepSingleZero)
-    );
-    assert.isFalse(
-      modifiedFormat.hasFormatTraitSet(FormatTraits.ShowUnitLabel)
-    );
+    assert.isTrue(modifiedFormat.hasFormatTraitSet(FormatTraits.KeepSingleZero));
+    assert.isFalse(modifiedFormat.hasFormatTraitSet(FormatTraits.ShowUnitLabel));
     assert.isTrue(modifiedFormat.precision === DecimalPrecision.Three);
   });
 
@@ -647,9 +600,7 @@ describe("Formatting tests:", () => {
 
     await testFormat.fromJSON(unitsProvider, json);
     assert.isFalse(testFormat.hasFormatTraitSet(FormatTraits.ApplyRounding));
-    assert.isFalse(
-      testFormat.hasFormatTraitSet(FormatTraits.ExponentOnlyNegative)
-    );
+    assert.isFalse(testFormat.hasFormatTraitSet(FormatTraits.ExponentOnlyNegative));
     assert.isFalse(testFormat.hasFormatTraitSet(FormatTraits.FractionDash));
     assert.isFalse(testFormat.hasFormatTraitSet(FormatTraits.KeepDecimalPoint));
     assert.isFalse(testFormat.hasFormatTraitSet(FormatTraits.KeepSingleZero));
@@ -722,157 +673,83 @@ describe("Formatting tests:", () => {
         uomSeparator: " ",
       },
       {
-        formatTraits: [
-          "keepSingleZero",
-          "applyRounding",
-          "keepDecimalPoint",
-          "showUnitLabel",
-        ],
+        formatTraits: ["keepSingleZero", "applyRounding", "keepDecimalPoint", "showUnitLabel"],
         precision: 0,
         type: "Decimal",
         uomSeparator: " ",
         showSignOption: "negativeParentheses",
       },
       {
-        formatTraits: [
-          "keepSingleZero",
-          "applyRounding",
-          "keepDecimalPoint",
-          "showUnitLabel",
-        ],
+        formatTraits: ["keepSingleZero", "applyRounding", "keepDecimalPoint", "showUnitLabel"],
         precision: 1,
         type: "Decimal",
         uomSeparator: " ",
         showSignOption: "noSign",
       },
       {
-        formatTraits: [
-          "keepSingleZero",
-          "applyRounding",
-          "keepDecimalPoint",
-          "showUnitLabel",
-        ],
+        formatTraits: ["keepSingleZero", "applyRounding", "keepDecimalPoint", "showUnitLabel"],
         precision: 2,
         type: "Decimal",
         uomSeparator: " ",
         showSignOption: "signAlways",
       },
       {
-        formatTraits: [
-          "keepSingleZero",
-          "applyRounding",
-          "keepDecimalPoint",
-          "showUnitLabel",
-        ],
+        formatTraits: ["keepSingleZero", "applyRounding", "keepDecimalPoint", "showUnitLabel"],
         precision: 3,
         type: "Decimal",
         uomSeparator: " ",
         showSignOption: "onlyNegative",
       },
       {
-        formatTraits: [
-          "keepSingleZero",
-          "applyRounding",
-          "keepDecimalPoint",
-          "showUnitLabel",
-          "use1000Separator",
-        ],
+        formatTraits: ["keepSingleZero", "applyRounding", "keepDecimalPoint", "showUnitLabel", "use1000Separator"],
         precision: 4,
         type: "Decimal",
         uomSeparator: " ",
       },
       {
-        formatTraits: [
-          "keepSingleZero",
-          "applyRounding",
-          "keepDecimalPoint",
-          "showUnitLabel",
-          "use1000Separator",
-        ],
+        formatTraits: ["keepSingleZero", "applyRounding", "keepDecimalPoint", "showUnitLabel", "use1000Separator"],
         precision: 5,
         type: "Decimal",
         uomSeparator: " ",
       },
       {
-        formatTraits: [
-          "keepSingleZero",
-          "applyRounding",
-          "keepDecimalPoint",
-          "showUnitLabel",
-          "use1000Separator",
-        ],
+        formatTraits: ["keepSingleZero", "applyRounding", "keepDecimalPoint", "showUnitLabel", "use1000Separator"],
         precision: 6,
         type: "Decimal",
         uomSeparator: " ",
       },
       {
-        formatTraits: [
-          "keepSingleZero",
-          "applyRounding",
-          "keepDecimalPoint",
-          "showUnitLabel",
-          "use1000Separator",
-        ],
+        formatTraits: ["keepSingleZero", "applyRounding", "keepDecimalPoint", "showUnitLabel", "use1000Separator"],
         precision: 7,
         type: "Decimal",
         uomSeparator: " ",
       },
       {
-        formatTraits: [
-          "keepSingleZero",
-          "applyRounding",
-          "keepDecimalPoint",
-          "showUnitLabel",
-          "use1000Separator",
-        ],
+        formatTraits: ["keepSingleZero", "applyRounding", "keepDecimalPoint", "showUnitLabel", "use1000Separator"],
         precision: 8,
         type: "Decimal",
         uomSeparator: " ",
       },
       {
-        formatTraits: [
-          "keepSingleZero",
-          "applyRounding",
-          "keepDecimalPoint",
-          "showUnitLabel",
-          "use1000Separator",
-        ],
+        formatTraits: ["keepSingleZero", "applyRounding", "keepDecimalPoint", "showUnitLabel", "use1000Separator"],
         precision: 9,
         type: "Decimal",
         uomSeparator: " ",
       },
       {
-        formatTraits: [
-          "keepSingleZero",
-          "applyRounding",
-          "keepDecimalPoint",
-          "showUnitLabel",
-          "use1000Separator",
-        ],
+        formatTraits: ["keepSingleZero", "applyRounding", "keepDecimalPoint", "showUnitLabel", "use1000Separator"],
         precision: 10,
         type: "Decimal",
         uomSeparator: " ",
       },
       {
-        formatTraits: [
-          "keepSingleZero",
-          "applyRounding",
-          "keepDecimalPoint",
-          "showUnitLabel",
-          "use1000Separator",
-        ],
+        formatTraits: ["keepSingleZero", "applyRounding", "keepDecimalPoint", "showUnitLabel", "use1000Separator"],
         precision: 11,
         type: "Decimal",
         uomSeparator: " ",
       },
       {
-        formatTraits: [
-          "keepSingleZero",
-          "applyRounding",
-          "keepDecimalPoint",
-          "showUnitLabel",
-          "use1000Separator",
-        ],
+        formatTraits: ["keepSingleZero", "applyRounding", "keepDecimalPoint", "showUnitLabel", "use1000Separator"],
         precision: 12,
         type: "Decimal",
         uomSeparator: " ",
@@ -892,24 +769,14 @@ describe("Formatting tests:", () => {
         uomSeparator: " ",
       },
       {
-        formatTraits: [
-          "trailZeroes",
-          "keepSingleZero",
-          "keepDecimalPoint",
-          "showUnitLabel",
-        ],
+        formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
         minWidth: 2,
         precision: 2,
         stationOffsetSize: 2,
         type: "Station",
       },
       {
-        formatTraits: [
-          "trailZeroes",
-          "keepSingleZero",
-          "keepDecimalPoint",
-          "showUnitLabel",
-        ],
+        formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
         minWidth: 2,
         precision: 2,
         stationOffsetSize: 2,
@@ -923,12 +790,7 @@ describe("Formatting tests:", () => {
             },
           ],
         },
-        formatTraits: [
-          "keepSingleZero",
-          "applyRounding",
-          "keepDecimalPoint",
-          "showUnitLabel",
-        ],
+        formatTraits: ["keepSingleZero", "applyRounding", "keepDecimalPoint", "showUnitLabel"],
         precision: 4,
         type: "Decimal",
         uomSeparator: "",
@@ -958,37 +820,23 @@ describe("Formatting tests:", () => {
     for (const formatData of formatDataArray) {
       const format = new Format("test");
       await format.fromJSON(unitsProvider, formatData).catch(() => {});
-      if (formatData.hasOwnProperty("precision"))
-        assert.isTrue(format.precision === formatData.precision);
-      assert.isTrue(
-        formatTypeToString(format.type).toUpperCase() ===
-          formatData.type.toUpperCase()
-      );
-      if (formatData.hasOwnProperty("uomSeparator"))
-        assert.isTrue(format.uomSeparator === formatData.uomSeparator);
+      if (formatData.hasOwnProperty("precision")) assert.isTrue(format.precision === formatData.precision);
+      assert.isTrue(formatTypeToString(format.type).toUpperCase() === formatData.type.toUpperCase());
+      if (formatData.hasOwnProperty("uomSeparator")) assert.isTrue(format.uomSeparator === formatData.uomSeparator);
       for (const traitStr of formatData.formatTraits) {
         const traitToValidate = parseFormatTrait(traitStr, "format.test");
-        if (traitToValidate !== undefined)
-          assert.isTrue(format.hasFormatTraitSet(traitToValidate));
+        if (traitToValidate !== undefined) assert.isTrue(format.hasFormatTraitSet(traitToValidate));
       }
 
       if (formatData.hasOwnProperty("composite")) {
         assert.isTrue(format.hasUnits === true);
-        assert.isTrue(
-          format.units!.length === formatData.composite!.units.length
-        );
+        assert.isTrue(format.units!.length === formatData.composite!.units.length);
       }
 
       const jsonData = format.toJSON();
-      assert.isTrue(
-        jsonData.type.toUpperCase() ===
-          formatTypeToString(format.type).toUpperCase()
-      );
+      assert.isTrue(jsonData.type.toUpperCase() === formatTypeToString(format.type).toUpperCase());
       if (formatData.hasOwnProperty("showSignOption")) {
-        assert.isTrue(
-          formatData.showSignOption!.toUpperCase() ===
-            jsonData.showSignOption!.toUpperCase()
-        );
+        assert.isTrue(formatData.showSignOption!.toUpperCase() === jsonData.showSignOption!.toUpperCase());
       }
     }
   });
@@ -1009,40 +857,16 @@ describe("Formatting tests:", () => {
       ],
     };
 
-    assert.isTrue(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.ApplyRounding)
-    );
-    assert.isTrue(
-      Format.isFormatTraitSetInProps(
-        formatProps,
-        FormatTraits.ExponentOnlyNegative
-      )
-    );
-    assert.isTrue(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.FractionDash)
-    );
-    assert.isTrue(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepDecimalPoint)
-    );
-    assert.isTrue(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepSingleZero)
-    );
-    assert.isTrue(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.PrependUnitLabel)
-    );
-    assert.isTrue(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.ShowUnitLabel)
-    );
-    assert.isTrue(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.TrailZeroes) ===
-        false
-    );
-    assert.isTrue(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator)
-    );
-    assert.isTrue(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.ZeroEmpty)
-    );
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ApplyRounding));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ExponentOnlyNegative));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.FractionDash));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepDecimalPoint));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepSingleZero));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.PrependUnitLabel));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ShowUnitLabel));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.TrailZeroes) === false);
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ZeroEmpty));
   });
 
   it("isFormatTraitSetInProps works properly", () => {
@@ -1051,39 +875,16 @@ describe("Formatting tests:", () => {
       formatTraits: ["trailZeroes"],
     };
 
-    assert.isFalse(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.ApplyRounding)
-    );
-    assert.isFalse(
-      Format.isFormatTraitSetInProps(
-        formatProps,
-        FormatTraits.ExponentOnlyNegative
-      )
-    );
-    assert.isFalse(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.FractionDash)
-    );
-    assert.isFalse(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepDecimalPoint)
-    );
-    assert.isFalse(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepSingleZero)
-    );
-    assert.isFalse(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.PrependUnitLabel)
-    );
-    assert.isFalse(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.ShowUnitLabel)
-    );
-    assert.isFalse(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator)
-    );
-    assert.isFalse(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.ZeroEmpty)
-    );
-    assert.isTrue(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.TrailZeroes)
-    );
+    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ApplyRounding));
+    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ExponentOnlyNegative));
+    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.FractionDash));
+    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepDecimalPoint));
+    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepSingleZero));
+    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.PrependUnitLabel));
+    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ShowUnitLabel));
+    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator));
+    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ZeroEmpty));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.TrailZeroes));
   });
 
   it("show old/optional trait format works properly", () => {
@@ -1093,38 +894,15 @@ describe("Formatting tests:", () => {
         "trailZeroes,keepSingleZero,zeroEmpty,keepDecimalPoint,applyRounding,fractionDash,showUnitLabel,prependUnitLabel,use1000Separator,exponentOnlyNegative",
     };
 
-    assert.isTrue(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.ApplyRounding)
-    );
-    assert.isTrue(
-      Format.isFormatTraitSetInProps(
-        formatProps,
-        FormatTraits.ExponentOnlyNegative
-      )
-    );
-    assert.isTrue(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.FractionDash)
-    );
-    assert.isTrue(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepDecimalPoint)
-    );
-    assert.isTrue(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepSingleZero)
-    );
-    assert.isTrue(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.PrependUnitLabel)
-    );
-    assert.isTrue(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.ShowUnitLabel)
-    );
-    assert.isTrue(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.TrailZeroes)
-    );
-    assert.isTrue(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator)
-    );
-    assert.isTrue(
-      Format.isFormatTraitSetInProps(formatProps, FormatTraits.ZeroEmpty)
-    );
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ApplyRounding));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ExponentOnlyNegative));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.FractionDash));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepDecimalPoint));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepSingleZero));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.PrependUnitLabel));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ShowUnitLabel));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.TrailZeroes));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ZeroEmpty));
   });
 });

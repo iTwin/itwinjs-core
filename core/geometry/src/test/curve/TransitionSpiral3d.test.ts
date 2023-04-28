@@ -45,10 +45,7 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 
-function exerciseCloneAndScale(
-  ck: Checker,
-  data: TransitionConditionalProperties
-) {
+function exerciseCloneAndScale(ck: Checker, data: TransitionConditionalProperties) {
   const data1 = data.clone();
   ck.testTrue(data1.isAlmostEqual(data));
   data1.applyScaleFactor(1.0);
@@ -64,56 +61,23 @@ describe("TransitionSpiral3d", () => {
     const b1 = Angle.createDegrees(25);
     const r0 = 0.0;
     const r1 = 1000.0;
-    const dataA = new TransitionConditionalProperties(
-      r0,
-      r1,
-      b0.clone(),
-      b1.clone(),
-      undefined
-    );
+    const dataA = new TransitionConditionalProperties(r0, r1, b0.clone(), b1.clone(), undefined);
     const dataA1 = dataA.clone();
     ck.testTrue(dataA.isAlmostEqual(dataA1));
     ck.testTrue(dataA.tryResolveAnySingleUnknown(), "resolve length");
-    ck.testTrue(
-      dataA.tryResolveAnySingleUnknown(),
-      "resolve in a complete set"
-    );
+    ck.testTrue(dataA.tryResolveAnySingleUnknown(), "resolve in a complete set");
     ck.testFalse(dataA.isAlmostEqual(dataA1));
     ck.testFalse(dataA.isAlmostEqual(undefined));
     ck.testTrue(dataA.curveLength !== undefined);
     const lengthA = dataA.curveLength as number;
-    const dataB = new TransitionConditionalProperties(
-      undefined,
-      r1,
-      b0.clone(),
-      b1.clone(),
-      lengthA
-    );
+    const dataB = new TransitionConditionalProperties(undefined, r1, b0.clone(), b1.clone(), lengthA);
     exerciseCloneAndScale(ck, dataB);
-    const dataC = new TransitionConditionalProperties(
-      r0,
-      undefined,
-      b0.clone(),
-      b1.clone(),
-      lengthA
-    );
+    const dataC = new TransitionConditionalProperties(r0, undefined, b0.clone(), b1.clone(), lengthA);
     exerciseCloneAndScale(ck, dataC);
-    const dataD = new TransitionConditionalProperties(
-      r0,
-      r1,
-      undefined,
-      b1.clone(),
-      lengthA
-    );
+    const dataD = new TransitionConditionalProperties(r0, r1, undefined, b1.clone(), lengthA);
     exerciseCloneAndScale(ck, dataD);
 
-    const dataE = new TransitionConditionalProperties(
-      r0,
-      r1,
-      b0.clone(),
-      undefined,
-      lengthA
-    );
+    const dataE = new TransitionConditionalProperties(r0, r1, b0.clone(), undefined, lengthA);
 
     ck.testFalse(dataA.isAlmostEqual(dataB), "A B");
     ck.testFalse(dataA.isAlmostEqual(dataC), "A C");
@@ -131,32 +95,17 @@ describe("TransitionSpiral3d", () => {
     ck.testTrue(dataA.isAlmostEqual(dataC), "dataC");
     ck.testTrue(dataA.isAlmostEqual(dataD), "dataD");
     ck.testTrue(dataA.isAlmostEqual(dataE), "dataE");
-    const dataZ = new TransitionConditionalProperties(
-      r0,
-      undefined,
-      b0.clone(),
-      b1.clone(),
-      undefined
-    );
+    const dataZ = new TransitionConditionalProperties(r0, undefined, b0.clone(), b1.clone(), undefined);
     ck.testFalse(dataZ.getIsValidCompleteSet(), " verify incomplete set");
     ck.testFalse(dataZ.tryResolveAnySingleUnknown(), " verify resolve failure");
-    const dataY = new TransitionConditionalProperties(
-      r0,
-      r1,
-      undefined,
-      undefined,
-      lengthA
-    );
+    const dataY = new TransitionConditionalProperties(r0, r1, undefined, undefined, lengthA);
     ck.testFalse(dataY.tryResolveAnySingleUnknown(), " verify resolve failure");
 
     const radiusLimits = Segment1d.create(1, 2);
     const radiusLimits1 = Segment1d.create(2, 1);
     const a = TransitionSpiral3d.averageCurvature(radiusLimits);
     const b = TransitionSpiral3d.averageCurvature(radiusLimits1);
-    const c = TransitionSpiral3d.averageCurvatureR0R1(
-      radiusLimits.x1,
-      radiusLimits.x0
-    );
+    const c = TransitionSpiral3d.averageCurvatureR0R1(radiusLimits.x1, radiusLimits.x0);
     ck.testCoordinate(a, b, "");
     ck.testCoordinate(a, c, "");
     expect(ck.getNumErrors()).equals(0);
@@ -175,18 +124,13 @@ describe("TransitionSpiral3d", () => {
       Segment1d.create(0, 1),
       Transform.createIdentity()
     );
-    if (
-      ck.testType(spiralA, IntegratedSpiral3d) &&
-      ck.testType(spiralB, IntegratedSpiral3d)
-    ) {
+    if (ck.testType(spiralA, IntegratedSpiral3d) && ck.testType(spiralB, IntegratedSpiral3d)) {
       ck.testFalse(spiralB.isAlmostEqual(spiralA));
       ck.testFalse(spiralA.isAlmostEqual(undefined));
       spiralB.setFrom(spiralA);
       ck.testTrue(spiralA.isAlmostEqual(spiralB));
       if (Checker.noisy.spirals)
-        GeometryCoreTestIO.consoleLog(
-          TransitionSpiral3d.radiusRadiusLengthToSweepRadians(0, 10, 50)
-        );
+        GeometryCoreTestIO.consoleLog(TransitionSpiral3d.radiusRadiusLengthToSweepRadians(0, 10, 50));
     }
     const spiralD = IntegratedSpiral3d.createFrom4OutOf5(
       "badTypeName",
@@ -242,41 +186,20 @@ describe("TransitionSpiral3d", () => {
         Point3d.create(3, 2, 5),
         Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(10))
       ),
-      Transform.createFixedPointAndMatrix(
-        Point3d.create(3, 2, 5),
-        Matrix3d.createUniformScale(2.0)
-      ),
+      Transform.createFixedPointAndMatrix(Point3d.create(3, 2, 5), Matrix3d.createUniformScale(2.0)),
       Transform.createFixedPointAndMatrix(
         Point3d.create(3, 2, 5),
         Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(10))
       ),
     ]) {
       const spiralB = spiralA.cloneTransformed(transform);
-      ck.testTransformedPoint3d(
-        transform,
-        spiralA.startPoint(),
-        spiralB.startPoint(),
-        "spiral.startPoint ()"
-      );
-      ck.testTransformedPoint3d(
-        transform,
-        spiralA.endPoint(),
-        spiralB.endPoint(),
-        "spiral.endPoint ()"
-      );
+      ck.testTransformedPoint3d(transform, spiralA.startPoint(), spiralB.startPoint(), "spiral.startPoint ()");
+      ck.testTransformedPoint3d(transform, spiralA.endPoint(), spiralB.endPoint(), "spiral.endPoint ()");
       const rangeB = spiralB.range();
       for (const f of [0.25, 0.35, 0.98]) {
         const pointB = spiralB.fractionToPoint(f);
-        ck.testTransformedPoint3d(
-          transform,
-          spiralA.fractionToPoint(f),
-          pointB,
-          "spiral.fractionToPoint ()"
-        );
-        ck.testTrue(
-          rangeB.containsPoint(pointB),
-          "rotated spiral range contains spiral points"
-        );
+        ck.testTransformedPoint3d(transform, spiralA.fractionToPoint(f), pointB, "spiral.fractionToPoint ()");
+        ck.testTrue(rangeB.containsPoint(pointB), "rotated spiral range contains spiral points");
       }
     }
 
@@ -300,10 +223,7 @@ describe("TransitionSpiral3d", () => {
       Segment1d.create(0, 100),
       AngleSweep.createStartEndDegrees(0, 15),
       Segment1d.create(0, 1),
-      Transform.createOriginAndMatrix(
-        undefined,
-        Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(85.5))
-      )
+      Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(85.5)))
     )!;
     // the start angle is chosen to make the true max x appear near the middle.
     const numEvalA = 4; // a pretty crude count for the range, so as to show the properties of the extrapolation.
@@ -314,13 +234,7 @@ describe("TransitionSpiral3d", () => {
     const b1 = 0.58;
     const dfA = 1.0 / (numEvalB - 1);
     const numEvalQ = 101;
-    const rangeQ = c.rangeBetweenFractionsByCount(
-      0.0,
-      1.0,
-      numEvalQ,
-      undefined,
-      0.0
-    );
+    const rangeQ = c.rangeBetweenFractionsByCount(0.0, 1.0, numEvalQ, undefined, 0.0);
 
     for (let i = 0; i < numEvalB; i++) {
       const f = i * dfA;
@@ -332,22 +246,8 @@ describe("TransitionSpiral3d", () => {
     const rangeClone = c.rangeBetweenFractionsByClone(0.0, 1.0);
     const countedRanges = [];
     // Use an EVEN number of evaluations so the first one does not evaluate in the middle where the true max is likely
-    for (const extrapolationFactor of [
-      0.0,
-      0.05,
-      1.0 / 3.0,
-      0.45,
-      0.5,
-      2.0,
-      20.0,
-    ]) {
-      const r = c.rangeBetweenFractionsByCount(
-        0.0,
-        1.0,
-        numEvalA,
-        undefined,
-        extrapolationFactor
-      );
+    for (const extrapolationFactor of [0.0, 0.05, 1.0 / 3.0, 0.45, 0.5, 2.0, 20.0]) {
+      const r = c.rangeBetweenFractionsByCount(0.0, 1.0, numEvalA, undefined, extrapolationFactor);
       countedRanges.push(r);
       // We expect 1/3 is right on the edge of required expansion.
       // Confirm for saftey at something a bit above ...
@@ -377,11 +277,7 @@ describe("TransitionSpiral3d", () => {
       GeometryCoreTestIO.captureRangeEdges(allGeometry, r, x0, y0);
       x0 += dx;
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "TransitionSpiral3d",
-      "RangeBetweenFractions"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "RangeBetweenFractions");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -404,27 +300,15 @@ describe("TransitionSpiral3d", () => {
     for (const f of [0.25, 0.35, 0.98]) {
       const pointA = spiralA.fractionToPoint(Geometry.interpolate(f0, f, f1));
       const pointB = spiralB.fractionToPoint(f);
-      ck.testPoint3d(
-        pointA,
-        pointB,
-        `spiral.fractionToPoint () in partial spiral at partial fraction ${f}`
-      );
+      ck.testPoint3d(pointA, pointB, `spiral.fractionToPoint () in partial spiral at partial fraction ${f}`);
     }
 
     const bearingA = spiralA.fractionToBearingRadians(f0);
     const bearingB = spiralB.fractionToBearingRadians(0.0);
-    ck.testCoordinate(
-      bearingA,
-      bearingB,
-      `spiral bearing at fraction " + [${f0}, 0.0]`
-    );
+    ck.testCoordinate(bearingA, bearingB, `spiral bearing at fraction " + [${f0}, 0.0]`);
     const curvatureA = spiralA.fractionToCurvature(f0)!;
     const curvatureB = spiralB.fractionToCurvature(0.0)!;
-    ck.testCoordinate(
-      curvatureA,
-      curvatureB,
-      `spiral curvature at fraction [${f0}, 0.0]`
-    );
+    ck.testCoordinate(curvatureA, curvatureB, `spiral curvature at fraction [${f0}, 0.0]`);
 
     expect(ck.getNumErrors()).equals(0);
   });
@@ -446,9 +330,7 @@ describe("TransitionSpiral3d", () => {
       Transform.createIdentity()
     )!;
     for (const f of [0.25, 0.35, 0.98]) {
-      const tangentA = spiralA.fractionToPointAndDerivative(
-        Geometry.interpolate(f0, f, f1)
-      );
+      const tangentA = spiralA.fractionToPointAndDerivative(Geometry.interpolate(f0, f, f1));
       const tangentB = spiralB.fractionToPointAndDerivative(f);
       ck.testPoint3d(
         tangentA.origin,
@@ -461,9 +343,7 @@ describe("TransitionSpiral3d", () => {
         "spiral.fractionToPointAndDerivatives in partial spiral at partial fraction"
       );
 
-      const planeA = spiralA.fractionToPointAnd2Derivatives(
-        Geometry.interpolate(f0, f, f1)
-      )!;
+      const planeA = spiralA.fractionToPointAnd2Derivatives(Geometry.interpolate(f0, f, f1))!;
       const planeB = spiralB.fractionToPointAnd2Derivatives(f)!;
       ck.testPoint3d(
         planeA.origin,
@@ -503,11 +383,7 @@ describe("TransitionSpiral3d", () => {
           const targetX = spiral3.evaluator.fractionToX(fraction0);
           const fraction1 = spiral3.evaluator.xToFraction(targetX);
           if (ck.testIsFinite(fraction1, "Expect newton inversion")) {
-            ck.testCoordinate(
-              fraction0,
-              fraction1,
-              "newton distance inversion"
-            );
+            ck.testCoordinate(fraction0, fraction1, "newton distance inversion");
           }
         }
       }
@@ -526,8 +402,7 @@ describe("TransitionSpiral3d", () => {
       const fractions = [];
       const distances = [];
       if (Checker.noisy.spirals) GeometryCoreTestIO.consoleLog();
-      if (Checker.noisy.spirals)
-        GeometryCoreTestIO.consoleLog(` R/L = ${radius1 / distance1}`);
+      if (Checker.noisy.spirals) GeometryCoreTestIO.consoleLog(` R/L = ${radius1 / distance1}`);
       let y0 = 0;
       const spiral = IntegratedSpiral3d.createFrom4OutOf5(
         "clothoid",
@@ -540,48 +415,25 @@ describe("TransitionSpiral3d", () => {
         Transform.createIdentity()
       )!;
       const linestring0 = LineString3d.create();
-      for (const d of [
-        0, 10, 20, 30, 40, 50, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71,
-        72, 80, 90, 100,
-      ]) {
+      for (const d of [0, 10, 20, 30, 40, 50, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 80, 90, 100]) {
         distances.push(d);
         const f = d / distance1;
         fractions.push(f);
         linestring0.packedPoints.push(spiral.fractionToPoint(f));
       }
 
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        spiral,
-        x0,
-        (y0 += 1)
-      );
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        linestring0,
-        x0,
-        (y0 += 1)
-      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral, x0, (y0 += 1));
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, linestring0, x0, (y0 += 1));
       const div2RL = 1.0 / (2.0 * radius1 * distance1);
       const y1 = 50.0;
       for (const numTerm of [1, 2, 3, 4, 5, 6, 8]) {
-        const seriesEvaluator = new ClothoidSeriesRLEvaluator(
-          distance1,
-          div2RL,
-          numTerm,
-          numTerm
-        );
-        if (Checker.noisy.spirals)
-          GeometryCoreTestIO.consoleLog(` numTerm ${numTerm}`);
+        const seriesEvaluator = new ClothoidSeriesRLEvaluator(distance1, div2RL, numTerm, numTerm);
+        if (Checker.noisy.spirals) GeometryCoreTestIO.consoleLog(` numTerm ${numTerm}`);
         series.push(seriesEvaluator);
         const ls = LineString3d.create();
         for (const d of distances) {
           const f = d / distance1;
-          ls.packedPoints.pushXYZ(
-            seriesEvaluator.fractionToX(f),
-            seriesEvaluator.fractionToY(f),
-            0
-          );
+          ls.packedPoints.pushXYZ(seriesEvaluator.fractionToX(f), seriesEvaluator.fractionToY(f), 0);
           if (d > 90) {
             const ux = seriesEvaluator.fractionToDX(f);
             const uy = seriesEvaluator.fractionToDY(f);
@@ -590,80 +442,49 @@ describe("TransitionSpiral3d", () => {
             const curvature = Geometry.curvatureMagnitude(ux, uy, 0, vx, vy, 0);
             if (Checker.noisy.spirals) {
               GeometryCoreTestIO.consoleLog(
-                ` f ${f} ${xyString(
-                  "D,R",
-                  d,
-                  Geometry.safeDivideFraction(1, curvature, 0)
-                )}  ${xyString("DU", ux, uy)}  ${xyString("DV", vx, vy)}`
+                ` f ${f} ${xyString("D,R", d, Geometry.safeDivideFraction(1, curvature, 0))}  ${xyString(
+                  "DU",
+                  ux,
+                  uy
+                )}  ${xyString("DV", vx, vy)}`
               );
             }
             const beta = (d * d) / (2.0 * radius1 * distance1);
             const wx = Math.cos(beta);
             const wy = Math.sin(beta);
             if (Checker.noisy.spirals)
-              GeometryCoreTestIO.consoleLog(
-                `    true unit ${wx},${wy}   e(${ux - wx},${uy - wy}`
-              );
+              GeometryCoreTestIO.consoleLog(`    true unit ${wx},${wy}   e(${ux - wx},${uy - wy}`);
           }
         }
         linestrings.push(ls);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls, x0, (y0 += 1));
         const extendedLineString = LineString3d.create();
         // Extended evaluation ..
-        GeometryCoreTestIO.captureCloneGeometry(
-          allGeometry,
-          linestring0,
-          x0,
-          y1
-        );
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, linestring0, x0, y1);
         for (let d = distance1; d < 4 * distance1; d += distance1 / 10) {
           const f = d / distance1;
-          extendedLineString.packedPoints.pushXYZ(
-            seriesEvaluator.fractionToX(f),
-            seriesEvaluator.fractionToY(f),
-            0
-          );
+          extendedLineString.packedPoints.pushXYZ(seriesEvaluator.fractionToX(f), seriesEvaluator.fractionToY(f), 0);
         }
-        GeometryCoreTestIO.captureCloneGeometry(
-          allGeometry,
-          extendedLineString,
-          x0,
-          y1
-        );
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, extendedLineString, x0, y1);
       }
       // We expect each series form to get closer to the real thing at each evaluation.
       for (let i = 0; i < distances.length; i++) {
         const d = distances[i];
-        const integratedPoint =
-          linestring0.packedPoints.getPoint3dAtUncheckedPointIndex(i);
+        const integratedPoint = linestring0.packedPoints.getPoint3dAtUncheckedPointIndex(i);
         let error0 = 1.0;
         if (Checker.noisy.spirals) GeometryCoreTestIO.consoleLog(`d = ${d}`);
         for (let j = 0; j < linestrings.length; j++) {
-          const pointJ =
-            linestrings[j].packedPoints.getPoint3dAtUncheckedPointIndex(i);
+          const pointJ = linestrings[j].packedPoints.getPoint3dAtUncheckedPointIndex(i);
           const errorJ = pointJ.distance(integratedPoint);
           const xReference = Geometry.maxXY(1, integratedPoint.x);
-          if (Checker.noisy.spirals)
-            GeometryCoreTestIO.consoleLog(
-              `     E = ${errorJ}    e = ${errorJ / xReference}`
-            );
-          ck.testLE(
-            errorJ,
-            error0 + 1.0e-15 * xReference,
-            j,
-            d,
-            errorJ - error0
-          );
+          if (Checker.noisy.spirals) GeometryCoreTestIO.consoleLog(`     E = ${errorJ}    e = ${errorJ / xReference}`);
+          ck.testLE(errorJ, error0 + 1.0e-15 * xReference, j, d, errorJ - error0);
           error0 = errorJ;
         }
       }
       x0 += 200;
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "TransitionSpiral3d",
-      "ClothoidTerms"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "ClothoidTerms");
     expect(ck.getNumErrors()).equals(0);
   });
   it("NamedApproximations", () => {
@@ -681,26 +502,10 @@ describe("TransitionSpiral3d", () => {
         Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(degrees))
       );
     };
-    const simpleCubic = DirectSpiral3d.createJapaneseCubic(
-      createPlacement(0),
-      nominalL1,
-      nominalR1
-    )!;
-    const simpleCubicRotated = DirectSpiral3d.createJapaneseCubic(
-      createPlacement(15),
-      nominalL1,
-      nominalR1
-    )!;
-    const aremaSpiral = DirectSpiral3d.createArema(
-      createPlacement(45),
-      nominalL1,
-      nominalR1
-    )!;
-    const directHalfCosine = DirectSpiral3d.createDirectHalfCosine(
-      createPlacement(90.0),
-      nominalL1,
-      nominalR1
-    )!;
+    const simpleCubic = DirectSpiral3d.createJapaneseCubic(createPlacement(0), nominalL1, nominalR1)!;
+    const simpleCubicRotated = DirectSpiral3d.createJapaneseCubic(createPlacement(15), nominalL1, nominalR1)!;
+    const aremaSpiral = DirectSpiral3d.createArema(createPlacement(45), nominalL1, nominalR1)!;
+    const directHalfCosine = DirectSpiral3d.createDirectHalfCosine(createPlacement(90.0), nominalL1, nominalR1)!;
     const spiral3 = DirectSpiral3d.createTruncatedClothoid(
       "ClothoidSeriesX3Y3",
       Transform.createIdentity(),
@@ -743,27 +548,10 @@ describe("TransitionSpiral3d", () => {
     )!;
     const y4 = spiral4.evaluator.fractionToY(1.0);
     const x4 = spiral4.evaluator.fractionToX(1.0);
-    const czechSpiral = DirectSpiral3d.createCzechCubic(
-      Transform.createIdentity(),
-      nominalL1,
-      nominalR1
-    )!;
-    const mxCubicAlongArc = DirectSpiral3d.createMXCubicAlongArc(
-      Transform.createIdentity(),
-      nominalL1,
-      nominalR1
-    )!;
-    const australianRailSpiral = DirectSpiral3d.createAustralianRail(
-      Transform.createIdentity(),
-      nominalL1,
-      nominalR1
-    )!;
-    GeometryCoreTestIO.consoleLog(
-      `Czech gamma factor ${CzechSpiralEvaluator.gammaConstant(
-        nominalL1,
-        nominalR1
-      )}`
-    );
+    const czechSpiral = DirectSpiral3d.createCzechCubic(Transform.createIdentity(), nominalL1, nominalR1)!;
+    const mxCubicAlongArc = DirectSpiral3d.createMXCubicAlongArc(Transform.createIdentity(), nominalL1, nominalR1)!;
+    const australianRailSpiral = DirectSpiral3d.createAustralianRail(Transform.createIdentity(), nominalL1, nominalR1)!;
+    GeometryCoreTestIO.consoleLog(`Czech gamma factor ${CzechSpiralEvaluator.gammaConstant(nominalL1, nominalR1)}`);
     for (const spiral of [
       mxCubicAlongArc,
       australianRailSpiral,
@@ -794,109 +582,34 @@ describe("TransitionSpiral3d", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral, x1, y0);
       GeometryCoreTestIO.captureRangeEdges(allGeometry, range, x1, y0);
 
-      GeometryCoreTestIO.consoleLog(
-        ` ${spiral.spiralType}  Y1  / Y4  ${
-          spiral.evaluator.fractionToY(1) / y4
-        }`
-      );
+      GeometryCoreTestIO.consoleLog(` ${spiral.spiralType}  Y1  / Y4  ${spiral.evaluator.fractionToY(1) / y4}`);
       if (strokes?.packedUVParams) {
         const splitFraction = 3 / 7;
         const lengthA = spiral.curveLengthBetweenFractions(0.0, splitFraction);
         const lengthB = spiral.curveLengthBetweenFractions(splitFraction, 1.0);
-        ck.testCoordinate(
-          lengthA + lengthB,
-          strokes.packedUVParams.back()!.y,
-          splitFraction,
-          lengthA,
-          lengthB
-        );
+        ck.testCoordinate(lengthA + lengthB, strokes.packedUVParams.back()!.y, splitFraction, lengthA, lengthB);
       }
-      const deltaXA =
-        spiral.evaluator.fractionToX(1) - spiral.evaluator.fractionToX(0);
-      const deltaXB = Quadrature.doGaussIntegral(
-        0,
-        1,
-        (f: number) => spiral.evaluator.fractionToDX(f),
-        6
-      );
-      const deltaYA =
-        spiral.evaluator.fractionToY(1) - spiral.evaluator.fractionToY(0);
-      const deltaYB = Quadrature.doGaussIntegral(
-        0,
-        1,
-        (f: number) => spiral.evaluator.fractionToDY(f),
-        6
-      );
+      const deltaXA = spiral.evaluator.fractionToX(1) - spiral.evaluator.fractionToX(0);
+      const deltaXB = Quadrature.doGaussIntegral(0, 1, (f: number) => spiral.evaluator.fractionToDX(f), 6);
+      const deltaYA = spiral.evaluator.fractionToY(1) - spiral.evaluator.fractionToY(0);
+      const deltaYB = Quadrature.doGaussIntegral(0, 1, (f: number) => spiral.evaluator.fractionToDY(f), 6);
 
-      ck.testCoordinate(
-        deltaXA,
-        deltaXB,
-        `confirm accurate DX ${spiral.spiralType}`
-      );
-      ck.testCoordinate(
-        deltaYA,
-        deltaYB,
-        `confirm accurate DY ${spiral.spiralType}`
-      );
+      ck.testCoordinate(deltaXA, deltaXB, `confirm accurate DX ${spiral.spiralType}`);
+      ck.testCoordinate(deltaYA, deltaYB, `confirm accurate DY ${spiral.spiralType}`);
 
-      const deltaDXA =
-        spiral.evaluator.fractionToDX(1) - spiral.evaluator.fractionToDX(0);
-      const deltaDXB = Quadrature.doGaussIntegral(
-        0,
-        1,
-        (f: number) => spiral.evaluator.fractionToDDX(f),
-        6
-      );
-      const deltaDYA =
-        spiral.evaluator.fractionToDY(1) - spiral.evaluator.fractionToDY(0);
-      const deltaDYB = Quadrature.doGaussIntegral(
-        0,
-        1,
-        (f: number) => spiral.evaluator.fractionToDDY(f),
-        6
-      );
-      ck.testCoordinate(
-        deltaDXA,
-        deltaDXB,
-        `confirm accurate DDX ${spiral.spiralType}`
-      );
-      ck.testCoordinate(
-        deltaDYA,
-        deltaDYB,
-        `confirm accurate DDY ${spiral.spiralType}`
-      );
-      Quadrature.doGaussIntegral(
-        0,
-        1,
-        (f: number) => spiral.evaluator.fractionToDDX(f),
-        6
-      );
-      const deltaD2XA =
-        spiral.evaluator.fractionToDDX(1) - spiral.evaluator.fractionToDDX(0);
-      const deltaD2XB = Quadrature.doGaussIntegral(
-        0,
-        1,
-        (f: number) => spiral.evaluator.fractionToD3X(f),
-        6
-      );
-      const deltaD2YA =
-        spiral.evaluator.fractionToDDY(1) - spiral.evaluator.fractionToDDY(0);
-      const deltaD2YB = Quadrature.doGaussIntegral(
-        0,
-        1,
-        (f: number) => spiral.evaluator.fractionToD3Y(f),
-        6
-      );
-      ck.testCoordinate(
-        deltaD2XA,
-        deltaD2XB,
-        `confirm accurate D3X ${spiral.spiralType}`
-      );
-      ck.testCoordinate(
-        deltaD2YA,
-        deltaD2YB,
-        `confirm accurate D3Y ${spiral.spiralType}`
-      );
+      const deltaDXA = spiral.evaluator.fractionToDX(1) - spiral.evaluator.fractionToDX(0);
+      const deltaDXB = Quadrature.doGaussIntegral(0, 1, (f: number) => spiral.evaluator.fractionToDDX(f), 6);
+      const deltaDYA = spiral.evaluator.fractionToDY(1) - spiral.evaluator.fractionToDY(0);
+      const deltaDYB = Quadrature.doGaussIntegral(0, 1, (f: number) => spiral.evaluator.fractionToDDY(f), 6);
+      ck.testCoordinate(deltaDXA, deltaDXB, `confirm accurate DDX ${spiral.spiralType}`);
+      ck.testCoordinate(deltaDYA, deltaDYB, `confirm accurate DDY ${spiral.spiralType}`);
+      Quadrature.doGaussIntegral(0, 1, (f: number) => spiral.evaluator.fractionToDDX(f), 6);
+      const deltaD2XA = spiral.evaluator.fractionToDDX(1) - spiral.evaluator.fractionToDDX(0);
+      const deltaD2XB = Quadrature.doGaussIntegral(0, 1, (f: number) => spiral.evaluator.fractionToD3X(f), 6);
+      const deltaD2YA = spiral.evaluator.fractionToDDY(1) - spiral.evaluator.fractionToDDY(0);
+      const deltaD2YB = Quadrature.doGaussIntegral(0, 1, (f: number) => spiral.evaluator.fractionToD3Y(f), 6);
+      ck.testCoordinate(deltaD2XA, deltaD2XB, `confirm accurate D3X ${spiral.spiralType}`);
+      ck.testCoordinate(deltaD2YA, deltaD2YB, `confirm accurate D3Y ${spiral.spiralType}`);
       // Problem: Arema and WesternAustralian seem to have a problem in:
       //  * Clothoid series DDX evaluator
       //  * evaluator.numXTerms == 2
@@ -940,21 +653,14 @@ describe("TransitionSpiral3d", () => {
     ck.testFalse(directHalfCosine.isAlmostEqual(undefined));
 
     expect(ck.getNumErrors()).equals(0);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "TransitionSpiral3d",
-      "NamedApproximations"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "NamedApproximations");
   });
   it("SnapFunctions", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     const unitBox = Sample.createRectangle(0, 0, 1, 1, 0, true);
-    const outerLines = [
-      LineSegment3d.createXYXY(-1, 0, 0, 0),
-      LineSegment3d.createXYXY(1, 1, 2, 1),
-    ];
+    const outerLines = [LineSegment3d.createXYXY(-1, 0, 0, 0), LineSegment3d.createXYXY(1, 1, 2, 1)];
     const yDF = 0;
     const yF = 4;
     const yIF = 8;
@@ -966,8 +672,7 @@ describe("TransitionSpiral3d", () => {
       new NormalizedSineTransition(),
     ];
     for (const snap of snapFunctions) {
-      if (Checker.noisy.spirals)
-        GeometryCoreTestIO.consoleLog(" Snap Function ", snap);
+      if (Checker.noisy.spirals) GeometryCoreTestIO.consoleLog(" Snap Function ", snap);
       const lsF = LineString3d.create();
       const lsDF = LineString3d.create();
       const lsIF = LineString3d.create();
@@ -987,38 +692,20 @@ describe("TransitionSpiral3d", () => {
       let trueDerivative;
       for (let f = 0.0; f <= 1.0; f += df) {
         lsF.packedPoints.pushXYZ(f, snap.fractionToCurvatureFraction(f), 0);
-        lsDF.packedPoints.pushXYZ(
-          f,
-          (trueDerivative = snap.fractionToCurvatureFractionDerivative(f)),
-          0
-        );
+        lsDF.packedPoints.pushXYZ(f, (trueDerivative = snap.fractionToCurvatureFractionDerivative(f)), 0);
         lsIF.packedPoints.pushXYZ(f, snap.fractionToArea(f), 0);
         // if cleanly inside the interval and NOT bracketing 0.5, do a central-difference derivative check ...
         if (f - e >= 0 && f + e <= 1.0 && (f + e - 0.5) * (f - e - 0.5) > 0) {
           const approximateDerivative =
-            (snap.fractionToCurvatureFraction(f + e) -
-              snap.fractionToCurvatureFraction(f - e)) /
-            (2 * e);
-          const derivativeError = Math.abs(
-            approximateDerivative - trueDerivative
-          );
+            (snap.fractionToCurvatureFraction(f + e) - snap.fractionToCurvatureFraction(f - e)) / (2 * e);
+          const derivativeError = Math.abs(approximateDerivative - trueDerivative);
           maxDerivativeError = Math.max(derivativeError, maxDerivativeError);
-          ck.testLE(
-            Math.abs(approximateDerivative - trueDerivative),
-            derivativeTolerance,
-            "approximate derivative"
-          );
+          ck.testLE(Math.abs(approximateDerivative - trueDerivative), derivativeTolerance, "approximate derivative");
         }
         // verify symmetry ...
-        ck.testCoordinate(
-          snap.fractionToCurvatureFraction(f),
-          1 - snap.fractionToCurvatureFraction(1 - f)
-        );
+        ck.testCoordinate(snap.fractionToCurvatureFraction(f), 1 - snap.fractionToCurvatureFraction(1 - f));
       }
-      if (Checker.noisy.spirals)
-        GeometryCoreTestIO.consoleLog(
-          `maxDerivativeError ${maxDerivativeError}`
-        );
+      if (Checker.noisy.spirals) GeometryCoreTestIO.consoleLog(`maxDerivativeError ${maxDerivativeError}`);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, lsF, x0, yF);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, lsDF, x0, yDF);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, lsIF, x0, yIF);
@@ -1029,11 +716,7 @@ describe("TransitionSpiral3d", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, unitBox, x0, yIF);
       x0 += 5.0;
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "TransitionSpiral3d",
-      "SnapFunctions"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "SnapFunctions");
     expect(ck.getNumErrors()).equals(0);
   });
   it("ClothoidSeriesCoverage", () => {
@@ -1052,15 +735,10 @@ describe("TransitionSpiral3d", () => {
       300,
       undefined
     );
-    if (
-      ck.testType(spiralA, DirectSpiral3d) &&
-      spiralA.evaluator instanceof ClothoidSeriesRLEvaluator
-    ) {
+    if (ck.testType(spiralA, DirectSpiral3d) && spiralA.evaluator instanceof ClothoidSeriesRLEvaluator) {
       ck.testExactNumber(1, spiralA.evaluator.numXTerms);
       ck.testExactNumber(1, spiralA.evaluator.numYTerms);
-      const spiralB = spiralA.cloneTransformed(
-        Transform.createTranslationXYZ(1, 2, 3)
-      );
+      const spiralB = spiralA.cloneTransformed(Transform.createTranslationXYZ(1, 2, 3));
       if (ck.testType(spiralA, DirectSpiral3d)) {
         // We know the (1,1) approximation is just (s, s^3 / 6RL)
         for (const fraction of [0, 0.24, 0.9]) {
@@ -1082,48 +760,20 @@ describe("TransitionSpiral3d", () => {
     for (const fraction of [0.1, 0.9, 1.0]) {
       const ray = seriesQ.fractionToPointAndDerivative(fraction);
       const plane = seriesQ.fractionToPointAnd2Derivatives(fraction);
-      ck.testCoordinate(
-        length1,
-        ray.direction.magnitude(),
-        "unit tangents on series clothoid"
-      );
-      ck.testPerpendicular(
-        plane.vectorU,
-        plane.vectorV,
-        "perpendicular derivatives on series clothoid"
-      );
-      const expectedCurvature = TransitionSpiral3d.interpolateCurvatureR0R1(
-        0,
-        fraction,
-        radius1
-      );
+      ck.testCoordinate(length1, ray.direction.magnitude(), "unit tangents on series clothoid");
+      ck.testPerpendicular(plane.vectorU, plane.vectorV, "perpendicular derivatives on series clothoid");
+      const expectedCurvature = TransitionSpiral3d.interpolateCurvatureR0R1(0, fraction, radius1);
       const ux = seriesQ.fractionToDX(fraction);
       const uy = seriesQ.fractionToDY(fraction);
       const vx = seriesQ.fractionToDDX(fraction);
       const vy = seriesQ.fractionToDDY(fraction);
-      const computedCurvature = Geometry.curvatureMagnitude(
-        ux,
-        uy,
-        0,
-        vx,
-        vy,
-        0
-      );
+      const computedCurvature = Geometry.curvatureMagnitude(ux, uy, 0, vx, vy, 0);
       // hm .. mild surprise that curvature does not have to be scaled from the fractional derivatives.
       // but the curvature formula for parametric derivative cancels that
-      ck.testCoordinate(
-        expectedCurvature,
-        computedCurvature,
-        " on clothoid, 2nd derivative is curvature?"
-      );
+      ck.testCoordinate(expectedCurvature, computedCurvature, " on clothoid, 2nd derivative is curvature?");
       const x = seriesQ.fractionToX(fraction);
       const fraction1 = seriesQ.xToFraction(x);
-      if (ck.testIsFinite(fraction1))
-        ck.testCoordinate(
-          fraction,
-          fraction1,
-          "round trip fraction to x to fraction"
-        );
+      if (ck.testIsFinite(fraction1)) ck.testCoordinate(fraction, fraction1, "round trip fraction to x to fraction");
     }
     expect(ck.getNumErrors()).equals(0);
   });
@@ -1135,8 +785,7 @@ describe("TransitionSpiral3d", () => {
     const dyA = 2;
     const bearingChange = Angle.createDegrees(8);
     const bigRadius = 500;
-    const length =
-      bearingChange.radians / Geometry.meanCurvatureOfRadii(0, bigRadius);
+    const length = bearingChange.radians / Geometry.meanCurvatureOfRadii(0, bigRadius);
     const dxB = length;
     const spirals: TransitionSpiral3d[] = [];
     for (const spiralType of [
@@ -1149,10 +798,7 @@ describe("TransitionSpiral3d", () => {
       "Arema",
       "AustralianRailCorp",
     ]) {
-      for (const activeInterval of [
-        Segment1d.create(0, 1),
-        Segment1d.create(0.35, 0.75),
-      ]) {
+      for (const activeInterval of [Segment1d.create(0, 1), Segment1d.create(0.35, 0.75)]) {
         for (const radiusSign of [1.0, -1.0]) {
           for (const reverseRadii of [false, true]) {
             let r0, r1;
@@ -1166,14 +812,13 @@ describe("TransitionSpiral3d", () => {
             r0 *= radiusSign;
             r1 *= radiusSign;
             for (const reverseAfterCreate of [false, true]) {
-              const spiralA =
-                IntegratedSpiral3d.createRadiusRadiusBearingBearing(
-                  Segment1d.create(r0, r1),
-                  AngleSweep.createStartEndDegrees(0, 8),
-                  activeInterval,
-                  Transform.createIdentity(),
-                  spiralType
-                );
+              const spiralA = IntegratedSpiral3d.createRadiusRadiusBearingBearing(
+                Segment1d.create(r0, r1),
+                AngleSweep.createStartEndDegrees(0, 8),
+                activeInterval,
+                Transform.createIdentity(),
+                spiralType
+              );
               if (spiralA) {
                 if (reverseAfterCreate) spiralA.reverseInPlace();
                 spirals.push(spiralA);
@@ -1208,34 +853,14 @@ describe("TransitionSpiral3d", () => {
       spiralType0 = spiralType1;
       let y1 = y0;
       if (ck.testType(spiral, TransitionSpiral3d)) {
-        GeometryCoreTestIO.captureCloneGeometry(
-          allGeometry,
-          spiral.activeStrokes,
-          x0,
-          y1
-        );
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral.activeStrokes, x0, y1);
         const linestringA = LineString3d.create();
         spiral.emitStrokes(linestringA);
-        GeometryCoreTestIO.captureGeometry(
-          allGeometry,
-          linestringA,
-          x0,
-          y1 + dyA / 4
-        );
+        GeometryCoreTestIO.captureGeometry(allGeometry, linestringA, x0, y1 + dyA / 4);
         const linestringB = LineString3d.create();
         spiral.emitStrokes(linestringB, optionsB);
-        GeometryCoreTestIO.captureGeometry(
-          allGeometry,
-          linestringB,
-          x0,
-          y1 + (2 * dyA) / 4
-        );
-        GeometryCoreTestIO.captureCloneGeometry(
-          allGeometry,
-          spiral,
-          x0 + dxB,
-          y1
-        );
+        GeometryCoreTestIO.captureGeometry(allGeometry, linestringB, x0, y1 + (2 * dyA) / 4);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral, x0 + dxB, y1);
         y1 += dyA;
       }
       y0 += 25;
@@ -1339,30 +964,10 @@ describe("TransitionSpiral3d", () => {
     const dyB = length1;
     for (const evaluator of [
       new DirectHalfCosineSpiralEvaluator(length1, radius1),
-      new ClothoidSeriesRLEvaluator(
-        length1,
-        1.0 / (2.0 * radius1 * length1),
-        1,
-        1
-      ),
-      new ClothoidSeriesRLEvaluator(
-        length1,
-        1.0 / (2.0 * radius1 * length1),
-        2,
-        2
-      ),
-      new ClothoidSeriesRLEvaluator(
-        length1,
-        1.0 / (2.0 * radius1 * length1),
-        3,
-        3
-      ),
-      new ClothoidSeriesRLEvaluator(
-        length1,
-        1.0 / (2.0 * radius1 * length1),
-        4,
-        4
-      ),
+      new ClothoidSeriesRLEvaluator(length1, 1.0 / (2.0 * radius1 * length1), 1, 1),
+      new ClothoidSeriesRLEvaluator(length1, 1.0 / (2.0 * radius1 * length1), 2, 2),
+      new ClothoidSeriesRLEvaluator(length1, 1.0 / (2.0 * radius1 * length1), 3, 3),
+      new ClothoidSeriesRLEvaluator(length1, 1.0 / (2.0 * radius1 * length1), 4, 4),
       AustralianRailCorpXYEvaluator.create(length1, radius1)!,
       CzechSpiralEvaluator.create(length1, radius1)!,
     ]) {
@@ -1379,11 +984,7 @@ describe("TransitionSpiral3d", () => {
       const d2xy = Vector3d.create();
       const d3xy = Vector3d.create();
       const frame = [];
-      frame.push(
-        Point3d.create(length1, 0),
-        Point3d.create(0, 0),
-        Point3d.create(0, length1)
-      );
+      frame.push(Point3d.create(length1, 0), Point3d.create(0, 0), Point3d.create(0, length1));
       frame.push(Point3d.create(-dxA, length1));
       for (let u = 0; u <= 2.0; u += 0.05) {
         evaluator.fractionToPointAnd3Derivatives(u, xy, d1xy, d2xy, d3xy);
@@ -1396,85 +997,30 @@ describe("TransitionSpiral3d", () => {
         lsD3X.packedPoints.pushXYZ(xy.x, d3xy.x, 0);
         const xA = xy.x;
         const uB = evaluator.xToFraction(xA);
-        if (ck.testIsFinite(uB))
-          ck.testCoordinate(u, uB, "nominal distance inversion");
+        if (ck.testIsFinite(uB)) ck.testCoordinate(u, uB, "nominal distance inversion");
       }
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, lsY, x0, y0);
-      GeometryCoreTestIO.captureGeometry(
-        allGeometry,
-        LineSegment3d.createXYZXYZ(0, 0, 0, length1, 0, 0),
-        x0,
-        y0
-      );
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        lsD1Y,
-        x0,
-        (y0 += dyB)
-      );
-      GeometryCoreTestIO.captureGeometry(
-        allGeometry,
-        LineSegment3d.createXYZXYZ(0, 0, 0, length1, 0, 0),
-        x0,
-        y0
-      );
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        lsD2Y,
-        x0,
-        (y0 += dyB)
-      );
-      GeometryCoreTestIO.captureGeometry(
-        allGeometry,
-        LineSegment3d.createXYZXYZ(0, 0, 0, length1, 0, 0),
-        x0,
-        y0
-      );
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        lsD3Y,
-        x0,
-        (y0 += dyB)
-      );
-      GeometryCoreTestIO.captureGeometry(
-        allGeometry,
-        LineSegment3d.createXYZXYZ(0, 0, 0, length1, 0, 0),
-        x0,
-        y0
-      );
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYZXYZ(0, 0, 0, length1, 0, 0), x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, lsD1Y, x0, (y0 += dyB));
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYZXYZ(0, 0, 0, length1, 0, 0), x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, lsD2Y, x0, (y0 += dyB));
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYZXYZ(0, 0, 0, length1, 0, 0), x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, lsD3Y, x0, (y0 += dyB));
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYZXYZ(0, 0, 0, length1, 0, 0), x0, y0);
 
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        lsD1X,
-        x0,
-        (y0 += dyA)
-      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, lsD1X, x0, (y0 += dyA));
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, frame, x0, y0);
 
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        lsD2X,
-        x0,
-        (y0 += dyA)
-      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, lsD2X, x0, (y0 += dyA));
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, frame, x0, y0);
 
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        lsD3X,
-        x0,
-        (y0 += dyA)
-      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, lsD3X, x0, (y0 += dyA));
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, frame, x0, y0);
 
       x0 += 3 * length1;
       y0 = 0;
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "TransitionSpiral3d",
-      "DirectHalfCosineSnap"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "DirectHalfCosineSnap");
     expect(ck.getNumErrors()).equals(0);
   });
   it("SampleConstruction", () => {
@@ -1519,11 +1065,7 @@ describe("TransitionSpiral3d", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineIn, x0, y0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, arcOutB, x0, y0);
     expect(ck.getNumErrors()).equals(0);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "TransitionSpiral3d",
-      "SampleConstruction"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "SampleConstruction");
   });
   it("LineSpiralSpiralLine", () => {
     const ck = new Checker();
@@ -1532,34 +1074,15 @@ describe("TransitionSpiral3d", () => {
     const y0 = 0;
     const pointA = Point3d.create(100, -100);
     const pointB = Point3d.create(500, 0);
-    for (const pointC of [
-      Point3d.create(800, 500),
-      Point3d.create(600, 600),
-      Point3d.create(900, -100),
-    ]) {
-      GeometryCoreTestIO.captureGeometry(
-        allGeometry,
-        LineString3d.create(pointA, pointB, pointC),
-        x0,
-        y0
-      );
-      const spirals = CurveFactory.createLineSpiralSpiralLine(
-        "clothoid",
-        pointA,
-        pointB,
-        pointC
-      );
+    for (const pointC of [Point3d.create(800, 500), Point3d.create(600, 600), Point3d.create(900, -100)]) {
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(pointA, pointB, pointC), x0, y0);
+      const spirals = CurveFactory.createLineSpiralSpiralLine("clothoid", pointA, pointB, pointC);
       if (spirals) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, spirals, x0, y0);
         for (const spiral of spirals) {
           if (spiral instanceof IntegratedSpiral3d) {
             {
-              GeometryCoreTestIO.captureCloneGeometry(
-                allGeometry,
-                spiral.activeStrokes,
-                x0,
-                y0
-              );
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral.activeStrokes, x0, y0);
             }
           }
         }
@@ -1567,11 +1090,7 @@ describe("TransitionSpiral3d", () => {
       x0 += 1000;
     }
     expect(ck.getNumErrors()).equals(0);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "TransitionSpiral3d",
-      "LineSpiralSpiralLine"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "LineSpiralSpiralLine");
   });
 
   it("LineSpiralArcSpiralLine", () => {
@@ -1583,17 +1102,8 @@ describe("TransitionSpiral3d", () => {
     const pointB = Point3d.create(500, 0);
     const lengthArray = [200, 275];
     const radius = 300;
-    for (const pointC of [
-      Point3d.create(800, 500),
-      Point3d.create(600, 600),
-      Point3d.create(700, -200),
-    ]) {
-      GeometryCoreTestIO.captureGeometry(
-        allGeometry,
-        LineString3d.create(pointA, pointB, pointC),
-        x0,
-        y0
-      );
+    for (const pointC of [Point3d.create(800, 500), Point3d.create(600, 600), Point3d.create(700, -200)]) {
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(pointA, pointB, pointC), x0, y0);
       const spirals = CurveFactory.createLineSpiralArcSpiralLine(
         "clothoid",
         pointA,
@@ -1609,23 +1119,10 @@ describe("TransitionSpiral3d", () => {
         for (const spiral of spirals) {
           if (spiral instanceof IntegratedSpiral3d) {
             {
-              GeometryCoreTestIO.captureCloneGeometry(
-                allGeometry,
-                spiral.activeStrokes,
-                x0,
-                y0
-              );
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral.activeStrokes, x0, y0);
               const c1 = spiral.fractionToCurvature(1.0)!;
-              ck.testCoordinate(
-                radius,
-                Math.abs(1 / c1),
-                "confirm curvature at junction."
-              );
-              ck.testCoordinate(
-                lengthArray[spiralCounter],
-                spiral.curveLength(),
-                " confirm spiralLength"
-              );
+              ck.testCoordinate(radius, Math.abs(1 / c1), "confirm curvature at junction.");
+              ck.testCoordinate(lengthArray[spiralCounter], spiral.curveLength(), " confirm spiralLength");
               spiralCounter++;
             }
           }
@@ -1634,11 +1131,7 @@ describe("TransitionSpiral3d", () => {
       x0 += 1000;
     }
     expect(ck.getNumErrors()).equals(0);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "TransitionSpiral3d",
-      "LineSpiralArcSpiralLine"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "LineSpiralArcSpiralLine");
   });
 
   it("LineSpiralArcSpiralLineWithSpiralLength", () => {
@@ -1649,17 +1142,8 @@ describe("TransitionSpiral3d", () => {
     const pointA = Point3d.create(100, -100);
     const pointB = Point3d.create(500, 0);
     const spiralLength = 200;
-    for (const pointC of [
-      Point3d.create(800, 500),
-      Point3d.create(600, 600),
-      Point3d.create(700, -200),
-    ]) {
-      GeometryCoreTestIO.captureGeometry(
-        allGeometry,
-        LineString3d.create(pointA, pointB, pointC),
-        x0,
-        y0
-      );
+    for (const pointC of [Point3d.create(800, 500), Point3d.create(600, 600), Point3d.create(700, -200)]) {
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(pointA, pointB, pointC), x0, y0);
       const spirals = CurveFactory.createLineSpiralSpiralLineWithSpiralLength(
         "clothoid",
         pointA,
@@ -1673,32 +1157,16 @@ describe("TransitionSpiral3d", () => {
       x0 += 1000;
     }
     expect(ck.getNumErrors()).equals(0);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "TransitionSpiral3d",
-      "LineSpiralArcSpiralLineWithSpiralLength"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "LineSpiralArcSpiralLineWithSpiralLength");
   });
 
   it("DirectSpiralDistanceAlong", () => {
     const ck = new Checker();
     const nominalL1 = 100;
     const nominalR1 = 400;
-    const simpleCubic = DirectSpiral3d.createJapaneseCubic(
-      Transform.createIdentity(),
-      nominalL1,
-      nominalR1
-    )!;
-    const aremaSpiral = DirectSpiral3d.createArema(
-      Transform.createIdentity(),
-      nominalL1,
-      nominalR1
-    )!;
-    const directHalfCosine = DirectSpiral3d.createDirectHalfCosine(
-      Transform.createIdentity(),
-      nominalL1,
-      nominalR1
-    )!;
+    const simpleCubic = DirectSpiral3d.createJapaneseCubic(Transform.createIdentity(), nominalL1, nominalR1)!;
+    const aremaSpiral = DirectSpiral3d.createArema(Transform.createIdentity(), nominalL1, nominalR1)!;
+    const directHalfCosine = DirectSpiral3d.createDirectHalfCosine(Transform.createIdentity(), nominalL1, nominalR1)!;
     const spiral3 = DirectSpiral3d.createTruncatedClothoid(
       "ClothoidSeriesX3Y3",
       Transform.createIdentity(),
@@ -1725,11 +1193,7 @@ describe("TransitionSpiral3d", () => {
       nominalR1,
       undefined
     )!;
-    const czechSpiral = DirectSpiral3d.createCzechCubic(
-      Transform.createIdentity(),
-      nominalL1,
-      nominalR1
-    )!;
+    const czechSpiral = DirectSpiral3d.createCzechCubic(Transform.createIdentity(), nominalL1, nominalR1)!;
     for (const spiral of [
       simpleCubic,
       czechSpiral,
@@ -1746,15 +1210,8 @@ describe("TransitionSpiral3d", () => {
         );
 
       for (const fraction of [0.0, 0.32423478, 0.5, 0.83424, 0.9328424, 1.0]) {
-        const distanceFromStart = spiral.curveLengthBetweenFractions(
-          0.0,
-          fraction
-        );
-        const inverseFraction = spiral.moveSignedDistanceFromFraction(
-          0,
-          distanceFromStart,
-          true
-        );
+        const distanceFromStart = spiral.curveLengthBetweenFractions(0.0, fraction);
+        const inverseFraction = spiral.moveSignedDistanceFromFraction(0, distanceFromStart, true);
         if (Checker.noisy.directSpiralDistanceAlong)
           GeometryCoreTestIO.consoleLog({
             fraction0: fraction,
@@ -1771,20 +1228,11 @@ describe("TransitionSpiral3d", () => {
     // const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const alignment = IModelJson.Reader.parse(
-      JSON.parse(
-        fs.readFileSync(
-          "./src/test/testInputs/curve/AlexGSpiral/AlexGSpiral.imjs",
-          "utf8"
-        )
-      )
+      JSON.parse(fs.readFileSync("./src/test/testInputs/curve/AlexGSpiral/AlexGSpiral.imjs", "utf8"))
     );
     captureStroked(allGeometry, alignment);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, alignment);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "TransitionSpiral3d",
-      "AlexGStroking"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "AlexGStroking");
   });
   it("AlexGSamples", () => {
     const ck = new Checker();
@@ -1796,25 +1244,11 @@ describe("TransitionSpiral3d", () => {
       for (const fileName of fileList) {
         GeometryCoreTestIO.consoleLog(fileName);
         const fullPath = `${directoryPath}/${fileName}`;
-        const alignment = IModelJson.Reader.parse(
-          JSON.parse(fs.readFileSync(fullPath, "utf8"))
-        );
+        const alignment = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(fullPath, "utf8")));
         const outputFileName = `AlexG0421${fileName}`;
         const allGeometry: GeometryQuery[] = [];
-        if (
-          ck.testTrue(
-            alignment instanceof Path,
-            "expect one alignment in test file"
-          ) &&
-          alignment instanceof Path
-        ) {
-          GeometryCoreTestIO.captureCloneGeometry(
-            allGeometry,
-            alignment,
-            0,
-            0,
-            0
-          );
+        if (ck.testTrue(alignment instanceof Path, "expect one alignment in test file") && alignment instanceof Path) {
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, alignment, 0, 0, 0);
           let numSpiral = 0;
           let counter = 0;
           const children = alignment.children;
@@ -1823,11 +1257,7 @@ describe("TransitionSpiral3d", () => {
             const xyzA = children[i].fractionToPoint(1.0);
             const xyzB = children[i + 1].fractionToPoint(0.0);
             const d = xyzA.distance(xyzB);
-            ck.testCoordinate(
-              0.0,
-              d,
-              `end-to-start distance ${fileName} index ${i}`
-            );
+            ck.testCoordinate(0.0, d, `end-to-start distance ${fileName} index ${i}`);
             // GeometryCoreTestIO.consoleLog(`    AB ${d}`);
           }
           let point0 = Point3d.create(0, 0, 0);
@@ -1839,47 +1269,24 @@ describe("TransitionSpiral3d", () => {
             if (curve instanceof TransitionSpiral3d) {
               numSpiral++;
               const points = [];
-              for (
-                let fraction = 0.0;
-                fraction <= 1.0;
-                fraction += 1.0 / 16.0
-              ) {
+              for (let fraction = 0.0; fraction <= 1.0; fraction += 1.0 / 16.0) {
                 // stay strictly less to allow debug break at 1.0
                 points.push(curve.fractionToPoint(fraction));
               }
               // throw away for debugging...
               curve.fractionToPoint(1.0);
-              GeometryCoreTestIO.captureCloneGeometry(
-                allGeometry,
-                points,
-                0,
-                0,
-                0
-              );
-              GeometryCoreTestIO.captureCloneGeometry(
-                allGeometry,
-                points,
-                0,
-                yShift,
-                0
-              ); // second time to stand out visually
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, points, 0, 0, 0);
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, points, 0, yShift, 0); // second time to stand out visually
             }
           }
           if (numSpiral !== 4) {
             GeometryCoreTestIO.consoleLog(
               `Expected 4 spirals, got ${numSpiral} in ${outputFileName}  *******************************`
             );
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry, [
-              point0,
-              point0.plus(Vector3d.create(-1000, 0, 0)),
-            ]);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, [point0, point0.plus(Vector3d.create(-1000, 0, 0))]);
           }
           testGeometryQueryRoundTrip(ck, alignment);
-          GeometryCoreTestIO.saveGeometry(
-            allGeometry,
-            "TransitionSpiral3d",
-            outputFileName
-          );
+          GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", outputFileName);
         }
       }
     }
@@ -1893,16 +1300,8 @@ describe("TransitionSpiral3d", () => {
     const nominalL1 = 100.0;
     const nominalR1 = 500.0;
     for (const xA of [10, 20, 40, 80, 99, 100, 0]) {
-      const dA = PolishCubicEvaluator.xToApproximateDistance(
-        xA,
-        nominalR1,
-        nominalL1
-      );
-      const xB = PolishCubicEvaluator.approximateDistanceAlongToX(
-        dA,
-        nominalR1,
-        nominalL1
-      )!;
+      const dA = PolishCubicEvaluator.xToApproximateDistance(xA, nominalR1, nominalL1);
+      const xB = PolishCubicEvaluator.approximateDistanceAlongToX(dA, nominalR1, nominalL1)!;
       ck.testTrue(Math.abs(xA - xB) < distanceInversionTolerance);
     }
     expect(ck.getNumErrors()).equals(0);
@@ -1944,11 +1343,7 @@ describe("TransitionSpiral3d", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiralA, x0, y0, 0);
       y0 += 20;
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "TransitionSpiral3d",
-      "spiralStroking"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "spiralStroking");
   });
 
   it("test TransitionSpiral3d clonePartialCurve", () => {
@@ -1956,22 +1351,17 @@ describe("TransitionSpiral3d", () => {
     const nominalL1 = 100;
     const nominalR1 = 400;
 
-    const simpleCubic = DirectSpiral3d.createJapaneseCubic(
-      Transform.createIdentity(),
-      nominalL1,
-      nominalR1
-    )!;
+    const simpleCubic = DirectSpiral3d.createJapaneseCubic(Transform.createIdentity(), nominalL1, nominalR1)!;
     ck.testType(simpleCubic, DirectSpiral3d);
     const simpleCubicReversed = simpleCubic.clone();
     simpleCubicReversed.reverseInPlace();
 
-    const integratedSpiral =
-      IntegratedSpiral3d.createRadiusRadiusBearingBearing(
-        Segment1d.create(0, 1000),
-        AngleSweep.createStartEndDegrees(0, 8),
-        Segment1d.create(0, 1),
-        Transform.createIdentity()
-      )!;
+    const integratedSpiral = IntegratedSpiral3d.createRadiusRadiusBearingBearing(
+      Segment1d.create(0, 1000),
+      AngleSweep.createStartEndDegrees(0, 8),
+      Segment1d.create(0, 1),
+      Transform.createIdentity()
+    )!;
     ck.testType(integratedSpiral, IntegratedSpiral3d);
     const integratedSpiralReversed = integratedSpiral.clone();
     integratedSpiralReversed.reverseInPlace();
@@ -1988,12 +1378,7 @@ describe("TransitionSpiral3d", () => {
     ck.testTrue(cloneD.isAlmostEqual(integratedSpiralReversed));
 
     // For each input spiral, clone partial and validate points/tangents and lengths are the same
-    for (const spiral of [
-      simpleCubic,
-      simpleCubicReversed,
-      integratedSpiral,
-      integratedSpiralReversed,
-    ]) {
+    for (const spiral of [simpleCubic, simpleCubicReversed, integratedSpiral, integratedSpiralReversed]) {
       // GeometryCoreTestIO.consoleLog(spiral.spiralType);
       const partial = spiral.clonePartialCurve(0.2, 0.8)!;
       ck.testTrue(spiral.spiralType === partial.spiralType);
@@ -2003,46 +1388,24 @@ describe("TransitionSpiral3d", () => {
       if (spiral instanceof IntegratedSpiral3d) {
         // Length is proportional to total length
         ck.testTightNumber(partial.curveLength(), 0.6 * spiral.curveLength());
-        ck.testTrue(
-          (partial as IntegratedSpiral3d).bearing01.isAlmostEqual(
-            spiral.bearing01
-          )
-        );
-        ck.testTrue(
-          (partial as IntegratedSpiral3d).radius01.isAlmostEqual(
-            spiral.radius01
-          )
-        );
+        ck.testTrue((partial as IntegratedSpiral3d).bearing01.isAlmostEqual(spiral.bearing01));
+        ck.testTrue((partial as IntegratedSpiral3d).radius01.isAlmostEqual(spiral.radius01));
       } else if (spiral instanceof DirectSpiral3d) {
-        ck.testExactNumber(
-          (partial as DirectSpiral3d).nominalL1,
-          spiral.nominalL1
-        );
-        ck.testExactNumber(
-          (partial as DirectSpiral3d).nominalR1,
-          spiral.nominalR1
-        );
+        ck.testExactNumber((partial as DirectSpiral3d).nominalL1, spiral.nominalL1);
+        ck.testExactNumber((partial as DirectSpiral3d).nominalR1, spiral.nominalR1);
       }
 
       for (const fraction of [0.0, 0.2, 0.4, 0.5, 0.7, 1.0]) {
-        const fSpiral =
-          partial.activeFractionInterval.fractionToPoint(fraction);
-        const fPartial =
-          spiral.activeFractionInterval.fractionToPoint(fraction);
+        const fSpiral = partial.activeFractionInterval.fractionToPoint(fraction);
+        const fPartial = spiral.activeFractionInterval.fractionToPoint(fraction);
 
         const raySpiral = spiral.fractionToPointAndUnitTangent(fSpiral);
         const rayPartial = partial.fractionToPointAndUnitTangent(fPartial);
-        ck.testVector3d(
-          raySpiral.getDirectionRef(),
-          rayPartial.getDirectionRef()
-        );
+        ck.testVector3d(raySpiral.getDirectionRef(), rayPartial.getDirectionRef());
         ck.testPoint3d(raySpiral.getOriginRef(), rayPartial.getOriginRef());
 
         const lengthSpiral = spiral.curveLengthBetweenFractions(fSpiral, 0.8);
-        const lengthPartial = partial.curveLengthBetweenFractions(
-          fPartial,
-          1.0
-        );
+        const lengthPartial = partial.curveLengthBetweenFractions(fPartial, 1.0);
         ck.testTightNumber(lengthSpiral, lengthPartial);
       }
     }
@@ -2084,31 +1447,13 @@ describe("TransitionSpiral3d", () => {
       const detail = clothoid.closestPoint(spacePoint, false);
 
       if (ck.testPointer(detail) && ck.testPointer(detail.curve)) {
-        GeometryCoreTestIO.createAndCaptureXYMarker(
-          allGeometry,
-          0,
-          spacePoint,
-          0.003
-        );
-        GeometryCoreTestIO.createAndCaptureXYMarker(
-          allGeometry,
-          0,
-          detail.point,
-          0.003
-        );
-        ck.testCoordinate(
-          detail.fraction,
-          0.0,
-          "Expected closest point at start"
-        );
+        GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, spacePoint, 0.003);
+        GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, detail.point, 0.003);
+        ck.testCoordinate(detail.fraction, 0.0, "Expected closest point at start");
       }
     }
 
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "CurvePrimitive",
-      "ClothoidProjectionFromClaude"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurvePrimitive", "ClothoidProjectionFromClaude");
     ck.checkpoint("End ClothoidTest.ProjectionFromClaude");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -2132,12 +1477,7 @@ describe("TransitionSpiral3d", () => {
     for (const u of [0.0, 1.0]) {
       const pointA = spiral01.fractionToPoint(u);
       const pointB = pointA.plusXYZ(0, 10 * dy, 0);
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        [pointA, pointB],
-        x0,
-        y0
-      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pointA, pointB], x0, y0);
     }
     for (const activeInterval of [
       Segment1d.create(0, 1),
@@ -2174,31 +1514,11 @@ describe("TransitionSpiral3d", () => {
       for (const u0 of [1.1, 0.1, 0.9, -0.1, 1.1]) {
         const tangentRay = spiral.fractionToPointAndUnitTangent(u0);
         const perpVector = tangentRay.direction.rotate90CCWXY();
-        const spacePoint = tangentRay.origin.plusScaled(
-          perpVector,
-          perpDistance
-        );
-        GeometryCoreTestIO.createAndCaptureXYCircle(
-          allGeometry,
-          spacePoint,
-          perpDistance / 2.0,
-          x0,
-          y0
-        );
+        const spacePoint = tangentRay.origin.plusScaled(perpVector, perpDistance);
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, spacePoint, perpDistance / 2.0, x0, y0);
         const curvePointDetail = spiral.closestPoint(spacePoint, true);
-        if (
-          ck.testType(
-            curvePointDetail,
-            CurveLocationDetail,
-            "closest point computed"
-          )
-        ) {
-          GeometryCoreTestIO.captureCloneGeometry(
-            allGeometry,
-            [spacePoint, curvePointDetail.point],
-            x0,
-            y0
-          );
+        if (ck.testType(curvePointDetail, CurveLocationDetail, "closest point computed")) {
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [spacePoint, curvePointDetail.point], x0, y0);
           ck.testCoordinate(u0, curvePointDetail.fraction, {
             u0,
             curvePointDetail,
@@ -2208,11 +1528,7 @@ describe("TransitionSpiral3d", () => {
       }
     }
     expect(ck.getNumErrors()).equals(0);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "TransitionSpiral3d",
-      "ExtendedSpiral"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "ExtendedSpiral");
   });
 });
 function xyString(name: string, x: number, y: number): string {
@@ -2223,12 +1539,7 @@ it("AlexGProjectPointToChain", () => {
   const allGeometry: GeometryQuery[] = [];
   //  const alignment = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/AlexGSpiral/AlexGSpiral.imjs", "utf8")));
   const alignment = IModelJson.Reader.parse(
-    JSON.parse(
-      fs.readFileSync(
-        "./src/test/testInputs/curve/AlexGSpiral/pathWithSpirals.imjs",
-        "utf8"
-      )
-    )
+    JSON.parse(fs.readFileSync("./src/test/testInputs/curve/AlexGSpiral/pathWithSpirals.imjs", "utf8"))
   );
   captureStroked(allGeometry, alignment);
   if (alignment instanceof Path) {
@@ -2238,8 +1549,7 @@ it("AlexGProjectPointToChain", () => {
     const chain = CurveChainWithDistanceIndex.createCapture(alignment);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, alignment);
     const fractions = [
-      -0.2, -0.1, 0.0, 0.1, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6,
-      0.65, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2,
+      -0.2, -0.1, 0.0, 0.1, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2,
     ];
     for (const fx of fractions) {
       for (const fy of fractions) {
@@ -2247,35 +1557,18 @@ it("AlexGProjectPointToChain", () => {
         const spacePoint = range.localToWorld(uv)!;
         const curvePoint = chain.closestPoint(spacePoint, false);
         if (curvePoint) {
-          GeometryCoreTestIO.captureGeometry(
-            allGeometry,
-            LineSegment3d.create(spacePoint, curvePoint.point)
-          );
+          GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(spacePoint, curvePoint.point));
         }
       }
     }
-    const counters =
-      CurveChainWithDistanceIndex.getClosestPointTestCounts(true);
-    ck.testTrue(
-      counters.numAssigned >= counters.numCalls,
-      "At least one assign per call"
-    );
-    ck.testTrue(
-      counters.numTested > counters.numCalls,
-      "more than one test per call"
-    );
-    ck.testTrue(
-      counters.numCandidate >= counters.numCalls * alignment.children.length,
-      "candidates"
-    );
+    const counters = CurveChainWithDistanceIndex.getClosestPointTestCounts(true);
+    ck.testTrue(counters.numAssigned >= counters.numCalls, "At least one assign per call");
+    ck.testTrue(counters.numTested > counters.numCalls, "more than one test per call");
+    ck.testTrue(counters.numCandidate >= counters.numCalls * alignment.children.length, "candidates");
     GeometryCoreTestIO.consoleLog(counters);
   }
 
-  GeometryCoreTestIO.saveGeometry(
-    allGeometry,
-    "TransitionSpiral3d",
-    "AlexGProjectToChain"
-  );
+  GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "AlexGProjectToChain");
   expect(ck.getNumErrors()).equals(0);
 });
 
@@ -2317,8 +1610,7 @@ function captureStroked(
     }
     numStroked++;
   } else if (data instanceof CurveCollection) {
-    for (const child of data.children!)
-      numStroked += captureStroked(allGeometry, child, dx, dy, dz);
+    for (const child of data.children!) numStroked += captureStroked(allGeometry, child, dx, dy, dz);
   }
   return numStroked;
 }

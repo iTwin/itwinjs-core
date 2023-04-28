@@ -28,10 +28,7 @@ export class PriorityQueue<T> implements Iterable<T> {
    * @param clone The function used to clone a value for insertion onto the queue. The default implementation simply returns its input.
    * @note If the criterion which control the result of the `compare` function changes, then [[PriorityQueue.sort]] should be used to reorder the queue according to the new criterion.
    */
-  public constructor(
-    compare: OrderedComparator<T>,
-    clone: CloneFunction<T> = shallowClone
-  ) {
+  public constructor(compare: OrderedComparator<T>, clone: CloneFunction<T> = shallowClone) {
     this._compare = compare;
     this._clone = clone;
   }
@@ -62,18 +59,10 @@ export class PriorityQueue<T> implements Iterable<T> {
     while (true) {
       const right = 2 * (index + 1);
       const left = right - 1;
-      if (
-        left < this.length &&
-        this._compare(this._array[left], this._array[index]) < 0
-      )
-        candidate = left;
+      if (left < this.length && this._compare(this._array[left], this._array[index]) < 0) candidate = left;
       else candidate = index;
 
-      if (
-        right < this.length &&
-        this._compare(this._array[right], this._array[candidate]) < 0
-      )
-        candidate = right;
+      if (right < this.length && this._compare(this._array[right], this._array[candidate]) < 0) candidate = right;
 
       if (candidate !== index) {
         this._swap(candidate, index);

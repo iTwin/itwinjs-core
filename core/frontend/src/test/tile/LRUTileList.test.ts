@@ -9,8 +9,7 @@ import { LRUTileList, LRUTileListNode, Tile } from "../../tile/internal";
 function mockTile(bytesUsed: number): Tile {
   return {
     bytesUsed: 0,
-    collectStatistics: (stats: RenderMemory.Statistics) =>
-      stats.addTexture(bytesUsed),
+    collectStatistics: (stats: RenderMemory.Statistics) => stats.addTexture(bytesUsed),
   } as unknown as Tile;
 }
 
@@ -32,23 +31,13 @@ class List extends LRUTileList {
     expect(this.head.previous).to.be.undefined;
     expect(this.tail.next).to.be.undefined;
     const actual = [];
-    for (
-      let node: LRUTileListNode | undefined = this.head;
-      node !== undefined;
-      node = node.next
-    )
-      actual.push(node);
+    for (let node: LRUTileListNode | undefined = this.head; node !== undefined; node = node.next) actual.push(node);
 
     expect(actual.length).to.equal(expected.length);
-    for (let i = 0; i < actual.length; i++)
-      expect(actual[i]).to.equal(expected[i]);
+    for (let i = 0; i < actual.length; i++) expect(actual[i]).to.equal(expected[i]);
 
     let j = actual.length;
-    for (
-      let node: LRUTileListNode | undefined = this.tail;
-      node !== undefined;
-      node = node.previous
-    ) {
+    for (let node: LRUTileListNode | undefined = this.tail; node !== undefined; node = node.previous) {
       expect(j).greaterThan(0);
       expect(actual[--j]).to.equal(node);
     }
@@ -223,16 +212,10 @@ describe("LRUTileList", () => {
   it("iterates over partitions", () => {
     const list = new List();
 
-    function expectPartition(
-      which: "selected" | "unselected",
-      ...expected: LRUTileListNode[]
-    ): void {
-      const actual = Array.from(
-        "selected" === which ? list.selectedTiles : list.unselectedTiles
-      );
+    function expectPartition(which: "selected" | "unselected", ...expected: LRUTileListNode[]): void {
+      const actual = Array.from("selected" === which ? list.selectedTiles : list.unselectedTiles);
       expect(actual.length).to.equal(expected.length);
-      for (let i = 0; i < actual.length; i++)
-        expect(actual[i]).to.equal(expected[i]);
+      for (let i = 0; i < actual.length; i++) expect(actual[i]).to.equal(expected[i]);
     }
 
     function expectSelected(...expected: LRUTileListNode[]) {

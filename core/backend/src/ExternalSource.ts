@@ -22,10 +22,7 @@ import {
 } from "@itwin/core-common";
 import { InformationReferenceElement, UrlLink } from "./Element";
 import { IModelDb } from "./IModelDb";
-import {
-  ExternalSourceAttachmentAttachesSource,
-  ExternalSourceIsInRepository,
-} from "./NavigationRelationship";
+import { ExternalSourceAttachmentAttachesSource, ExternalSourceIsInRepository } from "./NavigationRelationship";
 
 /** An ExternalSource refers to an 'information container' found in a repository. In some cases, the container is the entire repository.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.13
@@ -46,9 +43,7 @@ export class ExternalSource extends InformationReferenceElement {
   public constructor(props: ExternalSourceProps, iModel: IModelDb) {
     super(props, iModel);
     if (props.repository)
-      this.repository = new ExternalSourceIsInRepository(
-        RelatedElement.idFromJson(props.repository)
-      );
+      this.repository = new ExternalSourceIsInRepository(RelatedElement.idFromJson(props.repository));
   }
   /** @internal */
   public override toJSON(): ExternalSourceProps {
@@ -61,10 +56,7 @@ export class ExternalSource extends InformationReferenceElement {
       const codeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.externalSource);
       return codeSpec.id;
     } catch (e) {
-      return iModelDb.codeSpecs.insert(
-        BisCodeSpec.externalSource,
-        CodeScopeSpec.Type.Repository
-      );
+      return iModelDb.codeSpecs.insert(BisCodeSpec.externalSource, CodeScopeSpec.Type.Repository);
     }
   }
   /** Create a Code for an ExternalSource element given a name that is meant to be unique within the scope of the iModel.
@@ -82,9 +74,7 @@ export class ExternalSource extends InformationReferenceElement {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(
-    referenceIds: EntityReferenceSet
-  ): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     if (this.repository) referenceIds.addElement(this.repository.id);
   }
@@ -117,12 +107,9 @@ export class ExternalSourceAttachment extends InformationReferenceElement {
   public constructor(props: ExternalSourceAttachmentProps, iModel: IModelDb) {
     super(props, iModel);
     if (props.attaches)
-      this.attaches = new ExternalSourceAttachmentAttachesSource(
-        RelatedElement.idFromJson(props.attaches)
-      );
+      this.attaches = new ExternalSourceAttachmentAttachesSource(RelatedElement.idFromJson(props.attaches));
 
-    if (props.translation)
-      this.translation = Point3d.fromJSON(props.translation);
+    if (props.translation) this.translation = Point3d.fromJSON(props.translation);
 
     if (props.scale) this.scale = Point3d.fromJSON(props.scale);
   }
@@ -134,15 +121,10 @@ export class ExternalSourceAttachment extends InformationReferenceElement {
   /** The [[CodeSpec]] for ExternalSourceAttachment elements is not automatically created, so this method ensures that it exists. */
   public static ensureCodeSpec(iModelDb: IModelDb): Id64String {
     try {
-      const codeSpec = iModelDb.codeSpecs.getByName(
-        BisCodeSpec.externalSourceAttachment
-      );
+      const codeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.externalSourceAttachment);
       return codeSpec.id;
     } catch (e) {
-      return iModelDb.codeSpecs.insert(
-        BisCodeSpec.externalSourceAttachment,
-        CodeScopeSpec.Type.ParentElement
-      );
+      return iModelDb.codeSpecs.insert(BisCodeSpec.externalSourceAttachment, CodeScopeSpec.Type.ParentElement);
     }
   }
   /** Create a Code for an ExternalSourceAttachment element given a name that is meant to be unique within the scope of its parent [[ExternalSource]].
@@ -151,14 +133,8 @@ export class ExternalSourceAttachment extends InformationReferenceElement {
    * @param codeValue The ExternalSourceAttachment name
    * @see [[ensureCodeSpec]]
    */
-  public static createCode(
-    iModelDb: IModelDb,
-    scopeElementId: Id64String,
-    codeValue: string
-  ): Code {
-    const codeSpec = iModelDb.codeSpecs.getByName(
-      BisCodeSpec.externalSourceAttachment
-    );
+  public static createCode(iModelDb: IModelDb, scopeElementId: Id64String, codeValue: string): Code {
+    const codeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.externalSourceAttachment);
     return new Code({
       spec: codeSpec.id,
       scope: scopeElementId,

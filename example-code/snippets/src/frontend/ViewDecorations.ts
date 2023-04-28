@@ -3,21 +3,8 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { Id64String, Logger } from "@itwin/core-bentley";
-import {
-  AngleSweep,
-  Arc3d,
-  Point2d,
-  Point3d,
-  Transform,
-  XAndY,
-  XYAndZ,
-} from "@itwin/core-geometry";
-import {
-  AxisAlignedBox3d,
-  ColorByName,
-  ColorDef,
-  NpcCenter,
-} from "@itwin/core-common";
+import { AngleSweep, Arc3d, Point2d, Point3d, Transform, XAndY, XYAndZ } from "@itwin/core-geometry";
+import { AxisAlignedBox3d, ColorByName, ColorDef, NpcCenter } from "@itwin/core-common";
 import {
   BeButton,
   BeButtonEvent,
@@ -49,10 +36,7 @@ export class ExampleGraphicDecoration {
     const vp = context.viewport;
     if (!vp.view.isSpatialView()) return;
 
-    const builder = context.createGraphicBuilder(
-      GraphicType.WorldDecoration,
-      undefined
-    );
+    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined);
     // Set edge color to white or black depending on current view background color and set line weight to 2.
     builder.setSymbology(vp.getContrastToBackgroundColor(), ColorDef.black, 2);
     // Add range box edge geometry to builder.
@@ -72,14 +56,9 @@ export class ExamplePickableGraphicDecoration {
     if (!vp.view.isSpatialView()) return;
 
     // Get next available Id to represent our decoration for it's life span.
-    if (undefined === this._decoId)
-      this._decoId = vp.iModel.transientIds.getNext();
+    if (undefined === this._decoId) this._decoId = vp.iModel.transientIds.getNext();
 
-    const builder = context.createGraphicBuilder(
-      GraphicType.WorldDecoration,
-      undefined,
-      this._decoId
-    );
+    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._decoId);
     builder.setSymbology(vp.getContrastToBackgroundColor(), ColorDef.black, 2);
     builder.addRangeBox(vp.iModel.projectExtents);
     context.addDecorationFromBuilder(builder);
@@ -91,9 +70,7 @@ export class ExamplePickableGraphicDecoration {
   }
 
   /** Return localized tooltip message for the decoration identified by HitDetail.sourceId. */
-  public async getDecorationToolTip(
-    _hit: HitDetail
-  ): Promise<HTMLElement | string> {
+  public async getDecorationToolTip(_hit: HitDetail): Promise<HTMLElement | string> {
     return "Project Extents";
   }
   // __PUBLISH_EXTRACT_END__
@@ -170,12 +147,7 @@ class IncidentMarker extends Marker {
   }
 
   /** Create a new IncidentMarker */
-  constructor(
-    location: XYAndZ,
-    public severity: number,
-    public id: number,
-    icon: HTMLImageElement
-  ) {
+  constructor(location: XYAndZ, public severity: number, public id: number, icon: HTMLImageElement) {
     super(location, IncidentMarker._size);
     this._color = IncidentMarker.makeColor(severity); // color interpolated from severity
     this.setImage(icon); // save icon
@@ -236,10 +208,7 @@ class IncidentClusterMarker extends Marker {
     const sorted: IncidentMarker[] = [];
     const maxLen = 10;
     cluster.markers.forEach((marker) => {
-      if (
-        maxLen > sorted.length ||
-        marker.severity > sorted[sorted.length - 1].severity
-      ) {
+      if (maxLen > sorted.length || marker.severity > sorted[sorted.length - 1].severity) {
         const index = sorted.findIndex((val) => val.severity < marker.severity);
         if (index === -1) sorted.push(marker);
         else sorted.splice(index, 0, marker);
@@ -261,9 +230,7 @@ class IncidentClusterMarker extends Marker {
     if (cluster.markers.length > maxLen) title += "<br>...";
 
     this.title = title;
-    this._clusterColor = IncidentMarker.makeColor(
-      sorted[0].severity
-    ).toHexString();
+    this._clusterColor = IncidentMarker.makeColor(sorted[0].severity).toHexString();
     if (image) this.setImage(image);
   }
 }
@@ -329,9 +296,7 @@ export class IncidentMarkerDemo {
       pos.z = extents.low.z + Math.random() * extents.zLength();
       const img = this._images[(i % len) + 1];
       if (undefined !== img)
-        this._incidents.markers.add(
-          new IncidentMarker(pos, 1 + Math.round(Math.random() * 29), i, img)
-        );
+        this._incidents.markers.add(new IncidentMarker(pos, 1 + Math.round(Math.random() * 29), i, img));
     }
     this._loading = undefined;
   }
@@ -399,11 +364,7 @@ class GltfDecoration implements Decorator {
   /** The Id of the graphic used for picking. */
   private readonly _pickableId: Id64String;
 
-  public constructor(
-    graphic: RenderGraphic,
-    tooltip: string,
-    pickableId: Id64String
-  ) {
+  public constructor(graphic: RenderGraphic, tooltip: string, pickableId: Id64String) {
     this._graphic = graphic;
     this._tooltip = tooltip;
     this._pickableId = pickableId;
@@ -437,9 +398,7 @@ class GltfDecoration implements Decorator {
  * @param iModel The iModel with which the graphic will be associated. Any viewports viewing a spatial view of this iModel will be decorated with the glTF asset.
  * @returns true if the graphic was successfully created.
  */
-export async function displayGltfAsset(
-  iModel: IModelConnection
-): Promise<boolean> {
+export async function displayGltfAsset(iModel: IModelConnection): Promise<boolean> {
   // Allow the user to select the glTF asset.
   try {
     // We need to cast `window` to `any` because the TypeScript type definition doesn't expose the `showOpenFilePicker` function.

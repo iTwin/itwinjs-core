@@ -7,13 +7,7 @@
  */
 
 import { BeTimePoint } from "@itwin/core-bentley";
-import {
-  Angle,
-  Matrix3d,
-  Point2d,
-  Point3d,
-  Vector3d,
-} from "@itwin/core-geometry";
+import { Angle, Matrix3d, Point2d, Point3d, Vector3d } from "@itwin/core-geometry";
 import { Camera } from "@itwin/core-common";
 import { ViewState, ViewState2d, ViewState3d } from "./ViewState";
 
@@ -100,10 +94,7 @@ export class ViewPose3d extends ViewPose {
   /** @internal override */
   public override get target() {
     return this.cameraOn
-      ? this.camera.eye.plusScaled(
-          this.rotation.getRow(2),
-          -1.0 * this.camera.focusDist
-        )
+      ? this.camera.eye.plusScaled(this.rotation.getRow(2), -1.0 * this.camera.focusDist)
       : this.center;
   }
 

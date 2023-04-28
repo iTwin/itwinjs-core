@@ -36,11 +36,7 @@ export class FileAccess {
    * @param fileName the name of the file.
    * @param fileLength the length of the file.
    */
-  public constructor(
-    fileStorage: FileStorage,
-    fileName: string,
-    fileLength: ALong
-  ) {
+  public constructor(fileStorage: FileStorage, fileName: string, fileLength: ALong) {
     this._fileStorage = fileStorage;
     this._fileName = fileName;
     this._fileLength = fileLength;

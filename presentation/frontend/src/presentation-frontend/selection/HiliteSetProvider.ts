@@ -80,9 +80,7 @@ export class HiliteSetProvider {
     };
     const contentPromises = new Array<Promise<Content | undefined>>();
     keys.forEachBatch(DEFAULT_KEYS_BATCH_SIZE, (batch: KeySet) => {
-      contentPromises.push(
-        Presentation.presentation.getContent({ ...options, keys: batch })
-      );
+      contentPromises.push(Presentation.presentation.getContent({ ...options, keys: batch }));
     });
     return (await Promise.all(contentPromises)).reduce((items, content) => {
       if (content) items.push(...content.contentSet);
@@ -97,11 +95,7 @@ export class HiliteSetProvider {
     const subCategoryIds = new Array<Id64String>();
     const elementIds = transientIds; // note: not making a copy here since we're throwing away `transientIds` anyway
     records.forEach((rec) => {
-      const ids = isModelRecord(rec)
-        ? modelIds
-        : isSubCategoryRecord(rec)
-        ? subCategoryIds
-        : elementIds;
+      const ids = isModelRecord(rec) ? modelIds : isSubCategoryRecord(rec) ? subCategoryIds : elementIds;
       rec.primaryKeys.forEach((pk) => ids.push(pk.id));
     });
     return {
@@ -125,10 +119,7 @@ export class HiliteSetProvider {
       const transientIds = new Array<Id64String>();
       const keys = new KeySet();
       keys.add(selection, (key: Key) => {
-        if (
-          Key.isInstanceKey(key) &&
-          key.className === TRANSIENT_ELEMENT_CLASSNAME
-        ) {
+        if (Key.isInstanceKey(key) && key.className === TRANSIENT_ELEMENT_CLASSNAME) {
           transientIds.push(key.id);
           return false;
         }
@@ -142,8 +133,6 @@ export class HiliteSetProvider {
   }
 }
 
-const isModelRecord = (rec: Item) =>
-  rec.extendedData && rec.extendedData.isModel;
+const isModelRecord = (rec: Item) => rec.extendedData && rec.extendedData.isModel;
 
-const isSubCategoryRecord = (rec: Item) =>
-  rec.extendedData && rec.extendedData.isSubCategory;
+const isSubCategoryRecord = (rec: Item) => rec.extendedData && rec.extendedData.isSubCategory;

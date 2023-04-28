@@ -46,25 +46,19 @@ function saveTree(
   shiftY: number = 0,
   scaleAroundCentroidFactor: number = 1.0
 ) {
-  if (scaleAroundCentroidFactor === 1.0)
-    Checker.saveTransformedLineString(root.points);
+  if (scaleAroundCentroidFactor === 1.0) Checker.saveTransformedLineString(root.points);
   else {
     const centroid = Point3dArray.centroid(root.points);
     const transform = Transform.createFixedPointAndMatrix(
       centroid,
-      Matrix3d.createScale(
-        scaleAroundCentroidFactor,
-        scaleAroundCentroidFactor,
-        scaleAroundCentroidFactor
-      )
+      Matrix3d.createScale(scaleAroundCentroidFactor, scaleAroundCentroidFactor, scaleAroundCentroidFactor)
     );
     const scaledPoints = transform.multiplyPoint3dArray(root.points);
     scaledPoints.push(scaledPoints[0].clone());
     Checker.saveTransformedLineString(scaledPoints);
   }
   Checker.shift(shiftX, shiftY, 0);
-  for (const child of root.children)
-    saveTree(child, shiftX, shiftY, scaleAroundCentroidFactor);
+  for (const child of root.children) saveTree(child, shiftX, shiftY, scaleAroundCentroidFactor);
 }
 
 function clipPathA(shift: Vector3d, scale: number, points: Point3d[]) {
@@ -85,10 +79,7 @@ function clipAndSave(root: AlternatingCCTreeNode, curve: CurvePrimitive) {
   const outside: CurveLocationDetailPair[] = [];
   root.appendCurvePrimitiveClipIntervals(curve, inside, outside);
   for (const pair of inside) {
-    const r = curve.clonePartialCurve(
-      pair.detailA.fraction,
-      pair.detailB.fraction
-    );
+    const r = curve.clonePartialCurve(pair.detailA.fraction, pair.detailB.fraction);
     if (r) Checker.saveTransformed(r);
   }
 }
@@ -99,11 +90,7 @@ function clipAndSave(root: AlternatingCCTreeNode, curve: CurvePrimitive) {
  *  1 - diagonals & scatter samples
  *  2 - all
  */
-function testClipper(
-  points: Point3d[],
-  root: AlternatingCCTreeNode,
-  outputLevel: number = 1
-) {
+function testClipper(points: Point3d[], root: AlternatingCCTreeNode, outputLevel: number = 1) {
   const fractions: number[] = [];
   const range = Range3d.createArray(points);
   const halfCount = 20;
@@ -121,11 +108,7 @@ function testClipper(
       const xyz = range.fractionToPoint(fx, fy, 0);
       const doOutput =
         outputLevel === 2 ||
-        (outputLevel === 1 &&
-          Geometry.isAlmostEqualNumber(
-            Math.abs(fx - 0.5),
-            Math.abs(fy - 0.5)
-          )) ||
+        (outputLevel === 1 && Geometry.isAlmostEqualNumber(Math.abs(fx - 0.5), Math.abs(fy - 0.5))) ||
         (outputLevel === 1 && id % idPeriod === 0);
       if (root.isPointOnOrInside(xyz)) {
         if (doOutput) Checker.saveTransformedMarker(xyz, a);
@@ -139,15 +122,9 @@ function testClipper(
 
   const numTest = fractions.length * fractions.length;
   if (Checker.noisy.clipTree === true) {
-    GeometryCoreTestIO.consoleLog(
-      `ClipperTest  (polygonPoints: ${points.length}) (TestPoint: ${numTest})`
-    );
-    GeometryCoreTestIO.consoleLog(
-      `IN: ${inSum.count} avg: ${inSum.mean} max ${inSum.minMax}`
-    );
-    GeometryCoreTestIO.consoleLog(
-      `OUT: ${outSum.count} avg: ${outSum.mean}  max: ${outSum.minMax}`
-    );
+    GeometryCoreTestIO.consoleLog(`ClipperTest  (polygonPoints: ${points.length}) (TestPoint: ${numTest})`);
+    GeometryCoreTestIO.consoleLog(`IN: ${inSum.count} avg: ${inSum.mean} max ${inSum.minMax}`);
+    GeometryCoreTestIO.consoleLog(`OUT: ${outSum.count} avg: ${outSum.mean}  max: ${outSum.minMax}`);
   }
 }
 
@@ -167,8 +144,7 @@ describe("RecursiveClipSets", () => {
           const vector = points[i].vectorTo(points[i + 1]);
           points[i + 1].plusScaled(vector, f, points[i + 1]);
           f *= af;
-          if (i + 2 < numPoints - 1)
-            points[i + 2].plusScaled(vector, f, points[i + 2]);
+          if (i + 2 < numPoints - 1) points[i + 2].plusScaled(vector, f, points[i + 2]);
           if (f > 2.0) f = 0.1;
           i += 4;
         } else {
@@ -332,10 +308,7 @@ describe("RecursiveClipSets", () => {
             clipPathA(baseShift, s, linesToClip);
 
             for (let i0 = 0; i0 + 1 < linesToClip.length; i0++) {
-              const lineSegment = LineSegment3d.create(
-                linesToClip[i0],
-                linesToClip[i0 + 1]
-              );
+              const lineSegment = LineSegment3d.create(linesToClip[i0], linesToClip[i0 + 1]);
               clipAndSave(root, lineSegment);
             }
           }
@@ -378,10 +351,7 @@ describe("RecursiveClipSets", () => {
             ],
             4
           );
-          ck.testFalse(
-            bcurve === undefined,
-            "Created bspline curve is not undefined"
-          );
+          ck.testFalse(bcurve === undefined, "Created bspline curve is not undefined");
           Checker.saveTransformed(bcurve!);
           Checker.shift(0, 4, 0);
           Checker.saveTransformedLineString(polygon);
@@ -405,10 +375,7 @@ describe("RecursiveClipSets", () => {
           // This fragment is not clipped properly within in the linestring ... small outside hanger.
           Checker.shift(0, 5, 0);
           Checker.saveTransformedLineString(polygon);
-          const segmentB = LineSegment3d.create(
-            Point3d.create(1, 0.3),
-            Point3d.create(1.2, 0.8)
-          );
+          const segmentB = LineSegment3d.create(Point3d.create(1, 0.3), Point3d.create(1.2, 0.8));
           Checker.saveTransformed(segmentB);
           Checker.shift(0, 4, 0);
           Checker.saveTransformedLineString(polygon);
@@ -445,43 +412,16 @@ describe("RecursiveClipSets", () => {
       let y0 = 0;
       for (const dyAB of [2, 1, 3]) {
         const cache = new GrowableXYZArrayCache();
-        const rectangle = GrowableXYZArray.create(
-          Sample.createRectangleXY(1, yA, 5, dyAB)
-        );
+        const rectangle = GrowableXYZArray.create(Sample.createRectangleXY(1, yA, 5, dyAB));
         const insideFragments: GrowableXYZArray[] = [];
         const outsideFragments: GrowableXYZArray[] = [];
-        root.appendPolygonClip(
-          rectangle,
-          insideFragments,
-          outsideFragments,
-          cache
-        );
+        root.appendPolygonClip(rectangle, insideFragments, outsideFragments, cache);
         GeometryCoreTestIO.createAndCaptureLoop(allGeometry, rectangle, x0, y0);
         GeometryCoreTestIO.createAndCaptureLoop(allGeometry, polygon, x0, y0);
-        GeometryCoreTestIO.captureGeometry(
-          allGeometry,
-          LineString3d.create(polygon),
-          x0,
-          y0 + dy
-        );
-        GeometryCoreTestIO.createAndCaptureLoops(
-          allGeometry,
-          insideFragments,
-          x0,
-          y0 + dy
-        );
-        GeometryCoreTestIO.captureGeometry(
-          allGeometry,
-          LineString3d.create(polygon),
-          x0,
-          y0 + 2 * dy
-        );
-        GeometryCoreTestIO.createAndCaptureLoops(
-          allGeometry,
-          outsideFragments,
-          x0,
-          y0 + 2 * dy
-        );
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(polygon), x0, y0 + dy);
+        GeometryCoreTestIO.createAndCaptureLoops(allGeometry, insideFragments, x0, y0 + dy);
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(polygon), x0, y0 + 2 * dy);
+        GeometryCoreTestIO.createAndCaptureLoops(allGeometry, outsideFragments, x0, y0 + 2 * dy);
         y0 += 4 * dy;
       }
       x0 += dx;
@@ -523,50 +463,16 @@ describe("RecursiveClipSets", () => {
 
             const insideFragments: GrowableXYZArray[] = [];
             const outsideFragments: GrowableXYZArray[] = [];
-            root.appendPolygonClip(
-              input,
-              insideFragments,
-              outsideFragments,
-              cache
-            );
+            root.appendPolygonClip(input, insideFragments, outsideFragments, cache);
             GeometryCoreTestIO.createAndCaptureLoop(allGeometry, input, x0, y0);
-            GeometryCoreTestIO.createAndCaptureLoop(
-              allGeometry,
-              polygon,
-              x0,
-              y0
-            );
-            GeometryCoreTestIO.captureGeometry(
-              allGeometry,
-              LineString3d.create(polygon),
-              x0,
-              y0 + dy
-            );
-            GeometryCoreTestIO.createAndCaptureLoops(
-              allGeometry,
-              insideFragments,
-              x0,
-              y0 + dy
-            );
-            GeometryCoreTestIO.captureGeometry(
-              allGeometry,
-              LineString3d.create(polygon),
-              x0,
-              y0 + 2 * dy
-            );
-            GeometryCoreTestIO.createAndCaptureLoops(
-              allGeometry,
-              outsideFragments,
-              x0,
-              y0 + 2 * dy
-            );
+            GeometryCoreTestIO.createAndCaptureLoop(allGeometry, polygon, x0, y0);
+            GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(polygon), x0, y0 + dy);
+            GeometryCoreTestIO.createAndCaptureLoops(allGeometry, insideFragments, x0, y0 + dy);
+            GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(polygon), x0, y0 + 2 * dy);
+            GeometryCoreTestIO.createAndCaptureLoops(allGeometry, outsideFragments, x0, y0 + 2 * dy);
             const insideArea = summedAreas(insideFragments);
             const outsideArea = summedAreas(outsideFragments);
-            ck.testCoordinate(
-              inputArea,
-              insideArea + outsideArea,
-              " clipped area sums"
-            );
+            ck.testCoordinate(inputArea, insideArea + outsideArea, " clipped area sums");
 
             x0 += 4 * range.xLength();
           }

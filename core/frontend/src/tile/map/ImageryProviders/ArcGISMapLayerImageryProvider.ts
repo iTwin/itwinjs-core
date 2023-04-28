@@ -5,13 +5,7 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import {
-  Cartographic,
-  ImageMapLayerSettings,
-  ImageSource,
-  IModelStatus,
-  ServerError,
-} from "@itwin/core-common";
+import { Cartographic, ImageMapLayerSettings, ImageSource, IModelStatus, ServerError } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import {
   ArcGisErrorCode,
@@ -47,9 +41,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
   public serviceJson: any;
   constructor(settings: ImageMapLayerSettings) {
     super(settings, false);
-    this._accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(
-      settings.formatId
-    );
+    this._accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(settings.formatId);
   }
 
   protected override get _filterByCartoRange() {
@@ -60,9 +52,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     return Math.max(super.minimumZoomLevel, this._minDepthFromLod);
   }
   public override get maximumZoomLevel() {
-    return this._maxDepthFromLod > 0
-      ? this._maxDepthFromLod
-      : super.maximumZoomLevel;
+    return this._maxDepthFromLod > 0 ? this._maxDepthFromLod : super.maximumZoomLevel;
   }
 
   public uintToString(uintArray: any) {
@@ -75,11 +65,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     return this.fetch(new URL(tileUrl), { method: "GET" });
   }
 
-  public override async loadTile(
-    row: number,
-    column: number,
-    zoomLevel: number
-  ): Promise<ImageSource | undefined> {
+  public override async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
     if (this.status === MapLayerImageryProviderStatus.RequireAuth) {
       return undefined;
     }
@@ -93,18 +79,12 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
       }
       return await this.getImageFromTileResponse(tileResponse, zoomLevel);
     } catch (error) {
-      Logger.logError(
-        loggerCategory,
-        `Error occurred when loading tile(${row},${column},${zoomLevel}) : ${error}`
-      );
+      Logger.logError(loggerCategory, `Error occurred when loading tile(${row},${column},${zoomLevel}) : ${error}`);
       return undefined;
     }
   }
 
-  protected override _generateChildIds(
-    tile: ImageryMapTile,
-    resolveChildren: (childIds: QuadId[]) => void
-  ) {
+  protected override _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) {
     const childIds = this.getPotentialChildIds(tile);
     if (tile.quadId.level < Math.max(1, this.minimumZoomLevel - 1)) {
       resolveChildren(childIds);
@@ -115,8 +95,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this._tileMap.getChildrenAvailability(childIds).then((availability) => {
         const availableChildIds = new Array<QuadId>();
-        for (let i = 0; i < availability.length; i++)
-          if (availability[i]) availableChildIds.push(childIds[i]);
+        for (let i = 0; i < availability.length; i++) if (availability[i]) availableChildIds.push(childIds[i]);
 
         resolveChildren(availableChildIds);
       });
@@ -125,11 +104,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
       const availableChildIds = new Array<QuadId>();
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < childIds.length; i++) {
-        const childExtent = this.getEPSG4326Extent(
-          childIds[i].row,
-          childIds[i].column,
-          childIds[i].level
-        );
+        const childExtent = this.getEPSG4326Extent(childIds[i].row, childIds[i].column, childIds[i].level);
 
         const childRange = MapCartoRectangle.fromDegrees(
           childExtent.longitudeLeft,
@@ -150,14 +125,10 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
   public override async initialize(): Promise<void> {
     const metadata = await this.getServiceJson();
 
-    if (metadata?.content === undefined)
-      throw new ServerError(IModelStatus.ValidationFailed, "");
+    if (metadata?.content === undefined) throw new ServerError(IModelStatus.ValidationFailed, "");
 
     const json = metadata.content;
-    if (
-      json?.error?.code === ArcGisErrorCode.TokenRequired ||
-      json?.error?.code === ArcGisErrorCode.InvalidToken
-    ) {
+    if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
       // Check again layer status, it might have change during await.
       if (this.status === MapLayerImageryProviderStatus.Valid) {
         this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
@@ -186,21 +157,14 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
         if (this._mapSupported && !this._tilesOnly) {
           this._usesCachedTiles = false;
         } else {
-          throw new ServerError(
-            IModelStatus.ValidationFailed,
-            "Invalid coordinate system"
-          );
+          throw new ServerError(IModelStatus.ValidationFailed, "Invalid coordinate system");
         }
       }
     }
 
     if (this._usesCachedTiles) {
       // Read max LOD
-      if (
-        json.maxScale !== undefined &&
-        json.maxScale !== 0 &&
-        Array.isArray(json.tileInfo.lods)
-      ) {
+      if (json.maxScale !== undefined && json.maxScale !== 0 && Array.isArray(json.tileInfo.lods)) {
         for (
           ;
           this._maxDepthFromLod < json.tileInfo.lods.length &&
@@ -222,10 +186,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
 
     // Read range using fullextent from service metadata
     if (json.fullExtent) {
-      if (
-        json.fullExtent.spatialReference.latestWkid === 3857 ||
-        json.fullExtent.spatialReference.wkid === 102100
-      ) {
+      if (json.fullExtent.spatialReference.latestWkid === 3857 || json.fullExtent.spatialReference.wkid === 102100) {
         const range3857 = Range2d.createFrom({
           low: { x: json.fullExtent.xmin, y: json.fullExtent.ymin },
           high: { x: json.fullExtent.xmax, y: json.fullExtent.ymax },
@@ -235,12 +196,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
         const south = this.getEPSG4326Lat(range3857.yLow);
         const east = this.getEPSG4326Lon(range3857.xHigh);
         const north = this.getEPSG4326Lat(range3857.yHigh);
-        this.cartoRange = MapCartoRectangle.fromDegrees(
-          west,
-          south,
-          east,
-          north
-        );
+        this.cartoRange = MapCartoRectangle.fromDegrees(west, south, east, north);
       }
     }
 
@@ -253,10 +209,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     } else if (json.minScale) {
       // Read min LOD using minScale
       const minScale = json.minScale;
-      if (
-        json.tileInfo?.lods !== undefined &&
-        Array.isArray(json.tileInfo.lods)
-      ) {
+      if (json.tileInfo?.lods !== undefined && Array.isArray(json.tileInfo.lods)) {
         for (const lod of json.tileInfo.lods) {
           if (lod.scale < minScale) {
             this._minDepthFromLod = lod.level;
@@ -281,23 +234,15 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
 
   // Translates the provided Cartographic into a EPSG:3857 point, and retrieve information.
   // tolerance is in pixels
-  private async getIdentifyData(
-    quadId: QuadId,
-    carto: Cartographic,
-    tolerance: number
-  ): Promise<any> {
-    const bboxString = this.getEPSG3857ExtentString(
-      quadId.row,
-      quadId.column,
-      quadId.level
-    );
+  private async getIdentifyData(quadId: QuadId, carto: Cartographic, tolerance: number): Promise<any> {
+    const bboxString = this.getEPSG3857ExtentString(quadId.row, quadId.column, quadId.level);
     const x = this.getEPSG3857X(carto.longitudeDegrees);
     const y = this.getEPSG3857Y(carto.latitudeDegrees);
     const tmpUrl = `${
       this._settings.url
-    }/identify?f=json&tolerance=${tolerance}&returnGeometry=false&sr=3857&imageDisplay=${
+    }/identify?f=json&tolerance=${tolerance}&returnGeometry=false&sr=3857&imageDisplay=${this.tileSize},${
       this.tileSize
-    },${this.tileSize},96&layers=${this.getLayerString(
+    },96&layers=${this.getLayerString(
       "visible"
     )}&geometry=${x},${y}&geometryType=esriGeometryPoint&mapExtent=${bboxString}`;
     const urlObj = new URL(tmpUrl);
@@ -322,13 +267,8 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
 
     if (json && Array.isArray(json.results)) {
       for (const result of json.results) {
-        if (
-          result.attributes !== undefined &&
-          result.attributes[result.displayFieldName] !== undefined
-        ) {
-          const thisString = `${result.displayFieldName}: ${
-            result.attributes[result.displayFieldName]
-          }`;
+        if (result.attributes !== undefined && result.attributes[result.displayFieldName] !== undefined) {
+          const thisString = `${result.displayFieldName}: ${result.attributes[result.displayFieldName]}`;
           if (!stringSet.has(thisString)) {
             strings.push(thisString);
             stringSet.add(thisString);
@@ -392,31 +332,20 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
   protected getLayerString(prefix = "show"): string {
     const layers = new Array<string>();
     this._settings.subLayers.forEach((subLayer) => {
-      if (this._settings.isSubLayerVisible(subLayer))
-        layers.push(subLayer.idString);
+      if (this._settings.isSubLayerVisible(subLayer)) layers.push(subLayer.idString);
     });
 
     return `${prefix}: ${layers.join(",")} `;
   }
 
   // construct the Url from the desired Tile
-  public async constructUrl(
-    row: number,
-    column: number,
-    zoomLevel: number
-  ): Promise<string> {
+  public async constructUrl(row: number, column: number, zoomLevel: number): Promise<string> {
     let tmpUrl;
     if (this._usesCachedTiles) {
       tmpUrl = `${this._settings.url}/tile/${zoomLevel}/${row}/${column} `;
     } else {
-      const bboxString = `${this.getEPSG3857ExtentString(
-        row,
-        column,
-        zoomLevel
-      )}&bboxSR=3857`;
-      tmpUrl = `${this._settings.url}/export?bbox=${bboxString}&size=${
-        this.tileSize
-      },${
+      const bboxString = `${this.getEPSG3857ExtentString(row, column, zoomLevel)}&bboxSR=3857`;
+      tmpUrl = `${this._settings.url}/export?bbox=${bboxString}&size=${this.tileSize},${
         this.tileSize
       }&layers=${this.getLayerString()}&format=png&transparent=${
         this.transparentBackgroundString

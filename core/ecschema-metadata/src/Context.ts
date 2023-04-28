@@ -50,9 +50,7 @@ export interface ISchemaLocater {
  * @beta
  */
 export interface ISchemaItemLocater {
-  getSchemaItem<T extends SchemaItem>(
-    schemaItemKey: SchemaItemKey
-  ): Promise<T | undefined>;
+  getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey): Promise<T | undefined>;
 }
 
 /**
@@ -206,10 +204,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
    * @param schemaItem The SchemaItem to add
    */
   public async addSchemaItem(schemaItem: SchemaItem) {
-    const schema = await this.getSchema(
-      schemaItem.key.schemaKey,
-      SchemaMatchType.Exact
-    );
+    const schema = await this.getSchema(schemaItem.key.schemaKey, SchemaMatchType.Exact);
     if (!schema)
       throw new ECObjectsError(
         ECObjectsStatus.UnableToLocateSchema,
@@ -282,24 +277,14 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
     return schema as T;
   }
 
-  public async getSchemaItem<T extends SchemaItem>(
-    schemaItemKey: SchemaItemKey
-  ): Promise<T | undefined> {
-    const schema = await this.getSchema(
-      schemaItemKey.schemaKey,
-      SchemaMatchType.Latest
-    );
+  public async getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey): Promise<T | undefined> {
+    const schema = await this.getSchema(schemaItemKey.schemaKey, SchemaMatchType.Latest);
     if (undefined === schema) return undefined;
     return schema.getItem<T>(schemaItemKey.name);
   }
 
-  public getSchemaItemSync<T extends SchemaItem>(
-    schemaItemKey: SchemaItemKey
-  ): T | undefined {
-    const schema = this.getSchemaSync(
-      schemaItemKey.schemaKey,
-      SchemaMatchType.Latest
-    );
+  public getSchemaItemSync<T extends SchemaItem>(schemaItemKey: SchemaItemKey): T | undefined {
+    const schema = this.getSchemaSync(schemaItemKey.schemaKey, SchemaMatchType.Latest);
     if (undefined === schema) return undefined;
     return schema.getItemSync<T>(schemaItemKey.name);
   }

@@ -50,16 +50,14 @@ export namespace Base64EncodedString {
 
   /** A function suitable for use with `JSON.parse` to revive a Base64EncodedString into a Uint8Array. */
   export const reviver = (_name: string, value: any): any => {
-    if (typeof value === "string" && hasPrefix(value))
-      value = toUint8Array(value);
+    if (typeof value === "string" && hasPrefix(value)) value = toUint8Array(value);
 
     return value;
   };
 
   /** A function suitable for use with `JSON.stringify` to serialize a Uint8Array as a Base64EncodedString. */
   export const replacer = (_name: string, value: any): any => {
-    if (value && value.constructor === Uint8Array)
-      value = fromUint8Array(value);
+    if (value && value.constructor === Uint8Array) value = fromUint8Array(value);
 
     return value;
   };

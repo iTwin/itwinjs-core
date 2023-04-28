@@ -36,31 +36,22 @@ export class Formats {
     const newFormat = (await schema.createFormat(name)) as MutableFormat;
     if (newFormat === undefined) {
       return {
-        errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(
-          true
-        )}.`,
+        errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.`,
       };
     }
 
     if (units !== undefined) {
       for (const unit of units) {
-        const unitItem = await this._schemaEditor.schemaContext.getSchemaItem<
-          Unit | InvertedUnit
-        >(unit);
+        const unitItem = await this._schemaEditor.schemaContext.getSchemaItem<Unit | InvertedUnit>(unit);
         if (unitItem === undefined) {
           return {
             errorMessage: `Failed to locate unit ${unit.name} in Schema Context.`,
           };
         }
 
-        if (
-          unitItem.schemaItemType !== SchemaItemType.Unit &&
-          unitItem.schemaItemType !== SchemaItemType.InvertedUnit
-        )
+        if (unitItem.schemaItemType !== SchemaItemType.Unit && unitItem.schemaItemType !== SchemaItemType.InvertedUnit)
           return {
-            errorMessage: `${
-              (unitItem as SchemaItem).fullName
-            } is not of type Unit or InvertedUnit.`,
+            errorMessage: `${(unitItem as SchemaItem).fullName} is not of type Unit or InvertedUnit.`,
           };
         newFormat.addUnit(unitItem);
       }
@@ -84,22 +75,15 @@ export class Formats {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       return {
-        errorMessage: `Schema Key ${schemaKey.toString(
-          true
-        )} not found in context`,
+        errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context`,
       };
 
-    if (formatProps.name === undefined)
-      return { errorMessage: `No name was supplied within props.` };
+    if (formatProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
 
-    const newFormat = (await schema.createFormat(
-      formatProps.name
-    )) as MutableFormat;
+    const newFormat = (await schema.createFormat(formatProps.name)) as MutableFormat;
     if (newFormat === undefined)
       return {
-        errorMessage: `Failed to create class ${
-          formatProps.name
-        } in schema ${schemaKey.toString(true)}.`,
+        errorMessage: `Failed to create class ${formatProps.name} in schema ${schemaKey.toString(true)}.`,
       };
 
     await newFormat.fromJSON(formatProps);

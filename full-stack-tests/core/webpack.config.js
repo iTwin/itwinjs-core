@@ -46,8 +46,7 @@ function createConfig(shouldInstrument) {
         zlib: require.resolve("browserify-zlib"),
       },
       alias: {
-        "@azure/storage-blob$":
-          "@azure/storage-blob/dist-esm/storage-blob/src/index.browser.js",
+        "@azure/storage-blob$": "@azure/storage-blob/dist-esm/storage-blob/src/index.browser.js",
         "@azure/core-http$": "@azure/core-http/dist-esm/src/index.js",
         "@azure/logger$": "@azure/logger/dist-esm/src/index.js",
         "supports-color$": "supports-color/browser.js",
@@ -100,9 +99,7 @@ function createConfig(shouldInstrument) {
             return env;
           },
           {
-            IMODELJS_CORE_DIRNAME: JSON.stringify(
-              path.join(__dirname, "../..")
-            ),
+            IMODELJS_CORE_DIRNAME: JSON.stringify(path.join(__dirname, "../..")),
           }
         ),
       }),
@@ -117,10 +114,7 @@ function createConfig(shouldInstrument) {
     config.output.filename = "bundled-tests.instrumented.js";
     config.module.rules.push({
       test: /\.(jsx?|tsx?)$/,
-      include: [
-        path.join(__dirname, "../../core/backend"),
-        path.join(__dirname, "../../core/frontend"),
-      ],
+      include: [path.join(__dirname, "../../core/backend"), path.join(__dirname, "../../core/frontend")],
       use: {
         loader: "babel-loader",
         options: {

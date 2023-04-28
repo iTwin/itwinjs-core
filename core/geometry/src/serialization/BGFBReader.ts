@@ -35,21 +35,14 @@ import { RuledSweep } from "../solid/RuledSweep";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { BSplineSurface3d, BSplineSurface3dH } from "../bspline/BSplineSurface";
 import { PointString3d } from "../curve/PointString3d";
-import {
-  AuxChannel,
-  AuxChannelData,
-  PolyfaceAuxData,
-} from "../polyface/AuxData";
+import { AuxChannel, AuxChannelData, PolyfaceAuxData } from "../polyface/AuxData";
 import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
 import { Geometry } from "../Geometry";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
 import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
 import { TaggedNumericData } from "../polyface/TaggedNumericData";
-import {
-  InterpolationCurve3d,
-  InterpolationCurve3dOptions,
-} from "../bspline/InterpolationCurve3d";
+import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../bspline/InterpolationCurve3d";
 import { NumberArray, Point3dArray } from "../geometry3d/PointHelpers";
 import { AkimaCurve3d, AkimaCurve3dOptions } from "../bspline/AkimaCurve3d";
 
@@ -69,9 +62,7 @@ export class BGFBReader {
   ): BSplineSurface3d | BSplineSurface3dH | undefined {
     const geometryType = variantHeader.geometryType();
     if (geometryType === BGFBAccessors.VariantGeometryUnion.tagBsplineSurface) {
-      const bsurfHeader = variantHeader.geometry(
-        new BGFBAccessors.BsplineSurface()
-      );
+      const bsurfHeader = variantHeader.geometry(new BGFBAccessors.BsplineSurface());
       if (bsurfHeader !== null) {
         const orderU = bsurfHeader.orderU();
         const orderV = bsurfHeader.orderV();
@@ -84,15 +75,7 @@ export class BGFBReader {
         // const closed = header.closed();
         if (xyzArray !== null && knotArrayU !== null && knotArrayV !== null)
           if (weightArray === null) {
-            return BSplineSurface3d.create(
-              xyzArray,
-              numPolesU,
-              orderU,
-              knotArrayU,
-              numPolesV,
-              orderV,
-              knotArrayV
-            );
+            return BSplineSurface3d.create(xyzArray, numPolesU, orderU, knotArrayU, numPolesV, orderV, knotArrayV);
           } else {
             return BSplineSurface3dH.create(
               xyzArray,
@@ -114,9 +97,7 @@ export class BGFBReader {
    * Extract an interpolating curve
    * @param variant read position in the flat buffer.
    */
-  public readInterpolationCurve3d(
-    header: BGFBAccessors.InterpolationCurve
-  ): InterpolationCurve3d | undefined {
+  public readInterpolationCurve3d(header: BGFBAccessors.InterpolationCurve): InterpolationCurve3d | undefined {
     const xyzArray = header.fitPointsArray();
     if (xyzArray instanceof Float64Array) {
       const knots = header.knotsArray();
@@ -133,16 +114,8 @@ export class BGFBReader {
         header.isColinearTangents(),
         header.isChordLenTangents(),
         header.isNaturalTangents(),
-        startTangent !== null
-          ? Vector3d.create(
-              startTangent.x(),
-              startTangent.y(),
-              startTangent.z()
-            )
-          : undefined,
-        endTangent !== null
-          ? Vector3d.create(endTangent.x(), endTangent.y(), endTangent.z())
-          : undefined
+        startTangent !== null ? Vector3d.create(startTangent.x(), startTangent.y(), startTangent.z()) : undefined,
+        endTangent !== null ? Vector3d.create(endTangent.x(), endTangent.y(), endTangent.z()) : undefined
       );
       return InterpolationCurve3d.createCapture(options);
     }
@@ -153,14 +126,10 @@ export class BGFBReader {
    * Extract an akima curve
    * @param variant read position in the flat buffer.
    */
-  public readAkimaCurve3d(
-    header: BGFBAccessors.AkimaCurve
-  ): AkimaCurve3d | undefined {
+  public readAkimaCurve3d(header: BGFBAccessors.AkimaCurve): AkimaCurve3d | undefined {
     const xyzArray = header.pointsArray();
     if (xyzArray instanceof Float64Array) {
-      const options = new AkimaCurve3dOptions(
-        Point3dArray.clonePoint3dArray(xyzArray)
-      );
+      const options = new AkimaCurve3dOptions(Point3dArray.clonePoint3dArray(xyzArray));
       return AkimaCurve3d.createCapture(options);
     }
     return undefined;
@@ -169,9 +138,7 @@ export class BGFBReader {
    * Extract a bspline curve
    * @param variant read position in the flat buffer.
    */
-  public readBSplineCurve(
-    header: BGFBAccessors.BsplineCurve
-  ): BSplineCurve3d | BSplineCurve3dH | undefined {
+  public readBSplineCurve(header: BGFBAccessors.BsplineCurve): BSplineCurve3d | BSplineCurve3dH | undefined {
     const order = header.order();
     const xyzArray = header.polesArray();
     const knots = header.knotsArray();
@@ -181,11 +148,7 @@ export class BGFBReader {
       if (weightsArray === null) {
         return BSplineCurve3d.create(xyzArray, knots, order);
       } else {
-        return BSplineCurve3dH.create(
-          { xyz: xyzArray, weights: weightsArray },
-          knots,
-          order
-        );
+        return BSplineCurve3dH.create({ xyz: xyzArray, weights: weightsArray }, knots, order);
       }
     return undefined;
   }
@@ -193,16 +156,12 @@ export class BGFBReader {
    * Extract a bspline curve
    * @param variant read position in the flat buffer.
    */
-  public readTransitionSpiral(
-    header: BGFBAccessors.TransitionSpiral
-  ): TransitionSpiral3d | undefined {
+  public readTransitionSpiral(header: BGFBAccessors.TransitionSpiral): TransitionSpiral3d | undefined {
     const detailHeader = header.detail();
     if (detailHeader) {
       const directDetailHeader = header.directDetail();
       const _extraDataArray = header.extraDataArray();
-      const spiralTypeName = DgnSpiralTypeQueries.typeCodeToString(
-        detailHeader.spiralType()
-      );
+      const spiralTypeName = DgnSpiralTypeQueries.typeCodeToString(detailHeader.spiralType());
       const curvature0 = detailHeader.curvature0();
       const curvature1 = detailHeader.curvature1();
       const bearing0Radians = detailHeader.bearing0Radians();
@@ -225,31 +184,26 @@ export class BGFBReader {
           )
         : Transform.createIdentity();
 
-      const activeFractionInterval = Segment1d.create(
-        detailHeader.fractionA(),
-        detailHeader.fractionB()
-      );
+      const activeFractionInterval = Segment1d.create(detailHeader.fractionA(), detailHeader.fractionB());
       if (!directDetailHeader) {
-        const integratedSpiral =
-          IntegratedSpiral3d.createRadiusRadiusBearingBearing(
-            Segment1d.create(
-              IntegratedSpiral3d.curvatureToRadius(curvature0),
-              IntegratedSpiral3d.curvatureToRadius(curvature1)
-            ),
-            AngleSweep.createStartEndRadians(bearing0Radians, bearing1Radians),
-            activeFractionInterval,
-            localToWorld,
-            spiralTypeName
-          );
+        const integratedSpiral = IntegratedSpiral3d.createRadiusRadiusBearingBearing(
+          Segment1d.create(
+            IntegratedSpiral3d.curvatureToRadius(curvature0),
+            IntegratedSpiral3d.curvatureToRadius(curvature1)
+          ),
+          AngleSweep.createStartEndRadians(bearing0Radians, bearing1Radians),
+          activeFractionInterval,
+          localToWorld,
+          spiralTypeName
+        );
         if (integratedSpiral) return integratedSpiral;
         const radius0 = TransitionSpiral3d.curvatureToRadius(curvature0);
         const radius1 = TransitionSpiral3d.curvatureToRadius(curvature1);
-        const arcLength =
-          TransitionSpiral3d.radiusRadiusSweepRadiansToArcLength(
-            radius0,
-            radius1,
-            bearing1Radians - bearing0Radians
-          );
+        const arcLength = TransitionSpiral3d.radiusRadiusSweepRadiansToArcLength(
+          radius0,
+          radius1,
+          bearing1Radians - bearing0Radians
+        );
         const directSpiral = DirectSpiral3d.createFromLengthAndRadius(
           spiralTypeName!,
           radius0,
@@ -269,14 +223,10 @@ export class BGFBReader {
    * Extract a curve primitive
    * @param variant read position in the flat buffer.
    */
-  public readCurvePrimitiveFromVariant(
-    variant: BGFBAccessors.VariantGeometry
-  ): CurvePrimitive | undefined {
+  public readCurvePrimitiveFromVariant(variant: BGFBAccessors.VariantGeometry): CurvePrimitive | undefined {
     const geometryType = variant.geometryType();
     if (geometryType === BGFBAccessors.VariantGeometryUnion.tagLineSegment) {
-      const offsetToLineSegment = variant.geometry(
-        new BGFBAccessors.LineSegment()
-      );
+      const offsetToLineSegment = variant.geometry(new BGFBAccessors.LineSegment());
       const offsetToCoordinates = offsetToLineSegment!.segment();
       return LineSegment3d.createXYZXYZ(
         offsetToCoordinates!.point0X(),
@@ -286,12 +236,8 @@ export class BGFBReader {
         offsetToCoordinates!.point1Y(),
         offsetToCoordinates!.point1Z()
       );
-    } else if (
-      geometryType === BGFBAccessors.VariantGeometryUnion.tagEllipticArc
-    ) {
-      const offsetToEllipticArc = variant.geometry(
-        new BGFBAccessors.EllipticArc()
-      );
+    } else if (geometryType === BGFBAccessors.VariantGeometryUnion.tagEllipticArc) {
+      const offsetToEllipticArc = variant.geometry(new BGFBAccessors.EllipticArc());
       const offsetToCoordinates = offsetToEllipticArc!.arc()!;
       return Arc3d.createXYZXYZXYZ(
         offsetToCoordinates.centerX(),
@@ -303,17 +249,10 @@ export class BGFBReader {
         offsetToCoordinates.vector90X(),
         offsetToCoordinates.vector90Y(),
         offsetToCoordinates.vector90Z(),
-        AngleSweep.createStartSweepRadians(
-          offsetToCoordinates.startRadians(),
-          offsetToCoordinates?.sweepRadians()
-        )
+        AngleSweep.createStartSweepRadians(offsetToCoordinates.startRadians(), offsetToCoordinates?.sweepRadians())
       );
-    } else if (
-      geometryType === BGFBAccessors.VariantGeometryUnion.tagLineString
-    ) {
-      const offsetToLineString = variant.geometry(
-        new BGFBAccessors.LineString()
-      )!;
+    } else if (geometryType === BGFBAccessors.VariantGeometryUnion.tagLineString) {
+      const offsetToLineString = variant.geometry(new BGFBAccessors.LineString())!;
       const numCoordinates = offsetToLineString.pointsLength();
       const result = LineString3d.create();
       for (let i = 0; i + 2 < numCoordinates; i += 3) {
@@ -324,35 +263,19 @@ export class BGFBReader {
         );
       }
       return result;
-    } else if (
-      geometryType === BGFBAccessors.VariantGeometryUnion.tagBsplineCurve
-    ) {
+    } else if (geometryType === BGFBAccessors.VariantGeometryUnion.tagBsplineCurve) {
       const offsetToBCurve = variant.geometry(new BGFBAccessors.BsplineCurve());
       if (offsetToBCurve !== null) return this.readBSplineCurve(offsetToBCurve);
-    } else if (
-      geometryType === BGFBAccessors.VariantGeometryUnion.tagTransitionSpiral
-    ) {
-      const offsetToTransitionSpiralTable = variant.geometry(
-        new BGFBAccessors.TransitionSpiral()
-      );
-      if (offsetToTransitionSpiralTable !== null)
-        return this.readTransitionSpiral(offsetToTransitionSpiralTable);
-    } else if (
-      geometryType === BGFBAccessors.VariantGeometryUnion.tagInterpolationCurve
-    ) {
-      const offsetToInterpolationCurveTable = variant.geometry(
-        new BGFBAccessors.InterpolationCurve()
-      );
+    } else if (geometryType === BGFBAccessors.VariantGeometryUnion.tagTransitionSpiral) {
+      const offsetToTransitionSpiralTable = variant.geometry(new BGFBAccessors.TransitionSpiral());
+      if (offsetToTransitionSpiralTable !== null) return this.readTransitionSpiral(offsetToTransitionSpiralTable);
+    } else if (geometryType === BGFBAccessors.VariantGeometryUnion.tagInterpolationCurve) {
+      const offsetToInterpolationCurveTable = variant.geometry(new BGFBAccessors.InterpolationCurve());
       if (offsetToInterpolationCurveTable !== null)
         return this.readInterpolationCurve3d(offsetToInterpolationCurveTable);
-    } else if (
-      geometryType === BGFBAccessors.VariantGeometryUnion.tagAkimaCurve
-    ) {
-      const offsetToAkimaCurveTable = variant.geometry(
-        new BGFBAccessors.AkimaCurve()
-      );
-      if (offsetToAkimaCurveTable !== null)
-        return this.readAkimaCurve3d(offsetToAkimaCurveTable);
+    } else if (geometryType === BGFBAccessors.VariantGeometryUnion.tagAkimaCurve) {
+      const offsetToAkimaCurveTable = variant.geometry(new BGFBAccessors.AkimaCurve());
+      if (offsetToAkimaCurveTable !== null) return this.readAkimaCurve3d(offsetToAkimaCurveTable);
     }
     return undefined;
   }
@@ -360,14 +283,10 @@ export class BGFBReader {
    * Extract a curve primitive
    * @param variant read position in the flat buffer.
    */
-  public readPointStringFromVariant(
-    variant: BGFBAccessors.VariantGeometry
-  ): PointString3d | undefined {
+  public readPointStringFromVariant(variant: BGFBAccessors.VariantGeometry): PointString3d | undefined {
     const geometryType = variant.geometryType();
     if (geometryType === BGFBAccessors.VariantGeometryUnion.tagPointString) {
-      const offsetToLineString = variant.geometry(
-        new BGFBAccessors.PointString()
-      )!;
+      const offsetToLineString = variant.geometry(new BGFBAccessors.PointString())!;
       const numCoordinates = offsetToLineString.pointsLength();
       const result = PointString3d.create();
       for (let i = 0; i + 2 < numCoordinates; i += 3) {
@@ -402,9 +321,7 @@ export class BGFBReader {
    * Extract auxData for a mesh
    * @param variant read position in the flat buffer.
    */
-  public readPolyfaceAuxChannel(
-    channelHeader: BGFBAccessors.PolyfaceAuxChannel | null
-  ): AuxChannel | undefined {
+  public readPolyfaceAuxChannel(channelHeader: BGFBAccessors.PolyfaceAuxChannel | null): AuxChannel | undefined {
     if (channelHeader) {
       const dataType = channelHeader.dataType();
       const dataLength = channelHeader.dataLength();
@@ -412,17 +329,10 @@ export class BGFBReader {
       const name = channelHeader.name();
       const inputName = channelHeader.inputName();
       for (let i = 0; i < dataLength; i++) {
-        const channelData = this.readPolyfaceAuxChannelData(
-          channelHeader.data(i)
-        );
+        const channelData = this.readPolyfaceAuxChannelData(channelHeader.data(i));
         if (channelData) channelDataArray.push(channelData);
       }
-      return new AuxChannel(
-        channelDataArray,
-        dataType,
-        name ? name : undefined,
-        inputName ? inputName : undefined
-      );
+      return new AuxChannel(channelDataArray, dataType, name ? name : undefined, inputName ? inputName : undefined);
     }
     return undefined;
   }
@@ -430,9 +340,7 @@ export class BGFBReader {
    * Extract auxData for a mesh
    * @param variant read position in the flat buffer.
    */
-  public readPolyfaceAuxData(
-    auxDataHeader: BGFBAccessors.PolyfaceAuxData | null
-  ): PolyfaceAuxData | undefined {
+  public readPolyfaceAuxData(auxDataHeader: BGFBAccessors.PolyfaceAuxData | null): PolyfaceAuxData | undefined {
     if (auxDataHeader) {
       const channelsLength = auxDataHeader.channelsLength();
       const indicesArray = auxDataHeader.indicesArray();
@@ -457,18 +365,11 @@ export class BGFBReader {
    * Extract auxData for a mesh
    * @param variant read position in the flat buffer.
    */
-  public readTaggedNumericData(
-    accessor: BGFBAccessors.TaggedNumericData | undefined
-  ): TaggedNumericData | undefined {
+  public readTaggedNumericData(accessor: BGFBAccessors.TaggedNumericData | undefined): TaggedNumericData | undefined {
     if (accessor) {
-      const taggedNumericData = new TaggedNumericData(
-        accessor.tagA(),
-        accessor.tagB()
-      );
+      const taggedNumericData = new TaggedNumericData(accessor.tagA(), accessor.tagB());
       const intDataArray = nullToUndefined<Int32Array>(accessor.intDataArray());
-      const doubleDataArray = nullToUndefined<Float64Array>(
-        accessor.doubleDataArray()
-      );
+      const doubleDataArray = nullToUndefined<Float64Array>(accessor.doubleDataArray());
       if (intDataArray) {
         taggedNumericData.intData = [];
         for (const c of intDataArray) taggedNumericData.intData.push(c);
@@ -485,9 +386,7 @@ export class BGFBReader {
    * Extract a mesh
    * @param variant read position in the flat buffer.
    */
-  public readPolyfaceFromVariant(
-    variant: BGFBAccessors.VariantGeometry
-  ): IndexedPolyface | undefined {
+  public readPolyfaceFromVariant(variant: BGFBAccessors.VariantGeometry): IndexedPolyface | undefined {
     const geometryType = variant.geometryType();
     if (geometryType === BGFBAccessors.VariantGeometryUnion.tagPolyface) {
       const polyfaceHeader = variant.geometry(new BGFBAccessors.Polyface());
@@ -497,31 +396,15 @@ export class BGFBReader {
         const meshStyle = polyfaceHeader.meshStyle();
         const numPerFace = polyfaceHeader.numPerFace();
 
-        const pointF64 = nullToUndefined<Float64Array>(
-          polyfaceHeader.pointArray()
-        );
-        const paramF64 = nullToUndefined<Float64Array>(
-          polyfaceHeader.paramArray()
-        );
-        const normalF64 = nullToUndefined<Float64Array>(
-          polyfaceHeader.normalArray()
-        );
-        const intColorU32 = nullToUndefined<Uint32Array>(
-          polyfaceHeader.intColorArray()
-        );
+        const pointF64 = nullToUndefined<Float64Array>(polyfaceHeader.pointArray());
+        const paramF64 = nullToUndefined<Float64Array>(polyfaceHeader.paramArray());
+        const normalF64 = nullToUndefined<Float64Array>(polyfaceHeader.normalArray());
+        const intColorU32 = nullToUndefined<Uint32Array>(polyfaceHeader.intColorArray());
 
-        const pointIndexI32 = nullToUndefined<Int32Array>(
-          polyfaceHeader.pointIndexArray()
-        );
-        const paramIndexI32 = nullToUndefined<Int32Array>(
-          polyfaceHeader.paramIndexArray()
-        );
-        const normalIndexI32 = nullToUndefined<Int32Array>(
-          polyfaceHeader.normalIndexArray()
-        );
-        const colorIndexI32 = nullToUndefined<Int32Array>(
-          polyfaceHeader.colorIndexArray()
-        );
+        const pointIndexI32 = nullToUndefined<Int32Array>(polyfaceHeader.pointIndexArray());
+        const paramIndexI32 = nullToUndefined<Int32Array>(polyfaceHeader.paramIndexArray());
+        const normalIndexI32 = nullToUndefined<Int32Array>(polyfaceHeader.normalIndexArray());
+        const colorIndexI32 = nullToUndefined<Int32Array>(polyfaceHeader.colorIndexArray());
         const taggedNumericDataOffset = polyfaceHeader.taggedNumericData();
         if (meshStyle === 1 && pointF64 && pointIndexI32) {
           const polyface = IndexedPolyface.create(
@@ -532,22 +415,13 @@ export class BGFBReader {
           );
           polyface.expectedClosure = expectedClosure;
           for (let i = 0; i + 2 < pointF64?.length; i += 3)
-            polyface.data.point.pushXYZ(
-              pointF64[i],
-              pointF64[i + 1],
-              pointF64[i + 2]
-            );
+            polyface.data.point.pushXYZ(pointF64[i], pointF64[i + 1], pointF64[i + 2]);
           if (paramF64) {
-            for (let i = 0; i + 1 < paramF64?.length; i += 2)
-              polyface.data.param!.pushXY(paramF64[i], paramF64[i + 1]);
+            for (let i = 0; i + 1 < paramF64?.length; i += 2) polyface.data.param!.pushXY(paramF64[i], paramF64[i + 1]);
           }
           if (normalF64) {
             for (let i = 0; i + 2 < normalF64?.length; i += 3)
-              polyface.data.normal!.pushXYZ(
-                normalF64[i],
-                normalF64[i + 1],
-                normalF64[i + 2]
-              );
+              polyface.data.normal!.pushXYZ(normalF64[i], normalF64[i + 1], normalF64[i + 2]);
           }
           if (intColorU32) {
             for (const c of intColorU32) polyface.data.color!.push(c);
@@ -588,20 +462,12 @@ export class BGFBReader {
             }
           }
 
-          polyface.data.auxData = this.readPolyfaceAuxData(
-            polyfaceHeader.auxData()
-          );
+          polyface.data.auxData = this.readPolyfaceAuxData(polyfaceHeader.auxData());
           if (taggedNumericDataOffset) {
-            const taggedNumericDataAccessor =
-              nullToUndefined<BGFBAccessors.TaggedNumericData>(
-                taggedNumericDataOffset
-              );
+            const taggedNumericDataAccessor = nullToUndefined<BGFBAccessors.TaggedNumericData>(taggedNumericDataOffset);
             if (taggedNumericDataAccessor !== undefined) {
-              const taggedNumericData = this.readTaggedNumericData(
-                taggedNumericDataAccessor
-              );
-              if (taggedNumericData !== undefined)
-                polyface.data.setTaggedNumericData(taggedNumericData);
+              const taggedNumericData = this.readTaggedNumericData(taggedNumericDataAccessor);
+              if (taggedNumericData !== undefined) polyface.data.setTaggedNumericData(taggedNumericData);
             }
           }
           return polyface;
@@ -611,9 +477,7 @@ export class BGFBReader {
     return undefined;
   }
 
-  public readCurveCollectionFromCurveVectorTable(
-    cvTable: BGFBAccessors.CurveVector
-  ): CurveCollection {
+  public readCurveCollectionFromCurveVectorTable(cvTable: BGFBAccessors.CurveVector): CurveCollection {
     const numChildren = cvTable.curvesLength();
     const collectionType = cvTable.type();
     const collection = createTypedCurveCollection(collectionType);
@@ -623,8 +487,7 @@ export class BGFBReader {
         const child = this.readCurvePrimitiveFromVariant(childOffset);
         if (child) collection.tryAddChild(child);
         else {
-          const childCollection =
-            this.readCurveCollectionFromVariantGeometry(childOffset);
+          const childCollection = this.readCurveCollectionFromVariantGeometry(childOffset);
           if (childCollection) collection.tryAddChild(childCollection);
         }
       }
@@ -635,9 +498,7 @@ export class BGFBReader {
    * Extract a curve collection
    * @param variant read position in the flat buffer.
    */
-  public readCurveCollectionFromVariantGeometry(
-    variant: BGFBAccessors.VariantGeometry
-  ): CurveCollection | undefined {
+  public readCurveCollectionFromVariantGeometry(variant: BGFBAccessors.VariantGeometry): CurveCollection | undefined {
     const geometryType = variant.geometryType();
     if (geometryType === BGFBAccessors.VariantGeometryUnion.tagCurveVector) {
       const cvTable = variant.geometry(new BGFBAccessors.CurveVector())!;
@@ -649,34 +510,16 @@ export class BGFBReader {
    * Extract a curve collection
    * @param variant read position in the flat buffer.
    */
-  public readSolidPrimitiveFromVariant(
-    variant: BGFBAccessors.VariantGeometry
-  ): SolidPrimitive | undefined {
+  public readSolidPrimitiveFromVariant(variant: BGFBAccessors.VariantGeometry): SolidPrimitive | undefined {
     const geometryType = variant.geometryType();
     if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnBox) {
       const header = variant.geometry(new BGFBAccessors.DgnBox());
       const detail = header!.detail()!;
       return Box.createDgnBox(
-        Point3d.create(
-          detail.baseOriginX(),
-          detail.baseOriginY(),
-          detail.baseOriginZ()
-        ),
-        Vector3d.create(
-          detail.vectorXX(),
-          detail.vectorXY(),
-          detail.vectorXZ()
-        ),
-        Vector3d.create(
-          detail.vectorYX(),
-          detail.vectorYY(),
-          detail.vectorYZ()
-        ),
-        Point3d.create(
-          detail.topOriginX(),
-          detail.topOriginY(),
-          detail.topOriginZ()
-        ),
+        Point3d.create(detail.baseOriginX(), detail.baseOriginY(), detail.baseOriginZ()),
+        Vector3d.create(detail.vectorXX(), detail.vectorXY(), detail.vectorXZ()),
+        Vector3d.create(detail.vectorYX(), detail.vectorYY(), detail.vectorYZ()),
+        Point3d.create(detail.topOriginX(), detail.topOriginY(), detail.topOriginZ()),
         detail.baseX(),
         detail.baseY(),
         detail.topX(),
@@ -704,66 +547,27 @@ export class BGFBReader {
       );
       return Sphere.createEllipsoid(
         localToWorld,
-        AngleSweep.createStartSweepRadians(
-          detail.startLatitudeRadians(),
-          detail.latitudeSweepRadians()
-        ),
+        AngleSweep.createStartSweepRadians(detail.startLatitudeRadians(), detail.latitudeSweepRadians()),
         detail.capped()
       );
     }
     if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnCone) {
       const header = variant.geometry(new BGFBAccessors.DgnCone());
       const detail = header!.detail()!;
-      const centerA = Point3d.create(
-        detail.centerAX(),
-        detail.centerAY(),
-        detail.centerAZ()
-      );
-      const centerB = Point3d.create(
-        detail.centerBX(),
-        detail.centerBY(),
-        detail.centerBZ()
-      );
-      const vector0 = Vector3d.create(
-        detail.vector0X(),
-        detail.vector0Y(),
-        detail.vector0Z()
-      );
-      const vector90 = Vector3d.create(
-        detail.vector90X(),
-        detail.vector90Y(),
-        detail.vector90Z()
-      );
+      const centerA = Point3d.create(detail.centerAX(), detail.centerAY(), detail.centerAZ());
+      const centerB = Point3d.create(detail.centerBX(), detail.centerBY(), detail.centerBZ());
+      const vector0 = Vector3d.create(detail.vector0X(), detail.vector0Y(), detail.vector0Z());
+      const vector90 = Vector3d.create(detail.vector90X(), detail.vector90Y(), detail.vector90Z());
       const radiusA = detail.radiusA();
       const radiusB = detail.radiusB();
-      return Cone.createBaseAndTarget(
-        centerA,
-        centerB,
-        vector0,
-        vector90,
-        radiusA,
-        radiusB,
-        detail.capped()
-      );
+      return Cone.createBaseAndTarget(centerA, centerB, vector0, vector90, radiusA, radiusB, detail.capped());
     }
     if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnTorusPipe) {
       const header = variant.geometry(new BGFBAccessors.DgnTorusPipe())!;
       const detail = header.detail()!;
-      const center = Point3d.create(
-        detail.centerX(),
-        detail.centerY(),
-        detail.centerZ()
-      );
-      const vectorX = Vector3d.create(
-        detail.vectorXX(),
-        detail.vectorXY(),
-        detail.vectorXZ()
-      );
-      const vectorY = Vector3d.create(
-        detail.vectorYX(),
-        detail.vectorYY(),
-        detail.vectorYZ()
-      );
+      const center = Point3d.create(detail.centerX(), detail.centerY(), detail.centerZ());
+      const vectorX = Vector3d.create(detail.vectorXX(), detail.vectorXY(), detail.vectorXZ());
+      const vectorY = Vector3d.create(detail.vectorYX(), detail.vectorYY(), detail.vectorYZ());
       const sweepRadians = detail.sweepRadians();
       const majorRadius = detail.majorRadius();
       const minorRadius = detail.minorRadius();
@@ -781,42 +585,24 @@ export class BGFBReader {
       const header = variant.geometry(new BGFBAccessors.DgnExtrusion())!;
       const dVector = new BGFBAccessors.DVector3d();
       header.extrusionVector(dVector);
-      const extrusionVector = Vector3d.create(
-        dVector.x(),
-        dVector.y(),
-        dVector.z()
-      );
+      const extrusionVector = Vector3d.create(dVector.x(), dVector.y(), dVector.z());
       const baseCurve = header.baseCurve();
       if (baseCurve !== null) {
         const contour = this.readCurveCollectionFromCurveVectorTable(baseCurve);
         return LinearSweep.create(contour, extrusionVector, header.capped());
       }
     }
-    if (
-      geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnRotationalSweep
-    ) {
+    if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnRotationalSweep) {
       const header = variant.geometry(new BGFBAccessors.DgnRotationalSweep())!;
       const dAxis = new BGFBAccessors.DRay3d();
       header.axis(dAxis);
-      const axis = Ray3d.createXYZUVW(
-        dAxis.x(),
-        dAxis.y(),
-        dAxis.z(),
-        dAxis.ux(),
-        dAxis.uy(),
-        dAxis.uz()
-      );
+      const axis = Ray3d.createXYZUVW(dAxis.x(), dAxis.y(), dAxis.z(), dAxis.ux(), dAxis.uy(), dAxis.uz());
       const sweepAngle = Angle.createRadians(header.sweepRadians());
       // const numVRules = header.numVRules();
       const baseCurve = header.baseCurve();
       if (baseCurve !== null) {
         const contour = this.readCurveCollectionFromCurveVectorTable(baseCurve);
-        return RotationalSweep.create(
-          contour,
-          axis,
-          sweepAngle,
-          header.capped()
-        );
+        return RotationalSweep.create(contour, axis, sweepAngle, header.capped());
       }
     }
     if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnRuledSweep) {
@@ -826,8 +612,7 @@ export class BGFBReader {
       for (let i = 0; i < numCurves; i++) {
         const contourTable = header.curves(i);
         if (contourTable) {
-          const contour =
-            this.readCurveCollectionFromCurveVectorTable(contourTable);
+          const contour = this.readCurveCollectionFromCurveVectorTable(contourTable);
           if (contour) contours.push(contour);
         }
       }
@@ -872,14 +657,8 @@ export class BGFBReader {
       }
       case BGFBAccessors.VariantGeometryUnion.tagVectorOfVariantGeometry: {
         const geometry: GeometryQuery[] = [];
-        const offsetToVectorOfVariantGeometry = variant.geometry(
-          new BGFBAccessors.VectorOfVariantGeometry()
-        );
-        for (
-          let i = 0;
-          i < offsetToVectorOfVariantGeometry!.membersLength();
-          i++
-        ) {
+        const offsetToVectorOfVariantGeometry = variant.geometry(new BGFBAccessors.VectorOfVariantGeometry());
+        for (let i = 0; i < offsetToVectorOfVariantGeometry!.membersLength(); i++) {
           const child = offsetToVectorOfVariantGeometry!.members(i);
           if (child !== null) {
             const childGeometry = this.readGeometryQueryFromVariant(child);
@@ -912,12 +691,10 @@ export class BGFBReader {
     const newByteBuffer = new flatbuffers.ByteBuffer(theBytes);
     if (signature) {
       if (theBytes.length < signature.length) return undefined;
-      for (let i = 0; i < signature.length; i++)
-        if (theBytes[i] !== signature[i]) return undefined;
+      for (let i = 0; i < signature.length; i++) if (theBytes[i] !== signature[i]) return undefined;
       newByteBuffer.setPosition(signature.length);
     }
-    const root =
-      BGFBAccessors.VariantGeometry.getRootAsVariantGeometry(newByteBuffer);
+    const root = BGFBAccessors.VariantGeometry.getRootAsVariantGeometry(newByteBuffer);
     const reader = new BGFBReader();
     return reader.readGeometryQueryFromVariant(root);
   }
@@ -975,13 +752,9 @@ export class DgnSpiralTypeQueries {
   }
 
   /** Convert typescript string to native integer type */
-  public static stringToTypeCode(
-    s: string,
-    defaultToClothoid: boolean = true
-  ): number | undefined {
+  public static stringToTypeCode(s: string, defaultToClothoid: boolean = true): number | undefined {
     for (const entry of DgnSpiralTypeQueries.spiralTypeCodeMap) {
-      if (Geometry.equalStringNoCase(s, entry[1] as string))
-        return entry[0] as number;
+      if (Geometry.equalStringNoCase(s, entry[1] as string)) return entry[0] as number;
     }
     return defaultToClothoid ? 10 : undefined;
   }

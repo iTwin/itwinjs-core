@@ -8,11 +8,7 @@
 
 import { CombineTexturesGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
-import {
-  FragmentShaderComponent,
-  VariablePrecision,
-  VariableType,
-} from "../ShaderBuilder";
+import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { Texture2DHandle } from "../Texture";
 import { createViewportQuadBuilder } from "./ViewportQuad";
@@ -27,9 +23,7 @@ const assignFragData = `
 `;
 
 /** @internal */
-export function createCombineTexturesProgram(
-  context: WebGL2RenderingContext
-): ShaderProgram {
+export function createCombineTexturesProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 
@@ -40,11 +34,7 @@ export function createCombineTexturesProgram(
     VariableType.Sampler2D,
     (prog) => {
       prog.addGraphicUniform("u_texture0", (uniform, params) => {
-        Texture2DHandle.bindSampler(
-          uniform,
-          (params.geometry as CombineTexturesGeometry).texture0,
-          TextureUnit.Zero
-        );
+        Texture2DHandle.bindSampler(uniform, (params.geometry as CombineTexturesGeometry).texture0, TextureUnit.Zero);
       });
     },
     VariablePrecision.High
@@ -55,11 +45,7 @@ export function createCombineTexturesProgram(
     VariableType.Sampler2D,
     (prog) => {
       prog.addGraphicUniform("u_texture1", (uniform, params) => {
-        Texture2DHandle.bindSampler(
-          uniform,
-          (params.geometry as CombineTexturesGeometry).texture1,
-          TextureUnit.One
-        );
+        Texture2DHandle.bindSampler(uniform, (params.geometry as CombineTexturesGeometry).texture1, TextureUnit.One);
       });
     },
     VariablePrecision.High

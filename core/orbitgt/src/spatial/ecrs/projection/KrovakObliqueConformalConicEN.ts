@@ -44,11 +44,7 @@ export class KrovakObliqueConformalConicEN extends OperationMethod {
    * @param parameters the values of the parameters.
    */
   public constructor(parameters: ParameterValueList) {
-    super(
-      KrovakObliqueConformalConicEN.METHOD_CODE,
-      "Krovak Oblique Conic Conformal East-North",
-      parameters
-    );
+    super(KrovakObliqueConformalConicEN.METHOD_CODE, "Krovak Oblique Conic Conformal East-North", parameters);
     /* Create the projection */
     this.projection = new KrovakObliqueConformalConic(parameters);
   }
@@ -66,12 +62,7 @@ export class KrovakObliqueConformalConicEN extends OperationMethod {
    * OperationMethod interface method.
    * @see OperationMethod#forward
    */
-  public forward(
-    sourceCRS: CRS,
-    source: Coordinate,
-    targetCRS: CRS,
-    target: Coordinate
-  ): void {
+  public forward(sourceCRS: CRS, source: Coordinate, targetCRS: CRS, target: Coordinate): void {
     /* Do the forward projection */
     this.projection.forward(sourceCRS, source, targetCRS, target);
     /* Get the original position */
@@ -86,12 +77,7 @@ export class KrovakObliqueConformalConicEN extends OperationMethod {
    * OperationMethod interface method.
    * @see OperationMethod#reverse
    */
-  public reverse(
-    sourceCRS: CRS,
-    source: Coordinate,
-    targetCRS: CRS,
-    target: Coordinate
-  ): void {
+  public reverse(sourceCRS: CRS, source: Coordinate, targetCRS: CRS, target: Coordinate): void {
     /* Get the swapped position */
     const N: float64 = -target.getX();
     const E: float64 = -target.getY();

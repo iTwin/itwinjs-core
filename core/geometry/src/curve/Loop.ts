@@ -81,10 +81,7 @@ export class Loop extends CurveChain {
     return 2;
   } // (2) all "Loop" become "outer"
   /** invoke `processor.announceLoop(this, indexInParent)` */
-  public announceToCurveProcessor(
-    processor: RecursiveCurveProcessor,
-    indexInParent: number = -1
-  ): void {
+  public announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent: number = -1): void {
     return processor.announceLoop(this, indexInParent);
   }
   /** Create a new `Loop` with no children */

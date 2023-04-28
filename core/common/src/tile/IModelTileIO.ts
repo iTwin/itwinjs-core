@@ -124,9 +124,7 @@ export class FeatureTableHeader {
     const length = stream.readUint32();
     const maxFeatures = stream.readUint32();
     const count = stream.readUint32();
-    return stream.isPastTheEnd
-      ? undefined
-      : new FeatureTableHeader(length, maxFeatures, count);
+    return stream.isPastTheEnd ? undefined : new FeatureTableHeader(length, maxFeatures, count);
   }
 
   public static sizeInBytes = 12;

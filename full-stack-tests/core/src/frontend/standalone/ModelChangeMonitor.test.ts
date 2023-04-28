@@ -34,19 +34,14 @@ if (!ProcessDetector.isMobileAppFrontend) {
         process.env.IMODELJS_CORE_DIRNAME!,
         "core/backend/lib/cjs/test/assets/planprojection.bim"
       );
-      imodel = await BriefcaseConnection.openStandalone(
-        filePath,
-        OpenMode.ReadWrite
-      );
+      imodel = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
     });
 
     afterEach(async () => {
       await imodel.close();
     });
 
-    async function getBufferedChanges(
-      func: () => Promise<void>
-    ): Promise<Set<string>> {
+    async function getBufferedChanges(func: () => Promise<void>): Promise<Set<string>> {
       const promise = new Promise<Set<string>>((resolve) => {
         imodel.onBufferedModelChanges.addOnce((modelIds) => {
           resolve(modelIds);
@@ -64,20 +59,15 @@ if (!ProcessDetector.isMobileAppFrontend) {
       beforeEach(async () => {
         const modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(
           imodel.key,
-          await makeModelCode(
-            imodel,
-            imodel.models.repositoryModelId,
-            Guid.createValue()
-          )
+          await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())
         );
         const dictId = await imodel.models.getDictionaryModel();
-        const categoryId =
-          await coreFullStackTestIpc.createAndInsertSpatialCategory(
-            imodel.key,
-            dictId,
-            Guid.createValue(),
-            { color: 0 }
-          );
+        const categoryId = await coreFullStackTestIpc.createAndInsertSpatialCategory(
+          imodel.key,
+          dictId,
+          Guid.createValue(),
+          { color: 0 }
+        );
         elemId = await insertLineElement(imodel, modelId, categoryId);
 
         // Make sure the event produced by saveChanges doesn't pollute our tests.

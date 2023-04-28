@@ -4,14 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert, Id64Array, Id64String } from "@itwin/core-bentley";
-import {
-  BackgroundMapProps,
-  ColorDef,
-  Hilite,
-  RenderMode,
-  ViewFlags,
-  ViewStateProps,
-} from "@itwin/core-common";
+import { BackgroundMapProps, ColorDef, Hilite, RenderMode, ViewFlags, ViewStateProps } from "@itwin/core-common";
 import { RenderSystem, TileAdmin } from "@itwin/core-frontend";
 
 /** Dimensions of the Viewport for a TestConfig. */
@@ -168,15 +161,8 @@ export interface TestConfigProps {
 }
 
 export const defaultHilite = new Hilite.Settings();
-export const defaultEmphasis = new Hilite.Settings(
-  ColorDef.black,
-  0,
-  0,
-  Hilite.Silhouette.Thick
-);
-export const isWindows = window.navigator.userAgent
-  .toLowerCase()
-  .includes("win");
+export const defaultEmphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
+export const isWindows = window.navigator.userAgent.toLowerCase().includes("win");
 export const separator = isWindows ? "\\" : "/";
 
 /** Configures how one or more tests are run. A Test belongs to a TestSet and can test multiple iModels and views thereof.
@@ -223,41 +209,26 @@ export class TestConfig {
    */
   public constructor(props: TestConfigProps, prevConfig?: TestConfig) {
     this.view = props.view ?? prevConfig?.view ?? { width: 1000, height: 1000 };
-    this.numRendersToTime =
-      props.numRendersToTime ?? prevConfig?.numRendersToTime ?? 100;
-    this.numRendersToSkip =
-      props.numRendersToSkip ?? prevConfig?.numRendersToSkip ?? 50;
-    this.outputName =
-      props.outputName ?? prevConfig?.outputName ?? "performanceResults.csv";
-    this.outputPath =
-      prevConfig?.outputPath ??
-      (isWindows ? "D:\\output\\performanceData\\" : "/Users/");
+    this.numRendersToTime = props.numRendersToTime ?? prevConfig?.numRendersToTime ?? 100;
+    this.numRendersToSkip = props.numRendersToSkip ?? prevConfig?.numRendersToSkip ?? 50;
+    this.outputName = props.outputName ?? prevConfig?.outputName ?? "performanceResults.csv";
+    this.outputPath = prevConfig?.outputPath ?? (isWindows ? "D:\\output\\performanceData\\" : "/Users/");
     this.iModelLocation = prevConfig?.iModelLocation ?? "";
     this.iModelName = props.iModelName ?? prevConfig?.iModelName ?? "*";
     this.iModelId = props.iModelId ?? prevConfig?.iModelId;
     this.iTwinId = props.iTwinId ?? prevConfig?.iTwinId;
     this.csvFormat = props.csvFormat ?? prevConfig?.csvFormat ?? "original";
-    this.viewName =
-      props.viewName ??
-      props.extViewName ??
-      prevConfig?.viewName ??
-      prevConfig?.extViewName ??
-      "*";
+    this.viewName = props.viewName ?? props.extViewName ?? prevConfig?.viewName ?? prevConfig?.extViewName ?? "*";
     this.extViewName = props.extViewName;
     this.testType = props.testType ?? prevConfig?.testType ?? "timing";
-    this.savedViewType =
-      (props.savedViewType?.toLowerCase() as SavedViewType) ??
-      prevConfig?.savedViewType ??
-      "both";
+    this.savedViewType = (props.savedViewType?.toLowerCase() as SavedViewType) ?? prevConfig?.savedViewType ?? "both";
     this.renderOptions = prevConfig?.renderOptions
       ? { ...prevConfig.renderOptions }
       : { useWebGL2: true, dpiAwareLOD: true };
-    this.filenameOptsToIgnore =
-      props.filenameOptsToIgnore ?? prevConfig?.filenameOptsToIgnore;
+    this.filenameOptsToIgnore = props.filenameOptsToIgnore ?? prevConfig?.filenameOptsToIgnore;
     this.displayStyle = props.displayStyle ?? prevConfig?.displayStyle;
     this.hyperModeling = props.hyperModeling ?? prevConfig?.hyperModeling;
-    this.useDisjointTimer =
-      props.useDisjointTimer ?? prevConfig?.useDisjointTimer ?? true;
+    this.useDisjointTimer = props.useDisjointTimer ?? prevConfig?.useDisjointTimer ?? true;
     this.onException = props.onException ?? prevConfig?.onException;
 
     if (prevConfig) {
@@ -272,8 +243,7 @@ export class TestConfig {
       this.hilite = prevConfig.hilite;
       this.emphasis = prevConfig.emphasis;
 
-      if (prevConfig.backgroundMap)
-        this.backgroundMap = { ...prevConfig.backgroundMap };
+      if (prevConfig.backgroundMap) this.backgroundMap = { ...prevConfig.backgroundMap };
 
       if (prevConfig.tileProps) this.tileProps = { ...prevConfig.tileProps };
 
@@ -282,14 +252,9 @@ export class TestConfig {
       this.outputPath = props.argOutputPath;
     }
 
-    if (props.iModelLocation)
-      this.iModelLocation = combineFilePaths(
-        props.iModelLocation,
-        this.iModelLocation
-      );
+    if (props.iModelLocation) this.iModelLocation = combineFilePaths(props.iModelLocation, this.iModelLocation);
 
-    if (props.outputPath)
-      this.outputPath = combineFilePaths(props.outputPath, this.outputPath);
+    if (props.outputPath) this.outputPath = combineFilePaths(props.outputPath, this.outputPath);
 
     if (props.viewString) {
       this.viewStateSpec = {
@@ -298,14 +263,10 @@ export class TestConfig {
       };
 
       if (props.viewString._overrideElements)
-        this.viewStateSpec.elementOverrides = JSON.parse(
-          props.viewString._overrideElements
-        );
+        this.viewStateSpec.elementOverrides = JSON.parse(props.viewString._overrideElements);
 
       if (props.viewString._selectedElements)
-        this.viewStateSpec.selectedElements = JSON.parse(
-          props.viewString._selectedElements
-        );
+        this.viewStateSpec.selectedElements = JSON.parse(props.viewString._selectedElements);
     }
 
     if (props.renderOptions) {
@@ -318,20 +279,14 @@ export class TestConfig {
     this.backgroundMap = merge(this.backgroundMap, props.backgroundMap);
     this.viewFlags = merge(this.viewFlags, props.viewFlags);
 
-    if (props.hilite)
-      this.hilite = hiliteSettings(this.hilite ?? defaultHilite, props.hilite);
+    if (props.hilite) this.hilite = hiliteSettings(this.hilite ?? defaultHilite, props.hilite);
 
-    if (props.emphasis)
-      this.emphasis = hiliteSettings(
-        this.emphasis ?? defaultEmphasis,
-        props.emphasis
-      );
+    if (props.emphasis) this.emphasis = hiliteSettings(this.emphasis ?? defaultEmphasis, props.emphasis);
   }
 
   /** Returns true if IModelApp must be restarted when transitioning from this config to the specified config. */
   public requiresRestart(newConfig: TestConfig): boolean {
-    if (!areObjectsEqual(this.renderOptions, newConfig.renderOptions))
-      return true;
+    if (!areObjectsEqual(this.renderOptions, newConfig.renderOptions)) return true;
 
     if (!this.tileProps || !newConfig.tileProps)
       return undefined !== this.tileProps || undefined !== newConfig.tileProps;
@@ -368,17 +323,9 @@ export class TestConfigStack {
 }
 
 /** Override properties of settings with those defined by props. */
-function hiliteSettings(
-  settings: Hilite.Settings,
-  props: HiliteProps
-): Hilite.Settings {
+function hiliteSettings(settings: Hilite.Settings, props: HiliteProps): Hilite.Settings {
   const colors = settings.color.colors;
-  const color = ColorDef.from(
-    props?.red ?? colors.r,
-    props?.green ?? colors.g,
-    props?.blue ?? colors.b,
-    0
-  );
+  const color = ColorDef.from(props?.red ?? colors.r, props?.green ?? colors.g, props?.blue ?? colors.b, 0);
   return new Hilite.Settings(
     color,
     props.visibleRatio ?? settings.visibleRatio,
@@ -390,10 +337,7 @@ function hiliteSettings(
 /** Merge two objects of type T such that any property defined by second overrides the value supplied for that property by first.
  * The inputs are not modified - a new object is returned if two objects are supplied.
  */
-function merge<T extends object>(
-  first: T | undefined,
-  second: T | undefined
-): T | undefined {
+function merge<T extends object>(first: T | undefined, second: T | undefined): T | undefined {
   if (!first) return second;
   else if (!second) return first;
   else return { ...first, ...second };
@@ -404,11 +348,7 @@ function merge<T extends object>(
  * If !isWindows & additionalPath begins with "/", initialPath is ignored.
  */
 function combineFilePaths(additionalPath: string, initialPath: string): string {
-  if (
-    initialPath.length === 0 ||
-    (isWindows && additionalPath[1] === ":") ||
-    (!isWindows && additionalPath[0] === "/")
-  )
+  if (initialPath.length === 0 || (isWindows && additionalPath[1] === ":") || (!isWindows && additionalPath[0] === "/"))
     return additionalPath;
   return `${initialPath}${separator}${additionalPath}`;
 }
@@ -435,8 +375,7 @@ function areObjectsEqual(a: object, b: object): boolean {
   if (Object.keys(a).length !== Object.keys(b).length) return false;
 
   const ob = b as { [key: string]: any };
-  for (const [key, value] of Object.entries(a))
-    if (!areEqual(value, ob[key])) return false;
+  for (const [key, value] of Object.entries(a)) if (!areEqual(value, ob[key])) return false;
 
   return true;
 }

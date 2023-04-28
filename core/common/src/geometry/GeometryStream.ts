@@ -32,12 +32,7 @@ import {
   isPlacement2dProps,
   PlacementProps,
 } from "../ElementProps";
-import {
-  BackgroundFill,
-  FillDisplay,
-  GeometryClass,
-  GeometryParams,
-} from "../GeometryParams";
+import { BackgroundFill, FillDisplay, GeometryClass, GeometryParams } from "../GeometryParams";
 import { Gradient } from "../Gradient";
 import { IModelError } from "../IModelError";
 import { AreaPattern } from "./AreaPattern";
@@ -223,10 +218,7 @@ export class GeometryStreamBuilder {
    * Can be called with undefined or identity transform to start appending geometry supplied in local coordinates again.
    */
   public setLocalToWorld(localToWorld?: Transform) {
-    this._worldToLocal =
-      undefined === localToWorld || localToWorld.isIdentity
-        ? undefined
-        : localToWorld.inverse();
+    this._worldToLocal = undefined === localToWorld || localToWorld.isIdentity ? undefined : localToWorld.inverse();
   }
 
   /** Supply local to world transform from a Point3d and optional YawPitchRollAngles.
@@ -236,18 +228,13 @@ export class GeometryStreamBuilder {
     origin: Point3d,
     angles: YawPitchRollAngles = YawPitchRollAngles.createDegrees(0.0, 0.0, 0.0)
   ) {
-    this.setLocalToWorld(
-      Transform.createOriginAndMatrix(origin, angles.toMatrix3d())
-    );
+    this.setLocalToWorld(Transform.createOriginAndMatrix(origin, angles.toMatrix3d()));
   }
 
   /** Supply local to world transform from a Point2d and optional Angle.
    * @see [[Placement2d]]
    */
-  public setLocalToWorld2d(
-    origin: Point2d,
-    angle: Angle = Angle.createDegrees(0.0)
-  ) {
+  public setLocalToWorld2d(origin: Point2d, angle: Angle = Angle.createDegrees(0.0)) {
     this.setLocalToWorld(
       Transform.createOriginAndMatrix(
         Point3d.createFrom(origin),
@@ -260,9 +247,7 @@ export class GeometryStreamBuilder {
    * @see [[PlacementProps]]
    */
   public setLocalToWorldFromPlacement(props: PlacementProps) {
-    const placement = isPlacement2dProps(props)
-      ? Placement2d.fromJSON(props)
-      : Placement3d.fromJSON(props);
+    const placement = isPlacement2dProps(props) ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props);
     this.setLocalToWorld(placement.transform);
   }
 
@@ -303,54 +288,29 @@ export class GeometryStreamBuilder {
         material: { materialId: geomParams.materialId },
       });
 
-    if (
-      undefined !== geomParams.fillDisplay &&
-      FillDisplay.Never !== geomParams.fillDisplay
-    ) {
+    if (undefined !== geomParams.fillDisplay && FillDisplay.Never !== geomParams.fillDisplay) {
       const fill: AreaFillProps = {
         display: geomParams.fillDisplay,
         transparency: geomParams.fillTransparency,
       };
-      if (
-        undefined !== geomParams.gradient &&
-        Gradient.Mode.None !== geomParams.gradient.mode
-      )
+      if (undefined !== geomParams.gradient && Gradient.Mode.None !== geomParams.gradient.mode)
         fill.gradient = geomParams.gradient?.toJSON();
-      else if (
-        undefined !== geomParams.backgroundFill &&
-        BackgroundFill.None !== geomParams.backgroundFill
-      )
+      else if (undefined !== geomParams.backgroundFill && BackgroundFill.None !== geomParams.backgroundFill)
         fill.backgroundFill = geomParams.backgroundFill;
-      else if (undefined !== geomParams.fillColor)
-        fill.color = geomParams.fillColor.toJSON();
+      else if (undefined !== geomParams.fillColor) fill.color = geomParams.fillColor.toJSON();
       this.geometryStream.push({ fill });
     }
 
     if (undefined !== geomParams.pattern) {
-      const localPattern = this._worldToLocal
-        ? geomParams.pattern.clone()
-        : geomParams.pattern;
-      if (
-        undefined !== this._worldToLocal &&
-        !localPattern.applyTransform(this._worldToLocal)
-      )
-        return false;
+      const localPattern = this._worldToLocal ? geomParams.pattern.clone() : geomParams.pattern;
+      if (undefined !== this._worldToLocal && !localPattern.applyTransform(this._worldToLocal)) return false;
 
       this.geometryStream.push({ pattern: localPattern.toJSON() });
     }
 
-    if (
-      undefined !== geomParams.styleInfo &&
-      undefined !== geomParams.styleInfo.styleMod
-    ) {
-      const localStyleMod = new LineStyle.Modifier(
-        geomParams.styleInfo.styleMod
-      );
-      if (
-        undefined !== this._worldToLocal &&
-        !localStyleMod.applyTransform(this._worldToLocal)
-      )
-        return false;
+    if (undefined !== geomParams.styleInfo && undefined !== geomParams.styleInfo.styleMod) {
+      const localStyleMod = new LineStyle.Modifier(geomParams.styleInfo.styleMod);
+      if (undefined !== this._worldToLocal && !localStyleMod.applyTransform(this._worldToLocal)) return false;
       this.geometryStream.push({ styleMod: localStyleMod });
     }
 
@@ -379,23 +339,13 @@ export class GeometryStreamBuilder {
     }
     const partTrans = Transform.createOriginAndMatrix(
       instanceOrigin,
-      instanceRotation
-        ? instanceRotation.toMatrix3d()
-        : Matrix3d.createIdentity()
+      instanceRotation ? instanceRotation.toMatrix3d() : Matrix3d.createIdentity()
     );
-    if (undefined !== instanceScale)
-      partTrans.matrix.scaleColumnsInPlace(
-        instanceScale,
-        instanceScale,
-        instanceScale
-      );
-    const resultTrans =
-      this._worldToLocal.multiplyTransformTransform(partTrans);
+    if (undefined !== instanceScale) partTrans.matrix.scaleColumnsInPlace(instanceScale, instanceScale, instanceScale);
+    const resultTrans = this._worldToLocal.multiplyTransformTransform(partTrans);
     const scales = new Vector3d();
     if (!resultTrans.matrix.normalizeColumnsInPlace(scales)) return false;
-    const newRotation = YawPitchRollAngles.createFromMatrix3d(
-      resultTrans.matrix
-    );
+    const newRotation = YawPitchRollAngles.createFromMatrix3d(resultTrans.matrix);
     if (undefined === newRotation) return false;
     this.geometryStream.push({
       geomPart: {
@@ -439,8 +389,7 @@ export class GeometryStreamBuilder {
 
   /** Append an [[ImageGraphic]] supplied in either local or world coordinates. */
   public appendImage(image: ImageGraphic): boolean {
-    if (undefined !== this._worldToLocal)
-      image = image.cloneTransformed(this._worldToLocal);
+    if (undefined !== this._worldToLocal) image = image.cloneTransformed(this._worldToLocal);
 
     this.geometryStream.push({ image: image.toJSON() });
     return true;
@@ -471,9 +420,7 @@ export class GeometryStreamBuilder {
       return true;
     }
     const entityTrans = Transform.fromJSON(brep.transform);
-    const localTrans = entityTrans.multiplyTransformTransform(
-      this._worldToLocal
-    );
+    const localTrans = entityTrans.multiplyTransformTransform(this._worldToLocal);
     const localBrep: BRepEntity.DataProps = {
       data: brep.data,
       type: brep.type,
@@ -486,9 +433,7 @@ export class GeometryStreamBuilder {
 
   /** @internal */
   public getHeader(): GeometryStreamHeaderProps | undefined {
-    return 0 < this.geometryStream.length
-      ? this.geometryStream[0].header
-      : undefined;
+    return 0 < this.geometryStream.length ? this.geometryStream[0].header : undefined;
   }
 
   /** @internal */
@@ -508,11 +453,7 @@ export class GeometryStreamBuilder {
    */
   public get isViewIndependent(): boolean {
     const hdr = this.getHeader();
-    return (
-      undefined !== hdr &&
-      GeometryStreamFlags.None !==
-        (hdr.flags & GeometryStreamFlags.ViewIndependent)
-    );
+    return undefined !== hdr && GeometryStreamFlags.None !== (hdr.flags & GeometryStreamFlags.ViewIndependent);
   }
   public set isViewIndependent(viewIndependent: boolean) {
     if (viewIndependent === this.isViewIndependent) return;
@@ -604,14 +545,8 @@ class IteratorEntry implements GeometryStreamIteratorEntry {
   public readonly localToWorld?: Transform;
   public localRange?: Range3d;
 
-  public constructor(
-    appearance: Id64String | GeometryParams,
-    localToWorld?: Transform
-  ) {
-    this.geomParams =
-      typeof appearance === "string"
-        ? new GeometryParams(appearance)
-        : appearance;
+  public constructor(appearance: Id64String | GeometryParams, localToWorld?: Transform) {
+    this.geomParams = typeof appearance === "string" ? new GeometryParams(appearance) : appearance;
     this.localToWorld = localToWorld;
   }
 
@@ -647,9 +582,7 @@ class IteratorEntry implements GeometryStreamIteratorEntry {
  * Each [[GeometryStreamIteratorEntry]] returned by the iterator represents exactly one geometric primitive in the stream.
  * @public
  */
-export class GeometryStreamIterator
-  implements IterableIterator<GeometryStreamIteratorEntry>
-{
+export class GeometryStreamIterator implements IterableIterator<GeometryStreamIteratorEntry> {
   /** GeometryStream entries */
   public geometryStream: GeometryStreamProps;
   /** Flags applied to the entire geometry stream. */
@@ -683,8 +616,7 @@ export class GeometryStreamIterator
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private get entry() {
-    if (undefined === this._entry)
-      this._entry = new IteratorEntry(this._appearance, this._localToWorld);
+    if (undefined === this._entry) this._entry = new IteratorEntry(this._appearance, this._localToWorld);
 
     return this._entry;
   }
@@ -693,14 +625,9 @@ export class GeometryStreamIterator
    * If [[GeometricElement3dProps.placement]] is not undefined, placement relative entries will be returned transformed to world coordinates.
    * @throws [[IModelError]] if element.geom is undefined.
    */
-  public static fromGeometricElement3d(
-    element: Pick<GeometricElement3dProps, "geom" | "placement" | "category">
-  ) {
+  public static fromGeometricElement3d(element: Pick<GeometricElement3dProps, "geom" | "placement" | "category">) {
     if (element.geom === undefined)
-      throw new IModelError(
-        IModelStatus.NoGeometry,
-        "GeometricElement has no geometry or geometry wasn't requested"
-      );
+      throw new IModelError(IModelStatus.NoGeometry, "GeometricElement has no geometry or geometry wasn't requested");
 
     let transform;
     if (element.placement !== undefined)
@@ -709,43 +636,25 @@ export class GeometryStreamIterator
         YawPitchRollAngles.fromJSON(element.placement.angles).toMatrix3d()
       );
 
-    return new GeometryStreamIterator(
-      element.geom,
-      element.category,
-      transform
-    );
+    return new GeometryStreamIterator(element.geom, element.category, transform);
   }
 
   /** Create a new GeometryStream iterator for a [[GeometricElement2d]].
    * If [[GeometricElement2dProps.placement]] is not undefined, placement relative entries will be returned transformed to world coordinates.
    * @throws [[IModelError]] if element.geom is undefined.
    */
-  public static fromGeometricElement2d(
-    element: Pick<GeometricElement2dProps, "geom" | "placement" | "category">
-  ) {
+  public static fromGeometricElement2d(element: Pick<GeometricElement2dProps, "geom" | "placement" | "category">) {
     if (element.geom === undefined)
-      throw new IModelError(
-        IModelStatus.NoGeometry,
-        "GeometricElement has no geometry or geometry wasn't requested"
-      );
+      throw new IModelError(IModelStatus.NoGeometry, "GeometricElement has no geometry or geometry wasn't requested");
 
     let transform;
     if (element.placement !== undefined) {
-      const origin = Point3d.createFrom(
-        Point2d.fromJSON(element.placement.origin)
-      );
-      const matrix = Matrix3d.createRotationAroundVector(
-        Vector3d.unitZ(),
-        Angle.fromJSON(element.placement.angle)
-      )!;
+      const origin = Point3d.createFrom(Point2d.fromJSON(element.placement.origin));
+      const matrix = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.fromJSON(element.placement.angle))!;
       transform = Transform.createOriginAndMatrix(origin, matrix);
     }
 
-    return new GeometryStreamIterator(
-      element.geom,
-      element.category,
-      transform
-    );
+    return new GeometryStreamIterator(element.geom, element.category, transform);
   }
 
   /** Create a new GeometryStream iterator for a [[GeometryPart]].
@@ -761,28 +670,17 @@ export class GeometryStreamIterator
     partTransform?: Transform
   ) {
     if (geomPart.geom === undefined)
-      throw new IModelError(
-        IModelStatus.NoGeometry,
-        "GeometryPart has no geometry or geometry wasn't requested"
-      );
+      throw new IModelError(IModelStatus.NoGeometry, "GeometryPart has no geometry or geometry wasn't requested");
 
-    return new GeometryStreamIterator(
-      geomPart.geom,
-      geomParams?.clone(),
-      partTransform
-    );
+    return new GeometryStreamIterator(geomPart.geom, geomParams?.clone(), partTransform);
   }
 
   /** Get the transform that if applied to a [[GeometryPart]]'s GeometryStream entries would return them in world coordinates. */
   public partToWorld(): Transform | undefined {
     if (undefined === this._entry) return this._localToWorld;
 
-    const partToLocal =
-      "partReference" === this._entry.primitive.type
-        ? this._entry.primitive.part.toLocal
-        : undefined;
-    if (this._entry.localToWorld === undefined || partToLocal === undefined)
-      return this._entry.localToWorld;
+    const partToLocal = "partReference" === this._entry.primitive.type ? this._entry.primitive.part.toLocal : undefined;
+    if (this._entry.localToWorld === undefined || partToLocal === undefined) return this._entry.localToWorld;
 
     return this._entry.localToWorld.multiplyTransformTransform(partToLocal);
   }
@@ -797,19 +695,12 @@ export class GeometryStreamIterator
       if (entry.appearance) {
         this.entry.geomParams.resetAppearance();
         if (entry.appearance.subCategory)
-          this.entry.geomParams.subCategoryId = Id64.fromJSON(
-            entry.appearance.subCategory
-          );
+          this.entry.geomParams.subCategoryId = Id64.fromJSON(entry.appearance.subCategory);
         if (undefined !== entry.appearance.color)
-          this.entry.geomParams.lineColor = ColorDef.fromJSON(
-            entry.appearance.color
-          );
-        if (undefined !== entry.appearance.weight)
-          this.entry.geomParams.weight = entry.appearance.weight;
+          this.entry.geomParams.lineColor = ColorDef.fromJSON(entry.appearance.color);
+        if (undefined !== entry.appearance.weight) this.entry.geomParams.weight = entry.appearance.weight;
         if (undefined !== entry.appearance.style)
-          this.entry.geomParams.styleInfo = new LineStyle.Info(
-            Id64.fromJSON(entry.appearance.style)
-          );
+          this.entry.geomParams.styleInfo = new LineStyle.Info(Id64.fromJSON(entry.appearance.style));
         if (undefined !== entry.appearance.transparency)
           this.entry.geomParams.elmTransparency = entry.appearance.transparency;
         if (undefined !== entry.appearance.displayPriority)
@@ -820,37 +711,22 @@ export class GeometryStreamIterator
         if (this.entry.geomParams.styleInfo === undefined) continue;
 
         const styleMod = new LineStyle.Modifier(entry.styleMod);
-        if (this.entry.localToWorld !== undefined)
-          styleMod.applyTransform(this.entry.localToWorld);
+        if (this.entry.localToWorld !== undefined) styleMod.applyTransform(this.entry.localToWorld);
 
-        this.entry.geomParams.styleInfo = new LineStyle.Info(
-          this.entry.geomParams.styleInfo.styleId,
-          styleMod
-        );
+        this.entry.geomParams.styleInfo = new LineStyle.Info(this.entry.geomParams.styleInfo.styleId, styleMod);
       } else if (entry.fill) {
-        if (entry.fill.display)
-          this.entry.geomParams.fillDisplay = entry.fill.display;
-        if (entry.fill.transparency)
-          this.entry.geomParams.fillTransparency = entry.fill.transparency;
-        if (entry.fill.gradient)
-          this.entry.geomParams.gradient = Gradient.Symb.fromJSON(
-            entry.fill.gradient
-          );
-        else if (entry.fill.backgroundFill)
-          this.entry.geomParams.backgroundFill = entry.fill.backgroundFill;
-        else if (entry.fill.color)
-          this.entry.geomParams.fillColor = ColorDef.fromJSON(entry.fill.color);
+        if (entry.fill.display) this.entry.geomParams.fillDisplay = entry.fill.display;
+        if (entry.fill.transparency) this.entry.geomParams.fillTransparency = entry.fill.transparency;
+        if (entry.fill.gradient) this.entry.geomParams.gradient = Gradient.Symb.fromJSON(entry.fill.gradient);
+        else if (entry.fill.backgroundFill) this.entry.geomParams.backgroundFill = entry.fill.backgroundFill;
+        else if (entry.fill.color) this.entry.geomParams.fillColor = ColorDef.fromJSON(entry.fill.color);
       } else if (entry.pattern) {
         const params = AreaPattern.Params.fromJSON(entry.pattern);
-        if (this.entry.localToWorld !== undefined)
-          params.applyTransform(this.entry.localToWorld);
+        if (this.entry.localToWorld !== undefined) params.applyTransform(this.entry.localToWorld);
 
         this.entry.geomParams.pattern = params;
       } else if (entry.material) {
-        if (entry.material.materialId)
-          this.entry.geomParams.materialId = Id64.fromJSON(
-            entry.material.materialId
-          );
+        if (entry.material.materialId) this.entry.geomParams.materialId = Id64.fromJSON(entry.material.materialId);
       } else if (entry.subRange) {
         this.entry.localRange = Range3d.fromJSON(entry.subRange);
       } else if (entry.geomPart) {
@@ -860,19 +736,14 @@ export class GeometryStreamIterator
           entry.geomPart.rotation !== undefined ||
           entry.geomPart.scale !== undefined
         ) {
-          const origin = entry.geomPart.origin
-            ? Point3d.fromJSON(entry.geomPart.origin)
-            : Point3d.createZero();
+          const origin = entry.geomPart.origin ? Point3d.fromJSON(entry.geomPart.origin) : Point3d.createZero();
           const rotation = entry.geomPart.rotation
             ? YawPitchRollAngles.fromJSON(entry.geomPart.rotation).toMatrix3d()
             : Matrix3d.createIdentity();
           transform = Transform.createRefs(origin, rotation);
           if (entry.geomPart.scale)
             transform.multiplyTransformTransform(
-              Transform.createRefs(
-                Point3d.createZero(),
-                Matrix3d.createUniformScale(entry.geomPart.scale)
-              ),
+              Transform.createRefs(Point3d.createZero(), Matrix3d.createUniformScale(entry.geomPart.scale)),
               transform
             );
         }
@@ -880,31 +751,24 @@ export class GeometryStreamIterator
         // Subgraphic range doesn't apply to parts. A sane geometry stream (i.e., any that has been through the native layers or GeometryStreamBuilder)
         // will have a new subgraphic range for any geometric primitive following the part.
         this.entry.localRange = undefined;
-        this.entry.setPartReference(
-          Id64.fromJSON(entry.geomPart.part),
-          transform
-        );
+        this.entry.setPartReference(Id64.fromJSON(entry.geomPart.part), transform);
         return { value: this.entry, done: false };
       } else if (entry.textString) {
         const textString = new TextString(entry.textString);
-        if (this.entry.localToWorld !== undefined)
-          textString.transformInPlace(this.entry.localToWorld);
+        if (this.entry.localToWorld !== undefined) textString.transformInPlace(this.entry.localToWorld);
 
         this.entry.setTextString(textString);
         return { value: this.entry, done: false };
       } else if (entry.image) {
         const image = ImageGraphic.fromJSON(entry.image);
-        if (undefined !== this.entry.localToWorld)
-          image.transformInPlace(this.entry.localToWorld);
+        if (undefined !== this.entry.localToWorld) image.transformInPlace(this.entry.localToWorld);
 
         this.entry.setImage(image);
         return { value: this.entry, done: false };
       } else if (entry.brep) {
         if (this.entry.localToWorld !== undefined) {
           const entityTrans = Transform.fromJSON(entry.brep.transform);
-          entry.brep.transform = entityTrans
-            .multiplyTransformTransform(this.entry.localToWorld)
-            .toJSON();
+          entry.brep.transform = entityTrans.multiplyTransformTransform(this.entry.localToWorld).toJSON();
         }
 
         this.entry.setBRep(entry.brep);
@@ -913,8 +777,7 @@ export class GeometryStreamIterator
         const geometryQuery = GeomJson.Reader.parse(entry);
         if (!(geometryQuery instanceof GeometryQuery)) continue;
 
-        if (this.entry.localToWorld !== undefined)
-          geometryQuery.tryTransformInPlace(this.entry.localToWorld);
+        if (this.entry.localToWorld !== undefined) geometryQuery.tryTransformInPlace(this.entry.localToWorld);
 
         this.entry.setGeometryQuery(geometryQuery);
         return { value: this.entry, done: false };
@@ -930,9 +793,6 @@ export class GeometryStreamIterator
 
   /** @internal */
   public get isViewIndependent(): boolean {
-    return (
-      GeometryStreamFlags.None !==
-      (this.flags & GeometryStreamFlags.ViewIndependent)
-    );
+    return GeometryStreamFlags.None !== (this.flags & GeometryStreamFlags.ViewIndependent);
   }
 }

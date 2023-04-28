@@ -16,10 +16,7 @@ import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { Point2d } from "./Point2dVector2d";
 import { Point3dArrayCarrier } from "./Point3dArrayCarrier";
 import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
-import {
-  PointStringDeepXYZArrayCollector,
-  VariantPointDataStream,
-} from "./PointStreaming";
+import { PointStringDeepXYZArrayCollector, VariantPointDataStream } from "./PointStreaming";
 import { Transform } from "./Transform";
 import { XAndY, XYAndZ, XYZProps } from "./XYZProps";
 
@@ -29,11 +26,7 @@ import { XAndY, XYAndZ, XYZProps } from "./XYZProps";
  * @param numB second candidate -- may be undefined, invalid if outside closed interval 0..numA
  * @param multiplyBy second candidate multiplier (applied only if candidate is defined)
  */
-function selectOptionalClampedMin(
-  numA: number,
-  numB: number | undefined,
-  multiplyBy: number
-): number {
+function selectOptionalClampedMin(numA: number, numB: number | undefined, multiplyBy: number): number {
   if (numB !== undefined) {
     const numC = numB * multiplyBy;
     if (numC >= 0 && numC <= numA) return numC;
@@ -70,8 +63,7 @@ export class NumberArray {
   ): boolean {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length) return false;
-      for (let i = 0; i < dataA.length; i++)
-        if (dataA[i] !== dataB[i]) return false;
+      for (let i = 0; i < dataA.length; i++) if (dataA[i] !== dataB[i]) return false;
       return true;
     }
     return dataA === undefined && dataB === undefined;
@@ -84,8 +76,7 @@ export class NumberArray {
   ): boolean {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length) return false;
-      for (let i = 0; i < dataA.length; i++)
-        if (Math.abs(dataA[i] - dataB[i]) >= tolerance) return false;
+      for (let i = 0; i < dataA.length; i++) if (Math.abs(dataA[i] - dataB[i]) >= tolerance) return false;
       return true;
     }
     return dataA === undefined && dataB === undefined;
@@ -100,10 +91,7 @@ export class NumberArray {
     return sum;
   }
   /** test if coordinate x appears (to tolerance by `Geometry.isSameCoordinate`) in this array of numbers */
-  public static isCoordinateInArray(
-    x: number,
-    data: number[] | undefined
-  ): boolean {
+  public static isCoordinateInArray(x: number, data: number[] | undefined): boolean {
     if (data) {
       for (const y of data) {
         if (Geometry.isSameCoordinate(x, y)) return true;
@@ -135,10 +123,7 @@ export class NumberArray {
   /** Return the max absolute difference between corresponding entries in two arrays of numbers
    * * If sizes are mismatched, only the smaller length is tested.
    */
-  public static maxAbsDiff(
-    dataA: number[] | Float64Array,
-    dataB: number[] | Float64Array
-  ): number {
+  public static maxAbsDiff(dataA: number[] | Float64Array, dataB: number[] | Float64Array): number {
     let a = 0.0;
     const n = Math.min(dataA.length, dataB.length);
     for (let i = 0; i < n; i++) {
@@ -150,10 +135,7 @@ export class NumberArray {
   /** Return the max absolute difference between corresponding entries in two Float64Array
    * * If sizes are mismatched, only the smaller length is tested.
    */
-  public static maxAbsDiffFloat64(
-    dataA: Float64Array,
-    dataB: Float64Array
-  ): number {
+  public static maxAbsDiffFloat64(dataA: Float64Array, dataB: Float64Array): number {
     let a = 0.0;
     const n = Math.min(dataA.length, dataB.length);
     for (let i = 0; i < n; i++) {
@@ -167,11 +149,7 @@ export class NumberArray {
    * @param high high value
    * @param step max permitted step
    */
-  public static createArrayWithMaxStepSize(
-    low: number,
-    high: number,
-    step: number
-  ): number[] {
+  public static createArrayWithMaxStepSize(low: number, high: number, step: number): number[] {
     if (low === high) return [low];
     const delta = high - low;
     const numInterval = Math.max(1, Math.floor(Math.abs(delta / step)));
@@ -212,8 +190,7 @@ export class NumberArray {
     }
 
     for (let k = 0; k < target0; k++) result.push(knot0);
-    for (let k = multiplicity0; k + multiplicity1 < knots.length; k++)
-      result.push(knots[k]);
+    for (let k = multiplicity0; k + multiplicity1 < knots.length; k++) result.push(knots[k]);
     for (let k = 0; k < target1; k++) result.push(knot1);
     return result;
   }
@@ -236,10 +213,7 @@ export class NumberArray {
    * @param scales array of scales s_i. For best results, `scales` should have the same length as `colors`.
    * @return s = sum(c_i * s_i), where i ranges from 0 to min(colors.length, scales.length).
    */
-  public static linearCombinationOfColors(
-    colors: number[],
-    scales: number[]
-  ): number {
+  public static linearCombinationOfColors(colors: number[], scales: number[]): number {
     const numTerms = Math.min(colors.length, scales.length);
     const bytes = [0, 0, 0, 0];
     // compute a convex combination of each byte
@@ -261,10 +235,7 @@ export class NumberArray {
  */
 export class Point2dArray {
   /** Return true if arrays have same length and matching coordinates. */
-  public static isAlmostEqual(
-    dataA: undefined | Point2d[],
-    dataB: undefined | Point2d[]
-  ): boolean {
+  public static isAlmostEqual(dataA: undefined | Point2d[], dataB: undefined | Point2d[]): boolean {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length) return false;
       for (let i = 0; i < dataA.length; i++) {
@@ -291,11 +262,7 @@ export class Point2dArray {
     const x0 = data[0].x;
     const y0 = data[0].y;
     while (n > 1) {
-      if (
-        !Geometry.isSameCoordinate(data[n - 1].x, x0) ||
-        !Geometry.isSameCoordinate(data[n - 1].y, y0)
-      )
-        return n;
+      if (!Geometry.isSameCoordinate(data[n - 1].x, x0) || !Geometry.isSameCoordinate(data[n - 1].y, y0)) return n;
       n--;
     }
     return n;
@@ -308,14 +275,10 @@ export class Point2dArray {
  */
 export class Vector3dArray {
   /** Return true if arrays have same length and matching coordinates. */
-  public static isAlmostEqual(
-    dataA: undefined | Vector3d[],
-    dataB: undefined | Vector3d[]
-  ): boolean {
+  public static isAlmostEqual(dataA: undefined | Vector3d[], dataB: undefined | Vector3d[]): boolean {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length) return false;
-      for (let i = 0; i < dataA.length; i++)
-        if (!dataA[i].isAlmostEqual(dataB[i])) return false;
+      for (let i = 0; i < dataA.length; i++) if (!dataA[i].isAlmostEqual(dataB[i])) return false;
       return true;
     }
     return dataA === undefined && dataB === undefined;
@@ -373,10 +336,7 @@ export class Point4dArray {
   }
 
   /** pack x,y,z,w in Float64Array. */
-  public static packToFloat64Array(
-    data: Point4d[],
-    result?: Float64Array
-  ): Float64Array {
+  public static packToFloat64Array(data: Point4d[], result?: Float64Array): Float64Array {
     result = result ? result : new Float64Array(4 * data.length);
     let i = 0;
     for (const p of data) {
@@ -391,9 +351,7 @@ export class Point4dArray {
   public static unpackToPoint4dArray(data: Float64Array): Point4d[] {
     const result = [];
     for (let i = 0; i + 3 < data.length; i += 4) {
-      result.push(
-        Point4d.create(data[i], data[i + 1], data[i + 2], data[i + 3])
-      );
+      result.push(Point4d.create(data[i], data[i + 1], data[i + 2], data[i + 3]));
     }
     return result;
   }
@@ -418,20 +376,11 @@ export class Point4dArray {
    * @param transform transform to apply
    * @param xyzw array of x,y,z,w points.
    */
-  public static multiplyInPlace(
-    transform: Transform,
-    xyzw: Float64Array
-  ): void {
+  public static multiplyInPlace(transform: Transform, xyzw: Float64Array): void {
     const numXYZW = xyzw.length;
     const xyzw1 = Point4dArray._workPoint4d;
     for (let i = 0; i + 3 < numXYZW; i += 4) {
-      transform.multiplyXYZW(
-        xyzw[i],
-        xyzw[i + 1],
-        xyzw[i + 2],
-        xyzw[i + 3],
-        xyzw1
-      );
+      transform.multiplyXYZW(xyzw[i], xyzw[i + 1], xyzw[i + 2], xyzw[i + 3], xyzw1);
       xyzw[i] = xyzw1.x;
       xyzw[i + 1] = xyzw1.y;
       xyzw[i + 2] = xyzw1.z;
@@ -446,11 +395,9 @@ export class Point4dArray {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length) return false;
       if (dataA instanceof Float64Array && dataB instanceof Float64Array) {
-        for (let i = 0; i < dataA.length; i++)
-          if (!Geometry.isSameCoordinate(dataA[i], dataB[i])) return false;
+        for (let i = 0; i < dataA.length; i++) if (!Geometry.isSameCoordinate(dataA[i], dataB[i])) return false;
       } else if (Array.isArray(dataA) && Array.isArray(dataB)) {
-        for (let i = 0; i < dataA.length; i++)
-          if (!dataA[i].isAlmostEqual(dataB[i])) return false;
+        for (let i = 0; i < dataA.length; i++) if (!dataA[i].isAlmostEqual(dataB[i])) return false;
       }
       return true;
     }
@@ -465,21 +412,12 @@ export class Point4dArray {
   ): boolean {
     if (Array.isArray(data)) {
       for (const xyzw of data) {
-        if (
-          Math.abs(plane.altitudeXYZW(xyzw.x, xyzw.y, xyzw.z, xyzw.w)) >
-          tolerance
-        )
-          return false;
+        if (Math.abs(plane.altitudeXYZW(xyzw.x, xyzw.y, xyzw.z, xyzw.w)) > tolerance) return false;
       }
     } else if (data instanceof Float64Array) {
       const numXYZ = data.length;
       for (let i = 0; i + 2 < numXYZ; i += 4) {
-        if (
-          Math.abs(
-            plane.altitudeXYZW(data[i], data[i + 1], data[i + 2], data[i + 3])
-          ) > tolerance
-        )
-          return false;
+        if (Math.abs(plane.altitudeXYZW(data[i], data[i + 1], data[i + 2], data[i + 3])) > tolerance) return false;
       }
     }
     return true;
@@ -582,23 +520,9 @@ export class Point3dArray {
    * @param points array of 8 points at corners, with x index varying fastest.
    * @param result optional result point
    */
-  public static evaluateTrilinearPoint(
-    points: Point3d[],
-    u: number,
-    v: number,
-    w: number,
-    result?: Point3d
-  ): Point3d {
+  public static evaluateTrilinearPoint(points: Point3d[], u: number, v: number, w: number, result?: Point3d): Point3d {
     if (!result) result = Point3d.create(0, 0, 0);
-    this.evaluateTrilinearWeights(
-      this._weightUVW,
-      1 - u,
-      u,
-      1 - v,
-      v,
-      1 - w,
-      w
-    );
+    this.evaluateTrilinearWeights(this._weightUVW, 1 - u, u, 1 - v, v, 1 - w, w);
     let a;
     for (let i = 0; i < 8; i++) {
       a = this._weightUVW[i];
@@ -622,15 +546,7 @@ export class Point3dArray {
     w: number,
     result?: Transform
   ): Transform {
-    this.evaluateTrilinearWeights(
-      this._weightUVW,
-      1 - u,
-      u,
-      1 - v,
-      v,
-      1 - w,
-      w
-    );
+    this.evaluateTrilinearWeights(this._weightUVW, 1 - u, u, 1 - v, v, 1 - w, w);
     this.evaluateTrilinearWeights(this._weightDU, -1, 1, 1 - v, v, 1 - w, w);
     this.evaluateTrilinearWeights(this._weightDV, 1 - u, u, -1, 1, 1 - w, w);
     this.evaluateTrilinearWeights(this._weightDW, 1 - u, u, 1 - v, v, -1, 1);
@@ -651,9 +567,7 @@ export class Point3dArray {
     );
   }
   /** unpack from a number array or Float64Array to an array of `Point3d` */
-  public static unpackNumbersToPoint3dArray(
-    data: Float64Array | number[]
-  ): Point3d[] {
+  public static unpackNumbersToPoint3dArray(data: Float64Array | number[]): Point3d[] {
     const result = [];
     for (let i = 0; i + 2 < data.length; i += 3) {
       result.push(Point3d.create(data[i], data[i + 1], data[i + 2]));
@@ -666,10 +580,7 @@ export class Point3dArray {
    * @param data simple array of numbers
    * @param numPerBlock number of values in each block at first level down
    */
-  public static unpackNumbersToNestedArrays(
-    data: Float64Array,
-    numPerBlock: number
-  ): any[] {
+  public static unpackNumbersToNestedArrays(data: Float64Array, numPerBlock: number): any[] {
     const result = [];
     const n = data.length;
     let i = 0;
@@ -692,11 +603,7 @@ export class Point3dArray {
    * @param data simple array of numbers
    * @param numPerBlock number of values in each block at first level down
    */
-  public static unpackNumbersToNestedArraysIJK(
-    data: Float64Array,
-    numPerBlock: number,
-    numPerRow: number
-  ): any[] {
+  public static unpackNumbersToNestedArraysIJK(data: Float64Array, numPerBlock: number, numPerRow: number): any[] {
     const result = [];
     const n = data.length;
     let i = 0;
@@ -737,11 +644,9 @@ export class Point3dArray {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length) return false;
       if (dataA instanceof Float64Array && dataB instanceof Float64Array) {
-        for (let i = 0; i < dataA.length; i++)
-          if (!Geometry.isSameCoordinate(dataA[i], dataB[i])) return false;
+        for (let i = 0; i < dataA.length; i++) if (!Geometry.isSameCoordinate(dataA[i], dataB[i])) return false;
       } else if (Array.isArray(dataA) && Array.isArray(dataB)) {
-        for (let i = 0; i < dataA.length; i++)
-          if (!dataA[i].isAlmostEqual(dataB[i])) return false;
+        for (let i = 0; i < dataA.length; i++) if (!dataA[i].isAlmostEqual(dataB[i])) return false;
       }
       return true;
     }
@@ -750,10 +655,7 @@ export class Point3dArray {
   }
 
   /** return simple average of all coordinates.   (000 if empty array) */
-  public static centroid(
-    points: IndexedXYZCollection | Point3d[],
-    result?: Point3d
-  ): Point3d {
+  public static centroid(points: IndexedXYZCollection | Point3d[], result?: Point3d): Point3d {
     if (points instanceof IndexedXYZCollection) {
       result = Point3d.create(0, 0, 0, result);
       const p = Point3d.create();
@@ -773,11 +675,7 @@ export class Point3dArray {
   }
 
   /** Return the index of the point most distant from spacePoint */
-  public static indexOfMostDistantPoint(
-    points: Point3d[],
-    spacePoint: XYZ,
-    farVector: Vector3d
-  ): number | undefined {
+  public static indexOfMostDistantPoint(points: Point3d[], spacePoint: XYZ, farVector: Vector3d): number | undefined {
     if (points.length === 0) return undefined;
     let dMax = -1;
     let d;
@@ -847,11 +745,7 @@ export class Point3dArray {
     } else if (data instanceof Float64Array) {
       const numXYZ = data.length;
       for (let i = 0; i + 2 < numXYZ; i += 3) {
-        if (
-          Math.abs(plane.altitudeXYZ(data[i], data[i + 1], data[i + 2])) >
-          tolerance
-        )
-          return false;
+        if (Math.abs(plane.altitudeXYZ(data[i], data[i + 1], data[i + 2])) > tolerance) return false;
       }
     }
     return true;
@@ -877,18 +771,10 @@ export class Point3dArray {
       let i = 0;
       for (; i + 5 < numXYZ; i += 3) {
         // final i points at final point x
-        sum += Geometry.hypotenuseXYZ(
-          data[i + 3] - data[i],
-          data[i + 4] - data[i + 1],
-          data[i + 5] - data[i + 2]
-        );
+        sum += Geometry.hypotenuseXYZ(data[i + 3] - data[i], data[i + 4] - data[i + 1], data[i + 5] - data[i + 2]);
       }
       if (addClosureEdge && i >= 3) {
-        sum += Geometry.hypotenuseXYZ(
-          data[0] - data[i],
-          data[1] - data[i + 1],
-          data[2] - data[i + 2]
-        );
+        sum += Geometry.hypotenuseXYZ(data[0] - data[i], data[1] - data[i + 1], data[2] - data[i + 2]);
       }
     }
     return sum;
@@ -900,18 +786,14 @@ export class Point3dArray {
    * * return 0 if there are any duplicates within the remaining points.
    * @param points points to examine.
    */
-  public static countNonDuplicates(
-    points: Point3d[],
-    tolerance: number = Geometry.smallMetricDistance
-  ): number {
+  public static countNonDuplicates(points: Point3d[], tolerance: number = Geometry.smallMetricDistance): number {
     let n = points.length;
     // strip of (allow) trailing duplicates ...
     while (n > 1) {
       if (points[0].isAlmostEqual(points[n - 1], tolerance)) n--;
       else break;
     }
-    for (let i = 0; i + 1 < n; i++)
-      if (points[i].isAlmostEqual(points[i + 1], tolerance)) return 0;
+    for (let i = 0; i + 1 < n; i++) if (points[i].isAlmostEqual(points[i + 1], tolerance)) return 0;
     return n;
   }
 
@@ -923,8 +805,7 @@ export class Point3dArray {
     const result: Point3d[] = [];
     if (data.length === 0) return result;
     if (data instanceof Float64Array) {
-      for (let i = 0; i + 2 < data.length; i += 3)
-        result.push(Point3d.create(data[i], data[i + 1], data[i + 2]));
+      for (let i = 0; i + 2 < data.length; i += 3) result.push(Point3d.create(data[i], data[i + 1], data[i + 2]));
       return result;
     }
     for (const p of data) {
@@ -945,17 +826,13 @@ export class Point3dArray {
    * @param points array of points
    * @param maxEdgeLength max length of an edge
    */
-  public static cloneWithMaxEdgeLength(
-    points: Point3d[],
-    maxEdgeLength: number
-  ): Point3d[] {
+  public static cloneWithMaxEdgeLength(points: Point3d[], maxEdgeLength: number): Point3d[] {
     if (points.length === 0) return [];
     const result = [points[0]];
     for (let i = 1; i < points.length; i++) {
       const a = points[i - 1].distance(points[i]);
       const n = Geometry.stepCount(maxEdgeLength, a, 1);
-      for (let k = 1; k < n; k++)
-        result.push(points[i - 1].interpolate(k / n, points[i]));
+      for (let k = 1; k < n; k++) result.push(points[i - 1].interpolate(k / n, points[i]));
       result.push(points[i]);
     }
     return result;
@@ -969,9 +846,7 @@ export class Point3dArray {
    * return similarly-structured array, array of arrays, etc, with the lowest level point data specifically structured as arrays of 3 numbers `[1,2,3]`
    * @param data point data with various leaf forms such as `[1,2,3]`, `{x:1,y:2,z:3}`, `Point3d`
    */
-  public static cloneDeepJSONNumberArrays(
-    data: MultiLineStringDataVariant
-  ): number[][] {
+  public static cloneDeepJSONNumberArrays(data: MultiLineStringDataVariant): number[][] {
     const collector = new PointStringDeepXYZArrayCollector(this.xyzToArray);
     VariantPointDataStream.streamXYZ(data, collector);
     return collector.claimResult();
@@ -1015,9 +890,7 @@ export class Point3dArray {
    * return similarly-structured array, array of arrays, etc, with the lowest level point data specifically structured as `Point3d`.
    * @param data point data with various leaf forms such as `[1,2,3]`, `{x:1,y:2,z:3}`, `Point3d`
    */
-  public static cloneDeepXYZPoint3dArrays(
-    data: MultiLineStringDataVariant
-  ): any[] {
+  public static cloneDeepXYZPoint3dArrays(data: MultiLineStringDataVariant): any[] {
     const collector = new PointStringDeepXYZArrayCollector(Point3d.create);
     VariantPointDataStream.streamXYZ(data, collector);
     return collector.claimResult();
@@ -1083,13 +956,7 @@ export class Point3dArray {
     for (let i = 2; i < n; i++) {
       const candidate = xy1[i];
       let top = hullPoints.length - 1;
-      while (
-        top >= 1 &&
-        hullPoints[top - 1].crossProductToPointsXY(
-          hullPoints[top],
-          candidate
-        ) <= 0.0
-      ) {
+      while (top >= 1 && hullPoints[top - 1].crossProductToPointsXY(hullPoints[top], candidate) <= 0.0) {
         xy1[numInside++] = hullPoints[top];
         top--;
         hullPoints.pop();
@@ -1106,13 +973,7 @@ export class Point3dArray {
     for (let i = n - 1; i-- > 0; ) {
       const candidate = xy1[i];
       let top = hullPoints.length - 1;
-      while (
-        top > i0 &&
-        hullPoints[top - 1].crossProductToPointsXY(
-          hullPoints[top],
-          candidate
-        ) <= 0.0
-      ) {
+      while (top > i0 && hullPoints[top - 1].crossProductToPointsXY(hullPoints[top], candidate) <= 0.0) {
         insidePoints.push(hullPoints[top]);
         top--;
         hullPoints.pop();

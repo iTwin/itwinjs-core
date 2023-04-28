@@ -33,9 +33,7 @@ describe("MapLayerSources", () => {
     expect(sampleSource!.formatId).to.equals(sampleSourceJson.formatId);
     expect(sampleSource!.name).to.equals(sampleSourceJson.name);
     expect(sampleSource!.url).to.equals(sampleSourceJson.url);
-    expect(sampleSource!.transparentBackground).to.equals(
-      sampleSourceJson.transparentBackground
-    );
+    expect(sampleSource!.transparentBackground).to.equals(sampleSourceJson.transparentBackground);
     expect(sampleSource!.baseMap).to.equals(sampleSourceJson.baseMap);
 
     // check baseMap false

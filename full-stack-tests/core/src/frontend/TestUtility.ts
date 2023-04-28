@@ -3,33 +3,16 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import {
-  AccessToken,
-  GuidString,
-  Logger,
-  ProcessDetector,
-} from "@itwin/core-bentley";
+import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { Project as ITwin } from "@itwin/projects-client";
 import { AuthorizationClient } from "@itwin/core-common";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import {
-  IModelApp,
-  IModelAppOptions,
-  LocalhostIpcApp,
-  MockRender,
-  NativeApp,
-} from "@itwin/core-frontend";
-import {
-  getAccessTokenFromBackend,
-  TestUserCredentials,
-} from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import { IModelApp, IModelAppOptions, LocalhostIpcApp, MockRender, NativeApp } from "@itwin/core-frontend";
+import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
 import { rpcInterfaces } from "../common/RpcInterfaces";
-import {
-  ITwinPlatformAbstraction,
-  ITwinPlatformCloudEnv,
-} from "./hub/ITwinPlatformEnv";
+import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv } from "./hub/ITwinPlatformEnv";
 import { setBackendAccessToken } from "../certa/certaCommon";
 
 export class TestUtility {
@@ -64,9 +47,7 @@ export class TestUtility {
 
   public static iTwinPlatformEnv: ITwinPlatformAbstraction;
 
-  public static async getAccessToken(
-    user: TestUserCredentials
-  ): Promise<AccessToken> {
+  public static async getAccessToken(user: TestUserCredentials): Promise<AccessToken> {
     return getAccessTokenFromBackend(user);
   }
 
@@ -79,8 +60,7 @@ export class TestUtility {
    */
   public static async initialize(user: TestUserCredentials): Promise<void> {
     // If provided, create, setup and sign-in with the Auth client.
-    if (!IModelApp.initialized)
-      throw new Error("IModelApp must be initialized");
+    if (!IModelApp.initialized) throw new Error("IModelApp must be initialized");
 
     let authorizationClient: AuthorizationClient | undefined;
     if (NativeApp.isValid) {
@@ -103,18 +83,12 @@ export class TestUtility {
     const accessToken = await IModelApp.getAccessToken();
     if (accessToken === "") throw new Error("no access token");
 
-    const iTwin: ITwin = await this.iTwinPlatformEnv.iTwinMgr.getITwinByName(
-      accessToken,
-      iTwinName
-    );
+    const iTwin: ITwin = await this.iTwinPlatformEnv.iTwinMgr.getITwinByName(accessToken, iTwinName);
     assert(iTwin && iTwin.id);
     return iTwin.id;
   }
 
-  public static async queryIModelIdByName(
-    iTwinId: string,
-    iModelName: string
-  ): Promise<string> {
+  public static async queryIModelIdByName(iTwinId: string, iModelName: string): Promise<string> {
     const accessToken = await IModelApp.getAccessToken();
     const iModelId = await this.iTwinPlatformEnv.hubAccess.queryIModelByName({
       accessToken,
@@ -127,16 +101,12 @@ export class TestUtility {
   }
 
   /** Purges all acquired briefcases for the current user for the specified iModel, if the specified threshold of acquired briefcases is exceeded */
-  public static async purgeAcquiredBriefcases(
-    iModelId: string,
-    acquireThreshold: number = 16
-  ): Promise<void> {
+  public static async purgeAcquiredBriefcases(iModelId: string, acquireThreshold: number = 16): Promise<void> {
     const accessToken = await IModelApp.getAccessToken();
-    const briefcaseIds =
-      await this.iTwinPlatformEnv.hubAccess.getMyBriefcaseIds({
-        accessToken,
-        iModelId,
-      });
+    const briefcaseIds = await this.iTwinPlatformEnv.hubAccess.getMyBriefcaseIds({
+      accessToken,
+      iModelId,
+    });
 
     if (briefcaseIds.length > acquireThreshold) {
       Logger.logInfo(
@@ -164,8 +134,7 @@ export class TestUtility {
     };
   }
 
-  private static systemFactory: MockRender.SystemFactory = () =>
-    TestUtility.createDefaultRenderSystem();
+  private static systemFactory: MockRender.SystemFactory = () => TestUtility.createDefaultRenderSystem();
   private static createDefaultRenderSystem() {
     return new MockRender.System();
   }
@@ -182,8 +151,7 @@ export class TestUtility {
   ): Promise<void> {
     const iopts = { ...TestUtility.iModelAppOptions, ...opts };
     if (mockRender) iopts.renderSys = this.systemFactory();
-    if (ProcessDetector.isElectronAppFrontend)
-      return ElectronApp.startup({ iModelApp: iopts });
+    if (ProcessDetector.isElectronAppFrontend) return ElectronApp.startup({ iModelApp: iopts });
 
     if (enableWebEdit) {
       let socketUrl = new URL(window.location.toString());

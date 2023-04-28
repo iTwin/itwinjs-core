@@ -52,31 +52,19 @@ class TransparencyDecorator {
   }
 
   public decorate(context: DecorateContext): void {
-    for (const graphic of this._graphics)
-      context.addDecoration(GraphicType.Scene, graphic.graphic);
+    for (const graphic of this._graphics) context.addDecoration(GraphicType.Scene, graphic.graphic);
   }
 
   public addFeatureOverrides(overrides: FeatureSymbology.Overrides): void {
-    for (const [elementId, appearance] of this._symbologyOverrides)
-      overrides.override({ elementId, appearance });
+    for (const [elementId, appearance] of this._symbologyOverrides) overrides.override({ elementId, appearance });
   }
 
-  public overrideTransparency(
-    id: string,
-    transparency: number,
-    viewDependent?: boolean
-  ): void {
-    this._symbologyOverrides.set(
-      id,
-      FeatureAppearance.fromTransparency(transparency, viewDependent)
-    );
+  public overrideTransparency(id: string, transparency: number, viewDependent?: boolean): void {
+    this._symbologyOverrides.set(id, FeatureAppearance.fromTransparency(transparency, viewDependent));
   }
 
   public ignoreMaterial(id: string): void {
-    this._symbologyOverrides.set(
-      id,
-      FeatureAppearance.fromJSON({ ignoresMaterial: true })
-    );
+    this._symbologyOverrides.set(id, FeatureAppearance.fromJSON({ ignoresMaterial: true }));
   }
 
   /** Make a rectangle that occupies the entire view. Priority is Z in NPC coords - [0,1] maps to [far, near]. */
@@ -106,9 +94,7 @@ class TransparencyDecorator {
     builder.activateGraphicParams(gfParams);
     builder.addShape(pts);
 
-    this._graphics.push(
-      vp.target.renderSystem.createGraphicOwner(builder.finish())
-    );
+    this._graphics.push(vp.target.renderSystem.createGraphicOwner(builder.finish()));
   }
 }
 
@@ -128,9 +114,7 @@ describe("Transparency", async () => {
   });
 
   beforeEach(() => {
-    IModelApp.viewManager.addDecorator(
-      (decorator = new TransparencyDecorator())
-    );
+    IModelApp.viewManager.addDecorator((decorator = new TransparencyDecorator()));
   });
 
   afterEach(() => {
@@ -138,15 +122,11 @@ describe("Transparency", async () => {
     IModelApp.viewManager.dropDecorator(decorator);
   });
 
-  async function test(
-    setup: (vp: TestViewport) => void,
-    verify: (vp: TestViewport) => void
-  ): Promise<void> {
+  async function test(setup: (vp: TestViewport) => void, verify: (vp: TestViewport) => void): Promise<void> {
     decorator.reset();
     await testOnScreenViewport("0x24", imodel, 100, 100, async (viewport) => {
       expect(viewport.viewFlags.renderMode).to.equal(RenderMode.SmoothShade);
-      expect(viewport.displayStyle.backgroundColor.equals(ColorDef.black)).to.be
-        .true;
+      expect(viewport.displayStyle.backgroundColor.equals(ColorDef.black)).to.be.true;
 
       viewport.changeViewedModels([]);
       viewport.viewFlags = viewport.viewFlags.with("lighting", false);
@@ -270,16 +250,13 @@ describe("Transparency", async () => {
 
   // Alpha in [0,255].
   function createBlueTexture(alpha?: number): RenderTexture {
-    const fmt =
-      undefined !== alpha ? ImageBufferFormat.Rgba : ImageBufferFormat.Rgb;
+    const fmt = undefined !== alpha ? ImageBufferFormat.Rgba : ImageBufferFormat.Rgb;
     const bytes = [0, 0, 255];
     if (undefined !== alpha) bytes.push(alpha);
 
     // ###TODO test Mixed transparency.
     const transparency =
-      undefined !== alpha && alpha < 255
-        ? TextureTransparency.Translucent
-        : TextureTransparency.Opaque;
+      undefined !== alpha && alpha < 255 ? TextureTransparency.Translucent : TextureTransparency.Opaque;
     const img = ImageBuffer.create(new Uint8Array(bytes), fmt, 1);
     const texture = IModelApp.renderSystem.createTexture({
       type: RenderTexture.Type.Normal,
@@ -318,10 +295,8 @@ describe("Transparency", async () => {
 
     for (const testCase of testCases) {
       await test(
-        (vp) =>
-          decorator.add(vp, { color: ColorDef.red, material: testCase[0] }),
-        (vp) =>
-          expectTransparency(vp, ColorDef.blue.withTransparency(testCase[1]))
+        (vp) => decorator.add(vp, { color: ColorDef.red, material: testCase[0] }),
+        (vp) => expectTransparency(vp, ColorDef.blue.withTransparency(testCase[1]))
       );
     }
   });
@@ -329,46 +304,21 @@ describe("Transparency", async () => {
   it("should apply texture weight to material color but not alpha", async () => {
     const testCases: Array<[RenderMaterial, ColorDef]> = [
       // Opaque
-      [
-        createMaterial(1, createBlueTexture(), 0.5, ColorDef.red),
-        ColorDef.from(0x80, 0, 0x80),
-      ],
-      [
-        createMaterial(1, createBlueTexture(), 0.25, ColorDef.red),
-        ColorDef.from(0xc0, 0, 0x40),
-      ],
-      [
-        createMaterial(1, createBlueTexture(), 0, ColorDef.red),
-        ColorDef.from(0xff, 0, 0),
-      ],
+      [createMaterial(1, createBlueTexture(), 0.5, ColorDef.red), ColorDef.from(0x80, 0, 0x80)],
+      [createMaterial(1, createBlueTexture(), 0.25, ColorDef.red), ColorDef.from(0xc0, 0, 0x40)],
+      [createMaterial(1, createBlueTexture(), 0, ColorDef.red), ColorDef.from(0xff, 0, 0)],
 
       // Translucent
-      [
-        createMaterial(0.5, createBlueTexture(), 0.5, ColorDef.red),
-        ColorDef.from(0x40, 0, 0x40),
-      ],
-      [
-        createMaterial(1, createBlueTexture(0x80), 0.5, ColorDef.red),
-        ColorDef.from(0x40, 0, 0x40),
-      ],
-      [
-        createMaterial(1, createBlueTexture(0x80), 0.75, ColorDef.red),
-        ColorDef.from(0x20, 0, 0x60),
-      ],
-      [
-        createMaterial(0.5, createBlueTexture(0x80), 0.5, ColorDef.red),
-        ColorDef.from(0x20, 0, 0x20),
-      ],
-      [
-        createMaterial(0.5, createBlueTexture(0x80), 0.25, ColorDef.red),
-        ColorDef.from(0x30, 0, 0x10),
-      ],
+      [createMaterial(0.5, createBlueTexture(), 0.5, ColorDef.red), ColorDef.from(0x40, 0, 0x40)],
+      [createMaterial(1, createBlueTexture(0x80), 0.5, ColorDef.red), ColorDef.from(0x40, 0, 0x40)],
+      [createMaterial(1, createBlueTexture(0x80), 0.75, ColorDef.red), ColorDef.from(0x20, 0, 0x60)],
+      [createMaterial(0.5, createBlueTexture(0x80), 0.5, ColorDef.red), ColorDef.from(0x20, 0, 0x20)],
+      [createMaterial(0.5, createBlueTexture(0x80), 0.25, ColorDef.red), ColorDef.from(0x30, 0, 0x10)],
     ];
 
     for (const testCase of testCases) {
       await test(
-        (vp) =>
-          decorator.add(vp, { color: ColorDef.green, material: testCase[0] }),
+        (vp) => decorator.add(vp, { color: ColorDef.green, material: testCase[0] }),
         (vp) => expectColor(vp, testCase[1])
       );
     }
@@ -377,43 +327,21 @@ describe("Transparency", async () => {
   it("should apply texture weight to element color but not alpha if material does not override color", async () => {
     const testCases: Array<[RenderMaterial, ColorDef]> = [
       // Opaque
-      [
-        createMaterial(1, createBlueTexture(), 0.5),
-        ColorDef.from(0x80, 0, 0x80),
-      ],
-      [
-        createMaterial(1, createBlueTexture(), 0.25),
-        ColorDef.from(0xc0, 0, 0x40),
-      ],
+      [createMaterial(1, createBlueTexture(), 0.5), ColorDef.from(0x80, 0, 0x80)],
+      [createMaterial(1, createBlueTexture(), 0.25), ColorDef.from(0xc0, 0, 0x40)],
       [createMaterial(1, createBlueTexture(), 0), ColorDef.from(0xff, 0, 0)],
 
       // Translucent
-      [
-        createMaterial(0.5, createBlueTexture(), 0.5),
-        ColorDef.from(0x40, 0, 0x40),
-      ],
-      [
-        createMaterial(1, createBlueTexture(0x80), 0.5),
-        ColorDef.from(0x40, 0, 0x40),
-      ],
-      [
-        createMaterial(1, createBlueTexture(0x80), 0.75),
-        ColorDef.from(0x20, 0, 0x60),
-      ],
-      [
-        createMaterial(0.5, createBlueTexture(0x80), 0.5),
-        ColorDef.from(0x20, 0, 0x20),
-      ],
-      [
-        createMaterial(0.5, createBlueTexture(0x80), 0.25),
-        ColorDef.from(0x30, 0, 0x10),
-      ],
+      [createMaterial(0.5, createBlueTexture(), 0.5), ColorDef.from(0x40, 0, 0x40)],
+      [createMaterial(1, createBlueTexture(0x80), 0.5), ColorDef.from(0x40, 0, 0x40)],
+      [createMaterial(1, createBlueTexture(0x80), 0.75), ColorDef.from(0x20, 0, 0x60)],
+      [createMaterial(0.5, createBlueTexture(0x80), 0.5), ColorDef.from(0x20, 0, 0x20)],
+      [createMaterial(0.5, createBlueTexture(0x80), 0.25), ColorDef.from(0x30, 0, 0x10)],
     ];
 
     for (const testCase of testCases) {
       await test(
-        (vp) =>
-          decorator.add(vp, { color: ColorDef.red, material: testCase[0] }),
+        (vp) => decorator.add(vp, { color: ColorDef.red, material: testCase[0] }),
         (vp) => expectColor(vp, testCase[1])
       );
     }
@@ -436,8 +364,7 @@ describe("Transparency", async () => {
             color: ColorDef.red.withTransparency(testCase[0]),
             material: testCase[1],
           }),
-        (vp) =>
-          expectTransparency(vp, ColorDef.blue.withTransparency(testCase[2]))
+        (vp) => expectTransparency(vp, ColorDef.blue.withTransparency(testCase[2]))
       );
     }
   });
@@ -447,12 +374,7 @@ describe("Transparency", async () => {
     await test(
       (vp) => {
         decorator.ignoreMaterial(pickableId);
-        const material = createMaterial(
-          0.5,
-          createBlueTexture(0x7f),
-          undefined,
-          ColorDef.green
-        );
+        const material = createMaterial(0.5, createBlueTexture(0x7f), undefined, ColorDef.green);
         decorator.add(vp, { color: ColorDef.red, material, pickableId });
       },
       (vp) => expectColor(vp, ColorDef.red)
@@ -462,12 +384,7 @@ describe("Transparency", async () => {
       (vp) => {
         decorator.ignoreMaterial(pickableId);
         const color = ColorDef.red.withTransparency(0xaf);
-        const material = createMaterial(
-          0.5,
-          createBlueTexture(0x7f),
-          undefined,
-          ColorDef.green
-        );
+        const material = createMaterial(0.5, createBlueTexture(0x7f), undefined, ColorDef.green);
         decorator.add(vp, { color, material, pickableId });
       },
       (vp) => expectTransparency(vp, ColorDef.red.withTransparency(0xaf))
@@ -542,12 +459,7 @@ describe("Transparency", async () => {
         decorator.add(vp, {
           color: ColorDef.green,
           pickableId,
-          material: createMaterial(
-            undefined,
-            undefined,
-            undefined,
-            ColorDef.red
-          ),
+          material: createMaterial(undefined, undefined, undefined, ColorDef.red),
         });
         decorator.overrideTransparency(pickableId, 0.5);
       },
@@ -559,12 +471,7 @@ describe("Transparency", async () => {
         decorator.add(vp, {
           color: ColorDef.green.withTransparency(0x7f),
           pickableId,
-          material: createMaterial(
-            undefined,
-            undefined,
-            undefined,
-            ColorDef.red
-          ),
+          material: createMaterial(undefined, undefined, undefined, ColorDef.red),
         });
         decorator.overrideTransparency(pickableId, 0);
       },
@@ -604,43 +511,18 @@ describe("Transparency", async () => {
       createMaterial(undefined, createBlueTexture(0x7f)),
       ColorDef.blue.withTransparency(0xbf)
     );
-    await testCase(
-      ColorDef.red,
-      0,
-      createMaterial(undefined, createBlueTexture(0x7f)),
-      ColorDef.blue
-    );
-    await testCase(
-      ColorDef.red,
-      1,
-      createMaterial(undefined, createBlueTexture()),
-      ColorDef.black
-    );
+    await testCase(ColorDef.red, 0, createMaterial(undefined, createBlueTexture(0x7f)), ColorDef.blue);
+    await testCase(ColorDef.red, 1, createMaterial(undefined, createBlueTexture()), ColorDef.black);
 
-    await testCase(
-      ColorDef.green,
-      0.5,
-      createMaterial(1, createBlueTexture()),
-      ColorDef.blue.withTransparency(0x7f)
-    );
+    await testCase(ColorDef.green, 0.5, createMaterial(1, createBlueTexture()), ColorDef.blue.withTransparency(0x7f));
     await testCase(
       ColorDef.green,
       0.5,
       createMaterial(1, createBlueTexture(0x7f)),
       ColorDef.blue.withTransparency(0xbf)
     );
-    await testCase(
-      ColorDef.green,
-      0,
-      createMaterial(1, createBlueTexture(0x7f)),
-      ColorDef.blue
-    );
-    await testCase(
-      ColorDef.green,
-      1,
-      createMaterial(1, createBlueTexture()),
-      ColorDef.black
-    );
+    await testCase(ColorDef.green, 0, createMaterial(1, createBlueTexture(0x7f)), ColorDef.blue);
+    await testCase(ColorDef.green, 1, createMaterial(1, createBlueTexture()), ColorDef.black);
 
     await testCase(
       ColorDef.green,
@@ -656,21 +538,14 @@ describe("Transparency", async () => {
       for (let iViewDep = 0; iViewDep < 2; iViewDep++) {
         const viewDep = iViewDep > 0;
         const transp = iTransp > 0;
-        for (const renderMode of [
-          RenderMode.SmoothShade,
-          RenderMode.SolidFill,
-          RenderMode.HiddenLine,
-        ]) {
+        for (const renderMode of [RenderMode.SmoothShade, RenderMode.SolidFill, RenderMode.HiddenLine]) {
           await test(
             (vp) => {
-              vp.viewFlags = vp.viewFlags
-                .with("transparency", transp)
-                .withRenderMode(renderMode);
+              vp.viewFlags = vp.viewFlags.with("transparency", transp).withRenderMode(renderMode);
               if (vp.displayStyle.settings.is3d())
-                vp.displayStyle.settings.hiddenLineSettings =
-                  vp.displayStyle.settings.hiddenLineSettings.override({
-                    transThreshold: 1,
-                  });
+                vp.displayStyle.settings.hiddenLineSettings = vp.displayStyle.settings.hiddenLineSettings.override({
+                  transThreshold: 1,
+                });
 
               decorator.add(vp, {
                 color: ColorDef.green,
@@ -682,14 +557,8 @@ describe("Transparency", async () => {
             (vp) => {
               // NB: the edges are drawing outside the viewport, so we're only testing surface color+transparency.
               const expectTransparent =
-                !viewDep ||
-                (transp &&
-                  RenderMode.HiddenLine !== renderMode &&
-                  RenderMode.SolidFill !== renderMode);
-              let color =
-                RenderMode.HiddenLine === renderMode
-                  ? ColorDef.black
-                  : ColorDef.green;
+                !viewDep || (transp && RenderMode.HiddenLine !== renderMode && RenderMode.SolidFill !== renderMode);
+              let color = RenderMode.HiddenLine === renderMode ? ColorDef.black : ColorDef.green;
               if (expectTransparent) color = color.withTransparency(0x7f);
 
               expectTransparency(vp, color);

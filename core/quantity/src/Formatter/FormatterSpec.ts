@@ -6,12 +6,7 @@
  * @module Quantity
  */
 
-import {
-  UnitConversionProps,
-  UnitConversionSpec,
-  UnitProps,
-  UnitsProvider,
-} from "../Interfaces";
+import { UnitConversionProps, UnitConversionSpec, UnitProps, UnitsProvider } from "../Interfaces";
 import { Format } from "./Format";
 import { Formatter } from "./Formatter";
 
@@ -34,20 +29,13 @@ export class FormatterSpec {
    *  @param conversions An array of conversion factors necessary to convert from an input unit to the units specified in the format.
    *  @param persistenceUnit The unit the magnitude value is input.
    */
-  constructor(
-    name: string,
-    format: Format,
-    conversions?: UnitConversionSpec[],
-    persistenceUnit?: UnitProps
-  ) {
+  constructor(name: string, format: Format, conversions?: UnitConversionSpec[], persistenceUnit?: UnitProps) {
     if (!persistenceUnit) {
       if (format.units) {
         const [props] = format.units[0];
         persistenceUnit = props;
       } else {
-        throw new Error(
-          "Formatter Spec needs persistence unit to be specified"
-        );
+        throw new Error("Formatter Spec needs persistence unit to be specified");
       }
     }
 
@@ -84,9 +72,7 @@ export class FormatterSpec {
         const [props] = format.units[0];
         persistenceUnit = props;
       } else {
-        throw new Error(
-          "Formatter Spec needs persistence unit to be specified"
-        );
+        throw new Error("Formatter Spec needs persistence unit to be specified");
       }
     }
 
@@ -95,15 +81,11 @@ export class FormatterSpec {
       for (const unit of format.units) {
         let unitConversion: UnitConversionProps;
         if (convertFromUnit) {
-          unitConversion = await unitsProvider.getConversion(
-            convertFromUnit,
-            unit[0]
-          );
+          unitConversion = await unitsProvider.getConversion(convertFromUnit, unit[0]);
         } else {
           unitConversion = { factor: 1.0, offset: 0.0 };
         }
-        const unitLabel =
-          unit[1] && unit[1]!.length > 0 ? unit[1]! : unit[0].label;
+        const unitLabel = unit[1] && unit[1]!.length > 0 ? unit[1]! : unit[0].label;
         const spec = {
           name: unit[0].name,
           label: unitLabel,
@@ -143,8 +125,7 @@ export class FormatterSpec {
     unitsProvider: UnitsProvider,
     inputUnit?: UnitProps
   ): Promise<FormatterSpec> {
-    const conversions: UnitConversionSpec[] =
-      await FormatterSpec.getUnitConversions(format, unitsProvider, inputUnit);
+    const conversions: UnitConversionSpec[] = await FormatterSpec.getUnitConversions(format, unitsProvider, inputUnit);
     return new FormatterSpec(name, format, conversions, inputUnit);
   }
 

@@ -19,11 +19,7 @@ export class LengthDescription extends FormattedQuantityDescription {
     const defaultName = "length";
     super(
       name ? name : defaultName,
-      displayLabel
-        ? displayLabel
-        : IModelApp.localization.getLocalizedString(
-            "iModelJs:Properties.Length"
-          ),
+      displayLabel ? displayLabel : IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
       iconSpec
     );
   }
@@ -36,9 +32,7 @@ export class LengthDescription extends FormattedQuantityDescription {
   }
 
   public get parseError(): string {
-    return IModelApp.localization.getLocalizedString(
-      "iModelJs:Properties.UnableToParseLength"
-    );
+    return IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseLength");
   }
 }
 
@@ -51,11 +45,7 @@ export class SurveyLengthDescription extends FormattedQuantityDescription {
     const defaultName = "surveyLength";
     super(
       name ? name : defaultName,
-      displayLabel
-        ? displayLabel
-        : IModelApp.localization.getLocalizedString(
-            "iModelJs:Properties.Length"
-          ),
+      displayLabel ? displayLabel : IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
       iconSpec
     );
   }
@@ -68,9 +58,7 @@ export class SurveyLengthDescription extends FormattedQuantityDescription {
   }
 
   public get parseError(): string {
-    return IModelApp.localization.getLocalizedString(
-      "iModelJs:Properties.UnableToParseLength"
-    );
+    return IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseLength");
   }
 }
 
@@ -83,11 +71,7 @@ export class EngineeringLengthDescription extends FormattedQuantityDescription {
     const defaultName = "engineeringLength";
     super(
       name ? name : defaultName,
-      displayLabel
-        ? displayLabel
-        : IModelApp.localization.getLocalizedString(
-            "iModelJs:Properties.Length"
-          ),
+      displayLabel ? displayLabel : IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
       iconSpec
     );
   }
@@ -100,8 +84,6 @@ export class EngineeringLengthDescription extends FormattedQuantityDescription {
   }
 
   public get parseError(): string {
-    return IModelApp.localization.getLocalizedString(
-      "iModelJs:Properties.UnableToParseLength"
-    );
+    return IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseLength");
   }
 }

@@ -20,21 +20,13 @@ class TestFixture {
     const n = systemA.order();
     for (let i = 0; i < n; i++) {
       // TODO: Implement correct method of comparing two Float64Array's
-      this.ck.testCoordinate(
-        systemA.getX(i),
-        systemB.getX(i),
-        "Solution vectors of A and B"
-      );
+      this.ck.testCoordinate(systemA.getX(i), systemB.getX(i), "Solution vectors of A and B");
     }
   }
   public checkB(systemA: TriDiagonalSystem, systemB: TriDiagonalSystem) {
     const n = systemA.order();
     for (let i = 0; i < n; i++) {
-      this.ck.testCoordinate(
-        systemA.getB(i),
-        systemB.getB(i),
-        "Right side vectors of A and B"
-      );
+      this.ck.testCoordinate(systemA.getB(i), systemB.getB(i), "Right side vectors of A and B");
     }
   }
   // Setup Methods --------------------------------------------------------------------
@@ -79,14 +71,8 @@ class TestFixture {
     const pointBX = [];
     for (const b of pointB) pointBX.push(b.clone());
     // console.log ("B*pointX0", pointB);
-    this.ck.testFalse(
-      A.factorAndBackSubstitutePointArrays([], []),
-      "FactorAndBackSubstitute fails with empty inputs"
-    );
-    this.ck.testTrue(
-      B.factorAndBackSubstitutePointArrays(pointB, pointX),
-      "FactorAndBackSubstitutePointArrays"
-    );
+    this.ck.testFalse(A.factorAndBackSubstitutePointArrays([], []), "FactorAndBackSubstitute fails with empty inputs");
+    this.ck.testTrue(B.factorAndBackSubstitutePointArrays(pointB, pointX), "FactorAndBackSubstitutePointArrays");
     this.ck.testTrue(
       B.factorAndBackSubstitutePointArrays(pointBX, pointBX),
       "factorAndBackSubstitutePointArrays with aliased B, X"
@@ -223,36 +209,14 @@ class TestFixture {
       this.ck.testCoordinate(f0(i) + f1(i), A.getB(i));
     }
     this.ck.testTrue(A.defactor(), "Defactor noop for raw matrix");
-    this.ck.testFalse(
-      A.factor(),
-      "Expect factor failure on unpopulated matrix"
-    );
-    this.ck.testFalse(
-      A.multiplyAX(),
-      "multiplyAX called for incomplete matrix."
-    );
+    this.ck.testFalse(A.factor(), "Expect factor failure on unpopulated matrix");
+    this.ck.testFalse(A.multiplyAX(), "multiplyAX called for incomplete matrix.");
     const pointX: Point3d[] = [];
-    let pointB: Point3d[] = [
-      Point3d.create(),
-      Point3d.create(),
-      Point3d.create(),
-      Point3d.create(),
-    ];
-    this.ck.testFalse(
-      A.multiplyAXPoints(pointX, pointB),
-      "multiplyAXPoints after factor failure."
-    );
+    let pointB: Point3d[] = [Point3d.create(), Point3d.create(), Point3d.create(), Point3d.create()];
+    this.ck.testFalse(A.multiplyAXPoints(pointX, pointB), "multiplyAXPoints after factor failure.");
     this.ck.testFalse(A.defactor(), "Defactor fails after factor fail");
-    this.ck.testFalse(
-      A.factorAndBackSubstitute(),
-      "FactorAndBackSubstitute fails after factor fail"
-    );
-    pointB = [
-      Point3d.create(),
-      Point3d.create(),
-      Point3d.create(),
-      Point3d.create(),
-    ];
+    this.ck.testFalse(A.factorAndBackSubstitute(), "FactorAndBackSubstitute fails after factor fail");
+    pointB = [Point3d.create(), Point3d.create(), Point3d.create(), Point3d.create()];
     this.ck.testFalse(
       A.factorAndBackSubstitutePointArrays(pointB, pointX),
       "FactorAndBackSubstitutePointArrays after factor fail"

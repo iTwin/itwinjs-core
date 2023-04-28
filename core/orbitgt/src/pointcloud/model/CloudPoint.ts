@@ -79,14 +79,7 @@ export class CloudPoint {
    * @param intensity the intensity.
    * @return the new point.
    */
-  public static create(
-    index: ALong,
-    x: float64,
-    y: float64,
-    z: float64,
-    color: int32,
-    intensity: int32
-  ): CloudPoint {
+  public static create(index: ALong, x: float64, y: float64, z: float64, color: int32, intensity: int32): CloudPoint {
     let point: CloudPoint = new CloudPoint();
     point._index = index;
     point._x = x;
@@ -102,15 +95,12 @@ export class CloudPoint {
    * @param attributes the definitions of the attributes.
    * @return the new point.
    */
-  public static createWithAttributes(
-    attributes: Array<PointAttribute>
-  ): CloudPoint {
+  public static createWithAttributes(attributes: Array<PointAttribute>): CloudPoint {
     let point: CloudPoint = new CloudPoint();
     point._attributes = attributes;
     if (attributes != null) {
       point._values = new Array<AttributeValue>(attributes.length);
-      for (let i: number = 0; i < attributes.length; i++)
-        point._values[i] = new AttributeValue();
+      for (let i: number = 0; i < attributes.length; i++) point._values[i] = new AttributeValue();
     }
     return point;
   }
@@ -297,10 +287,7 @@ export class CloudPoint {
    * @return the value.
    */
   public getNamedAttributeValue(attributeName: string): AttributeValue {
-    let index: int32 = PointAttribute.indexOfName(
-      this._attributes,
-      attributeName
-    );
+    let index: int32 = PointAttribute.indexOfName(this._attributes, attributeName);
     return index < 0 ? null : this._values[index];
   }
 
@@ -309,10 +296,7 @@ export class CloudPoint {
    * @param attributes the definitions of the attributes.
    * @param values the values of the attributes.
    */
-  public setAttributes(
-    attributes: Array<PointAttribute>,
-    values: Array<AttributeValue>
-  ): void {
+  public setAttributes(attributes: Array<PointAttribute>, values: Array<AttributeValue>): void {
     this._attributes = attributes;
     this._values = values;
   }
@@ -381,25 +365,13 @@ export class CloudPoint {
    */
   public print(): void {
     Message.print(CloudPoint.MODULE, "Index: " + this._index);
-    Message.print(
-      CloudPoint.MODULE,
-      "Position: " + this._x + "," + this._y + "," + this._z
-    );
-    Message.print(
-      CloudPoint.MODULE,
-      "Color: " + Numbers.rgbToString(this._color)
-    );
+    Message.print(CloudPoint.MODULE, "Position: " + this._x + "," + this._y + "," + this._z);
+    Message.print(CloudPoint.MODULE, "Color: " + Numbers.rgbToString(this._color));
     Message.print(CloudPoint.MODULE, "Intensity: " + this._intensity);
     Message.print(CloudPoint.MODULE, "Weight: " + this._weight);
     Message.print(CloudPoint.MODULE, "Selected? " + this._selected);
     if (this._attributes != null)
       for (let i: number = 0; i < this._attributes.length; i++)
-        Message.print(
-          CloudPoint.MODULE,
-          "Attribute '" +
-            this._attributes[i].getName() +
-            "': " +
-            this._values[i]
-        );
+        Message.print(CloudPoint.MODULE, "Attribute '" + this._attributes[i].getName() + "': " + this._values[i]);
   }
 }

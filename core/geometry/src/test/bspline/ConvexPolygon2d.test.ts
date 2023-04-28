@@ -31,11 +31,7 @@ function checkHullRaysFromCentroid(hull: ConvexPolygon2d, ck: Checker) {
   for (const i of hullPoints) {
     for (const f of fractions) {
       const xy = centroid.interpolate(f, i);
-      ck.testBoolean(
-        f <= 1.0,
-        hull.containsPoint(xy),
-        "If fraction is <= 1, hull should contain point xy"
-      );
+      ck.testBoolean(f <= 1.0, hull.containsPoint(xy), "If fraction is <= 1, hull should contain point xy");
     }
   }
 }
@@ -52,11 +48,7 @@ function checkHullChords(hull: ConvexPolygon2d, step: number, ck: Checker) {
       for (const f of fractions) {
         const xy = hullPoints[i].interpolate(f, hullPoints[j]);
         const isIn01 = Geometry.isIn01(f);
-        ck.testBoolean(
-          isIn01,
-          hull.containsPoint(xy),
-          "Point interpolated from 0 <= fraction <= 1 is in hull"
-        );
+        ck.testBoolean(isIn01, hull.containsPoint(xy), "Point interpolated from 0 <= fraction <= 1 is in hull");
         const distanceOutside = hull.distanceOutside(xy);
         ck.testBoolean(distanceOutside <= 0, isIn01, "distanceOutside sign");
         const ray = Ray2d.createOriginAndTarget(hullPoints[i], hullPoints[j]);
@@ -101,14 +93,8 @@ describe("ConvexPolygon2d", () => {
     const hull = ConvexPolygon2d.createHull(points)!;
     checkHullRaysFromCentroid(hull, ck);
 
-    const rayA = Ray2d.createOriginAndDirection(
-      Point2d.create(0, 5),
-      Vector2d.create(2, 0)
-    );
-    ck.testTrue(
-      rayA.normalizeDirectionInPlace(),
-      "Normalized direction in place should be true"
-    );
+    const rayA = Ray2d.createOriginAndDirection(Point2d.create(0, 5), Vector2d.create(2, 0));
+    ck.testTrue(rayA.normalizeDirectionInPlace(), "Normalized direction in place should be true");
 
     const skip = 3;
     for (let i = 0; i < points.length; i++) {
@@ -145,11 +131,7 @@ describe("ConvexPolygon2d", () => {
       ck.testTrue(rayC1M.normalizeDirectionInPlace());
       range = hull.clipRay(rayC1M);
       ck.testFalse(range.isNull, "Clip mixed segment");
-      ck.testCoordinate(
-        range.length(),
-        pointA.distance(pointB),
-        "Clipped segment length"
-      );
+      ck.testCoordinate(range.length(), pointA.distance(pointB), "Clipped segment length");
     }
 
     // Construct known exterior rays
@@ -165,19 +147,12 @@ describe("ConvexPolygon2d", () => {
     }
 
     // Construct a grid of parallel segments ...
-    const scanBase = Ray2d.createOriginAndDirection(
-      Point2d.create(1, 4),
-      Vector2d.create(1, 2)
-    );
+    const scanBase = Ray2d.createOriginAndDirection(Point2d.create(1, 4), Vector2d.create(1, 2));
     scanBase.normalizeDirectionInPlace();
     const hullRange = hull.rangePerpendicularToRay(scanBase);
     const parallelDistance = 2.25;
     const epsilon = 0.01;
-    for (
-      let a = hullRange.low + epsilon;
-      a + epsilon <= hullRange.high;
-      a += parallelDistance
-    ) {
+    for (let a = hullRange.low + epsilon; a + epsilon <= hullRange.high; a += parallelDistance) {
       const scanRay = scanBase.parallelRay(a);
       // a is strictly within -- expect an interior segment ..
       const range = hull.clipRay(scanRay);
@@ -265,32 +240,16 @@ describe("ConvexPolygon2d", () => {
       innerPt0.interpolate(0.5, innerPt1, innerMidPt);
       outerEdge.point0Ref.setFrom(hull1.points[i0]);
       outerEdge.point1Ref.setFrom(hull1.points[i1]);
-      outerEdge.closestPoint(
-        Point3d.createFrom(innerMidPt, innerMidPt3d),
-        false,
-        detail
-      );
-      ck.testCoordinate(
-        offsetDistance,
-        detail.a,
-        "hull1 has expected offsetDistance from hull"
-      );
+      outerEdge.closestPoint(Point3d.createFrom(innerMidPt, innerMidPt3d), false, detail);
+      ck.testCoordinate(offsetDistance, detail.a, "hull1 has expected offsetDistance from hull");
       // verify hull2 offsetDistance1 from hull1
       innerPt0 = hull1.points[i0];
       innerPt1 = hull1.points[i1];
       innerPt0.interpolate(0.5, innerPt1, innerMidPt);
       outerEdge.point0Ref.setFrom(hull2.points[i0]);
       outerEdge.point1Ref.setFrom(hull2.points[i1]);
-      outerEdge.closestPoint(
-        Point3d.createFrom(innerMidPt, innerMidPt3d),
-        false,
-        detail
-      );
-      ck.testCoordinate(
-        offsetDistance1,
-        detail.a,
-        "hull2 has expected offsetDistance1 from hull1"
-      );
+      outerEdge.closestPoint(Point3d.createFrom(innerMidPt, innerMidPt3d), false, detail);
+      ck.testCoordinate(offsetDistance1, detail.a, "hull2 has expected offsetDistance1 from hull1");
     }
     const allGeometry: GeometryQuery[] = [];
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [
@@ -298,21 +257,14 @@ describe("ConvexPolygon2d", () => {
       GrowableXYZArray.create(hull1.points),
       GrowableXYZArray.create(hull2.points),
     ]);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "ConvexPolygon2d",
-      "OffsetInPlace"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ConvexPolygon2d", "OffsetInPlace");
 
     expect(ck.getNumErrors()).equals(0);
   });
 
   it("Ray2d", () => {
     const ck = new Checker();
-    const ray0 = Ray2d.createOriginAndDirection(
-      Point2d.create(2, 3),
-      Vector2d.create(1, 4)
-    );
+    const ray0 = Ray2d.createOriginAndDirection(Point2d.create(2, 3), Vector2d.create(1, 4));
     const pointA = Point2d.create(1, 2);
     const ray1 = Ray2d.createOriginAndTarget(pointA, pointA);
     ck.testFalse(ray1.normalizeDirectionInPlace());
@@ -323,11 +275,7 @@ describe("ConvexPolygon2d", () => {
     ck.testPerpendicular2d(perp0.direction, ray0.direction, "CCW rotate");
     ck.testPerpendicular2d(perp1.direction, ray0.direction, "CW rotate");
     ck.testLT(0, ray0.direction.crossProduct(perp0.direction));
-    ck.testLT(
-      ray0.direction.crossProduct(perp1.direction),
-      0,
-      "CW rotate sense"
-    );
+    ck.testLT(ray0.direction.crossProduct(perp1.direction), 0, "CW rotate sense");
     ck.checkpoint("Ray2d");
     expect(ck.getNumErrors()).equals(0);
 
@@ -341,10 +289,7 @@ describe("ConvexPolygon2d", () => {
   it("ConvexPolygon2dEmptyCases", () => {
     const ck = new Checker();
     const sawPoints = [];
-    const highRay = Ray2d.createOriginAndDirection(
-      Point2d.create(0, 2),
-      Vector2d.create(1, 0)
-    );
+    const highRay = Ray2d.createOriginAndDirection(Point2d.create(0, 2), Vector2d.create(1, 0));
     for (let k = 0; k < 3; k++) {
       sawPoints.push(Point2d.create(2 * k, 0));
       sawPoints.push(Point2d.create(2 * k + 1, 1));

@@ -24,8 +24,7 @@ export class TileUserIdSet extends ReadonlySortedArray<number> {
   public equals(set: TileUserIdSet): boolean {
     if (this.length !== set.length) return false;
 
-    for (let i = 0; i < this.length; i++)
-      if (this._array[i] !== set._array[i]) return false;
+    for (let i = 0; i < this.length; i++) if (this._array[i] !== set._array[i]) return false;
 
     return true;
   }
@@ -111,10 +110,7 @@ export class TileUserIdSets extends SortedArray<TileUserIdSet> {
   }
 
   /** Obtain a TileUserIdSet owned by this object containing all of userIds (if specified) but not userId. Returns undefined if the resultant set would be empty. */
-  public minus(
-    userId: number,
-    userIds?: TileUserIdSet
-  ): TileUserIdSet | undefined {
+  public minus(userId: number, userIds?: TileUserIdSet): TileUserIdSet | undefined {
     const scratch = this.scratch(userIds);
     scratch.drop(userId);
     return scratch.length > 0 ? this.getEquivalent(scratch) : undefined;
@@ -158,10 +154,7 @@ function isLinked(node: LRUTileListNode): boolean {
   return undefined !== node.previous || undefined !== node.next;
 }
 
-function* lruListIterator(
-  start: Tile | undefined,
-  end: LRUTileListNode | undefined
-): Iterator<Tile> {
+function* lruListIterator(start: Tile | undefined, end: LRUTileListNode | undefined): Iterator<Tile> {
   let cur = start;
   while (cur && cur !== end) {
     const prev = cur;
@@ -322,10 +315,7 @@ export class LRUTileList {
 
   /** Iterate over all of the tiles in the unselected partition. */
   public get unselectedTiles(): Iterable<Tile> {
-    const start =
-      this._head === this._sentinel
-        ? undefined
-        : (this._head as Tile | undefined);
+    const start = this._head === this._sentinel ? undefined : (this._head as Tile | undefined);
     return {
       [Symbol.iterator]: () => lruListIterator(start, this._sentinel),
     };
@@ -334,8 +324,7 @@ export class LRUTileList {
   /** Iterate over all of the tiles in the selected partition. */
   public get selectedTiles(): Iterable<Tile> {
     return {
-      [Symbol.iterator]: () =>
-        lruListIterator(this._sentinel.next as Tile | undefined, undefined),
+      [Symbol.iterator]: () => lruListIterator(this._sentinel.next as Tile | undefined, undefined),
     };
   }
 

@@ -14,9 +14,7 @@ import { ArcGisFeatureProvider } from "./ArcGisFeatureProvider";
 /** @internal */
 export class ArcGisFeatureMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "ArcGISFeature";
-  public static override createImageryProvider(
-    settings: ImageMapLayerSettings
-  ): MapLayerImageryProvider | undefined {
+  public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     return new ArcGisFeatureProvider(settings);
   }
   public static override async validateSource(
@@ -25,13 +23,6 @@ export class ArcGisFeatureMapLayerFormat extends ImageryMapLayerFormat {
     password?: string,
     ignoreCache?: boolean
   ): Promise<MapLayerSourceValidation> {
-    return ArcGisUtilities.validateSource(
-      url,
-      this.formatId,
-      ["query"],
-      userName,
-      password,
-      ignoreCache
-    );
+    return ArcGisUtilities.validateSource(url, this.formatId, ["query"], userName, password, ignoreCache);
   }
 }

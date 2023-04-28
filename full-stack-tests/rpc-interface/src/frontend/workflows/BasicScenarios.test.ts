@@ -20,9 +20,7 @@ describe("Basic Scenarios", async () => {
   before(async () => {
     testContext = await TestContext.instance();
     const accessToken = testContext.adminUserAccessToken;
-    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(
-      accessToken
-    );
+    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
   });
 
   async function openIModelAndQueryPage(iTwinId: string, iModelId: string) {
@@ -47,11 +45,10 @@ describe("Basic Scenarios", async () => {
     const iModel = await testContext.iModelWithChangesets!.getConnection();
 
     const rows = [];
-    for await (const row of iModel.createQueryReader(
-      "SELECT ECInstanceId AS id FROM BisCore.Element",
-      undefined,
-      { rowFormat: QueryRowFormat.UseJsPropertyNames, limit: { count: 10 } }
-    ))
+    for await (const row of iModel.createQueryReader("SELECT ECInstanceId AS id FROM BisCore.Element", undefined, {
+      rowFormat: QueryRowFormat.UseJsPropertyNames,
+      limit: { count: 10 },
+    }))
       rows.push(row);
 
     expect(rows).not.to.be.empty;

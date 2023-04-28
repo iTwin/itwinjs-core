@@ -17,17 +17,11 @@ export class TestServer extends IModelJsExpressServer {
         res.clearCookie("XSRF-TOKEN");
       }
 
-      if (
-        req.path.indexOf("-csrfTestEnabled") !== -1 &&
-        req.header("X-XSRF-TOKEN") !== "test"
-      ) {
+      if (req.path.indexOf("-csrfTestEnabled") !== -1 && req.header("X-XSRF-TOKEN") !== "test") {
         throw new Error("CSRF is not enabled.");
       }
 
-      if (
-        req.path.indexOf("-csrfTestDisabled") !== -1 &&
-        req.header("X-XSRF-TOKEN")
-      ) {
+      if (req.path.indexOf("-csrfTestDisabled") !== -1 && req.header("X-XSRF-TOKEN")) {
         throw new Error("CSRF is not disabled.");
       }
 

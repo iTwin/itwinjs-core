@@ -76,19 +76,13 @@ export class MultiChainCollector {
     tolerance: number,
     exceptChainIndex: number = -1
   ): { chainIndex: number; atEnd: boolean } | undefined {
-    for (
-      let chainIndexA = 0;
-      chainIndexA < this._chains.length;
-      chainIndexA++
-    ) {
+    for (let chainIndexA = 0; chainIndexA < this._chains.length; chainIndexA++) {
       if (exceptChainIndex === chainIndexA) continue;
       const chain = this._chains[chainIndexA];
       this._xyzWork1 = chain[chain.length - 1].endPoint(this._xyzWork1);
-      if (this._xyzWork1.isAlmostEqual(xyz, tolerance))
-        return { chainIndex: chainIndexA, atEnd: true };
+      if (this._xyzWork1.isAlmostEqual(xyz, tolerance)) return { chainIndex: chainIndexA, atEnd: true };
       this._xyzWork1 = chain[0].startPoint(this._xyzWork1);
-      if (this._xyzWork1.isAlmostEqual(xyz, tolerance))
-        return { chainIndex: chainIndexA, atEnd: false };
+      if (this._xyzWork1.isAlmostEqual(xyz, tolerance)) return { chainIndex: chainIndexA, atEnd: false };
     }
     return undefined;
   }
@@ -101,10 +95,8 @@ export class MultiChainCollector {
    * @param candidate
    */
   public captureCurvePrimitive(candidate: CurvePrimitive) {
-    if (this.attachPrimitiveToAnyChain(candidate, this._endPointHitTolerance))
-      return;
-    if (this.attachPrimitiveToAnyChain(candidate, this._endPointShiftTolerance))
-      return;
+    if (this.attachPrimitiveToAnyChain(candidate, this._endPointHitTolerance)) return;
+    if (this.attachPrimitiveToAnyChain(candidate, this._endPointShiftTolerance)) return;
     this._chains.push([candidate]);
     return;
   }
@@ -116,12 +108,8 @@ export class MultiChainCollector {
    * @param candidate
    */
   public captureCurve(candidate: GeometryQuery) {
-    if (candidate instanceof CurvePrimitive)
-      this.captureCurvePrimitive(candidate);
-    else if (
-      candidate instanceof CurveCollection &&
-      candidate.children !== undefined
-    ) {
+    if (candidate instanceof CurvePrimitive) this.captureCurvePrimitive(candidate);
+    else if (candidate instanceof CurveCollection && candidate.children !== undefined) {
       for (const c of candidate.children) {
         this.captureCurve(c);
       }
@@ -132,10 +120,7 @@ export class MultiChainCollector {
    * * If a "nearby" connection is possible, insert the candidate in the chain and force endpoint match.
    * * Otherwise start a new chain.
    */
-  private attachPrimitiveToAnyChain(
-    candidate: CurvePrimitive,
-    tolerance: number
-  ): boolean {
+  private attachPrimitiveToAnyChain(candidate: CurvePrimitive, tolerance: number): boolean {
     if (candidate) {
       this._xyzWork0 = candidate.startPoint(this._xyzWork0);
       let connect = this.findAnyChainToConnect(this._xyzWork0, tolerance);
@@ -144,22 +129,14 @@ export class MultiChainCollector {
           const chain = this._chains[connect.chainIndex];
           const index0 = chain.length - 1;
           this._chains[connect.chainIndex].push(candidate);
-          OffsetHelpers.moveHeadOrTail(
-            chain[index0],
-            chain[index0 + 1],
-            this._endPointShiftTolerance
-          );
+          OffsetHelpers.moveHeadOrTail(chain[index0], chain[index0 + 1], this._endPointShiftTolerance);
           this.searchAndMergeChainIndex(connect.chainIndex, tolerance);
           return true;
         } else {
           candidate.reverseInPlace();
           const chain = this._chains[connect.chainIndex];
           chain.splice(0, 0, candidate);
-          OffsetHelpers.moveHeadOrTail(
-            chain[0],
-            chain[1],
-            this._endPointShiftTolerance
-          );
+          OffsetHelpers.moveHeadOrTail(chain[0], chain[1], this._endPointShiftTolerance);
           this.searchAndMergeChainIndex(connect.chainIndex, tolerance);
           return true;
         }
@@ -173,21 +150,13 @@ export class MultiChainCollector {
             const chain = this._chains[connect.chainIndex];
             const index0 = chain.length - 1;
             this._chains[connect.chainIndex].push(candidate);
-            OffsetHelpers.moveHeadOrTail(
-              chain[index0],
-              chain[index0 + 1],
-              this._endPointShiftTolerance
-            );
+            OffsetHelpers.moveHeadOrTail(chain[index0], chain[index0 + 1], this._endPointShiftTolerance);
             this.searchAndMergeChainIndex(connect.chainIndex, tolerance);
             return true;
           } else {
             const chain = this._chains[connect.chainIndex];
             chain.splice(0, 0, candidate);
-            OffsetHelpers.moveHeadOrTail(
-              chain[0],
-              chain[1],
-              this._endPointShiftTolerance
-            );
+            OffsetHelpers.moveHeadOrTail(chain[0], chain[1], this._endPointShiftTolerance);
             this.searchAndMergeChainIndex(connect.chainIndex, tolerance);
             return true;
           }
@@ -224,20 +193,13 @@ export class MultiChainCollector {
     for (const p of chain) p.reverseInPlace();
   }
   // see if the head or tail of chainIndex matches any existing chain.  If so, merge
-  private searchAndMergeChainIndex(
-    chainIndex: number,
-    tolerance: number
-  ): void {
+  private searchAndMergeChainIndex(chainIndex: number, tolerance: number): void {
     // ASSUME valid index of non-empty chain
     const chain = this._chains[chainIndex];
     const lastIndexInChain = chain.length - 1;
     this._xyzWork0 = chain[0].startPoint(this._xyzWork0);
     // this start with any other chain ..
-    let connect = this.findAnyChainToConnect(
-      this._xyzWork0,
-      tolerance,
-      chainIndex
-    );
+    let connect = this.findAnyChainToConnect(this._xyzWork0, tolerance, chainIndex);
     if (connect) {
       if (!connect.atEnd) this.reverseChain(connect.chainIndex);
       this.mergeChainsForwardForward(connect.chainIndex, chainIndex);
@@ -264,43 +226,22 @@ export class MultiChainCollector {
     if (makeLoopIfClosed) {
       const primitive0 = curves[0];
       const primitiveN = curves[curves.length - 1];
-      MultiChainCollector._staticPointA = primitive0.startPoint(
-        MultiChainCollector._staticPointA
-      );
-      MultiChainCollector._staticPointB = primitiveN.endPoint(
-        MultiChainCollector._staticPointB
-      );
-      const distanceAToB = MultiChainCollector._staticPointA.distance(
-        MultiChainCollector._staticPointB
-      );
+      MultiChainCollector._staticPointA = primitive0.startPoint(MultiChainCollector._staticPointA);
+      MultiChainCollector._staticPointB = primitiveN.endPoint(MultiChainCollector._staticPointB);
+      const distanceAToB = MultiChainCollector._staticPointA.distance(MultiChainCollector._staticPointB);
       if (distanceAToB < this._endPointShiftTolerance) {
         // adjust for closure (and get the corrected coordinates)
-        OffsetHelpers.moveHeadOrTail(
-          primitiveN,
-          primitive0,
-          this._endPointShiftTolerance
-        );
-        MultiChainCollector._staticPointA = primitive0.startPoint(
-          MultiChainCollector._staticPointA
-        );
-        MultiChainCollector._staticPointB = primitiveN.endPoint(
-          MultiChainCollector._staticPointB
-        );
+        OffsetHelpers.moveHeadOrTail(primitiveN, primitive0, this._endPointShiftTolerance);
+        MultiChainCollector._staticPointA = primitive0.startPoint(MultiChainCollector._staticPointA);
+        MultiChainCollector._staticPointB = primitiveN.endPoint(MultiChainCollector._staticPointB);
       }
-      if (
-        MultiChainCollector._staticPointA.isAlmostEqual(
-          MultiChainCollector._staticPointB
-        )
-      ) {
+      if (MultiChainCollector._staticPointA.isAlmostEqual(MultiChainCollector._staticPointB)) {
         const localToWorld = FrameBuilder.createRightHandedLocalToWorld(curves);
         if (localToWorld) {
           const worldToLocal = localToWorld.inverse();
           if (worldToLocal) {
             const range = RegionOps.curveArrayRange(curves, worldToLocal);
-            if (
-              this._planarityTolerance !== undefined &&
-              range.zLength() <= this._planarityTolerance
-            ) {
+            if (this._planarityTolerance !== undefined && range.zLength() <= this._planarityTolerance) {
               return Loop.createArray(curves);
             }
           }
@@ -311,9 +252,7 @@ export class MultiChainCollector {
     if (curves.length === 1) return curves[0];
     return Path.createArray(curves);
   }
-  private chainToLineString3d(
-    curves: CurvePrimitive[]
-  ): LineString3d | undefined {
+  private chainToLineString3d(curves: CurvePrimitive[]): LineString3d | undefined {
     if (curves.length === 0) return undefined;
     const linestring = LineString3d.create();
     for (const curve of curves) {
@@ -327,8 +266,7 @@ export class MultiChainCollector {
   public grabResult(makeLoopIfClosed: boolean = false): ChainTypes {
     const chains = this._chains;
     if (chains.length === 0) return undefined;
-    if (chains.length === 1)
-      return this.promoteArrayToCurves(chains[0], makeLoopIfClosed);
+    if (chains.length === 1) return this.promoteArrayToCurves(chains[0], makeLoopIfClosed);
     const bag = BagOfCurves.create();
     for (const chain of chains) {
       const q = this.promoteArrayToCurves(chain, makeLoopIfClosed);
@@ -337,9 +275,7 @@ export class MultiChainCollector {
     return bag;
   }
   /** Return chains as individual calls to announceChain. */
-  public announceChainsAsLineString3d(
-    announceChain: (ls: LineString3d) => void
-  ): void {
+  public announceChainsAsLineString3d(announceChain: (ls: LineString3d) => void): void {
     const chains = this._chains;
     if (chains.length === 1) {
       const ls = this.chainToLineString3d(chains[0]);
@@ -379,36 +315,24 @@ export class OffsetHelpers {
   // construct (separately) the offsets of each entry of data (Path, Loop, BagOfCurve, or Array of those)
   // push all offset geometry into the result array
   // return summed length
-  public static appendOffsets(
-    data: AnyCurve | AnyCurve[] | undefined,
-    offset: number,
-    result: AnyCurve[]
-  ): number {
+  public static appendOffsets(data: AnyCurve | AnyCurve[] | undefined, offset: number, result: AnyCurve[]): number {
     let summedLengths = 0;
     if (data instanceof CurvePrimitive) {
-      const resultA = CurveChainWireOffsetContext.constructCurveXYOffset(
-        Path.create(data),
-        offset
-      );
+      const resultA = CurveChainWireOffsetContext.constructCurveXYOffset(Path.create(data), offset);
       if (resultA) {
         summedLengths += this.sumLengths(resultA);
         result.push(resultA);
       }
     } else if (data instanceof Loop || data instanceof Path) {
-      const resultA = CurveChainWireOffsetContext.constructCurveXYOffset(
-        data,
-        offset
-      );
+      const resultA = CurveChainWireOffsetContext.constructCurveXYOffset(data, offset);
       if (resultA) {
         summedLengths += this.sumLengths(resultA);
         result.push(resultA);
       }
     } else if (data instanceof BagOfCurves) {
-      for (const q of data.children)
-        summedLengths += this.appendOffsets(q, offset, result);
+      for (const q of data.children) summedLengths += this.appendOffsets(q, offset, result);
     } else if (Array.isArray(data)) {
-      for (const q of data)
-        summedLengths += this.appendOffsets(q, offset, result);
+      for (const q of data) summedLengths += this.appendOffsets(q, offset, result);
     }
     return summedLengths;
   }
@@ -436,16 +360,8 @@ export class OffsetHelpers {
     const myChains = collector.grabResult(true);
     const myOffsetA: CurveCollection[] = [];
     const myOffsetB: CurveCollection[] = [];
-    const offsetLengthA = OffsetHelpers.appendOffsets(
-      myChains,
-      offsetDistance,
-      myOffsetA
-    );
-    const offsetLengthB = OffsetHelpers.appendOffsets(
-      myChains,
-      -offsetDistance,
-      myOffsetB
-    );
+    const offsetLengthA = OffsetHelpers.appendOffsets(myChains, offsetDistance, myOffsetA);
+    const offsetLengthB = OffsetHelpers.appendOffsets(myChains, -offsetDistance, myOffsetB);
     if (offsetLengthA > offsetLengthB) {
       return {
         outsideOffsets: myOffsetA,
@@ -481,11 +397,7 @@ export class OffsetHelpers {
   /** If allowed by the geometry type, move an endpoint.
    *
    */
-  public static simpleEndPointMove(
-    g: CurvePrimitive,
-    atEnd: boolean,
-    to: XYAndZ
-  ): boolean {
+  public static simpleEndPointMove(g: CurvePrimitive, atEnd: boolean, to: XYAndZ): boolean {
     if (g instanceof LineSegment3d) {
       if (atEnd) {
         g.point1Ref.setFrom(to);
@@ -501,21 +413,13 @@ export class OffsetHelpers {
     return false;
   }
   // Try to move move head (end) of g0 and tail (beginning) of g1 together.
-  public static moveHeadOrTail(
-    g0: CurvePrimitive,
-    g1: CurvePrimitive,
-    maxShift: number
-  ): boolean {
+  public static moveHeadOrTail(g0: CurvePrimitive, g1: CurvePrimitive, maxShift: number): boolean {
     const xyz0 = g0.endPoint();
     const xyz1 = g1.startPoint();
     const minShift = Geometry.smallMetricDistance * 0.001;
     const d01 = xyz0.distanceXY(xyz1);
     if (d01 < minShift) return true;
-    if (
-      this.simpleEndPointMove(g1, false, xyz0) ||
-      this.simpleEndPointMove(g0, true, xyz1)
-    )
-      return true;
+    if (this.simpleEndPointMove(g1, false, xyz0) || this.simpleEndPointMove(g0, true, xyz1)) return true;
     //    const detail1On0 = g0.closestPoint(xyz1);
     //    const detail0On1 = g1.closestPoint(xyz0);
     const intersections = CurveCurve.intersectionXYPairs(g0, true, g1, true);
@@ -525,10 +429,7 @@ export class OffsetHelpers {
       const detail1 = pair.detailB;
       const distance0 = detail0.point.distanceXY(xyz0);
       const distance1 = detail1.point.distanceXY(xyz1);
-      if (
-        distance0 < shiftFactor * maxShift &&
-        distance1 < shiftFactor * maxShift
-      ) {
+      if (distance0 < shiftFactor * maxShift && distance1 < shiftFactor * maxShift) {
         if (g0 instanceof Arc3d && g1 instanceof Arc3d) {
           const radians0End = g0.sweep.fractionToRadians(detail0.fraction);
           g0.sweep.setStartEndRadians(g0.sweep.startRadians, radians0End);

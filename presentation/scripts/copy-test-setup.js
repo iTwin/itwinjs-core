@@ -27,7 +27,4 @@ if (!fs.existsSync(dir)) fs.mkdirSync(dir);
 dir = path.join(dir, "test");
 if (!fs.existsSync(dir)) fs.mkdirSync(dir);
 
-fs.copyFileSync(
-  path.join(__dirname, "setup-tests.js"),
-  path.join(dir, "setup.js")
-);
+fs.copyFileSync(path.join(__dirname, "setup-tests.js"), path.join(dir, "setup.js"));

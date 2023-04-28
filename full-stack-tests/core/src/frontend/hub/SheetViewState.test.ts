@@ -17,9 +17,7 @@ describe("Sheet views (#integration)", () => {
     await TestUtility.startFrontend(TestUtility.iModelAppOptions);
     await TestUtility.initialize(TestUsers.regular);
 
-    const iTwinId = await TestUtility.queryITwinIdByName(
-      TestUtility.testITwinName
-    );
+    const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
     const iModelId = await TestUtility.queryIModelIdByName(
       iTwinId,
       TestUtility.testIModelNames.sectionDrawingLocations
@@ -143,9 +141,7 @@ describe("Sheet views (#integration)", () => {
     expect(props.sheetProps!.height).to.equal(view.sheetSize.y);
 
     expect(props.sheetAttachments).not.to.be.undefined;
-    expect(props.sheetAttachments).to.deep.equal(
-      view.viewAttachmentProps.map((x) => x.id)
-    );
+    expect(props.sheetAttachments).to.deep.equal(view.viewAttachmentProps.map((x) => x.id));
 
     const clone = SheetViewState.createFromProps(props, imodel);
     await clone.load();

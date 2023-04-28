@@ -11,10 +11,7 @@ import { ImportIMJS } from "./ImportIMJS";
 
 const argv = yargs
   .usage("Usage: $0 --input [GeomJsonFileName]")
-  .describe(
-    "input",
-    "Input directory.  (Each .imjs file in the directory is inserted to the bim file.)"
-  )
+  .describe("input", "Input directory.  (Each .imjs file in the directory is inserted to the bim file.)")
   .string("input")
   .alias("input", "i")
   .describe("output", "Output iModel file name")

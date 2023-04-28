@@ -28,11 +28,7 @@ describe("BaseQuantityDescription", () => {
         return "MockError";
       }
     }
-    const sut = new QuantityDescription(
-      "mockQuantity",
-      "Mock Quantity",
-      "icon-placeholder"
-    );
+    const sut = new QuantityDescription("mockQuantity", "Mock Quantity", "icon-placeholder");
     const formattedValue = sut.format(5);
     expect(formattedValue).to.eq("This is the number");
     const results = sut.parse("mock value");

@@ -4,10 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import {
-  PlanProjectionSettings,
-  PlanProjectionSettingsProps,
-} from "../PlanProjectionSettings";
+import { PlanProjectionSettings, PlanProjectionSettingsProps } from "../PlanProjectionSettings";
 
 describe("PlanProjectionSettings", () => {
   it("round-trips through JSON", () => {
@@ -28,9 +25,7 @@ describe("PlanProjectionSettings", () => {
       expect(output.elevation).to.equal(expected!.elevation);
       expect(output.transparency).to.equal(expected!.transparency);
       expect(output.overlay).to.equal(expected!.overlay);
-      expect(output.enforceDisplayPriority).to.equal(
-        expected!.enforceDisplayPriority
-      );
+      expect(output.enforceDisplayPriority).to.equal(expected!.enforceDisplayPriority);
     };
 
     roundTrip(undefined, undefined);
@@ -40,14 +35,8 @@ describe("PlanProjectionSettings", () => {
     roundTrip({ overlay: false }, {});
     roundTrip({ enforceDisplayPriority: true }, "input");
     roundTrip({ enforceDisplayPriority: false }, {});
-    roundTrip(
-      { overlay: false, enforceDisplayPriority: true },
-      { enforceDisplayPriority: true }
-    );
-    roundTrip(
-      { overlay: true, enforceDisplayPriority: false },
-      { overlay: true }
-    );
+    roundTrip({ overlay: false, enforceDisplayPriority: true }, { enforceDisplayPriority: true });
+    roundTrip({ overlay: true, enforceDisplayPriority: false }, { overlay: true });
 
     roundTrip({ transparency: 0.5 }, "input");
     roundTrip({ transparency: 1.0 }, "input");
@@ -69,9 +58,7 @@ describe("PlanProjectionSettings", () => {
       expect(output.elevation).to.equal(expected.elevation);
       expect(output.transparency).to.equal(expected.transparency);
       expect(output.overlay).to.equal(expected.overlay);
-      expect(output.enforceDisplayPriority).to.equal(
-        expected.enforceDisplayPriority
-      );
+      expect(output.enforceDisplayPriority).to.equal(expected.enforceDisplayPriority);
     };
 
     clone({}, undefined, { overlay: false, enforceDisplayPriority: false });
@@ -83,16 +70,8 @@ describe("PlanProjectionSettings", () => {
       overlay: false,
       enforceDisplayPriority: false,
     });
-    clone(
-      {},
-      { overlay: true },
-      { overlay: true, enforceDisplayPriority: false }
-    );
-    clone(
-      { overlay: true },
-      { overlay: false },
-      { overlay: false, enforceDisplayPriority: false }
-    );
+    clone({}, { overlay: true }, { overlay: true, enforceDisplayPriority: false });
+    clone({ overlay: true }, { overlay: false }, { overlay: false, enforceDisplayPriority: false });
 
     clone(
       { transparency: 0.5 },
@@ -155,11 +134,7 @@ describe("PlanProjectionSettings", () => {
       enforceDisplayPriority: false,
       overlay: false,
     });
-    clone(
-      {},
-      { enforceDisplayPriority: true },
-      { enforceDisplayPriority: true, overlay: false }
-    );
+    clone({}, { enforceDisplayPriority: true }, { enforceDisplayPriority: true, overlay: false });
     clone(
       { enforceDisplayPriority: true },
       { enforceDisplayPriority: false },

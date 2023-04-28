@@ -46,10 +46,7 @@ export enum CurveSearchStatus {
  * @param source optional source
  * @param result optional result
  */
-function optionalVectorUpdate(
-  source: Vector3d | undefined,
-  result: Vector3d | undefined
-): Vector3d | undefined {
+function optionalVectorUpdate(source: Vector3d | undefined, result: Vector3d | undefined): Vector3d | undefined {
   if (source) {
     return source.clone(result);
   }
@@ -179,18 +176,10 @@ export class CurveLocationDetail {
    * @param vector (optional) vector to install.
    * @param a (optional) numeric value to install.
    */
-  public setFP(
-    fraction: number,
-    point: Point3d,
-    vector?: Vector3d,
-    a: number = 0.0
-  ) {
+  public setFP(fraction: number, point: Point3d, vector?: Vector3d, a: number = 0.0) {
     this.fraction = fraction;
     this.point.setFrom(point);
-    this.vectorInCurveLocationDetail = optionalVectorUpdate(
-      vector,
-      this.vectorInCurveLocationDetail
-    );
+    this.vectorInCurveLocationDetail = optionalVectorUpdate(vector, this.vectorInCurveLocationDetail);
     this.a = a;
   }
 
@@ -218,10 +207,7 @@ export class CurveLocationDetail {
 
   /** create with a CurvePrimitive pointer but no coordinate data.
    */
-  public static create(
-    curve?: CurvePrimitive,
-    result?: CurveLocationDetail
-  ): CurveLocationDetail {
+  public static create(curve?: CurvePrimitive, result?: CurveLocationDetail): CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = curve;
     return result;
@@ -401,13 +387,7 @@ export class CurveLocationDetail {
     a: number
   ): boolean {
     if (this.a < a) return false;
-    CurveLocationDetail.createCurveFractionPointDistance(
-      curve,
-      fraction,
-      point,
-      a,
-      this
-    );
+    CurveLocationDetail.createCurveFractionPointDistance(curve, fraction, point, a, this);
     return true;
   }
   /**
@@ -430,10 +410,7 @@ export class CurveLocationDetail {
    * * return the fraction where f falls between fraction and fraction1.
    * * ASSUME fraction1 defined
    */
-  public inverseInterpolateFraction(
-    f: number,
-    defaultFraction: number = 0
-  ): number {
+  public inverseInterpolateFraction(f: number, defaultFraction: number = 0): number {
     const a = Geometry.inverseInterpolate01(this.fraction, this.fraction1!, f);
     if (a === undefined) return defaultFraction;
     return a;
@@ -480,10 +457,7 @@ export class CurveLocationDetailPair {
    */
   public approachType?: CurveCurveApproachType;
 
-  public constructor(
-    detailA?: CurveLocationDetail,
-    detailB?: CurveLocationDetail
-  ) {
+  public constructor(detailA?: CurveLocationDetail, detailB?: CurveLocationDetail) {
     this.detailA = detailA ? detailA : new CurveLocationDetail();
     this.detailB = detailB ? detailB : new CurveLocationDetail();
   }

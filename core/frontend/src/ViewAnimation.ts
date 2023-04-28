@@ -87,9 +87,7 @@ export interface MarginOptions {
  * @public
  * @extensions
  */
-export interface ViewChangeOptions
-  extends OnViewExtentsError,
-    ViewAnimationOptions {
+export interface ViewChangeOptions extends OnViewExtentsError, ViewAnimationOptions {
   /** Whether to save the result of this change into the view undo stack. Default is to save in undo. */
   noSaveInUndo?: boolean;
   /** Whether the change should be animated or not. Default is to not animate frustum change. */

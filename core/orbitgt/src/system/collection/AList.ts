@@ -46,8 +46,7 @@ export class AList<T> {
   }
 
   public indexOf(element: T): int32 {
-    for (let i: number = 0; i < this._elements.length; i++)
-      if (this._elements[i] === element) return i;
+    for (let i: number = 0; i < this._elements.length; i++) if (this._elements[i] === element) return i;
     return -1;
   }
 

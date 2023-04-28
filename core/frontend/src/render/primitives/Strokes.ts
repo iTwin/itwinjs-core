@@ -31,19 +31,11 @@ export class StrokesPrimitive {
   public readonly isPlanar: boolean;
   public strokes: StrokesPrimitivePointLists;
 
-  public static create(
-    params: DisplayParams,
-    isDisjoint: boolean,
-    isPlanar: boolean
-  ) {
+  public static create(params: DisplayParams, isDisjoint: boolean, isPlanar: boolean) {
     return new StrokesPrimitive(params, isDisjoint, isPlanar);
   }
 
-  private constructor(
-    params: DisplayParams,
-    isDisjoint: boolean,
-    isPlanar: boolean
-  ) {
+  private constructor(params: DisplayParams, isDisjoint: boolean, isPlanar: boolean) {
     this.displayParams = params;
     this.strokes = new StrokesPrimitivePointLists();
     this.isDisjoint = isDisjoint;

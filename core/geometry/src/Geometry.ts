@@ -254,8 +254,7 @@ export class Geometry {
   /** Numeric value that may be considered zero for fractions between 0 and 1. */
   public static readonly smallFraction = 1.0e-10;
   /** Radians value for full circle 2PI radians minus `smallAngleRadians`. */
-  public static readonly fullCircleRadiansMinusSmallAngle =
-    2.0 * Math.PI - Geometry.smallAngleRadians;
+  public static readonly fullCircleRadiansMinusSmallAngle = 2.0 * Math.PI - Geometry.smallAngleRadians;
   /**
    * Numeric value that may be considered large for a ratio of numbers.
    * * Note that the allowed result value is vastly larger than 1.
@@ -293,14 +292,8 @@ export class Geometry {
    * * If `distance` magnitude is `undefined` or smaller than `smallMetricDistance`, then return `replacement`
    * (or 0 if replacement is not passed). Otherwise return `distance`.
    */
-  public static correctSmallMetricDistance(
-    distance: number | undefined,
-    replacement: number = 0.0
-  ): number {
-    if (
-      distance === undefined ||
-      Math.abs(distance) < Geometry.smallMetricDistance
-    ) {
+  public static correctSmallMetricDistance(distance: number | undefined, replacement: number = 0.0): number {
+    if (distance === undefined || Math.abs(distance) < Geometry.smallMetricDistance) {
       return replacement;
     }
     return distance;
@@ -311,10 +304,7 @@ export class Geometry {
    * @param replacement value to return if `fraction` is too small
    * @returns `fraction` if its absolute value is at least `Geometry.smallFraction`; otherwise returns `replacement`
    */
-  public static correctSmallFraction(
-    fraction: number | undefined,
-    replacement: number = 0.0
-  ): number {
+  public static correctSmallFraction(fraction: number | undefined, replacement: number = 0.0): number {
     if (fraction === undefined || Math.abs(fraction) < Geometry.smallFraction) {
       return replacement;
     }
@@ -326,31 +316,21 @@ export class Geometry {
    * then return `1/distance`. Otherwise return `undefined`.
    */
   public static inverseMetricDistance(distance: number): number | undefined {
-    return Math.abs(distance) <= Geometry.smallMetricDistance
-      ? undefined
-      : 1.0 / distance;
+    return Math.abs(distance) <= Geometry.smallMetricDistance ? undefined : 1.0 / distance;
   }
   /**
    * Return the inverse of `distanceSquared`.
    * * If `distanceSquared ` magnitude is smaller than `smallMetricDistanceSquared` (i.e. distanceSquared  is large
    * enough for safe division), then return `1/distanceSquared `. Otherwise return `undefined`.
    */
-  public static inverseMetricDistanceSquared(
-    distanceSquared: number
-  ): number | undefined {
-    return Math.abs(distanceSquared) <= Geometry.smallMetricDistanceSquared
-      ? undefined
-      : 1.0 / distanceSquared;
+  public static inverseMetricDistanceSquared(distanceSquared: number): number | undefined {
+    return Math.abs(distanceSquared) <= Geometry.smallMetricDistanceSquared ? undefined : 1.0 / distanceSquared;
   }
   /**
    * Boolean test for metric coordinate near-equality (i.e., if `x` and `y` are almost equal) using `tolerance`.
    * * `Geometry.smallMetricDistance` is used if tolerance is `undefined`.
    */
-  public static isSameCoordinate(
-    x: number,
-    y: number,
-    tolerance: number = Geometry.smallMetricDistance
-  ): boolean {
+  public static isSameCoordinate(x: number, y: number, tolerance: number = Geometry.smallMetricDistance): boolean {
     let d = x - y;
     if (d < 0) d = -d;
     return d <= tolerance;
@@ -359,16 +339,8 @@ export class Geometry {
    * Boolean test for metric coordinate near-equality (i.e., if `x` and `y` are almost equal) using
    * `tolerance = toleranceFactor * smallMetricDistance`
    * */
-  public static isSameCoordinateWithToleranceFactor(
-    x: number,
-    y: number,
-    toleranceFactor: number
-  ): boolean {
-    return Geometry.isSameCoordinate(
-      x,
-      y,
-      toleranceFactor * Geometry.smallMetricDistance
-    );
+  public static isSameCoordinateWithToleranceFactor(x: number, y: number, toleranceFactor: number): boolean {
+    return Geometry.isSameCoordinate(x, y, toleranceFactor * Geometry.smallMetricDistance);
   }
   /**
    * Boolean test for metric coordinate pair near-equality (i.e., if `x0` and `x1` are almost equal
@@ -417,11 +389,7 @@ export class Geometry {
    * * `Geometry.smallMetricDistance` is used if tolerance is `undefined`.
    * * Note that Point3d and Vector3d are both derived from XYZ, so this method tolerates mixed types.
    */
-  public static isSameXYZ(
-    dataA: XYZ,
-    dataB: XYZ,
-    tolerance: number = Geometry.smallMetricDistance
-  ): boolean {
+  public static isSameXYZ(dataA: XYZ, dataB: XYZ, tolerance: number = Geometry.smallMetricDistance): boolean {
     return dataA.distance(dataB) <= tolerance;
   }
   /**
@@ -515,11 +483,7 @@ export class Geometry {
    * Returns `true` if both values are `undefined` or if both are defined and almost equal within tolerance.
    * If one is `undefined` and the other is not, then `false` is returned.
    */
-  public static isAlmostEqualOptional(
-    a: number | undefined,
-    b: number | undefined,
-    tolerance: number
-  ): boolean {
+  public static isAlmostEqualOptional(a: number | undefined, b: number | undefined, tolerance: number): boolean {
     if (a !== undefined && b !== undefined) {
       if (Math.abs(a - b) > tolerance) return false;
     } else {
@@ -531,11 +495,7 @@ export class Geometry {
    * Toleranced equality test using tolerance `tolerance * ( 1 + abs(a) + abs(b) )`.
    * * `Geometry.smallAngleRadians` is used if tolerance is `undefined`.
    */
-  public static isAlmostEqualNumber(
-    a: number,
-    b: number,
-    tolerance: number = Geometry.smallAngleRadians
-  ): boolean {
+  public static isAlmostEqualNumber(a: number, b: number, tolerance: number = Geometry.smallAngleRadians): boolean {
     const sumAbs = 1.0 + Math.abs(a) + Math.abs(b);
     return Math.abs(a - b) <= tolerance * sumAbs;
   }
@@ -543,24 +503,15 @@ export class Geometry {
    * Toleranced equality test using tolerance `tolerance * ( 1 + abs(a.x) + abs(a.y) + abs(b.x) + abs(b.y) )`.
    * * `Geometry.smallAngleRadians` is used if tolerance is `undefined`.
    */
-  public static isAlmostEqualXAndY(
-    a: XAndY,
-    b: XAndY,
-    tolerance: number = Geometry.smallAngleRadians
-  ): boolean {
-    const tol =
-      tolerance *
-      (1.0 + Math.abs(a.x) + Math.abs(b.x) + Math.abs(a.y) + Math.abs(b.y));
+  public static isAlmostEqualXAndY(a: XAndY, b: XAndY, tolerance: number = Geometry.smallAngleRadians): boolean {
+    const tol = tolerance * (1.0 + Math.abs(a.x) + Math.abs(b.x) + Math.abs(a.y) + Math.abs(b.y));
     return Math.abs(a.x - b.x) <= tol && Math.abs(a.y - b.y) <= tol;
   }
   /**
    * Toleranced equality test using caller-supplied `tolerance`.
    * * `Geometry.smallMetricDistance` is used if tolerance is `undefined`.
    */
-  public static isDistanceWithinTol(
-    distance: number,
-    tolerance: number = Geometry.smallMetricDistance
-  ): boolean {
+  public static isDistanceWithinTol(distance: number, tolerance: number = Geometry.smallMetricDistance): boolean {
     return Math.abs(distance) <= tolerance;
   }
   /** Toleranced equality test using `smallMetricDistance` tolerance. */
@@ -592,15 +543,11 @@ export class Geometry {
    * * `axisIndex === 1` returns `AxisOrder.YZX`
    * * `axisIndex === 2` returns `AxisOrder.ZXY`
    */
-  public static axisIndexToRightHandedAxisOrder(
-    axisIndex: AxisIndex
-  ): AxisOrder {
+  public static axisIndexToRightHandedAxisOrder(axisIndex: AxisIndex): AxisOrder {
     if (axisIndex === 0) return AxisOrder.XYZ;
     if (axisIndex === 1) return AxisOrder.YZX;
     if (axisIndex === 2) return AxisOrder.ZXY;
-    return Geometry.axisIndexToRightHandedAxisOrder(
-      Geometry.cyclic3dAxis(axisIndex)
-    );
+    return Geometry.axisIndexToRightHandedAxisOrder(Geometry.cyclic3dAxis(axisIndex));
   }
   /** Return the largest signed value among `a`, `b`, and `c` */
   public static maxXYZ(a: number, b: number, c: number): number {
@@ -646,12 +593,7 @@ export class Geometry {
    * * If `x` is true zero, return `outZero`
    * * If `x` is positive, return `outPositive`
    */
-  public static split3WaySign(
-    x: number,
-    outNegative: number,
-    outZero: number,
-    outPositive: number
-  ): number {
+  public static split3WaySign(x: number, outNegative: number, outZero: number, outPositive: number): number {
     if (x < 0) return outNegative;
     if (x > 0.0) return outPositive;
     return outZero;
@@ -662,10 +604,7 @@ export class Geometry {
    * * If x is true zero, return 0
    * * If x is positive, return 1
    */
-  public static split3Way01(
-    x: number,
-    tolerance: number = Geometry.smallMetricDistance
-  ): -1 | 0 | 1 {
+  public static split3Way01(x: number, tolerance: number = Geometry.smallMetricDistance): -1 | 0 | 1 {
     if (x > tolerance) return 1;
     if (x < -tolerance) return -1;
     return 0;
@@ -700,21 +639,11 @@ export class Geometry {
    * Return the full 4d hypotenuse (i.e., `sqrt(x*x + y*y + z*z + w*w)`).
    * * This is much faster than `Math.hypot(x,y,z,w)`.
    */
-  public static hypotenuseXYZW(
-    x: number,
-    y: number,
-    z: number,
-    w: number
-  ): number {
+  public static hypotenuseXYZW(x: number, y: number, z: number, w: number): number {
     return Math.sqrt(x * x + y * y + z * z + w * w);
   }
   /** Return the squared hypotenuse (i.e., `x*x + y*y + z*z + w*w`). */
-  public static hypotenuseSquaredXYZW(
-    x: number,
-    y: number,
-    z: number,
-    w: number
-  ): number {
+  public static hypotenuseSquaredXYZW(x: number, y: number, z: number, w: number): number {
     return x * x + y * y + z * z + w * w;
   }
   /**
@@ -724,12 +653,7 @@ export class Geometry {
    * @param x1 x coordinate of point 1
    * @param y1 y coordinate of point 1
    */
-  public static distanceXYXY(
-    x0: number,
-    y0: number,
-    x1: number,
-    y1: number
-  ): number {
+  public static distanceXYXY(x0: number, y0: number, x1: number, y1: number): number {
     return Geometry.hypotenuseXY(x1 - x0, y1 - y0);
   }
   /**
@@ -741,14 +665,7 @@ export class Geometry {
    * @param y1 y coordinate of point 1
    * @param z1 z coordinate of point 1
    */
-  public static distanceXYZXYZ(
-    x0: number,
-    y0: number,
-    z0: number,
-    x1: number,
-    y1: number,
-    z1: number
-  ): number {
+  public static distanceXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number): number {
     return Geometry.hypotenuseXYZ(x1 - x0, y1 - y0, z1 - z0);
   }
   /**
@@ -778,11 +695,7 @@ export class Geometry {
     wy: number,
     wz: number
   ): number {
-    return (
-      ux * (vy * wz - vz * wy) +
-      uy * (vz * wx - vx * wz) +
-      uz * (vx * wy - vy * wx)
-    );
+    return ux * (vy * wz - vz * wy) + uy * (vz * wx - vx * wz) + uz * (vx * wy - vy * wx);
   }
   /** Returns the determinant of the 4x4 matrix unrolled as the 16 parameters */
   public static determinant4x4(
@@ -843,11 +756,7 @@ export class Geometry {
    *      [columnA.y   columnB.y   columnC.y]
    *      [columnA.w   columnB.w   columnC.w]
    */
-  public static tripleProductPoint4dXYW(
-    columnA: Point4d,
-    columnB: Point4d,
-    columnC: Point4d
-  ): number {
+  public static tripleProductPoint4dXYW(columnA: Point4d, columnB: Point4d, columnC: Point4d): number {
     return Geometry.tripleProduct(
       columnA.x,
       columnB.x,
@@ -861,12 +770,7 @@ export class Geometry {
     );
   }
   /** 2D cross product of vectors with the vectors presented as numbers. */
-  public static crossProductXYXY(
-    ux: number,
-    uy: number,
-    vx: number,
-    vy: number
-  ): number {
+  public static crossProductXYXY(ux: number, uy: number, vx: number, vy: number): number {
     return ux * vy - uy * vx;
   }
   /** 3D cross product of vectors with the vectors presented as numbers. */
@@ -879,46 +783,18 @@ export class Geometry {
     vz: number,
     result?: Vector3d
   ): Vector3d {
-    return Vector3d.create(
-      uy * vz - uz * vy,
-      uz * vx - ux * vz,
-      ux * vy - uy * vx,
-      result
-    );
+    return Vector3d.create(uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx, result);
   }
   /** Magnitude of 3D cross product of vectors with the vectors presented as numbers. */
-  public static crossProductMagnitude(
-    ux: number,
-    uy: number,
-    uz: number,
-    vx: number,
-    vy: number,
-    vz: number
-  ): number {
-    return Geometry.hypotenuseXYZ(
-      uy * vz - uz * vy,
-      uz * vx - ux * vz,
-      ux * vy - uy * vx
-    );
+  public static crossProductMagnitude(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number {
+    return Geometry.hypotenuseXYZ(uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx);
   }
   /** 2D dot product of vectors with the vectors presented as numbers. */
-  public static dotProductXYXY(
-    ux: number,
-    uy: number,
-    vx: number,
-    vy: number
-  ): number {
+  public static dotProductXYXY(ux: number, uy: number, vx: number, vy: number): number {
     return ux * vx + uy * vy;
   }
   /** 3D dot product of vectors with the vectors presented as numbers. */
-  public static dotProductXYZXYZ(
-    ux: number,
-    uy: number,
-    uz: number,
-    vx: number,
-    vy: number,
-    vz: number
-  ): number {
+  public static dotProductXYZXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number {
     return ux * vx + uy * vy + uz * vz;
   }
   /**
@@ -929,10 +805,7 @@ export class Geometry {
    * @param r1 second radius
    */
   public static meanCurvatureOfRadii(r0: number, r1: number): number {
-    return (
-      0.5 *
-      (this.safeDivideFraction(1, r0, 0) + this.safeDivideFraction(1, r1, 0))
-    );
+    return 0.5 * (this.safeDivideFraction(1, r0, 0) + this.safeDivideFraction(1, r1, 0));
   }
   /**
    * Returns curvature from the first and second derivative vectors.
@@ -946,14 +819,7 @@ export class Geometry {
    * @param vy second derivative y component
    * @param vz second derivative z component
    */
-  public static curvatureMagnitude(
-    ux: number,
-    uy: number,
-    uz: number,
-    vx: number,
-    vy: number,
-    vz: number
-  ): number {
+  public static curvatureMagnitude(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number {
     let q = uy * vz - uz * vy;
     let sum = q * q;
     q = uz * vx - ux * vz;
@@ -963,8 +829,7 @@ export class Geometry {
     const magUxV = Math.sqrt(sum);
     const magU = Math.sqrt(ux * ux + uy * uy + uz * uz);
     const magUCubed = magU * magU * magU;
-    if (magUCubed > Geometry.smallAngleRadians * magUxV)
-      return magUxV / magUCubed;
+    if (magUCubed > Geometry.smallAngleRadians * magUxV) return magUxV / magUCubed;
     return 0;
   }
   /**
@@ -991,10 +856,7 @@ export class Geometry {
     return Math.max(min, Math.min(max, value));
   }
   /** If given a `value`, return it. If given `undefined`, return `defaultValue`. */
-  public static resolveNumber(
-    value: number | undefined,
-    defaultValue: number = 0
-  ): number {
+  public static resolveNumber(value: number | undefined, defaultValue: number = 0): number {
     return value !== undefined ? value : defaultValue;
   }
   /** If given a `value`, return it. If given `undefined`, return `defaultValue`. */
@@ -1002,10 +864,7 @@ export class Geometry {
     return value !== undefined ? value : defaultValue;
   }
   /** If given `value` matches the `targetValue`, return `undefined`. Otherwise return the `value`. */
-  public static resolveToUndefined<T>(
-    value: T | undefined,
-    targetValue: T
-  ): T | undefined {
+  public static resolveToUndefined<T>(value: T | undefined, targetValue: T): T | undefined {
     return value === targetValue ? undefined : value;
   }
   /**
@@ -1026,8 +885,7 @@ export class Geometry {
    * for more info.
    */
   public static axisOrderToAxis(order: AxisOrder, index: number): number {
-    const axis =
-      order <= AxisOrder.ZXY ? order + index : order - AxisOrder.XZY - index;
+    const axis = order <= AxisOrder.ZXY ? order + index : order - AxisOrder.XZY - index;
     return Geometry.cyclic3dAxis(axis);
   }
   /**
@@ -1069,15 +927,8 @@ export class Geometry {
    * @returns return `numerator/denominator` but if the ratio exceeds `Geometry.largeFractionResult`,
    * return `undefined`.
    */
-  public static conditionalDivideFraction(
-    numerator: number,
-    denominator: number
-  ): number | undefined {
-    if (
-      Math.abs(denominator) * Geometry.largeFractionResult >
-      Math.abs(numerator)
-    )
-      return numerator / denominator;
+  public static conditionalDivideFraction(numerator: number, denominator: number): number | undefined {
+    if (Math.abs(denominator) * Geometry.largeFractionResult > Math.abs(numerator)) return numerator / denominator;
     return undefined;
   }
   /**
@@ -1087,11 +938,7 @@ export class Geometry {
    * @returns return `numerator/denominator` but if the ratio exceeds `Geometry.largeFractionResult`,
    * return `defaultResult`.
    */
-  public static safeDivideFraction(
-    numerator: number,
-    denominator: number,
-    defaultResult: number
-  ): number {
+  public static safeDivideFraction(numerator: number, denominator: number, defaultResult: number): number {
     const ratio = Geometry.conditionalDivideFraction(numerator, denominator);
     if (ratio !== undefined) return ratio;
     return defaultResult;
@@ -1108,8 +955,7 @@ export class Geometry {
     denominator: number,
     largestResult: number = Geometry.largeCoordinateResult
   ): number | undefined {
-    if (Math.abs(denominator * largestResult) > Math.abs(numerator))
-      return numerator / denominator;
+    if (Math.abs(denominator * largestResult) > Math.abs(numerator)) return numerator / denominator;
     return undefined;
   }
   /**
@@ -1117,11 +963,7 @@ export class Geometry {
    * constraint `c*c + s*s = 1`.
    * * There could be 0, 1, or 2 solutions. Return `undefined` if there is no solution.
    */
-  public static solveTrigForm(
-    constCoff: number,
-    cosCoff: number,
-    sinCoff: number
-  ): Vector2d[] | undefined {
+  public static solveTrigForm(constCoff: number, cosCoff: number, sinCoff: number): Vector2d[] | undefined {
     /**
      * Solutions can be found by finding the intersection of line "ax + by + d = 0" and unit circle "x^2 + y^2 = 1".
      * From the line equation we have "y = (-ax - d) / b". By replacing this into the circle equation we get
@@ -1188,11 +1030,7 @@ export class Geometry {
    * For a line `f(x)` where `f(0) = f0` and `f(1) = f1`, return the `x` value at which `f(x) = fTarget`
    * Return `undefined` if `(fTarget - f0) / (f1 - f0)` exceeds `Geometry.largeFractionResult`
    */
-  public static inverseInterpolate01(
-    f0: number,
-    f1: number,
-    fTarget: number = 0
-  ): number | undefined {
+  public static inverseInterpolate01(f0: number, f1: number, fTarget: number = 0): number | undefined {
     /**
      * Line equation is "fTarget-f0 = (f1-f0)*x" so "x = (fTarget-f0)/(f1-f0)"
      */
@@ -1216,15 +1054,10 @@ export class Geometry {
    * Return `true` if `json` is an array of at least `minArrays` arrays with at least `minEntries` entries in
    * each array and all entries are numbers (including those beyond minEntries).
    */
-  public static isArrayOfNumberArray(
-    json: any,
-    minArrays: number,
-    minEntries: number = 0
-  ): boolean {
+  public static isArrayOfNumberArray(json: any, minArrays: number, minEntries: number = 0): boolean {
     if (Array.isArray(json) && json.length >= minArrays) {
       let entry;
-      for (entry of json)
-        if (!Geometry.isNumberArray(entry, minEntries)) return false;
+      for (entry of json) if (!Geometry.isNumberArray(entry, minEntries)) return false;
       return true;
     }
     return false;
@@ -1237,12 +1070,7 @@ export class Geometry {
    *   * (b) `numSteps < minCount`
    * * `maxCount` is returned if `numSteps > maxCount`.
    */
-  public static stepCount(
-    stepSize: number,
-    total: number,
-    minCount = 1,
-    maxCount = 101
-  ): number {
+  public static stepCount(stepSize: number, total: number, minCount = 1, maxCount = 101): number {
     if (stepSize <= 0) return minCount;
     total = Math.abs(total);
     if (stepSize >= total) return minCount;
@@ -1302,10 +1130,7 @@ export class Geometry {
    * Test for exact match of two number arrays.
    * Returns `true` if both arrays have the same length and entries, or if both arrays are empty or `undefined`.
    */
-  public static exactEqualNumberArrays(
-    a: number[] | undefined,
-    b: number[] | undefined
-  ): boolean {
+  public static exactEqualNumberArrays(a: number[] | undefined, b: number[] | undefined): boolean {
     if (Array.isArray(a) && a.length === 0) a = undefined;
     if (Array.isArray(b) && b.length === 0) b = undefined;
     if (a === undefined && b === undefined) return true;
@@ -1379,9 +1204,7 @@ export class Geometry {
    * Clone an array whose members have type `T`, which implements the clone method.
    * * If the clone method returns `undefined`, then `undefined` is forced into the cloned array.
    */
-  public static cloneMembers<T extends Cloneable<T>>(
-    array: T[] | undefined
-  ): T[] | undefined {
+  public static cloneMembers<T extends Cloneable<T>>(array: T[] | undefined): T[] | undefined {
     if (array === undefined) return undefined;
     const clonedArray: T[] = [];
     for (const element of array) {

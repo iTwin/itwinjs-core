@@ -36,8 +36,6 @@ export class FrontendLocalizationHelper extends LocalizationHelper {
   }
 
   public static unregisterNamespaces() {
-    NAMESPACES.map((namespace) =>
-      Presentation.localization.unregisterNamespace(namespace)
-    );
+    NAMESPACES.map((namespace) => Presentation.localization.unregisterNamespace(namespace));
   }
 }

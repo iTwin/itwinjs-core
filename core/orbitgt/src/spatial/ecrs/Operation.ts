@@ -175,9 +175,7 @@ export class Operation {
    * Set the concatenated operations.
    * @param concatenatedOperations the concatenated operations (null for a method).
    */
-  public setConcatenatedOperations(
-    concatenatedOperations: AList<Operation>
-  ): void {
+  public setConcatenatedOperations(concatenatedOperations: AList<Operation>): void {
     this._concatenatedOperations = concatenatedOperations;
   }
 
@@ -186,10 +184,8 @@ export class Operation {
    */
   public initialise(): void {
     /* Initialize the systems */
-    if (this._sourceCRS == null)
-      this._sourceCRS = Registry.getCRS(this._sourceCRScode);
-    if (this._targetCRS == null)
-      this._targetCRS = Registry.getCRS(this._targetCRScode);
+    if (this._sourceCRS == null) this._sourceCRS = Registry.getCRS(this._sourceCRScode);
+    if (this._targetCRS == null) this._targetCRS = Registry.getCRS(this._targetCRScode);
     /* Already done ? */
     if (this._initialised) return;
     this._initialised = true;
@@ -268,9 +264,7 @@ export class Operation {
     if (this._type == Operation.CONCATENATED) {
       /* Run all operations */
       for (let i: number = 0; i < this._concatenatedOperations.size(); i++) {
-        this._concatenatedOperations
-          .get(this._concatenatedOperations.size() - 1 - i)
-          .reverse(source, target);
+        this._concatenatedOperations.get(this._concatenatedOperations.size() - 1 - i).reverse(source, target);
         target = source;
       }
     } else {
@@ -290,12 +284,7 @@ export class Operation {
     if (other._sourceCRScode != this._sourceCRScode) return false;
     if (other._targetCRScode != this._targetCRScode) return false;
     if (other._method.isCompatible(this._method) == false) return false;
-    if (
-      Operation.areCompatibleOperations(
-        other._concatenatedOperations,
-        this._concatenatedOperations
-      ) == false
-    )
+    if (Operation.areCompatibleOperations(other._concatenatedOperations, this._concatenatedOperations) == false)
       return false;
     return true;
   }
@@ -306,10 +295,7 @@ export class Operation {
    * @param operation2 the second operation.
    * @return true if compatible.
    */
-  public static isCompatibleOperation(
-    operation1: Operation,
-    operation2: Operation
-  ): boolean {
+  public static isCompatibleOperation(operation1: Operation, operation2: Operation): boolean {
     if (operation1 == null) return operation2 == null;
     if (operation2 == null) return false;
     return operation1.isCompatible(operation2);
@@ -321,15 +307,11 @@ export class Operation {
    * @param list2 the second list.
    * @return true if compatible.
    */
-  private static areCompatibleOperations(
-    list1: AList<Operation>,
-    list2: AList<Operation>
-  ): boolean {
+  private static areCompatibleOperations(list1: AList<Operation>, list2: AList<Operation>): boolean {
     if (list1 == null) return list2 == null;
     if (list2 == null) return false;
     if (list2.size() != list1.size()) return false;
-    for (let i: number = 0; i < list2.size(); i++)
-      if (list2.get(i).isCompatible(list1.get(i)) == false) return false;
+    for (let i: number = 0; i < list2.size(); i++) if (list2.get(i).isCompatible(list1.get(i)) == false) return false;
     return true;
   }
 
@@ -385,11 +367,7 @@ export class Operation {
     let index1: int32 = Strings.lastIndexOf(transformationName, ")");
     if (index1 < 0 || index1 < index0) return 0;
     /* Parse the version */
-    let version: string = Strings.substring(
-      transformationName,
-      index0 + 1,
-      index1
-    );
+    let version: string = Strings.substring(transformationName, index0 + 1, index1);
     return Numbers.getInteger(version, 0);
   }
 
@@ -398,24 +376,18 @@ export class Operation {
    * @param transformations the set of transformations.
    * @return the latest transform.
    */
-  public static getLatestTransformation(
-    transformations: AList<Operation>
-  ): Operation {
+  public static getLatestTransformation(transformations: AList<Operation>): Operation {
     /* We need at least two transforms */
     if (transformations == null) return null;
     if (transformations.size() == 0) return null;
     if (transformations.size() == 1) return transformations.get(0);
     /* Start with the first transform */
     let bestIndex: int32 = 0;
-    let bestVersion: int32 = Operation.getTransformationVersion(
-      transformations.get(bestIndex).getName()
-    );
+    let bestVersion: int32 = Operation.getTransformationVersion(transformations.get(bestIndex).getName());
     /* Check for better versions */
     for (let i: number = 1; i < transformations.size(); i++) {
       /* Check */
-      let version: int32 = Operation.getTransformationVersion(
-        transformations.get(i).getName()
-      );
+      let version: int32 = Operation.getTransformationVersion(transformations.get(i).getName());
       if (version > bestVersion) {
         /* This one is later */
         bestIndex = i;

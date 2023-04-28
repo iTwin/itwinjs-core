@@ -6,12 +6,7 @@ import { assert } from "chai";
 import * as path from "path";
 import { DbResult, using } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
-import {
-  ECDb,
-  ECDbOpenMode,
-  SqliteStatement,
-  SqliteValueType,
-} from "../../core-backend";
+import { ECDb, ECDbOpenMode, SqliteStatement, SqliteValueType } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
@@ -21,188 +16,172 @@ describe("SqliteStatement", () => {
   const stringVal: string = "Hello world";
   const intVal = 0;
   const doubleVal = -2.5;
-  const blobVal = new Uint8Array(
-    new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7).toFloat64Array().buffer
-  );
+  const blobVal = new Uint8Array(new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7).toFloat64Array().buffer);
 
   it("create table, insert, select with ecdb", () => {
-    using(
-      ECDbTestHelper.createECDb(outDir, "sqlitestatement.ecdb"),
-      (ecdb: ECDb) => {
-        assert.isTrue(ecdb.isOpen);
+    using(ECDbTestHelper.createECDb(outDir, "sqlitestatement.ecdb"), (ecdb: ECDb) => {
+      assert.isTrue(ecdb.isOpen);
 
-        ecdb.withSqliteStatement(
-          "CREATE TABLE MyTable(id INTEGER PRIMARY KEY, stringcol TEXT, intcol INTEGER, doublecol REAL, blobcol)",
-          (stmt: SqliteStatement) => {
-            assert.isFalse(stmt.isReadonly);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-          }
-        );
-
-        const stmt1 =
-          "INSERT INTO MyTable(stringcol,intcol,doublecol,blobcol) VALUES(?,?,?,?)";
-        ecdb.withPreparedSqliteStatement(stmt1, (stmt) => {
+      ecdb.withSqliteStatement(
+        "CREATE TABLE MyTable(id INTEGER PRIMARY KEY, stringcol TEXT, intcol INTEGER, doublecol REAL, blobcol)",
+        (stmt: SqliteStatement) => {
           assert.isFalse(stmt.isReadonly);
-          stmt.bindValue(1, stringVal);
-          stmt.bindValue(2, intVal);
-          stmt.bindValue(3, doubleVal);
-          stmt.bindValue(4, blobVal);
           assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+        }
+      );
+
+      const stmt1 = "INSERT INTO MyTable(stringcol,intcol,doublecol,blobcol) VALUES(?,?,?,?)";
+      ecdb.withPreparedSqliteStatement(stmt1, (stmt) => {
+        assert.isFalse(stmt.isReadonly);
+        stmt.bindValue(1, stringVal);
+        stmt.bindValue(2, intVal);
+        stmt.bindValue(3, doubleVal);
+        stmt.bindValue(4, blobVal);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
+
+      ecdb.withPreparedSqliteStatement(stmt1, (stmt) => {
+        stmt.maybeBindString(1, stringVal);
+        stmt.maybeBindInteger(2, intVal);
+        stmt.maybeBindDouble(3, doubleVal);
+        stmt.maybeBindBlob(4, blobVal);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
+
+      ecdb.withPreparedSqliteStatement(stmt1, (stmt) => {
+        assert.isFalse(stmt.isReadonly);
+        stmt.bindValues([stringVal, intVal, doubleVal, blobVal]);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
+
+      const stmt2 = "INSERT INTO MyTable(stringcol,intcol,doublecol,blobcol) VALUES(:string,:int,:double,:blob)";
+      ecdb.withPreparedSqliteStatement(stmt2, (stmt: SqliteStatement) => {
+        assert.isFalse(stmt.isReadonly);
+        stmt.bindValue(":string", stringVal);
+        stmt.bindValue(":int", intVal);
+        stmt.bindValue(":double", doubleVal);
+        stmt.bindValue(":blob", blobVal);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
+
+      ecdb.withPreparedSqliteStatement(stmt2, (stmt: SqliteStatement) => {
+        assert.isFalse(stmt.isReadonly);
+        stmt.bindValues({
+          ":string": stringVal,
+          ":int": intVal,
+          ":double": doubleVal,
+          ":blob": blobVal,
         });
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
 
-        ecdb.withPreparedSqliteStatement(stmt1, (stmt) => {
-          stmt.maybeBindString(1, stringVal);
-          stmt.maybeBindInteger(2, intVal);
-          stmt.maybeBindDouble(3, doubleVal);
-          stmt.maybeBindBlob(4, blobVal);
-          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-        });
+      ecdb.saveChanges();
 
-        ecdb.withPreparedSqliteStatement(stmt1, (stmt) => {
-          assert.isFalse(stmt.isReadonly);
-          stmt.bindValues([stringVal, intVal, doubleVal, blobVal]);
-          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-        });
+      ecdb.withPreparedSqliteStatement(
+        "SELECT id,stringcol,intcol,doublecol,blobcol FROM MyTable",
+        (stmt: SqliteStatement) => {
+          assert.isTrue(stmt.isReadonly);
+          let rowCount = 0;
+          while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+            rowCount++;
+            assert.equal(stmt.getColumnCount(), 5);
+            const idSqlVal = stmt.getValue(0);
+            assert.isFalse(idSqlVal.isNull);
+            assert.equal(idSqlVal.type, SqliteValueType.Integer);
+            assert.isDefined(idSqlVal.value);
+            assert.equal(idSqlVal.value, rowCount);
+            assert.equal(idSqlVal.getInteger(), rowCount);
+            assert.equal(idSqlVal.columnName, "id");
 
-        const stmt2 =
-          "INSERT INTO MyTable(stringcol,intcol,doublecol,blobcol) VALUES(:string,:int,:double,:blob)";
-        ecdb.withPreparedSqliteStatement(stmt2, (stmt: SqliteStatement) => {
-          assert.isFalse(stmt.isReadonly);
-          stmt.bindValue(":string", stringVal);
-          stmt.bindValue(":int", intVal);
-          stmt.bindValue(":double", doubleVal);
-          stmt.bindValue(":blob", blobVal);
-          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-        });
+            const stringSqlVal = stmt.getValue(1);
+            assert.isFalse(stringSqlVal.isNull);
+            assert.equal(stringSqlVal.type, SqliteValueType.String);
+            assert.isDefined(stringSqlVal.value);
+            assert.equal(stringSqlVal.value, stringVal);
+            assert.equal(stringSqlVal.getString(), stringVal);
+            assert.equal(stringSqlVal.columnName, "stringcol");
 
-        ecdb.withPreparedSqliteStatement(stmt2, (stmt: SqliteStatement) => {
-          assert.isFalse(stmt.isReadonly);
-          stmt.bindValues({
-            ":string": stringVal,
-            ":int": intVal,
-            ":double": doubleVal,
-            ":blob": blobVal,
-          });
-          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-        });
+            const intSqlVal = stmt.getValue(2);
+            assert.isFalse(intSqlVal.isNull);
+            assert.equal(intSqlVal.type, SqliteValueType.Integer);
+            assert.isDefined(intSqlVal.value);
+            assert.equal(intSqlVal.value, intVal);
+            assert.equal(intSqlVal.getInteger(), intVal);
+            assert.equal(intSqlVal.columnName, "intcol");
 
-        ecdb.saveChanges();
+            const doubleSqlVal = stmt.getValue(3);
+            assert.isFalse(doubleSqlVal.isNull);
+            assert.equal(doubleSqlVal.type, SqliteValueType.Double);
+            assert.isDefined(doubleSqlVal.value);
+            assert.equal(doubleSqlVal.value, doubleVal);
+            assert.equal(doubleSqlVal.getDouble(), doubleVal);
+            assert.equal(doubleSqlVal.columnName, "doublecol");
 
-        ecdb.withPreparedSqliteStatement(
-          "SELECT id,stringcol,intcol,doublecol,blobcol FROM MyTable",
-          (stmt: SqliteStatement) => {
-            assert.isTrue(stmt.isReadonly);
-            let rowCount = 0;
-            while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-              rowCount++;
-              assert.equal(stmt.getColumnCount(), 5);
-              const idSqlVal = stmt.getValue(0);
-              assert.isFalse(idSqlVal.isNull);
-              assert.equal(idSqlVal.type, SqliteValueType.Integer);
-              assert.isDefined(idSqlVal.value);
-              assert.equal(idSqlVal.value, rowCount);
-              assert.equal(idSqlVal.getInteger(), rowCount);
-              assert.equal(idSqlVal.columnName, "id");
-
-              const stringSqlVal = stmt.getValue(1);
-              assert.isFalse(stringSqlVal.isNull);
-              assert.equal(stringSqlVal.type, SqliteValueType.String);
-              assert.isDefined(stringSqlVal.value);
-              assert.equal(stringSqlVal.value, stringVal);
-              assert.equal(stringSqlVal.getString(), stringVal);
-              assert.equal(stringSqlVal.columnName, "stringcol");
-
-              const intSqlVal = stmt.getValue(2);
-              assert.isFalse(intSqlVal.isNull);
-              assert.equal(intSqlVal.type, SqliteValueType.Integer);
-              assert.isDefined(intSqlVal.value);
-              assert.equal(intSqlVal.value, intVal);
-              assert.equal(intSqlVal.getInteger(), intVal);
-              assert.equal(intSqlVal.columnName, "intcol");
-
-              const doubleSqlVal = stmt.getValue(3);
-              assert.isFalse(doubleSqlVal.isNull);
-              assert.equal(doubleSqlVal.type, SqliteValueType.Double);
-              assert.isDefined(doubleSqlVal.value);
-              assert.equal(doubleSqlVal.value, doubleVal);
-              assert.equal(doubleSqlVal.getDouble(), doubleVal);
-              assert.equal(doubleSqlVal.columnName, "doublecol");
-
-              const blobSqlVal = stmt.getValue(4);
-              assert.isFalse(blobSqlVal.isNull);
-              assert.equal(blobSqlVal.type, SqliteValueType.Blob);
-              assert.isDefined(blobSqlVal.value);
-              assert.equal(
-                (blobSqlVal.value as Uint8Array).byteLength,
-                blobVal.byteLength
-              );
-              assert.equal(blobSqlVal.getBlob().byteLength, blobVal.byteLength);
-              assert.equal(blobSqlVal.columnName, "blobcol");
-            }
-            assert.equal(rowCount, 5);
+            const blobSqlVal = stmt.getValue(4);
+            assert.isFalse(blobSqlVal.isNull);
+            assert.equal(blobSqlVal.type, SqliteValueType.Blob);
+            assert.isDefined(blobSqlVal.value);
+            assert.equal((blobSqlVal.value as Uint8Array).byteLength, blobVal.byteLength);
+            assert.equal(blobSqlVal.getBlob().byteLength, blobVal.byteLength);
+            assert.equal(blobSqlVal.columnName, "blobcol");
           }
-        );
+          assert.equal(rowCount, 5);
+        }
+      );
 
-        ecdb.withPreparedSqliteStatement(
-          "SELECT id,stringcol,intcol,doublecol,blobcol FROM MyTable",
-          (stmt: SqliteStatement) => {
-            assert.isTrue(stmt.isReadonly);
-            let rowCount = 0;
-            while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-              rowCount++;
-              const row = stmt.getRow();
-              assert.isDefined(row.id);
-              assert.equal(row.id, rowCount);
+      ecdb.withPreparedSqliteStatement(
+        "SELECT id,stringcol,intcol,doublecol,blobcol FROM MyTable",
+        (stmt: SqliteStatement) => {
+          assert.isTrue(stmt.isReadonly);
+          let rowCount = 0;
+          while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+            rowCount++;
+            const row = stmt.getRow();
+            assert.isDefined(row.id);
+            assert.equal(row.id, rowCount);
 
-              assert.isDefined(row.stringcol);
-              assert.equal(row.stringcol, stringVal);
+            assert.isDefined(row.stringcol);
+            assert.equal(row.stringcol, stringVal);
 
-              assert.isDefined(row.intcol);
-              assert.equal(row.intcol, intVal);
+            assert.isDefined(row.intcol);
+            assert.equal(row.intcol, intVal);
 
-              assert.isDefined(row.doublecol);
-              assert.equal(row.doublecol, doubleVal);
+            assert.isDefined(row.doublecol);
+            assert.equal(row.doublecol, doubleVal);
 
-              assert.isDefined(row.blobcol);
-              assert.equal(
-                (row.blobcol as Uint8Array).byteLength,
-                blobVal.byteLength
-              );
-            }
-            assert.equal(rowCount, 5);
+            assert.isDefined(row.blobcol);
+            assert.equal((row.blobcol as Uint8Array).byteLength, blobVal.byteLength);
           }
-        );
+          assert.equal(rowCount, 5);
+        }
+      );
 
-        ecdb.withPreparedSqliteStatement(
-          "SELECT id,stringcol,intcol,doublecol,blobcol FROM MyTable",
-          (stmt: SqliteStatement) => {
-            assert.isTrue(stmt.isReadonly);
-            let rowCount = 0;
-            for (const row of stmt) {
-              rowCount++;
-              assert.isDefined(row.id);
-              assert.equal(row.id, rowCount);
+      ecdb.withPreparedSqliteStatement(
+        "SELECT id,stringcol,intcol,doublecol,blobcol FROM MyTable",
+        (stmt: SqliteStatement) => {
+          assert.isTrue(stmt.isReadonly);
+          let rowCount = 0;
+          for (const row of stmt) {
+            rowCount++;
+            assert.isDefined(row.id);
+            assert.equal(row.id, rowCount);
 
-              assert.isDefined(row.stringcol);
-              assert.equal(row.stringcol, stringVal);
+            assert.isDefined(row.stringcol);
+            assert.equal(row.stringcol, stringVal);
 
-              assert.isDefined(row.intcol);
-              assert.equal(row.intcol, intVal);
+            assert.isDefined(row.intcol);
+            assert.equal(row.intcol, intVal);
 
-              assert.isDefined(row.doublecol);
-              assert.equal(row.doublecol, doubleVal);
+            assert.isDefined(row.doublecol);
+            assert.equal(row.doublecol, doubleVal);
 
-              assert.isDefined(row.blobcol);
-              assert.equal(
-                (row.blobcol as Uint8Array).byteLength,
-                blobVal.byteLength
-              );
-            }
-            assert.equal(rowCount, 5);
+            assert.isDefined(row.blobcol);
+            assert.equal((row.blobcol as Uint8Array).byteLength, blobVal.byteLength);
           }
-        );
-      }
-    );
+          assert.equal(rowCount, 5);
+        }
+      );
+    });
   });
 
   it("null values handling", () => {
@@ -317,103 +296,77 @@ describe("SqliteStatement", () => {
   });
 
   it("ids and guids", () => {
-    using(
-      ECDbTestHelper.createECDb(outDir, "idsandguids.ecdb"),
-      (ecdb: ECDb) => {
-        assert.isTrue(ecdb.isOpen);
+    using(ECDbTestHelper.createECDb(outDir, "idsandguids.ecdb"), (ecdb: ECDb) => {
+      assert.isTrue(ecdb.isOpen);
 
-        ecdb.withSqliteStatement(
-          "CREATE TABLE MyTable(id INTEGER PRIMARY KEY, guid BLOB)",
-          (stmt: SqliteStatement) => {
-            assert.isFalse(stmt.isReadonly);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-          }
-        );
+      ecdb.withSqliteStatement("CREATE TABLE MyTable(id INTEGER PRIMARY KEY, guid BLOB)", (stmt: SqliteStatement) => {
+        assert.isFalse(stmt.isReadonly);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
 
-        ecdb.withSqliteStatement(
-          "INSERT INTO MyTable(id,guid) VALUES(?,?)",
-          (stmt: SqliteStatement) => {
-            assert.isFalse(stmt.isReadonly);
-            stmt.bindValue(1, { id: "0x11" });
-            stmt.bindValue(2, { guid: "370cea34-8415-4f81-b54c-85040eb3111e" });
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-            stmt.reset();
-            stmt.clearBindings();
+      ecdb.withSqliteStatement("INSERT INTO MyTable(id,guid) VALUES(?,?)", (stmt: SqliteStatement) => {
+        assert.isFalse(stmt.isReadonly);
+        stmt.bindValue(1, { id: "0x11" });
+        stmt.bindValue(2, { guid: "370cea34-8415-4f81-b54c-85040eb3111e" });
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+        stmt.reset();
+        stmt.clearBindings();
 
-            stmt.bindValues([
-              { id: "0x12" },
-              { guid: "f9f1eb6e-1171-4f45-ba90-55c856056341" },
-            ]);
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-            stmt.reset();
-            stmt.clearBindings();
-          }
-        );
+        stmt.bindValues([{ id: "0x12" }, { guid: "f9f1eb6e-1171-4f45-ba90-55c856056341" }]);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+        stmt.reset();
+        stmt.clearBindings();
+      });
 
-        ecdb.withSqliteStatement(
-          "INSERT INTO MyTable(id,guid) VALUES(:id,:guid)",
-          (stmt: SqliteStatement) => {
-            assert.isFalse(stmt.isReadonly);
-            stmt.bindValue(":id", { id: "0x13" });
-            stmt.bindValue(":guid", {
-              guid: "370cea34-8415-4f81-b54c-85040eb3111e",
-            });
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-            stmt.reset();
-            stmt.clearBindings();
+      ecdb.withSqliteStatement("INSERT INTO MyTable(id,guid) VALUES(:id,:guid)", (stmt: SqliteStatement) => {
+        assert.isFalse(stmt.isReadonly);
+        stmt.bindValue(":id", { id: "0x13" });
+        stmt.bindValue(":guid", {
+          guid: "370cea34-8415-4f81-b54c-85040eb3111e",
+        });
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+        stmt.reset();
+        stmt.clearBindings();
 
-            stmt.bindValues({
-              ":id": { id: "0x14" },
-              ":guid": { guid: "f9f1eb6e-1171-4f45-ba90-55c856056341" },
-            });
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-            stmt.reset();
-            stmt.clearBindings();
-          }
-        );
+        stmt.bindValues({
+          ":id": { id: "0x14" },
+          ":guid": { guid: "f9f1eb6e-1171-4f45-ba90-55c856056341" },
+        });
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+        stmt.reset();
+        stmt.clearBindings();
+      });
 
-        ecdb.withSqliteStatement(
-          "SELECT id,guid FROM MyTable",
-          (stmt: SqliteStatement) => {
-            assert.isTrue(stmt.isReadonly);
-            let rowCount = 0;
-            while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-              rowCount++;
-              const expectedId = rowCount + 16;
-              const idVal = stmt.getValue(0);
-              assert.equal(expectedId, idVal.getInteger());
-              assert.equal(typeof idVal.value, "number");
-              assert.equal(expectedId, idVal.value);
-              assert.equal(expectedId, Number.parseInt(idVal.getId(), 16));
+      ecdb.withSqliteStatement("SELECT id,guid FROM MyTable", (stmt: SqliteStatement) => {
+        assert.isTrue(stmt.isReadonly);
+        let rowCount = 0;
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          rowCount++;
+          const expectedId = rowCount + 16;
+          const idVal = stmt.getValue(0);
+          assert.equal(expectedId, idVal.getInteger());
+          assert.equal(typeof idVal.value, "number");
+          assert.equal(expectedId, idVal.value);
+          assert.equal(expectedId, Number.parseInt(idVal.getId(), 16));
 
-              const guidVal = stmt.getValue(1);
-              assert.instanceOf(guidVal.value, Uint8Array);
+          const guidVal = stmt.getValue(1);
+          assert.instanceOf(guidVal.value, Uint8Array);
 
-              if (rowCount % 2 !== 0)
-                assert.equal(
-                  "370cea34-8415-4f81-b54c-85040eb3111e",
-                  guidVal.getGuid()
-                );
-              else
-                assert.equal(
-                  "f9f1eb6e-1171-4f45-ba90-55c856056341",
-                  guidVal.getGuid()
-                );
+          if (rowCount % 2 !== 0) assert.equal("370cea34-8415-4f81-b54c-85040eb3111e", guidVal.getGuid());
+          else assert.equal("f9f1eb6e-1171-4f45-ba90-55c856056341", guidVal.getGuid());
 
-              const row = stmt.getRow();
-              assert.isDefined(row.id);
-              assert.equal(typeof row.id, "number");
-              assert.equal(expectedId, row.id);
+          const row = stmt.getRow();
+          assert.isDefined(row.id);
+          assert.equal(typeof row.id, "number");
+          assert.equal(expectedId, row.id);
 
-              assert.isDefined(row.guid);
-              assert.instanceOf(row.guid, Uint8Array);
-            }
-            assert.equal(4, rowCount);
-          }
-        );
-        ecdb.saveChanges();
-      }
-    );
+          assert.isDefined(row.guid);
+          assert.instanceOf(row.guid, Uint8Array);
+        }
+        assert.equal(4, rowCount);
+      });
+      ecdb.saveChanges();
+    });
   });
 
   it("run cached sql", () => {
@@ -448,9 +401,7 @@ describe("SqliteStatement", () => {
             assert.isFalse(versionVal.isNull);
             const profileVersion: any = JSON.parse(versionVal.getString());
 
-            assert.isTrue(
-              name === "SchemaVersion" || name === "InitialSchemaVersion"
-            );
+            assert.isTrue(name === "SchemaVersion" || name === "InitialSchemaVersion");
             if (name === "SchemaVersion") {
               assert.equal(profileVersion.major, 4);
               assert.equal(profileVersion.minor, 0);
@@ -487,11 +438,7 @@ describe("SqliteStatement", () => {
       assert.isTrue(stmt4?.isPrepared, "stmt4 is in the cache");
       assert.isFalse(stmt1?.isPrepared, "stmt1 was cleared from the cache");
       ecdb.withPreparedSqliteStatement("SELECT 2", (stmt) => (stmt2a = stmt));
-      assert.equal(
-        stmt2,
-        stmt2a,
-        "statement 2 gets reused, moved to most recent"
-      );
+      assert.equal(stmt2, stmt2a, "statement 2 gets reused, moved to most recent");
       assert.isTrue(stmt3?.isPrepared, "statement 3 is still cached");
       ecdb.withPreparedSqliteStatement("SELECT 5", (stmt) => (stmt5 = stmt));
       assert.isTrue(stmt5?.isPrepared, "statement 5 is cached");
@@ -500,10 +447,7 @@ describe("SqliteStatement", () => {
       let nested1: SqliteStatement | undefined;
       ecdb.withPreparedSqliteStatement("SELECT 1", (stmt) => {
         stmt1 = stmt;
-        ecdb.withPreparedSqliteStatement(
-          "SELECT 1",
-          (nested) => (nested1 = nested)
-        );
+        ecdb.withPreparedSqliteStatement("SELECT 1", (nested) => (nested1 = nested));
       });
       assert.notEqual(stmt1, nested1, "shouldn't reuse an in-use statement");
       assert.isFalse(stmt1?.isPrepared, "outer 1 is not cached");
@@ -528,9 +472,7 @@ describe("SqliteStatement", () => {
         .append()
         .error()
         .category("BeSQLite")
-        .message(
-          'Error "no such table: def (BE_SQLITE_ERROR)" preparing SQL: SELECT abc FROM def'
-        );
+        .message('Error "no such table: def (BE_SQLITE_ERROR)" preparing SQL: SELECT abc FROM def');
       assert.throw(
         () => ecdb.withSqliteStatement("SELECT abc FROM def", () => {}),
         "no such table: def (BE_SQLITE_ERROR)"
@@ -543,30 +485,16 @@ describe("SqliteStatement", () => {
         .append()
         .error()
         .category("BeSQLite")
-        .message(
-          'Error "no such table: def (BE_SQLITE_ERROR)" preparing SQL: SELECT abc FROM def'
-        );
+        .message('Error "no such table: def (BE_SQLITE_ERROR)" preparing SQL: SELECT abc FROM def');
       assert.throw(
-        () =>
-          ecdb.withSqliteStatement(
-            "SELECT abc FROM def",
-            () => {},
-            /* logErrors = */ false
-          ),
+        () => ecdb.withSqliteStatement("SELECT abc FROM def", () => {}, /* logErrors = */ false),
         "no such table: def (BE_SQLITE_ERROR)"
       );
-      assert.isFalse(
-        slm.finishAndDispose(),
-        "logMatcher should not detect log"
-      );
+      assert.isFalse(slm.finishAndDispose(), "logMatcher should not detect log");
 
       // expect log message when statement fails
       slm = new SequentialLogMatcher();
-      slm
-        .append()
-        .error()
-        .category("ECDb")
-        .message("ECClass 'abc.def' does not exist or could not be loaded.");
+      slm.append().error().category("ECDb").message("ECClass 'abc.def' does not exist or could not be loaded.");
       assert.throw(
         () => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => {}),
         "ECClass 'abc.def' does not exist or could not be loaded."
@@ -575,24 +503,9 @@ describe("SqliteStatement", () => {
 
       // now pass suppress log error which mean we should not get the error
       slm = new SequentialLogMatcher();
-      slm
-        .append()
-        .error()
-        .category("ECDb")
-        .message("ECClass 'abc.def' does not exist or could not be loaded.");
-      assert.throw(
-        () =>
-          ecdb.withPreparedStatement(
-            "SELECT abc FROM abc.def",
-            () => {},
-            /* logErrors = */ false
-          ),
-        ""
-      ); // BUG: we do not see error message
-      assert.isFalse(
-        slm.finishAndDispose(),
-        "logMatcher should not detect log"
-      );
+      slm.append().error().category("ECDb").message("ECClass 'abc.def' does not exist or could not be loaded.");
+      assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => {}, /* logErrors = */ false), ""); // BUG: we do not see error message
+      assert.isFalse(slm.finishAndDispose(), "logMatcher should not detect log");
     });
   });
 });

@@ -26,13 +26,11 @@ import {
  */
 export class RpcOperationPolicy {
   /** Supplies the IModelRpcProps for an operation request. */
-  public token: RpcRequestTokenSupplier_T = (request) =>
-    request.findTokenPropsParameter();
+  public token: RpcRequestTokenSupplier_T = (request) => request.findTokenPropsParameter();
 
   /** Supplies the initial retry interval for an operation request. */
-  public retryInterval: RpcRequestInitialRetryIntervalSupplier_T = (
-    configuration
-  ) => configuration.pendingOperationRetryInterval;
+  public retryInterval: RpcRequestInitialRetryIntervalSupplier_T = (configuration) =>
+    configuration.pendingOperationRetryInterval;
 
   /** Called before every operation request on the frontend is sent. */
   public requestCallback: RpcRequestCallback_T = (_request) => {};
@@ -44,8 +42,7 @@ export class RpcOperationPolicy {
    * Determines if caching is permitted for an operation response.
    * @note Not all RPC protocols support caching.
    */
-  public allowResponseCaching: RpcResponseCachingCallback_T = (_request) =>
-    RpcResponseCacheControl.None;
+  public allowResponseCaching: RpcResponseCachingCallback_T = (_request) => RpcResponseCacheControl.None;
 
   /** Forces RpcConfiguration.strictMode for this operation. */
   public forceStrictMode: boolean = false;
@@ -65,16 +62,9 @@ export class RpcOperation {
   public static fallbackToken: IModelRpcProps | undefined = undefined;
 
   /** Looks up an RPC operation by name. */
-  public static lookup(
-    target: string | RpcInterfaceDefinition,
-    operationName: string
-  ): RpcOperation {
-    const definition =
-      typeof target === "string"
-        ? RpcRegistry.instance.lookupInterfaceDefinition(target)
-        : target;
-    const propertyName: string | symbol =
-      RpcOperation.computeOperationName(operationName);
+  public static lookup(target: string | RpcInterfaceDefinition, operationName: string): RpcOperation {
+    const definition = typeof target === "string" ? RpcRegistry.instance.lookupInterfaceDefinition(target) : target;
+    const propertyName: string | symbol = RpcOperation.computeOperationName(operationName);
 
     const proto = definition.prototype as any;
     if (!proto.hasOwnProperty(propertyName))
@@ -87,22 +77,13 @@ export class RpcOperation {
   }
 
   /** Iterates the operations of an RPC interface definition. */
-  public static forEach(
-    definition: RpcInterfaceDefinition,
-    callback: (operation: RpcOperation) => void
-  ): void {
-    Object.getOwnPropertyNames(definition.prototype).forEach(
-      (operationName) => {
-        if (
-          operationName === "constructor" ||
-          operationName === "configurationSupplier"
-        )
-          return;
+  public static forEach(definition: RpcInterfaceDefinition, callback: (operation: RpcOperation) => void): void {
+    Object.getOwnPropertyNames(definition.prototype).forEach((operationName) => {
+      if (operationName === "constructor" || operationName === "configurationSupplier") return;
 
-        const propertyName = RpcOperation.computeOperationName(operationName);
-        callback((definition.prototype as any)[propertyName][OPERATION]);
-      }
-    );
+      const propertyName = RpcOperation.computeOperationName(operationName);
+      callback((definition.prototype as any)[propertyName][OPERATION]);
+    });
   }
 
   /** The RPC interface definition for this operation. */
@@ -120,11 +101,7 @@ export class RpcOperation {
   public policy: RpcOperationPolicy;
 
   /** @internal */
-  public constructor(
-    definition: RpcInterfaceDefinition,
-    operation: string,
-    policy: RpcOperationPolicy
-  ) {
+  public constructor(definition: RpcInterfaceDefinition, operation: string, policy: RpcOperationPolicy) {
     this.interfaceDefinition = definition;
     this.operationName = operation;
     this.policy = policy;
@@ -156,31 +133,15 @@ export namespace RpcOperation {
   }
 
   /** Decorator for setting the policy for an RPC operation function. */
-  export function setPolicy(
-    policy: RpcOperationPolicy | RpcOperationPolicyProps
-  ) {
-    return <T extends RpcInterface>(
-      target: T,
-      propertyKey: string,
-      descriptor: PropertyDescriptor
-    ) => {
-      descriptor.value[OPERATION] = new RpcOperation(
-        target.constructor as any,
-        propertyKey,
-        obtainInstance(policy)
-      );
+  export function setPolicy(policy: RpcOperationPolicy | RpcOperationPolicyProps) {
+    return <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => {
+      descriptor.value[OPERATION] = new RpcOperation(target.constructor as any, propertyKey, obtainInstance(policy));
     };
   }
 
   /** Convenience decorator for setting an RPC operation policy that allows response caching. */
-  export function allowResponseCaching(
-    control: RpcResponseCacheControl = RpcResponseCacheControl.Immutable
-  ) {
-    return <T extends RpcInterface>(
-      target: T,
-      propertyKey: string,
-      descriptor: PropertyDescriptor
-    ) => {
+  export function allowResponseCaching(control: RpcResponseCacheControl = RpcResponseCacheControl.Immutable) {
+    return <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => {
       descriptor.value[OPERATION] = new RpcOperation(
         target.constructor as any,
         propertyKey,
@@ -193,11 +154,7 @@ export namespace RpcOperation {
 
   /** Convenience decorator for setting an RPC operation policy that supplies the IModelRpcProps for an operation. */
   export function setRoutingProps(handler: RpcRequestTokenSupplier_T) {
-    return <T extends RpcInterface>(
-      target: T,
-      propertyKey: string,
-      descriptor: PropertyDescriptor
-    ) => {
+    return <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => {
       descriptor.value[OPERATION] = new RpcOperation(
         target.constructor as any,
         propertyKey,
@@ -209,9 +166,7 @@ export namespace RpcOperation {
   }
 
   /** Decorator for setting the default policy for an RPC interface definition class. */
-  export function setDefaultPolicy(
-    policy: RpcOperationPolicy | RpcOperationPolicyProps
-  ) {
+  export function setDefaultPolicy(policy: RpcOperationPolicy | RpcOperationPolicyProps) {
     return <T extends RpcInterface>(definition: RpcInterfaceDefinition<T>) => {
       (definition as any)[POLICY] = obtainInstance(policy);
     };

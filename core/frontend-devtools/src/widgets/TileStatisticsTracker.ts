@@ -29,15 +29,13 @@ function computeProgress(vp: Viewport): number {
 const statEntries: StatEntry[] = [
   {
     getValue: (stats, vp) =>
-      stats.numActiveRequests +
-      (IModelApp.tileAdmin.getTilesForUser(vp)?.external.requested ?? 0),
+      stats.numActiveRequests + (IModelApp.tileAdmin.getTilesForUser(vp)?.external.requested ?? 0),
     label: "Active",
   },
   { getValue: (stats, _vp) => stats.numPendingRequests, label: "Pending" },
   { getValue: (stats, _vp) => stats.numCanceled, label: "Canceled" },
   {
-    getValue: (stats, _vp) =>
-      stats.numActiveRequests + stats.numPendingRequests,
+    getValue: (stats, _vp) => stats.numActiveRequests + stats.numPendingRequests,
     label: "Total",
   },
   { getValue: (_stats, vp) => vp.numSelectedTiles, label: "Selected" },
@@ -112,8 +110,7 @@ export class TileStatisticsTracker {
       this._statElements[i] = elem;
       div.appendChild(elem);
 
-      const column =
-        i >= indexOfFirstGlobalStatistic ? globalColumn : frameColumn;
+      const column = i >= indexOfFirstGlobalStatistic ? globalColumn : frameColumn;
       column.appendChild(div);
     }
 

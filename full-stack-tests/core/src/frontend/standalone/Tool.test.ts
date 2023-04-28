@@ -28,12 +28,7 @@ describe("Tools", () => {
   });
 
   it("ElementAgenda tests", () => {
-    const ids = [
-      Id64.fromString("0x1"),
-      Id64.fromString("0x2"),
-      Id64.fromString("0x3"),
-      Id64.fromString("0x4"),
-    ];
+    const ids = [Id64.fromString("0x1"), Id64.fromString("0x2"), Id64.fromString("0x3"), Id64.fromString("0x4")];
     const agenda = new ElementAgenda(imodel);
     assert.equal(agenda.iModel, imodel);
     assert.equal(agenda.count, 0);
@@ -42,22 +37,14 @@ describe("Tools", () => {
     agenda.add([ids[0], ids[1]]);
     agenda.setSource(ModifyElementSource.Selected);
     assert.equal(agenda.length, 2, "add with array");
-    assert.equal(
-      agenda.getSource(),
-      ModifyElementSource.Selected,
-      "setSource selected"
-    );
+    assert.equal(agenda.getSource(), ModifyElementSource.Selected, "setSource selected");
     const idsSet = new Set([ids[0], ids[1], ids[2], ids[3]]);
     agenda.add(idsSet);
     agenda.setSource(ModifyElementSource.Selected);
     assert.equal(agenda.length, 4, "add with IdSet");
     ids.forEach((id) => assert.isTrue(agenda.has(id)));
     assert.isFalse(agenda.has("0x11"), "should not find");
-    assert.equal(
-      agenda.getSource(),
-      ModifyElementSource.Selected,
-      "setSource group"
-    );
+    assert.equal(agenda.getSource(), ModifyElementSource.Selected, "setSource group");
     assert.equal(imodel.hilited.elements.size, 4, "hilite");
     agenda.remove(ids[0]);
     assert.equal(imodel.hilited.elements.size, 3, "remove unhilites");
@@ -65,11 +52,7 @@ describe("Tools", () => {
     agenda.popGroup();
     assert.equal(imodel.hilited.elements.size, 1, "popGroup unhilites");
     assert.equal(agenda.length, 1, "popGroup");
-    assert.equal(
-      agenda.getSource(),
-      ModifyElementSource.Selected,
-      "popGroup pops source"
-    );
+    assert.equal(agenda.getSource(), ModifyElementSource.Selected, "popGroup pops source");
     agenda.invert(idsSet);
     assert.equal(agenda.length, 3, "invert");
     assert.equal(imodel.hilited.elements.size, 3, "invert unhilites");
@@ -80,12 +63,7 @@ describe("Tools", () => {
   });
 
   it("SelectionSet tests", () => {
-    const ids = [
-      Id64.fromString("0x1"),
-      Id64.fromString("0x2"),
-      Id64.fromString("0x3"),
-      Id64.fromString("0x4"),
-    ];
+    const ids = [Id64.fromString("0x1"), Id64.fromString("0x2"), Id64.fromString("0x3"), Id64.fromString("0x4")];
     const selSet = imodel.selectionSet;
     let numCalls = 0;
     let lastType = SelectionSetEventType.Clear;
@@ -116,11 +94,7 @@ describe("Tools", () => {
     // add the same ids - should do nothing
     selSet.add([ids[0], ids[1]]);
     assert.equal(selSet.size, 2, "size not changed");
-    assert.equal(
-      numCalls,
-      2,
-      "added ones that are already present should not invoke callback"
-    );
+    assert.equal(numCalls, 2, "added ones that are already present should not invoke callback");
     // ids in set: [0, 1]
 
     // add using a Set
@@ -178,11 +152,7 @@ describe("Tools", () => {
     // ids in set: []
 
     removeMe(); // remove listener
-    assert.equal(
-      selSet.onChanged.numberOfListeners,
-      originalNumListeners,
-      "listener removed"
-    );
+    assert.equal(selSet.onChanged.numberOfListeners, originalNumListeners, "listener removed");
 
     selSet.add(ids[0]);
     assert.equal(selSet.size, 1, "add with no listener");
@@ -208,8 +178,7 @@ describe("HiliteSet", () => {
   });
 
   function expectHilitedElements(ids: Id64Arg) {
-    for (const id of Id64.iterable(ids))
-      expect(hilited.elements.hasId(id)).to.be.true;
+    for (const id of Id64.iterable(ids)) expect(hilited.elements.hasId(id)).to.be.true;
   }
 
   it("synchronizes with selection set", () => {

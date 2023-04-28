@@ -10,12 +10,7 @@ import { AttributeMap } from "../AttributeMap";
 import { SkyBoxQuadsGeometry } from "../CachedGeometry";
 import { Matrix3 } from "../Matrix";
 import { TextureUnit } from "../RenderFlags";
-import {
-  FragmentShaderComponent,
-  ProgramBuilder,
-  VariableType,
-  VertexShaderComponent,
-} from "../ShaderBuilder";
+import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { Texture } from "../Texture";
 
@@ -27,12 +22,8 @@ const computeTexDir = `v_texDir = rawPosition.xyz;`;
 const scratchRotMatrix = new Matrix3();
 
 /** @internal */
-export function createSkyBoxProgram(
-  context: WebGL2RenderingContext
-): ShaderProgram {
-  const prog = new ProgramBuilder(
-    AttributeMap.findAttributeMap(undefined, false)
-  );
+export function createSkyBoxProgram(context: WebGL2RenderingContext): ShaderProgram {
+  const prog = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
 
   prog.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
   prog.frag.set(FragmentShaderComponent.AssignFragData, assignFragData);

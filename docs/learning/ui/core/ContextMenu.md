@@ -62,12 +62,7 @@ In the example below, the PopupContextMenu is displayed below the `button` eleme
 
 ```tsx
 import * as React from "react";
-import {
-  ContextMenuItem,
-  ContextSubMenu,
-  PopupContextMenu,
-  useRefState,
-} from "@itwin/core-react";
+import { ContextMenuItem, ContextSubMenu, PopupContextMenu, useRefState } from "@itwin/core-react";
 import { RelativePosition } from "@itwin/appui-abstract";
 
 export function SamplePopupContextMenu() {
@@ -102,21 +97,15 @@ export function SamplePopupContextMenu() {
           <ContextMenuItem icon="icon-placeholder" iconRight="icon-checkmark">
             SubMenu Item ~1
           </ContextMenuItem>
-          <ContextMenuItem icon="icon-placeholder">
-            SubMenu Item ~2
-          </ContextMenuItem>
+          <ContextMenuItem icon="icon-placeholder">SubMenu Item ~2</ContextMenuItem>
         </ContextSubMenu>
         <ContextMenuItem icon="icon-placeholder" iconRight="icon-checkmark">
           Item ~2
         </ContextMenuItem>
         <ContextMenuItem>Item ~3</ContextMenuItem>
         <ContextSubMenu label="Item ~4">
-          <ContextMenuItem icon="icon-placeholder">
-            SubMenu Item ~1
-          </ContextMenuItem>
-          <ContextMenuItem icon="icon-placeholder">
-            SubMenu Item ~2
-          </ContextMenuItem>
+          <ContextMenuItem icon="icon-placeholder">SubMenu Item ~1</ContextMenuItem>
+          <ContextMenuItem icon="icon-placeholder">SubMenu Item ~2</ContextMenuItem>
         </ContextSubMenu>
       </PopupContextMenu>
     </div>

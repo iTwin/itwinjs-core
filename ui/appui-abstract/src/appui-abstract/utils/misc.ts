@@ -16,8 +16,7 @@ export const getClassName = (obj: any): string => {
     if (obj.name) className = obj.name;
     else {
       // istanbul ignore else
-      if (obj.constructor && obj.constructor.name)
-        className = obj.constructor.name;
+      if (obj.constructor && obj.constructor.name) className = obj.constructor.name;
     }
   }
 

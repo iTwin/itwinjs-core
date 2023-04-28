@@ -6,15 +6,8 @@
  * @module Metadata
  */
 
-import {
-  EnumerationProps,
-  EnumeratorProps,
-} from "../Deserialization/JsonProps";
-import {
-  PrimitiveType,
-  primitiveTypeToString,
-  SchemaItemType,
-} from "../ECObjects";
+import { EnumerationProps, EnumeratorProps } from "../Deserialization/JsonProps";
+import { PrimitiveType, primitiveTypeToString, SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { ECName } from "../ECName";
 import { Schema } from "./Schema";
@@ -51,11 +44,7 @@ export class Enumeration extends SchemaItem {
     return this._isStrict;
   }
 
-  constructor(
-    schema: Schema,
-    name: string,
-    primitiveType?: PrimitiveType.Integer | PrimitiveType.String
-  ) {
+  constructor(schema: Schema, name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String) {
     super(schema, name);
     this.schemaItemType = SchemaItemType.Enumeration;
     this._type = primitiveType;
@@ -75,9 +64,7 @@ export class Enumeration extends SchemaItem {
    * @param name The ECName of the Enumerator to find.
    */
   public getEnumeratorByName(name: string): AnyEnumerator | undefined {
-    return this.enumerators.find(
-      (item) => item.name.toLowerCase() === name.toLowerCase()
-    );
+    return this.enumerators.find((item) => item.name.toLowerCase() === name.toLowerCase());
   }
 
   /**
@@ -120,12 +107,7 @@ export class Enumeration extends SchemaItem {
    * @param description A localized description for the enumerator.
    * @return AnyEnumerator object
    */
-  public createEnumerator(
-    name: string,
-    value: string | number,
-    label?: string,
-    description?: string
-  ): AnyEnumerator {
+  public createEnumerator(name: string, value: string | number, label?: string, description?: string): AnyEnumerator {
     if (this.isInt && typeof value === "string")
       // throws if backing type is int and value is string
       throw new ECObjectsError(
@@ -160,46 +142,32 @@ export class Enumeration extends SchemaItem {
    * @param standalone Serialization includes only this object (as opposed to the full schema).
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
    */
-  public override toJSON(
-    standalone: boolean = false,
-    includeSchemaVersion: boolean = false
-  ): EnumerationProps {
+  public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): EnumerationProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     schemaJson.type = this.isInt ? "int" : "string";
     schemaJson.isStrict = this.isStrict;
-    schemaJson.enumerators = this._enumerators.map(
-      ({ name, label, value, description }) => {
-        const enumJson: any = { name, value };
-        if (undefined !== label) enumJson.label = label;
-        if (undefined !== description) enumJson.description = description;
-        return enumJson;
-      }
-    );
+    schemaJson.enumerators = this._enumerators.map(({ name, label, value, description }) => {
+      const enumJson: any = { name, value };
+      if (undefined !== label) enumJson.label = label;
+      if (undefined !== description) enumJson.description = description;
+      return enumJson;
+    });
     return schemaJson;
   }
 
   /** @internal */
   public override async toXml(schemaXml: Document): Promise<Element> {
     const itemElement = await super.toXml(schemaXml);
-    if (undefined !== this.type)
-      itemElement.setAttribute(
-        "backingTypeName",
-        primitiveTypeToString(this.type)
-      );
+    if (undefined !== this.type) itemElement.setAttribute("backingTypeName", primitiveTypeToString(this.type));
     itemElement.setAttribute("isStrict", String(this.isStrict));
 
     for (const enumerator of this.enumerators) {
       const enumElement = schemaXml.createElement("ECEnumerator");
       enumElement.setAttribute("name", enumerator.name);
-      const enumValue =
-        typeof enumerator.value === "string"
-          ? enumerator.value
-          : enumerator.value.toString();
+      const enumValue = typeof enumerator.value === "string" ? enumerator.value : enumerator.value.toString();
       enumElement.setAttribute("value", enumValue);
-      if (undefined !== enumerator.label)
-        enumElement.setAttribute("displayLabel", enumerator.label);
-      if (undefined !== enumerator.description)
-        enumElement.setAttribute("description", enumerator.description);
+      if (undefined !== enumerator.label) enumElement.setAttribute("displayLabel", enumerator.label);
+      if (undefined !== enumerator.description) enumElement.setAttribute("description", enumerator.description);
       itemElement.appendChild(enumElement);
     }
 
@@ -209,10 +177,8 @@ export class Enumeration extends SchemaItem {
   public override fromJSONSync(enumerationProps: EnumerationProps) {
     super.fromJSONSync(enumerationProps);
     if (undefined === this._type) {
-      if (/int/i.test(enumerationProps.type))
-        this._type = PrimitiveType.Integer;
-      else if (/string/i.test(enumerationProps.type))
-        this._type = PrimitiveType.String;
+      if (/int/i.test(enumerationProps.type)) this._type = PrimitiveType.Integer;
+      else if (/string/i.test(enumerationProps.type)) this._type = PrimitiveType.String;
       else
         throw new ECObjectsError(
           ECObjectsStatus.InvalidECJson,
@@ -223,9 +189,9 @@ export class Enumeration extends SchemaItem {
       if (!primitiveTypePattern.test(enumerationProps.type))
         throw new ECObjectsError(
           ECObjectsStatus.InvalidECJson,
-          `The Enumeration ${this.name} has an incompatible type. It must be "${
-            this.isInt ? "int" : "string"
-          }", not "${this.isInt ? "string" : "int"}".`
+          `The Enumeration ${this.name} has an incompatible type. It must be "${this.isInt ? "int" : "string"}", not "${
+            this.isInt ? "string" : "int"
+          }".`
         );
     }
     this._isStrict = enumerationProps.isStrict;
@@ -235,12 +201,7 @@ export class Enumeration extends SchemaItem {
         // Creates a new enumerator (with the specified name, value, label and description- label and description are optional) and adds to the list of enumerators.
         // Throws ECObjectsError if there are duplicate names or values present in the enumeration
         this.addEnumerator(
-          this.createEnumerator(
-            enumerator.name,
-            enumerator.value,
-            enumerator.label,
-            enumerator.description
-          )
+          this.createEnumerator(enumerator.name, enumerator.value, enumerator.label, enumerator.description)
         );
       });
     }

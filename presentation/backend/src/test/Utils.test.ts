@@ -24,9 +24,7 @@ describe("getElementKey", () => {
     stmt.reset();
     imodel.reset();
     imodel
-      .setup((x) =>
-        x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())
-      )
+      .setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny()))
       .callback((_query: string, cb: (stmt: ECSqlStatement) => void) => {
         cb(stmt.object);
       });
@@ -36,9 +34,7 @@ describe("getElementKey", () => {
     const id = createRandomId();
 
     const sqlQueryResult = moq.Mock.ofType<ECSqlValue>();
-    sqlQueryResult
-      .setup((x) => x.getClassNameForClassId())
-      .returns(() => "schema.class");
+    sqlQueryResult.setup((x) => x.getClassNameForClassId()).returns(() => "schema.class");
 
     stmt.setup((x) => x.bindId(1, id)).verifiable(moq.Times.once());
     stmt
@@ -85,33 +81,21 @@ describe("getNormalizedVersion", () => {
 
 describe("getLocalizedStringEN", () => {
   it("translates from Presentation", () => {
-    expect(getLocalizedStringEN("Presentation:label.notSpecified")).to.be.eq(
-      "Not specified"
-    );
+    expect(getLocalizedStringEN("Presentation:label.notSpecified")).to.be.eq("Not specified");
     expect(getLocalizedStringEN("Presentation:label.other")).to.be.eq("Other");
-    expect(getLocalizedStringEN("Presentation:label.varies")).to.be.eq(
-      "Varies"
-    );
-    expect(
-      getLocalizedStringEN("Presentation:label.multipleInstances")
-    ).to.be.eq("Multiple items");
+    expect(getLocalizedStringEN("Presentation:label.varies")).to.be.eq("Varies");
+    expect(getLocalizedStringEN("Presentation:label.multipleInstances")).to.be.eq("Multiple items");
     expect(getLocalizedStringEN("Presentation:field.label")).to.be.eq("Label");
-    expect(
-      getLocalizedStringEN("Presentation:selectedItems.categoryLabel")
-    ).to.be.eq("Selected Item(s)");
-    expect(
-      getLocalizedStringEN("Presentation:selectedItems.categoryDescription")
-    ).to.be.eq("Contains properties of selected item(s)");
+    expect(getLocalizedStringEN("Presentation:selectedItems.categoryLabel")).to.be.eq("Selected Item(s)");
+    expect(getLocalizedStringEN("Presentation:selectedItems.categoryDescription")).to.be.eq(
+      "Contains properties of selected item(s)"
+    );
   });
 
   it("does not translate if key not found", () => {
     expect(getLocalizedStringEN("wrong:Label")).to.be.eq("wrong:Label");
-    expect(getLocalizedStringEN("Presentation:label")).to.be.eq(
-      "Presentation:label"
-    );
-    expect(getLocalizedStringEN("Presentation:label.non-existent")).to.be.eq(
-      "Presentation:label.non-existent"
-    );
+    expect(getLocalizedStringEN("Presentation:label")).to.be.eq("Presentation:label");
+    expect(getLocalizedStringEN("Presentation:label.non-existent")).to.be.eq("Presentation:label.non-existent");
   });
 });
 
@@ -119,43 +103,20 @@ describe("combineDiagnosticsOptions", () => {
   const handler = sinon.spy();
 
   it("doesn't set `perf` if none of the arguments have it", () => {
-    expect(
-      combineDiagnosticsOptions(
-        { perf: false, handler },
-        { perf: undefined, handler },
-        undefined
-      )
-    ).to.be.undefined;
+    expect(combineDiagnosticsOptions({ perf: false, handler }, { perf: undefined, handler }, undefined)).to.be
+      .undefined;
   });
 
   it("sets `perf` to the single truthy value", () => {
-    expect(
-      combineDiagnosticsOptions({ perf: true, handler }, undefined)
-    ).to.deep.eq({ perf: true });
-    expect(
-      combineDiagnosticsOptions(
-        { perf: true, handler },
-        { perf: false, handler }
-      )
-    ).to.deep.eq({ perf: true });
-    expect(
-      combineDiagnosticsOptions(
-        { perf: false, handler },
-        { perf: true, handler }
-      )
-    ).to.deep.eq({ perf: true });
-    expect(
-      combineDiagnosticsOptions(
-        { perf: { minimumDuration: 123 }, handler },
-        { perf: false, handler }
-      )
-    ).to.deep.eq({ perf: { minimumDuration: 123 } });
-    expect(
-      combineDiagnosticsOptions(
-        { perf: false, handler },
-        { perf: { minimumDuration: 456 }, handler }
-      )
-    ).to.deep.eq({ perf: { minimumDuration: 456 } });
+    expect(combineDiagnosticsOptions({ perf: true, handler }, undefined)).to.deep.eq({ perf: true });
+    expect(combineDiagnosticsOptions({ perf: true, handler }, { perf: false, handler })).to.deep.eq({ perf: true });
+    expect(combineDiagnosticsOptions({ perf: false, handler }, { perf: true, handler })).to.deep.eq({ perf: true });
+    expect(combineDiagnosticsOptions({ perf: { minimumDuration: 123 }, handler }, { perf: false, handler })).to.deep.eq(
+      { perf: { minimumDuration: 123 } }
+    );
+    expect(combineDiagnosticsOptions({ perf: false, handler }, { perf: { minimumDuration: 456 }, handler })).to.deep.eq(
+      { perf: { minimumDuration: 456 } }
+    );
   });
 
   it("sets `perf` to lower requirement", () => {
@@ -177,33 +138,23 @@ describe("combineDiagnosticsOptions", () => {
   });
 
   it("doesn't set `dev` if none of the arguments have it", () => {
-    expect(combineDiagnosticsOptions({ dev: undefined, handler }, undefined)).to
-      .be.undefined;
+    expect(combineDiagnosticsOptions({ dev: undefined, handler }, undefined)).to.be.undefined;
   });
 
   it("sets `dev` severity", () => {
-    expect(
-      combineDiagnosticsOptions(
-        { handler },
-        { dev: "error", handler },
-        { dev: true, handler }
-      )
-    ).to.deep.eq({ dev: "debug" });
+    expect(combineDiagnosticsOptions({ handler }, { dev: "error", handler }, { dev: true, handler })).to.deep.eq({
+      dev: "debug",
+    });
   });
 
   it("doesn't set `editor` if none of the arguments have it", () => {
-    expect(combineDiagnosticsOptions({ editor: undefined, handler }, undefined))
-      .to.be.undefined;
+    expect(combineDiagnosticsOptions({ editor: undefined, handler }, undefined)).to.be.undefined;
   });
 
   it("sets `editor` severity", () => {
-    expect(
-      combineDiagnosticsOptions(
-        { handler },
-        { editor: "error", handler },
-        { editor: true, handler }
-      )
-    ).to.deep.eq({ editor: "debug" });
+    expect(combineDiagnosticsOptions({ handler }, { editor: "error", handler }, { editor: true, handler })).to.deep.eq({
+      editor: "debug",
+    });
   });
 
   it("combines multiple attributes", () => {
@@ -230,15 +181,9 @@ describe("reportDiagnostics", () => {
   });
 
   it("only calls handler when there are logs to be reported", () => {
-    reportDiagnostics(
-      {},
-      { handler, perf: true, dev: "trace", editor: "trace" }
-    );
+    reportDiagnostics({}, { handler, perf: true, dev: "trace", editor: "trace" });
     expect(handler).to.not.be.called;
-    reportDiagnostics(
-      { logs: [] },
-      { handler, perf: true, dev: "trace", editor: "trace" }
-    );
+    reportDiagnostics({ logs: [] }, { handler, perf: true, dev: "trace", editor: "trace" });
     expect(handler).to.not.be.called;
   });
 

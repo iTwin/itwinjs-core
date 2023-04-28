@@ -19,10 +19,7 @@ export interface CertaTestRunner {
 export class CertaCore {
   private static _runners: { [environment: string]: CertaTestRunner } = {};
 
-  public static registerTestRunner(
-    environment: string,
-    runner: CertaTestRunner
-  ) {
+  public static registerTestRunner(environment: string, runner: CertaTestRunner) {
     this._runners[environment] = runner;
   }
 
@@ -37,16 +34,12 @@ CertaCore.registerTestRunner("node", NodeTestRunner);
 CertaCore.registerTestRunner("chrome", ChromeTestRunner);
 CertaCore.registerTestRunner("electron", ElectronTestRunner);
 
-export async function certa(
-  environment: string,
-  config: CertaConfig
-): Promise<void> {
+export async function certa(environment: string, config: CertaConfig): Promise<void> {
   const runner = CertaCore.getTestRunner(environment);
 
   // If we're going to measure code coverage, we should stop now and let an `nyc`-wrapped child process take it from here.
   const alreadyInNyc = process.env.NYC_CWD !== undefined;
-  if (config.cover && runner.supportsCoverage && !alreadyInNyc)
-    return process.exit(await relaunchForCoverage());
+  if (config.cover && runner.supportsCoverage && !alreadyInNyc) return process.exit(await relaunchForCoverage());
 
   if (runner.initialize) await runner.initialize(config);
 
@@ -62,11 +55,9 @@ export async function certa(
    * empty object if nothing is exported by the backendInitModule
    */
   let cleanUpCallback: undefined | (() => Promise<void>) | {};
-  if (config.backendInitModule)
-    cleanUpCallback = await require(config.backendInitModule);
+  if (config.backendInitModule) cleanUpCallback = await require(config.backendInitModule);
 
   await runner.runTests(config);
 
-  if (typeof cleanUpCallback === "function" && runner.supportsCleanup)
-    await cleanUpCallback();
+  if (typeof cleanUpCallback === "function" && runner.supportsCleanup) await cleanUpCallback();
 }

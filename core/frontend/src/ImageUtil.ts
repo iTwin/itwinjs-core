@@ -7,12 +7,7 @@
  */
 
 import { Point2d } from "@itwin/core-geometry";
-import {
-  ImageBuffer,
-  ImageBufferFormat,
-  ImageSource,
-  ImageSourceFormat,
-} from "@itwin/core-common";
+import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { ViewRect } from "./ViewRect";
 
 interface Rgba {
@@ -75,13 +70,7 @@ export function canvasToResizedCanvasWithBars(
   const context = canvasOut.getContext("2d")!;
   context.fillStyle = barStyle;
   context.fillRect(0, 0, canvasOut.width, canvasOut.height);
-  context.drawImage(
-    canvasIn,
-    adjustImageX,
-    adjustImageY,
-    targetSize.x,
-    targetSize.y
-  );
+  context.drawImage(canvasIn, adjustImageX, adjustImageY, targetSize.x, targetSize.y);
   return canvasOut;
 }
 
@@ -92,10 +81,7 @@ export function canvasToResizedCanvasWithBars(
  * @public
  * @extensions
  */
-export function imageBufferToCanvas(
-  buffer: ImageBuffer,
-  preserveAlpha: boolean = true
-): HTMLCanvasElement | undefined {
+export function imageBufferToCanvas(buffer: ImageBuffer, preserveAlpha: boolean = true): HTMLCanvasElement | undefined {
   const canvas = document.createElement("canvas");
   if (null === canvas) return undefined;
 
@@ -202,9 +188,7 @@ export function getImageSourceMimeType(format: ImageSourceFormat): string {
  * @public
  * @extensions
  */
-export function getImageSourceFormatForMimeType(
-  mimeType: string
-): ImageSourceFormat | undefined {
+export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined {
   switch (mimeType) {
     case "image/jpeg":
       return ImageSourceFormat.Jpeg;
@@ -223,9 +207,7 @@ export function getImageSourceFormatForMimeType(
  * @public
  * @extensions
  */
-export async function imageElementFromImageSource(
-  source: ImageSource
-): Promise<HTMLImageElement> {
+export async function imageElementFromImageSource(source: ImageSource): Promise<HTMLImageElement> {
   const blob = new Blob([source.data], {
     type: getImageSourceMimeType(source.format),
   });
@@ -237,9 +219,7 @@ export async function imageElementFromImageSource(
  * @returns a Promise which resolves to an ImageBitmap containing the uncompressed bitmap image in RGBA format.
  * @public
  */
-export async function imageBitmapFromImageSource(
-  source: ImageSource
-): Promise<ImageBitmap> {
+export async function imageBitmapFromImageSource(source: ImageSource): Promise<ImageBitmap> {
   const blob = new Blob([source.data], {
     type: getImageSourceMimeType(source.format),
   });
@@ -257,10 +237,7 @@ export async function imageBitmapFromImageSource(
  * @public
  * @extensions
  */
-export async function imageElementFromUrl(
-  url: string,
-  skipCrossOriginCheck = false
-): Promise<HTMLImageElement> {
+export async function imageElementFromUrl(url: string, skipCrossOriginCheck = false): Promise<HTMLImageElement> {
   // We must set crossorigin property so that images loaded from same origin can be used with texImage2d.
   // We must do that outside of the promise constructor or it won't work, for reasons.
   const image = new Image();
@@ -300,9 +277,7 @@ export async function tryImageElementFromUrl(
  * @public
  * @extensions
  */
-export async function extractImageSourceDimensions(
-  source: ImageSource
-): Promise<Point2d> {
+export async function extractImageSourceDimensions(source: ImageSource): Promise<Point2d> {
   const image = await imageElementFromImageSource(source);
   return new Point2d(image.naturalWidth, image.naturalHeight);
 }
@@ -315,10 +290,7 @@ export async function extractImageSourceDimensions(
  * @public
  * @extensions
  */
-export function imageBufferToPngDataUrl(
-  buffer: ImageBuffer,
-  preserveAlpha = true
-): string | undefined {
+export function imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha = true): string | undefined {
   // The default format (and the only format required to be supported) for toDataUrl() is "image/png".
   const canvas = imageBufferToCanvas(buffer, preserveAlpha);
   return undefined !== canvas ? canvas.toDataURL() : undefined;
@@ -332,10 +304,7 @@ export function imageBufferToPngDataUrl(
  * @public
  * @extensions
  */
-export function imageBufferToBase64EncodedPng(
-  buffer: ImageBuffer,
-  preserveAlpha = true
-): string | undefined {
+export function imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha = true): string | undefined {
   const urlPrefix = "data:image/png;base64,";
   const url = imageBufferToPngDataUrl(buffer, preserveAlpha);
   if (undefined === url || !url.startsWith(urlPrefix)) return undefined;
@@ -364,10 +333,7 @@ export function openImageDataUrlInNewWindow(url: string, title?: string): void {
  * @returns A ViewRect centered in the input rectangle.
  * @public
  */
-export function getCenteredViewRect(
-  viewRect: ViewRect,
-  aspectRatio = 1.4
-): ViewRect {
+export function getCenteredViewRect(viewRect: ViewRect, aspectRatio = 1.4): ViewRect {
   // Determine scale that ensures ability to return an image with the prescribed aspectRatio
   const scale = Math.min(viewRect.width / aspectRatio, viewRect.height);
   const finalWidth = scale * aspectRatio;

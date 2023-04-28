@@ -14,9 +14,7 @@ describe("Learning Snippets", () => {
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile(
-      "assets/datasets/Properties_60InstancesWithUrl2.ibim"
-    );
+    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {
@@ -251,9 +249,7 @@ describe("Learning Snippets", () => {
         expect(content.descriptor.fields).to.be.empty;
 
         // Ensure the property is displayed when value is set to `true`
-        await Presentation.presentation
-          .vars(ruleset.id)
-          .setBool("SHOW_LABEL", true);
+        await Presentation.presentation.vars(ruleset.id).setBool("SHOW_LABEL", true);
         content = (await Presentation.presentation.getContent({
           imodel,
           rulesetOrId: ruleset,
@@ -267,9 +263,7 @@ describe("Learning Snippets", () => {
         ]);
 
         // Ensure the property is not displayed when value is set to `false`
-        await Presentation.presentation
-          .vars(ruleset.id)
-          .setBool("SHOW_LABEL", false);
+        await Presentation.presentation.vars(ruleset.id).setBool("SHOW_LABEL", false);
         content = (await Presentation.presentation.getContent({
           imodel,
           rulesetOrId: ruleset,

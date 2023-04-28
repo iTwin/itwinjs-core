@@ -3,12 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { BentleyError, BentleyStatus } from "@itwin/core-bentley";
-import {
-  UnitConversionProps,
-  UnitExtraData,
-  UnitProps,
-  UnitsProvider,
-} from "@itwin/core-quantity";
+import { UnitConversionProps, UnitExtraData, UnitProps, UnitsProvider } from "@itwin/core-quantity";
 import { ISchemaLocater, SchemaContext } from "../Context";
 import { SchemaItem } from "../Metadata/SchemaItem";
 import { SchemaItemKey, SchemaKey } from "../SchemaKey";
@@ -31,10 +26,7 @@ export class SchemaUnitProvider implements UnitsProvider {
    * created and the locater will be added.
    * @param _unitExtraData Additional data like alternate display label not found in Units Schema to match with Units; Defaults to empty array.
    */
-  constructor(
-    contextOrLocater: ISchemaLocater,
-    private _unitExtraData: UnitExtraData[] = []
-  ) {
+  constructor(contextOrLocater: ISchemaLocater, private _unitExtraData: UnitExtraData[] = []) {
     if (contextOrLocater instanceof SchemaContext) {
       this._context = contextOrLocater;
     } else {
@@ -66,34 +58,22 @@ export class SchemaUnitProvider implements UnitsProvider {
     const schema = await this._context.getSchema(schemaKey);
 
     if (!schema) {
-      throw new BentleyError(
-        BentleyStatus.ERROR,
-        "Cannot find schema for phenomenon",
-        () => {
-          return { phenomenon, schema: schemaName };
-        }
-      );
+      throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema for phenomenon", () => {
+        return { phenomenon, schema: schemaName };
+      });
     }
 
     const itemKey = new SchemaItemKey(schemaItemName, schema.schemaKey);
     const phenom = await this._context.getSchemaItem(itemKey);
     if (!phenom)
-      throw new BentleyError(
-        BentleyStatus.ERROR,
-        "Cannot find schema item/phenomenon",
-        () => {
-          return { item: schemaItemName, schema: schemaName };
-        }
-      );
+      throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema item/phenomenon", () => {
+        return { item: schemaItemName, schema: schemaName };
+      });
 
     if (phenom.schemaItemType !== SchemaItemType.Phenomenon)
-      throw new BentleyError(
-        BentleyStatus.ERROR,
-        "Item is not a phenomenon",
-        () => {
-          return { itemType: phenom.key.fullName };
-        }
-      );
+      throw new BentleyError(BentleyStatus.ERROR, "Item is not a phenomenon", () => {
+        return { itemType: phenom.key.fullName };
+      });
 
     // Find units' full name that match given phenomenon param.
     const filteredUnits: Array<UnitProps> = [];
@@ -102,10 +82,7 @@ export class SchemaUnitProvider implements UnitsProvider {
     while (!done) {
       if (Unit.isUnit(value)) {
         const foundPhenomenon = await value.phenomenon;
-        if (
-          foundPhenomenon &&
-          foundPhenomenon.key.matchesFullName(phenomenon)
-        ) {
+        if (foundPhenomenon && foundPhenomenon.key.matchesFullName(phenomenon)) {
           const unitProps = this.getUnitsProps(value);
           filteredUnits.push(unitProps);
         }
@@ -156,29 +133,15 @@ export class SchemaUnitProvider implements UnitsProvider {
 
     try {
       try {
-        foundUnit = await this.findUnitByDisplayLabel(
-          findLabel,
-          findSchema,
-          findPhenomenon,
-          findUnitSystem
-        );
+        foundUnit = await this.findUnitByDisplayLabel(findLabel, findSchema, findPhenomenon, findUnitSystem);
       } catch (err) {
         // If there is no Unit with display label that matches label, then check for alternate display labels that may match
-        foundUnit = await this.findUnitByAltDisplayLabel(
-          findLabel,
-          findSchema,
-          findPhenomenon,
-          findUnitSystem
-        );
+        foundUnit = await this.findUnitByAltDisplayLabel(findLabel, findSchema, findPhenomenon, findUnitSystem);
       }
     } catch (err) {
-      throw new BentleyError(
-        BentleyStatus.ERROR,
-        "Cannot find unit with label",
-        () => {
-          return { unitLabel };
-        }
-      );
+      throw new BentleyError(BentleyStatus.ERROR, "Cannot find unit with label", () => {
+        return { unitLabel };
+      });
     }
 
     return this.getUnitsProps(foundUnit);
@@ -190,14 +153,8 @@ export class SchemaUnitProvider implements UnitsProvider {
    * @param toUnit The UnitProps of the 'to' unit.
    * @returns The UnitConversionProps interface from the @itwin/core-quantity package.
    */
-  public async getConversion(
-    fromUnit: UnitProps,
-    toUnit: UnitProps
-  ): Promise<UnitConversionProps> {
-    const conversion = await this._unitConverter.calculateConversion(
-      fromUnit.name,
-      toUnit.name
-    );
+  public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps> {
+    const conversion = await this._unitConverter.calculateConversion(fromUnit.name, toUnit.name);
     return {
       factor: conversion.factor,
       offset: conversion.offset,
@@ -216,25 +173,17 @@ export class SchemaUnitProvider implements UnitsProvider {
     const schema = await this._context.getSchema(schemaKey);
 
     if (!schema) {
-      throw new BentleyError(
-        BentleyStatus.ERROR,
-        "Cannot find schema for unit",
-        () => {
-          return { schema: schemaName, unit: unitName };
-        }
-      );
+      throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema for unit", () => {
+        return { schema: schemaName, unit: unitName };
+      });
     }
 
     const itemKey = new SchemaItemKey(schemaItemName, schema.schemaKey);
     const item = await this._context.getSchemaItem<Unit>(itemKey);
     if (!item)
-      throw new BentleyError(
-        BentleyStatus.ERROR,
-        "Cannot find schema item/unit",
-        () => {
-          return { item: schemaItemName, schema: schemaName };
-        }
-      );
+      throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema item/unit", () => {
+        return { item: schemaItemName, schema: schemaName };
+      });
 
     if (item.schemaItemType === SchemaItemType.Unit) return item;
 
@@ -275,26 +224,15 @@ export class SchemaUnitProvider implements UnitsProvider {
         const currPhenomenon = await value.phenomenon;
         const currUnitSystem = await value.unitSystem;
         if (!schemaName || value.schema.name.toLowerCase() === schemaName)
-          if (
-            !phenomenon ||
-            (currPhenomenon && currPhenomenon.key.matchesFullName(phenomenon))
-          )
-            if (
-              !unitSystem ||
-              (currUnitSystem && currUnitSystem.key.matchesFullName(unitSystem))
-            )
-              return value;
+          if (!phenomenon || (currPhenomenon && currPhenomenon.key.matchesFullName(phenomenon)))
+            if (!unitSystem || (currUnitSystem && currUnitSystem.key.matchesFullName(unitSystem))) return value;
       }
       ({ value, done } = schemaItems.next());
     }
 
-    throw new BentleyError(
-      BentleyStatus.ERROR,
-      "Cannot find unit with display label",
-      () => {
-        return { displayLabel };
-      }
-    );
+    throw new BentleyError(BentleyStatus.ERROR, "Cannot find unit with display label", () => {
+      return { displayLabel };
+    });
   }
 
   /**
@@ -309,37 +247,20 @@ export class SchemaUnitProvider implements UnitsProvider {
   ): Promise<Unit> {
     for (const entry of this._unitExtraData) {
       if (entry.altDisplayLabels && entry.altDisplayLabels.length > 0) {
-        if (
-          entry.altDisplayLabels.findIndex(
-            (ref: string) => ref.toLowerCase() === altDisplayLabel
-          ) !== -1
-        ) {
+        if (entry.altDisplayLabels.findIndex((ref: string) => ref.toLowerCase() === altDisplayLabel) !== -1) {
           // Found altDisplayLabel that matches label to find
           const unit = await this.findECUnitByName(entry.name);
           const foundPhenomenon = await unit.phenomenon;
           const foundUnitSystem = await unit.unitSystem;
           if (!schemaName || unit.schema.name.toLowerCase() === schemaName)
-            if (
-              !phenomenon ||
-              (foundPhenomenon &&
-                foundPhenomenon.key.matchesFullName(phenomenon))
-            )
-              if (
-                !unitSystem ||
-                (foundUnitSystem &&
-                  foundUnitSystem.key.matchesFullName(unitSystem))
-              )
-                return unit;
+            if (!phenomenon || (foundPhenomenon && foundPhenomenon.key.matchesFullName(phenomenon)))
+              if (!unitSystem || (foundUnitSystem && foundUnitSystem.key.matchesFullName(unitSystem))) return unit;
         }
       }
     }
 
-    throw new BentleyError(
-      BentleyStatus.ERROR,
-      "Cannot find unit with alternate display label",
-      () => {
-        return { altDisplayLabel };
-      }
-    );
+    throw new BentleyError(BentleyStatus.ERROR, "Cannot find unit with alternate display label", () => {
+      return { altDisplayLabel };
+    });
   }
 }

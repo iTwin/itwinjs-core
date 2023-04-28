@@ -47,15 +47,9 @@ export class ALong {
   /** The integer value 10 */
   public static TEN: ALong = new ALong(0.0, 10.0);
   /** The integer value -1 */
-  public static MINUS_ONE: ALong = new ALong(
-    ALong._U32 - 1.0,
-    ALong._U32 - 1.0
-  );
+  public static MINUS_ONE: ALong = new ALong(ALong._U32 - 1.0, ALong._U32 - 1.0);
   /** The maximum positive value of a signed_ 64-bit integer (9223372036854775807) */
-  public static MAX_VALUE: ALong = new ALong(
-    ALong._U31 - 1.0,
-    ALong._U32 - 1.0
-  );
+  public static MAX_VALUE: ALong = new ALong(ALong._U31 - 1.0, ALong._U32 - 1.0);
   /** The minimum negative value of a signed 64-bit integer (-9223372036854775808) */
   public static MIN_VALUE: ALong = new ALong(ALong._U31, 0.0);
 
@@ -414,9 +408,7 @@ export class ALong {
    * @return the new number.
    */
   public static fromInt(value: float64): ALong {
-    return value < 0.0
-      ? new ALong(ALong._U32 - 1.0, ALong._U32 + value)
-      : new ALong(0.0, value);
+    return value < 0.0 ? new ALong(ALong._U32 - 1.0, ALong._U32 + value) : new ALong(0.0, value);
   }
 
   /**
@@ -506,8 +498,7 @@ export class ALong {
   public getByte(index: int32): int32 {
     let value: float64 = index < 4 ? this._low : this._high; // this should be unsigned
     let position: int32 = index < 4 ? index : index - 4;
-    for (let i: number = 0; i < position; i++)
-      value = Numbers.floor(value / 256.0);
+    for (let i: number = 0; i < position; i++) value = Numbers.floor(value / 256.0);
     return Math.trunc(value % 256);
   }
 
@@ -687,19 +678,12 @@ export class ALong {
       let digit: int32 = value.modInt(radix);
       value = value.divInt(radix);
       let sdigit: string =
-        digit < 10
-          ? Strings.charCodeToString(48 + digit)
-          : Strings.charCodeToString(65 + digit - 10);
+        digit < 10 ? Strings.charCodeToString(48 + digit) : Strings.charCodeToString(65 + digit - 10);
       result = sdigit + result;
       /* Fail? */
       ASystem.assertNot(
         Strings.getLength(result) > 20,
-        "Failed to convert longHL to string (radix " +
-          radix +
-          "): " +
-          this._high +
-          ";" +
-          this._low
+        "Failed to convert longHL to string (radix " + radix + "): " + this._high + ";" + this._low
       );
     }
     if (neg) result = "-" + result;

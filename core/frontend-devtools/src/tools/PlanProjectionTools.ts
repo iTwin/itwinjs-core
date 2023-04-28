@@ -7,11 +7,7 @@
  * @module Tools
  */
 
-import {
-  PlanProjectionSettings,
-  PlanProjectionSettingsProps,
-  SubCategoryOverride,
-} from "@itwin/core-common";
+import { PlanProjectionSettings, PlanProjectionSettingsProps, SubCategoryOverride } from "@itwin/core-common";
 import {
   DisplayStyle3dState,
   IModelApp,
@@ -43,28 +39,22 @@ export class DumpPlanProjectionSettingsTool extends DisplayStyleTool {
   }
 
   protected async parse(args: string[]) {
-    if (1 === args.length)
-      this._copyToClipboard = "c" === args[0].toLowerCase();
+    if (1 === args.length) this._copyToClipboard = "c" === args[0].toLowerCase();
 
     return true;
   }
 
   protected async execute(vp: Viewport) {
-    const settings = (vp.displayStyle as DisplayStyle3dState).settings
-      .planProjectionSettings;
+    const settings = (vp.displayStyle as DisplayStyle3dState).settings.planProjectionSettings;
     if (undefined === settings) {
       IModelApp.notifications.outputMessage(
-        new NotifyMessageDetails(
-          OutputMessagePriority.Info,
-          "No plan projection settings defined"
-        )
+        new NotifyMessageDetails(OutputMessagePriority.Info, "No plan projection settings defined")
       );
       return false;
     }
 
     const props = [];
-    for (const [modelId, value] of settings)
-      props.push({ modelId, settings: value.toJSON() });
+    for (const [modelId, value] of settings) props.push({ modelId, settings: value.toJSON() });
 
     const json = JSON.stringify(props);
     if (this._copyToClipboard) copyStringToClipboard(json);
@@ -101,10 +91,7 @@ export abstract class OverrideSubCategoryPriorityTool extends DisplayStyleTool {
       const ovr = style.getSubCategoryOverride(id);
       if (undefined === ovr) {
         if (undefined !== this._priority)
-          style.overrideSubCategory(
-            id,
-            SubCategoryOverride.fromJSON({ priority: this._priority })
-          );
+          style.overrideSubCategory(id, SubCategoryOverride.fromJSON({ priority: this._priority }));
       } else {
         const props = ovr.toJSON();
         props.priority = this._priority;
@@ -146,8 +133,7 @@ export abstract class ChangePlanProjectionSettingsTool extends DisplayStyleTool 
 
   protected async execute(vp: Viewport) {
     const settings = (vp.displayStyle as DisplayStyle3dState).settings;
-    for (const modelId of this._modelIds)
-      settings.setPlanProjectionSettings(modelId, this._settings);
+    for (const modelId of this._modelIds) settings.setPlanProjectionSettings(modelId, this._settings);
 
     return true;
   }
@@ -187,18 +173,14 @@ export abstract class ChangePlanProjectionSettingsTool extends DisplayStyleTool 
         });
         break;
       case "0": // comma-separated list of Ids
-        for (const modelId of models.split(","))
-          if (isPlanProjection(modelId)) this._modelIds.add(modelId);
+        for (const modelId of models.split(",")) if (isPlanProjection(modelId)) this._modelIds.add(modelId);
 
         break;
     }
 
     if (this._modelIds.size === 0) {
       IModelApp.notifications.outputMessage(
-        new NotifyMessageDetails(
-          OutputMessagePriority.Error,
-          "No plan projection models"
-        )
+        new NotifyMessageDetails(OutputMessagePriority.Error, "No plan projection models")
       );
       return false;
     }

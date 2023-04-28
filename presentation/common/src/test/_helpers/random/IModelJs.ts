@@ -26,5 +26,4 @@ export const createRandomEntityProps = (): EntityProps => {
 /**
  * @internal Used for testing only.
  */
-export const createRandomTransientId = () =>
-  Id64.fromLocalAndBriefcaseIds(123, 0xffffff);
+export const createRandomTransientId = () => Id64.fromLocalAndBriefcaseIds(123, 0xffffff);

@@ -7,9 +7,7 @@
  */
 
 import i18next, { i18n, InitOptions, Module, TOptionsBase } from "i18next";
-import i18nextBrowserLanguageDetector, {
-  DetectorOptions,
-} from "i18next-browser-languagedetector";
+import i18nextBrowserLanguageDetector, { DetectorOptions } from "i18next-browser-languagedetector";
 import Backend, { BackendOptions } from "i18next-http-backend";
 import { Logger } from "@itwin/core-bentley";
 import type { Localization } from "@itwin/core-common";
@@ -73,13 +71,9 @@ export class ITwinLocalization implements Localization {
   public async initialize(namespaces: string[]): Promise<void> {
     // Also consider namespaces passed into constructor
     const initNamespaces: string[] = [this._initOptions.ns || []].flat();
-    const combinedNamespaces: Set<string> = new Set([
-      ...namespaces,
-      ...initNamespaces,
-    ]); // without duplicates
+    const combinedNamespaces: Set<string> = new Set([...namespaces, ...initNamespaces]); // without duplicates
 
-    const defaultNamespace: string | false | readonly string[] =
-      this._initOptions.defaultNS ?? namespaces[0];
+    const defaultNamespace: string | false | readonly string[] = this._initOptions.defaultNS ?? namespaces[0];
     if (defaultNamespace) combinedNamespaces.add(defaultNamespace as string); // Make sure default namespace is in namespaces list
 
     const initOptions: InitOptions = {
@@ -91,9 +85,7 @@ export class ITwinLocalization implements Localization {
     // if in a development environment, set debugging
     if (process.env.NODE_ENV === "development") initOptions.debug = true;
 
-    const initPromise = this.i18next.init(
-      initOptions
-    ) as unknown as Promise<void>;
+    const initPromise = this.i18next.init(initOptions) as unknown as Promise<void>;
 
     for (const ns of namespaces) this._namespaces.set(ns, initPromise);
 
@@ -117,9 +109,7 @@ export class ITwinLocalization implements Localization {
    * @public
    */
   public getLocalizedKeys(line: string): string {
-    return line.replace(/\%\{(.+?)\}/g, (_match, tag) =>
-      this.getLocalizedString(tag)
-    );
+    return line.replace(/\%\{(.+?)\}/g, (_match, tag) => this.getLocalizedString(tag));
   }
 
   /** Return the translated value of a key.
@@ -135,14 +125,9 @@ export class ITwinLocalization implements Localization {
    * @throws Error if no keys resolve to a string.
    * @public
    */
-  public getLocalizedString(
-    key: string | string[],
-    options?: TOptionsBase
-  ): string {
+  public getLocalizedString(key: string | string[], options?: TOptionsBase): string {
     if (options?.returnDetails || options?.returnObjects) {
-      throw new Error(
-        "Translation key must map to a string, but the given options will result in an object"
-      );
+      throw new Error("Translation key must map to a string, but the given options will result in an object");
     }
 
     const value = this.i18next.t(key, options);
@@ -162,11 +147,7 @@ export class ITwinLocalization implements Localization {
    * @throws Error if no keys resolve to a string.
    * @internal
    */
-  public getLocalizedStringWithNamespace(
-    namespace: string,
-    key: string | string[],
-    options?: TOptionsBase
-  ): string {
+  public getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TOptionsBase): string {
     let fullKey: string | string[] = "";
 
     if (typeof key === "string") {
@@ -187,15 +168,9 @@ export class ITwinLocalization implements Localization {
    * @throws Error if no keys resolve to a string.
    * @internal
    */
-  public getEnglishString(
-    namespace: string,
-    key: string | string[],
-    options?: TOptionsBase
-  ): string {
+  public getEnglishString(namespace: string, key: string | string[], options?: TOptionsBase): string {
     if (options?.returnDetails || options?.returnObjects) {
-      throw new Error(
-        "Translation key must map to a string, but the given options will result in an object"
-      );
+      throw new Error("Translation key must map to a string, but the given options will result in an object");
     }
 
     options = {
@@ -205,8 +180,7 @@ export class ITwinLocalization implements Localization {
 
     const en = this.i18next.getFixedT("en", namespace);
     const str = en(key, options);
-    if (typeof str !== "string")
-      throw new Error("Translation key(s) not found");
+    if (typeof str !== "string") throw new Error("Translation key(s) not found");
 
     return str;
   }
@@ -251,26 +225,18 @@ export class ITwinLocalization implements Localization {
         // For example 'fr-ca' might be the most specific locale, in which case 'fr' and 'en' are fallback locales.
         // Using Backend from i18next-http-backend, err will be an array of strings of each namespace it tried to read and its locale.
         // There might be errs for some other namespaces as well as this one. We resolve the promise unless there's an error for each possible locale.
-        let locales = this.getLanguageList().map(
-          (thisLocale: any) => `/${thisLocale}/`
-        );
+        let locales = this.getLanguageList().map((thisLocale: any) => `/${thisLocale}/`);
 
         try {
           for (const thisError of err) {
             if (typeof thisError === "string")
-              locales = locales.filter(
-                (thisLocale) => !thisError.includes(thisLocale)
-              );
+              locales = locales.filter((thisLocale) => !thisError.includes(thisLocale));
           }
         } catch (e) {
           locales = [];
         }
         // if we removed every locale from the array, it wasn't loaded.
-        if (locales.length === 0)
-          Logger.logError(
-            "i18n",
-            `No resources for namespace ${name} could be loaded`
-          );
+        if (locales.length === 0) Logger.logError("i18n", `No resources for namespace ${name} could be loaded`);
 
         resolve();
       });

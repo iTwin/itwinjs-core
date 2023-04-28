@@ -31,10 +31,7 @@ describe("FeatureOverrideProvider", () => {
 
   class Provider implements FeatureOverrideProvider {
     public id = 0;
-    public addFeatureOverrides(
-      _ovrs: FeatureSymbology.Overrides,
-      _vp: Viewport
-    ): void {}
+    public addFeatureOverrides(_ovrs: FeatureSymbology.Overrides, _vp: Viewport): void {}
   }
 
   function checkDirty(vp: Viewport, expectDirty: boolean): void {
@@ -46,8 +43,7 @@ describe("FeatureOverrideProvider", () => {
   it("adds and drops", async () => {
     await testOnScreenViewport("0x24", imodel, 200, 150, async (vp) => {
       const expectCount = (count: number) => {
-        const list = (vp as any)
-          ._featureOverrideProviders as FeatureOverrideProvider[];
+        const list = (vp as any)._featureOverrideProviders as FeatureOverrideProvider[];
         expect(list.length).to.equal(count);
       };
 
@@ -99,23 +95,12 @@ describe("FeatureOverrideProvider", () => {
       p2.id = 2;
       vp.addFeatureOverrideProvider(p2);
 
-      expect(vp.findFeatureOverrideProviderOfType<Provider>(Provider)).to.equal(
-        p1
-      );
-      expect(
-        vp.findFeatureOverrideProviderOfType<EmphasizeElements>(
-          EmphasizeElements
-        )
-      ).to.be.undefined;
+      expect(vp.findFeatureOverrideProviderOfType<Provider>(Provider)).to.equal(p1);
+      expect(vp.findFeatureOverrideProviderOfType<EmphasizeElements>(EmphasizeElements)).to.be.undefined;
 
-      expect(
-        vp.findFeatureOverrideProvider((x) => (x as Provider).id === 1)
-      ).to.equal(p1);
-      expect(
-        vp.findFeatureOverrideProvider((x) => (x as Provider).id === 2)
-      ).to.equal(p2);
-      expect(vp.findFeatureOverrideProvider((x) => (x as Provider).id === 3)).to
-        .be.undefined;
+      expect(vp.findFeatureOverrideProvider((x) => (x as Provider).id === 1)).to.equal(p1);
+      expect(vp.findFeatureOverrideProvider((x) => (x as Provider).id === 2)).to.equal(p2);
+      expect(vp.findFeatureOverrideProvider((x) => (x as Provider).id === 3)).to.be.undefined;
     });
   });
 });

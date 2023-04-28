@@ -13,11 +13,7 @@ import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { BSplineCurveOps } from "../bspline/BSplineCurveOps";
-import {
-  BSplineSurface3d,
-  BSplineSurface3dH,
-  WeightStyle,
-} from "../bspline/BSplineSurface";
+import { BSplineSurface3d, BSplineSurface3dH, WeightStyle } from "../bspline/BSplineSurface";
 import {
   InterpolationCurve3d as InterpolationCurve3d,
   InterpolationCurve3dProps,
@@ -48,17 +44,9 @@ import { Ray3d } from "../geometry3d/Ray3d";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
 import { XYProps, XYZProps } from "../geometry3d/XYZProps";
-import {
-  YawPitchRollAngles,
-  YawPitchRollProps,
-} from "../geometry3d/YawPitchRollAngles";
+import { YawPitchRollAngles, YawPitchRollProps } from "../geometry3d/YawPitchRollAngles";
 import { Point4d } from "../geometry4d/Point4d";
-import {
-  AuxChannel,
-  AuxChannelData,
-  AuxChannelDataType,
-  PolyfaceAuxData,
-} from "../polyface/AuxData";
+import { AuxChannel, AuxChannelData, AuxChannelDataType, PolyfaceAuxData } from "../polyface/AuxData";
 import { IndexedPolyface } from "../polyface/Polyface";
 import { TaggedNumericData } from "../polyface/TaggedNumericData";
 import { Box } from "../solid/Box";
@@ -79,10 +67,7 @@ export namespace IModelJson {
    * Property rules for json objects that can be deserialized to various Curve and Solid objects
    * @public
    */
-  export interface GeometryProps
-    extends CurvePrimitiveProps,
-      SolidPrimitiveProps,
-      CurveCollectionProps {
+  export interface GeometryProps extends CurvePrimitiveProps, SolidPrimitiveProps, CurveCollectionProps {
     /** `{indexedMesh:...}` */
     indexedMesh?: IndexedMeshProps;
     /** `{point:...}` */
@@ -563,10 +548,8 @@ export namespace IModelJson {
     ): Vector3d | undefined {
       if (json.hasOwnProperty(propertyName)) {
         const value = json[propertyName];
-        if (Geometry.isNumberArray(value, 3))
-          return Vector3d.create(value[0], value[1], value[2]);
-        if (Geometry.isNumberArray(value, 2))
-          return Vector3d.create(value[0], value[1]);
+        if (Geometry.isNumberArray(value, 3)) return Vector3d.create(value[0], value[1], value[2]);
+        if (Geometry.isNumberArray(value, 2)) return Vector3d.create(value[0], value[1]);
         if (XYZ.isXAndY(value)) return Vector3d.fromJSON(value);
       }
       return defaultValue;
@@ -579,10 +562,8 @@ export namespace IModelJson {
     ): Point3d | undefined {
       if (json.hasOwnProperty(propertyName)) {
         const value = json[propertyName];
-        if (Geometry.isNumberArray(value, 3))
-          return Point3d.create(value[0], value[1], value[2]);
-        if (Geometry.isNumberArray(value, 2))
-          return Point3d.create(value[0], value[1]);
+        if (Geometry.isNumberArray(value, 3)) return Point3d.create(value[0], value[1], value[2]);
+        if (Geometry.isNumberArray(value, 2)) return Point3d.create(value[0], value[1]);
         if (XYZ.isXAndY(value)) return Point3d.fromJSON(value);
       }
       return defaultValue;
@@ -595,8 +576,7 @@ export namespace IModelJson {
     ): Segment1d | undefined {
       if (json.hasOwnProperty(propertyName)) {
         const value = json[propertyName];
-        if (Geometry.isNumberArray(value, 2))
-          return Segment1d.create(value[0], value[1]);
+        if (Geometry.isNumberArray(value, 2)) return Segment1d.create(value[0], value[1]);
       }
       return defaultValue;
     }
@@ -615,27 +595,15 @@ export namespace IModelJson {
     /**
      * @internal
      */
-    public static parseTaggedNumericProps(
-      json: any
-    ): TaggedNumericData | undefined {
+    public static parseTaggedNumericProps(json: any): TaggedNumericData | undefined {
       const tagA = this.parseNumberProperty(json, "tagA");
       const tagB = this.parseNumberProperty(json, "tagB", 0);
       if (tagA !== undefined) {
         const result = new TaggedNumericData(tagA, tagB);
         if (json.hasOwnProperty("intData"))
-          result.intData = this.parseNumberArrayProperty(
-            json,
-            "intData",
-            0,
-            undefined
-          );
+          result.intData = this.parseNumberArrayProperty(json, "intData", 0, undefined);
         if (json.hasOwnProperty("doubleData"))
-          result.doubleData = this.parseNumberArrayProperty(
-            json,
-            "doubleData",
-            0,
-            undefined
-          );
+          result.doubleData = this.parseNumberArrayProperty(json, "doubleData", 0, undefined);
         return result;
       }
       return undefined;
@@ -705,10 +673,7 @@ export namespace IModelJson {
       return defaultValue;
     }
 
-    private static loadContourArray(
-      json: any,
-      propertyName: string
-    ): CurveCollection[] | undefined {
+    private static loadContourArray(json: any, propertyName: string): CurveCollection[] | undefined {
       if (json.hasOwnProperty(propertyName)) {
         const value = json[propertyName];
         if (Array.isArray(value)) {
@@ -725,9 +690,7 @@ export namespace IModelJson {
       return undefined;
     }
 
-    private static parseYawPitchRollAnglesToMatrix3d(
-      json: YawPitchRollProps
-    ): Matrix3d | undefined {
+    private static parseYawPitchRollAnglesToMatrix3d(json: YawPitchRollProps): Matrix3d | undefined {
       const ypr = YawPitchRollAngles.fromJSON(json);
       return ypr.toMatrix3d();
     }
@@ -753,11 +716,7 @@ export namespace IModelJson {
       if (Array.isArray(json) && json.length === 2) {
         const xVector = Vector3d.fromJSON(json[0]);
         const yVector = Vector3d.fromJSON(json[1]);
-        const matrix = Matrix3d.createRigidFromColumns(
-          xVector,
-          yVector,
-          axisOrder
-        );
+        const matrix = Matrix3d.createRigidFromColumns(xVector, yVector, axisOrder);
         if (matrix) return matrix;
       }
       if (createDefaultIdentity) return Matrix3d.createIdentity();
@@ -772,34 +731,19 @@ export namespace IModelJson {
      * @param json [in] json source data
      * @param createDefaultIdentity [in] If true and no orientation is present, return an identity matrix.  If false and no orientation is present, return undefined.
      */
-    private static parseOrientation(
-      json: any,
-      createDefaultIdentity: boolean
-    ): Matrix3d | undefined {
+    private static parseOrientation(json: any, createDefaultIdentity: boolean): Matrix3d | undefined {
       if (json.yawPitchRollAngles) {
-        return Reader.parseYawPitchRollAnglesToMatrix3d(
-          json.yawPitchRollAngles
-        );
+        return Reader.parseYawPitchRollAnglesToMatrix3d(json.yawPitchRollAngles);
       } else if (json.xyVectors) {
-        return Reader.parseAxesFromVectors(
-          json.xyVectors,
-          AxisOrder.XYZ,
-          createDefaultIdentity
-        );
+        return Reader.parseAxesFromVectors(json.xyVectors, AxisOrder.XYZ, createDefaultIdentity);
       } else if (json.zxVectors) {
-        return Reader.parseAxesFromVectors(
-          json.zxVectors,
-          AxisOrder.ZXY,
-          createDefaultIdentity
-        );
+        return Reader.parseAxesFromVectors(json.zxVectors, AxisOrder.ZXY, createDefaultIdentity);
       }
       if (createDefaultIdentity) return Matrix3d.createIdentity();
       return undefined;
     }
 
-    private static parseArcByVectorProps(
-      data?: ArcByVectorProps
-    ): Arc3d | undefined {
+    private static parseArcByVectorProps(data?: ArcByVectorProps): Arc3d | undefined {
       if (
         data &&
         data.center !== undefined &&
@@ -817,9 +761,7 @@ export namespace IModelJson {
       return undefined;
     }
     // remark: Returns LineString3d as last default when give points are colinear.
-    private static parseArcBy3Points(
-      data?: ArcByVectorProps
-    ): Arc3d | LineString3d | undefined {
+    private static parseArcBy3Points(data?: ArcByVectorProps): Arc3d | LineString3d | undefined {
       if (Array.isArray(data) && data.length > 2) {
         const pointA = Point3d.fromJSON(data[0]);
         const pointB = Point3d.fromJSON(data[1]);
@@ -829,11 +771,8 @@ export namespace IModelJson {
       return undefined;
     }
 
-    private static parseArcObject(
-      data?: ArcByVectorProps
-    ): Arc3d | LineString3d | undefined {
-      let arc: Arc3d | LineString3d | undefined =
-        Reader.parseArcByVectorProps(data);
+    private static parseArcObject(data?: ArcByVectorProps): Arc3d | LineString3d | undefined {
+      let arc: Arc3d | LineString3d | undefined = Reader.parseArcByVectorProps(data);
       if (arc) return arc;
       arc = Reader.parseArcBy3Points(data);
       return arc; // possibly undefined.
@@ -847,9 +786,7 @@ export namespace IModelJson {
     /** Parse TransitionSpiral content (right side) to TransitionSpiral3d
      * @alpha
      */
-    public static parseTransitionSpiral(
-      data?: TransitionSpiralProps
-    ): TransitionSpiral3d | undefined {
+    public static parseTransitionSpiral(data?: TransitionSpiralProps): TransitionSpiral3d | undefined {
       const axes = Reader.parseOrientation(data, true)!;
       const origin = Reader.parsePoint3dProperty(data, "origin");
       // the create method will juggle any 4 out of these 5 inputs to define the other ..
@@ -858,26 +795,11 @@ export namespace IModelJson {
       const startRadius = Reader.parseNumberProperty(data, "startRadius");
       const endRadius = Reader.parseNumberProperty(data, "endRadius");
       let length = Reader.parseNumberProperty(data, "length", undefined);
-      if (length === undefined)
-        length = Reader.parseNumberProperty(data, "curveLength", undefined);
+      if (length === undefined) length = Reader.parseNumberProperty(data, "curveLength", undefined);
 
-      let interval = Reader.parseSegment1dProperty(
-        data,
-        "activeFractionInterval",
-        undefined
-      );
-      if (!interval)
-        interval = Reader.parseSegment1dProperty(
-          data,
-          "fractionInterval",
-          undefined
-        );
-      if (!interval)
-        interval = Reader.parseSegment1dProperty(
-          data,
-          "activeInterval",
-          undefined
-        );
+      let interval = Reader.parseSegment1dProperty(data, "activeFractionInterval", undefined);
+      if (!interval) interval = Reader.parseSegment1dProperty(data, "fractionInterval", undefined);
+      if (!interval) interval = Reader.parseSegment1dProperty(data, "activeInterval", undefined);
       const spiralType = Reader.parseStringProperty(data, "type", "clothoid")!;
       // REMARK:  Our job is to parse and pass data along -- inscrutable validation happens in the implementation classes . . .
       if (origin) {
@@ -924,11 +846,7 @@ export namespace IModelJson {
       newKnots: number[]
     ): boolean {
       const numKnots = knots.length;
-      if (
-        numPoles + 2 * order - 1 === numKnots &&
-        knots[0] < knots[1] &&
-        knots[numKnots - 2] < knots[numKnots - 1]
-      ) {
+      if (numPoles + 2 * order - 1 === numKnots && knots[0] < knots[1] && knots[numKnots - 2] < knots[numKnots - 1]) {
         const a0 = knots[1];
         const a1 = knots[numKnots - 2];
         for (let i = 2; i <= order; i++) {
@@ -942,9 +860,7 @@ export namespace IModelJson {
       return false;
     }
     /** Parse `bcurve` content (right side)to  BSplineCurve3d or BSplineCurve3dH object. */
-    public static parseBcurve(
-      data?: any
-    ): BSplineCurve3d | BSplineCurve3dH | undefined {
+    public static parseBcurve(data?: any): BSplineCurve3d | BSplineCurve3dH | undefined {
       if (data === undefined) return undefined;
       if (
         Array.isArray(data.points) &&
@@ -959,12 +875,7 @@ export namespace IModelJson {
           let wrapMode = BSplineWrapMode.None;
           if (
             data.closed &&
-            this.getCorrectedKnotsForClosedClamped(
-              data.points.length,
-              data.knots,
-              data.order,
-              knots
-            )
+            this.getCorrectedKnotsForClosedClamped(data.points.length, data.knots, data.order, knots)
           ) {
             // leave the poles alone -- knots are fixed.
             wrapMode = BSplineWrapMode.OpenByRemovingKnots;
@@ -990,12 +901,7 @@ export namespace IModelJson {
           let wrapMode = BSplineWrapMode.None;
           if (
             data.closed &&
-            this.getCorrectedKnotsForClosedClamped(
-              data.points.length,
-              data.knots,
-              data.order,
-              knots
-            )
+            this.getCorrectedKnotsForClosedClamped(data.points.length, data.knots, data.order, knots)
           ) {
             wrapMode = BSplineWrapMode.OpenByRemovingKnots;
             // leave the poles alone -- knots are fixed.
@@ -1020,9 +926,7 @@ export namespace IModelJson {
     }
 
     /** Parse `bcurve` content (right side)to  BSplineCurve3d or BSplineCurve3dH object. */
-    public static parseInterpolationCurve(
-      data?: any
-    ): InterpolationCurve3d | undefined {
+    public static parseInterpolationCurve(data?: any): InterpolationCurve3d | undefined {
       if (data === undefined) return undefined;
       return InterpolationCurve3d.create(data);
     }
@@ -1048,11 +952,7 @@ export namespace IModelJson {
     }
 
     // For each nonzero index, Announce Math.abs (value) -1
-    private static addZeroBasedIndicesFromSignedOneBased(
-      data: any,
-      numPerFace: number,
-      f: (x: number) => any
-    ): void {
+    private static addZeroBasedIndicesFromSignedOneBased(data: any, numPerFace: number, f: (x: number) => any): void {
       if (data && Geometry.isNumberArray(data)) {
         if (numPerFace > 1) {
           // all indices are used ...
@@ -1068,28 +968,16 @@ export namespace IModelJson {
       }
     }
     /** parse polyface aux data content to PolyfaceAuxData instance */
-    public static parsePolyfaceAuxData(
-      data: any = undefined,
-      numPerFace: number = 0
-    ): PolyfaceAuxData | undefined {
-      if (!Array.isArray(data.channels) || !Array.isArray(data.indices))
-        return undefined;
+    public static parsePolyfaceAuxData(data: any = undefined, numPerFace: number = 0): PolyfaceAuxData | undefined {
+      if (!Array.isArray(data.channels) || !Array.isArray(data.indices)) return undefined;
 
       const outChannels: AuxChannel[] = [];
       for (const inChannel of data.channels) {
-        if (
-          Array.isArray(inChannel.data) &&
-          inChannel.hasOwnProperty("dataType")
-        ) {
+        if (Array.isArray(inChannel.data) && inChannel.hasOwnProperty("dataType")) {
           const outChannelData: AuxChannelData[] = [];
           for (const inChannelData of inChannel.data) {
-            if (
-              inChannelData.hasOwnProperty("input") &&
-              Array.isArray(inChannelData.values)
-            )
-              outChannelData.push(
-                new AuxChannelData(inChannelData.input, inChannelData.values)
-              );
+            if (inChannelData.hasOwnProperty("input") && Array.isArray(inChannelData.values))
+              outChannelData.push(new AuxChannelData(inChannelData.input, inChannelData.values));
           }
           outChannels.push(
             new AuxChannel(
@@ -1103,13 +991,9 @@ export namespace IModelJson {
       }
 
       const auxData = new PolyfaceAuxData(outChannels, []);
-      Reader.addZeroBasedIndicesFromSignedOneBased(
-        data.indices,
-        numPerFace,
-        (x: number) => {
-          auxData.indices.push(x);
-        }
-      );
+      Reader.addZeroBasedIndicesFromSignedOneBased(data.indices, numPerFace, (x: number) => {
+        auxData.indices.push(x);
+      });
 
       return auxData;
     }
@@ -1130,8 +1014,7 @@ export namespace IModelJson {
           // use addNormalXYZ which always creates a new one.
           // likewise for params
           for (const uvw of data.normal) {
-            if (Geometry.isNumberArray(uvw, 3))
-              polyface.addNormalXYZ(uvw[0], uvw[1], uvw[2]);
+            if (Geometry.isNumberArray(uvw, 3)) polyface.addNormalXYZ(uvw[0], uvw[1], uvw[2]);
           }
         }
         if (data.hasOwnProperty("twoSided")) {
@@ -1140,9 +1023,7 @@ export namespace IModelJson {
             polyface.twoSided = q;
           }
         }
-        const numPerFace = data.hasOwnProperty("numPerFace")
-          ? data.numPerFace
-          : 0;
+        const numPerFace = data.hasOwnProperty("numPerFace") ? data.numPerFace : 0;
         if (data.hasOwnProperty("expectedClosure")) {
           const q = data.expectedClosure;
           if (Number.isFinite(q)) {
@@ -1151,8 +1032,7 @@ export namespace IModelJson {
         }
         if (data.hasOwnProperty("param") && Array.isArray(data.param)) {
           for (const uv of data.param) {
-            if (Geometry.isNumberArray(uv, 2))
-              polyface.addParamUV(uv[0], uv[1]);
+            if (Geometry.isNumberArray(uv, 2)) polyface.addParamUV(uv[0], uv[1]);
           }
         }
         if (data.hasOwnProperty("color") && Array.isArray(data.color)) {
@@ -1182,43 +1062,26 @@ export namespace IModelJson {
         }
 
         if (data.hasOwnProperty("normalIndex")) {
-          Reader.addZeroBasedIndicesFromSignedOneBased(
-            data.normalIndex,
-            numPerFace,
-            (x: number) => {
-              polyface.addNormalIndex(x);
-            }
-          );
+          Reader.addZeroBasedIndicesFromSignedOneBased(data.normalIndex, numPerFace, (x: number) => {
+            polyface.addNormalIndex(x);
+          });
         }
         if (data.hasOwnProperty("paramIndex")) {
-          Reader.addZeroBasedIndicesFromSignedOneBased(
-            data.paramIndex,
-            numPerFace,
-            (x: number) => {
-              polyface.addParamIndex(x);
-            }
-          );
+          Reader.addZeroBasedIndicesFromSignedOneBased(data.paramIndex, numPerFace, (x: number) => {
+            polyface.addParamIndex(x);
+          });
         }
 
         if (data.hasOwnProperty("colorIndex")) {
-          Reader.addZeroBasedIndicesFromSignedOneBased(
-            data.colorIndex,
-            numPerFace,
-            (x: number) => {
-              polyface.addColorIndex(x);
-            }
-          );
+          Reader.addZeroBasedIndicesFromSignedOneBased(data.colorIndex, numPerFace, (x: number) => {
+            polyface.addColorIndex(x);
+          });
         }
         if (data.hasOwnProperty("auxData"))
-          polyface.data.auxData = Reader.parsePolyfaceAuxData(
-            data.auxData,
-            numPerFace
-          );
+          polyface.data.auxData = Reader.parsePolyfaceAuxData(data.auxData, numPerFace);
 
         if (data.hasOwnProperty("tags")) {
-          polyface.data.taggedNumericData = Reader.parseTaggedNumericProps(
-            data.tags
-          );
+          polyface.data.taggedNumericData = Reader.parseTaggedNumericProps(data.tags);
         }
 
         return polyface;
@@ -1226,17 +1089,13 @@ export namespace IModelJson {
       return undefined;
     }
     /** parse contents of a curve collection to a CurveCollection instance */
-    public static parseCurveCollectionMembers(
-      result: CurveCollection,
-      data?: any
-    ): CurveCollection | undefined {
+    public static parseCurveCollectionMembers(result: CurveCollection, data?: any): CurveCollection | undefined {
       if (data && Array.isArray(data)) {
         for (const c of data) {
           const g = Reader.parse(c);
           if (
             g instanceof GeometryQuery &&
-            ("curveCollection" === g.geometryCategory ||
-              "curvePrimitive" === g.geometryCategory)
+            ("curveCollection" === g.geometryCategory || "curvePrimitive" === g.geometryCategory)
           )
             result.tryAddChild(g);
         }
@@ -1245,9 +1104,7 @@ export namespace IModelJson {
       return undefined;
     }
     /** Parse content of `bsurf` to BSplineSurface3d or BSplineSurface3dH */
-    public static parseBsurf(
-      data?: any
-    ): BSplineSurface3d | BSplineSurface3dH | undefined {
+    public static parseBsurf(data?: any): BSplineSurface3d | BSplineSurface3dH | undefined {
       if (
         data.hasOwnProperty("uKnots") &&
         Array.isArray(data.uKnots) &&
@@ -1266,13 +1123,7 @@ export namespace IModelJson {
           const d = data.points[0][0].length;
           /** xyz surface (no weights) */
           if (d === 3) {
-            return BSplineSurface3d.createGrid(
-              data.points,
-              orderU,
-              data.uKnots,
-              orderV,
-              data.vKnots
-            );
+            return BSplineSurface3d.createGrid(data.points, orderU, data.uKnots, orderV, data.vKnots);
           }
           /** xyzw surface (weights already applied) */
           if (d === 4) {
@@ -1295,53 +1146,20 @@ export namespace IModelJson {
       const start = Reader.parsePoint3dProperty(json, "start");
       const end = Reader.parsePoint3dProperty(json, "end");
       const radius = Reader.parseNumberProperty(json, "radius");
-      const startRadius = Reader.parseNumberProperty(
-        json,
-        "startRadius",
-        radius
-      );
-      const endRadius = Reader.parseNumberProperty(
-        json,
-        "endRadius",
-        startRadius
-      );
+      const startRadius = Reader.parseNumberProperty(json, "startRadius", radius);
+      const endRadius = Reader.parseNumberProperty(json, "endRadius", startRadius);
 
-      const capped = Reader.parseBooleanProperty(
-        json,
-        "capped",
-        false
-      ) as boolean;
+      const capped = Reader.parseBooleanProperty(json, "capped", false) as boolean;
 
-      if (
-        start &&
-        end &&
-        startRadius !== undefined &&
-        endRadius !== undefined
-      ) {
+      if (start && end && startRadius !== undefined && endRadius !== undefined) {
         if (axes === undefined) {
           const axisVector = Vector3d.createStartEnd(start, end);
           const frame = Matrix3d.createRigidHeadsUp(axisVector, AxisOrder.ZXY);
           const vectorX = frame.columnX();
           const vectorY = frame.columnY();
-          return Cone.createBaseAndTarget(
-            start,
-            end,
-            vectorX,
-            vectorY,
-            startRadius,
-            endRadius,
-            capped
-          );
+          return Cone.createBaseAndTarget(start, end, vectorX, vectorY, startRadius, endRadius, capped);
         } else {
-          return Cone.createBaseAndTarget(
-            start,
-            end,
-            axes.columnX(),
-            axes.columnY(),
-            startRadius,
-            endRadius,
-            capped
-          );
+          return Cone.createBaseAndTarget(start, end, axes.columnX(), axes.columnY(), startRadius, endRadius, capped);
         }
       }
       return undefined;
@@ -1353,11 +1171,7 @@ export namespace IModelJson {
       const end = Reader.parsePoint3dProperty(json, "end");
       const radius = Reader.parseNumberProperty(json, "radius");
 
-      const capped = Reader.parseBooleanProperty(
-        json,
-        "capped",
-        false
-      ) as boolean;
+      const capped = Reader.parseBooleanProperty(json, "capped", false) as boolean;
 
       if (start && end && radius !== undefined) {
         return Cone.createAxisPoints(start, end, radius, radius, capped);
@@ -1365,14 +1179,9 @@ export namespace IModelJson {
       return undefined;
     }
     /** Parse line segment (array of 2 points) properties to `LineSegment3d` instance */
-    private static parseLineSegmentProps(
-      value: any[]
-    ): LineSegment3d | undefined {
+    private static parseLineSegmentProps(value: any[]): LineSegment3d | undefined {
       if (Array.isArray(value) && value.length > 1)
-        return LineSegment3d.create(
-          Point3d.fromJSON(value[0]),
-          Point3d.fromJSON(value[1])
-        );
+        return LineSegment3d.create(Point3d.fromJSON(value[0]), Point3d.fromJSON(value[1]));
       else return undefined;
     }
     /** Parse linear sweep content to `LinearSweep` instance. */
@@ -1391,9 +1200,7 @@ export namespace IModelJson {
       return undefined;
     }
     /** Parse rotational sweep contents to `RotationalSweep` instance */
-    public static parseRotationalSweep(
-      json?: RotationalSweepProps
-    ): RotationalSweep | undefined {
+    public static parseRotationalSweep(json?: RotationalSweepProps): RotationalSweep | undefined {
       if (json === undefined) return undefined;
       const contour = Reader.parse(json.contour);
       const capped = Reader.parseBooleanProperty(json, "capped");
@@ -1423,9 +1230,7 @@ export namespace IModelJson {
 
       // A mismatch between native and TypeScript code: TypeScript used "origin" where native used "baseOrigin".
       // Native now outputs and accepts either, preferring "origin"; TypeScript continues to expose only "origin".
-      const origin =
-        Reader.parsePoint3dProperty(json, "origin") ??
-        Reader.parsePoint3dProperty(json, "baseOrigin");
+      const origin = Reader.parsePoint3dProperty(json, "origin") ?? Reader.parsePoint3dProperty(json, "baseOrigin");
       const baseX = Reader.parseNumberProperty(json, "baseX");
       const baseY = Reader.parseNumberProperty(json, "baseY", baseX);
       let topOrigin = Reader.parsePoint3dProperty(json, "topOrigin");
@@ -1435,11 +1240,7 @@ export namespace IModelJson {
       const axes = Reader.parseOrientation(json, true)!;
 
       if (origin && !topOrigin && height)
-        topOrigin = Matrix3d.xyzPlusMatrixTimesXYZ(
-          origin,
-          axes,
-          Vector3d.create(0, 0, height)
-        );
+        topOrigin = Matrix3d.xyzPlusMatrixTimesXYZ(origin, axes, Vector3d.create(0, 0, height));
 
       if (
         capped !== undefined &&
@@ -1451,16 +1252,7 @@ export namespace IModelJson {
         origin &&
         topOrigin
       ) {
-        return Box.createDgnBoxWithAxes(
-          origin,
-          axes,
-          topOrigin,
-          baseX,
-          baseY,
-          topX,
-          topY,
-          capped
-        );
+        return Box.createDgnBoxWithAxes(origin, axes, topOrigin, baseX, baseY, topX, topY, capped);
       }
       return undefined;
     }
@@ -1474,10 +1266,7 @@ export namespace IModelJson {
       // missing Y and Z both pick up radiusX  (which may have already been defaulted from unqualified radius)
       const radiusY = Reader.parseNumberProperty(json, "radiusY", radiusX);
       const radiusZ = Reader.parseNumberProperty(json, "radiusZ", radiusX);
-      const latitudeStartEnd = Reader.parseAngleSweepProps(
-        json,
-        "latitudeStartEnd"
-      ); // this may be undefined!!
+      const latitudeStartEnd = Reader.parseAngleSweepProps(json, "latitudeStartEnd"); // this may be undefined!!
 
       const axes = Reader.parseOrientation(json, true)!;
 
@@ -1490,22 +1279,12 @@ export namespace IModelJson {
         radiusZ !== undefined &&
         capped !== undefined
       ) {
-        return Sphere.createFromAxesAndScales(
-          center,
-          axes,
-          radiusX,
-          radiusY,
-          radiusZ,
-          latitudeStartEnd,
-          capped
-        );
+        return Sphere.createFromAxesAndScales(center, axes, radiusX, radiusY, radiusZ, latitudeStartEnd, capped);
       }
       return undefined;
     }
     /** Parse RuledSweepProps to RuledSweep instance. */
-    public static parseRuledSweep(
-      json?: RuledSweepProps
-    ): RuledSweep | undefined {
+    public static parseRuledSweep(json?: RuledSweepProps): RuledSweep | undefined {
       const capped = Reader.parseBooleanProperty(json, "capped", false);
       const contours = this.loadContourArray(json, "contour");
       if (contours !== undefined && capped !== undefined) {
@@ -1519,11 +1298,7 @@ export namespace IModelJson {
       const center = Reader.parsePoint3dProperty(json, "center");
       const radiusA = Reader.parseNumberProperty(json, "majorRadius");
       const radiusB = Reader.parseNumberProperty(json, "minorRadius");
-      const sweepAngle = Reader.parseAngleProperty(
-        json,
-        "sweepAngle",
-        undefined
-      );
+      const sweepAngle = Reader.parseAngleProperty(json, "sweepAngle", undefined);
       const capped = Reader.parseBooleanProperty(json, "capped", false)!;
       if (center && radiusA !== undefined && radiusB !== undefined) {
         return TorusPipe.createDgnTorusPipe(
@@ -1574,20 +1349,11 @@ export namespace IModelJson {
         } else if (json.hasOwnProperty("loop")) {
           return Reader.parseCurveCollectionMembers(new Loop(), json.loop);
         } else if (json.hasOwnProperty("parityRegion")) {
-          return Reader.parseCurveCollectionMembers(
-            new ParityRegion(),
-            json.parityRegion
-          );
+          return Reader.parseCurveCollectionMembers(new ParityRegion(), json.parityRegion);
         } else if (json.hasOwnProperty("unionRegion")) {
-          return Reader.parseCurveCollectionMembers(
-            new UnionRegion(),
-            json.unionRegion
-          );
+          return Reader.parseCurveCollectionMembers(new UnionRegion(), json.unionRegion);
         } else if (json.hasOwnProperty("bagOfCurves")) {
-          return Reader.parseCurveCollectionMembers(
-            new BagOfCurves(),
-            json.bagOfCurves
-          );
+          return Reader.parseCurveCollectionMembers(new BagOfCurves(), json.bagOfCurves);
         } else if (json.hasOwnProperty("indexedMesh")) {
           return Reader.parseIndexedMesh(json.indexedMesh);
         } else if (json.hasOwnProperty("bsurf")) {
@@ -1627,17 +1393,13 @@ export namespace IModelJson {
    * @public
    */
   export class Writer extends GeometryHandler {
-    public handleTaggedNumericData(
-      data: TaggedNumericData
-    ): TaggedNumericDataProps {
+    public handleTaggedNumericData(data: TaggedNumericData): TaggedNumericDataProps {
       const result: TaggedNumericDataProps = {
         tagA: data.tagA,
         tagB: data.tagB,
       };
-      if (data.intData !== undefined && data.intData.length > 0)
-        result.intData = data.intData.slice();
-      if (data.doubleData !== undefined && data.doubleData.length > 0)
-        result.doubleData = data.doubleData.slice();
+      if (data.intData !== undefined && data.intData.length > 0) result.intData = data.intData.slice();
+      if (data.doubleData !== undefined && data.doubleData.length > 0) result.doubleData = data.doubleData.slice();
       return result;
     }
     /** Convert strongly typed instance to tagged json */
@@ -1668,17 +1430,12 @@ export namespace IModelJson {
      * @param omitIfIdentity omit the axis data if the matrix is an identity.
      * @param data AxesProps object to be annotated.
      */
-    private static insertOrientationFromMatrix(
-      data: AxesProps,
-      matrix: Matrix3d | undefined,
-      omitIfIdentity: boolean
-    ) {
+    private static insertOrientationFromMatrix(data: AxesProps, matrix: Matrix3d | undefined, omitIfIdentity: boolean) {
       if (omitIfIdentity) {
         if (matrix === undefined) return;
         if (matrix.isIdentity) return;
       }
-      if (matrix)
-        data.xyVectors = [matrix.columnX().toJSON(), matrix.columnY().toJSON()];
+      if (matrix) data.xyVectors = [matrix.columnX().toJSON(), matrix.columnY().toJSON()];
       else
         data.xyVectors = [
           [1, 0, 0],
@@ -1686,9 +1443,7 @@ export namespace IModelJson {
         ];
     }
     private static isIdentityXY(xVector: Vector3d, yVector: Vector3d): boolean {
-      return (
-        xVector.isAlmostEqualXYZ(1, 0, 0) && yVector.isAlmostEqualXYZ(0, 1, 0)
-      );
+      return xVector.isAlmostEqualXYZ(1, 0, 0) && yVector.isAlmostEqualXYZ(0, 1, 0);
     }
 
     /**
@@ -1715,18 +1470,9 @@ export namespace IModelJson {
      * @param omitIfIdentity omit the axis data if the vectorU and vectorV are global x and y vectors.
      * @param data AxesProps object to be annotated.
      */
-    private static insertXYOrientation(
-      data: AxesProps,
-      vectorU: Vector3d,
-      vectorV: Vector3d,
-      omitIfIdentity: boolean
-    ) {
+    private static insertXYOrientation(data: AxesProps, vectorU: Vector3d, vectorV: Vector3d, omitIfIdentity: boolean) {
       if (omitIfIdentity) {
-        if (
-          vectorU.isAlmostEqualXYZ(1, 0, 0) &&
-          vectorV.isAlmostEqualXYZ(0, 1, 0)
-        )
-          return;
+        if (vectorU.isAlmostEqualXYZ(1, 0, 0) && vectorV.isAlmostEqualXYZ(0, 1, 0)) return;
       }
       data.xyVectors = [vectorU.toJSON(), vectorV.toJSON()];
     }
@@ -1743,17 +1489,10 @@ export namespace IModelJson {
           origin: data.localToWorld.origin.toJSON(),
           type: data.spiralType,
         };
-        Writer.insertOrientationFromMatrix(
-          value,
-          data.localToWorld.matrix,
-          true
-        );
+        Writer.insertOrientationFromMatrix(value, data.localToWorld.matrix, true);
 
         if (!data.activeFractionInterval.isExact01)
-          value.activeFractionInterval = [
-            data.activeFractionInterval.x0,
-            data.activeFractionInterval.x1,
-          ];
+          value.activeFractionInterval = [data.activeFractionInterval.x0, data.activeFractionInterval.x1];
         // Object.defineProperty(value, "fractionInterval", { value: [data.activeFractionInterval.x0, data.activeFractionInterval.x1] });
         value.startRadius = 0;
         value.endRadius = data.nominalR1;
@@ -1769,35 +1508,20 @@ export namespace IModelJson {
           origin: data.localToWorld.origin.toJSON(),
           type: data.spiralType,
         };
-        Writer.insertOrientationFromMatrix(
-          value,
-          data.localToWorld.matrix,
-          true
-        );
+        Writer.insertOrientationFromMatrix(value, data.localToWorld.matrix, true);
 
         if (!data.activeFractionInterval.isExact01)
-          value.activeFractionInterval = [
-            data.activeFractionInterval.x0,
-            data.activeFractionInterval.x1,
-          ];
+          value.activeFractionInterval = [data.activeFractionInterval.x0, data.activeFractionInterval.x1];
         // Object.defineProperty(value, "fractionInterval", { value: [data.activeFractionInterval.x0, data.activeFractionInterval.x1] });
 
         // if possible, do selective output of defining data (omit exactly one out of the 5, matching original definition)
         // EXCEPT do not omit final radius .. readers want it?
-        if (
-          originalProperties !== undefined &&
-          originalProperties.numDefinedProperties() === 4
-        ) {
-          if (originalProperties.radius0 !== undefined)
-            value.startRadius = data.radius01.x0;
-          if (originalProperties.radius1 !== undefined)
-            value.endRadius = data.radius01.x1;
-          if (originalProperties.bearing0 !== undefined)
-            value.startBearing = data.bearing01.startAngle.toJSON();
-          if (originalProperties.bearing1 !== undefined)
-            value.endBearing = data.bearing01.endAngle.toJSON();
-          if (originalProperties.curveLength !== undefined)
-            value.length = data.curveLength();
+        if (originalProperties !== undefined && originalProperties.numDefinedProperties() === 4) {
+          if (originalProperties.radius0 !== undefined) value.startRadius = data.radius01.x0;
+          if (originalProperties.radius1 !== undefined) value.endRadius = data.radius01.x1;
+          if (originalProperties.bearing0 !== undefined) value.startBearing = data.bearing01.startAngle.toJSON();
+          if (originalProperties.bearing1 !== undefined) value.endBearing = data.bearing01.endAngle.toJSON();
+          if (originalProperties.curveLength !== undefined) value.length = data.curveLength();
           if (value.endRadius === undefined) value.endRadius = data.radius01.x1;
         } else {
           // uh oh ... no original data, but the spiral itself knows all 5 values.  We don't know which to consider primary.
@@ -1846,12 +1570,7 @@ export namespace IModelJson {
           startRadius: data.getRadiusA(),
           endRadius: data.getRadiusB(),
         };
-        Writer.insertOrientationFromXYVectors(
-          coneProps,
-          vectorX,
-          vectorY,
-          false
-        );
+        Writer.insertOrientationFromXYVectors(coneProps, vectorX, vectorY, false);
         return { cone: coneProps };
       }
     }
@@ -1870,17 +1589,12 @@ export namespace IModelJson {
         const value: SphereProps = {
           center: data.cloneCenter().toJSON(),
         };
-        if (!data.getConstructiveFrame()!.matrix.isIdentity)
-          value.zxVectors = [zData.v.toJSON(), xData.v.toJSON()];
+        if (!data.getConstructiveFrame()!.matrix.isIdentity) value.zxVectors = [zData.v.toJSON(), xData.v.toJSON()];
         const fullSweep = latitudeSweep.isFullLatitudeSweep;
 
         if (data.capped && !fullSweep) value.capped = data.capped;
 
-        if (
-          Geometry.isSameCoordinate(rX, rY) &&
-          Geometry.isSameCoordinate(rX, rZ)
-        )
-          value.radius = rX;
+        if (Geometry.isSameCoordinate(rX, rY) && Geometry.isSameCoordinate(rX, rZ)) value.radius = rX;
         else {
           value.radiusX = rX;
           value.radiusY = rY;
@@ -2035,24 +1749,14 @@ export namespace IModelJson {
       };
 
       const outBox = out.box!;
-      Writer.insertXYOrientation(
-        outBox,
-        box.getVectorX(),
-        box.getVectorY(),
-        true
-      );
-      if (!Geometry.isSameCoordinate(box.getTopX(), box.getBaseX()))
-        outBox.topX = box.getTopX();
-      if (!Geometry.isSameCoordinate(box.getTopY(), box.getBaseY()))
-        outBox.topY = box.getTopY();
+      Writer.insertXYOrientation(outBox, box.getVectorX(), box.getVectorY(), true);
+      if (!Geometry.isSameCoordinate(box.getTopX(), box.getBaseX())) outBox.topX = box.getTopX();
+      if (!Geometry.isSameCoordinate(box.getTopY(), box.getBaseY())) outBox.topY = box.getTopY();
 
       return out;
     }
 
-    private handlePolyfaceAuxData(
-      auxData: PolyfaceAuxData,
-      pf: IndexedPolyface
-    ): any {
+    private handlePolyfaceAuxData(auxData: PolyfaceAuxData, pf: IndexedPolyface): any {
       const contents: { [k: string]: any } = {};
       contents.indices = [];
       const visitor = pf.createVisitor(0);
@@ -2092,8 +1796,7 @@ export namespace IModelJson {
       const colors = [];
       {
         const p = Point3d.create();
-        for (let i = 0; pf.data.point.getPoint3dAtCheckedPointIndex(i, p); i++)
-          points.push(p.toJSON());
+        for (let i = 0; pf.data.point.getPoint3dAtCheckedPointIndex(i, p); i++) points.push(p.toJSON());
       }
       if (pf.data.normal) {
         const numNormal = pf.data.normal.length;
@@ -2106,8 +1809,7 @@ export namespace IModelJson {
 
       if (pf.data.param) {
         const uv = Point2d.create();
-        for (let i = 0; pf.data.param.getPoint2dAtCheckedPointIndex(i, uv); i++)
-          params.push(uv.toJSON());
+        for (let i = 0; pf.data.param.getPoint2dAtCheckedPointIndex(i, uv); i++) params.push(uv.toJSON());
       }
 
       if (pf.data.color) {
@@ -2136,34 +1838,27 @@ export namespace IModelJson {
         indexCounter += visitor.indexCount;
 
         if (visitor.normalIndex) {
-          for (let i = 0; i < n; i++)
-            normalIndex.push(1 + visitor.clientNormalIndex(i));
+          for (let i = 0; i < n; i++) normalIndex.push(1 + visitor.clientNormalIndex(i));
           normalIndex.push(0);
         }
         if (visitor.paramIndex) {
-          for (let i = 0; i < n; i++)
-            paramIndex.push(1 + visitor.clientParamIndex(i));
+          for (let i = 0; i < n; i++) paramIndex.push(1 + visitor.clientParamIndex(i));
           paramIndex.push(0);
         }
         if (visitor.colorIndex) {
-          for (let i = 0; i < n; i++)
-            colorIndex.push(1 + visitor.clientColorIndex(i));
+          for (let i = 0; i < n; i++) colorIndex.push(1 + visitor.clientColorIndex(i));
           colorIndex.push(0);
         }
       }
       let taggedNumericData;
       if (pf.data.taggedNumericData) {
-        taggedNumericData = this.handleTaggedNumericData(
-          pf.data.taggedNumericData
-        );
+        taggedNumericData = this.handleTaggedNumericData(pf.data.taggedNumericData);
       }
       // assemble the contents in alphabetical order.
       const contents: { [k: string]: any } = {};
-      if (pf.expectedClosure !== 0)
-        contents.expectedClosure = pf.expectedClosure;
+      if (pf.expectedClosure !== 0) contents.expectedClosure = pf.expectedClosure;
       if (pf.twoSided) contents.twoSided = true;
-      if (pf.data.auxData)
-        contents.auxData = this.handlePolyfaceAuxData(pf.data.auxData, pf);
+      if (pf.data.auxData) contents.auxData = this.handlePolyfaceAuxData(pf.data.auxData, pf);
 
       if (pf.data.color) contents.color = colors;
       if (pf.data.colorIndex) contents.colorIndex = colorIndex;

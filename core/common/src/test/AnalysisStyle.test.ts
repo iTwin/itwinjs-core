@@ -4,26 +4,18 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ThematicGradientSettings } from "../ThematicDisplay";
-import {
-  AnalysisStyle,
-  AnalysisStyleProps,
-  LegacyAnalysisStyleProps,
-} from "../AnalysisStyle";
+import { AnalysisStyle, AnalysisStyleProps, LegacyAnalysisStyleProps } from "../AnalysisStyle";
 
 describe("AnalysisStyle", () => {
   it("round-trips through JSON", () => {
-    function roundTrip(
-      props: AnalysisStyleProps | undefined,
-      expected: AnalysisStyleProps | "input"
-    ): void {
+    function roundTrip(props: AnalysisStyleProps | undefined, expected: AnalysisStyleProps | "input"): void {
       if ("input" === expected) expected = props ?? {};
 
       const style = AnalysisStyle.fromJSON(props);
       const actual = style.toJSON();
       expect(actual).to.deep.equal(expected);
       expect(style.equals(AnalysisStyle.fromJSON(actual))).to.be.true;
-      if (style.equals(AnalysisStyle.defaults))
-        expect(expected).to.deep.equal({});
+      if (style.equals(AnalysisStyle.defaults)) expect(expected).to.deep.equal({});
       else expect(expected).not.to.deep.equal({});
     }
 
@@ -35,10 +27,7 @@ describe("AnalysisStyle", () => {
 
     roundTrip({ displacement: { channelName: "disp" } }, "input");
     roundTrip({ displacement: { channelName: "disp", scale: 4.2 } }, "input");
-    roundTrip(
-      { displacement: { channelName: "disp", scale: 1 } },
-      { displacement: { channelName: "disp" } }
-    );
+    roundTrip({ displacement: { channelName: "disp", scale: 1 } }, { displacement: { channelName: "disp" } });
 
     roundTrip({ scalar: { channelName: "scalars", range: [-2, 4] } }, "input");
     roundTrip(
@@ -76,18 +65,12 @@ describe("AnalysisStyle", () => {
 
     const src = AnalysisStyle.fromJSON(props);
 
-    function expectClone(
-      changed: AnalysisStyleProps,
-      expected: AnalysisStyleProps
-    ): void {
+    function expectClone(changed: AnalysisStyleProps, expected: AnalysisStyleProps): void {
       expect(src.clone(changed).toJSON()).to.deep.equal(expected);
     }
 
     expectClone({}, props);
-    expectClone(
-      { normalChannelName: undefined },
-      { displacement: props.displacement, scalar: props.scalar }
-    );
+    expectClone({ normalChannelName: undefined }, { displacement: props.displacement, scalar: props.scalar });
     expectClone(
       {
         displacement: undefined,
@@ -163,24 +146,15 @@ describe("AnalysisStyle", () => {
   });
 
   it("accepts legacy JSON representation", () => {
-    function roundTrip(
-      props: LegacyAnalysisStyleProps,
-      expected: AnalysisStyleProps
-    ): void {
+    function roundTrip(props: LegacyAnalysisStyleProps, expected: AnalysisStyleProps): void {
       const style = AnalysisStyle.fromJSON(props as AnalysisStyleProps);
       const actual = style.toJSON();
       expect(actual).to.deep.equal(expected);
     }
 
     roundTrip({}, {});
-    roundTrip(
-      { normalChannelName: "normals" },
-      { normalChannelName: "normals" }
-    );
-    roundTrip(
-      { displacementChannelName: "disp" },
-      { displacement: { channelName: "disp" } }
-    );
+    roundTrip({ normalChannelName: "normals" }, { normalChannelName: "normals" });
+    roundTrip({ displacementChannelName: "disp" }, { displacement: { channelName: "disp" } });
     roundTrip({ displacementScale: 42 }, {});
     roundTrip(
       { displacementChannelName: "disp", displacementScale: 42 },

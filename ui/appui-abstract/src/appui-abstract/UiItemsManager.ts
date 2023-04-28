@@ -10,17 +10,9 @@
 import { BeEvent, Logger, MarkRequired } from "@itwin/core-bentley";
 import { BackstageItem } from "./backstage/BackstageItem";
 import { CommonStatusBarItem } from "./statusbar/StatusBarItem";
-import {
-  CommonToolbarItem,
-  ToolbarOrientation,
-  ToolbarUsage,
-} from "./toolbars/ToolbarItem";
+import { CommonToolbarItem, ToolbarOrientation, ToolbarUsage } from "./toolbars/ToolbarItem";
 import { AbstractWidgetProps } from "./widget/AbstractWidgetProps";
-import {
-  AbstractZoneLocation,
-  StagePanelLocation,
-  StagePanelSection,
-} from "./widget/StagePanel";
+import { AbstractZoneLocation, StagePanelLocation, StagePanelSection } from "./widget/StagePanel";
 import { loggerCategory } from "./utils/misc";
 import { UiItemsProvider } from "./UiItemsProvider";
 
@@ -74,10 +66,7 @@ export type UiItemProviderOverrides =
   | MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageIds"> // eslint-disable-line @typescript-eslint/indent
   | MarkRequired<AllowedUiItemProviderOverrides, "stageIds"> // eslint-disable-line @typescript-eslint/indent
   | MarkRequired<AllowedUiItemProviderOverrides, "stageUsages"> // eslint-disable-line @typescript-eslint/indent
-  | MarkRequired<
-      AllowedUiItemProviderOverrides,
-      "providerId" | "stageUsages" | "stageIds"
-    >; // eslint-disable-line @typescript-eslint/indent
+  | MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages" | "stageIds">; // eslint-disable-line @typescript-eslint/indent
 
 /** Interface that defines an instance of a UiItemsProvider and its application specified overrides. */
 interface UiItemProviderEntry {
@@ -90,8 +79,7 @@ interface UiItemProviderEntry {
  * @public
  */
 export class UiItemsManager {
-  private static _registeredUiItemsProviders: Map<string, UiItemProviderEntry> =
-    new Map<string, UiItemProviderEntry>();
+  private static _registeredUiItemsProviders: Map<string, UiItemProviderEntry> = new Map<string, UiItemProviderEntry>();
 
   /** For use in unit testing
    * @internal */
@@ -100,9 +88,7 @@ export class UiItemsManager {
   }
 
   /** Event raised any time a UiProvider is registered or unregistered. */
-  public static readonly onUiProviderRegisteredEvent = new BeEvent<
-    (ev: UiItemProviderRegisteredEventArgs) => void
-  >();
+  public static readonly onUiProviderRegisteredEvent = new BeEvent<(ev: UiItemProviderRegisteredEventArgs) => void>();
 
   /** Return number of registered UiProvider. */
   public static get registeredProviderIds() {
@@ -119,9 +105,7 @@ export class UiItemsManager {
    * Retrieves a previously loaded UiItemsProvider.
    * @param providerId id of the UiItemsProvider to get
    */
-  public static getUiItemsProvider(
-    providerId: string
-  ): UiItemsProvider | undefined {
+  public static getUiItemsProvider(providerId: string): UiItemsProvider | undefined {
     return UiItemsManager._registeredUiItemsProviders.get(providerId)?.provider;
   }
 
@@ -133,26 +117,17 @@ export class UiItemsManager {
    * Registers a UiItemsProvider with the UiItemsManager.
    * @param uiProvider the UI items provider to register.
    */
-  public static register(
-    uiProvider: UiItemsProvider,
-    overrides?: UiItemProviderOverrides
-  ): void {
+  public static register(uiProvider: UiItemsProvider, overrides?: UiItemProviderOverrides): void {
     const providerId = overrides?.providerId ?? uiProvider.id;
 
     if (UiItemsManager.getUiItemsProvider(providerId)) {
-      Logger.logInfo(
-        loggerCategory(this),
-        `UiItemsProvider (${providerId}) is already loaded`
-      );
+      Logger.logInfo(loggerCategory(this), `UiItemsProvider (${providerId}) is already loaded`);
     } else {
       UiItemsManager._registeredUiItemsProviders.set(providerId, {
         provider: uiProvider,
         overrides,
       });
-      Logger.logInfo(
-        loggerCategory(this),
-        `UiItemsProvider ${uiProvider.id} registered as ${providerId} `
-      );
+      Logger.logInfo(loggerCategory(this), `UiItemsProvider ${uiProvider.id} registered as ${providerId} `);
 
       UiItemsManager.sendRegisteredEvent({
         providerId,
@@ -168,10 +143,7 @@ export class UiItemsManager {
     provider.onUnregister && provider.onUnregister();
 
     UiItemsManager._registeredUiItemsProviders.delete(uiProviderId);
-    Logger.logInfo(
-      loggerCategory(this),
-      `UiItemsProvider (${uiProviderId}) unloaded`
-    );
+    Logger.logInfo(loggerCategory(this), `UiItemsProvider (${uiProviderId}) unloaded`);
 
     // trigger a refresh of the ui
     UiItemsManager.sendRegisteredEvent({
@@ -179,18 +151,10 @@ export class UiItemsManager {
     } as UiItemProviderRegisteredEventArgs);
   }
 
-  private static allowItemsFromProvider(
-    entry: UiItemProviderEntry,
-    stageId?: string,
-    stageUsage?: string
-  ) {
+  private static allowItemsFromProvider(entry: UiItemProviderEntry, stageId?: string, stageUsage?: string) {
     // istanbul ignore else
     const overrides = entry.overrides;
-    if (
-      undefined !== stageId &&
-      overrides?.stageIds &&
-      !overrides.stageIds.some((value: string) => value === stageId)
-    )
+    if (undefined !== stageId && overrides?.stageIds && !overrides.stageIds.some((value: string) => value === stageId))
       return false;
     if (
       undefined !== stageUsage &&
@@ -217,39 +181,22 @@ export class UiItemsManager {
     stageAppData?: any
   ): CommonToolbarItem[] {
     const buttonItems: CommonToolbarItem[] = [];
-    if (0 === UiItemsManager._registeredUiItemsProviders.size)
-      return buttonItems;
+    if (0 === UiItemsManager._registeredUiItemsProviders.size) return buttonItems;
 
-    UiItemsManager._registeredUiItemsProviders.forEach(
-      (entry: UiItemProviderEntry) => {
-        const uiProvider = entry.provider;
-        const providerId = entry.overrides?.providerId ?? uiProvider.id;
-        // istanbul ignore else
-        if (
-          uiProvider.provideToolbarButtonItems &&
-          this.allowItemsFromProvider(entry, stageId, stageUsage)
-        ) {
-          uiProvider
-            .provideToolbarButtonItems(
-              stageId,
-              stageUsage,
-              toolbarUsage,
-              toolbarOrientation,
-              stageAppData
-            )
-            .forEach((spec: CommonToolbarItem) => {
-              // ignore duplicate ids
-              if (
-                -1 ===
-                buttonItems.findIndex(
-                  (existingItem) => spec.id === existingItem.id
-                )
-              )
-                buttonItems.push({ ...spec, providerId });
-            });
-        }
+    UiItemsManager._registeredUiItemsProviders.forEach((entry: UiItemProviderEntry) => {
+      const uiProvider = entry.provider;
+      const providerId = entry.overrides?.providerId ?? uiProvider.id;
+      // istanbul ignore else
+      if (uiProvider.provideToolbarButtonItems && this.allowItemsFromProvider(entry, stageId, stageUsage)) {
+        uiProvider
+          .provideToolbarButtonItems(stageId, stageUsage, toolbarUsage, toolbarOrientation, stageAppData)
+          .forEach((spec: CommonToolbarItem) => {
+            // ignore duplicate ids
+            if (-1 === buttonItems.findIndex((existingItem) => spec.id === existingItem.id))
+              buttonItems.push({ ...spec, providerId });
+          });
       }
-    );
+    });
 
     return buttonItems;
   }
@@ -259,41 +206,24 @@ export class UiItemsManager {
    * @param stageUsage the StageUsage of the active stage.
    * @returns An array of CommonStatusBarItem that will be used to create controls for the status bar.
    */
-  public static getStatusBarItems(
-    stageId: string,
-    stageUsage: string,
-    stageAppData?: any
-  ): CommonStatusBarItem[] {
+  public static getStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[] {
     const statusBarItems: CommonStatusBarItem[] = [];
 
-    if (0 === UiItemsManager._registeredUiItemsProviders.size)
-      return statusBarItems;
+    if (0 === UiItemsManager._registeredUiItemsProviders.size) return statusBarItems;
 
-    UiItemsManager._registeredUiItemsProviders.forEach(
-      (entry: UiItemProviderEntry) => {
-        const uiProvider = entry.provider;
-        const providerId = entry.overrides?.providerId ?? uiProvider.id;
+    UiItemsManager._registeredUiItemsProviders.forEach((entry: UiItemProviderEntry) => {
+      const uiProvider = entry.provider;
+      const providerId = entry.overrides?.providerId ?? uiProvider.id;
 
-        // istanbul ignore else
-        if (
-          uiProvider.provideStatusBarItems &&
-          this.allowItemsFromProvider(entry, stageId, stageUsage)
-        ) {
-          uiProvider
-            .provideStatusBarItems(stageId, stageUsage, stageAppData)
-            .forEach((item: CommonStatusBarItem) => {
-              // ignore duplicate ids
-              if (
-                -1 ===
-                statusBarItems.findIndex(
-                  (existingItem) => item.id === existingItem.id
-                )
-              )
-                statusBarItems.push({ ...item, providerId });
-            });
-        }
+      // istanbul ignore else
+      if (uiProvider.provideStatusBarItems && this.allowItemsFromProvider(entry, stageId, stageUsage)) {
+        uiProvider.provideStatusBarItems(stageId, stageUsage, stageAppData).forEach((item: CommonStatusBarItem) => {
+          // ignore duplicate ids
+          if (-1 === statusBarItems.findIndex((existingItem) => item.id === existingItem.id))
+            statusBarItems.push({ ...item, providerId });
+        });
       }
-    );
+    });
 
     return statusBarItems;
   }
@@ -304,33 +234,25 @@ export class UiItemsManager {
   public static getBackstageItems(): BackstageItem[] {
     const backstageItems: BackstageItem[] = [];
 
-    if (0 === UiItemsManager._registeredUiItemsProviders.size)
-      return backstageItems;
+    if (0 === UiItemsManager._registeredUiItemsProviders.size) return backstageItems;
 
-    UiItemsManager._registeredUiItemsProviders.forEach(
-      (entry: UiItemProviderEntry) => {
-        const uiProvider = entry.provider;
-        const providerId = entry.overrides?.providerId ?? uiProvider.id;
+    UiItemsManager._registeredUiItemsProviders.forEach((entry: UiItemProviderEntry) => {
+      const uiProvider = entry.provider;
+      const providerId = entry.overrides?.providerId ?? uiProvider.id;
 
-        // istanbul ignore else
-        if (uiProvider.provideBackstageItems) {
-          // Note: We do not call this.allowItemsFromProvider here as backstage items
-          uiProvider
-            .provideBackstageItems() //       should not be considered stage specific. If they need to be hidden
-            .forEach((item: BackstageItem) => {
-              //       the isHidden property should be set to a ConditionalBooleanValue
-              // ignore duplicate ids
-              if (
-                -1 ===
-                backstageItems.findIndex(
-                  (existingItem) => item.id === existingItem.id
-                )
-              )
-                backstageItems.push({ ...item, providerId });
-            });
-        }
+      // istanbul ignore else
+      if (uiProvider.provideBackstageItems) {
+        // Note: We do not call this.allowItemsFromProvider here as backstage items
+        uiProvider
+          .provideBackstageItems() //       should not be considered stage specific. If they need to be hidden
+          .forEach((item: BackstageItem) => {
+            //       the isHidden property should be set to a ConditionalBooleanValue
+            // ignore duplicate ids
+            if (-1 === backstageItems.findIndex((existingItem) => item.id === existingItem.id))
+              backstageItems.push({ ...item, providerId });
+          });
       }
-    );
+    });
     return backstageItems;
   }
 
@@ -353,38 +275,21 @@ export class UiItemsManager {
 
     if (0 === UiItemsManager._registeredUiItemsProviders.size) return widgets;
 
-    UiItemsManager._registeredUiItemsProviders.forEach(
-      (entry: UiItemProviderEntry) => {
-        const uiProvider = entry.provider;
-        const providerId = entry.overrides?.providerId ?? uiProvider.id;
+    UiItemsManager._registeredUiItemsProviders.forEach((entry: UiItemProviderEntry) => {
+      const uiProvider = entry.provider;
+      const providerId = entry.overrides?.providerId ?? uiProvider.id;
 
-        // istanbul ignore else
-        if (
-          uiProvider.provideWidgets &&
-          this.allowItemsFromProvider(entry, stageId, stageUsage)
-        ) {
-          uiProvider
-            .provideWidgets(
-              stageId,
-              stageUsage,
-              location,
-              section,
-              zoneLocation,
-              stageAppData
-            )
-            .forEach((widget: AbstractWidgetProps) => {
-              // ignore duplicate ids
-              if (
-                -1 ===
-                widgets.findIndex(
-                  (existingItem) => widget.id === existingItem.id
-                )
-              )
-                widgets.push({ ...widget, providerId });
-            });
-        }
+      // istanbul ignore else
+      if (uiProvider.provideWidgets && this.allowItemsFromProvider(entry, stageId, stageUsage)) {
+        uiProvider
+          .provideWidgets(stageId, stageUsage, location, section, zoneLocation, stageAppData)
+          .forEach((widget: AbstractWidgetProps) => {
+            // ignore duplicate ids
+            if (-1 === widgets.findIndex((existingItem) => widget.id === existingItem.id))
+              widgets.push({ ...widget, providerId });
+          });
       }
-    );
+    });
     return widgets;
   }
 }

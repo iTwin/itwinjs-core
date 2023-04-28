@@ -33,11 +33,7 @@ import { ViewRect } from "./ViewRect";
  * @public
  * @extensions
  */
-export type MarkerImage =
-  | HTMLImageElement
-  | HTMLCanvasElement
-  | HTMLVideoElement
-  | ImageBitmap;
+export type MarkerImage = HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap;
 
 /**
  * @public
@@ -55,13 +51,7 @@ export type MarkerTextAlign = "left" | "right" | "center" | "start" | "end";
  * @public
  * @extensions
  */
-export type MarkerTextBaseline =
-  | "top"
-  | "hanging"
-  | "middle"
-  | "alphabetic"
-  | "ideographic"
-  | "bottom";
+export type MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom";
 
 function getMinScaleViewW(vp: Viewport): number {
   let zHigh;
@@ -160,8 +150,7 @@ export class Marker implements CanvasDecoration {
 
   /** Called when the mouse pointer moves over this Marker */
   public onMouseMove(ev: BeButtonEvent): void {
-    if (this.title)
-      ev.viewport!.openToolTip(this.title, ev.viewPoint, this.tooltipOptions);
+    if (this.title) ev.viewport!.openToolTip(this.title, ev.viewPoint, this.tooltipOptions);
   }
   /** Called when a mouse button is pressed over this Marker. */
   public onMouseButton?(_ev: BeButtonEvent): boolean;
@@ -194,15 +183,10 @@ export class Marker implements CanvasDecoration {
    * The new Marker will share the world location and size, but will be otherwise blank.
    */
   public static makeFrom<T extends Marker>(other: Marker, ...args: any[]): T {
-    const out = new (this as any)(
-      other.worldLocation,
-      other.size,
-      ...args
-    ) as T;
+    const out = new (this as any)(other.worldLocation, other.size, ...args) as T;
     out.rect.setFrom(other.rect);
     out.position.setFrom(other.position);
-    if (other._scaleFactor)
-      out._scaleFactor = Point2d.createFrom(other._scaleFactor);
+    if (other._scaleFactor) out._scaleFactor = Point2d.createFrom(other._scaleFactor);
     out._scaleFactorRange = other._scaleFactorRange;
     return out;
   }
@@ -214,9 +198,7 @@ export class Marker implements CanvasDecoration {
    */
   protected drawHilited(ctx: CanvasRenderingContext2D) {
     ctx.shadowBlur = 30;
-    ctx.shadowColor = this._hiliteColor
-      ? this._hiliteColor.toHexString()
-      : "white";
+    ctx.shadowColor = this._hiliteColor ? this._hiliteColor.toHexString() : "white";
     ctx.scale(1.25, 1.25);
     return false;
   }
@@ -225,8 +207,7 @@ export class Marker implements CanvasDecoration {
   public drawDecoration(ctx: CanvasRenderingContext2D): void {
     if (this._isHilited && this.drawHilited(ctx)) return;
 
-    if (this._scaleFactor !== undefined)
-      ctx.scale(this._scaleFactor.x, this._scaleFactor.y);
+    if (this._scaleFactor !== undefined) ctx.scale(this._scaleFactor.x, this._scaleFactor.y);
 
     // first call the "drawFunc" if defined. This means it will be below the image and label if they overlap
     if (undefined !== this.drawFunc) this.drawFunc(ctx);
@@ -264,9 +245,7 @@ export class Marker implements CanvasDecoration {
         .then((resolvedImage) => (this.image = resolvedImage))
         .catch((err: Event) => {
           const target = err.target as any;
-          const msg = `Could not load image ${
-            target && target.src ? target.src : "unknown"
-          }`;
+          const msg = `Could not load image ${target && target.src ? target.src : "unknown"}`;
           Logger.logError(`${FrontendLoggerCategory.Package}.markers`, msg);
           console.log(msg); // eslint-disable-line no-console
         });
@@ -298,34 +277,17 @@ export class Marker implements CanvasDecoration {
     const origin = this.position;
     const sizeX = this.size.x / 2;
     const sizeY = this.size.y / 2;
-    this.rect.init(
-      origin.x - sizeX,
-      origin.y - sizeY,
-      origin.x + sizeX,
-      origin.y + sizeY
-    );
+    this.rect.init(origin.x - sizeX, origin.y - sizeY, origin.x + sizeX, origin.y + sizeY);
 
     // if there's a scale factor active, calculate it now.
     if (this._scaleFactor && this._scaleFactorRange) {
       let scale = 1.0;
       if (vp.isCameraOn) {
         const range = this._scaleFactorRange;
-        const minScaleViewW =
-          undefined !== markerSet
-            ? markerSet.getMinScaleViewW(vp)
-            : getMinScaleViewW(vp);
+        const minScaleViewW = undefined !== markerSet ? markerSet.getMinScaleViewW(vp) : getMinScaleViewW(vp);
         if (minScaleViewW > 0.0)
-          scale = Geometry.clamp(
-            range.high - (pt4.w / minScaleViewW) * range.length(),
-            0.4,
-            2.0
-          );
-        else
-          scale = Geometry.clamp(
-            range.low + (1 - pt4.w) * range.length(),
-            0.4,
-            2.0
-          );
+          scale = Geometry.clamp(range.high - (pt4.w / minScaleViewW) * range.length(), 0.4, 2.0);
+        else scale = Geometry.clamp(range.low + (1 - pt4.w) * range.length(), 0.4, 2.0);
         this.rect.scaleAboutCenter(scale, scale);
       }
       this._scaleFactor.set(scale, scale);
@@ -393,9 +355,7 @@ export class Cluster<T extends Marker> {
   public getClusterLocation() {
     const location = Point3d.createZero();
     if (this.markers.length > 0) {
-      this.markers.forEach((marker) =>
-        location.addInPlace(marker.worldLocation)
-      );
+      this.markers.forEach((marker) => location.addInPlace(marker.worldLocation));
       location.scaleInPlace(1 / this.markers.length);
     }
     return location;
@@ -431,8 +391,7 @@ export abstract class MarkerSet<T extends Marker> {
    * @param viewport the ScreenViewport for this MarkerSet. If undefined, use [[IModelApp.viewManager.selectedView]]
    */
   public constructor(viewport?: ScreenViewport) {
-    this._viewport =
-      undefined === viewport ? IModelApp.viewManager.selectedView : viewport;
+    this._viewport = undefined === viewport ? IModelApp.viewManager.selectedView : viewport;
     const markDirty = () => this.markDirty();
     this._markers.onAdded.addListener(markDirty);
     this._markers.onDeleted.addListener(markDirty);
@@ -473,8 +432,7 @@ export abstract class MarkerSet<T extends Marker> {
 
   /** Get weight value limit establishing the distance from camera for the back of view scale factor. */
   public getMinScaleViewW(vp: Viewport): number {
-    if (undefined === this._minScaleViewW)
-      this._minScaleViewW = getMinScaleViewW(vp);
+    if (undefined === this._minScaleViewW) this._minScaleViewW = getMinScaleViewW(vp);
     return this._minScaleViewW;
   }
 
@@ -512,9 +470,7 @@ export abstract class MarkerSet<T extends Marker> {
         for (let i = 0; i < entries.length; ++i) {
           // loop through all of the currently visible markers/clusters
           const entry = entries[i];
-          if (
-            marker.position.distanceSquaredXY(entry.position) <= distSquared
-          ) {
+          if (marker.position.distanceSquaredXY(entry.position) <= distSquared) {
             added = true; // yes, we're going to save it as a Cluster
             if (entry instanceof Cluster) {
               // is the entry already a Cluster?

@@ -20,11 +20,7 @@ import {
   getCesiumAssetUrl,
   getCesiumOSMBuildingsUrl,
 } from "./tile/internal";
-import {
-  PublisherProductInfo,
-  RealityDataSource,
-  SpatialLocationAndExtents,
-} from "./RealityDataSource";
+import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } from "./RealityDataSource";
 
 /** This class provides access to the reality data provider services.
  * It encapsulates access to a reality data weiter it be from local access, http or ProjectWise Context Share.
@@ -57,8 +53,7 @@ export class RealityDataSourceCesiumIonAssetImpl implements RealityDataSource {
     sourceKey: RealityDataSourceKey,
     iTwinId: GuidString | undefined
   ): Promise<RealityDataSource | undefined> {
-    if (sourceKey.provider !== RealityDataProvider.CesiumIonAsset)
-      return undefined;
+    if (sourceKey.provider !== RealityDataProvider.CesiumIonAsset) return undefined;
     const rdSource = new RealityDataSourceCesiumIonAssetImpl({ sourceKey });
     let tilesetUrl: string | undefined;
     try {
@@ -104,9 +99,7 @@ export class RealityDataSourceCesiumIonAssetImpl implements RealityDataSource {
    * This method returns the URL to access the actual 3d tiles from the service provider.
    * @returns string containing the URL to reality data.
    */
-  public async getServiceUrl(
-    _iTwinId: GuidString | undefined
-  ): Promise<string | undefined> {
+  public async getServiceUrl(_iTwinId: GuidString | undefined): Promise<string | undefined> {
     // If url was not resolved - resolve it
     this._tilesetUrl = this.key.id;
     if (this.key.id === CesiumIonAssetProvider.osmBuildingId) {
@@ -123,16 +116,12 @@ export class RealityDataSourceCesiumIonAssetImpl implements RealityDataSource {
 
   public async getRootDocument(iTwinId: GuidString | undefined): Promise<any> {
     let url = await this.getServiceUrl(iTwinId);
-    if (!url)
-      throw new IModelError(BentleyStatus.ERROR, "Unable to get service url");
+    if (!url) throw new IModelError(BentleyStatus.ERROR, "Unable to get service url");
 
     // The following is only if the reality data is not stored on PW Context Share.
     const cesiumAsset = CesiumIonAssetProvider.parseCesiumUrl(url);
     if (cesiumAsset) {
-      const tokenAndUrl = await getCesiumAccessTokenAndEndpointUrl(
-        cesiumAsset.id,
-        cesiumAsset.key
-      );
+      const tokenAndUrl = await getCesiumAccessTokenAndEndpointUrl(cesiumAsset.id, cesiumAsset.key);
       if (tokenAndUrl.url && tokenAndUrl.token) {
         url = tokenAndUrl.url;
         this._requestAuthorization = `Bearer ${tokenAndUrl.token}`;
@@ -175,9 +164,7 @@ export class RealityDataSourceCesiumIonAssetImpl implements RealityDataSource {
    * @returns spatial location and extents
    * @internal
    */
-  public async getSpatialLocationAndExtents(): Promise<
-    SpatialLocationAndExtents | undefined
-  > {
+  public async getSpatialLocationAndExtents(): Promise<SpatialLocationAndExtents | undefined> {
     // Cesium Ion asset we currenlty support are unbound (cover all earth)
     const spatialLocation: SpatialLocationAndExtents | undefined = undefined;
     return spatialLocation;
@@ -188,9 +175,7 @@ export class RealityDataSourceCesiumIonAssetImpl implements RealityDataSource {
    * @returns information to identify the product and engine that create this reality data
    * @alpha
    */
-  public async getPublisherProductInfo(): Promise<
-    PublisherProductInfo | undefined
-  > {
+  public async getPublisherProductInfo(): Promise<PublisherProductInfo | undefined> {
     let publisherInfo: PublisherProductInfo | undefined;
     return publisherInfo;
   }

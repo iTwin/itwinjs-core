@@ -4,10 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import {
-  InterpolationCurve3d,
-  InterpolationCurve3dOptions,
-} from "../../bspline/InterpolationCurve3d";
+import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineString3d } from "../../curve/LineString3d";
 import { Angle } from "../../geometry3d/Angle";
@@ -201,24 +198,12 @@ describe("InterpolationCurve3d", () => {
         isChordLenKnots: 1,
       }),
     ]) {
-      if (noisy)
-        GeometryCoreTestIO.consoleLog(`InterpolationCurve index ${count}`);
+      if (noisy) GeometryCoreTestIO.consoleLog(`InterpolationCurve index ${count}`);
       count++;
       x0 += delta;
-      testInterpolationCurveConstruction(
-        ck,
-        allGeometry,
-        options,
-        x0,
-        y0,
-        delta
-      );
+      testInterpolationCurveConstruction(ck, allGeometry, options, x0, y0, delta);
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "InterpolationCurve3d",
-      "HelloWorld"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "InterpolationCurve3d", "HelloWorld");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -226,23 +211,11 @@ describe("InterpolationCurve3d", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const points = [
-      Point3d.create(
-        53.44488806143417,
-        -26.616949756940954,
-        1.0000000000000036
-      ),
-      Point3d.create(
-        53.44488806143417,
-        -28.649852653892122,
-        1.0000000000000036
-      ),
+      Point3d.create(53.44488806143417, -26.616949756940954, 1.0000000000000036),
+      Point3d.create(53.44488806143417, -28.649852653892122, 1.0000000000000036),
       Point3d.create(52.155105205956495, -31.11087513966227, 1.000000000000007),
       Point3d.create(51.81089204818833, -31.38045503480483, 1.000000000000007),
-      Point3d.create(
-        51.616695380910535,
-        -31.499726679972767,
-        1.000000000000007
-      ),
+      Point3d.create(51.616695380910535, -31.499726679972767, 1.000000000000007),
     ];
     const startTan = Vector3d.create(0, -1, 0);
     const endTan = Vector3d.create(1, 0, 0);
@@ -254,11 +227,7 @@ describe("InterpolationCurve3d", () => {
       isColinearTangents: 1,
     });
     testInterpolationCurveConstruction(ck, allGeometry, options);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "InterpolationCurve3d",
-      "BrienCurve"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "InterpolationCurve3d", "BrienCurve");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -280,43 +249,15 @@ describe("InterpolationCurve3d", () => {
         for (const count1 of [1, 5]) {
           for (const count2 of [1, 2]) {
             const points: Point3d[] = [];
-            pushInterpolatedInteriorPoints(
-              points,
-              point0,
-              point1,
-              0,
-              count0,
-              count0
-            );
-            pushInterpolatedInteriorPoints(
-              points,
-              point1,
-              point2,
-              1,
-              count1,
-              count1
-            );
-            pushInterpolatedInteriorPoints(
-              points,
-              point2,
-              point3,
-              1,
-              count2,
-              count2
-            );
+            pushInterpolatedInteriorPoints(points, point0, point1, 0, count0, count0);
+            pushInterpolatedInteriorPoints(points, point1, point2, 1, count1, count1);
+            pushInterpolatedInteriorPoints(points, point2, point3, 1, count2, count2);
             const options = InterpolationCurve3dOptions.create({
               fitPoints: points,
               isChordLenKnots,
             });
             x0 += deltaX;
-            testInterpolationCurveConstruction(
-              ck,
-              allGeometry,
-              options,
-              x0,
-              y0,
-              deltaY
-            );
+            testInterpolationCurveConstruction(ck, allGeometry, options, x0, y0, deltaY);
           }
           x0 += 2.0 * deltaX;
         }
@@ -324,11 +265,7 @@ describe("InterpolationCurve3d", () => {
       }
       y0 += 10.0 * deltaY;
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "InterpolationCurve3d",
-      "ExercisePointSpacing"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "InterpolationCurve3d", "ExercisePointSpacing");
     expect(ck.getNumErrors()).equals(0);
   });
 });
@@ -342,26 +279,13 @@ function testInterpolationCurveConstruction(
   delta: number = 0
 ) {
   const curve = InterpolationCurve3d.create(options);
-  if (
-    ck.testType(
-      curve,
-      InterpolationCurve3d,
-      `Expect interpolation curve for options ${options}`
-    )
-  ) {
+  if (ck.testType(curve, InterpolationCurve3d, `Expect interpolation curve for options ${options}`)) {
     if (ck.testType(curve.options, InterpolationCurve3dOptions)) {
       for (const fitPoint of curve.options.fitPoints) {
         const detail = curve.closestPoint(fitPoint, false);
         if (ck.testPointer(detail)) {
           if (!ck.testPoint3d(fitPoint, detail.point, "fit point interpolated"))
-            GeometryCoreTestIO.createAndCaptureXYMarker(
-              allGeometry,
-              0,
-              fitPoint,
-              0.04,
-              x0,
-              y0
-            );
+            GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, fitPoint, 0.04, x0, y0);
         }
       }
     }
@@ -370,10 +294,7 @@ function testInterpolationCurveConstruction(
     const tangentScale = 0.25;
     const y1 = y0 + delta;
     const y2 = y1 + delta;
-    if (
-      curve.options.startTangent &&
-      !curve.options.startTangent.isAlmostZero
-    ) {
+    if (curve.options.startTangent && !curve.options.startTangent.isAlmostZero) {
       ck.testVector3d(
         curve.options.startTangent.normalize()!,
         curve.fractionToPointAndUnitTangent(0.0).direction,
@@ -419,20 +340,8 @@ function testInterpolationCurveConstruction(
     const ls = LineString3d.create();
     curve.proxyCurve.emitStrokes(ls);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls, x0, y2, 0); // top row is stroked proxy curve
-    GeometryCoreTestIO.captureCloneGeometry(
-      allGeometry,
-      curve.proxyCurve,
-      x0,
-      y1,
-      0
-    ); // middle row is MSBsplineCurve proxy
-    GeometryCoreTestIO.captureCloneGeometry(
-      allGeometry,
-      curve.options.fitPoints,
-      x0,
-      y1,
-      0
-    ); // ... and fit points
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve.proxyCurve, x0, y1, 0); // middle row is MSBsplineCurve proxy
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve.options.fitPoints, x0, y1, 0); // ... and fit points
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve, x0, y0, 0); // bottom row is MSInterpolationCurve
     testGeometryQueryRoundTrip(ck, curve);
   }

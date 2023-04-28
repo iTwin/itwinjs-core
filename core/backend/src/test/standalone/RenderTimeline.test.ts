@@ -4,18 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64, Id64String, OpenMode } from "@itwin/core-bentley";
-import {
-  Code,
-  IModel,
-  RenderSchedule,
-  RenderTimelineProps,
-} from "@itwin/core-common";
-import {
-  GenericSchema,
-  IModelJsFs,
-  RenderTimeline,
-  StandaloneDb,
-} from "../../core-backend";
+import { Code, IModel, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
+import { GenericSchema, IModelJsFs, RenderTimeline, StandaloneDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("RenderTimeline", () => {
@@ -38,10 +28,7 @@ describe("RenderTimeline", () => {
     ];
   }
 
-  function insertTimeline(
-    imodel: StandaloneDb,
-    scriptProps?: RenderSchedule.ScriptProps
-  ): Id64String {
+  function insertTimeline(imodel: StandaloneDb, scriptProps?: RenderSchedule.ScriptProps): Id64String {
     const script = JSON.stringify(scriptProps ?? makeScriptProps());
     const props: RenderTimelineProps = {
       model: IModel.dictionaryId,
@@ -59,18 +46,12 @@ describe("RenderTimeline", () => {
       },
       allowEdit: `{ "txns": true }`,
     };
-    const filename = IModelTestUtils.prepareOutputFile(
-      "RenderTimeline",
-      `${name}.bim`
-    );
+    const filename = IModelTestUtils.prepareOutputFile("RenderTimeline", `${name}.bim`);
     return StandaloneDb.createEmpty(filename, props);
   }
 
   it("requires BisCore >= 1.0.13", () => {
-    const filename = IModelTestUtils.prepareOutputFile(
-      "RenderTimeline.SchemaTooOld",
-      "testImodel.bim"
-    );
+    const filename = IModelTestUtils.prepareOutputFile("RenderTimeline.SchemaTooOld", "testImodel.bim");
     const seedFileName = IModelTestUtils.resolveAssetFile("testImodel.bim");
     IModelJsFs.copySync(seedFileName, filename);
 

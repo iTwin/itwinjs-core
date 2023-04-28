@@ -81,10 +81,7 @@ export class GeometryRecord {
     let gridSX: float64 = LittleEndian.readBufferDouble(data, 72);
     let gridSY: float64 = LittleEndian.readBufferDouble(data, 80);
     let gridSZ: float64 = LittleEndian.readBufferDouble(data, 88);
-    let tileGrid: Grid = new Grid(
-      new Coordinate(gridX0, gridY0, gridZ0),
-      new Coordinate(gridSX, gridSY, gridSZ)
-    );
+    let tileGrid: Grid = new Grid(new Coordinate(gridX0, gridY0, gridZ0), new Coordinate(gridSX, gridSY, gridSZ));
     /* Return the record */
     return new GeometryRecord(bounds, tileGrid);
   }
@@ -96,11 +93,7 @@ export class GeometryRecord {
    * @param size the file size to the record.
    * @return the record.
    */
-  public static readNew(
-    offset: ALong,
-    size: ALong,
-    contentLoader: ContentLoader
-  ): GeometryRecord {
+  public static readNew(offset: ALong, size: ALong, contentLoader: ContentLoader): GeometryRecord {
     /* Request the data? */
     if (contentLoader.isLoaded() == false) {
       /* Add the range */

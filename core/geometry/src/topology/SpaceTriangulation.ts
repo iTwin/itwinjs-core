@@ -13,10 +13,7 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Point3dArray } from "../geometry3d/PointHelpers";
 import { PolygonOps } from "../geometry3d/PolygonOps";
 import { PolylineOps } from "../geometry3d/PolylineOps";
-type AnnounceLoopAndTrianglesFunction = (
-  loop: Point3d[],
-  triangles: Point3d[][]
-) => void;
+type AnnounceLoopAndTrianglesFunction = (loop: Point3d[], triangles: Point3d[][]) => void;
 
 /**
  * Class with static methods to triangulate various forms of possibly non-planar polygons.
@@ -33,17 +30,11 @@ export class SpacePolygonTriangulation {
    * @param point1
    * @param point2
    */
-  public static spaceTriangleAspectRatio(
-    point0: Point3d,
-    point1: Point3d,
-    point2: Point3d
-  ): number {
+  public static spaceTriangleAspectRatio(point0: Point3d, point1: Point3d, point2: Point3d): number {
     const crossProduct = point0.crossProductToPoints(point1, point2);
     const area = 0.5 * crossProduct.magnitude();
     const summedEdgeSquares =
-      point0.distanceSquared(point1) +
-      point1.distanceSquared(point2) +
-      point2.distanceSquared(point0);
+      point0.distanceSquared(point1) + point1.distanceSquared(point2) + point2.distanceSquared(point0);
     return Geometry.safeDivideFraction(area, summedEdgeSquares, 0.0);
   }
   /**
@@ -84,15 +75,8 @@ export class SpacePolygonTriangulation {
       let i1 = myPoints.length - 1;
       let i2;
       for (i2 = 0; i2 < myPoints.length; i0 = i1, i1 = i2, i2++) {
-        const ratio = this.spaceTriangleAspectRatio(
-          myPoints[i0],
-          myPoints[i1],
-          myPoints[i2]
-        );
-        const normalB = myPoints[i0].crossProductToPoints(
-          myPoints[i1],
-          myPoints[i2]
-        );
+        const ratio = this.spaceTriangleAspectRatio(myPoints[i0], myPoints[i1], myPoints[i2]);
+        const normalB = myPoints[i0].crossProductToPoints(myPoints[i1], myPoints[i2]);
         if (normalB.dotProduct(normalA) > 0 && ratio > bestRatio) {
           bestRatio = ratio;
           bestRatioIndex0 = i0;
@@ -119,32 +103,17 @@ export class SpacePolygonTriangulation {
     maxPerimeter: number | undefined
   ): boolean {
     const n = Point3dArray.countNonDuplicates(points);
-    if (
-      maxPerimeter !== undefined &&
-      Point3dArray.sumEdgeLengths(points, true, n) > maxPerimeter
-    )
-      return false;
+    if (maxPerimeter !== undefined && Point3dArray.sumEdgeLengths(points, true, n) > maxPerimeter) return false;
     if (n < 3) return false;
     if (n === 3) {
-      if (this.spaceTriangleAspectRatio(points[0], points[1], points[2]) === 0)
-        return false;
+      if (this.spaceTriangleAspectRatio(points[0], points[1], points[2]) === 0) return false;
       // already a triangle . . .
       announceLoopAndTriangles(points, [points.slice()]);
       return true;
     }
     if (n === 4) {
-      const d02 = this.spaceQuadDiagonalAspectRatio(
-        points[0],
-        points[1],
-        points[2],
-        points[3]
-      );
-      const d13 = this.spaceQuadDiagonalAspectRatio(
-        points[1],
-        points[2],
-        points[3],
-        points[0]
-      );
+      const d02 = this.spaceQuadDiagonalAspectRatio(points[0], points[1], points[2], points[3]);
+      const d13 = this.spaceQuadDiagonalAspectRatio(points[1], points[2], points[3], points[0]);
       if (d02 === 0.0 && d13 === 0.0) return false;
       // announce the two triangles with better aspect ratios ....
       if (d02 > d13) {
@@ -177,16 +146,8 @@ export class SpacePolygonTriangulation {
     maxPerimeter?: number
   ): boolean {
     if (loop instanceof LineString3d)
-      return this.triangulateSimplestSpaceLoopGo(
-        loop.points,
-        announceLoopAndTriangles,
-        maxPerimeter
-      );
+      return this.triangulateSimplestSpaceLoopGo(loop.points, announceLoopAndTriangles, maxPerimeter);
     // (array case by exhaustion)
-    return this.triangulateSimplestSpaceLoopGo(
-      loop,
-      announceLoopAndTriangles,
-      maxPerimeter
-    );
+    return this.triangulateSimplestSpaceLoopGo(loop, announceLoopAndTriangles, maxPerimeter);
   }
 }

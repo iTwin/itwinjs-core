@@ -5,16 +5,8 @@
 import { expect } from "chai";
 import { using } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import {
-  ChildNodeSpecificationTypes,
-  RegisteredRuleset,
-  Ruleset,
-  RuleTypes,
-} from "@itwin/presentation-common";
-import {
-  Presentation,
-  PresentationManager,
-} from "@itwin/presentation-frontend";
+import { ChildNodeSpecificationTypes, RegisteredRuleset, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
 import { initialize, resetBackend, terminate } from "../IntegrationTests";
 
 const RULESET_1: Ruleset = {
@@ -54,8 +46,7 @@ describe("Rulesets", async () => {
 
   before(async () => {
     await initialize();
-    const testIModelName: string =
-      "assets/datasets/Properties_60InstancesWithUrl2.ibim";
+    const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await SnapshotConnection.openFile(testIModelName);
   });
 
@@ -80,41 +71,29 @@ describe("Rulesets", async () => {
   });
 
   it("removes ruleset", async () => {
-    const registeredRuleset = await Presentation.presentation
-      .rulesets()
-      .add(RULESET_1);
+    const registeredRuleset = await Presentation.presentation.rulesets().add(RULESET_1);
     let rootNodes = await Presentation.presentation.getNodes({
       imodel,
       rulesetOrId: RULESET_1.id,
     });
     expect(rootNodes.length).to.be.equal(1);
 
-    expect(await Presentation.presentation.rulesets().remove(registeredRuleset))
-      .to.be.true;
+    expect(await Presentation.presentation.rulesets().remove(registeredRuleset)).to.be.true;
     rootNodes = await Presentation.presentation.getNodes({
       imodel,
       rulesetOrId: RULESET_1.id,
     });
     expect(rootNodes.length).to.be.equal(0);
 
-    expect(await Presentation.presentation.rulesets().remove(registeredRuleset))
-      .to.be.false;
+    expect(await Presentation.presentation.rulesets().remove(registeredRuleset)).to.be.false;
   });
 
   it("doesn't overwrite ruleset", async () => {
     const otherRuleset = { ...RULESET_2, id: RULESET_1.id };
-    const registeredRuleset1 = await Presentation.presentation
-      .rulesets()
-      .add(RULESET_1);
-    const registeredRuleset2 = await Presentation.presentation
-      .rulesets()
-      .add(otherRuleset);
-    expect(
-      await Presentation.presentation.rulesets().remove(registeredRuleset1)
-    ).to.be.true;
-    expect(
-      await Presentation.presentation.rulesets().remove(registeredRuleset2)
-    ).to.be.true;
+    const registeredRuleset1 = await Presentation.presentation.rulesets().add(RULESET_1);
+    const registeredRuleset2 = await Presentation.presentation.rulesets().add(otherRuleset);
+    expect(await Presentation.presentation.rulesets().remove(registeredRuleset1)).to.be.true;
+    expect(await Presentation.presentation.rulesets().remove(registeredRuleset2)).to.be.true;
   });
 
   it("clears rulesets from frontend", async () => {
@@ -156,13 +135,9 @@ describe("Rulesets", async () => {
         },
       ];
 
-      const registeredRulesets = await Promise.all(
-        frontends.map(async (f, i) => f.rulesets().add(rulesets[i]))
-      );
+      const registeredRulesets = await Promise.all(frontends.map(async (f, i) => f.rulesets().add(rulesets[i])));
 
-      const nodes = await Promise.all(
-        frontends.map(async (f) => f.getNodes({ imodel, rulesetOrId: "test" }))
-      );
+      const nodes = await Promise.all(frontends.map(async (f) => f.getNodes({ imodel, rulesetOrId: "test" })));
       frontends.forEach((_f, i) => {
         expect(nodes[i][0].label.displayValue).to.eq(`label ${i + 1}`);
       });
@@ -184,21 +159,18 @@ describe("Rulesets", async () => {
 
     it("can use the same frontend-registered ruleset after backend is reset", async () => {
       const props = { imodel, rulesetOrId: RULESET_1.id };
-      await using<RegisteredRuleset, Promise<void>>(
-        await frontend.rulesets().add(RULESET_1),
-        async () => {
-          const rootNodes1 = await frontend.getNodes(props);
-          expect(rootNodes1.length).to.be.equal(1);
-          expect(rootNodes1[0].label.displayValue).to.be.equal("label 1");
+      await using<RegisteredRuleset, Promise<void>>(await frontend.rulesets().add(RULESET_1), async () => {
+        const rootNodes1 = await frontend.getNodes(props);
+        expect(rootNodes1.length).to.be.equal(1);
+        expect(rootNodes1[0].label.displayValue).to.be.equal("label 1");
 
-          resetBackend();
+        resetBackend();
 
-          const rootNodes2 = await frontend.getNodes(props);
-          expect(rootNodes2.length).to.be.equal(1);
-          expect(rootNodes2[0].label.displayValue).to.be.equal("label 1");
-          expect(rootNodes2).to.deep.eq(rootNodes1);
-        }
-      );
+        const rootNodes2 = await frontend.getNodes(props);
+        expect(rootNodes2.length).to.be.equal(1);
+        expect(rootNodes2[0].label.displayValue).to.be.equal("label 1");
+        expect(rootNodes2).to.deep.eq(rootNodes1);
+      });
     });
   });
 });

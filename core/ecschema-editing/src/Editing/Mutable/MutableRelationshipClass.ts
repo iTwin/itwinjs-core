@@ -16,9 +16,7 @@ import {
  * @internal
  */
 export abstract class MutableRelationshipConstraint extends RelationshipConstraint {
-  public abstract override addCustomAttribute(
-    customAttribute: CustomAttribute
-  ): void;
+  public abstract override addCustomAttribute(customAttribute: CustomAttribute): void;
 }
 
 /**
@@ -33,9 +31,7 @@ export abstract class MutableRelationshipClass extends RelationshipClass {
     return this._target as MutableRelationshipConstraint;
   }
   public abstract override setStrength(strength: StrengthType): void;
-  public abstract override setStrengthDirection(
-    direction: StrengthDirection
-  ): void;
+  public abstract override setStrengthDirection(direction: StrengthDirection): void;
   public abstract override createNavigationProperty(
     name: string,
     relationship: string | RelationshipClass,

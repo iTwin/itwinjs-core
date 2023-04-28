@@ -20,38 +20,22 @@ import {
   VertexShaderComponent,
 } from "../ShaderBuilder";
 import { System } from "../System";
-import {
-  FeatureMode,
-  IsShadowable,
-  IsThematic,
-  TechniqueFlags,
-} from "../TechniqueFlags";
+import { FeatureMode, IsShadowable, IsThematic, TechniqueFlags } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { Texture } from "../Texture";
 import { addAtmosphericScatteringEffect } from "./Atmosphere";
 import { addVaryingColor } from "./Color";
 import { addEyeSpace, addShaderFlags, addUInt32s } from "./Common";
 import { decodeDepthRgb, unquantize2d } from "./Decode";
-import {
-  addFeatureSymbology,
-  addHiliter,
-  FeatureSymbologyOptions,
-} from "./FeatureSymbology";
-import {
-  addAltPickBufferOutputs,
-  addPickBufferOutputs,
-  assignFragColor,
-} from "./Fragment";
+import { addFeatureSymbology, addHiliter, FeatureSymbologyOptions } from "./FeatureSymbology";
+import { addAltPickBufferOutputs, addPickBufferOutputs, assignFragColor } from "./Fragment";
 import {
   addColorPlanarClassifier,
   addFeaturePlanarClassifier,
   addHilitePlanarClassifier,
 } from "./PlanarClassification";
 import { addSolarShadowMap } from "./SolarShadowMapping";
-import {
-  addClassificationTranslucencyDiscard,
-  octDecodeNormal,
-} from "./Surface";
+import { addClassificationTranslucencyDiscard, octDecodeNormal } from "./Surface";
 import { addThematicDisplay, getComputeThematicIndex } from "./Thematic";
 import { addModelViewProjectionMatrix, addNormalMatrix } from "./Vertex";
 import { addWiremesh } from "./Wiremesh";
@@ -149,12 +133,7 @@ const overrideFeatureId = `return (classifierId == vec4(0)) ? (addUInt32s(featur
 
 function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
   builder.vert.addFunction(unquantize2d);
-  builder.addFunctionComputedVarying(
-    "v_texCoord",
-    VariableType.Vec2,
-    "computeTexCoord",
-    computeTexCoord
-  );
+  builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", computeTexCoord);
   builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
       const realityMesh = params.geometry.asRealityMesh!;
@@ -164,17 +143,11 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
     });
   });
 
-  builder.frag.addUniform(
-    "u_texturesPresent",
-    VariableType.Boolean,
-    (program) => {
-      program.addGraphicUniform("u_texturesPresent", (uniform, params) => {
-        uniform.setUniform1i(
-          params.geometry.asRealityMesh!.hasTextures ? 1 : 0
-        );
-      });
-    }
-  );
+  builder.frag.addUniform("u_texturesPresent", VariableType.Boolean, (program) => {
+    program.addGraphicUniform("u_texturesPresent", (uniform, params) => {
+      uniform.setUniform1i(params.geometry.asRealityMesh!.hasTextures ? 1 : 0);
+    });
+  });
 
   for (let i = 0; i < maxTexturesPerMesh; i++) {
     const textureLabel = `s_texture${i}`;
@@ -183,17 +156,13 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
         const textureUnits = [
           TextureUnit.RealityMesh0,
           TextureUnit.RealityMesh1,
-          params.target.drawForReadPixels
-            ? TextureUnit.ShadowMap
-            : TextureUnit.PickDepthAndOrder,
+          params.target.drawForReadPixels ? TextureUnit.ShadowMap : TextureUnit.PickDepthAndOrder,
           TextureUnit.RealityMesh3,
           TextureUnit.RealityMesh4,
           TextureUnit.RealityMesh5,
         ];
         const realityMesh = params.geometry.asRealityMesh!;
-        const realityTexture = realityMesh.textureParams
-          ? realityMesh.textureParams.params[i].texture
-          : undefined;
+        const realityTexture = realityMesh.textureParams ? realityMesh.textureParams.params[i].texture : undefined;
         if (realityTexture !== undefined) {
           const texture = realityTexture as Texture;
           texture.texture.bindSampler(uniform, textureUnits[i]);
@@ -217,13 +186,8 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
               params.target.uniforms.frustum.viewMatrix.inverse()!,
               scratchMatrix4d1
             );
-            const eyeToTexture = projectionMatrix.multiplyMatrixMatrix(
-              eyeToModel,
-              scratchMatrix4d2
-            );
-            uniform.setMatrix4(
-              Matrix4.fromMatrix4d(eyeToTexture, scratchMatrix)
-            );
+            const eyeToTexture = projectionMatrix.multiplyMatrixMatrix(eyeToModel, scratchMatrix4d2);
+            uniform.setMatrix4(Matrix4.fromMatrix4d(eyeToTexture, scratchMatrix));
           } else uniform.setMatrix4(textureParam.getTerrainMatrix()!);
         }
       });
@@ -240,10 +204,7 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
     });
   }
 }
-function baseColorFromTextures(
-  textureCount: number,
-  applyFeatureColor: string
-) {
+function baseColorFromTextures(textureCount: number, applyFeatureColor: string) {
   const applyTextureStrings = [];
 
   for (let i = 0; i < textureCount; i++)
@@ -277,19 +238,11 @@ const mixFeatureColor = `
   col.a = mix(col.a, v_color.a, step(0.0, v_color.a));
   `;
 
-function addThematicToRealityMesh(
-  builder: ProgramBuilder,
-  gradientTextureUnit: TextureUnit
-) {
+function addThematicToRealityMesh(builder: ProgramBuilder, gradientTextureUnit: TextureUnit) {
   addNormalMatrix(builder.vert);
   builder.vert.addFunction(octDecodeNormal);
   builder.vert.addGlobal("g_hillshadeIndex", VariableType.Float);
-  builder.addFunctionComputedVarying(
-    "v_n",
-    VariableType.Vec3,
-    "computeLightingNormal",
-    computeNormal
-  );
+  builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", computeNormal);
   builder.frag.addGlobal("g_normal", VariableType.Vec3);
   builder.frag.set(FragmentShaderComponent.FinalizeNormal, finalizeNormal);
   addThematicDisplay(builder, false, true);
@@ -300,11 +253,7 @@ function addThematicToRealityMesh(
   );
   builder.vert.addUniform("u_worldToViewN", VariableType.Mat3, (prog) => {
     prog.addGraphicUniform("u_worldToViewN", (uniform, params) => {
-      params.target.uniforms.branch.bindWorldToViewNTransform(
-        uniform,
-        params.geometry,
-        false
-      );
+      params.target.uniforms.branch.bindWorldToViewNTransform(uniform, params.geometry, false);
     });
   });
   builder.frag.addUniform("s_texture", VariableType.Sampler2D, (prog) => {
@@ -331,9 +280,7 @@ export function addColorOverrideMix(frag: ShaderBuilder) {
 }
 
 function createRealityMeshHiliterBuilder(): ProgramBuilder {
-  const builder = new ProgramBuilder(
-    AttributeMap.findAttributeMap(TechniqueId.RealityMesh, false)
-  );
+  const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.RealityMesh, false));
   const vert = builder.vert;
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   addModelViewProjectionMatrix(vert);
@@ -356,12 +303,8 @@ export function createRealityMeshHiliter(): ProgramBuilder {
 }
 
 /** @internal */
-export function createRealityMeshBuilder(
-  flags: TechniqueFlags
-): ProgramBuilder {
-  const builder = new ProgramBuilder(
-    AttributeMap.findAttributeMap(TechniqueId.RealityMesh, false)
-  );
+export function createRealityMeshBuilder(flags: TechniqueFlags): ProgramBuilder {
+  const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.RealityMesh, false));
   const vert = builder.vert;
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   addModelViewProjectionMatrix(vert);
@@ -376,10 +319,7 @@ export function createRealityMeshBuilder(
   const gradientTextureUnit = TextureUnit.RealityMeshThematicGradient;
 
   const feat = flags.featureMode;
-  let opts =
-    FeatureMode.Overrides === feat
-      ? FeatureSymbologyOptions.Surface
-      : FeatureSymbologyOptions.None;
+  let opts = FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None;
   let applyFragmentFeatureColor = "";
 
   if (flags.isClassified) {
@@ -395,10 +335,7 @@ export function createRealityMeshBuilder(
     applyFragmentFeatureColor = mixFeatureColor;
     addColorOverrideMix(builder.frag);
   }
-  const computeFragmentBaseColor = baseColorFromTextures(
-    textureCount,
-    applyFragmentFeatureColor
-  );
+  const computeFragmentBaseColor = baseColorFromTextures(textureCount, applyFragmentFeatureColor);
 
   frag.addFunction(addUInt32s);
   frag.addFunction(testInside);
@@ -408,23 +345,11 @@ export function createRealityMeshBuilder(
   builder.frag.addUniform("u_baseColor", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_baseColor", (uniform, params) => {
       const realityMesh = params.geometry.asRealityMesh!;
-      const baseColor = (
-        realityMesh.baseColor
-          ? realityMesh.baseColor
-          : ColorDef.create(0xff000000)
-      ).colors;
-      uniform.setUniform4fv([
-        baseColor.r / 255,
-        baseColor.g / 255,
-        baseColor.b / 255,
-        1 - baseColor.t / 255,
-      ]);
+      const baseColor = (realityMesh.baseColor ? realityMesh.baseColor : ColorDef.create(0xff000000)).colors;
+      uniform.setUniform4fv([baseColor.r / 255, baseColor.g / 255, baseColor.b / 255, 1 - baseColor.t / 255]);
     });
   });
-  builder.frag.set(
-    FragmentShaderComponent.ComputeBaseColor,
-    computeFragmentBaseColor
-  );
+  builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeFragmentBaseColor);
   if (!flags.isTranslucent) {
     if (FeatureMode.None !== feat) {
       if (flags.isClassified) addFeaturePlanarClassifier(builder);
@@ -437,13 +362,11 @@ export function createRealityMeshBuilder(
 
   addTextures(builder, textureCount);
 
-  if (IsThematic.Yes === flags.isThematic)
-    addThematicToRealityMesh(builder, gradientTextureUnit);
+  if (IsThematic.Yes === flags.isThematic) addThematicToRealityMesh(builder, gradientTextureUnit);
 
   if (flags.isWiremesh) addWiremesh(builder);
 
-  if (flags.enableAtmosphere)
-    addAtmosphericScatteringEffect(builder, false, false);
+  if (flags.enableAtmosphere) addAtmosphericScatteringEffect(builder, false, false);
 
   return builder;
 }

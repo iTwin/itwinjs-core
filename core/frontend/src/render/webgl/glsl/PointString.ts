@@ -7,12 +7,7 @@
  */
 
 import { AttributeMap } from "../AttributeMap";
-import {
-  FragmentShaderComponent,
-  ProgramBuilder,
-  VariableType,
-  VertexShaderComponent,
-} from "../ShaderBuilder";
+import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
 import { IsInstanced, PositionType } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { addColor } from "./Color";
@@ -38,17 +33,10 @@ const roundCorners = `
   return dot(vt, vt) * v_roundCorners >= 0.25; // meets or exceeds radius of circle
 `;
 
-const computeRoundCorners =
-  "  v_roundCorners = gl_PointSize > 4.0 ? 1.0 : 0.0;";
+const computeRoundCorners = "  v_roundCorners = gl_PointSize > 4.0 ? 1.0 : 0.0;";
 
-function createBase(
-  instanced: IsInstanced,
-  positionType: PositionType
-): ProgramBuilder {
-  const attrMap = AttributeMap.findAttributeMap(
-    TechniqueId.PointString,
-    IsInstanced.Yes === instanced
-  );
+function createBase(instanced: IsInstanced, positionType: PositionType): ProgramBuilder {
+  const attrMap = AttributeMap.findAttributeMap(TechniqueId.PointString, IsInstanced.Yes === instanced);
 
   const builder = new ProgramBuilder(attrMap, {
     positionType,
@@ -59,31 +47,21 @@ function createBase(
   addModelViewProjectionMatrix(vert);
 
   addLineWeight(vert);
-  builder.addInlineComputedVarying(
-    "v_roundCorners",
-    VariableType.Float,
-    computeRoundCorners
-  );
+  builder.addInlineComputedVarying("v_roundCorners", VariableType.Float, computeRoundCorners);
   builder.frag.set(FragmentShaderComponent.CheckForEarlyDiscard, roundCorners);
 
   return builder;
 }
 
 /** @internal */
-export function createPointStringHiliter(
-  instanced: IsInstanced,
-  posType: PositionType
-): ProgramBuilder {
+export function createPointStringHiliter(instanced: IsInstanced, posType: PositionType): ProgramBuilder {
   const builder = createBase(instanced, posType);
   addHiliter(builder, true);
   return builder;
 }
 
 /** @internal */
-export function createPointStringBuilder(
-  instanced: IsInstanced,
-  posType: PositionType
-): ProgramBuilder {
+export function createPointStringBuilder(instanced: IsInstanced, posType: PositionType): ProgramBuilder {
   const builder = createBase(instanced, posType);
   addShaderFlags(builder);
   addColor(builder);

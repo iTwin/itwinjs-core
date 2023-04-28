@@ -31,12 +31,9 @@ export class DebugWindow extends Window {
     this._windowId = `debugPanel-${viewport.viewportId}`;
     this.isPinned = true;
 
-    this._dispose = IModelApp.viewManager.onSelectedViewportChanged.addListener(
-      (args) => {
-        this.container.style.display =
-          args.current === viewport ? "flex" : "none";
-      }
-    );
+    this._dispose = IModelApp.viewManager.onSelectedViewportChanged.addListener((args) => {
+      this.container.style.display = args.current === viewport ? "flex" : "none";
+    });
   }
 
   public dispose(): void {

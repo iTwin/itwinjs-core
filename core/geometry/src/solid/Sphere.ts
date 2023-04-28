@@ -47,43 +47,27 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     return u * Math.PI * 2.0;
   }
 
-  private constructor(
-    localToWorld: Transform,
-    latitudeSweep: AngleSweep,
-    capped: boolean
-  ) {
+  private constructor(localToWorld: Transform, latitudeSweep: AngleSweep, capped: boolean) {
     super(capped);
     this._localToWorld = localToWorld;
-    this._latitudeSweep = latitudeSweep
-      ? latitudeSweep
-      : AngleSweep.createFullLatitude();
+    this._latitudeSweep = latitudeSweep ? latitudeSweep : AngleSweep.createFullLatitude();
   }
   /** return a deep clone */
   public clone(): Sphere {
-    return new Sphere(
-      this._localToWorld.clone(),
-      this._latitudeSweep.clone(),
-      this.capped
-    );
+    return new Sphere(this._localToWorld.clone(), this._latitudeSweep.clone(), this.capped);
   }
   /** Transform the sphere in place.
    * * Fails if the transform is singular.
    */
   public tryTransformInPlace(transform: Transform): boolean {
     if (transform.matrix.isSingular()) return false;
-    transform.multiplyTransformTransform(
-      this._localToWorld,
-      this._localToWorld
-    );
+    transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
     return true;
   }
   /** Return a transformed clone. */
   public cloneTransformed(transform: Transform): Sphere | undefined {
     const sphere1 = this.clone();
-    transform.multiplyTransformTransform(
-      sphere1._localToWorld,
-      sphere1._localToWorld
-    );
+    transform.multiplyTransformTransform(sphere1._localToWorld, sphere1._localToWorld);
     if (transform.matrix.determinant() < 0.0) {
       if (sphere1._latitudeSweep !== undefined) {
         sphere1._latitudeSweep.reverseInPlace();
@@ -104,20 +88,9 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     return this._latitudeSweep.sweepRadians / Math.PI;
   }
   /** Create from center and radius, with optional restricted latitudes. */
-  public static createCenterRadius(
-    center: Point3d,
-    radius: number,
-    latitudeSweep?: AngleSweep
-  ): Sphere {
-    const localToWorld = Transform.createOriginAndMatrix(
-      center,
-      Matrix3d.createUniformScale(radius)
-    );
-    return new Sphere(
-      localToWorld,
-      latitudeSweep ? latitudeSweep : AngleSweep.createFullLatitude(),
-      false
-    );
+  public static createCenterRadius(center: Point3d, radius: number, latitudeSweep?: AngleSweep): Sphere {
+    const localToWorld = Transform.createOriginAndMatrix(center, Matrix3d.createUniformScale(radius));
+    return new Sphere(localToWorld, latitudeSweep ? latitudeSweep : AngleSweep.createFullLatitude(), false);
   }
   /** Create an ellipsoid which is a unit sphere mapped to position by an (arbitrary, possibly skewed and scaled) transform. */
   public static createEllipsoid(
@@ -160,11 +133,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
   ): Sphere | undefined {
     const localToWorld = Transform.createOriginAndMatrix(center, axes);
     localToWorld.matrix.scaleColumnsInPlace(radiusX, radiusY, radiusZ);
-    return new Sphere(
-      localToWorld,
-      latitudeSweep ? latitudeSweep.clone() : AngleSweep.createFullLatitude(),
-      capped
-    );
+    return new Sphere(localToWorld, latitudeSweep ? latitudeSweep.clone() : AngleSweep.createFullLatitude(), capped);
   }
 
   /** return (copy of) sphere center */
@@ -201,11 +170,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
    */
   public maxAxisRadius(): number {
     const matrix = this._localToWorld.matrix;
-    return Geometry.maxXYZ(
-      matrix.columnXMagnitude(),
-      matrix.columnYMagnitude(),
-      matrix.columnZMagnitude()
-    );
+    return Geometry.maxXYZ(matrix.columnXMagnitude(), matrix.columnYMagnitude(), matrix.columnZMagnitude());
   }
   /**
    * Return a (clone of) the sphere's local to world transformation.
@@ -242,10 +207,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
       strokeCount = fixedStrokeCount;
     } else if (options instanceof StrokeOptions) {
       strokeCount = options.applyTolerancesToArc(
-        Geometry.maxXY(
-          this._localToWorld.matrix.columnXMagnitude(),
-          this._localToWorld.matrix.columnYMagnitude()
-        )
+        Geometry.maxXY(this._localToWorld.matrix.columnXMagnitude(), this._localToWorld.matrix.columnYMagnitude())
       );
     }
     strokeCount = Geometry.clampToStartEnd(strokeCount, 4, 64);
@@ -330,11 +292,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
    * @param uFraction fractional position on minor arc (theta, longitude)
    * @param vFraction fractional position on major arc (phi, latitude)
    */
-  public uvFractionToPoint(
-    uFraction: number,
-    vFraction: number,
-    result?: Point3d
-  ): Point3d {
+  public uvFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d {
     // sphere with radius 1 . . .
     const thetaRadians = this.uFractionToRadians(uFraction);
     const phiRadians = this.vFractionToRadians(vFraction);
@@ -342,12 +300,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     const sinTheta = Math.sin(thetaRadians);
     const sinPhi = Math.sin(phiRadians);
     const cosPhi = Math.cos(phiRadians);
-    return this._localToWorld.multiplyXYZ(
-      cosTheta * cosPhi,
-      sinTheta * cosPhi,
-      sinPhi,
-      result
-    );
+    return this._localToWorld.multiplyXYZ(cosTheta * cosPhi, sinTheta * cosPhi, sinPhi, result);
   }
   /** Evaluate as a uv surface, returning point and two vectors.
    * @param uFraction fractional position on minor arc (theta, longitude)
@@ -367,21 +320,9 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     const sinPhi = Math.sin(phiRadians);
     const cosPhi = Math.cos(phiRadians);
     return Plane3dByOriginAndVectors.createOriginAndVectors(
-      this._localToWorld.multiplyXYZ(
-        cosTheta * cosPhi,
-        sinTheta * cosPhi,
-        sinPhi
-      ),
-      this._localToWorld.matrix.multiplyXYZ(
-        -fTheta * sinTheta,
-        fTheta * cosTheta,
-        0
-      ), // !!! note cosTheta term is omitted -- scale is wrong, but remains non-zero at poles.
-      this._localToWorld.matrix.multiplyXYZ(
-        -fPhi * cosTheta * sinPhi,
-        -fPhi * sinTheta * sinPhi,
-        fPhi * cosPhi
-      ),
+      this._localToWorld.multiplyXYZ(cosTheta * cosPhi, sinTheta * cosPhi, sinPhi),
+      this._localToWorld.matrix.multiplyXYZ(-fTheta * sinTheta, fTheta * cosTheta, 0), // !!! note cosTheta term is omitted -- scale is wrong, but remains non-zero at poles.
+      this._localToWorld.matrix.multiplyXYZ(-fPhi * cosTheta * sinPhi, -fPhi * sinTheta * sinPhi, fPhi * cosPhi),
       result
     );
   }
@@ -411,8 +352,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
         Math.cos(Math.abs(this._latitudeSweep.startRadians)),
         Math.cos(Math.abs(this._latitudeSweep.endRadians))
       );
-    const dMaxV =
-      Math.max(rMaxU, rZ) * Math.abs(this._latitudeSweep.sweepRadians);
+    const dMaxV = Math.max(rMaxU, rZ) * Math.abs(this._latitudeSweep.sweepRadians);
 
     return Vector2d.create(dMaxU, dMaxV);
   }

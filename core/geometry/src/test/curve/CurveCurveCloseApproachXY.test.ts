@@ -21,44 +21,23 @@ import { BSplineCurve3d } from "../../bspline/BSplineCurve";
  * @param allGeometry
  * @param geometryA
  */
-function testVaryingLineSegments(
-  _ck: Checker,
-  allGeometry: GeometryQuery[],
-  geometryA: CurvePrimitive
-) {
+function testVaryingLineSegments(_ck: Checker, allGeometry: GeometryQuery[], geometryA: CurvePrimitive) {
   const path0 = Arc3d.createXY(geometryA.fractionToPoint(0.5), 4)!;
-  const path1 = Arc3d.createCircularStartMiddleEnd(
-    Point3d.create(0, 9),
-    Point3d.create(6, 3),
-    Point3d.create(3, -3)
-  )!;
+  const path1 = Arc3d.createCircularStartMiddleEnd(Point3d.create(0, 9), Point3d.create(6, 3), Point3d.create(3, -3))!;
   const fractions = [0.0, 0.1, 0.2, 0.3, 0.4, 0.6, 0.8, 0.9, 1.0];
   let x0 = 0;
   const maxDistance = 2.5;
   for (const f0 of fractions) {
     let y0 = 0;
     for (const f1 of fractions) {
-      const lineB = LineSegment3d.create(
-        path0.fractionToPoint(f0),
-        path1.fractionToPoint(f1)
-      );
-      const approaches = CurveCurve.closeApproachProjectedXYPairs(
-        geometryA,
-        lineB,
-        2.5
-      );
+      const lineB = LineSegment3d.create(path0.fractionToPoint(f0), path1.fractionToPoint(f1));
+      const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, lineB, 2.5);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA, x0, y0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineB, x0, y0);
       if (approaches.length > 0) {
         for (const p of approaches)
           if (p.detailA.point.isAlmostEqual(p.detailB.point))
-            GeometryCoreTestIO.createAndCaptureXYCircle(
-              allGeometry,
-              p.detailA.point,
-              0.0625,
-              x0,
-              y0
-            );
+            GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, p.detailA.point, 0.0625, x0, y0);
           else
             GeometryCoreTestIO.captureGeometry(
               allGeometry,
@@ -67,34 +46,10 @@ function testVaryingLineSegments(
               y0
             );
       } else {
-        GeometryCoreTestIO.createAndCaptureXYCircle(
-          allGeometry,
-          geometryA.startPoint(),
-          maxDistance,
-          x0,
-          y0
-        );
-        GeometryCoreTestIO.createAndCaptureXYCircle(
-          allGeometry,
-          geometryA.endPoint(),
-          maxDistance,
-          x0,
-          y0
-        );
-        GeometryCoreTestIO.createAndCaptureXYCircle(
-          allGeometry,
-          lineB.startPoint(),
-          maxDistance,
-          x0,
-          y0
-        );
-        GeometryCoreTestIO.createAndCaptureXYCircle(
-          allGeometry,
-          lineB.endPoint(),
-          maxDistance,
-          x0,
-          y0
-        );
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, geometryA.startPoint(), maxDistance, x0, y0);
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, geometryA.endPoint(), maxDistance, x0, y0);
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, lineB.startPoint(), maxDistance, x0, y0);
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, lineB.endPoint(), maxDistance, x0, y0);
       }
       y0 += 20;
     }
@@ -118,13 +73,7 @@ function testVaryingSubsets(
   fractions: number[] = [1.0, 0.9, 0.0, 0.2, 0.3, 0.4, 0.6, 0.8]
 ) {
   let x0 = 0;
-  GeometryCoreTestIO.createAndCaptureXYCircle(
-    allGeometry,
-    Point3d.create(x0, 0),
-    maxDistance,
-    x0,
-    0
-  );
+  GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, Point3d.create(x0, 0), maxDistance, x0, 0);
   for (const f0 of fractions) {
     let y0 = 0;
     for (const f1 of fractions) {
@@ -136,23 +85,13 @@ function testVaryingSubsets(
           partialB = geometryB.clonePartialCurve(f0, f1);
         }
         if (!partialB) continue;
-        const approaches = CurveCurve.closeApproachProjectedXYPairs(
-          geometryA,
-          partialB,
-          maxDistance
-        );
+        const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, partialB, maxDistance);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA, x0, y0);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, partialB, x0, y0);
         if (approaches.length > 0) {
           for (const p of approaches)
             if (p.detailA.point.isAlmostEqual(p.detailB.point))
-              GeometryCoreTestIO.createAndCaptureXYCircle(
-                allGeometry,
-                p.detailA.point,
-                maxDistance / 5,
-                x0,
-                y0
-              );
+              GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, p.detailA.point, maxDistance / 5, x0, y0);
             else
               GeometryCoreTestIO.captureGeometry(
                 allGeometry,
@@ -161,34 +100,10 @@ function testVaryingSubsets(
                 y0
               );
         } else {
-          GeometryCoreTestIO.createAndCaptureXYCircle(
-            allGeometry,
-            geometryA.startPoint(),
-            maxDistance,
-            x0,
-            y0
-          );
-          GeometryCoreTestIO.createAndCaptureXYCircle(
-            allGeometry,
-            geometryA.endPoint(),
-            maxDistance,
-            x0,
-            y0
-          );
-          GeometryCoreTestIO.createAndCaptureXYCircle(
-            allGeometry,
-            partialB.startPoint(),
-            maxDistance,
-            x0,
-            y0
-          );
-          GeometryCoreTestIO.createAndCaptureXYCircle(
-            allGeometry,
-            partialB.endPoint(),
-            maxDistance,
-            x0,
-            y0
-          );
+          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, geometryA.startPoint(), maxDistance, x0, y0);
+          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, geometryA.endPoint(), maxDistance, x0, y0);
+          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, partialB.startPoint(), maxDistance, x0, y0);
+          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, partialB.endPoint(), maxDistance, x0, y0);
         }
       }
       y0 += 20;
@@ -201,16 +116,8 @@ describe("CurveCurveCloseApproachXY", () => {
   it("LineLine", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    testVaryingLineSegments(
-      ck,
-      allGeometry,
-      LineSegment3d.createXYXY(1, 2, 5, 2)
-    );
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "CurveCurveCloseApproachXY",
-      "LineLine"
-    );
+    testVaryingLineSegments(ck, allGeometry, LineSegment3d.createXYXY(1, 2, 5, 2));
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LineLine");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -226,28 +133,16 @@ describe("CurveCurveCloseApproachXY", () => {
         [4, 3],
       ])
     );
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "CurveCurveCloseApproachXY",
-      "LineLineString"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LineLineString");
     expect(ck.getNumErrors()).equals(0);
   });
 
   it("LineArc", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const arc = Arc3d.createCircularStartMiddleEnd(
-      Point3d.create(1, 2),
-      Point3d.create(3, 3.5),
-      Point3d.create(5, 2)
-    )!;
+    const arc = Arc3d.createCircularStartMiddleEnd(Point3d.create(1, 2), Point3d.create(3, 3.5), Point3d.create(5, 2))!;
     testVaryingLineSegments(ck, allGeometry, arc);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "CurveCurveCloseApproachXY",
-      "LineArc"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LineArc");
     expect(ck.getNumErrors()).equals(0);
   });
   it("ArcArc", () => {
@@ -264,11 +159,7 @@ describe("CurveCurveCloseApproachXY", () => {
       Point3d.create(0, -2)
     )!;
     testVaryingSubsets(ck, allGeometry, arcA, arcB);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "CurveCurveCloseApproachXY",
-      "ArcArc"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "ArcArc");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -278,11 +169,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const arcA = Arc3d.createXY(Point3d.create(1, 1), 1.5);
     const arcB = Arc3d.createXY(Point3d.create(5, 2), 2);
     testVaryingSubsets(ck, allGeometry, arcA, arcB);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "CurveCurveCloseApproachXY",
-      "ArcArcFar"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "ArcArcFar");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -292,11 +179,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const arcA = Arc3d.createXY(Point3d.create(1, 1), 5);
     const arcB = Arc3d.createXY(Point3d.create(2, 3), 2);
     testVaryingSubsets(ck, allGeometry, arcA, arcB);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "CurveCurveCloseApproachXY",
-      "ArcArcInside"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "ArcArcInside");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -314,11 +197,7 @@ describe("CurveCurveCloseApproachXY", () => {
       [6, 4],
     ]);
     testVaryingSubsets(ck, allGeometry, cpA, cpB);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "CurveCurveCloseApproachXY",
-      "LineStringLineString"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LineStringLineString");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -335,40 +214,24 @@ describe("CurveCurveCloseApproachXY", () => {
       cpB.addPointXYZ(x + 0.6, 0.8 - f * f * 0.4, 0);
     }
     testVaryingSubsets(ck, allGeometry, cpA, cpB, 0.6);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "CurveCurveCloseApproachXY",
-      "LineStringLineStringLong06"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LineStringLineStringLong06");
     allGeometry.length = 0;
     testVaryingSubsets(ck, allGeometry, cpA, cpB, 0.3);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "CurveCurveCloseApproachXY",
-      "LineStringLineStringLong03"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LineStringLineStringLong03");
     expect(ck.getNumErrors()).equals(0);
   });
 
   it("ArcLineString", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const cpA = Arc3d.createCircularStartMiddleEnd(
-      Point3d.create(1, 2),
-      Point3d.create(3, 3.5),
-      Point3d.create(5, 2)
-    )!;
+    const cpA = Arc3d.createCircularStartMiddleEnd(Point3d.create(1, 2), Point3d.create(3, 3.5), Point3d.create(5, 2))!;
     const cpB = LineString3d.create([
       [1, 3],
       [4, 2.5],
       [6, 4],
     ]);
     testVaryingSubsets(ck, allGeometry, cpA, cpB);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "CurveCurveCloseApproachXY",
-      "ArcLineString"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "ArcLineString");
     expect(ck.getNumErrors()).equals(0);
   });
   it("BsplineLineString", () => {
@@ -390,18 +253,10 @@ describe("CurveCurveCloseApproachXY", () => {
       [6, 3],
     ]);
     testVaryingSubsets(ck, allGeometry, cpA, cpB, 1, [0, 1]);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "CurveCurveCloseApproachXY",
-      "BsplineLineString1"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "BsplineLineString1");
     allGeometry.length = 0;
     testVaryingSubsets(ck, allGeometry, cpA, cpB, 2, [0, 1]);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "CurveCurveCloseApproachXY",
-      "BsplineLineString2"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "BsplineLineString2");
     expect(ck.getNumErrors()).equals(0);
   });
   it("BsplineArc", () => {
@@ -417,17 +272,9 @@ describe("CurveCurveCloseApproachXY", () => {
       ],
       4
     )!;
-    const cpB = Arc3d.createCircularStartMiddleEnd(
-      Point3d.create(1, 3),
-      Point3d.create(4, 2.5),
-      Point3d.create(6, 2)
-    )!;
+    const cpB = Arc3d.createCircularStartMiddleEnd(Point3d.create(1, 3), Point3d.create(4, 2.5), Point3d.create(6, 2))!;
     testVaryingSubsets(ck, allGeometry, cpA, cpB, 2, [0, 1]);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "CurveCurveCloseApproachXY",
-      "BsplineArc"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "BsplineArc");
 
     allGeometry.length = 0;
     const cpB1 = Arc3d.createCircularStartMiddleEnd(
@@ -436,31 +283,16 @@ describe("CurveCurveCloseApproachXY", () => {
       Point3d.create(6, -1)
     )!;
     testVaryingSubsets(ck, allGeometry, cpA, cpB1, 2, [0, 1]);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "CurveCurveCloseApproachXY",
-      "BsplineArcB"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "BsplineArcB");
 
     allGeometry.length = 0;
     testVaryingSubsets(ck, allGeometry, cpB, cpA, 2, [0, 1]);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "CurveCurveCloseApproachXY",
-      "ArcBspline"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "ArcBspline");
 
     allGeometry.length = 0;
-    const cpB2 = LineSegment3d.create(
-      Point3d.create(1, -1),
-      Point3d.create(6, -1)
-    );
+    const cpB2 = LineSegment3d.create(Point3d.create(1, -1), Point3d.create(6, -1));
     testVaryingSubsets(ck, allGeometry, cpA, cpB2, 2, [0, 1]);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "CurveCurveCloseApproachXY",
-      "BsplineLine"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "BsplineLine");
 
     expect(ck.getNumErrors()).equals(0);
   });

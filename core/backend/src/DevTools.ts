@@ -56,35 +56,17 @@ export interface DevToolsProcessStats {
  * @internal
  */
 export class DevToolsStatsFormatter {
-  private static readonly _megaByteProps = [
-    "totalmem",
-    "freemem",
-    "rss",
-    "heapTotal",
-    "heapUsed",
-    "external",
-  ];
-  private static readonly _percentProps = [
-    "user",
-    "nice",
-    "sys",
-    "idle",
-    "irq",
-    "cpuUsage",
-  ];
+  private static readonly _megaByteProps = ["totalmem", "freemem", "rss", "heapTotal", "heapUsed", "external"];
+  private static readonly _percentProps = ["user", "nice", "sys", "idle", "irq", "cpuUsage"];
   private static readonly _mHzProps = ["speed"];
   private static readonly _secondsProps = ["uptime"];
 
   /** Replacer that includes units - can be used with JSON.stringify()  */
   private static _replacer = (key: string, value: any) => {
-    if (DevToolsStatsFormatter._megaByteProps.includes(key))
-      return `${value.toFixed()} MB`;
-    if (DevToolsStatsFormatter._percentProps.includes(key))
-      return `${value.toFixed()}%`;
-    if (DevToolsStatsFormatter._mHzProps.includes(key))
-      return `${value.toString()} MHz`;
-    if (DevToolsStatsFormatter._secondsProps.includes(key))
-      return `${value.toFixed()} secs`;
+    if (DevToolsStatsFormatter._megaByteProps.includes(key)) return `${value.toFixed()} MB`;
+    if (DevToolsStatsFormatter._percentProps.includes(key)) return `${value.toFixed()}%`;
+    if (DevToolsStatsFormatter._mHzProps.includes(key)) return `${value.toString()} MHz`;
+    if (DevToolsStatsFormatter._secondsProps.includes(key)) return `${value.toFixed()} secs`;
     return value;
   };
 
@@ -134,9 +116,7 @@ export class DevTools {
 
     const elapUserMS = elapUsage.user / 1000; // microseconds to milliseconds
     const elapSystMS = elapUsage.system / 1000;
-    const cpuPercent = Math.round(
-      (100 * (elapUserMS + elapSystMS)) / elapTimeMS / NUMBER_OF_CPUS
-    );
+    const cpuPercent = Math.round((100 * (elapUserMS + elapSystMS)) / elapTimeMS / NUMBER_OF_CPUS);
 
     return cpuPercent;
   }
@@ -150,10 +130,7 @@ export class DevTools {
 
     // Evaluate cpu usage as percentages
     for (const cpu of Object.values(cpus)) {
-      const total = Object.values(cpu.times).reduce(
-        (_total: number, currValue) => (_total += currValue),
-        0
-      );
+      const total = Object.values(cpu.times).reduce((_total: number, currValue) => (_total += currValue), 0);
       const cpuTimes = cpu.times as StringIndexedObject<number>;
       for (const type of Object.keys(cpuTimes)) {
         const cpuPercent = Math.round((100 * cpuTimes[type]) / total);
@@ -210,10 +187,7 @@ export class DevTools {
   }
 
   /** Sets up a log level at the backend and returns the old log level */
-  public static setLogLevel(
-    inLoggerCategory: string,
-    newLevel: LogLevel
-  ): LogLevel | undefined {
+  public static setLogLevel(inLoggerCategory: string, newLevel: LogLevel): LogLevel | undefined {
     const oldLevel = Logger.getLevel(inLoggerCategory);
     Logger.logInfo(loggerCategory, `Setting log level`, () => ({
       loggerCategory: inLoggerCategory,

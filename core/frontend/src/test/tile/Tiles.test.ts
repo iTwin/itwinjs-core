@@ -41,11 +41,7 @@ describe("Tiles", () => {
     public retainMemory = false;
     public visible = true;
 
-    public constructor(
-      tileTree: TileTree,
-      contentSize: number,
-      retainMemory = false
-    ) {
+    public constructor(tileTree: TileTree, contentSize: number, retainMemory = false) {
       super(
         {
           contentId: contentSize.toString(),
@@ -61,9 +57,7 @@ describe("Tiles", () => {
       if (contentSize === 0) this.setIsReady();
     }
 
-    protected _loadChildren(
-      resolve: (children: Tile[] | undefined) => void
-    ): void {
+    protected _loadChildren(resolve: (children: Tile[] | undefined) => void): void {
       resolve(undefined);
     }
 
@@ -96,11 +90,7 @@ describe("Tiles", () => {
     public readonly contentSize: number;
     private readonly _rootTile: TestTile;
 
-    public constructor(
-      contentSize: number,
-      iModel: IModelConnection,
-      retainMemory = false
-    ) {
+    public constructor(contentSize: number, iModel: IModelConnection, retainMemory = false) {
       super({
         iModel,
         id: (++TestTree._nextId).toString(),
@@ -148,9 +138,7 @@ describe("Tiles", () => {
     public prune() {}
   }
 
-  const createOnTileTreeLoadPromise: (
-    treeOwner: TileTreeOwner
-  ) => Promise<void> = async (treeOwner: TileTreeOwner) => {
+  const createOnTileTreeLoadPromise: (treeOwner: TileTreeOwner) => Promise<void> = async (treeOwner: TileTreeOwner) => {
     return new Promise((resolve) => {
       IModelApp.tileAdmin.onTileTreeLoad.addListener((tileTreeOwner) => {
         if (treeOwner === tileTreeOwner) resolve();
@@ -193,10 +181,7 @@ describe("Tiles", () => {
     // We need to call 'TileTreeOwner.load()' in order check 'isDisposed' later on (i.e only loaded tiletree can be truly disposed)
     // Unfortunately 'TileTreeOwner.load()' doesn't return a promise this test can await.
     // To workaround this, we create our own Promise hooked to the 'onTileTreeLoad' event.
-    const promises = [
-      createOnTileTreeLoadPromise(treeOwner1),
-      createOnTileTreeLoadPromise(treeOwner2),
-    ];
+    const promises = [createOnTileTreeLoadPromise(treeOwner1), createOnTileTreeLoadPromise(treeOwner2)];
 
     treeOwner1.load();
     treeOwner2.load();

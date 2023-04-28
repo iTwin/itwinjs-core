@@ -92,12 +92,7 @@ export class LineStringOffsetClipperContext {
    * @param unitA incoming vector
    * @param unitB outgoing vector
    */
-  private createChamferCut(
-    clipSet: ConvexClipPlaneSet,
-    point: Point3d,
-    unitA: Vector3d,
-    unitB: Vector3d
-  ) {
+  private createChamferCut(clipSet: ConvexClipPlaneSet, point: Point3d, unitA: Vector3d, unitB: Vector3d) {
     const degreesA = unitA.angleToXY(unitB).degrees;
     if (Math.abs(degreesA) > this._turnDegrees) {
       const perpAB = unitA.interpolate(0.5, unitB);
@@ -105,23 +100,11 @@ export class LineStringOffsetClipperContext {
       perpAB.normalizeInPlace();
       if (degreesA > 0)
         clipSet.addPlaneToConvexSet(
-          LineStringOffsetClipperContext.createDirectedPlane(
-            point,
-            perpAB,
-            -this._positiveOffsetRight,
-            1.0,
-            false
-          )
+          LineStringOffsetClipperContext.createDirectedPlane(point, perpAB, -this._positiveOffsetRight, 1.0, false)
         );
       else
         clipSet.addPlaneToConvexSet(
-          LineStringOffsetClipperContext.createDirectedPlane(
-            point,
-            perpAB,
-            this._positiveOffsetLeft,
-            -1.0,
-            false
-          )
+          LineStringOffsetClipperContext.createDirectedPlane(point, perpAB, this._positiveOffsetLeft, -1.0, false)
         );
     }
   }
@@ -142,41 +125,13 @@ export class LineStringOffsetClipperContext {
     unitBC.normalizeInPlace();
     const clipSet = ConvexClipPlaneSet.createEmpty();
     clipSet.addPlaneToConvexSet(
-      LineStringOffsetClipperContext.createDirectedPlane(
-        pointA,
-        perpB,
-        this._positiveOffsetLeft,
-        -1.0,
-        false
-      )
+      LineStringOffsetClipperContext.createDirectedPlane(pointA, perpB, this._positiveOffsetLeft, -1.0, false)
     );
     clipSet.addPlaneToConvexSet(
-      LineStringOffsetClipperContext.createDirectedPlane(
-        pointA,
-        perpB,
-        -this._positiveOffsetRight,
-        1.0,
-        false
-      )
+      LineStringOffsetClipperContext.createDirectedPlane(pointA, perpB, -this._positiveOffsetRight, 1.0, false)
     );
-    clipSet.addPlaneToConvexSet(
-      LineStringOffsetClipperContext.createDirectedPlane(
-        pointA,
-        unitAB,
-        0,
-        1.0,
-        true
-      )
-    );
-    clipSet.addPlaneToConvexSet(
-      LineStringOffsetClipperContext.createDirectedPlane(
-        pointB,
-        unitBC,
-        0,
-        -1.0,
-        true
-      )
-    );
+    clipSet.addPlaneToConvexSet(LineStringOffsetClipperContext.createDirectedPlane(pointA, unitAB, 0, 1.0, true));
+    clipSet.addPlaneToConvexSet(LineStringOffsetClipperContext.createDirectedPlane(pointB, unitBC, 0, -1.0, true));
     this.createChamferCut(clipSet, pointA, unitA, unitB);
     this.createChamferCut(clipSet, pointB, unitB, unitC);
     /*
@@ -217,15 +172,10 @@ export class LineStringOffsetClipperContext {
     z0: number | undefined,
     z1: number | undefined
   ): UnionOfConvexClipPlaneSets {
-    const context = new LineStringOffsetClipperContext(
-      positiveOffsetLeft,
-      positiveOffsetRight
-    );
+    const context = new LineStringOffsetClipperContext(positiveOffsetLeft, positiveOffsetRight);
     const result = UnionOfConvexClipPlaneSets.createEmpty();
     if (points.length > 1) {
-      const closed = Geometry.isSmallMetricDistance(
-        points.distanceIndexIndex(0, points.length - 1)!
-      );
+      const closed = Geometry.isSmallMetricDistance(points.distanceIndexIndex(0, points.length - 1)!);
       for (let i = 0; i + 1 < points.length; i++) {
         const unitVectorA = this.createUnit(points, i - 1, closed);
         const unitVectorB = this.createUnit(points, i, closed);

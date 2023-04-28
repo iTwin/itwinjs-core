@@ -36,14 +36,8 @@ export class PolylineOps {
    * @param source
    * @param chordTolerance
    */
-  public static compressByChordError(
-    source: Point3d[],
-    chordTolerance: number
-  ): Point3d[] {
-    return PolylineCompressionContext.compressPoint3dArrayByChordError(
-      source,
-      chordTolerance
-    );
+  public static compressByChordError(source: Point3d[], chordTolerance: number): Point3d[] {
+    return PolylineCompressionContext.compressPoint3dArrayByChordError(source, chordTolerance);
   }
   /**
    * Return a simplified subset of given points, omitting points if very close to their neighbors.
@@ -51,15 +45,9 @@ export class PolylineOps {
    * @param source input points
    * @param maxEdgeLength
    */
-  public static compressShortEdges(
-    source: Point3d[],
-    maxEdgeLength: number
-  ): Point3d[] {
+  public static compressShortEdges(source: Point3d[], maxEdgeLength: number): Point3d[] {
     const dest = GrowableXYZArray.create(source);
-    PolylineCompressionContext.compressInPlaceByShortEdgeLength(
-      dest,
-      maxEdgeLength
-    );
+    PolylineCompressionContext.compressInPlaceByShortEdgeLength(dest, maxEdgeLength);
     return dest.getPoint3dArray();
   }
   /**
@@ -68,15 +56,9 @@ export class PolylineOps {
    * @param source input points
    * @param maxEdgeLength
    */
-  public static compressSmallTriangles(
-    source: Point3d[],
-    maxTriangleArea: number
-  ): Point3d[] {
+  public static compressSmallTriangles(source: Point3d[], maxTriangleArea: number): Point3d[] {
     const dest = GrowableXYZArray.create(source);
-    PolylineCompressionContext.compressInPlaceBySmallTriangleArea(
-      dest,
-      maxTriangleArea
-    );
+    PolylineCompressionContext.compressInPlaceBySmallTriangleArea(dest, maxTriangleArea);
     return dest.getPoint3dArray();
   }
 
@@ -96,10 +78,7 @@ export class PolylineOps {
     const dest = GrowableXYZArray.create(source);
     let num0 = dest.length;
     for (let pass = 0; pass < numPass; pass++) {
-      PolylineCompressionContext.compressInPlaceByPerpendicularDistance(
-        dest,
-        maxDistance
-      );
+      PolylineCompressionContext.compressInPlaceByPerpendicularDistance(dest, maxDistance);
       const num1 = dest.length;
       if (num1 === num0) break;
       num0 = num1;
@@ -152,22 +131,12 @@ export class PolylineOps {
       //                        pointB----------------------------------->>>>>>> pointA
       //          pointQ<<<<---------------------------------------------------------
       const fraction = dot / d2Q; // safe to divide because of earlier d2Q test.
-      distanceSquared = this.squaredDistanceToInterpolatedPoint(
-        pointB,
-        pointA,
-        fraction,
-        pointQ
-      );
+      distanceSquared = this.squaredDistanceToInterpolatedPoint(pointB, pointA, fraction, pointQ);
     } else {
       //           pointB----------------------------------->>>>>>> pointA
       //                         pointQ<<<<----------------------
       const fraction = dot / d2B;
-      distanceSquared = this.squaredDistanceToInterpolatedPoint(
-        pointQ,
-        pointA,
-        fraction,
-        pointB
-      );
+      distanceSquared = this.squaredDistanceToInterpolatedPoint(pointQ, pointA, fraction, pointB);
     }
     return distanceSquared < squaredDistanceTolerance;
   }
@@ -182,25 +151,12 @@ export class PolylineOps {
   ): Point3d[] {
     let n = source.length;
     const squaredDistanceTolerance = tolerance * tolerance;
-    if (closed)
-      while (
-        n > 1 &&
-        source[n - 1].distanceSquared(source[0]) <= squaredDistanceTolerance
-      )
-        n--;
+    if (closed) while (n > 1 && source[n - 1].distanceSquared(source[0]) <= squaredDistanceTolerance) n--;
     const dest = [];
     dest.push(source[0].clone());
     for (let i = 1; i < n; i++) {
       const newPoint = source[i];
-      while (
-        this.isDanglerConfiguration(
-          dest,
-          dest.length - 1,
-          dest.length - 2,
-          newPoint,
-          squaredDistanceTolerance
-        )
-      )
+      while (this.isDanglerConfiguration(dest, dest.length - 1, dest.length - 2, newPoint, squaredDistanceTolerance))
         dest.pop();
       dest.push(newPoint.clone());
     }
@@ -209,24 +165,10 @@ export class PolylineOps {
       let leftIndex = 0;
       let rightIndex = dest.length - 1;
       while (rightIndex > leftIndex + 2) {
-        if (
-          this.isDanglerConfiguration(
-            dest,
-            leftIndex,
-            leftIndex + 1,
-            dest[rightIndex],
-            squaredDistanceTolerance
-          )
-        ) {
+        if (this.isDanglerConfiguration(dest, leftIndex, leftIndex + 1, dest[rightIndex], squaredDistanceTolerance)) {
           leftIndex++;
         } else if (
-          this.isDanglerConfiguration(
-            dest,
-            rightIndex,
-            rightIndex - 1,
-            dest[leftIndex],
-            squaredDistanceTolerance
-          )
+          this.isDanglerConfiguration(dest, rightIndex, rightIndex - 1, dest[leftIndex], squaredDistanceTolerance)
         ) {
           rightIndex--;
         } else {
@@ -254,11 +196,7 @@ export class PolylineOps {
       return;
     }
     const q1 = data[data.length - 1];
-    if (
-      q0 instanceof Point3d &&
-      q1 instanceof Point3d &&
-      !q0.isAlmostEqual(q1)
-    ) {
+    if (q0 instanceof Point3d && q1 instanceof Point3d && !q0.isAlmostEqual(q1)) {
       (data as Point3d[]).push(q0.clone());
     }
   }
@@ -276,11 +214,7 @@ export class PolylineOps {
       return;
     }
     const q1 = data[data.length - 1];
-    if (
-      q0 instanceof Point3d &&
-      q1 instanceof Point3d &&
-      q0.isAlmostEqual(q1)
-    ) {
+    if (q0 instanceof Point3d && q1 instanceof Point3d && q0.isAlmostEqual(q1)) {
       (data as Point3d[]).pop();
     }
   }

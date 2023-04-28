@@ -59,49 +59,20 @@ describe("BandedSystem", () => {
     const numRHS = 1;
     let a0 = 0;
     for (const a1 of [0, 0.1, 0.05]) {
-      const bandedMatrix = new Float64Array([
-        -3333,
-        2,
-        a1,
-        a0,
-        3,
-        a1,
-        a0,
-        4,
-        a1,
-        a0,
-        5,
-        1000,
-      ]);
-      if (Checker.noisy.bandedMatrix)
-        GeometryCoreTestIO.consoleLog("bandedMatrix", bandedMatrix);
+      const bandedMatrix = new Float64Array([-3333, 2, a1, a0, 3, a1, a0, 4, a1, a0, 5, 1000]);
+      if (Checker.noisy.bandedMatrix) GeometryCoreTestIO.consoleLog("bandedMatrix", bandedMatrix);
       // const solution0 = new Float64Array([1, 2, 3, 4, 5, 6, 7, 8]);
       const solution0 = new Float64Array([1, 2, 3, 4]);
-      if (Checker.noisy.bandedMatrix)
-        GeometryCoreTestIO.consoleLog("solution0", solution0);
+      if (Checker.noisy.bandedMatrix) GeometryCoreTestIO.consoleLog("solution0", solution0);
       ck.testExactNumber(bandedMatrix.length, bw * numRow);
       ck.testExactNumber(solution0.length, numRHS * numRow);
-      const rhs0 = BandedSystem.multiplyBandedTimesFull(
-        numRow,
-        bw,
-        bandedMatrix,
-        numRHS,
-        solution0
-      );
-      if (Checker.noisy.bandedMatrix)
-        GeometryCoreTestIO.consoleLog("rhs0", rhs0);
-      const solution1 = BandedSystem.solveBandedSystemMultipleRHS(
-        numRow,
-        bw,
-        bandedMatrix,
-        numRHS,
-        rhs0
-      );
+      const rhs0 = BandedSystem.multiplyBandedTimesFull(numRow, bw, bandedMatrix, numRHS, solution0);
+      if (Checker.noisy.bandedMatrix) GeometryCoreTestIO.consoleLog("rhs0", rhs0);
+      const solution1 = BandedSystem.solveBandedSystemMultipleRHS(numRow, bw, bandedMatrix, numRHS, rhs0);
       if (ck.testDefined(solution1) && solution1) {
         const diff = maxDiff(solution0, solution1);
         ck.testLE(diff, 1.0e-10, " solution diff");
-        if (Checker.noisy.bandedMatrix)
-          GeometryCoreTestIO.consoleLog("solution1", solution1);
+        if (Checker.noisy.bandedMatrix) GeometryCoreTestIO.consoleLog("solution1", solution1);
       }
       a0 = a1;
     }
@@ -117,20 +88,8 @@ describe("BandedSystem", () => {
         const solution0 = createBandedTestSystem(numRow, numRHS, 2.0, 0.2);
         ck.testExactNumber(matrix.length, bw * numRow);
         ck.testExactNumber(solution0.length, numRHS * numRow);
-        const rhs0 = BandedSystem.multiplyBandedTimesFull(
-          numRow,
-          bw,
-          matrix,
-          numRHS,
-          solution0
-        );
-        const solution1 = BandedSystem.solveBandedSystemMultipleRHS(
-          numRow,
-          bw,
-          matrix,
-          numRHS,
-          rhs0
-        );
+        const rhs0 = BandedSystem.multiplyBandedTimesFull(numRow, bw, matrix, numRHS, solution0);
+        const solution1 = BandedSystem.solveBandedSystemMultipleRHS(numRow, bw, matrix, numRHS, rhs0);
         if (ck.testDefined(solution1) && solution1) {
           const diff = maxDiff(solution0, solution1);
           ck.testLE(diff, 1.0e-10, " solution diff");
@@ -150,20 +109,8 @@ describe("BandedSystem", () => {
         const solution0 = createBandedTestSystem(numRow, numRHS, 2.0, 0.2);
         ck.testExactNumber(matrix.length, bw * numRow);
         ck.testExactNumber(solution0.length, numRHS * numRow);
-        const rhs0 = BandedSystem.multiplyBandedTimesFull(
-          numRow,
-          bw,
-          matrix,
-          numRHS,
-          solution0
-        );
-        const solution1 = BandedSystem.solveBandedSystemMultipleRHS(
-          numRow,
-          bw,
-          matrix,
-          numRHS,
-          rhs0
-        );
+        const rhs0 = BandedSystem.multiplyBandedTimesFull(numRow, bw, matrix, numRHS, solution0);
+        const solution1 = BandedSystem.solveBandedSystemMultipleRHS(numRow, bw, matrix, numRHS, rhs0);
         if (ck.testDefined(solution1) && solution1) {
           const diff = maxDiff(solution0, solution1);
           ck.testLE(diff, 1.0e-10, " solution diff");
@@ -207,10 +154,7 @@ describe("BandedSystem", () => {
         [3, 1],
       ])
     );
-    for (const count of [5, 6, 10])
-      allPoints.push(
-        Sample.createGrowableArrayCirclePoints(3, count, true, 0, 0)
-      );
+    for (const count of [5, 6, 10]) allPoints.push(Sample.createGrowableArrayCirclePoints(3, count, true, 0, 0));
     allPoints.push(
       GrowableXYZArray.create(
         Sample.createPointSineWave(
@@ -229,37 +173,19 @@ describe("BandedSystem", () => {
       const range = points.getRange();
       for (const order of [4, 3, 5, 7]) {
         if (points.length >= order) {
-          for (const q of points.points)
-            GeometryCoreTestIO.createAndCaptureXYCircle(
-              allGeometry,
-              q,
-              0.15,
-              x0,
-              y0
-            );
+          for (const q of points.points) GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, q, 0.15, x0, y0);
           const curve = BSplineCurveOps.createThroughPoints(points, order);
           if (curve) {
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve, x0, y0);
             for (const f of [0.25, 0.5, 0.75])
-              GeometryCoreTestIO.createAndCaptureXYMarker(
-                allGeometry,
-                4,
-                curve.fractionToPoint(f),
-                0.1,
-                x0,
-                y0
-              );
+              GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 4, curve.fractionToPoint(f), 0.1, x0, y0);
           }
           y0 += 1.5 * range.yLength();
         }
       }
       x0 += 3.0 * range.xLength();
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "BandedSystem",
-      "GrevilleBspline"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BandedSystem", "GrevilleBspline");
     expect(ck.getNumErrors()).equals(0);
   });
 });

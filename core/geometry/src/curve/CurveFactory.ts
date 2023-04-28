@@ -9,12 +9,7 @@
 
 // import { Geometry, Angle, AngleSweep } from "../Geometry";
 
-import {
-  AxisIndex,
-  AxisOrder,
-  Geometry,
-  PlaneAltitudeEvaluator,
-} from "../Geometry";
+import { AxisIndex, AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Ellipsoid, GeodesicPathPoint } from "../geometry3d/Ellipsoid";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
@@ -57,16 +52,9 @@ export class CurveFactory {
     fraction1: number
   ) {
     if (allowBackup || fraction1 > fraction0) {
-      if (
-        pointA !== undefined &&
-        pointB !== undefined &&
-        !Geometry.isAlmostEqualNumber(fraction0, fraction1)
-      )
+      if (pointA !== undefined && pointB !== undefined && !Geometry.isAlmostEqualNumber(fraction0, fraction1))
         path.tryAddChild(
-          LineSegment3d.create(
-            pointA.interpolate(fraction0, pointB),
-            pointA.interpolate(fraction1, pointB)
-          )
+          LineSegment3d.create(pointA.interpolate(fraction0, pointB), pointA.interpolate(fraction1, pointB))
         );
     }
   }
@@ -77,17 +65,9 @@ export class CurveFactory {
    * @param tangentA
    * @param pointB
    */
-  public static createArcPointTangentPoint(
-    pointA: Point3d,
-    tangentA: Vector3d,
-    pointB: Point3d
-  ): Arc3d | undefined {
+  public static createArcPointTangentPoint(pointA: Point3d, tangentA: Vector3d, pointB: Point3d): Arc3d | undefined {
     const vectorV = Vector3d.createStartEnd(pointA, pointB);
-    const frame = Matrix3d.createRigidFromColumns(
-      tangentA,
-      vectorV,
-      AxisOrder.XYZ
-    );
+    const frame = Matrix3d.createRigidFromColumns(tangentA, vectorV, AxisOrder.XYZ);
     if (frame !== undefined) {
       const vv = vectorV.dotProduct(vectorV);
       const vw = frame.dotColumnY(vectorV);
@@ -104,12 +84,7 @@ export class CurveFactory {
           // ah, sweepRadians is the wrong way
           sweepRadians = 2.0 * Math.PI - sweepRadians;
         const center = pointA.plusScaled(vector0, -1.0);
-        return Arc3d.create(
-          center,
-          vector0,
-          vector90,
-          AngleSweep.createStartEndRadians(0.0, sweepRadians)
-        );
+        return Arc3d.create(center, vector0, vector90, AngleSweep.createStartEndRadians(0.0, sweepRadians));
       }
     }
     return undefined;
@@ -131,17 +106,9 @@ export class CurveFactory {
     allowBackupAlongEdge: boolean = true
   ): Path | undefined {
     if (Array.isArray(points))
-      return this.createFilletsInLineString(
-        new Point3dArrayCarrier(points),
-        radius,
-        allowBackupAlongEdge
-      );
+      return this.createFilletsInLineString(new Point3dArrayCarrier(points), radius, allowBackupAlongEdge);
     if (points instanceof LineString3d)
-      return this.createFilletsInLineString(
-        points.packedPoints,
-        radius,
-        allowBackupAlongEdge
-      );
+      return this.createFilletsInLineString(points.packedPoints, radius, allowBackupAlongEdge);
 
     const n = points.length;
     if (n <= 1) return undefined;
@@ -163,10 +130,7 @@ export class CurveFactory {
         if (i < radius.length) thisRadius = radius[i];
       } else if (Number.isFinite(radius)) thisRadius = radius;
 
-      if (thisRadius !== 0.0)
-        blendArray.push(
-          Arc3d.createFilletArc(pointA, pointB, pointC, thisRadius)
-        );
+      if (thisRadius !== 0.0) blendArray.push(Arc3d.createFilletArc(pointA, pointB, pointC, thisRadius));
       else
         blendArray.push({
           fraction10: 0.0,
@@ -223,14 +187,7 @@ export class CurveFactory {
       const b0 = blendArray[i];
       const b1 = blendArray[i + 1];
       path.tryAddChild(b0.arc);
-      this.addPartialSegment(
-        path,
-        allowBackupAlongEdge,
-        b0.point,
-        b1.point,
-        b0.fraction12,
-        1.0 - b1.fraction10
-      );
+      this.addPartialSegment(path, allowBackupAlongEdge, b0.point, b1.point, b0.fraction12, 1.0 - b1.fraction10);
     }
     return path;
   }
@@ -252,11 +209,7 @@ export class CurveFactory {
     const xMax = Math.max(x0, x1);
     const yMin = Math.min(y0, y1);
     const yMax = Math.max(y0, y1);
-    radius = Math.min(
-      Math.abs(radius),
-      0.5 * (xMax - xMin),
-      0.5 * (yMax - yMin)
-    );
+    radius = Math.min(Math.abs(radius), 0.5 * (xMax - xMin), 0.5 * (yMax - yMin));
     if (radius === 0.0)
       return Loop.createPolygon([
         Point3d.create(xMin, yMin, z),
@@ -283,18 +236,10 @@ export class CurveFactory {
         const center = centers[i];
         const nextCenter = centers[(i + 1) % 4];
         const edgeVector = Vector3d.createStartEnd(center, nextCenter);
-        const arc = Arc3d.create(
-          center,
-          vectorU,
-          vectorV,
-          AngleSweep.createStartEndDegrees(0, 90)
-        );
+        const arc = Arc3d.create(center, vectorU, vectorV, AngleSweep.createStartEndDegrees(0, 90));
         loop.tryAddChild(arc);
         const arcEnd = arc.endPoint();
-        if (!edgeVector.isAlmostZero)
-          loop.tryAddChild(
-            LineSegment3d.create(arcEnd, arcEnd.plus(edgeVector))
-          );
+        if (!edgeVector.isAlmostZero) loop.tryAddChild(LineSegment3d.create(arcEnd, arcEnd.plus(edgeVector)));
         vectorU.rotate90CCWXY(vectorU);
         vectorV.rotate90CCWXY(vectorV);
       }
@@ -309,34 +254,19 @@ export class CurveFactory {
    * @param arcA
    * @param arcB
    */
-  public static appendToArcInPlace(
-    arcA: Arc3d,
-    arcB: Arc3d,
-    allowReverse: boolean = false
-  ): boolean {
+  public static appendToArcInPlace(arcA: Arc3d, arcB: Arc3d, allowReverse: boolean = false): boolean {
     if (arcA.center.isAlmostEqual(arcB.center)) {
-      const sweepSign = Geometry.split3WaySign(
-        arcA.sweep.sweepRadians * arcB.sweep.sweepRadians,
-        -1,
-        0,
-        1
-      );
+      const sweepSign = Geometry.split3WaySign(arcA.sweep.sweepRadians * arcB.sweep.sweepRadians, -1, 0, 1);
       // evaluate derivatives wrt radians (not fraction!), but adjust direction for sweep signs
-      const endA = arcA.angleToPointAndDerivative(
-        arcA.sweep.fractionToAngle(1.0)
-      );
+      const endA = arcA.angleToPointAndDerivative(arcA.sweep.fractionToAngle(1.0));
       if (arcA.sweep.sweepRadians < 0) endA.direction.scaleInPlace(-1.0);
-      const startB = arcB.angleToPointAndDerivative(
-        arcB.sweep.fractionToAngle(0.0)
-      );
+      const startB = arcB.angleToPointAndDerivative(arcB.sweep.fractionToAngle(0.0));
       if (arcB.sweep.sweepRadians < 0) startB.direction.scaleInPlace(-1.0);
 
       if (endA.isAlmostEqual(startB)) {
         arcA.sweep.setStartEndRadians(
           arcA.sweep.startRadians,
-          arcA.sweep.startRadians +
-            arcA.sweep.sweepRadians +
-            sweepSign * arcB.sweep.sweepRadians
+          arcA.sweep.startRadians + arcA.sweep.sweepRadians + sweepSign * arcB.sweep.sweepRadians
         );
         return true;
       }
@@ -346,9 +276,7 @@ export class CurveFactory {
         if (endA.isAlmostEqual(startB)) {
           arcA.sweep.setStartEndRadians(
             arcA.sweep.startRadians,
-            arcA.sweep.startRadians +
-              arcA.sweep.sweepRadians -
-              sweepSign * arcB.sweep.sweepRadians
+            arcA.sweep.startRadians + arcA.sweep.sweepRadians - sweepSign * arcB.sweep.sweepRadians
           );
           return true;
         }
@@ -401,13 +329,7 @@ export class CurveFactory {
     pipeRadius: number
   ): GeometryQuery | GeometryQuery[] | undefined {
     if (centerline instanceof LineSegment3d) {
-      return Cone.createAxisPoints(
-        centerline.startPoint(),
-        centerline.endPoint(),
-        pipeRadius,
-        pipeRadius,
-        false
-      );
+      return Cone.createAxisPoints(centerline.startPoint(), centerline.endPoint(), pipeRadius, pipeRadius, false);
     } else if (centerline instanceof Arc3d) {
       return TorusPipe.createAlongArc(centerline, pipeRadius, false);
     } else if (centerline instanceof CurvePrimitive) {
@@ -457,23 +379,13 @@ export class CurveFactory {
       initialSection.center.setFrom(currentCenter);
       vector0.setFrom(sectionData.vector0);
       vector90.setFrom(sectionData.vector90);
-    } else if (
-      typeof sectionData === "number" ||
-      Point3d.isXAndY(sectionData)
-    ) {
-      const length0 =
-        typeof sectionData === "number" ? sectionData : sectionData.x;
-      const length90 =
-        typeof sectionData === "number" ? sectionData : sectionData.y;
+    } else if (typeof sectionData === "number" || Point3d.isXAndY(sectionData)) {
+      const length0 = typeof sectionData === "number" ? sectionData : sectionData.x;
+      const length90 = typeof sectionData === "number" ? sectionData : sectionData.y;
       const baseFrame = Matrix3d.createRigidHeadsUp(vectorBC, AxisOrder.ZXY);
       baseFrame.columnX(vector0).scaleInPlace(length0);
       baseFrame.columnY(vector90).scaleInPlace(length90);
-      initialSection = Arc3d.create(
-        currentCenter,
-        vector0,
-        vector90,
-        AngleSweep.create360()
-      );
+      initialSection = Arc3d.create(currentCenter, vector0, vector90, AngleSweep.create360());
     } else {
       return [];
     }
@@ -496,9 +408,7 @@ export class CurveFactory {
         // vector0 and vector90 are obtained by sweeping the corresponding vectors of the start ellipse to the split plane.
         moveVectorToPlane(vector0, vectorAB, bisector, vector0);
         moveVectorToPlane(vector90, vectorAB, bisector, vector90);
-        arcs.push(
-          Arc3d.create(currentCenter, vector0, vector90, AngleSweep.create360())
-        );
+        arcs.push(Arc3d.create(currentCenter, vector0, vector90, AngleSweep.create360()));
       }
     }
     return arcs;
@@ -554,10 +464,7 @@ export class CurveFactory {
     const lineTurnRadians = vectorAB.angleToXY(vectorBC0);
     const spiralTurnRadians = 0.5 * lineTurnRadians.radians;
     const radiansBC = radiansAB + lineTurnRadians.radians;
-    const axesA = Matrix3d.createRotationAroundAxisIndex(
-      AxisIndex.Z,
-      Angle.createRadians(radiansAB)
-    );
+    const axesA = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createRadians(radiansAB));
     const frameA = Transform.createRefs(startPoint.clone(), axesA);
     // We know how much it has to turn, and but not the length or end radius.
     // make a spiral of referenceLength and scale it back to the junction line
@@ -573,18 +480,9 @@ export class CurveFactory {
     );
     if (spiralARefLength) {
       const midPlanePerpendicularRadians = radiansAB + spiralTurnRadians;
-      const midPlanePerpendicularVector = Vector3d.createPolar(
-        1.0,
-        Angle.createRadians(midPlanePerpendicularRadians)
-      );
-      const altitudeB = midPlanePerpendicularVector.dotProductStartEnd(
-        startPoint,
-        shoulderPoint
-      );
-      const altitudeSpiralEnd = midPlanePerpendicularVector.dotProductStartEnd(
-        startPoint,
-        spiralARefLength.endPoint()
-      );
+      const midPlanePerpendicularVector = Vector3d.createPolar(1.0, Angle.createRadians(midPlanePerpendicularRadians));
+      const altitudeB = midPlanePerpendicularVector.dotProductStartEnd(startPoint, shoulderPoint);
+      const altitudeSpiralEnd = midPlanePerpendicularVector.dotProductStartEnd(startPoint, spiralARefLength.endPoint());
       const scaleFactor = altitudeB / altitudeSpiralEnd;
       const spiralA = IntegratedSpiral3d.createFrom4OutOf5(
         spiralType,
@@ -600,10 +498,7 @@ export class CurveFactory {
       const vectorBC = Vector3d.createStartEnd(shoulderPoint, targetPoint);
       vectorBC.scaleToLength(distanceAB, vectorBC);
       const pointC = shoulderPoint.plus(vectorBC);
-      const axesC = Matrix3d.createRotationAroundAxisIndex(
-        AxisIndex.Z,
-        Angle.createRadians(radiansBC + Math.PI)
-      );
+      const axesC = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createRadians(radiansBC + Math.PI));
       const frameC = Transform.createRefs(pointC, axesC);
       const spiralC = IntegratedSpiral3d.createFrom4OutOf5(
         spiralType,
@@ -661,19 +556,10 @@ export class CurveFactory {
       // The spiral eventually has to end on the bisector, at localEndPoint.y height from the inbound line
       // distance from shoulder to projection of that point to point E on the inbound line is
       const distanceBE = localEndPoint.y / Math.tan(bisectorRadians);
-      const xFractionAB = Geometry.conditionalDivideFraction(
-        distanceAB - distanceBE - localEndPoint.x,
-        distanceAB
-      );
-      const xFractionCB = Geometry.conditionalDivideFraction(
-        distanceCB - distanceBE - localEndPoint.x,
-        distanceCB
-      );
+      const xFractionAB = Geometry.conditionalDivideFraction(distanceAB - distanceBE - localEndPoint.x, distanceAB);
+      const xFractionCB = Geometry.conditionalDivideFraction(distanceCB - distanceBE - localEndPoint.x, distanceCB);
       if (xFractionAB !== undefined && xFractionCB !== undefined) {
-        const axesA = Matrix3d.createRotationAroundAxisIndex(
-          AxisIndex.Z,
-          Angle.createRadians(radiansAB)
-        );
+        const axesA = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createRadians(radiansAB));
         const frameAOrigin = pointA.interpolate(xFractionAB, pointB);
         const frameA = Transform.createRefs(frameAOrigin, axesA);
         const spiralAB = IntegratedSpiral3d.createFrom4OutOf5(
@@ -686,10 +572,7 @@ export class CurveFactory {
           undefined,
           frameA
         )!;
-        const axesB = Matrix3d.createRotationAroundAxisIndex(
-          AxisIndex.Z,
-          Angle.createRadians(radiansCB)
-        );
+        const axesB = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createRadians(radiansCB));
         const frameBOrigin = pointC.interpolate(xFractionCB, pointB);
         const frameB = Transform.createRefs(frameBOrigin, axesB);
         const spiralBC = IntegratedSpiral3d.createFrom4OutOf5(
@@ -787,18 +670,8 @@ export class CurveFactory {
     ) {
       const tangencyAB = pointB.plusScaled(unitAB, uv.x);
       const tangencyCB = pointB.plusScaled(unitCB, uv.y);
-      const frameA = Transform.createOriginAndMatrixColumns(
-        tangencyAB,
-        unitAB,
-        unitPerpAB,
-        Vector3d.unitZ()
-      );
-      const frameB = Transform.createOriginAndMatrixColumns(
-        tangencyCB,
-        unitCB,
-        unitPerpCB,
-        Vector3d.unitZ()
-      );
+      const frameA = Transform.createOriginAndMatrixColumns(tangencyAB, unitAB, unitPerpAB, Vector3d.unitZ());
+      const frameB = Transform.createOriginAndMatrixColumns(tangencyCB, unitCB, unitPerpCB, Vector3d.unitZ());
       spiralA.tryTransformInPlace(frameA);
       spiralB.tryTransformInPlace(frameB);
       const rayA1 = spiralA.fractionToPointAndUnitTangent(1.0);
@@ -806,13 +679,7 @@ export class CurveFactory {
       rayB0.direction.scaleInPlace(-1.0);
       const sweep = rayA1.direction.angleToXY(rayB0.direction);
       if (radiusA < 0) sweep.setRadians(-sweep.radians);
-      const arc = CurveFactory.createArcPointTangentRadius(
-        rayA1.origin,
-        rayA1.direction,
-        radiusA,
-        undefined,
-        sweep
-      )!;
+      const arc = CurveFactory.createArcPointTangentRadius(rayA1.origin, rayA1.direction, radiusA, undefined, sweep)!;
       return [spiralA, arc, spiralB];
     }
     return undefined;
@@ -835,24 +702,9 @@ export class CurveFactory {
     const normalBx = planeB.normalX();
     const normalBy = planeB.normalY();
     const normalBz = planeB.normalZ();
-    const normalCx = Geometry.crossProductXYXY(
-      normalAy,
-      normalAz,
-      normalBy,
-      normalBz
-    );
-    const normalCy = Geometry.crossProductXYXY(
-      normalAz,
-      normalAx,
-      normalBz,
-      normalBx
-    );
-    const normalCz = Geometry.crossProductXYXY(
-      normalAx,
-      normalAy,
-      normalBx,
-      normalBy
-    );
+    const normalCx = Geometry.crossProductXYXY(normalAy, normalAz, normalBy, normalBz);
+    const normalCy = Geometry.crossProductXYXY(normalAz, normalAx, normalBz, normalBx);
+    const normalCz = Geometry.crossProductXYXY(normalAx, normalAy, normalBx, normalBy);
     const rayOrigin = SmallSystem.linearSystem3d(
       normalAx,
       normalAy,
@@ -868,14 +720,7 @@ export class CurveFactory {
       0.0
     );
     if (rayOrigin !== undefined) {
-      return Ray3d.createXYZUVW(
-        rayOrigin.x,
-        rayOrigin.y,
-        rayOrigin.z,
-        normalCx,
-        normalCy,
-        normalCz
-      );
+      return Ray3d.createXYZUVW(rayOrigin.x, rayOrigin.y, rayOrigin.z, normalCx, normalCy, normalCz);
     }
     return undefined;
   }
@@ -884,12 +729,7 @@ export class CurveFactory {
 /**
  * Starting at vectorR, move parallel to vectorV until perpendicular to planeNormal
  */
-function moveVectorToPlane(
-  vectorR: Vector3d,
-  vectorV: Vector3d,
-  planeNormal: Vector3d,
-  result?: Vector3d
-): Vector3d {
+function moveVectorToPlane(vectorR: Vector3d, vectorV: Vector3d, planeNormal: Vector3d, result?: Vector3d): Vector3d {
   // find s such that (vectorR + s * vectorV) DOT planeNormal = 0.
   const dotRN = vectorR.dotProduct(planeNormal);
   const dotVN = vectorV.dotProduct(planeNormal);

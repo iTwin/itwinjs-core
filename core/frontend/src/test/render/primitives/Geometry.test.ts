@@ -4,22 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import {
-  IndexedPolyface,
-  LineString3d,
-  Loop,
-  Path,
-  Point3d,
-  Range3d,
-  Transform,
-} from "@itwin/core-geometry";
+import { IndexedPolyface, LineString3d, Loop, Path, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, GraphicParams } from "@itwin/core-common";
 import { DisplayParams } from "../../../render/primitives/DisplayParams";
 import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
-import {
-  PolyfacePrimitive,
-  PolyfacePrimitiveList,
-} from "../../../render/primitives/Polyface";
+import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../render/primitives/Polyface";
 import {
   StrokesPrimitiveList,
   StrokesPrimitivePointList,
@@ -58,10 +47,7 @@ describe("GeometryPrimitives tests", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(
-      gfParams,
-      false
-    );
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
 
     const loopGeom = Geometry.createFromLoop(
       loop,
@@ -73,8 +59,7 @@ describe("GeometryPrimitives tests", () => {
     );
 
     // query stroke list from loopGeom
-    const strokesPrimList: StrokesPrimitiveList | undefined =
-      loopGeom.getStrokes(0.0);
+    const strokesPrimList: StrokesPrimitiveList | undefined = loopGeom.getStrokes(0.0);
 
     assert(strokesPrimList !== undefined);
     if (strokesPrimList === undefined) return;
@@ -91,8 +76,7 @@ describe("GeometryPrimitives tests", () => {
     }
 
     // query polyface list from loopGeom
-    const pfPrimList: PolyfacePrimitiveList | undefined =
-      loopGeom.getPolyfaces(0);
+    const pfPrimList: PolyfacePrimitiveList | undefined = loopGeom.getPolyfaces(0);
 
     assert(pfPrimList !== undefined);
     if (pfPrimList === undefined) return;
@@ -131,8 +115,7 @@ describe("GeometryPrimitives tests", () => {
 
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
-    const displayParams: DisplayParams =
-      DisplayParams.createForLinear(gfParams);
+    const displayParams: DisplayParams = DisplayParams.createForLinear(gfParams);
 
     const pathGeom = Geometry.createFromPath(
       pth,
@@ -144,8 +127,7 @@ describe("GeometryPrimitives tests", () => {
     );
 
     // query stroke list from pathGeom
-    const strokesPrimList: StrokesPrimitiveList | undefined =
-      pathGeom.getStrokes(0.0);
+    const strokesPrimList: StrokesPrimitiveList | undefined = pathGeom.getStrokes(0.0);
 
     assert(strokesPrimList !== undefined);
     if (strokesPrimList === undefined) return;
@@ -162,8 +144,7 @@ describe("GeometryPrimitives tests", () => {
     }
 
     // query polyface list from pathGeom (should be undefined - can't get polys from paths)
-    const pfPrimList: PolyfacePrimitiveList | undefined =
-      pathGeom.getPolyfaces(0);
+    const pfPrimList: PolyfacePrimitiveList | undefined = pathGeom.getPolyfaces(0);
     expect(pfPrimList).to.be.undefined;
   });
 });

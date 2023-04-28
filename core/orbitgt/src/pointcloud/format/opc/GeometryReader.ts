@@ -67,9 +67,7 @@ export class GeometryReader {
     this._level = level;
     /* Get the geometry data */
     this._geometryRecord = null;
-    this._geometryDataPart = fileReader
-      .getContainer()
-      .getPart("" + level + ".geometry.data");
+    this._geometryDataPart = fileReader.getContainer().getPart("" + level + ".geometry.data");
   }
 
   /**
@@ -81,11 +79,7 @@ export class GeometryReader {
     let geometryPart: ContainerFilePart = this._fileReader
       .getContainer()
       .getPart("" + this._level + ".geometry.definition");
-    this._geometryRecord = GeometryRecord.readNew(
-      geometryPart.getOffset(),
-      geometryPart.getSize(),
-      fileContents
-    );
+    this._geometryRecord = GeometryRecord.readNew(geometryPart.getOffset(), geometryPart.getSize(), fileContents);
     /* Return the reader */
     return this;
   }
@@ -114,15 +108,10 @@ export class GeometryReader {
   ): void {
     /* What resolution do we have? */
     let lowResolution: boolean = this._level > 0;
-    let recordSize: int32 = lowResolution
-      ? GeometryReader.RECORD_SIZE_LR
-      : GeometryReader.RECORD_SIZE_HR;
+    let recordSize: int32 = lowResolution ? GeometryReader.RECORD_SIZE_LR : GeometryReader.RECORD_SIZE_HR;
     /* Get the file extent */
     let fileSize: ALong = this._fileReader.getContainer().getFileLength();
-    let offset: ALong = tile.pointIndex
-      .addInt(pointOffset)
-      .mulInt(recordSize)
-      .add(this._geometryDataPart.getOffset());
+    let offset: ALong = tile.pointIndex.addInt(pointOffset).mulInt(recordSize).add(this._geometryDataPart.getOffset());
     let size: int32 = pointCount * recordSize;
     this._geometryDataPart.rangeCheck(offset, ALong.fromInt(size));
     /* Request the data? */
@@ -154,17 +143,10 @@ export class GeometryReader {
    * @param pointIndex the index of the point to read.
    * @param cloudPoint the point to read the geometry of.
    */
-  public getPointData(
-    tile: TileIndex,
-    tileBuffer: TileReadBuffer,
-    pointIndex: int32,
-    cloudPoint: CloudPoint
-  ): void {
+  public getPointData(tile: TileIndex, tileBuffer: TileReadBuffer, pointIndex: int32, cloudPoint: CloudPoint): void {
     /* What resolution do we have? */
     let lowResolution: boolean = this._level > 0;
-    let recordSize: int32 = lowResolution
-      ? GeometryReader.RECORD_SIZE_LR
-      : GeometryReader.RECORD_SIZE_HR;
+    let recordSize: int32 = lowResolution ? GeometryReader.RECORD_SIZE_LR : GeometryReader.RECORD_SIZE_HR;
     /* Get the buffer */
     let buffer: ABuffer = tileBuffer.getGeometryBuffer();
     let offset: int32 = pointIndex * recordSize;
@@ -174,17 +156,11 @@ export class GeometryReader {
     let lz: int32;
     if (lowResolution) {
       /* Read the 8-bit local position */
-      lx = GeometryReader.lowToHighResolution(
-        LittleEndian.readBufferByte(buffer, offset)
-      );
+      lx = GeometryReader.lowToHighResolution(LittleEndian.readBufferByte(buffer, offset));
       offset++;
-      ly = GeometryReader.lowToHighResolution(
-        LittleEndian.readBufferByte(buffer, offset)
-      );
+      ly = GeometryReader.lowToHighResolution(LittleEndian.readBufferByte(buffer, offset));
       offset++;
-      lz = GeometryReader.lowToHighResolution(
-        LittleEndian.readBufferByte(buffer, offset)
-      );
+      lz = GeometryReader.lowToHighResolution(LittleEndian.readBufferByte(buffer, offset));
     } else {
       /* Read the 16-bit local position */
       lx = LittleEndian.readBufferShort(buffer, offset);
@@ -215,27 +191,15 @@ export class GeometryReader {
    * @param tileBuffer the buffer that has been read.
    * @param pointData the point data.
    */
-  public getPointDataRaw(
-    tile: TileIndex,
-    tileBuffer: TileReadBuffer,
-    pointData: PointDataRaw
-  ): void {
+  public getPointDataRaw(tile: TileIndex, tileBuffer: TileReadBuffer, pointData: PointDataRaw): void {
     /* What resolution do we have? */
     let lowResolution: boolean = this._level > 0;
     if (lowResolution) {
       /* Straight copy of the raw buffer */
-      pointData.points8 = new Uint8Buffer(
-        tileBuffer.getGeometryBuffer(),
-        0,
-        3 * tile.pointCount
-      );
+      pointData.points8 = new Uint8Buffer(tileBuffer.getGeometryBuffer(), 0, 3 * tile.pointCount);
     } else {
       /* Straight copy of the raw buffer */
-      pointData.points16 = new Uint16Buffer(
-        tileBuffer.getGeometryBuffer(),
-        0,
-        3 * tile.pointCount
-      );
+      pointData.points16 = new Uint16Buffer(tileBuffer.getGeometryBuffer(), 0, 3 * tile.pointCount);
     }
   }
 }

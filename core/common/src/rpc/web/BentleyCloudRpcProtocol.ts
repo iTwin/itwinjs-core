@@ -11,10 +11,7 @@ import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcOperation } from "../core/RpcOperation";
-import {
-  SerializedRpcOperation,
-  SerializedRpcRequest,
-} from "../core/RpcProtocol";
+import { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
 import { RpcRequest } from "../core/RpcRequest";
 import { OpenAPIParameter } from "./OpenAPI";
 import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
@@ -33,23 +30,22 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
   public override checkToken = true;
 
   /** The name of various HTTP request headers based on client's request context */
-  public override serializedClientRequestContextHeaderNames: SerializedRpcActivity =
-    {
-      /** The name of the HTTP request id header. */
-      id: "X-Correlation-Id",
+  public override serializedClientRequestContextHeaderNames: SerializedRpcActivity = {
+    /** The name of the HTTP request id header. */
+    id: "X-Correlation-Id",
 
-      /** The name of the HTTP application id header. */
-      applicationId: "X-Application-Id",
+    /** The name of the HTTP application id header. */
+    applicationId: "X-Application-Id",
 
-      /** The name of the HTTP application version header. */
-      applicationVersion: "X-Application-Version",
+    /** The name of the HTTP application version header. */
+    applicationVersion: "X-Application-Version",
 
-      /** The name of the HTTP session id header. */
-      sessionId: "X-Session-Id",
+    /** The name of the HTTP session id header. */
+    sessionId: "X-Session-Id",
 
-      /** The name of the HTTP authorization header. */
-      authorization: "Authorization",
-    };
+    /** The name of the HTTP authorization header. */
+    authorization: "Authorization",
+  };
 
   /** The name of the RPC protocol version header. */
   public override protocolVersionHeaderName = "X-Protocol-Version";
@@ -64,18 +60,12 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
 
     // The encodedRequest should be base64 - fail now if any other characters detected.
     if (/[^A-z0-9=+\/]/.test(encodedRequest))
-      throw new IModelError(
-        BentleyStatus.ERROR,
-        `Invalid request: Malformed URL parameters detected.`
-      );
+      throw new IModelError(BentleyStatus.ERROR, `Invalid request: Malformed URL parameters detected.`);
 
     const firstHyphen = operationComponent.indexOf("-");
     const lastHyphen = operationComponent.lastIndexOf("-");
     const interfaceDefinition = operationComponent.slice(0, firstHyphen);
-    const interfaceVersion = operationComponent.slice(
-      firstHyphen + 1,
-      lastHyphen
-    );
+    const interfaceVersion = operationComponent.slice(firstHyphen + 1, lastHyphen);
     const operationName = operationComponent.slice(lastHyphen + 1);
 
     return {
@@ -87,10 +77,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
   }
 
   /** Supplies the OpenAPI-compatible URI path for an RPC operation. */
-  public override supplyPathForOperation(
-    operation: RpcOperation,
-    request: RpcRequest | undefined
-  ) {
+  public override supplyPathForOperation(operation: RpcOperation, request: RpcRequest | undefined) {
     const prefix = this.pathPrefix;
     const appTitle = this.info.title;
     const appVersion = this.info.version;
@@ -118,10 +105,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
         if (RpcConfiguration.disableRoutingValidation) {
           token = { key: "" };
         } else {
-          throw new IModelError(
-            BentleyStatus.ERROR,
-            "Invalid iModelToken for RPC operation request"
-          );
+          throw new IModelError(BentleyStatus.ERROR, "Invalid iModelToken for RPC operation request");
         }
       }
 
@@ -141,10 +125,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
    * Inflates the IModelRpcProps from the URL path for each request on the backend.
    * @note This function updates the IModelRpcProps value supplied in the request body.
    */
-  public override inflateToken(
-    tokenFromBody: IModelRpcProps,
-    request: SerializedRpcRequest
-  ): IModelRpcProps {
+  public override inflateToken(tokenFromBody: IModelRpcProps, request: SerializedRpcRequest): IModelRpcProps {
     const urlPathComponents = request.path.split("/");
 
     const iModelKey = tokenFromBody.key;
@@ -178,9 +159,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
   /** Returns the OpenAPI-compatible URI path parameters for an RPC operation.
    * @internal
    */
-  public supplyPathParametersForOperation(
-    _operation: RpcOperation
-  ): OpenAPIParameter[] {
+  public supplyPathParametersForOperation(_operation: RpcOperation): OpenAPIParameter[] {
     return [
       {
         name: "modeId",

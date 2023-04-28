@@ -4,11 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { ServiceAuthorizationClientConfiguration } from "@itwin/service-authorization";
 import { LogLevel } from "@itwin/core-bentley";
-import {
-  DevToolsRpcInterface,
-  IModelReadRpcInterface,
-  IModelTileRpcInterface,
-} from "@itwin/core-common";
+import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface } from "@itwin/core-common";
 import { TestUserCredentials } from "@itwin/oidc-signin-tool";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 
@@ -37,12 +33,9 @@ export interface IModelData {
 export function getRpcInterfaces(settings: Settings) {
   const rpcInterfaces = [];
   if (settings.runDevToolsRpcTests) rpcInterfaces.push(DevToolsRpcInterface);
-  if (settings.runPresentationRpcTests)
-    rpcInterfaces.push(PresentationRpcInterface);
-  if (settings.runiModelReadRpcTests)
-    rpcInterfaces.push(IModelReadRpcInterface);
-  if (settings.runiModelTileRpcTests)
-    rpcInterfaces.push(IModelTileRpcInterface);
+  if (settings.runPresentationRpcTests) rpcInterfaces.push(PresentationRpcInterface);
+  if (settings.runiModelReadRpcTests) rpcInterfaces.push(IModelReadRpcInterface);
+  if (settings.runiModelTileRpcTests) rpcInterfaces.push(IModelTileRpcInterface);
 
   return rpcInterfaces;
 }
@@ -107,14 +100,7 @@ export class Settings {
       // First check in process.cwd() for the config
       let result = dotenv.config();
       if (result.error) {
-        const potential = path.resolve(
-          process.cwd(),
-          "..",
-          "..",
-          "..",
-          "imodeljs-config",
-          ".env"
-        );
+        const potential = path.resolve(process.cwd(), "..", "..", "..", "imodeljs-config", ".env");
         result = dotenv.config({ path: potential });
         if (result.error) throw result.error;
       }
@@ -132,35 +118,25 @@ export class Settings {
    */
   private load() {
     // Parse OIDC
-    if (undefined === process.env.OIDC_CLIENT_ID)
-      throw new Error("Missing the 'OIDC_CLIENT_ID' setting.");
+    if (undefined === process.env.OIDC_CLIENT_ID) throw new Error("Missing the 'OIDC_CLIENT_ID' setting.");
     this.oidcClientId = process.env.OIDC_CLIENT_ID!;
 
-    if (undefined === process.env.OIDC_SCOPES)
-      throw new Error("Missing the 'OIDC_SCOPES' setting");
+    if (undefined === process.env.OIDC_SCOPES) throw new Error("Missing the 'OIDC_SCOPES' setting");
     this.oidcScopes = process.env.OIDC_SCOPES;
 
-    if (process.env.OIDC_AUTHORITY)
-      this.oidcAuthority = process.env.OIDC_AUTHORITY;
+    if (process.env.OIDC_AUTHORITY) this.oidcAuthority = process.env.OIDC_AUTHORITY;
 
-    this.oidcRedirect =
-      undefined === process.env.OIDC_REDIRECT
-        ? "http://localhost:5000"
-        : process.env.OIDC_REDIRECT;
+    this.oidcRedirect = undefined === process.env.OIDC_REDIRECT ? "http://localhost:5000" : process.env.OIDC_REDIRECT;
 
     // Parse GPRId
     if (undefined !== process.env.GPRID) this.gprid = process.env.GPRID;
 
     //  Parse the iModel variables
     if (!process.env.IMODEL_PROJECTID && !process.env.IMODEL_PROJECTNAME)
-      throw new Error(
-        "Missing the 'IMODEL_PROJECTID' or 'IMODEL_PROJECTNAME' setting."
-      );
+      throw new Error("Missing the 'IMODEL_PROJECTID' or 'IMODEL_PROJECTNAME' setting.");
 
     if (!process.env.IMODEL_IMODELID && !process.env.IMODEL_IMODELNAME)
-      throw new Error(
-        "Missing the 'IMODEL_IMODELID' or 'IMODEL_IMODELNAME' setting."
-      );
+      throw new Error("Missing the 'IMODEL_IMODELID' or 'IMODEL_IMODELNAME' setting.");
 
     // Note: This is kind of messy but we don't sign-in to resolve the Names into IDs until the TestContext.
     this.iModels.push({
@@ -177,21 +153,11 @@ export class Settings {
 
     // If write rpc interface is defined expect a separate iModel to be used.
     if (this.runiModelWriteRpcTests) {
-      if (
-        !process.env.IMODEL_WRITE_PROJECTID &&
-        !process.env.IMODEL_WRITE_PROJECTNAME
-      )
-        throw new Error(
-          "Missing the 'IMODEL_WRITE_PROJECTID' or 'IMODEL_WRITE_PROJECTNAME' setting."
-        );
+      if (!process.env.IMODEL_WRITE_PROJECTID && !process.env.IMODEL_WRITE_PROJECTNAME)
+        throw new Error("Missing the 'IMODEL_WRITE_PROJECTID' or 'IMODEL_WRITE_PROJECTNAME' setting.");
 
-      if (
-        !process.env.IMODEL_WRITE_IMODELID &&
-        !process.env.IMODEL_WRITE_IMODELNAME
-      )
-        throw new Error(
-          "Missing the 'IMODEL_WRITE_IMODELID' or 'IMODEL_WRITE_IMODELNAME' setting."
-        );
+      if (!process.env.IMODEL_WRITE_IMODELID && !process.env.IMODEL_WRITE_IMODELNAME)
+        throw new Error("Missing the 'IMODEL_WRITE_IMODELID' or 'IMODEL_WRITE_IMODELNAME' setting.");
 
       this.iModels.push({
         useName: !process.env.IMODEL_WRITE_IMODELID,
@@ -210,16 +176,13 @@ export class Settings {
     }
 
     // Get backend data
-    if (undefined === process.env.BACKEND_LOCATION)
-      throw new Error("Missing the 'BACKEND_LOCATION' setting.");
+    if (undefined === process.env.BACKEND_LOCATION) throw new Error("Missing the 'BACKEND_LOCATION' setting.");
     this._backend.location = process.env.BACKEND_LOCATION;
 
-    if (undefined === process.env.BACKEND_VERSION)
-      throw new Error("Missing the 'BACKEND_VERSION' setting.");
+    if (undefined === process.env.BACKEND_VERSION) throw new Error("Missing the 'BACKEND_VERSION' setting.");
     this._backend.version = process.env.BACKEND_VERSION;
 
-    if (undefined === process.env.BACKEND_NAME)
-      throw new Error("Missing the 'BACKEND_NAME' setting.");
+    if (undefined === process.env.BACKEND_NAME) throw new Error("Missing the 'BACKEND_NAME' setting.");
     this._backend.name = process.env.BACKEND_NAME;
 
     // Get users

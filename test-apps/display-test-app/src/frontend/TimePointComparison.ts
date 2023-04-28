@@ -34,10 +34,7 @@ class TimePointComparison {
     this._timePoint = timePoint;
   }
 
-  public forEachTileTreeRef(
-    viewport: ScreenViewport,
-    func: (ref: TileTreeReference) => void
-  ): void {
+  public forEachTileTreeRef(viewport: ScreenViewport, func: (ref: TileTreeReference) => void): void {
     viewport.view.forEachTileTreeRef(func);
   }
 
@@ -61,11 +58,7 @@ class TimePointComparison {
       for (const gf of gfx) branch.entries.push(gf);
 
       output.outputGraphic(
-        IModelApp.renderSystem.createGraphicBranch(
-          branch,
-          Transform.createIdentity(),
-          { clipVolume: this._clipVolume }
-        )
+        IModelApp.renderSystem.createGraphicBranch(branch, Transform.createIdentity(), { clipVolume: this._clipVolume })
       );
     }
 
@@ -82,8 +75,7 @@ class TimePointComparison {
     });
 
     if (!provider) {
-      const timePoint =
-        vp.timePoint ?? vp.view.displayStyle.scheduleScript?.duration.low;
+      const timePoint = vp.timePoint ?? vp.view.displayStyle.scheduleScript?.duration.low;
       if (undefined === timePoint) return;
 
       const rect = vp.getClientRect();
@@ -100,9 +92,7 @@ class TimePointComparison {
         return ClipVector.createCapture([ClipPrimitive.createCapture(planes)]);
       };
 
-      vp.addTiledGraphicsProvider(
-        new TimePointComparison(createClip(normal, point), timePoint)
-      );
+      vp.addTiledGraphicsProvider(new TimePointComparison(createClip(normal, point), timePoint));
       vp.view.setViewClip(createClip(normal.negate(), point));
       vp.viewFlags = vp.viewFlags.with("clipVolume", true);
     } else {

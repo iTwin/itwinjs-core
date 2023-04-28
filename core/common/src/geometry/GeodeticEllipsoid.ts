@@ -114,16 +114,8 @@ export class GeodeticEllipsoid implements GeodeticEllipsoidProps {
       this.deprecated === other.deprecated &&
       this.source === other.source &&
       this.epsg === other.epsg &&
-      Geometry.isAlmostEqualOptional(
-        this.equatorialRadius,
-        other.equatorialRadius,
-        Geometry.smallMetricDistance
-      ) &&
-      Geometry.isAlmostEqualOptional(
-        this.polarRadius,
-        other.polarRadius,
-        Geometry.smallMetricDistance
-      )
+      Geometry.isAlmostEqualOptional(this.equatorialRadius, other.equatorialRadius, Geometry.smallMetricDistance) &&
+      Geometry.isAlmostEqualOptional(this.polarRadius, other.polarRadius, Geometry.smallMetricDistance)
     );
   }
 }

@@ -198,14 +198,11 @@ the JavaScript object would now look like this:
 Now the result can be consumed in TypeScript as desired:
 
 ```ts
-iModelDb.withPreparedStatement(
-  "SELECT count(*) elementCount FROM bis.SpatialElement",
-  (stmt: ECSqlStatement) => {
-    stmt.step();
-    const row: any = stmt.getRow();
-    console.log("Element count: " + row.elementCount);
-  }
-);
+iModelDb.withPreparedStatement("SELECT count(*) elementCount FROM bis.SpatialElement", (stmt: ECSqlStatement) => {
+  stmt.step();
+  const row: any = stmt.getRow();
+  console.log("Element count: " + row.elementCount);
+});
 ```
 
 ## Parametrizing the ECSQL

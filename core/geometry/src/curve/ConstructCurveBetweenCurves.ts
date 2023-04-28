@@ -25,11 +25,7 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
   // private geometry0: GeometryQuery;  <-- Never used
   private _geometry1: GeometryQuery;
   private _fraction: number;
-  private constructor(
-    _geometry0: GeometryQuery,
-    _fraction: number,
-    _geometry1: GeometryQuery
-  ) {
+  private constructor(_geometry0: GeometryQuery, _fraction: number, _geometry1: GeometryQuery) {
     super();
     // this.geometry0 = _geometry0;   <-- Never used
     this._geometry1 = _geometry1;
@@ -45,9 +41,7 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
     if (this._geometry1 instanceof LineSegment3d) {
       const segment1 = this._geometry1;
       return LineSegment3d.create(
-        segment0
-          .startPoint()
-          .interpolate(this._fraction, segment1.startPoint()),
+        segment0.startPoint().interpolate(this._fraction, segment1.startPoint()),
         segment0.endPoint().interpolate(this._fraction, segment1.endPoint())
       );
     }
@@ -77,11 +71,7 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
         if (ls0.fractions && ls1.fractions) {
           for (let i = 0; i < numPoints; i++) {
             ls.addFraction(
-              Geometry.interpolate(
-                ls0.fractions.atUncheckedIndex(i),
-                fraction,
-                ls1.fractions.atUncheckedIndex(i)
-              )
+              Geometry.interpolate(ls0.fractions.atUncheckedIndex(i), fraction, ls1.fractions.atUncheckedIndex(i))
             );
           }
         }
@@ -95,14 +85,8 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
           const workVector0 = Vector3d.create();
           const workVector1 = Vector3d.create();
           for (let i = 0; i < numPoints; i++) {
-            ls0.packedDerivatives.getVector3dAtCheckedVectorIndex(
-              i,
-              workVector0
-            );
-            ls1.packedDerivatives.getVector3dAtCheckedVectorIndex(
-              i,
-              workVector1
-            );
+            ls0.packedDerivatives.getVector3dAtCheckedVectorIndex(i, workVector0);
+            ls1.packedDerivatives.getVector3dAtCheckedVectorIndex(i, workVector1);
             ls.addDerivative(workVector0.interpolate(fraction, workVector1));
           }
         }
@@ -144,11 +128,7 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
     fraction: number,
     geometry1: GeometryQuery
   ): GeometryQuery | undefined {
-    const handler = new ConstructCurveBetweenCurves(
-      geometry0,
-      fraction,
-      geometry1
-    );
+    const handler = new ConstructCurveBetweenCurves(geometry0, fraction, geometry1);
     return geometry0.dispatchToGeometryHandler(handler);
   }
 }

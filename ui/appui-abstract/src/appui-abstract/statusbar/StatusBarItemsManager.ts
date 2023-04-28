@@ -40,9 +40,7 @@ export class StatusBarItemsManager {
   /** Event raised when StatusBar items are changed.
    * @internal
    */
-  public readonly onItemsChanged = new BeEvent<
-    (args: StatusBarItemsChangedArgs) => void
-  >();
+  public readonly onItemsChanged = new BeEvent<(args: StatusBarItemsChangedArgs) => void>();
 
   private loadItemsInternal(
     items: ReadonlyArray<CommonStatusBarItem>,
@@ -52,8 +50,7 @@ export class StatusBarItemsManager {
     if (processConditions && items) {
       const eventIds = StatusBarItemsManager.getSyncIdsOfInterest(items);
       if (0 !== eventIds.length) {
-        const { itemsUpdated, updatedItems } =
-          this.internalRefreshAffectedItems(items, new Set(eventIds));
+        const { itemsUpdated, updatedItems } = this.internalRefreshAffectedItems(items, new Set(eventIds));
 
         // istanbul ignore else
         if (itemsUpdated) items = updatedItems;
@@ -81,30 +78,22 @@ export class StatusBarItemsManager {
     if (items !== this._items) this.loadItemsInternal(items, true, true);
   }
 
-  public add(
-    itemOrItems: CommonStatusBarItem | ReadonlyArray<CommonStatusBarItem>
-  ) {
+  public add(itemOrItems: CommonStatusBarItem | ReadonlyArray<CommonStatusBarItem>) {
     let itemsToAdd;
     if (isInstance(itemOrItems)) itemsToAdd = [itemOrItems];
     else {
       itemsToAdd = itemOrItems.filter(
-        (itemToAdd, index) =>
-          itemOrItems.findIndex((item) => item.id === itemToAdd.id) === index
+        (itemToAdd, index) => itemOrItems.findIndex((item) => item.id === itemToAdd.id) === index
       );
     }
-    itemsToAdd = itemsToAdd.filter(
-      (itemToAdd) =>
-        this._items.find((item) => item.id === itemToAdd.id) === undefined
-    );
+    itemsToAdd = itemsToAdd.filter((itemToAdd) => this._items.find((item) => item.id === itemToAdd.id) === undefined);
     if (itemsToAdd.length === 0) return;
     const items = [...this._items, ...itemsToAdd];
     this.items = items;
   }
 
   /** Remove StatusBar items based on id */
-  public remove(
-    itemIdOrItemIds: StatusBarItemId | ReadonlyArray<StatusBarItemId>
-  ) {
+  public remove(itemIdOrItemIds: StatusBarItemId | ReadonlyArray<StatusBarItemId>) {
     const items = this._items.filter((item) => {
       return isInstance(itemIdOrItemIds)
         ? item.id !== itemIdOrItemIds
@@ -118,22 +107,14 @@ export class StatusBarItemsManager {
     this._items = [];
   }
 
-  public static getSyncIdsOfInterest(
-    items: readonly CommonStatusBarItem[]
-  ): string[] {
+  public static getSyncIdsOfInterest(items: readonly CommonStatusBarItem[]): string[] {
     const eventIds = new Set<string>();
     items.forEach((item) => {
       for (const [, entry] of Object.entries(item)) {
         if (entry instanceof ConditionalBooleanValue) {
-          entry.syncEventIds.forEach((eventId: string) =>
-            eventIds.add(eventId.toLowerCase())
-          );
-        } /* istanbul ignore else */ else if (
-          entry instanceof ConditionalStringValue
-        ) {
-          entry.syncEventIds.forEach((eventId: string) =>
-            eventIds.add(eventId.toLowerCase())
-          );
+          entry.syncEventIds.forEach((eventId: string) => eventIds.add(eventId.toLowerCase()));
+        } /* istanbul ignore else */ else if (entry instanceof ConditionalStringValue) {
+          entry.syncEventIds.forEach((eventId: string) => eventIds.add(eventId.toLowerCase()));
         }
       }
     });
@@ -156,14 +137,10 @@ export class StatusBarItemsManager {
       for (const [, entry] of Object.entries(updatedItem)) {
         if (entry instanceof ConditionalBooleanValue) {
           // istanbul ignore else
-          if (ConditionalBooleanValue.refreshValue(entry, eventIds))
-            updateRequired = true;
-        } /* istanbul ignore else */ else if (
-          entry instanceof ConditionalStringValue
-        ) {
+          if (ConditionalBooleanValue.refreshValue(entry, eventIds)) updateRequired = true;
+        } /* istanbul ignore else */ else if (entry instanceof ConditionalStringValue) {
           // istanbul ignore else
-          if (ConditionalStringValue.refreshValue(entry, eventIds))
-            updateRequired = true;
+          if (ConditionalStringValue.refreshValue(entry, eventIds)) updateRequired = true;
         }
       }
 
@@ -177,10 +154,7 @@ export class StatusBarItemsManager {
     // istanbul ignore next
     if (0 === eventIds.size) return;
 
-    const { itemsUpdated, updatedItems } = this.internalRefreshAffectedItems(
-      this.items,
-      eventIds
-    );
+    const { itemsUpdated, updatedItems } = this.internalRefreshAffectedItems(this.items, eventIds);
 
     // istanbul ignore else
     if (itemsUpdated) this.loadItemsInternal(updatedItems, false, true);

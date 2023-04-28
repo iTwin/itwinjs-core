@@ -28,10 +28,7 @@ import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
  * from the file system using configurable search paths.
  * @beta This is a workaround the current lack of a full xml parser.
  */
-export class SchemaXmlFileLocater
-  extends SchemaFileLocater
-  implements ISchemaLocater
-{
+export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLocater {
   /**
    * Attempts to retrieve a Schema with the given SchemaKey by using the configured search paths
    * to locate the XML Schema file from the file system.
@@ -44,18 +41,12 @@ export class SchemaXmlFileLocater
     matchType: SchemaMatchType,
     context: SchemaContext
   ): Promise<T | undefined> {
-    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(
-      key,
-      matchType,
-      "xml"
-    );
+    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(key, matchType, "xml");
 
     if (0 === candidates.length) return undefined;
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[
-      candidates.length - 1
-    ];
+    const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaPath = maxCandidate.fileName;
 
     // Load the file
@@ -87,18 +78,12 @@ export class SchemaXmlFileLocater
     matchType: SchemaMatchType,
     context: SchemaContext
   ): T | undefined {
-    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(
-      key,
-      matchType,
-      "xml"
-    );
+    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(key, matchType, "xml");
 
     if (!candidates || candidates.length === 0) return undefined;
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[
-      candidates.length - 1
-    ];
+    const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaPath = maxCandidate.fileName;
 
     // Load the file
@@ -125,10 +110,7 @@ export class SchemaXmlFileLocater
   public getSchemaKey(data: string): SchemaKey {
     const matches = data.match(/<ECSchema ([^]+?)>/g);
     if (!matches || matches.length !== 1)
-      throw new ECObjectsError(
-        ECObjectsStatus.InvalidSchemaXML,
-        `Could not find '<ECSchema>' tag in the given file`
-      );
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Could not find '<ECSchema>' tag in the given file`);
 
     const name = matches[0].match(/schemaName="(.+?)"/);
     const version = matches[0].match(/version="(.+?)"/);

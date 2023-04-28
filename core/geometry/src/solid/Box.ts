@@ -39,14 +39,7 @@ export class Box extends SolidPrimitive {
   private _topX: number;
   private _topY: number;
 
-  protected constructor(
-    map: Transform,
-    baseX: number,
-    baseY: number,
-    topX: number,
-    topY: number,
-    capped: boolean
-  ) {
+  protected constructor(map: Transform, baseX: number, baseY: number, topX: number, topY: number, capped: boolean) {
     super(capped);
     this._localToWorld = map;
     this._baseX = baseX;
@@ -56,14 +49,7 @@ export class Box extends SolidPrimitive {
   }
   /** Return a clone */
   public clone(): Box {
-    return new Box(
-      this._localToWorld.clone(),
-      this._baseX,
-      this._baseY,
-      this._topX,
-      this._topY,
-      this.capped
-    );
+    return new Box(this._localToWorld.clone(), this._baseX, this._baseY, this._topX, this._topY, this.capped);
   }
 
   /** Return a coordinate frame (right handed unit vectors)
@@ -80,19 +66,13 @@ export class Box extends SolidPrimitive {
    */
   public tryTransformInPlace(transform: Transform): boolean {
     if (transform.matrix.isSingular()) return false;
-    transform.multiplyTransformTransform(
-      this._localToWorld,
-      this._localToWorld
-    );
+    transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
     return true;
   }
   /** Clone the box and immediately apply `transform` to the local frame of the clone. */
   public cloneTransformed(transform: Transform): Box | undefined {
     const result = this.clone();
-    transform.multiplyTransformTransform(
-      result._localToWorld,
-      result._localToWorld
-    );
+    transform.multiplyTransformTransform(result._localToWorld, result._localToWorld);
     return result;
   }
 
@@ -120,12 +100,7 @@ export class Box extends SolidPrimitive {
     capped: boolean
   ): Box | undefined {
     const vectorZ = origin.vectorTo(topOrigin);
-    const localToWorld = Transform.createOriginAndMatrixColumns(
-      origin,
-      vectorX,
-      vectorY,
-      vectorZ
-    );
+    const localToWorld = Transform.createOriginAndMatrixColumns(origin, vectorX, vectorY, vectorZ);
     return new Box(localToWorld, baseX, baseY, topX, topY, capped);
   }
 
@@ -150,17 +125,7 @@ export class Box extends SolidPrimitive {
     topY: number,
     capped: boolean
   ): Box | undefined {
-    return Box.createDgnBox(
-      origin,
-      axes.columnX(),
-      axes.columnY(),
-      topOrigin,
-      baseX,
-      baseY,
-      topX,
-      topY,
-      capped
-    );
+    return Box.createDgnBox(origin, axes.columnX(), axes.columnY(), topOrigin, baseX, baseY, topX, topY, capped);
   }
 
   /**
@@ -175,17 +140,7 @@ export class Box extends SolidPrimitive {
       const ySize = range.yLength();
       const zPoint = range.low.clone();
       zPoint.z = zPoint.z + range.zLength();
-      return Box.createDgnBox(
-        lowPoint,
-        Vector3d.unitX(),
-        Vector3d.unitY(),
-        zPoint,
-        xSize,
-        ySize,
-        xSize,
-        ySize,
-        capped
-      );
+      return Box.createDgnBox(lowPoint, Vector3d.unitX(), Vector3d.unitY(), zPoint, xSize, ySize, xSize, ySize, capped);
     }
     return undefined;
   }
@@ -305,62 +260,14 @@ export class Box extends SolidPrimitive {
     const bx = this._topX;
     const by = this._topY;
     if (transform) {
-      rangeToExtend.extendTransformTransformedXYZ(
-        transform,
-        boxTransform,
-        0,
-        0,
-        0
-      );
-      rangeToExtend.extendTransformTransformedXYZ(
-        transform,
-        boxTransform,
-        ax,
-        0,
-        0
-      );
-      rangeToExtend.extendTransformTransformedXYZ(
-        transform,
-        boxTransform,
-        0,
-        ay,
-        0
-      );
-      rangeToExtend.extendTransformTransformedXYZ(
-        transform,
-        boxTransform,
-        ax,
-        ay,
-        0
-      );
-      rangeToExtend.extendTransformTransformedXYZ(
-        transform,
-        boxTransform,
-        0,
-        0,
-        1
-      );
-      rangeToExtend.extendTransformTransformedXYZ(
-        transform,
-        boxTransform,
-        bx,
-        0,
-        1
-      );
-      rangeToExtend.extendTransformTransformedXYZ(
-        transform,
-        boxTransform,
-        0,
-        by,
-        1
-      );
-      rangeToExtend.extendTransformTransformedXYZ(
-        transform,
-        boxTransform,
-        bx,
-        by,
-        1
-      );
+      rangeToExtend.extendTransformTransformedXYZ(transform, boxTransform, 0, 0, 0);
+      rangeToExtend.extendTransformTransformedXYZ(transform, boxTransform, ax, 0, 0);
+      rangeToExtend.extendTransformTransformedXYZ(transform, boxTransform, 0, ay, 0);
+      rangeToExtend.extendTransformTransformedXYZ(transform, boxTransform, ax, ay, 0);
+      rangeToExtend.extendTransformTransformedXYZ(transform, boxTransform, 0, 0, 1);
+      rangeToExtend.extendTransformTransformedXYZ(transform, boxTransform, bx, 0, 1);
+      rangeToExtend.extendTransformTransformedXYZ(transform, boxTransform, 0, by, 1);
+      rangeToExtend.extendTransformTransformedXYZ(transform, boxTransform, bx, by, 1);
     } else {
       rangeToExtend.extendTransformedXYZ(boxTransform, 0, 0, 0);
       rangeToExtend.extendTransformedXYZ(boxTransform, ax, 0, 0);

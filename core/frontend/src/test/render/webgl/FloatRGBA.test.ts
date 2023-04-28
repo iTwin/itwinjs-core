@@ -25,13 +25,7 @@ function expectRgb<T extends Rgb>(rgb: T, r: number, g: number, b: number) {
   expectComponent(rgb.blue, b);
 }
 
-function expectRgba(
-  rgba: FloatRgba,
-  r: number,
-  g: number,
-  b: number,
-  a: number
-) {
+function expectRgba(rgba: FloatRgba, r: number, g: number, b: number, a: number) {
   expectRgb(rgba, r, g, b);
   expectComponent(rgba.alpha, a);
 }

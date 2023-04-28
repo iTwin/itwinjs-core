@@ -3,13 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-  ByteStream,
-  GuidString,
-  Id64String,
-  Logger,
-  StopWatch,
-} from "@itwin/core-bentley";
+import { ByteStream, GuidString, Id64String, Logger, StopWatch } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import {
   BatchType,
@@ -113,11 +107,7 @@ export class BackendTileGenerator {
     for (const modelId of this._iModel.queryEntityIds(queryParams)) {
       try {
         const model = this._iModel.models.getModel<SpatialModel>(modelId);
-        const treeId = iModelTileTreeIdToString(
-          modelId,
-          { type: BatchType.Primary, edges: false },
-          this._options
-        );
+        const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edges: false }, this._options);
         models.push({
           treeId,
           modelId,
@@ -127,20 +117,14 @@ export class BackendTileGenerator {
           tileScreenSize,
         });
       } catch (err) {
-        Logger.logError(
-          loggerCategory,
-          `Failed to load model "${modelId}": ${err}`
-        );
+        Logger.logError(loggerCategory, `Failed to load model "${modelId}": ${err}`);
       }
     }
     return models;
   }
 
   public async generateTilesForAllModels(): Promise<Stats> {
-    Logger.logInfo(
-      loggerCategory,
-      `Started generating all tiles { maxDepth: ${this._maxDepth} }`
-    );
+    Logger.logInfo(loggerCategory, `Started generating all tiles { maxDepth: ${this._maxDepth} }`);
 
     const totalTime = new StopWatch(undefined, true);
     const models = await this.getSpatialModels();
@@ -149,10 +133,7 @@ export class BackendTileGenerator {
     for (const model of models) {
       this._treeQueue.push(async () => {
         // eslint-disable-line @typescript-eslint/no-floating-promises
-        Logger.logInfo(
-          loggerCategory,
-          `Started generating tiles for model "${model.treeId}"`
-        );
+        Logger.logInfo(loggerCategory, `Started generating tiles for model "${model.treeId}"`);
         const modelTimer = new StopWatch(undefined, true);
         await this.generateAllTilesForModel(model);
         modelTimer.stop();
@@ -166,10 +147,7 @@ export class BackendTileGenerator {
 
     totalTime.stop();
     this._stats.totalTime = totalTime.elapsedSeconds;
-    Logger.logInfo(
-      loggerCategory,
-      `Finished generating all tiles { timeElapsed(s): ${totalTime.elapsedSeconds} }`
-    );
+    Logger.logInfo(loggerCategory, `Finished generating all tiles { timeElapsed(s): ${totalTime.elapsedSeconds} }`);
     return this._stats;
   }
 
@@ -180,19 +158,13 @@ export class BackendTileGenerator {
     try {
       treeProps = await this._iModel.tiles.requestTileTreeProps(info.treeId);
     } catch (err) {
-      Logger.logInfo(
-        loggerCategory,
-        `Failed to get "${info.treeId}" tile tree props: ${err}`
-      );
+      Logger.logInfo(loggerCategory, `Failed to get "${info.treeId}" tile tree props: ${err}`);
       return;
     }
     tilePropsTime.stop();
 
     // Ignore empty tile trees
-    if (
-      0 === treeProps.rootTile.maximumSize &&
-      true === treeProps.rootTile.isLeaf
-    ) {
+    if (0 === treeProps.rootTile.maximumSize && true === treeProps.rootTile.isLeaf) {
       Logger.logInfo(loggerCategory, `"${info.treeId}" tile tree is empty`);
       return;
     }
@@ -206,19 +178,14 @@ export class BackendTileGenerator {
     return this.generateAllTilesFromDepth(tilesToLoad, info, 0, idProvider);
   }
 
-  private skipUndisplayableTile(
-    treeInfo: TileTreeInfo,
-    tile: TileProps
-  ): TileMetadata {
+  private skipUndisplayableTile(treeInfo: TileTreeInfo, tile: TileProps): TileMetadata {
     Logger.logInfo(
       loggerCategory,
       `Skipped undisplayable tile { contentId: ${tile.contentId}, treeId: ${treeInfo.treeId} }`
     );
     const { contentId, sizeMultiplier } = tile;
     const range = Range3d.fromJSON(tile.range);
-    const contentRange = tile.contentRange
-      ? Range3d.fromJSON(tile.contentRange)
-      : range;
+    const contentRange = tile.contentRange ? Range3d.fromJSON(tile.contentRange) : range;
     const emptySubRangeMask = 0;
     const isLeaf = !!tile.isLeaf;
     return {
@@ -239,12 +206,7 @@ export class BackendTileGenerator {
     const tileTime = new StopWatch(undefined, true);
     let content;
     try {
-      content = (
-        await this._iModel.tiles.requestTileContent(
-          treeInfo.treeId,
-          tile.contentId
-        )
-      ).content;
+      content = (await this._iModel.tiles.requestTileContent(treeInfo.treeId, tile.contentId)).content;
     } catch (err) {
       throw err;
     }
@@ -288,11 +250,7 @@ export class BackendTileGenerator {
 
     const tilesAtNextDepth: TileProps[] = [];
     const promises: Array<Promise<void>> = [];
-    const reader = new TileMetadataReader(
-      treeInfo.treeType,
-      treeInfo.is2d,
-      this._options
-    );
+    const reader = new TileMetadataReader(treeInfo.treeType, treeInfo.is2d, this._options);
 
     const levelTimer = new StopWatch(undefined, true);
 
@@ -305,11 +263,7 @@ export class BackendTileGenerator {
                 ? await this.generateTile(treeInfo, tile, reader)
                 : this.skipUndisplayableTile(treeInfo, tile);
             if (depth < this._maxDepth - 1) {
-              const children = computeChildTileProps(
-                metadata,
-                idProvider,
-                treeInfo
-              ).children;
+              const children = computeChildTileProps(metadata, idProvider, treeInfo).children;
               for (const child of children) tilesAtNextDepth.push(child);
             }
           } catch (err) {
@@ -329,11 +283,6 @@ export class BackendTileGenerator {
       loggerCategory,
       `Finished generating level ${depth} tiles for model { treeId: ${treeInfo.treeId}, timeElapsed(ms): ${levelTimer.elapsed.milliseconds} }`
     );
-    return this.generateAllTilesFromDepth(
-      tilesAtNextDepth,
-      treeInfo,
-      depth + 1,
-      idProvider
-    );
+    return this.generateAllTilesFromDepth(tilesAtNextDepth, treeInfo, depth + 1, idProvider);
   }
 }

@@ -16,12 +16,7 @@ export type OptionalGrowableFloat64Array = GrowableFloat64Array | undefined;
  * Signature for a function which does lexical comparison of `blockSize` consecutive values as 2 starting indices.
  * @public
  */
-export type BlockComparisonFunction = (
-  data: Float64Array,
-  blockSize: number,
-  index0: number,
-  index1: number
-) => number;
+export type BlockComparisonFunction = (data: Float64Array, blockSize: number, index0: number, index1: number) => number;
 /**
  * A `GrowableFloat64Array` is Float64Array accompanied by a count of how many of the array's entries are considered in use.
  * * In C++ terms, this is like an std::vector
@@ -43,8 +38,7 @@ export class GrowableFloat64Array {
   constructor(initialCapacity: number = 8, growthFactor?: number) {
     this._data = new Float64Array(initialCapacity);
     this._inUse = 0;
-    this._growthFactor =
-      undefined !== growthFactor && growthFactor >= 1.0 ? growthFactor : 1.5;
+    this._growthFactor = undefined !== growthFactor && growthFactor >= 1.0 ? growthFactor : 1.5;
   }
 
   /** Copy data from source array. Does not reallocate or change active entry count.
@@ -64,13 +58,11 @@ export class GrowableFloat64Array {
     let myCount = sourceCount ?? source.length;
     if (myCount > 0) {
       if (myCount > source.length) myCount = source.length;
-      if (myOffset + myCount > this._data.length)
-        myCount = this._data.length - myOffset;
+      if (myOffset + myCount > this._data.length) myCount = this._data.length - myOffset;
     }
     if (myCount <= 0) return { count: 0, offset: 0 };
     if (myCount === source.length) this._data.set(source, myOffset);
-    else if (source instanceof Float64Array)
-      this._data.set(source.subarray(0, myCount), myOffset);
+    else if (source instanceof Float64Array) this._data.set(source.subarray(0, myCount), myOffset);
     else this._data.set(source.slice(0, myCount), myOffset);
     return { count: myCount, offset: myOffset };
   }
@@ -79,9 +71,7 @@ export class GrowableFloat64Array {
    * Create a GrowableFloat64Array with given contents.
    * @param contents data to copy into the array
    */
-  public static create(
-    contents: Float64Array | number[]
-  ): GrowableFloat64Array {
+  public static create(contents: Float64Array | number[]): GrowableFloat64Array {
     const out = new GrowableFloat64Array(contents.length);
     out.copyData(contents);
     out._inUse = contents.length;
@@ -101,9 +91,7 @@ export class GrowableFloat64Array {
    * * optionally trimmed capacity to the active length or replicate the capacity and unused space.
    */
   public clone(maintainExcessCapacity: boolean = false): GrowableFloat64Array {
-    const out = new GrowableFloat64Array(
-      maintainExcessCapacity ? this.capacity() : this._inUse
-    );
+    const out = new GrowableFloat64Array(maintainExcessCapacity ? this.capacity() : this._inUse);
     out.copyData(this._data, this._inUse);
     out._inUse = this._inUse;
     return out;
@@ -170,11 +158,7 @@ export class GrowableFloat64Array {
       copyFromIndex + numToCopy <= this._inUse
     ) {
       this.ensureCapacity(this._inUse + numToCopy);
-      this._data.copyWithin(
-        this._inUse,
-        copyFromIndex,
-        copyFromIndex + numToCopy
-      );
+      this._data.copyWithin(this._inUse, copyFromIndex, copyFromIndex + numToCopy);
       this._inUse += numToCopy;
     }
   }
@@ -195,10 +179,7 @@ export class GrowableFloat64Array {
    * @param newCapacity size of new array
    * @param applyGrowthFactor whether to apply the growth factor to newCapacity when reallocating
    */
-  public ensureCapacity(
-    newCapacity: number,
-    applyGrowthFactor: boolean = true
-  ) {
+  public ensureCapacity(newCapacity: number, applyGrowthFactor: boolean = true) {
     if (newCapacity > this.capacity()) {
       if (applyGrowthFactor) newCapacity *= this._growthFactor;
       const prevData = this._data;
@@ -254,9 +235,7 @@ export class GrowableFloat64Array {
    * * Uses insertion sort -- fine for small arrays (less than 30), slow for larger arrays
    * @param compareMethod comparison method
    */
-  public sort(
-    compareMethod: (a: any, b: any) => number = GrowableFloat64Array.compare
-  ) {
+  public sort(compareMethod: (a: any, b: any) => number = GrowableFloat64Array.compare) {
     for (let i = 0; i < this._inUse; i++) {
       for (let j = i + 1; j < this._inUse; j++) {
         const tempI = this._data[i];

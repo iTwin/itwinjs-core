@@ -17,13 +17,7 @@ describe("Numeric Formats tests:", () => {
     const unitsProvider = new TestUnitsProvider();
 
     const formatData = {
-      formatTraits: [
-        "keepSingleZero",
-        "applyRounding",
-        "showUnitLabel",
-        "trailZeroes",
-        "use1000Separator",
-      ],
+      formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel", "trailZeroes", "use1000Separator"],
       precision: 4,
       type: "Decimal",
       uomSeparator: " ",
@@ -79,22 +73,10 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
       // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -161,22 +143,10 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
       // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -248,22 +218,10 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        clonedFormat,
-        unitsProvider,
-        unit
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", clonedFormat, unitsProvider, unit);
 
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
       // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -318,21 +276,9 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
       // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -383,21 +329,9 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
       // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -458,21 +392,9 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
       // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -523,21 +445,9 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
       // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -592,21 +502,9 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
       // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -617,12 +515,7 @@ describe("Numeric Formats tests:", () => {
     const unitsProvider = new TestUnitsProvider();
 
     const formatData = {
-      formatTraits: [
-        "keepSingleZero",
-        "applyRounding",
-        "showUnitLabel",
-        "trailZeroes",
-      ],
+      formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel", "trailZeroes"],
       precision: 2,
       type: "Decimal",
       uomSeparator: " ",
@@ -666,21 +559,9 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
       // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -691,12 +572,7 @@ describe("Numeric Formats tests:", () => {
     const unitsProvider = new TestUnitsProvider();
 
     const formatData = {
-      formatTraits: [
-        "keepSingleZero",
-        "applyRounding",
-        "showUnitLabel",
-        "zeroEmpty",
-      ],
+      formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel", "zeroEmpty"],
       precision: 2,
       type: "Decimal",
       uomSeparator: " ",
@@ -740,21 +616,9 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
     }
   });
@@ -807,21 +671,9 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
       // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -872,21 +724,9 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
       // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -937,21 +777,9 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
       // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -986,21 +814,9 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
     }
   });
@@ -1049,21 +865,9 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
       // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -1114,21 +918,9 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
       // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -1179,21 +971,9 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
       // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -1263,21 +1043,9 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
       // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -1353,21 +1121,9 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        clonedFormat,
-        unitsProvider,
-        unit
-      );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", clonedFormat, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
       // eslint-disable-next-line no-console
       // console.log(`${testEntry.magnitude.toString()} ${testEntry.unit.label} => ${formattedValue}`);
@@ -1443,21 +1199,9 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        clonedFormat,
-        unitsProvider,
-        unit
-      );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", clonedFormat, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
       // eslint-disable-next-line no-console
       // console.log(`${testEntry.magnitude.toString()} ${testEntry.unit.label} => ${formattedValue}`);

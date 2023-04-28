@@ -9,9 +9,7 @@ import { WmsCapabilities } from "../../../tile/map/WmsCapabilities";
 const mapProxyDatasetNbLayers = 9;
 describe("WmsCapabilities", () => {
   it("should parse WMS 1.1.1 capabilities", async () => {
-    const capabilities = await WmsCapabilities.create(
-      "assets/wms_capabilities/mapproxy_111.xml"
-    );
+    const capabilities = await WmsCapabilities.create("assets/wms_capabilities/mapproxy_111.xml");
 
     expect(capabilities).to.not.undefined;
     if (capabilities === undefined) return;
@@ -37,9 +35,7 @@ describe("WmsCapabilities", () => {
   });
 
   it("should parse WMS 1.3.0 capabilities", async () => {
-    const capabilities = await WmsCapabilities.create(
-      "assets/wms_capabilities/mapproxy_130.xml"
-    );
+    const capabilities = await WmsCapabilities.create("assets/wms_capabilities/mapproxy_130.xml");
 
     expect(capabilities).to.not.undefined;
     if (capabilities === undefined) return;

@@ -4,10 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import {
-  IndexedCollectionInterval,
-  IndexedXYZCollectionInterval,
-} from "../../geometry3d/IndexedCollectionInterval";
+import { IndexedCollectionInterval, IndexedXYZCollectionInterval } from "../../geometry3d/IndexedCollectionInterval";
 import * as bsiChecker from "../Checker";
 
 describe("IndexedXYZCollectionInterval", () => {
@@ -18,11 +15,7 @@ describe("IndexedXYZCollectionInterval", () => {
       points.pushXYZ(i, 0, 0);
     }
     const fullInterval = IndexedCollectionInterval.createComplete(points);
-    const smallInterval = IndexedXYZCollectionInterval.createBeginEnd(
-      points,
-      3,
-      8
-    );
+    const smallInterval = IndexedXYZCollectionInterval.createBeginEnd(points, 3, 8);
     const length0 = smallInterval.length;
     ck.testExactNumber(fullInterval.length, points.length);
     smallInterval.advanceEnd();
@@ -32,17 +25,10 @@ describe("IndexedXYZCollectionInterval", () => {
 
     ck.testUndefined(smallInterval.localIndexToParentIndex(-1));
     ck.testUndefined(smallInterval.localIndexToParentIndex(20));
-    ck.testExactNumber(
-      smallInterval.localIndexToParentIndex(0)!,
-      smallInterval.begin
-    );
+    ck.testExactNumber(smallInterval.localIndexToParentIndex(0)!, smallInterval.begin);
     ck.testTrue(fullInterval.isNonEmpty, " verify invalid interval");
     ck.testTrue(fullInterval.isValidSubset, " subset valid before trim.");
-    const intervalB = IndexedXYZCollectionInterval.createBeginLength(
-      points,
-      3,
-      4
-    );
+    const intervalB = IndexedXYZCollectionInterval.createBeginLength(points, 3, 4);
     while (intervalB.length > 0) {
       ck.testTrue(intervalB.isValidSubset);
       intervalB.advanceBegin();

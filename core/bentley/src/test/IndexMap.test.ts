@@ -9,8 +9,7 @@ describe("IndexMap", () => {
   it("should remember insertion order", () => {
     const map = new IndexMap<number>(compareNumbers);
     const list = [9, 8, 7, 1, 2, 3, 0, 5, 4];
-    for (let i = 0; i < list.length; i++)
-      expect(map.insert(list[i])).to.equal(i);
+    for (let i = 0; i < list.length; i++) expect(map.insert(list[i])).to.equal(i);
 
     expect(map.length).to.equal(list.length);
     for (let i = 0; i < list.length; i++) {

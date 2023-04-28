@@ -22,9 +22,7 @@ export class HiliteUniforms {
 
   private _hiliteSettings = new Hilite.Settings();
   private _emphasisSettings = new Hilite.Settings();
-  private readonly _hiliteRgb = FloatRgb.fromColorDef(
-    this.hiliteSettings.color
-  );
+  private readonly _hiliteRgb = FloatRgb.fromColorDef(this.hiliteSettings.color);
 
   public syncKey = 0;
 
@@ -39,10 +37,7 @@ export class HiliteUniforms {
   }
 
   public update(hilite: Hilite.Settings, emphasis: Hilite.Settings): void {
-    if (
-      Hilite.equalSettings(hilite, this._hiliteSettings) &&
-      Hilite.equalSettings(emphasis, this._emphasisSettings)
-    )
+    if (Hilite.equalSettings(hilite, this._hiliteSettings) && Hilite.equalSettings(emphasis, this._emphasisSettings))
       return;
 
     desync(this);

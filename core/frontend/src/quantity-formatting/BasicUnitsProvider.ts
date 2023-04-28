@@ -6,13 +6,7 @@
  * @module QuantityFormatting
  */
 
-import {
-  BadUnit,
-  BasicUnit,
-  UnitConversionProps,
-  UnitProps,
-  UnitsProvider,
-} from "@itwin/core-quantity";
+import { BadUnit, BasicUnit, UnitConversionProps, UnitProps, UnitsProvider } from "@itwin/core-quantity";
 import { UnitNameKey } from "./QuantityFormatter";
 import { UNIT_EXTRA_DATA } from "./UnitsData";
 
@@ -36,37 +30,18 @@ export class BasicUnitsProvider implements UnitsProvider {
     for (const entry of UNIT_DATA) {
       if (schemaName && schemaName !== "Units") continue;
 
-      if (phenomenon && entry.phenomenon.toLowerCase() !== unitFamilyToFind)
-        continue;
+      if (phenomenon && entry.phenomenon.toLowerCase() !== unitFamilyToFind) continue;
 
-      if (unitSystemToFind && entry.system.toLowerCase() !== unitSystemToFind)
-        continue;
+      if (unitSystemToFind && entry.system.toLowerCase() !== unitSystemToFind) continue;
 
-      if (
-        entry.displayLabel.toLowerCase() === labelToFind ||
-        entry.name.toLowerCase() === labelToFind
-      ) {
-        const unitProps = new BasicUnit(
-          entry.name,
-          entry.displayLabel,
-          entry.phenomenon,
-          entry.system
-        );
+      if (entry.displayLabel.toLowerCase() === labelToFind || entry.name.toLowerCase() === labelToFind) {
+        const unitProps = new BasicUnit(entry.name, entry.displayLabel, entry.phenomenon, entry.system);
         return unitProps;
       }
 
       if (entry.altDisplayLabels && entry.altDisplayLabels.length > 0) {
-        if (
-          entry.altDisplayLabels.findIndex(
-            (ref) => ref.toLowerCase() === labelToFind
-          ) !== -1
-        ) {
-          const unitProps = new BasicUnit(
-            entry.name,
-            entry.displayLabel,
-            entry.phenomenon,
-            entry.system
-          );
+        if (entry.altDisplayLabels.findIndex((ref) => ref.toLowerCase() === labelToFind) !== -1) {
+          const unitProps = new BasicUnit(entry.name, entry.displayLabel, entry.phenomenon, entry.system);
           return unitProps;
         }
       }
@@ -80,14 +55,7 @@ export class BasicUnitsProvider implements UnitsProvider {
     const units: UnitProps[] = [];
     for (const entry of UNIT_DATA) {
       if (entry.phenomenon !== phenomenon) continue;
-      units.push(
-        new BasicUnit(
-          entry.name,
-          entry.displayLabel,
-          entry.phenomenon,
-          entry.system
-        )
-      );
+      units.push(new BasicUnit(entry.name, entry.displayLabel, entry.phenomenon, entry.system));
     }
     return units;
   }
@@ -115,20 +83,14 @@ export class BasicUnitsProvider implements UnitsProvider {
   }
 
   /** Return the information needed to convert a value between two different units.  The units should be from the same phenomenon. */
-  public async getConversion(
-    fromUnit: UnitProps,
-    toUnit: UnitProps
-  ): Promise<UnitConversionProps> {
+  public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps> {
     const fromUnitData = this.findUnitDefinition(fromUnit.name);
     const toUnitData = this.findUnitDefinition(toUnit.name);
 
     if (fromUnitData && toUnitData) {
-      const deltaOffset =
-        toUnitData.conversion.offset - fromUnitData.conversion.offset;
-      const deltaNumerator =
-        toUnitData.conversion.numerator * fromUnitData.conversion.denominator;
-      const deltaDenominator =
-        toUnitData.conversion.denominator * fromUnitData.conversion.numerator;
+      const deltaOffset = toUnitData.conversion.offset - fromUnitData.conversion.offset;
+      const deltaNumerator = toUnitData.conversion.numerator * fromUnitData.conversion.denominator;
+      const deltaDenominator = toUnitData.conversion.denominator * fromUnitData.conversion.numerator;
 
       const conversionData = new ConversionData();
       conversionData.factor = deltaNumerator / deltaDenominator;
@@ -173,10 +135,7 @@ export function getDefaultAlternateUnitLabels() {
   const altDisplayLabelsMap = new Map<UnitNameKey, Set<string>>();
   for (const entry of UNIT_EXTRA_DATA) {
     if (entry.altDisplayLabels && entry.altDisplayLabels.length > 0) {
-      altDisplayLabelsMap.set(
-        entry.name,
-        new Set<string>(entry.altDisplayLabels)
-      );
+      altDisplayLabelsMap.set(entry.name, new Set<string>(entry.altDisplayLabels));
     }
   }
   if (altDisplayLabelsMap.size) return altDisplayLabelsMap;

@@ -59,33 +59,19 @@ describe("SnapshotConnection", () => {
     assert.isFalse(snapshotR2.isCheckpointConnection());
     assert.isFalse(snapshotF1.isCheckpointConnection());
 
-    const elementPropsR1 = await snapshotR1.elements.getProps(
-      IModel.rootSubjectId
-    );
+    const elementPropsR1 = await snapshotR1.elements.getProps(IModel.rootSubjectId);
     assert.equal(1, elementPropsR1.length);
     assert.equal(elementPropsR1[0].id, IModel.rootSubjectId);
     await snapshotR1.close(); // R1 is the same backend iModel as F1, but close should not affect F1
 
-    const elementPropsR2 = await snapshotR2.elements.getProps(
-      IModel.rootSubjectId
-    );
+    const elementPropsR2 = await snapshotR2.elements.getProps(IModel.rootSubjectId);
     assert.equal(1, elementPropsR2.length);
     assert.equal(elementPropsR2[0].id, IModel.rootSubjectId);
     await snapshotR2.close();
 
-    const elementPropsF1 = await snapshotF1.elements.getProps(
-      IModel.rootSubjectId
-    );
-    assert.equal(
-      1,
-      elementPropsF1.length,
-      "R1 close should not have affected F1"
-    );
-    assert.equal(
-      elementPropsF1[0].id,
-      IModel.rootSubjectId,
-      "R1 close should not have affected F1"
-    );
+    const elementPropsF1 = await snapshotF1.elements.getProps(IModel.rootSubjectId);
+    assert.equal(1, elementPropsF1.length, "R1 close should not have affected F1");
+    assert.equal(elementPropsF1[0].id, IModel.rootSubjectId, "R1 close should not have affected F1");
     await snapshotF1.close();
 
     assert.isFalse(snapshotR1.isOpen);

@@ -43,10 +43,7 @@ describe("BsplineCurve", () => {
     ];
 
     ck.testUndefined(BezierCurve3d.create([]));
-    const bezierCurves = [
-      BezierCurve3d.create(allPoints)!,
-      BezierCurve3dH.create(allPoints)!,
-    ];
+    const bezierCurves = [BezierCurve3d.create(allPoints)!, BezierCurve3dH.create(allPoints)!];
     ck.testFalse(bezierCurves[0].isAlmostEqual(bezierCurves[1]));
     ck.testFalse(bezierCurves[1].isAlmostEqual(bezierCurves[0]));
     const plane0 = Plane3dByOriginAndUnitNormal.createXYPlane();
@@ -74,11 +71,7 @@ describe("BsplineCurve", () => {
   it("Bezier1dNd", () => {
     const ck = new Checker();
     ck.testUndefined(Bezier1dNd.create([]));
-    const base2 = Bezier1dNd.create([
-      Point2d.create(1, 2),
-      Point2d.create(2, 2),
-      Point2d.create(3, 1),
-    ]);
+    const base2 = Bezier1dNd.create([Point2d.create(1, 2), Point2d.create(2, 2), Point2d.create(3, 1)]);
     const base25 = Bezier1dNd.create([
       Point2d.create(1, 2),
       Point2d.create(2, 2),
@@ -90,11 +83,7 @@ describe("BsplineCurve", () => {
     ck.testFalse(base2!.isAlmostEqual(undefined));
     ck.testPointer(base2);
     exercise1dNdBase(ck, base2!);
-    const base3 = Bezier1dNd.create([
-      Point3d.create(1, 2),
-      Point3d.create(2, 2),
-      Point3d.create(3, 1),
-    ]);
+    const base3 = Bezier1dNd.create([Point3d.create(1, 2), Point3d.create(2, 2), Point3d.create(3, 1)]);
     ck.testPointer(base3);
     exercise1dNdBase(ck, base3!);
 
@@ -140,16 +129,8 @@ describe("BsplineCurve", () => {
     ck.testExactNumber(1.0, basis[0]);
     ck.testExactNumber(0.0, basis1[0]);
     ck.testFalse(knotVector1.isIndexOfRealSpan(-1));
-    const base2A = Bezier1dNd.create([
-      Point2d.create(1, 2),
-      Point2d.create(2, 2),
-      Point2d.create(3, 1),
-    ])!;
-    const base2B = Bezier1dNd.create([
-      Point2d.create(1, 2),
-      Point2d.create(2, 2),
-      Point2d.create(3, 1),
-    ])!;
+    const base2A = Bezier1dNd.create([Point2d.create(1, 2), Point2d.create(2, 2), Point2d.create(3, 1)])!;
+    const base2B = Bezier1dNd.create([Point2d.create(1, 2), Point2d.create(2, 2), Point2d.create(3, 1)])!;
     ck.testTrue(base2A.subdivideToIntervalInPlace(0.25, 0.5));
     ck.testTrue(base2B.subdivideToIntervalInPlace(0.5, 0.25));
     for (const f of [0, 0.1, 0.4, 0.3]) {
@@ -188,11 +169,7 @@ describe("BsplineCurve", () => {
       if (livePoints.length > 2) {
         const bezier = BezierCurve3d.create(livePoints)!;
         const bezier1 = bezier.clone();
-        const knotVector = KnotVector.create(
-          uniformKnots,
-          livePoints.length - 1,
-          false
-        );
+        const knotVector = KnotVector.create(uniformKnots, livePoints.length - 1, false);
         geometry.push(bezier.copyPointsAsLineString());
         geometry[geometry.length - 1].tryTranslateInPlace(0, currYShift, 0);
         bezier.saturateInPlace(knotVector, 0);
@@ -213,35 +190,17 @@ describe("BsplineCurve", () => {
 
         const bezier2 = BezierCurve3d.create(livePoints)!;
         const bezier3 = BezierCurve3d.create(livePoints)!;
-        bezier2.saturateInPlace(
-          KnotVector.create(leftSaturated, degree, false),
-          0
-        );
-        bezier3.saturateInPlace(
-          KnotVector.create(rightSaturated, degree, false),
-          0
-        );
+        bezier2.saturateInPlace(KnotVector.create(leftSaturated, degree, false), 0);
+        bezier3.saturateInPlace(KnotVector.create(rightSaturated, degree, false), 0);
         geometry.push(bezier2.copyPointsAsLineString());
-        geometry[geometry.length - 1].tryTranslateInPlace(
-          xShift1,
-          currYShift,
-          0
-        );
+        geometry[geometry.length - 1].tryTranslateInPlace(xShift1, currYShift, 0);
         geometry.push(bezier3.copyPointsAsLineString());
-        geometry[geometry.length - 1].tryTranslateInPlace(
-          xShift2,
-          currYShift,
-          0
-        );
+        geometry[geometry.length - 1].tryTranslateInPlace(xShift2, currYShift, 0);
 
         currYShift += yShift;
       }
     }
-    GeometryCoreTestIO.saveGeometry(
-      geometry,
-      "BezierCurve3d",
-      "SingleBezierSaturation"
-    );
+    GeometryCoreTestIO.saveGeometry(geometry, "BezierCurve3d", "SingleBezierSaturation");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -266,12 +225,7 @@ describe("BsplineCurve", () => {
     const dy = 30.0;
     const tickLength = 0.5;
     const setbackDistance = 0.5;
-    GeometryCoreTestIO.captureGeometry(
-      geometry,
-      LineString3d.create(controlPoints),
-      x0,
-      y0
-    );
+    GeometryCoreTestIO.captureGeometry(geometry, LineString3d.create(controlPoints), x0, y0);
     for (const order of [3, 2, 3, 4, 5]) {
       x0 += dx;
       y0 = 0.0;
@@ -291,10 +245,7 @@ describe("BsplineCurve", () => {
             perp.normalizeInPlace();
             GeometryCoreTestIO.captureGeometry(
               geometry,
-              LineSegment3d.create(
-                curvePoint.origin,
-                curvePoint.origin.plusScaled(perp, tickLength)
-              ),
+              LineSegment3d.create(curvePoint.origin, curvePoint.origin.plusScaled(perp, tickLength)),
               x0,
               y0
             );
@@ -307,36 +258,13 @@ describe("BsplineCurve", () => {
       for (const bezier of allBeziers) {
         const bezier1 = bezier.clonePartialCurve(f0, f1)!;
         GeometryCoreTestIO.captureGeometry(geometry, bezier1, x0, y1);
-        const detail0 = bezier.moveSignedDistanceFromFraction(
-          0.0,
-          setbackDistance,
-          false
-        );
-        const detail1 = bezier.moveSignedDistanceFromFraction(
-          1.0,
-          -setbackDistance,
-          false
-        );
-        const bezier2 = bezier.clonePartialCurve(
-          detail0.fraction,
-          detail1.fraction
-        )!;
+        const detail0 = bezier.moveSignedDistanceFromFraction(0.0, setbackDistance, false);
+        const detail1 = bezier.moveSignedDistanceFromFraction(1.0, -setbackDistance, false);
+        const bezier2 = bezier.clonePartialCurve(detail0.fraction, detail1.fraction)!;
         GeometryCoreTestIO.captureGeometry(geometry, bezier2, x0, y2);
         if (bezierIndex === 0)
-          GeometryCoreTestIO.createAndCaptureXYCircle(
-            geometry,
-            bezier.fractionToPoint(0.0),
-            setbackDistance,
-            x0,
-            y2
-          );
-        GeometryCoreTestIO.createAndCaptureXYCircle(
-          geometry,
-          bezier.fractionToPoint(1.0),
-          setbackDistance,
-          x0,
-          y2
-        );
+          GeometryCoreTestIO.createAndCaptureXYCircle(geometry, bezier.fractionToPoint(0.0), setbackDistance, x0, y2);
+        GeometryCoreTestIO.createAndCaptureXYCircle(geometry, bezier.fractionToPoint(1.0), setbackDistance, x0, y2);
         // make sure partialClones overlap original  . . .
         const g0 = 0.2342345;
         const g1 = 0.82342367;
@@ -359,12 +287,7 @@ describe("BsplineCurve", () => {
 
   it("Bspline1dNd", () => {
     const ck = new Checker();
-    const bspline = BSpline1dNd.create(
-      4,
-      3,
-      2,
-      KnotVector.create([1, 2, 3, 4], 1)
-    );
+    const bspline = BSpline1dNd.create(4, 3, 2, KnotVector.create([1, 2, 3, 4], 1));
     if (ck.testPointer(bspline)) {
       const point0 = bspline.getPoint3dPole(0)!;
       ck.testExactNumber(0, point0.magnitude());

@@ -36,16 +36,13 @@ export class SolarShadowSettings {
 
   private constructor(props: SolarShadowSettingsProps) {
     this.bias = JsonUtils.asDouble(props.bias, 0.001);
-    if (undefined === props.color || null === props.color)
-      this.color = defaultColor;
+    if (undefined === props.color || null === props.color) this.color = defaultColor;
     else this.color = RgbColor.fromColorDef(ColorDef.fromJSON(props.color));
   }
 
   public static defaults = new SolarShadowSettings({});
 
-  public static fromJSON(
-    props?: SolarShadowSettingsProps
-  ): SolarShadowSettings {
+  public static fromJSON(props?: SolarShadowSettingsProps): SolarShadowSettings {
     return props ? new SolarShadowSettings(props) : this.defaults;
   }
 
@@ -54,8 +51,7 @@ export class SolarShadowSettings {
     if (this.equals(defaults)) return undefined;
 
     const props: SolarShadowSettingsProps = {};
-    if (!this.color.equals(defaults.color))
-      props.color = this.color.toColorDef().toJSON();
+    if (!this.color.equals(defaults.color)) props.color = this.color.toColorDef().toJSON();
 
     if (this.bias !== defaults.bias) props.bias = this.bias;
 

@@ -46,10 +46,7 @@ const enum PointAdjustment { // eslint-disable-line no-restricted-syntax
  *  of two possible points:
  *  [pointInside OR undefined, pointOutside OR undefined]
  */
-function makePointAdjustments(
-  point: Point3d,
-  adjustment: PointAdjustment
-): Array<Point3d | undefined> {
+function makePointAdjustments(point: Point3d, adjustment: PointAdjustment): Array<Point3d | undefined> {
   let pointInside: Point3d | undefined;
   let pointOutside: Point3d | undefined;
   switch (adjustment) {
@@ -93,32 +90,19 @@ function checkPointProximity(
   pointOutside: Point3d | undefined,
   ck: Checker
 ) {
-  ck.testTrue(
-    clipVector.pointInside(pointOnEdge),
-    "Point on ClipShape edge is inside ClipVector"
-  );
+  ck.testTrue(clipVector.pointInside(pointOnEdge), "Point on ClipShape edge is inside ClipVector");
   if (pointInside)
-    ck.testTrue(
-      clipVector.pointInside(pointInside),
-      "Point within ClipShape bounds is inside ClipVector"
-    );
+    ck.testTrue(clipVector.pointInside(pointInside), "Point within ClipShape bounds is inside ClipVector");
   if (pointOutside)
-    ck.testTrue(
-      !clipVector.pointInside(pointOutside),
-      "Point outside of ClipShape bounds is outside ClipVector"
-    );
+    ck.testTrue(!clipVector.pointInside(pointOutside), "Point outside of ClipShape bounds is outside ClipVector");
 }
 
 /** EXPENSIVE -- Tests whether two ClipVectors are equivalent to one another. */
-function clipVectorsAreEqual(
-  vector0: ClipVector,
-  vector1: ClipVector
-): boolean {
+function clipVectorsAreEqual(vector0: ClipVector, vector1: ClipVector): boolean {
   if (vector0.clips.length !== vector1.clips.length) return false;
 
   for (let i = 0; i < vector0.clips.length; i++)
-    if (!clipPrimitivesAreEqual(vector0.clips[i], vector1.clips[i]))
-      return false;
+    if (!clipPrimitivesAreEqual(vector0.clips[i], vector1.clips[i])) return false;
   return true;
 }
 
@@ -149,15 +133,8 @@ describe("ClipVector", () => {
    *                                                     \/(7,-8)
    */
   before(() => {
-    clipShape0 = ClipShape.createBlock(
-      Range3d.createXYZXYZ(-5, -4, -50, -3, -2, 50),
-      ClipMaskXYZRangePlanes.All
-    );
-    clipShape1 = ClipShape.createShape([
-      Point3d.create(4.5, 1),
-      Point3d.create(6, 3),
-      Point3d.create(3, 3),
-    ])!;
+    clipShape0 = ClipShape.createBlock(Range3d.createXYZXYZ(-5, -4, -50, -3, -2, 50), ClipMaskXYZRangePlanes.All);
+    clipShape1 = ClipShape.createShape([Point3d.create(4.5, 1), Point3d.create(6, 3), Point3d.create(3, 3)])!;
     clipShape2 = ClipShape.createShape(
       [
         Point3d.create(6, 1),
@@ -170,29 +147,16 @@ describe("ClipVector", () => {
       -0.1
     )!;
     clipShape3 = ClipShape.createShape(
-      [
-        Point3d.create(2, -7),
-        Point3d.create(6.5, -7),
-        Point3d.create(6.5, -4),
-        Point3d.create(3, -4),
-      ],
+      [Point3d.create(2, -7), Point3d.create(6.5, -7), Point3d.create(6.5, -4), Point3d.create(3, -4)],
       -5,
       5
     )!;
     clipShape4 = ClipShape.createShape(
-      [
-        Point3d.create(7, -8),
-        Point3d.create(7.7, -4.5),
-        Point3d.create(6.3, -4.5),
-      ],
+      [Point3d.create(7, -8), Point3d.create(7.7, -4.5), Point3d.create(6.3, -4.5)],
       -5,
       5
     )!;
-    clipVector012 = ClipVector.createCapture([
-      clipShape0,
-      clipShape1,
-      clipShape2,
-    ]);
+    clipVector012 = ClipVector.createCapture([clipShape0, clipShape1, clipShape2]);
     // clipVector234 = ClipVector.createCapture([clipShape2, clipShape3, clipShape4]);
   });
 
@@ -206,8 +170,7 @@ describe("ClipVector", () => {
       clipShape3,
       clipShape4,
     ]);
-    for (const clip of newlyCreatedClipVector.clips)
-      ck.testFalse(clip.arePlanesDefined());
+    for (const clip of newlyCreatedClipVector.clips) ck.testFalse(clip.arePlanesDefined());
     newlyCreatedClipVector.parseClipPlanes();
     for (const clip of newlyCreatedClipVector.clips) {
       ck.testTrue(clip.arePlanesDefined());
@@ -216,20 +179,11 @@ describe("ClipVector", () => {
     // Test create methods and cloning/referencing
     const clipVectorTester0 = clipVector012.clone();
     const clipVectorTester1 = ClipVector.createEmpty();
-    ck.testTrue(
-      !clipVectorTester1.isValid,
-      "Empty ClipVector should not be valid"
-    );
+    ck.testTrue(!clipVectorTester1.isValid, "Empty ClipVector should not be valid");
     ClipVector.createCapture(clipVectorTester0.clips, clipVectorTester1);
-    ck.testTrue(
-      clipVectorTester1.isValid,
-      "ClipVector should not be empty after copy"
-    );
+    ck.testTrue(clipVectorTester1.isValid, "ClipVector should not be empty after copy");
     ClipVector.create(clipVectorTester0.clips, clipVectorTester1);
-    ck.testTrue(
-      clipVectorTester1.isValid,
-      "ClipVector should not be empty after clone"
-    );
+    ck.testTrue(clipVectorTester1.isValid, "ClipVector should not be empty after clone");
     ClipVector.createEmpty(clipVectorTester1);
     const arrLen = clipVector012.clips.length;
     for (let i = 0; i < arrLen; i++) {
@@ -238,10 +192,7 @@ describe("ClipVector", () => {
         "ClipVector created with clones should have deep copies of each ClipShape"
       );
       ck.testTrue(
-        clipPrimitivesAreEqual(
-          clipVector012.clips[i],
-          clipVectorTester0.clips[i]
-        ),
+        clipPrimitivesAreEqual(clipVector012.clips[i], clipVectorTester0.clips[i]),
         "ClipShape members of copied vector and cloned vector should be equivalent"
       );
       clipVectorTester1.appendReference(clipVector012.clips[i]);
@@ -256,10 +207,7 @@ describe("ClipVector", () => {
         "ClipVector with appended clone should have deep copy of ClipShape"
       );
       ck.testTrue(
-        clipPrimitivesAreEqual(
-          clipVector012.clips[i],
-          clipVectorTester1.clips[0]
-        ),
+        clipPrimitivesAreEqual(clipVector012.clips[i], clipVectorTester1.clips[0]),
         "ClipVector with shallow copied ClipShape should be equivalent"
       );
       clipVectorTester1.clear();
@@ -288,9 +236,7 @@ describe("ClipVector", () => {
     for (const primitive of clipJSON) {
       const shape = primitive as ClipPrimitiveShapeProps;
       ck.testTrue(
-        shape.shape !== undefined &&
-          shape.shape.points !== undefined &&
-          shape.shape.points.length > 0,
+        shape.shape !== undefined && shape.shape.points !== undefined && shape.shape.points.length > 0,
         "Each ClipShape was stored successfully, with its member points"
       );
     }
@@ -345,16 +291,8 @@ describe("ClipVector", () => {
       PointAdjustment.AddZ,
       PointAdjustment.SubZ,
     ];
-    const shapeExtremities: Point3d[][] = [
-      shape0Extremities,
-      shape1Extremities,
-      shape2Extremities,
-    ];
-    const shapePointAdjustments: PointAdjustment[][] = [
-      shape0PointAdj,
-      shape1PointAdj,
-      shape2PointAdj,
-    ];
+    const shapeExtremities: Point3d[][] = [shape0Extremities, shape1Extremities, shape2Extremities];
+    const shapePointAdjustments: PointAdjustment[][] = [shape0PointAdj, shape1PointAdj, shape2PointAdj];
 
     // Ensure that 'LineString' connecting boundaries is considered inside the ClipVector
     for (const arr of shapeExtremities) {
@@ -370,23 +308,11 @@ describe("ClipVector", () => {
     // Check whether points are considered inside or outside at the extremities of each contained ClipShape
     let clipVectorSingleShape: ClipVector | undefined;
     for (let i = 0; i < clipVector012.clips.length; i++) {
-      clipVectorSingleShape = ClipVector.create(
-        [clipVector012.clips[i]],
-        clipVectorSingleShape
-      );
+      clipVectorSingleShape = ClipVector.create([clipVector012.clips[i]], clipVectorSingleShape);
       for (let j = 0; j < shapeExtremities[i].length; j++) {
         const pointOnEdge = shapeExtremities[i][j];
-        const pointAdjustments = makePointAdjustments(
-          pointOnEdge,
-          shapePointAdjustments[i][j]
-        );
-        checkPointProximity(
-          clipVectorSingleShape,
-          pointOnEdge,
-          pointAdjustments[0],
-          pointAdjustments[1],
-          ck
-        );
+        const pointAdjustments = makePointAdjustments(pointOnEdge, shapePointAdjustments[i][j]);
+        checkPointProximity(clipVectorSingleShape, pointOnEdge, pointAdjustments[0], pointAdjustments[1], ck);
         ck.testExactNumber(
           clipVectorSingleShape.classifyPointContainment([pointOnEdge]),
           1,
@@ -394,26 +320,19 @@ describe("ClipVector", () => {
         );
         if (pointAdjustments[0])
           ck.testExactNumber(
-            clipVectorSingleShape.classifyPointContainment([
-              pointAdjustments[0]!,
-            ]),
+            clipVectorSingleShape.classifyPointContainment([pointAdjustments[0]!]),
             1,
             "Inner point should be classified as strongly inside for a single ClipShape"
           );
         if (pointAdjustments[1])
           ck.testExactNumber(
-            clipVectorSingleShape.classifyPointContainment([
-              pointAdjustments[1]!,
-            ]),
+            clipVectorSingleShape.classifyPointContainment([pointAdjustments[1]!]),
             3,
             "Outer point should be strongly outside for single ClipShape, given it is the only point."
           );
         if (pointAdjustments[0] && pointAdjustments[1])
           ck.testExactNumber(
-            clipVectorSingleShape.classifyPointContainment([
-              pointAdjustments[0]!,
-              pointAdjustments[1]!,
-            ]),
+            clipVectorSingleShape.classifyPointContainment([pointAdjustments[0]!, pointAdjustments[1]!]),
             2,
             "Array of outer AND inner points should return ambiguous for single ClipShape"
           );
@@ -426,20 +345,12 @@ describe("ClipVector", () => {
     );
     const intersectionClipVector = ClipVector.createCapture([
       ClipShape.createShape(
-        [
-          Point3d.create(-5, 5),
-          Point3d.create(-5, -5),
-          Point3d.create(0.00001, 0),
-        ],
+        [Point3d.create(-5, 5), Point3d.create(-5, -5), Point3d.create(0.00001, 0)],
         -0.00001,
         0.00001
       )!,
       ClipShape.createShape(
-        [
-          Point3d.create(5, 5),
-          Point3d.create(5, -5),
-          Point3d.create(-0.00001, 0),
-        ],
+        [Point3d.create(5, 5), Point3d.create(5, -5), Point3d.create(-0.00001, 0)],
         -0.00001,
         0.00001
       )!,
@@ -478,11 +389,7 @@ describe("ClipVector", () => {
     );
 
     clipVectorClone.appendShape(
-      [
-        Point3d.create(2, 0, 0),
-        Point3d.create(0, 1, 0),
-        Point3d.create(-1, 0, 0),
-      ],
+      [Point3d.create(2, 0, 0), Point3d.create(0, 1, 0), Point3d.create(-1, 0, 0)],
       undefined,
       undefined,
       undefined,
@@ -522,24 +429,17 @@ describe("ClipVector", () => {
     }
     const loopPoints: Point3d[][] = [];
     const retVal = clipVector012.extractBoundaryLoops(loopPoints);
-    ck.testExactNumber(
-      expClipMask,
-      retVal[0],
-      "ClipMask returned matches expected"
-    );
+    ck.testExactNumber(expClipMask, retVal[0], "ClipMask returned matches expected");
     ck.testExactNumber(expZLow, retVal[1], "zLow returned matches expected");
     ck.testExactNumber(expZHigh, retVal[2], "zHigh returned matches expected");
     for (let loopNum = 0; loopNum < loopPoints.length; loopNum++) {
       ck.testTrue(
-        loopPoints[loopNum].length ===
-          (clipVector012.clips[loopNum] as ClipShape).polygon.length,
+        loopPoints[loopNum].length === (clipVector012.clips[loopNum] as ClipShape).polygon.length,
         "Extracted point array is of same length as ClipShape polygon"
       );
       for (let pointNum = 0; pointNum < loopPoints[loopNum].length; pointNum++)
         ck.testTrue(
-          loopPoints[loopNum][pointNum].isAlmostEqual(
-            (clipVector012.clips[loopNum] as ClipShape).polygon[pointNum]
-          ),
+          loopPoints[loopNum][pointNum].isAlmostEqual((clipVector012.clips[loopNum] as ClipShape).polygon[pointNum]),
           "Extracted point matches point in ClipShape polygon array"
         );
     }
@@ -561,12 +461,7 @@ describe("ClipVector", () => {
     cv = ClipVector.createCapture([primitive]);
     expect(cv.toCompactString()).to.equal("1___");
 
-    const plane = ClipPlane.createNormalAndDistance(
-      new Vector3d(0, 1, 0),
-      -5,
-      true,
-      false
-    )!;
+    const plane = ClipPlane.createNormalAndDistance(new Vector3d(0, 1, 0), -5, true, false)!;
     expect(plane).not.to.be.undefined;
     convexSet = ConvexClipPlaneSet.createPlanes([plane]);
     primitive = ClipPrimitive.createCapture(convexSet);
@@ -574,14 +469,7 @@ describe("ClipVector", () => {
     expect(cv.toCompactString()).to.equal("010_1_0_-5____");
 
     const planes = [plane];
-    planes.push(
-      ClipPlane.createNormalAndDistance(
-        new Vector3d(0, 0, -1),
-        0.00000000005,
-        true,
-        true
-      )!
-    );
+    planes.push(ClipPlane.createNormalAndDistance(new Vector3d(0, 0, -1), 0.00000000005, true, true)!);
     convexSet = ConvexClipPlaneSet.createPlanes(planes);
     primitive = ClipPrimitive.createCapture(convexSet);
     cv = ClipVector.createCapture([primitive]);
@@ -590,25 +478,17 @@ describe("ClipVector", () => {
     const set2 = ConvexClipPlaneSet.createPlanes([
       ClipPlane.createNormalAndDistance(new Vector3d(1, 0, 0), 4, false, true)!,
     ]);
-    cv = ClipVector.createCapture([
-      primitive,
-      ClipPrimitive.createCapture(set2, true),
-    ]);
-    expect(cv.toCompactString()).to.equal(
-      "010_1_0_-5_30_0_-1_5e-11___121_0_0_4____"
-    );
+    cv = ClipVector.createCapture([primitive, ClipPrimitive.createCapture(set2, true)]);
+    expect(cv.toCompactString()).to.equal("010_1_0_-5_30_0_-1_5e-11___121_0_0_4____");
   });
 });
 
 describe("StringifiedClipVector", () => {
   it("creates from ClipVector", () => {
     expect(StringifiedClipVector.fromClipVector(undefined)).to.be.undefined;
-    expect(StringifiedClipVector.fromClipVector(ClipVector.createEmpty())).to.be
-      .undefined;
+    expect(StringifiedClipVector.fromClipVector(ClipVector.createEmpty())).to.be.undefined;
 
-    const cv = ClipVector.createCapture([
-      ClipPrimitive.createCapture(ConvexClipPlaneSet.createPlanes([]), false),
-    ]);
+    const cv = ClipVector.createCapture([ClipPrimitive.createCapture(ConvexClipPlaneSet.createPlanes([]), false)]);
     const scv = StringifiedClipVector.fromClipVector(cv)!;
     expect(scv).not.to.be.undefined;
     expect(scv).to.equal(cv);
@@ -704,37 +584,14 @@ describe("StringifiedClipVector", () => {
     const doLongTest = true;
     for (const isMask of [true, false]) {
       const jsonOuter = [{ shape: { points: outer } }];
-      const jsonTriangle = [
-        { shape: { points: outer } },
-        { shape: { points: triangle, mask: isMask } },
-      ];
-      const jsonOutsideCircle = [
-        { shape: { points: innerCircle, mask: isMask } },
-      ];
-      const jsonCircle = [
-        { shape: { points: outer } },
-        { shape: { points: innerCircle, mask: isMask } },
-      ];
-      const jsonC = [
-        { shape: { points: outer } },
-        { shape: { points: innerNonConvex, mask: isMask } },
-      ];
-      const jsonD = [
-        { shape: { points: outer } },
-        { shape: { points: innerU, mask: isMask } },
-      ];
-      const jsonDart = [
-        { shape: { points: outer } },
-        { shape: { points: innerDart, mask: isMask } },
-      ];
-      const jsonDart1 = [
-        { shape: { points: outer } },
-        { shape: { points: innerDart1, mask: isMask } },
-      ];
-      const jsonTwoInlets = [
-        { shape: { points: outer } },
-        { shape: { points: twoInletsWithWhisker, mask: isMask } },
-      ];
+      const jsonTriangle = [{ shape: { points: outer } }, { shape: { points: triangle, mask: isMask } }];
+      const jsonOutsideCircle = [{ shape: { points: innerCircle, mask: isMask } }];
+      const jsonCircle = [{ shape: { points: outer } }, { shape: { points: innerCircle, mask: isMask } }];
+      const jsonC = [{ shape: { points: outer } }, { shape: { points: innerNonConvex, mask: isMask } }];
+      const jsonD = [{ shape: { points: outer } }, { shape: { points: innerU, mask: isMask } }];
+      const jsonDart = [{ shape: { points: outer } }, { shape: { points: innerDart, mask: isMask } }];
+      const jsonDart1 = [{ shape: { points: outer } }, { shape: { points: innerDart1, mask: isMask } }];
+      const jsonTwoInlets = [{ shape: { points: outer } }, { shape: { points: twoInletsWithWhisker, mask: isMask } }];
       const jsonTwoInletsReversed = [
         { shape: { points: outer } },
         {
@@ -779,27 +636,14 @@ describe("StringifiedClipVector", () => {
       const shortJson = [jsonOuter, jsonTriangle];
       const activeJson = doLongTest ? allJson : shortJson;
       for (const json of activeJson) {
-        GeometryCoreTestIO.captureCloneGeometry(
-          allGeometry,
-          GrowableXYZArray.create(outer),
-          x0,
-          y0
-        );
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, GrowableXYZArray.create(outer), x0, y0);
         const primitive = ClipPrimitive.fromJSON(json[json.length - 1]);
         const clipVector = ClipVector.fromJSON(json);
         if (primitive) {
           // exerciseClipPrimitive(ck, allGeometry, primitive, polygonToClip, isMask, x0, y0);
           if (ck.testType(clipVector, ClipVector)) {
             const y1 = y0 + 200;
-            exerciseClipVector(
-              ck,
-              allGeometry,
-              clipVector,
-              polygonToClip,
-              5,
-              x0,
-              y1
-            );
+            exerciseClipVector(ck, allGeometry, clipVector, polygonToClip, 5, x0, y1);
           }
         }
         x0 += 200.0;
@@ -863,37 +707,20 @@ describe("StringifiedClipVector", () => {
     for (const json of [clip1]) {
       // const polygonToClip = Sample.createRectangleXY(99400, 80000, 400, 400);
       const polygonToClip = Sample.createRectangleXY(0, -0, 100, 100);
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        polygonToClip,
-        x0,
-        y0
-      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, polygonToClip, x0, y0);
       const cv = ClipVector.fromJSON(json);
       if (cv) {
         {
           exerciseClipVector(ck, allGeometry, cv, polygonToClip, 40, x0, y0);
           for (const primitive of cv.clips) {
             x0 += 200;
-            exerciseClipPrimitive(
-              ck,
-              allGeometry,
-              primitive,
-              polygonToClip,
-              false,
-              x0,
-              y0
-            );
+            exerciseClipPrimitive(ck, allGeometry, primitive, polygonToClip, false, x0, y0);
           }
         }
       }
       x0 += 200.0;
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "ClipVector",
-      "OuterAndMaskLargeCoordinateAndTransform"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipVector", "OuterAndMaskLargeCoordinateAndTransform");
     expect(ck.getNumErrors()).equals(0);
   });
   it("OuterAndMask", () => {
@@ -980,37 +807,14 @@ describe("StringifiedClipVector", () => {
       [0, 0, 1, 0],
     ];
     for (const isMask of [true, false]) {
-      const jsonTriangle = [
-        { shape: { points: outer } },
-        { shape: { points: triangle, mask: isMask } },
-      ];
-      const jsonOutsideCircle = [
-        { shape: { points: innerCircle, mask: isMask } },
-      ];
-      const jsonCircle = [
-        { shape: { points: outer } },
-        { shape: { points: innerCircle, mask: isMask } },
-      ];
-      const jsonC = [
-        { shape: { points: outer } },
-        { shape: { points: innerNonConvex, mask: isMask } },
-      ];
-      const jsonD = [
-        { shape: { points: outer } },
-        { shape: { points: innerU, mask: isMask } },
-      ];
-      const jsonDart = [
-        { shape: { points: outer } },
-        { shape: { points: innerDart, mask: isMask } },
-      ];
-      const jsonDart1 = [
-        { shape: { points: outer } },
-        { shape: { points: innerDart1, mask: isMask } },
-      ];
-      const jsonTwoInlets = [
-        { shape: { points: outer } },
-        { shape: { points: twoInletsWithWhisker, mask: isMask } },
-      ];
+      const jsonTriangle = [{ shape: { points: outer } }, { shape: { points: triangle, mask: isMask } }];
+      const jsonOutsideCircle = [{ shape: { points: innerCircle, mask: isMask } }];
+      const jsonCircle = [{ shape: { points: outer } }, { shape: { points: innerCircle, mask: isMask } }];
+      const jsonC = [{ shape: { points: outer } }, { shape: { points: innerNonConvex, mask: isMask } }];
+      const jsonD = [{ shape: { points: outer } }, { shape: { points: innerU, mask: isMask } }];
+      const jsonDart = [{ shape: { points: outer } }, { shape: { points: innerDart, mask: isMask } }];
+      const jsonDart1 = [{ shape: { points: outer } }, { shape: { points: innerDart1, mask: isMask } }];
+      const jsonTwoInlets = [{ shape: { points: outer } }, { shape: { points: twoInletsWithWhisker, mask: isMask } }];
       const jsonTwoInletsReversed = [
         { shape: { points: outer } },
         {
@@ -1052,35 +856,14 @@ describe("StringifiedClipVector", () => {
         jsonD,
         jsonDart,
       ]) {
-        GeometryCoreTestIO.captureCloneGeometry(
-          allGeometry,
-          GrowableXYZArray.create(outer),
-          x0,
-          y0
-        );
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, GrowableXYZArray.create(outer), x0, y0);
         const primitive = ClipPrimitive.fromJSON(json[json.length - 1]);
         const clipVector = ClipVector.fromJSON(json);
         if (primitive) {
-          exerciseClipPrimitive(
-            ck,
-            allGeometry,
-            primitive,
-            polygonToClip,
-            isMask,
-            x0,
-            y0
-          );
+          exerciseClipPrimitive(ck, allGeometry, primitive, polygonToClip, isMask, x0, y0);
           if (ck.testType(clipVector, ClipVector)) {
             const y1 = y0 + 200;
-            exerciseClipVector(
-              ck,
-              allGeometry,
-              clipVector,
-              polygonToClip,
-              0,
-              x0,
-              y1
-            );
+            exerciseClipVector(ck, allGeometry, clipVector, polygonToClip, 0, x0, y1);
           }
         }
         x0 += 200.0;
@@ -1094,11 +877,7 @@ describe("StringifiedClipVector", () => {
     const allGeometry: GeometryQuery[] = [];
     const a = 10;
     const b = 1.5;
-    ck.testLT(
-      2 * b,
-      a,
-      "Confirm diamonds will fit well within outer rectangle -- needed for test conditions."
-    );
+    ck.testLT(2 * b, a, "Confirm diamonds will fit well within outer rectangle -- needed for test conditions.");
     const outerPoints = Sample.createCenteredRectangleXY(0, 0, 2 * a, a);
     const outerRange = Range3d.createArray(outerPoints);
     const leftHolePoints = Sample.createArcStrokes(
@@ -1121,32 +900,10 @@ describe("StringifiedClipVector", () => {
     );
     const leftRange = Range3d.createArray(leftHolePoints);
     const rightRange = Range3d.createArray(rightHolePoints);
-    const outerPrimitive = ClipShape.createShape(
-      outerPoints,
-      undefined,
-      undefined,
-      undefined,
-      false
-    )!;
-    const leftHolePrimitive = ClipShape.createShape(
-      leftHolePoints,
-      undefined,
-      undefined,
-      undefined,
-      true
-    )!;
-    const rightHolePrimitive = ClipShape.createShape(
-      rightHolePoints,
-      undefined,
-      undefined,
-      undefined,
-      true
-    )!;
-    const clipVector = ClipVector.createCapture([
-      outerPrimitive,
-      leftHolePrimitive,
-      rightHolePrimitive,
-    ]);
+    const outerPrimitive = ClipShape.createShape(outerPoints, undefined, undefined, undefined, false)!;
+    const leftHolePrimitive = ClipShape.createShape(leftHolePoints, undefined, undefined, undefined, true)!;
+    const rightHolePrimitive = ClipShape.createShape(rightHolePoints, undefined, undefined, undefined, true)!;
+    const clipVector = ClipVector.createCapture([outerPrimitive, leftHolePrimitive, rightHolePrimitive]);
     const x0 = 0;
     const y0 = 0;
 
@@ -1157,56 +914,15 @@ describe("StringifiedClipVector", () => {
       leftRange.fractionToPoint(e0, e0, 0),
       rightRange.fractionToPoint(e1, e1, 0),
     ];
-    const outPoints = [
-      Point3d.create(-a, 0),
-      Point3d.create(a, 0),
-      outerRange.fractionToPoint(e0, e1),
-    ];
-    GeometryCoreTestIO.createAndCaptureXYMarker(
-      allGeometry,
-      2,
-      inPoints,
-      0.4,
-      x0,
-      y0
-    );
-    GeometryCoreTestIO.createAndCaptureXYMarker(
-      allGeometry,
-      0,
-      outPoints,
-      0.4,
-      x0,
-      y0
-    );
-    for (const point of inPoints)
-      ck.testTrue(
-        clipVector.isPointOnOrInside(point),
-        prettyPrint({ expectIn: point })
-      );
-    for (const point of outPoints)
-      ck.testFalse(
-        clipVector.isPointOnOrInside(point),
-        prettyPrint({ expectOut: point })
-      );
+    const outPoints = [Point3d.create(-a, 0), Point3d.create(a, 0), outerRange.fractionToPoint(e0, e1)];
+    GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 2, inPoints, 0.4, x0, y0);
+    GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, outPoints, 0.4, x0, y0);
+    for (const point of inPoints) ck.testTrue(clipVector.isPointOnOrInside(point), prettyPrint({ expectIn: point }));
+    for (const point of outPoints) ck.testFalse(clipVector.isPointOnOrInside(point), prettyPrint({ expectOut: point }));
     const drawTheBoundaries = (x0A: number, y0A: number) => {
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        outerPoints,
-        x0A,
-        y0A
-      );
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        leftHolePoints,
-        x0A,
-        y0A
-      );
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        rightHolePoints,
-        x0A,
-        y0A
-      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, outerPoints, x0A, y0A);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, leftHolePoints, x0A, y0A);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, rightHolePoints, x0A, y0A);
     };
     const y1 = y0 + 3 * a;
     const y2 = y1 + 5 * a;
@@ -1227,38 +943,19 @@ describe("StringifiedClipVector", () => {
       const fractionInRange = (1.0 - fractionYA) / (fractionYC - fractionYA);
       const pointC = testCase.range.fractionToPoint(0.5, fractionYC); // One half of this is in the range
       const lengthAC = pointA.distance(pointC);
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        [pointA, pointB, pointC, pointA],
-        x0,
-        y1
-      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pointA, pointB, pointC, pointA], x0, y1);
       ClipUtilities.announcePolylineClip(
         clipVector,
         [pointA, pointB, pointC, pointA],
         (clippedPoint0: Point3d, clippedPoint1: Point3d) => {
-          GeometryCoreTestIO.captureCloneGeometry(
-            allGeometry,
-            [clippedPoint0, clippedPoint1],
-            x0,
-            y2
-          );
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [clippedPoint0, clippedPoint1], x0, y2);
         }
       );
       // Test some clipped lengths ..
       // We know the holes are symmetric in their ranges and deeply buried, strokes from center have predictable clip lengths ..
-      const clippedLength = ClipUtilities.sumPolylineClipLength(clipVector, [
-        pointA,
-        pointC,
-      ]);
-      const expectedClipFraction = testCase.isHole
-        ? 1.0 - fractionInRange
-        : fractionInRange;
-      ck.testCoordinate(
-        clippedLength,
-        expectedClipFraction * lengthAC,
-        "Length of clippedStroke"
-      );
+      const clippedLength = ClipUtilities.sumPolylineClipLength(clipVector, [pointA, pointC]);
+      const expectedClipFraction = testCase.isHole ? 1.0 - fractionInRange : fractionInRange;
+      ck.testCoordinate(clippedLength, expectedClipFraction * lengthAC, "Length of clippedStroke");
     }
     /*
         // Apply clip to rectangles with clear relationship to the holes at   x+=a:
@@ -1273,11 +970,7 @@ describe("StringifiedClipVector", () => {
           { points: pointsQRight, excludedArea: PolygonOps.areaXY (rightHolePoints) }]) {
         }
       */
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "ClipVector",
-      "ClipperInterfaces"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipVector", "ClipperInterfaces");
     expect(ck.getNumErrors()).equals(0);
   });
 });
@@ -1309,12 +1002,7 @@ function exerciseClipVector(
     const insideClip: GrowableXYZArray[] = [];
     const outsideClip: GrowableXYZArray[] = [];
     const cache = new GrowableXYZArrayCache();
-    cv.appendPolygonClip(
-      GrowableXYZArray.create(polygonToClip),
-      insideClip,
-      outsideClip,
-      cache
-    );
+    cv.appendPolygonClip(GrowableXYZArray.create(polygonToClip), insideClip, outsideClip, cache);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loops, x0, y1);
     insideClip.map((x: GrowableXYZArray) => x.forceClosure());
     outsideClip.map((x: GrowableXYZArray) => x.forceClosure());
@@ -1323,20 +1011,9 @@ function exerciseClipVector(
 
     for (let ii = 1; ii < testDensity; ii++) {
       for (let jj = 1; jj < testDensity; jj++) {
-        const xyz = range.fractionToPoint(
-          ii / testDensity,
-          jj / testDensity,
-          0
-        );
+        const xyz = range.fractionToPoint(ii / testDensity, jj / testDensity, 0);
         const inside = cv.pointInside(xyz);
-        GeometryCoreTestIO.createAndCaptureXYMarker(
-          allGeometry,
-          inside ? -3 : 0,
-          xyz,
-          b,
-          x0,
-          y0
-        );
+        GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, inside ? -3 : 0, xyz, b, x0, y0);
       }
     }
   }
@@ -1354,21 +1031,10 @@ export function exerciseClipPrimitive(
   GeometryCoreTestIO.captureCloneGeometry(allGeometry, polygonToClip, x0, y0);
   if (primitive instanceof ClipShape) {
     if (primitive.transformIsValid) {
-      const transformedPolygon =
-        primitive.transformFromClip!.multiplyPoint3dArray(primitive.polygon);
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        transformedPolygon,
-        x0,
-        y0
-      );
+      const transformedPolygon = primitive.transformFromClip!.multiplyPoint3dArray(primitive.polygon);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, transformedPolygon, x0, y0);
     } else {
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        primitive.polygon,
-        x0,
-        y0
-      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, primitive.polygon, x0, y0);
     }
   }
   const range = Range3d.createArray(polygonToClip);
@@ -1396,17 +1062,8 @@ export function exerciseClipPrimitive(
         const area1 = PolygonOps.areaXY(primitive.polygon);
         const area2 = PolygonOps.areaXY(polygonToClip);
         if (primitive.isMask)
-          ck.testCoordinate(
-            area0,
-            area2 - area1,
-            "Expect mask to remove clip shape from containing polygon"
-          );
-        else
-          ck.testCoordinate(
-            area0,
-            area1,
-            "Expect clipper to excise clip shape from containing polygon"
-          );
+          ck.testCoordinate(area0, area2 - area1, "Expect mask to remove clip shape from containing polygon");
+        else ck.testCoordinate(area0, area1, "Expect clipper to excise clip shape from containing polygon");
       }
     }
     const compositeClip: GrowableXYZArray[] = [];

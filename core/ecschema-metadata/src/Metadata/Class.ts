@@ -44,10 +44,7 @@ import { SchemaItem } from "./SchemaItem";
  * A common abstract class for all of the ECClass types.
  * @beta
  */
-export abstract class ECClass
-  extends SchemaItem
-  implements CustomAttributeContainerProps
-{
+export abstract class ECClass extends SchemaItem implements CustomAttributeContainerProps {
   protected _modifier: ECClassModifier;
   protected _baseClass?: LazyLoadedECClass;
   protected _properties?: Map<string, Property>;
@@ -125,10 +122,7 @@ export abstract class ECClass
    * Searches, case-insensitive, for a local ECProperty with the name provided.
    * @param name
    */
-  public async getProperty(
-    name: string,
-    includeInherited: boolean = false
-  ): Promise<Property | undefined> {
+  public async getProperty(name: string, includeInherited: boolean = false): Promise<Property | undefined> {
     if (this._properties) {
       const upperKey = name.toUpperCase();
       const property = this._properties.get(upperKey);
@@ -146,10 +140,7 @@ export abstract class ECClass
    * Searches, case-insensitive, for a local ECProperty with the name provided.
    * @param name
    */
-  public getPropertySync(
-    name: string,
-    includeInherited: boolean = false
-  ): Property | undefined {
+  public getPropertySync(name: string, includeInherited: boolean = false): Property | undefined {
     if (this._properties) {
       const upperKey = name.toUpperCase();
       const property = this._properties.get(upperKey);
@@ -167,9 +158,7 @@ export abstract class ECClass
    * Searches the base class, if one exists, for the property with the name provided.
    * @param name The name of the inherited property to find.
    */
-  public async getInheritedProperty(
-    name: string
-  ): Promise<Property | undefined> {
+  public async getInheritedProperty(name: string): Promise<Property | undefined> {
     if (this.baseClass) {
       const baseClassObj = await this.baseClass;
       return baseClassObj.getProperty(name, true);
@@ -195,14 +184,8 @@ export abstract class ECClass
    * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
    * @throws ECObjectsStatus DuplicateProperty: thrown if a property with the same name already exists in the class.
    */
-  protected async createPrimitiveProperty(
-    name: string,
-    primitiveType: PrimitiveType
-  ): Promise<PrimitiveProperty>;
-  protected async createPrimitiveProperty(
-    name: string,
-    primitiveType: Enumeration
-  ): Promise<EnumerationProperty>;
+  protected async createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
+  protected async createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
   protected async createPrimitiveProperty(
     name: string,
     primitiveType?: string | PrimitiveType | Enumeration
@@ -214,15 +197,10 @@ export abstract class ECClass
       );
 
     const propType = await this.loadPrimitiveType(primitiveType, this.schema);
-    if (typeof propType === "number")
-      return this.addProperty(new PrimitiveProperty(this, name, propType));
+    if (typeof propType === "number") return this.addProperty(new PrimitiveProperty(this, name, propType));
 
     return this.addProperty(
-      new EnumerationProperty(
-        this,
-        name,
-        new DelayedPromiseWithProps(propType.key, async () => propType)
-      )
+      new EnumerationProperty(this, name, new DelayedPromiseWithProps(propType.key, async () => propType))
     );
   }
 
@@ -232,18 +210,9 @@ export abstract class ECClass
    * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
    * @throws ECObjectsStatus DuplicateProperty: thrown if a property with the same name already exists in the class.
    */
-  protected createPrimitivePropertySync(
-    name: string,
-    primitiveType: PrimitiveType
-  ): PrimitiveProperty;
-  protected createPrimitivePropertySync(
-    name: string,
-    primitiveType: Enumeration
-  ): EnumerationProperty;
-  protected createPrimitivePropertySync(
-    name: string,
-    primitiveType?: string | PrimitiveType | Enumeration
-  ): Property {
+  protected createPrimitivePropertySync(name: string, primitiveType: PrimitiveType): PrimitiveProperty;
+  protected createPrimitivePropertySync(name: string, primitiveType: Enumeration): EnumerationProperty;
+  protected createPrimitivePropertySync(name: string, primitiveType?: string | PrimitiveType | Enumeration): Property {
     if (this.getPropertySync(name))
       throw new ECObjectsError(
         ECObjectsStatus.DuplicateProperty,
@@ -251,15 +220,10 @@ export abstract class ECClass
       );
 
     const propType = this.loadPrimitiveTypeSync(primitiveType, this.schema);
-    if (typeof propType === "number")
-      return this.addProperty(new PrimitiveProperty(this, name, propType));
+    if (typeof propType === "number") return this.addProperty(new PrimitiveProperty(this, name, propType));
 
     return this.addProperty(
-      new EnumerationProperty(
-        this,
-        name,
-        new DelayedPromiseWithProps(propType.key, async () => propType)
-      )
+      new EnumerationProperty(this, name, new DelayedPromiseWithProps(propType.key, async () => propType))
     );
   }
 
@@ -287,15 +251,10 @@ export abstract class ECClass
       );
 
     const propType = await this.loadPrimitiveType(primitiveType, this.schema);
-    if (typeof propType === "number")
-      return this.addProperty(new PrimitiveArrayProperty(this, name, propType));
+    if (typeof propType === "number") return this.addProperty(new PrimitiveArrayProperty(this, name, propType));
 
     return this.addProperty(
-      new EnumerationArrayProperty(
-        this,
-        name,
-        new DelayedPromiseWithProps(propType.key, async () => propType)
-      )
+      new EnumerationArrayProperty(this, name, new DelayedPromiseWithProps(propType.key, async () => propType))
     );
   }
 
@@ -304,14 +263,8 @@ export abstract class ECClass
    * @param name The name of property to create.
    * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
    */
-  protected createPrimitiveArrayPropertySync(
-    name: string,
-    primitiveType: PrimitiveType
-  ): PrimitiveArrayProperty;
-  protected createPrimitiveArrayPropertySync(
-    name: string,
-    primitiveType: Enumeration
-  ): EnumerationArrayProperty;
+  protected createPrimitiveArrayPropertySync(name: string, primitiveType: PrimitiveType): PrimitiveArrayProperty;
+  protected createPrimitiveArrayPropertySync(name: string, primitiveType: Enumeration): EnumerationArrayProperty;
   protected createPrimitiveArrayPropertySync(
     name: string,
     primitiveType?: string | PrimitiveType | Enumeration
@@ -323,15 +276,10 @@ export abstract class ECClass
       );
 
     const propType = this.loadPrimitiveTypeSync(primitiveType, this.schema);
-    if (typeof propType === "number")
-      return this.addProperty(new PrimitiveArrayProperty(this, name, propType));
+    if (typeof propType === "number") return this.addProperty(new PrimitiveArrayProperty(this, name, propType));
 
     return this.addProperty(
-      new EnumerationArrayProperty(
-        this,
-        name,
-        new DelayedPromiseWithProps(propType.key, async () => propType)
-      )
+      new EnumerationArrayProperty(this, name, new DelayedPromiseWithProps(propType.key, async () => propType))
     );
   }
 
@@ -340,23 +288,14 @@ export abstract class ECClass
    * @param name The name of property to create.
    * @param structType The struct type of property to create.
    */
-  protected async createStructProperty(
-    name: string,
-    structType: string | StructClass
-  ): Promise<StructProperty> {
+  protected async createStructProperty(name: string, structType: string | StructClass): Promise<StructProperty> {
     if (await this.getProperty(name))
       throw new ECObjectsError(
         ECObjectsStatus.DuplicateProperty,
         `An ECProperty with the name ${name} already exists in the class ${this.name}.`
       );
 
-    return this.addProperty(
-      new StructProperty(
-        this,
-        name,
-        await this.loadStructType(structType, this.schema)
-      )
-    );
+    return this.addProperty(new StructProperty(this, name, await this.loadStructType(structType, this.schema)));
   }
 
   /**
@@ -364,23 +303,14 @@ export abstract class ECClass
    * @param name The name of property to create.
    * @param structType The struct type of property to create.
    */
-  protected createStructPropertySync(
-    name: string,
-    structType: string | StructClass
-  ): StructProperty {
+  protected createStructPropertySync(name: string, structType: string | StructClass): StructProperty {
     if (this.getPropertySync(name))
       throw new ECObjectsError(
         ECObjectsStatus.DuplicateProperty,
         `An ECProperty with the name ${name} already exists in the class ${this.name}.`
       );
 
-    return this.addProperty(
-      new StructProperty(
-        this,
-        name,
-        this.loadStructTypeSync(structType, this.schema)
-      )
-    );
+    return this.addProperty(new StructProperty(this, name, this.loadStructTypeSync(structType, this.schema)));
   }
 
   /**
@@ -398,13 +328,7 @@ export abstract class ECClass
         `An ECProperty with the name ${name} already exists in the class ${this.name}.`
       );
 
-    return this.addProperty(
-      new StructArrayProperty(
-        this,
-        name,
-        await this.loadStructType(structType, this.schema)
-      )
-    );
+    return this.addProperty(new StructArrayProperty(this, name, await this.loadStructType(structType, this.schema)));
   }
 
   /**
@@ -412,29 +336,17 @@ export abstract class ECClass
    * @param name
    * @param type
    */
-  protected createStructArrayPropertySync(
-    name: string,
-    structType: string | StructClass
-  ): StructArrayProperty {
+  protected createStructArrayPropertySync(name: string, structType: string | StructClass): StructArrayProperty {
     if (this.getPropertySync(name))
       throw new ECObjectsError(
         ECObjectsStatus.DuplicateProperty,
         `An ECProperty with the name ${name} already exists in the class ${this.name}.`
       );
 
-    return this.addProperty(
-      new StructArrayProperty(
-        this,
-        name,
-        this.loadStructTypeSync(structType, this.schema)
-      )
-    );
+    return this.addProperty(new StructArrayProperty(this, name, this.loadStructTypeSync(structType, this.schema)));
   }
 
-  protected async loadStructType(
-    structType: string | StructClass | undefined,
-    schema: Schema
-  ): Promise<StructClass> {
+  protected async loadStructType(structType: string | StructClass | undefined, schema: Schema): Promise<StructClass> {
     let correctType: StructClass | undefined;
     if (typeof structType === "string") {
       correctType = await schema.lookupItem<StructClass>(structType);
@@ -449,10 +361,7 @@ export abstract class ECClass
     return correctType;
   }
 
-  protected loadStructTypeSync(
-    structType: string | StructClass | undefined,
-    schema: Schema
-  ): StructClass {
+  protected loadStructTypeSync(structType: string | StructClass | undefined, schema: Schema): StructClass {
     let correctType: StructClass | undefined;
     if (typeof structType === "string") {
       correctType = schema.lookupItemSync<StructClass>(structType);
@@ -474,8 +383,7 @@ export abstract class ECClass
     if (primitiveType === undefined) return PrimitiveType.Integer;
 
     if (typeof primitiveType === "string") {
-      let resolvedType: PrimitiveType | Enumeration | undefined =
-        parsePrimitiveType(primitiveType);
+      let resolvedType: PrimitiveType | Enumeration | undefined = parsePrimitiveType(primitiveType);
       if (!resolvedType) {
         resolvedType = await schema.lookupItem<Enumeration>(primitiveType);
       }
@@ -487,10 +395,7 @@ export abstract class ECClass
         );
 
       // If resolvedType is a SchemaItem, make sure it is an Enumeration- if not, throw an error
-      if (
-        typeof resolvedType !== "number" &&
-        resolvedType.schemaItemType !== SchemaItemType.Enumeration
-      )
+      if (typeof resolvedType !== "number" && resolvedType.schemaItemType !== SchemaItemType.Enumeration)
         throw new ECObjectsError(
           ECObjectsStatus.InvalidType,
           `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`
@@ -509,8 +414,7 @@ export abstract class ECClass
     if (primitiveType === undefined) return PrimitiveType.Integer;
 
     if (typeof primitiveType === "string") {
-      let resolvedType: PrimitiveType | Enumeration | undefined =
-        parsePrimitiveType(primitiveType);
+      let resolvedType: PrimitiveType | Enumeration | undefined = parsePrimitiveType(primitiveType);
       if (!resolvedType) {
         resolvedType = schema.lookupItemSync<Enumeration>(primitiveType);
       }
@@ -532,26 +436,18 @@ export abstract class ECClass
    * @param standalone Serialization includes only this object (as opposed to the full schema).
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
    */
-  public override toJSON(
-    standalone: boolean = false,
-    includeSchemaVersion: boolean = false
-  ): ClassProps {
+  public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): ClassProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     const isMixin = SchemaItemType.Mixin === this.schemaItemType;
-    const isRelationship =
-      SchemaItemType.RelationshipClass === this.schemaItemType;
+    const isRelationship = SchemaItemType.RelationshipClass === this.schemaItemType;
     if (!isMixin && (ECClassModifier.None !== this.modifier || isRelationship))
       schemaJson.modifier = classModifierToString(this.modifier);
-    if (this.baseClass !== undefined)
-      schemaJson.baseClass = this.baseClass.fullName;
+    if (this.baseClass !== undefined) schemaJson.baseClass = this.baseClass.fullName;
     if (this._properties !== undefined && this._properties.size > 0)
-      schemaJson.properties = [...this.properties!].map((prop) =>
-        prop.toJSON()
-      );
+      schemaJson.properties = [...this.properties!].map((prop) => prop.toJSON());
 
     const customAttributes = serializeCustomAttributes(this.customAttributes);
-    if (customAttributes !== undefined)
-      schemaJson.customAttributes = customAttributes;
+    if (customAttributes !== undefined) schemaJson.customAttributes = customAttributes;
     return schemaJson as ClassProps;
   }
 
@@ -559,20 +455,12 @@ export abstract class ECClass
   public override async toXml(schemaXml: Document): Promise<Element> {
     const itemElement = await super.toXml(schemaXml);
 
-    if (undefined !== this.modifier)
-      itemElement.setAttribute(
-        "modifier",
-        classModifierToString(this.modifier)
-      );
+    if (undefined !== this.modifier) itemElement.setAttribute("modifier", classModifierToString(this.modifier));
 
     if (undefined !== this.baseClass) {
       const baseClass = await this.baseClass;
       const baseClassElement = schemaXml.createElement("BaseClass");
-      const baseClassName = XmlSerializationUtils.createXmlTypedName(
-        this.schema,
-        baseClass.schema,
-        baseClass.name
-      );
+      const baseClassName = XmlSerializationUtils.createXmlTypedName(this.schema, baseClass.schema, baseClass.name);
       baseClassElement.textContent = baseClassName;
       itemElement.appendChild(baseClassElement);
     }
@@ -587,12 +475,7 @@ export abstract class ECClass
     if (this._customAttributes) {
       const caContainerElement = schemaXml.createElement("ECCustomAttributes");
       for (const [name, attribute] of this._customAttributes) {
-        const caElement = await XmlSerializationUtils.writeCustomAttribute(
-          name,
-          attribute,
-          schemaXml,
-          this.schema
-        );
+        const caElement = await XmlSerializationUtils.writeCustomAttribute(name, attribute, schemaXml, this.schema);
         caContainerElement.appendChild(caElement);
       }
       itemElement.appendChild(caContainerElement);
@@ -615,28 +498,21 @@ export abstract class ECClass
     }
 
     if (undefined !== classProps.baseClass) {
-      const ecClassSchemaItemKey = this.schema.getSchemaItemKey(
-        classProps.baseClass
-      );
+      const ecClassSchemaItemKey = this.schema.getSchemaItemKey(classProps.baseClass);
       if (!ecClassSchemaItemKey)
         throw new ECObjectsError(
           ECObjectsStatus.InvalidECJson,
           `Unable to locate the baseClass ${classProps.baseClass}.`
         );
-      this._baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(
-        ecClassSchemaItemKey,
-        async () => {
-          const baseClass = await this.schema.lookupItem<ECClass>(
-            ecClassSchemaItemKey
+      this._baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(ecClassSchemaItemKey, async () => {
+        const baseClass = await this.schema.lookupItem<ECClass>(ecClassSchemaItemKey);
+        if (undefined === baseClass)
+          throw new ECObjectsError(
+            ECObjectsStatus.InvalidECJson,
+            `Unable to locate the baseClass ${classProps.baseClass}.`
           );
-          if (undefined === baseClass)
-            throw new ECObjectsError(
-              ECObjectsStatus.InvalidECJson,
-              `Unable to locate the baseClass ${classProps.baseClass}.`
-            );
-          return baseClass;
-        }
-      );
+        return baseClass;
+      });
     }
   }
 
@@ -645,8 +521,7 @@ export abstract class ECClass
   }
 
   protected addCustomAttribute(customAttribute: CustomAttribute) {
-    if (!this._customAttributes)
-      this._customAttributes = new Map<string, CustomAttribute>();
+    if (!this._customAttributes) this._customAttributes = new Map<string, CustomAttribute>();
 
     this._customAttributes.set(customAttribute.className, customAttribute);
   }
@@ -748,12 +623,7 @@ export abstract class ECClass
 
     const baseClass = this.getBaseClassSync();
     if (baseClass) {
-      ECClass.mergeProperties(
-        result,
-        existingValues,
-        baseClass.getPropertiesSync(resetBaseCaches),
-        false
-      );
+      ECClass.mergeProperties(result, existingValues, baseClass.getPropertiesSync(resetBaseCaches), false);
     }
 
     if (!this.properties) return;
@@ -769,11 +639,7 @@ export abstract class ECClass
   public getPropertiesSync(resetCache: boolean = false): Property[] {
     if (!this._mergedPropertyCache || resetCache) {
       this._mergedPropertyCache = [];
-      this.buildPropertyCacheSync(
-        this._mergedPropertyCache,
-        undefined,
-        resetCache
-      );
+      this.buildPropertyCacheSync(this._mergedPropertyCache, undefined, resetCache);
     }
 
     return this._mergedPropertyCache;
@@ -787,11 +653,7 @@ export abstract class ECClass
   public async getProperties(resetCache: boolean = false): Promise<Property[]> {
     if (!this._mergedPropertyCache || resetCache) {
       this._mergedPropertyCache = [];
-      await this.buildPropertyCache(
-        this._mergedPropertyCache,
-        undefined,
-        resetCache
-      );
+      await this.buildPropertyCache(this._mergedPropertyCache, undefined, resetCache);
     }
 
     return this._mergedPropertyCache;
@@ -809,8 +671,7 @@ export abstract class ECClass
    * Retrieve all custom attributes in the current class and its bases.
    */
   public getCustomAttributesSync(): CustomAttributeSet {
-    let customAttributes: Map<string, CustomAttribute> | undefined =
-      this._customAttributes;
+    let customAttributes: Map<string, CustomAttribute> | undefined = this._customAttributes;
     if (undefined === customAttributes) {
       customAttributes = new Map<string, CustomAttribute>();
     }
@@ -835,10 +696,7 @@ export abstract class ECClass
    * @param callback The function to call for each base class in the hierarchy.
    * @param arg An argument that will be passed as the second parameter to the callback function.
    */
-  public async traverseBaseClasses(
-    callback: (ecClass: ECClass, arg?: any) => boolean,
-    arg?: any
-  ): Promise<boolean> {
+  public async traverseBaseClasses(callback: (ecClass: ECClass, arg?: any) => boolean, arg?: any): Promise<boolean> {
     for await (const baseClass of this.getAllBaseClasses()) {
       if (callback(baseClass, arg)) return true;
     }
@@ -852,10 +710,7 @@ export abstract class ECClass
    * @param callback The function to call for each base class in the hierarchy.
    * @param arg An argument that will be passed as the second parameter to the callback function.
    */
-  public traverseBaseClassesSync(
-    callback: (ecClass: ECClass, arg?: any) => boolean,
-    arg?: any
-  ): boolean {
+  public traverseBaseClassesSync(callback: (ecClass: ECClass, arg?: any) => boolean, arg?: any): boolean {
     const baseClasses = this.getAllBaseClassesSync();
     if (!baseClasses) return false;
 
@@ -873,25 +728,16 @@ export abstract class ECClass
    */
   public async is(targetClass: string, schemaName: string): Promise<boolean>;
   public async is(targetClass: ECClass): Promise<boolean>;
-  public async is(
-    targetClass: ECClass | string,
-    schemaName?: string
-  ): Promise<boolean> {
+  public async is(targetClass: ECClass | string, schemaName?: string): Promise<boolean> {
     if (schemaName !== undefined) {
-      assert(
-        typeof targetClass === "string",
-        "Expected targetClass of type string because schemaName was specified"
-      );
+      assert(typeof targetClass === "string", "Expected targetClass of type string because schemaName was specified");
 
       const key = new SchemaItemKey(targetClass, new SchemaKey(schemaName));
       if (SchemaItem.equalByKey(this, key)) return true;
 
       return this.traverseBaseClasses(SchemaItem.equalByKey, key);
     } else {
-      assert(
-        ECClass.isECClass(targetClass),
-        "Expected targetClass to be of type ECClass"
-      );
+      assert(ECClass.isECClass(targetClass), "Expected targetClass to be of type ECClass");
 
       if (SchemaItem.equalByKey(this, targetClass)) return true;
 
@@ -960,9 +806,7 @@ export abstract class MutableStructClass extends StructClass {
  * @internal
  */
 export abstract class MutableClass extends ECClass {
-  public abstract override addCustomAttribute(
-    customAttribute: CustomAttribute
-  ): void;
+  public abstract override addCustomAttribute(customAttribute: CustomAttribute): void;
   public abstract override setModifier(modifier: ECClassModifier): void;
   public abstract override createPrimitiveProperty(
     name: string,
@@ -977,14 +821,8 @@ export abstract class MutableClass extends ECClass {
     primitiveType?: string | PrimitiveType | Enumeration
   ): Promise<Property>;
 
-  public abstract override createPrimitivePropertySync(
-    name: string,
-    primitiveType: PrimitiveType
-  ): PrimitiveProperty;
-  public abstract override createPrimitivePropertySync(
-    name: string,
-    primitiveType: Enumeration
-  ): EnumerationProperty;
+  public abstract override createPrimitivePropertySync(name: string, primitiveType: PrimitiveType): PrimitiveProperty;
+  public abstract override createPrimitivePropertySync(name: string, primitiveType: Enumeration): EnumerationProperty;
   public abstract override createPrimitivePropertySync(
     name: string,
     primitiveType?: string | PrimitiveType | Enumeration
@@ -1020,10 +858,7 @@ export abstract class MutableClass extends ECClass {
     name: string,
     structType: string | StructClass
   ): Promise<StructProperty>;
-  public abstract override createStructPropertySync(
-    name: string,
-    structType: string | StructClass
-  ): StructProperty;
+  public abstract override createStructPropertySync(name: string, structType: string | StructClass): StructProperty;
 
   public abstract override createStructArrayProperty(
     name: string,

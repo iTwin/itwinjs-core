@@ -39,16 +39,9 @@ export interface SyncTarget {
 /** Returns true if the target and observer are already synchronized.
  * @internal
  */
-export function isSynchronized(
-  target: SyncTarget,
-  observer: SyncObserver
-): boolean {
+export function isSynchronized(target: SyncTarget, observer: SyncObserver): boolean {
   const token = observer.syncToken;
-  return (
-    undefined !== token &&
-    token.target === target &&
-    token.syncKey === target.syncKey
-  );
+  return undefined !== token && token.target === target && token.syncKey === target.syncKey;
 }
 
 /** If the observer is already synchronized with the target, returns true.

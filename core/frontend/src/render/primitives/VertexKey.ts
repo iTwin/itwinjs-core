@@ -6,12 +6,7 @@
  * @module Rendering
  */
 
-import {
-  assert,
-  comparePossiblyUndefined,
-  compareWithTolerance,
-  IndexMap,
-} from "@itwin/core-bentley";
+import { assert, comparePossiblyUndefined, compareWithTolerance, IndexMap } from "@itwin/core-bentley";
 import { Point2d, Point3d, XYAndZ } from "@itwin/core-geometry";
 import { Feature, OctEncodedNormal } from "@itwin/core-common";
 
@@ -34,10 +29,7 @@ function comparePositions(p0: Point3d, p1: Point3d, tolerance: XYAndZ): number {
   return diff;
 }
 
-function compareFeatures(
-  f0: Feature | undefined,
-  f1: Feature | undefined
-): number {
+function compareFeatures(f0: Feature | undefined, f1: Feature | undefined): number {
   return comparePossiblyUndefined((lhs, rhs) => lhs.compare(rhs), f0, f1);
 }
 
@@ -64,13 +56,7 @@ export class VertexKey {
   }
 
   public static create(props: VertexKeyProps): VertexKey {
-    return new VertexKey(
-      props.position,
-      props.fillColor,
-      props.normal,
-      props.uvParam,
-      props.feature
-    );
+    return new VertexKey(props.position, props.fillColor, props.normal, props.uvParam, props.feature);
   }
 
   public equals(rhs: VertexKey, tolerance: XYAndZ): boolean {
@@ -83,8 +69,7 @@ export class VertexKey {
       if (this.normal.value !== rhs.normal.value) return false;
     }
 
-    if (0 !== comparePositions(this.position, rhs.position, tolerance))
-      return false;
+    if (0 !== comparePositions(this.position, rhs.position, tolerance)) return false;
 
     if (undefined !== this.uvParam) {
       assert(undefined !== rhs.uvParam);
@@ -111,8 +96,7 @@ export class VertexKey {
           if (0 === diff && undefined !== this.uvParam) {
             assert(undefined !== rhs.uvParam);
             diff = compareWithTolerance(this.uvParam.x, rhs.uvParam.x);
-            if (0 === diff)
-              diff = compareWithTolerance(this.uvParam.x, rhs.uvParam.y);
+            if (0 === diff) diff = compareWithTolerance(this.uvParam.x, rhs.uvParam.y);
           }
         }
       }
@@ -131,17 +115,11 @@ export class VertexMap extends IndexMap<VertexKey> {
     this._tolerance = tolerance;
   }
 
-  public insertKey(
-    props: VertexKeyProps,
-    onInsert?: (vk: VertexKey) => any
-  ): number {
+  public insertKey(props: VertexKeyProps, onInsert?: (vk: VertexKey) => any): number {
     return this.insert(VertexKey.create(props), onInsert);
   }
 
-  public arePositionsAlmostEqual(
-    p0: VertexKeyProps,
-    p1: VertexKeyProps
-  ): boolean {
+  public arePositionsAlmostEqual(p0: VertexKeyProps, p1: VertexKeyProps): boolean {
     return 0 === this.comparePositions(p0, p1);
   }
 

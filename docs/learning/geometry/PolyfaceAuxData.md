@@ -64,9 +64,7 @@ const auxChannels = [];
 
 /** Create a radial wave - start and return to zero  */
 for (let i = 0; i < polyface.data.point.length; i++) {
-  const angle =
-    (Angle.pi2Radians * polyface.data.point.distanceIndexToPoint(i, center)) /
-    radius;
+  const angle = (Angle.pi2Radians * polyface.data.point.distanceIndexToPoint(i, center)) / radius;
   const height = maxHeight * Math.sin(angle);
   const slope = Math.abs(Math.cos(angle));
 
@@ -107,38 +105,16 @@ We next create the AuxChannels. The channel names provideed in the [AuxChannel](
 
 ```ts
 auxChannels.push(
-  new AuxChannel(
-    radialDisplacementDataVector,
-    AuxChannelDataType.Vector,
-    "Radial Displacement",
-    "Radial: Time"
-  )
+  new AuxChannel(radialDisplacementDataVector, AuxChannelDataType.Vector, "Radial Displacement", "Radial: Time")
 );
-auxChannels.push(
-  new AuxChannel(
-    radialHeightDataVector,
-    AuxChannelDataType.Distance,
-    "Radial Height",
-    "Radial: Time"
-  )
-);
-auxChannels.push(
-  new AuxChannel(
-    radialSlopeDataVector,
-    AuxChannelDataType.Scalar,
-    "Radial Slope",
-    "Radial: Time"
-  )
-);
+auxChannels.push(new AuxChannel(radialHeightDataVector, AuxChannelDataType.Distance, "Radial Height", "Radial: Time"));
+auxChannels.push(new AuxChannel(radialSlopeDataVector, AuxChannelDataType.Scalar, "Radial Slope", "Radial: Time"));
 ```
 
 The final step is to create [PolyfaceAuxData]($geometry) and associate it to our base `Polyface'. A set of indices is required to map the channel data values into the facets. In our case, we have produced the channel data in parallel with the mesh points so that we can simply use point indices "polyface.data.pointIndex", but this is not required and alternate indexing could also be used. Not e that only a single index structure is supplied and shared by all channels and their data, therefore all channels data arrays must have same number of values and indexing.
 
 ```ts
-polyface.data.auxData = new PolyfaceAuxData(
-  auxChannels,
-  polyface.data.pointIndex
-);
+polyface.data.auxData = new PolyfaceAuxData(auxChannels, polyface.data.pointIndex);
 ```
 
 Run the example by entering "node test-apps/analysis-importer/lib/Main.js" in a command shell with CWD set to repository root. The output is "test-apps/analysis-importer/lib/output/AnalysisExample.bim".

@@ -41,10 +41,7 @@ export class ConcurrentQuery {
       });
     });
   }
-  public static resetConfig(
-    conn: IModelJsNative.ECDb | IModelJsNative.DgnDb,
-    config?: DbQueryConfig
-  ): DbQueryConfig {
+  public static resetConfig(conn: IModelJsNative.ECDb | IModelJsNative.DgnDb, config?: DbQueryConfig): DbQueryConfig {
     return conn.concurrentQueryResetConfig(config);
   }
   public static shutdown(conn: IModelJsNative.ECDb | IModelJsNative.DgnDb) {

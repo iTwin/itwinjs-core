@@ -30,17 +30,11 @@ export class Ray2d {
     return new Ray2d(origin.clone(), origin.vectorTo(target));
   }
   /** Create from (clones of) `origin` point and `direction` vector */
-  public static createOriginAndDirection(
-    origin: Point2d,
-    direction: Vector2d
-  ): Ray2d {
+  public static createOriginAndDirection(origin: Point2d, direction: Vector2d): Ray2d {
     return new Ray2d(origin.clone(), direction.clone());
   }
   /** Capture `origin` and `direction` as ray member variables. */
-  public static createOriginAndDirectionCapture(
-    origin: Point2d,
-    direction: Vector2d
-  ): Ray2d {
+  public static createOriginAndDirectionCapture(origin: Point2d, direction: Vector2d): Ray2d {
     return new Ray2d(origin, direction);
   }
   /** Get the (REFERENCE TO) the ray origin. */
@@ -56,10 +50,7 @@ export class Ray2d {
    *  Return a ray that is parallel at distance to the left, specified as fraction of the ray's direction vector.
    */
   public parallelRay(leftFraction: number): Ray2d {
-    return new Ray2d(
-      this._origin.addForwardLeft(0.0, leftFraction, this._direction),
-      this._direction
-    );
+    return new Ray2d(this._origin.addForwardLeft(0.0, leftFraction, this._direction), this._direction);
   }
   /** Return a ray with same origin, direction rotated 90 degrees counterclockwise */
   public ccwPerpendicularRay(): Ray2d {
@@ -71,10 +62,7 @@ export class Ray2d {
     return new Ray2d(this._origin, this._direction.rotate90CWXY());
   }
   /** Normalize the direction vector in place. */
-  public normalizeDirectionInPlace(
-    defaultX: number = 1,
-    defaultY: number = 0
-  ): boolean {
+  public normalizeDirectionInPlace(defaultX: number = 1, defaultY: number = 0): boolean {
     if (this._direction.normalize(this._direction)) {
       return true;
     } else {
@@ -91,12 +79,7 @@ export class Ray2d {
    *  Fraction and dHds passed as number[] to use by reference... Sticking to return of true and false in the case fraction is zero after
    *  a true safe divide
    */
-  public intersectUnboundedLine(
-    linePointA: Point2d,
-    linePointB: Point2d,
-    fraction: number[],
-    dHds: number[]
-  ): boolean {
+  public intersectUnboundedLine(linePointA: Point2d, linePointB: Point2d, fraction: number[], dHds: number[]): boolean {
     const lineDirection = linePointA.vectorTo(linePointB);
     const vector0 = linePointA.vectorTo(this._origin);
     const h0 = vector0.crossProduct(lineDirection);
@@ -114,9 +97,7 @@ export class Ray2d {
 
   /** return the ray fraction where point projects to the ray */
   public projectionFraction(point: Point2d): number {
-    return this._origin
-      .vectorTo(point)
-      .fractionOfProjectionToVector(this._direction);
+    return this._origin.vectorTo(point).fractionOfProjectionToVector(this._direction);
   }
 
   /** return the fraction of projection to the perpendicular ray */
@@ -158,8 +139,7 @@ export class ConvexPolygon2d {
 
   /** Create the hull. First try to use the points as given. */
   public static createHullIsValidCheck(points: Point2d[]) {
-    if (ConvexPolygon2d.isValidConvexHull(points))
-      return new ConvexPolygon2d(points);
+    if (ConvexPolygon2d.isValidConvexHull(points)) return new ConvexPolygon2d(points);
     else return new ConvexPolygon2d(ConvexPolygon2d.computeConvexHull(points));
   }
 
@@ -175,8 +155,7 @@ export class ConvexPolygon2d {
     for (let i = 0; i < n; i++) {
       const i1 = (i + 1) % n;
       const i2 = (i + 2) % n;
-      if (points[i].crossProductToPoints(points[i1], points[i2]) < 0.0)
-        return false;
+      if (points[i].crossProductToPoints(points[i1], points[i2]) < 0.0) return false;
     }
     return true;
   }
@@ -225,8 +204,7 @@ export class ConvexPolygon2d {
     const n = this._hullPoints.length;
     if (n >= 3) {
       const hullPoint0 = this._hullPoints[0];
-      let edgeA: Vector2d | undefined =
-        this._hullPoints[n - 1].vectorTo(hullPoint0);
+      let edgeA: Vector2d | undefined = this._hullPoints[n - 1].vectorTo(hullPoint0);
       edgeA = edgeA.normalize();
       if (edgeA === undefined) {
         return false;
@@ -237,20 +215,14 @@ export class ConvexPolygon2d {
       let perpB: Vector2d;
       for (let i = 0; i < n; i++) {
         const j = i + 1;
-        edgeB = this._hullPoints[i].vectorTo(
-          j < n ? this._hullPoints[j] : hullPoint0
-        );
+        edgeB = this._hullPoints[i].vectorTo(j < n ? this._hullPoints[j] : hullPoint0);
         edgeB = edgeB.normalize();
         if (edgeB === undefined) {
           return false;
         }
 
         perpB = edgeB.rotate90CWXY();
-        const offsetBisector = Vector2d.createOffsetBisector(
-          perpA,
-          perpB,
-          distance
-        );
+        const offsetBisector = Vector2d.createOffsetBisector(perpA, perpB, distance);
         if (offsetBisector === undefined) {
           return false;
         }
@@ -291,8 +263,7 @@ export class ConvexPolygon2d {
       } else {
         // ray is parallel to the edge.
         // Any single point out classifies it all . ..
-        if (xy0.crossProductToPoints(xy1, ray.origin) < 0.0)
-          return Range1d.createNull();
+        if (xy0.crossProductToPoints(xy1, ray.origin) < 0.0) return Range1d.createNull();
       }
 
       // xy1 is reassigned with each new loop
@@ -307,16 +278,14 @@ export class ConvexPolygon2d {
   /** Return the range of (fractional) ray positions for projections of all points from the arrays. */
   public rangeAlongRay(ray: Ray2d): Range1d {
     const range = Range1d.createNull();
-    for (const xy1 of this._hullPoints)
-      range.extendX(ray.projectionFraction(xy1));
+    for (const xy1 of this._hullPoints) range.extendX(ray.projectionFraction(xy1));
     return range;
   }
 
   /** Return the range of (fractional) ray positions for projections of all points from the arrays. */
   public rangePerpendicularToRay(ray: Ray2d): Range1d {
     const range = Range1d.createNull();
-    for (const xy1 of this._hullPoints)
-      range.extendX(ray.perpendicularProjectionFraction(xy1));
+    for (const xy1 of this._hullPoints) range.extendX(ray.perpendicularProjectionFraction(xy1));
     return range;
   }
 
@@ -337,10 +306,7 @@ export class ConvexPolygon2d {
     for (let i = 2; i < n; i++) {
       const candidate = xy1[i];
       let top = hull.length - 1;
-      while (
-        top > 0 &&
-        hull[top - 1].crossProductToPoints(hull[top], candidate) <= 0.0
-      ) {
+      while (top > 0 && hull[top - 1].crossProductToPoints(hull[top], candidate) <= 0.0) {
         top--;
         hull.pop();
       }
@@ -354,10 +320,7 @@ export class ConvexPolygon2d {
     for (let i = n - 2; i-- > 0; ) {
       const candidate = xy1[i];
       let top = hull.length - 1;
-      while (
-        top > i0 &&
-        hull[top - 1].crossProductToPoints(hull[top], candidate) <= 0.0
-      ) {
+      while (top > i0 && hull[top - 1].crossProductToPoints(hull[top], candidate) <= 0.0) {
         top--;
         hull.pop();
       }

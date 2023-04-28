@@ -23,14 +23,7 @@ export class NodeXYZUV {
   private _u: number;
   private _v: number;
 
-  private constructor(
-    node: HalfEdge,
-    x: number,
-    y: number,
-    z: number,
-    u: number,
-    v: number
-  ) {
+  private constructor(node: HalfEdge, x: number, y: number, z: number, u: number, v: number) {
     this._x = x;
     this._y = y;
     this._z = z;
@@ -41,14 +34,7 @@ export class NodeXYZUV {
   /** Set all content directly from args.
    * @returns `this` reference
    */
-  public set(
-    node: HalfEdge,
-    x: number,
-    y: number,
-    z: number,
-    u: number,
-    v: number
-  ): NodeXYZUV {
+  public set(node: HalfEdge, x: number, y: number, z: number, u: number, v: number): NodeXYZUV {
     this._x = x;
     this._y = y;
     this._z = z;
@@ -70,35 +56,19 @@ export class NodeXYZUV {
    * * x,y,z at ray origin
    * * u,v as dotXY and crossXY for the ray direction with x,y distances from the ray origin.
    */
-  public static createNodeAndRayOrigin(
-    node: HalfEdge,
-    ray: Ray3d,
-    result?: NodeXYZUV
-  ): NodeXYZUV {
+  public static createNodeAndRayOrigin(node: HalfEdge, ray: Ray3d, result?: NodeXYZUV): NodeXYZUV {
     const x = node.x;
     const y = node.y;
     const z = node.z;
     const dx = x - ray.origin.x;
     const dy = y - ray.origin.y;
     const u = Geometry.dotProductXYXY(dx, dy, ray.direction.x, ray.direction.y);
-    const v = Geometry.crossProductXYXY(
-      ray.direction.x,
-      ray.direction.y,
-      dx,
-      dy
-    );
+    const v = Geometry.crossProductXYXY(ray.direction.x, ray.direction.y, dx, dy);
     if (result) return result.set(node, x, y, z, u, v);
     return new NodeXYZUV(node, x, y, z, u, v);
   }
   /** Create a `NodeXYZUV` with explicit node, xyz, uv */
-  public static create(
-    node: HalfEdge,
-    x: number = 0,
-    y: number = 0,
-    z: number = 0,
-    u: number = 0,
-    v: number = 0
-  ) {
+  public static create(node: HalfEdge, x: number = 0, y: number = 0, z: number = 0, u: number = 0, v: number = 0) {
     return new NodeXYZUV(node, x, y, z, u, v);
   }
 

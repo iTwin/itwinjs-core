@@ -63,10 +63,7 @@ export class Uniform {
  * The function is responsible for setting the value of the uniform.
  * @internal
  */
-export type BindProgramUniform = (
-  uniform: UniformHandle,
-  params: ShaderProgramParams
-) => void;
+export type BindProgramUniform = (uniform: UniformHandle, params: ShaderProgramParams) => void;
 
 /**
  * Describes the location of a uniform variable within a shader program, the value of which does not change while the program is active.
@@ -93,10 +90,7 @@ export class ProgramUniform extends Uniform {
  * The function is responsible for setting the value of the uniform.
  * @internal
  */
-export type BindGraphicUniform = (
-  uniform: UniformHandle,
-  params: DrawParams
-) => void;
+export type BindGraphicUniform = (uniform: UniformHandle, params: DrawParams) => void;
 
 /**
  * Describes the location of a uniform variable within a shader program, the value of which is dependent upon the graphic primitive
@@ -156,8 +150,7 @@ export class ShaderProgram implements WebGLDisposable {
     fragDescription: string
   ) {
     this.description = description;
-    this.outputsToPick =
-      description.includes("Overrides") || description.includes("Pick");
+    this.outputsToPick = description.includes("Overrides") || description.includes("Pick");
     this._fragDescription = fragDescription;
     this.vertSource = vertSource;
     this.fragSource = fragSource;
@@ -196,20 +189,14 @@ export class ShaderProgram implements WebGLDisposable {
     const shader = gl.createShader(type);
     if (null === shader) return undefined;
 
-    const src =
-      GL.ShaderType.Vertex === type ? this.vertSource : this.fragSource;
+    const src = GL.ShaderType.Vertex === type ? this.vertSource : this.fragSource;
     gl.shaderSource(shader, src);
     gl.compileShader(shader);
-    const succeeded = gl.getShaderParameter(
-      shader,
-      GL.ShaderParameter.CompileStatus
-    ) as boolean;
+    const succeeded = gl.getShaderParameter(shader, GL.ShaderParameter.CompileStatus) as boolean;
     if (!succeeded) {
       const compileLog = `${
         GL.ShaderType.Vertex === type ? "Vertex" : "Fragment"
-      } shader failed to compile. Errors: ${gl.getShaderInfoLog(
-        shader
-      )} Program description: ${this.description}`;
+      } shader failed to compile. Errors: ${gl.getShaderInfoLog(shader)} Program description: ${this.description}`;
       throw new Error(compileLog);
     }
 
@@ -244,10 +231,7 @@ export class ShaderProgram implements WebGLDisposable {
     const linkLog = gl.getProgramInfoLog(this._glProgram);
     gl.validateProgram(this._glProgram);
 
-    const succeeded = gl.getProgramParameter(
-      this._glProgram,
-      GL.ProgramParameter.LinkStatus
-    ) as boolean;
+    const succeeded = gl.getProgramParameter(this._glProgram, GL.ProgramParameter.LinkStatus) as boolean;
     if (!succeeded) {
       const validateLog = gl.getProgramInfoLog(this._glProgram);
       const msg = `Shader program failed to link. Link errors: ${linkLog} Validation errors: ${validateLog} Program description: ${this.description}`;
@@ -258,11 +242,7 @@ export class ShaderProgram implements WebGLDisposable {
   }
 
   public compile(forUse: boolean = false): CompileStatus {
-    if (
-      System.instance.options.debugShaders &&
-      forUse &&
-      this._status === CompileStatus.Success
-    )
+    if (System.instance.options.debugShaders && forUse && this._status === CompileStatus.Success)
       this.setDebugShaderUsage();
 
     switch (this._status) {
@@ -291,15 +271,10 @@ export class ShaderProgram implements WebGLDisposable {
       )
         this._status = CompileStatus.Success;
 
-    if (
-      System.instance.options.debugShaders &&
-      forUse &&
-      this._status === CompileStatus.Success
-    )
+    if (System.instance.options.debugShaders && forUse && this._status === CompileStatus.Success)
       this.setDebugShaderUsage();
 
-    if (true !== System.instance.options.preserveShaderSourceCode)
-      this.vertSource = this.fragSource = "";
+    if (true !== System.instance.options.preserveShaderSourceCode) this.vertSource = this.fragSource = "";
 
     return this._status;
   }
@@ -362,12 +337,7 @@ export class ShaderProgram implements WebGLDisposable {
     if (this._fragHNdx >= 0) shaderFiles[this._fragHNdx].isUsed = true;
   }
 
-  private saveShaderCode(
-    isVS: boolean,
-    desc: string,
-    src: string,
-    shader: WebGLShader
-  ) {
+  private saveShaderCode(isVS: boolean, desc: string, src: string, shader: WebGLShader) {
     // save glsl and hlsl (from Angle and fixed up) in DebugShaderFile
     if (!System.instance.options.debugShaders) return;
 
@@ -384,9 +354,7 @@ export class ShaderProgram implements WebGLDisposable {
 
     sname += isVS ? "_VS" : "_FS";
     const fname = `${sname}.glsl`;
-    let dsfNdx = shaderFiles.push(
-      new DebugShaderFile(fname, src, isVS, true, false)
-    );
+    let dsfNdx = shaderFiles.push(new DebugShaderFile(fname, src, isVS, true, false));
     if (isVS) this._vertGNdx = dsfNdx - 1;
     else this._fragGNdx = dsfNdx - 1;
 
@@ -408,16 +376,7 @@ export class ShaderProgram implements WebGLDisposable {
     let haveGLPointCoord = false;
     let haveGLFragCoord = false;
     let haveGLFragColorOnly = false; // for only 1 output
-    const haveGLFragColor = [
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-    ];
+    const haveGLFragColor = [false, false, false, false, false, false, false, false];
     const attrs: string[] = new Array<string>();
     const varyings: string[] = new Array<string>();
     const lines = srcH.split("\n");
@@ -434,10 +393,7 @@ export class ShaderProgram implements WebGLDisposable {
         // look for lines that need editing
         if (line.indexOf("Varyings") >= 0) {
           // save off varyings in either case
-          while (
-            ndx + 1 < lines.length &&
-            lines[ndx + 1].indexOf("static") >= 0
-          ) {
+          while (ndx + 1 < lines.length && lines[ndx + 1].indexOf("static") >= 0) {
             ++ndx;
             line = lines[ndx].substring(6).trimStart();
             varyings.push(line.substring(0, line.indexOf("=")));
@@ -447,10 +403,7 @@ export class ShaderProgram implements WebGLDisposable {
         if (isVS) {
           if (line.indexOf("Attributes") >= 0) {
             // save off attributes
-            while (
-              ndx + 1 < lines.length &&
-              lines[ndx + 1].indexOf("static") >= 0
-            ) {
+            while (ndx + 1 < lines.length && lines[ndx + 1].indexOf("static") >= 0) {
               ++ndx;
               line = lines[ndx].substring(6).trimStart();
               attrs.push(line.substring(0, line.indexOf("=")));
@@ -504,11 +457,7 @@ export class ShaderProgram implements WebGLDisposable {
             }
 
             ++ndx;
-            lines.splice(
-              ndx,
-              0,
-              "  };\nVS_OUTPUT generateOutput(VS_INPUT input) {\n  VS_OUTPUT output;"
-            );
+            lines.splice(ndx, 0, "  };\nVS_OUTPUT generateOutput(VS_INPUT input) {\n  VS_OUTPUT output;");
             if (haveGLpos) {
               ++ndx;
               lines.splice(ndx, 0, "  output._v_position = gl_Position;");
@@ -627,11 +576,7 @@ export class ShaderProgram implements WebGLDisposable {
               for (cNdx = 0; cNdx < haveGLFragColor.length; ++cNdx) {
                 if (haveGLFragColor[cNdx]) {
                   ++ndx;
-                  lines.splice(
-                    ndx,
-                    0,
-                    `  float4 out_FragColor${cNdx} : SV_TARGET${cNdx};`
-                  );
+                  lines.splice(ndx, 0, `  float4 out_FragColor${cNdx} : SV_TARGET${cNdx};`);
                 }
               }
             }
@@ -642,11 +587,7 @@ export class ShaderProgram implements WebGLDisposable {
             }
 
             ++ndx;
-            lines.splice(
-              ndx,
-              0,
-              "  };\nPS_OUTPUT generateOutput () {\n  PS_OUTPUT output;"
-            );
+            lines.splice(ndx, 0, "  };\nPS_OUTPUT generateOutput () {\n  PS_OUTPUT output;");
             cNdx = 0;
             while (cNdx < numTargets) {
               ++ndx;
@@ -661,11 +602,7 @@ export class ShaderProgram implements WebGLDisposable {
               for (cNdx = 0; cNdx < haveGLFragColor.length; ++cNdx) {
                 if (haveGLFragColor[cNdx]) {
                   ++ndx;
-                  lines.splice(
-                    ndx,
-                    0,
-                    `  output.out_FragColor${cNdx} = out_FragColor${cNdx};`
-                  );
+                  lines.splice(ndx, 0, `  output.out_FragColor${cNdx} = out_FragColor${cNdx};`);
                 }
               }
             }
@@ -689,9 +626,7 @@ export class ShaderProgram implements WebGLDisposable {
     }
 
     const srcH2 = lines.join("\n");
-    dsfNdx = shaderFiles.push(
-      new DebugShaderFile(fnameH, srcH2, isVS, false, false)
-    );
+    dsfNdx = shaderFiles.push(new DebugShaderFile(fnameH, srcH2, isVS, false, false));
     if (isVS) this._vertHNdx = dsfNdx - 1;
     else this._fragHNdx = dsfNdx - 1;
   }
@@ -706,11 +641,7 @@ export class ShaderProgramExecutor {
   private _program?: ShaderProgram;
   private static _params?: ShaderProgramParams;
 
-  public constructor(
-    target: Target,
-    pass: RenderPass,
-    program?: ShaderProgram
-  ) {
+  public constructor(target: Target, pass: RenderPass, program?: ShaderProgram) {
     this.params.init(target, pass);
     this.changeProgram(program);
   }
@@ -744,8 +675,7 @@ export class ShaderProgramExecutor {
     return this.params.renderPass;
   }
   public get params() {
-    if (undefined === ShaderProgramExecutor._params)
-      ShaderProgramExecutor._params = new ShaderProgramParams();
+    if (undefined === ShaderProgramExecutor._params) ShaderProgramExecutor._params = new ShaderProgramParams();
 
     return ShaderProgramExecutor._params;
   }
@@ -759,9 +689,7 @@ export class ShaderProgramExecutor {
   public drawInterrupt(params: DrawParams) {
     assert(params.target === this.params.target);
 
-    const tech = params.target.techniques.getTechnique(
-      params.geometry.techniqueId
-    );
+    const tech = params.target.techniques.getTechnique(params.geometry.techniqueId);
     const program = tech.getShader(TechniqueFlags.defaults);
     if (this.setProgram(program)) {
       this.draw(params);

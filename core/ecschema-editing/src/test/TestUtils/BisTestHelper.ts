@@ -27,8 +27,7 @@ const coreCustomAttributesSchema = {
   items: {
     Deprecated: {
       appliesTo: "Any",
-      description:
-        "Identifies a schema or item within a schema as deprecated.  Deprecated things should not be used.",
+      description: "Identifies a schema or item within a schema as deprecated.  Deprecated things should not be used.",
       modifier: "sealed",
       schemaItemType: "CustomAttributeClass",
     },

@@ -7,21 +7,9 @@
  * @module WebGL
  */
 
-import {
-  assert,
-  dispose,
-  disposeArray,
-  IDisposable,
-  UintArray,
-} from "@itwin/core-bentley";
+import { assert, dispose, disposeArray, IDisposable, UintArray } from "@itwin/core-bentley";
 import { ColorDef, Quantization, RenderTexture } from "@itwin/core-common";
-import {
-  Matrix4d,
-  Range2d,
-  Range3d,
-  Transform,
-  Vector2d,
-} from "@itwin/core-geometry";
+import { Matrix4d, Range2d, Range3d, Transform, Vector2d } from "@itwin/core-geometry";
 import { GraphicBranch } from "../GraphicBranch";
 import { RealityMeshGraphicParams } from "../RealityMeshGraphicParams";
 import { RealityMeshParams } from "../RealityMeshParams";
@@ -29,12 +17,7 @@ import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { RenderPlanarClassifier } from "../RenderPlanarClassifier";
 import { RenderSystem, TerrainTexture } from "../RenderSystem";
-import {
-  BufferHandle,
-  BufferParameters,
-  QBufferHandle2d,
-  QBufferHandle3d,
-} from "./AttributeBuffers";
+import { BufferHandle, BufferParameters, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers";
 import { AttributeMap } from "./AttributeMap";
 import { IndexedGeometry, IndexedGeometryParams } from "./CachedGeometry";
 import { GL } from "./GL";
@@ -60,11 +43,7 @@ class ProjectedTexture {
     this.classifier = classifier as PlanarClassifier;
   }
   public clone(targetRectangle: Range2d) {
-    return new ProjectedTexture(
-      this.classifier,
-      this.meshParams,
-      targetRectangle.clone()
-    );
+    return new ProjectedTexture(this.classifier, this.meshParams, targetRectangle.clone());
   }
 }
 type TerrainOrProjectedTexture = TerrainTexture | ProjectedTexture;
@@ -99,9 +78,7 @@ class RealityTextureParam implements IDisposable {
       : undefined;
   }
   public getTerrainMatrix(): Matrix4 | undefined {
-    return this._projectedTextureOrMatrix instanceof Matrix4
-      ? this._projectedTextureOrMatrix
-      : undefined;
+    return this._projectedTextureOrMatrix instanceof Matrix4 ? this._projectedTextureOrMatrix : undefined;
   }
 
   public getParams(result: Matrix4): Matrix4 {
@@ -124,23 +101,14 @@ class RealityTextureParam implements IDisposable {
       const points = [];
       const meshParams = projectedTexture.meshParams;
       // Calculate range in the tiles local coordinates.
-      const low = meshParams.tileRectangle.worldToLocal(
-        projectedTexture.targetRectangle.low,
-        scratchRange2d.low
-      )!;
-      const high = meshParams.tileRectangle.worldToLocal(
-        projectedTexture.targetRectangle.high,
-        scratchRange2d.high
-      )!;
+      const low = meshParams.tileRectangle.worldToLocal(projectedTexture.targetRectangle.low, scratchRange2d.low)!;
+      const high = meshParams.tileRectangle.worldToLocal(projectedTexture.targetRectangle.high, scratchRange2d.high)!;
       points.push(meshParams.projection.getGlobalPoint(low.x, low.y, 0));
       points.push(meshParams.projection.getGlobalPoint(high.x, low.y, 0));
       points.push(meshParams.projection.getGlobalPoint(high.x, high.y, 0));
       points.push(meshParams.projection.getGlobalPoint(low.x, high.y, 0));
       for (let i = 0, j = 8; i < 4; i++) {
-        const projectedPoint =
-          projectedTexture.classifier.projectionMatrix.multiplyPoint3dQuietNormalize(
-            points[i]
-          );
+        const projectedPoint = projectedTexture.classifier.projectionMatrix.multiplyPoint3dQuietNormalize(points[i]);
         result.data[j++] = projectedPoint.x;
         result.data[j++] = projectedPoint.y;
       }
@@ -178,10 +146,7 @@ export class RealityTextureParams implements IDisposable {
       if (texture instanceof TerrainTexture) {
         const terrainTexture = texture;
         const matrix = new Matrix4(); // Published as Mat4.
-        assert(
-          terrainTexture.texture !== undefined,
-          "Texture not defined in TerrainTextureParams constructor"
-        );
+        assert(terrainTexture.texture !== undefined, "Texture not defined in TerrainTextureParams constructor");
         matrix.data[0] = terrainTexture.translate.x;
         matrix.data[1] = terrainTexture.translate.y;
         matrix.data[2] = terrainTexture.scale.x;
@@ -198,17 +163,10 @@ export class RealityTextureParams implements IDisposable {
         }
         matrix.data[8] = 1.0 - terrainTexture.transparency;
         matrix.data[9] = terrainTexture.featureId;
-        textureParams.push(
-          new RealityTextureParam(terrainTexture.texture, matrix)
-        );
+        textureParams.push(new RealityTextureParam(terrainTexture.texture, matrix));
       } else {
         const classifier = texture.classifier;
-        textureParams.push(
-          new RealityTextureParam(
-            classifier.getOrCreateClassifierTexture(),
-            texture
-          )
-        );
+        textureParams.push(new RealityTextureParam(classifier.getOrCreateClassifierTexture(), texture));
       }
     }
 
@@ -247,43 +205,19 @@ export class RealityMeshGeometryParams extends IndexedGeometryParams {
   ) {
     super(positions, indices, numIndices);
     this.numBytesPerIndex = numBytesPerIndex;
-    let attrParams = AttributeMap.findAttribute(
-      "a_uvParam",
-      TechniqueId.RealityMesh,
-      false
-    );
+    let attrParams = AttributeMap.findAttribute("a_uvParam", TechniqueId.RealityMesh, false);
     assert(attrParams !== undefined);
     this.buffers.addBuffer(uvParams, [
-      BufferParameters.create(
-        attrParams.location,
-        2,
-        GL.DataType.UnsignedShort,
-        false,
-        0,
-        0,
-        false
-      ),
+      BufferParameters.create(attrParams.location, 2, GL.DataType.UnsignedShort, false, 0, 0, false),
     ]);
     this.uvParams = uvParams;
 
     if (undefined !== normals) {
-      attrParams = AttributeMap.findAttribute(
-        "a_norm",
-        TechniqueId.RealityMesh,
-        false
-      );
+      attrParams = AttributeMap.findAttribute("a_norm", TechniqueId.RealityMesh, false);
       assert(attrParams !== undefined);
       if (normals.bytesUsed > 0)
         this.buffers.addBuffer(normals, [
-          BufferParameters.create(
-            attrParams.location,
-            2,
-            GL.DataType.UnsignedByte,
-            false,
-            0,
-            0,
-            false
-          ),
+          BufferParameters.create(attrParams.location, 2, GL.DataType.UnsignedByte, false, 0, 0, false),
         ]);
       this.normals = normals;
     }
@@ -297,47 +231,22 @@ export class RealityMeshGeometryParams extends IndexedGeometryParams {
     normBuf: BufferHandle | undefined,
     featureID: number
   ) {
-    const indBuf = BufferHandle.createBuffer(
-      GL.Buffer.Target.ElementArrayBuffer,
-      indices
-    );
+    const indBuf = BufferHandle.createBuffer(GL.Buffer.Target.ElementArrayBuffer, indices);
 
     if (undefined === indBuf) return undefined;
 
     const bytesPerIndex = indices.BYTES_PER_ELEMENT;
     assert(1 === bytesPerIndex || 2 === bytesPerIndex || 4 === bytesPerIndex);
-    return new RealityMeshGeometryParams(
-      posBuf,
-      normBuf,
-      uvParamBuf,
-      indBuf,
-      indices.length,
-      bytesPerIndex,
-      featureID
-    );
+    return new RealityMeshGeometryParams(posBuf, normBuf, uvParamBuf, indBuf, indices.length, bytesPerIndex, featureID);
   }
 
   public static fromRealityMesh(params: RealityMeshParams) {
-    const posBuf = QBufferHandle3d.create(
-      params.positions.params,
-      params.positions.points
-    );
-    const uvParamBuf = QBufferHandle2d.create(
-      params.uvs.params,
-      params.uvs.points
-    );
-    const normalBuf = params.normals
-      ? BufferHandle.createArrayBuffer(params.normals)
-      : undefined;
+    const posBuf = QBufferHandle3d.create(params.positions.params, params.positions.points);
+    const uvParamBuf = QBufferHandle2d.create(params.uvs.params, params.uvs.points);
+    const normalBuf = params.normals ? BufferHandle.createArrayBuffer(params.normals) : undefined;
     return undefined === posBuf || undefined === uvParamBuf
       ? undefined
-      : this.createFromBuffers(
-          posBuf,
-          uvParamBuf,
-          params.indices,
-          normalBuf,
-          params.featureID ?? 0
-        );
+      : this.createFromBuffers(posBuf, uvParamBuf, params.indices, normalBuf, params.featureID ?? 0);
   }
 
   public override get isDisposed(): boolean {
@@ -359,10 +268,7 @@ export class RealityMeshGeometryParams extends IndexedGeometryParams {
 }
 
 /** @internal */
-export class RealityMeshGeometry
-  extends IndexedGeometry
-  implements IDisposable, RenderMemory.Consumer
-{
+export class RealityMeshGeometry extends IndexedGeometry implements IDisposable, RenderMemory.Consumer {
   public readonly hasTextures: boolean;
   public override get asRealityMesh(): RealityMeshGeometry | undefined {
     return this;
@@ -413,8 +319,7 @@ export class RealityMeshGeometry
     this._isTerrain = props.isTerrain;
     this._disableTextureDisposal = props.disableTextureDisposal;
     this.hasTextures =
-      undefined !== this.textureParams &&
-      this.textureParams.params.some((x) => undefined !== x.texture);
+      undefined !== this.textureParams && this.textureParams.params.some((x) => undefined !== x.texture);
 
     const bytesPerIndex = props.realityMeshParams.numBytesPerIndex;
     this._indexType =
@@ -468,9 +373,7 @@ export class RealityMeshGeometry
 
     return new RealityMeshGeometry({
       realityMeshParams: params,
-      textureParams: texture
-        ? RealityTextureParams.create([texture])
-        : undefined,
+      textureParams: texture ? RealityTextureParams.create([texture]) : undefined,
       baseIsTransparent: false,
       isTerrain: false,
       disableTextureDisposal,
@@ -496,13 +399,7 @@ export class RealityMeshGeometry
     const meshes = [];
     const textures = params.textures ?? [];
     const realityMesh = params.realityMesh as RealityMeshGeometry;
-    const {
-      baseColor,
-      baseTransparent,
-      featureTable,
-      tileId,
-      layerClassifiers,
-    } = params;
+    const { baseColor, baseTransparent, featureTable, tileId, layerClassifiers } = params;
 
     const texturesPerMesh = System.instance.maxRealityImageryLayers;
     const layers = new Array<(TerrainTexture | ProjectedTexture)[]>();
@@ -517,16 +414,10 @@ export class RealityMeshGeometry
     }
     params.layerClassifiers?.forEach(
       (layerClassifier, layerIndex) =>
-        (layers[layerIndex] = [
-          new ProjectedTexture(layerClassifier, params, params.tileRectangle),
-        ])
+        (layers[layerIndex] = [new ProjectedTexture(layerClassifier, params, params.tileRectangle)])
     );
 
-    if (
-      layers.length < 2 &&
-      !layerClassifiers?.size &&
-      textures.length < texturesPerMesh
-    ) {
+    if (layers.length < 2 && !layerClassifiers?.size && textures.length < texturesPerMesh) {
       // If only there is not more than one layer then we can group all of the textures into a single draw call.
       meshes.push(
         new RealityMeshGeometry({
@@ -546,9 +437,7 @@ export class RealityMeshGeometry
       for (const primaryTexture of primaryLayer) {
         const targetRectangle = primaryTexture.targetRectangle;
         const overlapMinimum =
-          1.0e-5 *
-          (targetRectangle.high.x - targetRectangle.low.x) *
-          (targetRectangle.high.y - targetRectangle.low.y);
+          1.0e-5 * (targetRectangle.high.x - targetRectangle.low.x) * (targetRectangle.high.y - targetRectangle.low.y);
         let layerTextures = [primaryTexture];
         for (const secondaryLayer of layers) {
           if (!secondaryLayer) continue;
@@ -557,41 +446,20 @@ export class RealityMeshGeometry
               layerTextures.push(secondaryTexture.clone(targetRectangle));
             } else {
               const secondaryRectangle = secondaryTexture.targetRectangle;
-              const overlap = targetRectangle.intersect(
-                secondaryRectangle,
-                scratchOverlapRange
-              );
+              const overlap = targetRectangle.intersect(secondaryRectangle, scratchOverlapRange);
               if (
                 !overlap.isNull &&
-                (overlap.high.x - overlap.low.x) *
-                  (overlap.high.y - overlap.low.y) >
-                  overlapMinimum
+                (overlap.high.x - overlap.low.x) * (overlap.high.y - overlap.low.y) > overlapMinimum
               ) {
-                const textureRange = Range2d.createXYXY(
-                  overlap.low.x,
-                  overlap.low.y,
-                  overlap.high.x,
-                  overlap.high.y
-                );
-                secondaryRectangle.worldToLocal(
-                  textureRange.low,
-                  textureRange.low
-                );
-                secondaryRectangle.worldToLocal(
-                  textureRange.high,
-                  textureRange.high
-                );
+                const textureRange = Range2d.createXYXY(overlap.low.x, overlap.low.y, overlap.high.x, overlap.high.y);
+                secondaryRectangle.worldToLocal(textureRange.low, textureRange.low);
+                secondaryRectangle.worldToLocal(textureRange.high, textureRange.high);
 
                 if (secondaryTexture.clipRectangle)
-                  textureRange.intersect(
-                    secondaryTexture.clipRectangle,
-                    textureRange
-                  );
+                  textureRange.intersect(secondaryTexture.clipRectangle, textureRange);
 
                 if (!textureRange.isNull && textureRange) {
-                  layerTextures.push(
-                    secondaryTexture.cloneWithClip(textureRange)
-                  );
+                  layerTextures.push(secondaryTexture.cloneWithClip(textureRange));
                 }
               }
             }
@@ -601,9 +469,7 @@ export class RealityMeshGeometry
           meshes.push(
             new RealityMeshGeometry({
               realityMeshParams: realityMesh._realityMeshParams,
-              textureParams: RealityTextureParams.create(
-                layerTextures.slice(0, texturesPerMesh)
-              ),
+              textureParams: RealityTextureParams.create(layerTextures.slice(0, texturesPerMesh)),
               transform: realityMesh._transform,
               baseColor,
               baseIsTransparent: baseTransparent,
@@ -639,12 +505,7 @@ export class RealityMeshGeometry
       );
     }
 
-    return system.createBranch(
-      branch,
-      realityMesh._transform
-        ? realityMesh._transform
-        : Transform.createIdentity()
-    );
+    return system.createBranch(branch, realityMesh._transform ? realityMesh._transform : Transform.createIdentity());
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
@@ -658,10 +519,7 @@ export class RealityMeshGeometry
   }
 
   public override getPass(target: Target) {
-    if (
-      this._baseIsTransparent ||
-      (target.wantThematicDisplay && target.uniforms.thematic.wantIsoLines)
-    )
+    if (this._baseIsTransparent || (target.wantThematicDisplay && target.uniforms.thematic.wantIsoLines))
       return "translucent";
 
     return "opaque";
@@ -672,12 +530,7 @@ export class RealityMeshGeometry
 
   public override draw(): void {
     this._params.buffers.bind();
-    System.instance.context.drawElements(
-      GL.PrimitiveType.Triangles,
-      this._params.numIndices,
-      this._indexType,
-      0
-    );
+    System.instance.context.drawElements(GL.PrimitiveType.Triangles, this._params.numIndices, this._indexType, 0);
     this._params.buffers.unbind();
   }
 }

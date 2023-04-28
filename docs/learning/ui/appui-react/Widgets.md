@@ -47,12 +47,7 @@ export class TreeWidget extends WidgetControl {
     super(info, options);
 
     if (options.iModelConnection) {
-      this.reactNode = (
-        <SimpleTreeComponent
-          imodel={options.iModelConnection}
-          rulesetId={options.rulesetId}
-        />
-      );
+      this.reactNode = <SimpleTreeComponent imodel={options.iModelConnection} rulesetId={options.rulesetId} />;
     }
   }
 }

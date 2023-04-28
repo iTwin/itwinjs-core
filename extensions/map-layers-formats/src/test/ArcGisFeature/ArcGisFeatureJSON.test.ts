@@ -54,9 +54,7 @@ describe("ArcGisFeatureJSON", () => {
       results
     );
     expect(JSON.stringify(results)).equals(
-      JSON.stringify(
-        PhillyLandmarksDataset.phillyTansportationGetFeatureInfoResultRef
-      )
+      JSON.stringify(PhillyLandmarksDataset.phillyTansportationGetFeatureInfoResultRef)
     );
   });
 
@@ -69,16 +67,10 @@ describe("ArcGisFeatureJSON", () => {
     // Since I want to use the same output reference for both formats, I force a max precision of 8.
     featureJson.floatPrecision = 8;
     const results: MapLayerFeatureInfo[] = [];
-    const data = JSON.parse(
-      PhillyLandmarksDataset.phillyAirportGetFeatureInfoQueryJson
-    );
+    const data = JSON.parse(PhillyLandmarksDataset.phillyAirportGetFeatureInfoQueryJson);
     featureJson.readFeatureInfo({ data, exceedTransferLimit: false }, results);
     const _test = JSON.stringify(results);
-    expect(_test).equals(
-      JSON.stringify(
-        PhillyLandmarksDataset.phillyAirportGetFeatureInfoResultRef
-      )
-    );
+    expect(_test).equals(JSON.stringify(PhillyLandmarksDataset.phillyAirportGetFeatureInfoResultRef));
   });
 
   it("should deflate coordinates array", async () => {
@@ -88,23 +80,13 @@ describe("ArcGisFeatureJSON", () => {
       [3, 4],
     ];
     let deflated: number[] = [];
-    let offset = (ArcGisFeatureJSON as any).deflateCoordinates(
-      doubleArray,
-      deflated,
-      2,
-      0
-    );
+    let offset = (ArcGisFeatureJSON as any).deflateCoordinates(doubleArray, deflated, 2, 0);
     expect(offset).to.equals(4);
     expect(deflated).to.eql([1, 2, 3, 4]);
 
     /// Check offset with stride = 2
     doubleArray = [[5, 6]];
-    offset = (ArcGisFeatureJSON as any).deflateCoordinates(
-      doubleArray,
-      deflated,
-      2,
-      offset
-    );
+    offset = (ArcGisFeatureJSON as any).deflateCoordinates(doubleArray, deflated, 2, offset);
     expect(offset).to.equals(6);
     expect(deflated).to.eql([1, 2, 3, 4, 5, 6]);
 
@@ -114,23 +96,13 @@ describe("ArcGisFeatureJSON", () => {
       [4, 5, 6],
     ];
     deflated = [];
-    offset = (ArcGisFeatureJSON as any).deflateCoordinates(
-      doubleArray,
-      deflated,
-      3,
-      0
-    );
+    offset = (ArcGisFeatureJSON as any).deflateCoordinates(doubleArray, deflated, 3, 0);
     expect(offset).to.equals(6);
     expect(deflated).to.eql([1, 2, 3, 4, 5, 6]);
 
     /// Check offset with stride = 3
     doubleArray = [[7, 8, 9]];
-    offset = (ArcGisFeatureJSON as any).deflateCoordinates(
-      doubleArray,
-      deflated,
-      3,
-      offset
-    );
+    offset = (ArcGisFeatureJSON as any).deflateCoordinates(doubleArray, deflated, 3, offset);
     expect(offset).to.equals(9);
     expect(deflated).to.eql([1, 2, 3, 4, 5, 6, 7, 8, 9]);
   });
@@ -145,25 +117,17 @@ describe("ArcGisFeatureJSON", () => {
       PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo.renderer
     );
 
-    const featureRenderer = new ArcGisFeatureRenderer(
-      fakeContext,
-      symbolRenderer
-    );
+    const featureRenderer = new ArcGisFeatureRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
-    featureJson.readAndRender(
-      { data, exceedTransferLimit: false },
-      featureRenderer
-    );
+    featureJson.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
     expect(renderPathSpy.calledOnce);
 
     const firstCall = renderPathSpy.getCalls()[0];
     expect(firstCall.args[0]).to.eql(
-      PhillyLandmarksDataset.phillySimplePolyQueryPbf.queryResult.featureResult
-        .features[0].geometry.lengths
+      PhillyLandmarksDataset.phillySimplePolyQueryPbf.queryResult.featureResult.features[0].geometry.lengths
     ); // geometryLengths
     expect(firstCall.args[1]).to.eql(
-      PhillyLandmarksDataset.phillySimplePolyQueryPbf.queryResult.featureResult
-        .features[0].geometry.coords
+      PhillyLandmarksDataset.phillySimplePolyQueryPbf.queryResult.featureResult.features[0].geometry.coords
     ); // geometryCoords
     expect(firstCall.args[2]).to.eql(true); // fill
     expect(firstCall.args[3]).to.eql(2); // stride
@@ -179,25 +143,17 @@ describe("ArcGisFeatureJSON", () => {
       PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo.renderer
     );
 
-    const featureRenderer = new ArcGisFeatureRenderer(
-      fakeContext,
-      symbolRenderer
-    );
+    const featureRenderer = new ArcGisFeatureRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
-    featureJson.readAndRender(
-      { data, exceedTransferLimit: false },
-      featureRenderer
-    );
+    featureJson.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
     expect(renderPathSpy.calledOnce);
 
     const firstCall = renderPathSpy.getCalls()[0];
     expect(firstCall.args[0]).to.eql(
-      PhillyLandmarksDataset.phillyDoubleRingPolyQueryPbf.queryResult
-        .featureResult.features[0].geometry.lengths
+      PhillyLandmarksDataset.phillyDoubleRingPolyQueryPbf.queryResult.featureResult.features[0].geometry.lengths
     ); // geometryLengths
     expect(firstCall.args[1]).to.eql(
-      PhillyLandmarksDataset.phillyDoubleRingPolyQueryPbf.queryResult
-        .featureResult.features[0].geometry.coords
+      PhillyLandmarksDataset.phillyDoubleRingPolyQueryPbf.queryResult.featureResult.features[0].geometry.coords
     ); // geometryCoords
     expect(firstCall.args[2]).to.eql(true); // fill
     expect(firstCall.args[3]).to.eql(2); // stride
@@ -211,21 +167,14 @@ describe("ArcGisFeatureJSON", () => {
       PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer
     );
 
-    const featureRenderer = new ArcGisFeatureRenderer(
-      fakeContext,
-      symbolRenderer
-    );
+    const featureRenderer = new ArcGisFeatureRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
-    featureJson.readAndRender(
-      { data, exceedTransferLimit: false },
-      featureRenderer
-    );
+    featureJson.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
     expect(renderPathSpy.calledOnce);
 
     const geometryCoords = [
-      360, 491, -2, -1, -1, 0, -1, 0, -1, 0, -1, 1, -4, 1, -10, 2, -15, 3, -1,
-      0, -1, 0, -2, 0, -1, 0, -1, 0, -1, -1, -1, 0, -2, -1, 0, -1, -1, 0, -1, 0,
-      -1, 0, -1, 0, -1, 0, -1, 0,
+      360, 491, -2, -1, -1, 0, -1, 0, -1, 0, -1, 1, -4, 1, -10, 2, -15, 3, -1, 0, -1, 0, -2, 0, -1, 0, -1, 0, -1, -1,
+      -1, 0, -2, -1, 0, -1, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0,
     ];
     const firstCall = renderPathSpy.getCalls()[0];
     expect(firstCall.args[0]).to.eql([24]); // geometryLengths
@@ -242,26 +191,18 @@ describe("ArcGisFeatureJSON", () => {
       PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer
     );
 
-    const featureRenderer = new ArcGisFeatureRenderer(
-      fakeContext,
-      symbolRenderer
-    );
+    const featureRenderer = new ArcGisFeatureRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
-    featureJson.readAndRender(
-      { data, exceedTransferLimit: false },
-      featureRenderer
-    );
+    featureJson.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
     expect(renderPathSpy.calledOnce);
 
     // Pbf contains already the right output format expect, lets rely on that.
     const firstCall = renderPathSpy.getCalls()[0];
     expect(firstCall.args[0]).to.eql(
-      PhillyLandmarksDataset.phillyMultiPathQueryPbf.queryResult.featureResult
-        .features[0].geometry.lengths
+      PhillyLandmarksDataset.phillyMultiPathQueryPbf.queryResult.featureResult.features[0].geometry.lengths
     );
     expect(firstCall.args[1]).to.eql(
-      PhillyLandmarksDataset.phillyMultiPathQueryPbf.queryResult.featureResult
-        .features[0].geometry.coords
+      PhillyLandmarksDataset.phillyMultiPathQueryPbf.queryResult.featureResult.features[0].geometry.coords
     );
     expect(firstCall.args[2]).to.eql(false); // fill
     expect(firstCall.args[3]).to.eql(2); // stride
@@ -275,25 +216,17 @@ describe("ArcGisFeatureJSON", () => {
       PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer
     );
 
-    const featureRenderer = new ArcGisFeatureRenderer(
-      fakeContext,
-      symbolRenderer
-    );
+    const featureRenderer = new ArcGisFeatureRenderer(fakeContext, symbolRenderer);
     const spy = sinon.spy(featureRenderer, "renderPoint");
-    featureJson.readAndRender(
-      { data, exceedTransferLimit: false },
-      featureRenderer
-    );
+    featureJson.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
     expect(spy.calledOnce);
 
     // Pbf contains already the right output format expect, lets rely on that.
     const geometryCoords =
-      PhillyLandmarksDataset.phillySimplePointQueryPbf.queryResult.featureResult
-        .features[0].geometry.coords;
+      PhillyLandmarksDataset.phillySimplePointQueryPbf.queryResult.featureResult.features[0].geometry.coords;
     const firstCall = spy.getCalls()[0];
     expect(firstCall.args[0]).to.eql(
-      PhillyLandmarksDataset.phillySimplePointQueryPbf.queryResult.featureResult
-        .features[0].geometry.lengths
+      PhillyLandmarksDataset.phillySimplePointQueryPbf.queryResult.featureResult.features[0].geometry.lengths
     ); // geometryLengths
     expect(firstCall.args[1]).to.eql(geometryCoords); // geometryCoords
     expect(firstCall.args[2]).to.eql(2); // stride
@@ -306,22 +239,13 @@ describe("ArcGisFeatureJSON", () => {
       PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer
     );
 
-    const featureRenderer = new ArcGisFeatureRenderer(
-      fakeContext,
-      symbolRenderer
-    );
+    const featureRenderer = new ArcGisFeatureRenderer(fakeContext, symbolRenderer);
     const logErrorSpy = sandbox.spy(Logger, "logError");
-    featureJson.readAndRender(
-      { data: { test: "test" }, exceedTransferLimit: false },
-      featureRenderer
-    );
+    featureJson.readAndRender({ data: { test: "test" }, exceedTransferLimit: false }, featureRenderer);
     expect(logErrorSpy.calledOnce);
 
     logErrorSpy.resetHistory();
-    featureJson.readFeatureInfo(
-      { data: { test: "test" }, exceedTransferLimit: false },
-      []
-    );
+    featureJson.readFeatureInfo({ data: { test: "test" }, exceedTransferLimit: false }, []);
     expect(logErrorSpy.calledOnce);
   });
 });

@@ -3,10 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
-import {
-  BentleyCloudRpcConfiguration,
-  BentleyCloudRpcManager,
-} from "@itwin/core-common";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@itwin/core-common";
 import { MobileHost } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, rpcInterfaces } from "../common/TestRpcInterface";
@@ -42,18 +39,14 @@ async function init() {
   await initializeMockMobileTest();
 
   // eslint-disable-next-line no-console
-  console.log(
-    `Mobile backend for rpc full-stack-tests listening on port ${mobilePort}`
-  );
+  console.log(`Mobile backend for rpc full-stack-tests listening on port ${mobilePort}`);
   return () => {
     httpServer.close();
     MobileHost.onWillTerminate.raiseEvent();
   };
 }
 
-function initializeAttachedInterfacesTest(
-  config: BentleyCloudRpcConfiguration
-) {
+function initializeAttachedInterfacesTest(config: BentleyCloudRpcConfiguration) {
   AttachedInterfaceImpl.register();
   config.attach(AttachedInterface);
 }

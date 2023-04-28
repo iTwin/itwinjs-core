@@ -175,8 +175,7 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
    */
   public findOrInsert(key: K, value: V): { value: V; inserted: boolean } {
     const bound = this.lowerBound(key);
-    if (bound.equal)
-      return { value: this._values[bound.index], inserted: false };
+    if (bound.equal) return { value: this._values[bound.index], inserted: false };
 
     value = this._cloneValue(value);
     this._keys.splice(bound.index, 0, this._cloneKey(key));
@@ -206,8 +205,7 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
    */
   public extractPairs(): Array<{ key: K; value: V }> {
     const pairs: Array<{ key: K; value: V }> = [];
-    for (let i = 0; i < this.size; i++)
-      pairs.push({ key: this._keys[i], value: this._values[i] });
+    for (let i = 0; i < this.size; i++) pairs.push({ key: this._keys[i], value: this._values[i] });
 
     this.clear();
     return pairs;

@@ -89,10 +89,7 @@ import {
 import { EditCommand } from "./EditCommand";
 
 /** @alpha */
-export class BasicManipulationCommand
-  extends EditCommand
-  implements BasicManipulationCommandIpc
-{
+export class BasicManipulationCommand extends EditCommand implements BasicManipulationCommandIpc {
   public static override commandId = editorBuiltInCmdIds.cmdBasicManipulation;
 
   public constructor(iModel: IModelDb, protected _str: string) {
@@ -112,10 +109,7 @@ export class BasicManipulationCommand
     return IModelStatus.Success;
   }
 
-  public async transformPlacement(
-    ids: CompressedId64Set,
-    transProps: TransformProps
-  ): Promise<IModelStatus> {
+  public async transformPlacement(ids: CompressedId64Set, transProps: TransformProps): Promise<IModelStatus> {
     const idSet = CompressedId64Set.decompressSet(ids);
     await this.iModel.locks.acquireLocks({ exclusive: idSet });
 
@@ -197,21 +191,13 @@ export class BasicManipulationCommand
     let props: GeometricElementProps;
     if (typeof propsOrId === "string") {
       if (undefined === data)
-        throw new IModelError(
-          DbResult.BE_SQLITE_ERROR,
-          "Flatbuffer data required for update by id"
-        );
-      props =
-        this.iModel.elements.getElementProps<GeometricElementProps>(propsOrId);
+        throw new IModelError(DbResult.BE_SQLITE_ERROR, "Flatbuffer data required for update by id");
+      props = this.iModel.elements.getElementProps<GeometricElementProps>(propsOrId);
     } else {
       props = propsOrId;
     }
 
-    if (undefined === props.id)
-      throw new IModelError(
-        DbResult.BE_SQLITE_ERROR,
-        "Element id required for update"
-      );
+    if (undefined === props.id) throw new IModelError(DbResult.BE_SQLITE_ERROR, "Element id required for update");
 
     await this.iModel.locks.acquireLocks({ exclusive: props.id });
 
@@ -230,9 +216,7 @@ export class BasicManipulationCommand
   ): Promise<ElementGeometryInfo | undefined> {
     let accepted: ElementGeometryInfo | undefined;
 
-    const onGeometry: ElementGeometryFunction = (
-      info: ElementGeometryInfo
-    ): void => {
+    const onGeometry: ElementGeometryFunction = (info: ElementGeometryInfo): void => {
       accepted = info;
 
       if (undefined !== filter) {
@@ -247,18 +231,12 @@ export class BasicManipulationCommand
             break;
           }
 
-          if (
-            filter.reject &&
-            filter.reject.some((opcode) => entry.opcode === opcode)
-          ) {
+          if (filter.reject && filter.reject.some((opcode) => entry.opcode === opcode)) {
             accepted = undefined;
             break;
           }
 
-          if (
-            filter.accept &&
-            !filter.accept.some((opcode) => entry.opcode === opcode)
-          ) {
+          if (filter.accept && !filter.accept.some((opcode) => entry.opcode === opcode)) {
             accepted = undefined;
             break;
           }
@@ -266,13 +244,8 @@ export class BasicManipulationCommand
           if (undefined === filter.geometry) continue;
 
           let entityType;
-          if (
-            filter.geometry.curves &&
-            !(filter.geometry.surfaces || filter.geometry.solids)
-          )
-            entityType = ElementGeometry.isCurve(entry)
-              ? BRepEntity.Type.Wire
-              : undefined;
+          if (filter.geometry.curves && !(filter.geometry.surfaces || filter.geometry.solids))
+            entityType = ElementGeometry.isCurve(entry) ? BRepEntity.Type.Wire : undefined;
           // skip surface/solid opcodes...
           else entityType = ElementGeometry.getBRepEntityType(entry);
 
@@ -301,10 +274,7 @@ export class BasicManipulationCommand
       elementId,
     };
 
-    if (
-      IModelStatus.Success !== this.iModel.elementGeometryRequest(requestProps)
-    )
-      return undefined;
+    if (IModelStatus.Success !== this.iModel.elementGeometryRequest(requestProps)) return undefined;
 
     return accepted;
   }
@@ -313,11 +283,7 @@ export class BasicManipulationCommand
     const newExtents = new Range3d();
     newExtents.setFromJSON(extents);
 
-    if (newExtents.isNull)
-      throw new IModelError(
-        DbResult.BE_SQLITE_ERROR,
-        "Invalid project extents"
-      );
+    if (newExtents.isNull) throw new IModelError(DbResult.BE_SQLITE_ERROR, "Invalid project extents");
 
     await this.iModel.acquireSchemaLock();
 
@@ -341,9 +307,7 @@ export class BasicManipulationCommand
     }
   }
 
-  public async updateEcefLocation(
-    ecefLocation: EcefLocationProps
-  ): Promise<void> {
+  public async updateEcefLocation(ecefLocation: EcefLocationProps): Promise<void> {
     await this.iModel.acquireSchemaLock();
 
     // Clear GCS that caller already determined was invalid...
@@ -389,12 +353,8 @@ interface SubEntityGeometryResponseProps {
 
 type GeometrySummaryFunction = (info: BRepEntityType[]) => void;
 type SubEntityGeometryFunction = (info: SubEntityGeometryResponseProps) => void;
-type SubEntityParameterRangeFunction = (
-  info: FaceParameterRangeProps | EdgeParameterRangeProps
-) => void;
-type SubEntityEvaluateFunction = (
-  info: EvaluatedFaceProps | EvaluatedEdgeProps | EvaluatedVertexProps
-) => void;
+type SubEntityParameterRangeFunction = (info: FaceParameterRangeProps | EdgeParameterRangeProps) => void;
+type SubEntityEvaluateFunction = (info: EvaluatedFaceProps | EvaluatedEdgeProps | EvaluatedVertexProps) => void;
 type SubEntityArrayFunction = (info: SubEntityProps[]) => void;
 type SubEntityLocationArrayFunction = (info: SubEntityLocationProps[]) => void;
 type SubEntityLocationFunction = (info: SubEntityLocationProps) => void;
@@ -620,10 +580,7 @@ interface ElementGeometryCacheOperationRequestProps {
 }
 
 /** @alpha */
-export class SolidModelingCommand
-  extends BasicManipulationCommand
-  implements SolidModelingCommandIpc
-{
+export class SolidModelingCommand extends BasicManipulationCommand implements SolidModelingCommandIpc {
   public static override commandId = editorBuiltInCmdIds.cmdSolidModeling;
 
   public override async onStart() {
@@ -636,26 +593,15 @@ export class SolidModelingCommand
     return this.iModel.nativeDb.updateElementGeometryCache(props);
   }
 
-  public async createElementGeometryCache(
-    id: Id64String,
-    filter?: ElementGeometryCacheFilter
-  ): Promise<boolean> {
+  public async createElementGeometryCache(id: Id64String, filter?: ElementGeometryCacheFilter): Promise<boolean> {
     const result = await this.updateElementGeometryCache({ id });
     if (BentleyStatus.SUCCESS !== result.status) return false;
 
     if (undefined === filter) return true;
 
-    if (
-      filter.minGeom &&
-      (undefined === result.numGeom || filter.minGeom > result.numGeom)
-    )
-      return false;
+    if (filter.minGeom && (undefined === result.numGeom || filter.minGeom > result.numGeom)) return false;
 
-    if (
-      filter.maxGeom &&
-      (undefined === result.numGeom || filter.maxGeom < result.numGeom)
-    )
-      return false;
+    if (filter.maxGeom && (undefined === result.numGeom || filter.maxGeom < result.numGeom)) return false;
 
     if (!filter.parts && (result.numPart ?? 0 > 0)) return false;
 
@@ -674,13 +620,9 @@ export class SolidModelingCommand
     await this.updateElementGeometryCache({});
   }
 
-  public async summarizeElementGeometryCache(
-    id: Id64String
-  ): Promise<BRepEntityType[] | undefined> {
+  public async summarizeElementGeometryCache(id: Id64String): Promise<BRepEntityType[] | undefined> {
     let accepted: BRepEntityType[] | undefined;
-    const onResult: GeometrySummaryFunction = (
-      info: BRepEntityType[]
-    ): void => {
+    const onResult: GeometrySummaryFunction = (info: BRepEntityType[]): void => {
       accepted = info;
     };
     const params: GeometrySummaryRequestProps = { onResult };
@@ -698,9 +640,7 @@ export class SolidModelingCommand
     subEntity: SubEntityProps
   ): SubEntityGeometryResponseProps | undefined {
     let accepted: SubEntityGeometryResponseProps | undefined;
-    const onResult: SubEntityGeometryFunction = (
-      info: SubEntityGeometryResponseProps
-    ): void => {
+    const onResult: SubEntityGeometryFunction = (info: SubEntityGeometryResponseProps): void => {
       accepted = info;
     };
     const params: SubEntityGeometryRequestProps = { subEntity, onResult };
@@ -719,11 +659,7 @@ export class SolidModelingCommand
     opts: Omit<ElementGeometryResultOptions, "writeChanges" | "insertProps">
   ): Promise<SubEntityGeometryProps | undefined> {
     const geometryProps = this.requestSubEntityGeometry(id, subEntity);
-    if (
-      undefined === geometryProps?.geometry ||
-      undefined === geometryProps?.category
-    )
-      return undefined;
+    if (undefined === geometryProps?.geometry || undefined === geometryProps?.category) return undefined;
 
     const resultProps: SubEntityGeometryProps = {};
 
@@ -750,12 +686,8 @@ export class SolidModelingCommand
 
     if (!opts.wantGraphic) return resultProps;
 
-    const requestId = opts.requestId
-      ? opts.requestId
-      : `SubEntity:${id}-${subEntity.id}`;
-    const toleranceLog10 = opts.chordTolerance
-      ? Math.floor(Math.log10(opts.chordTolerance))
-      : -2;
+    const requestId = opts.requestId ? opts.requestId : `SubEntity:${id}-${subEntity.id}`;
+    const toleranceLog10 = opts.chordTolerance ? Math.floor(Math.log10(opts.chordTolerance)) : -2;
 
     const requestProps: DynamicGraphicsRequest3dProps = {
       id: requestId,
@@ -771,9 +703,7 @@ export class SolidModelingCommand
       geometry: { format: "flatbuffer", data: [geometryProps.geometry] },
     };
 
-    resultProps.graphic = await this.iModel.generateElementGraphics(
-      requestProps
-    );
+    resultProps.graphic = await this.iModel.generateElementGraphics(requestProps);
 
     return resultProps;
   }
@@ -804,14 +734,8 @@ export class SolidModelingCommand
     subEntity: SubEntityProps,
     uParam?: number,
     vParam?: number
-  ): Promise<
-    EvaluatedFaceProps | EvaluatedEdgeProps | EvaluatedVertexProps | undefined
-  > {
-    let accepted:
-      | EvaluatedFaceProps
-      | EvaluatedEdgeProps
-      | EvaluatedVertexProps
-      | undefined;
+  ): Promise<EvaluatedFaceProps | EvaluatedEdgeProps | EvaluatedVertexProps | undefined> {
+    let accepted: EvaluatedFaceProps | EvaluatedEdgeProps | EvaluatedVertexProps | undefined;
     const onResult: SubEntityEvaluateFunction = (
       info: EvaluatedFaceProps | EvaluatedEdgeProps | EvaluatedVertexProps
     ): void => {
@@ -833,11 +757,7 @@ export class SolidModelingCommand
     return accepted;
   }
 
-  private async subEntityQuery(
-    id: Id64String,
-    subEntity: SubEntityProps,
-    query: QuerySubEntity
-  ): Promise<boolean> {
+  private async subEntityQuery(id: Id64String, subEntity: SubEntityProps, query: QuerySubEntity): Promise<boolean> {
     let accepted = false;
     const onResult: YesNoFunction = (info: boolean): void => {
       accepted = info;
@@ -853,53 +773,31 @@ export class SolidModelingCommand
     return accepted;
   }
 
-  public async isPlanarFace(
-    id: Id64String,
-    subEntity: SubEntityProps
-  ): Promise<boolean> {
+  public async isPlanarFace(id: Id64String, subEntity: SubEntityProps): Promise<boolean> {
     return this.subEntityQuery(id, subEntity, QuerySubEntity.PlanarFace);
   }
 
-  public async isSmoothEdge(
-    id: Id64String,
-    subEntity: SubEntityProps
-  ): Promise<boolean> {
+  public async isSmoothEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean> {
     return this.subEntityQuery(id, subEntity, QuerySubEntity.SmoothEdge);
   }
 
-  public async isLaminarEdge(
-    id: Id64String,
-    subEntity: SubEntityProps
-  ): Promise<boolean> {
+  public async isLaminarEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean> {
     return this.subEntityQuery(id, subEntity, QuerySubEntity.LaminarEdge);
   }
 
-  public async isLinearEdge(
-    id: Id64String,
-    subEntity: SubEntityProps
-  ): Promise<boolean> {
+  public async isLinearEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean> {
     return this.subEntityQuery(id, subEntity, QuerySubEntity.LinearEdge);
   }
 
-  public async isRedundantEdge(
-    id: Id64String,
-    subEntity: SubEntityProps
-  ): Promise<boolean> {
+  public async isRedundantEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean> {
     return this.subEntityQuery(id, subEntity, QuerySubEntity.RedundantEdge);
   }
 
-  public async isSmoothVertex(
-    id: Id64String,
-    subEntity: SubEntityProps
-  ): Promise<boolean> {
+  public async isSmoothVertex(id: Id64String, subEntity: SubEntityProps): Promise<boolean> {
     return this.subEntityQuery(id, subEntity, QuerySubEntity.SmoothVertex);
   }
 
-  private async bodyQuery(
-    id: Id64String,
-    index: number,
-    query: QueryBody
-  ): Promise<boolean> {
+  private async bodyQuery(id: Id64String, index: number, query: QueryBody): Promise<boolean> {
     let accepted = false;
     const onResult: YesNoFunction = (info: boolean): void => {
       accepted = info;
@@ -923,24 +821,15 @@ export class SolidModelingCommand
     return this.bodyQuery(id, index, QueryBody.PlanarBody);
   }
 
-  public async isSingleFacePlanarSheet(
-    id: Id64String,
-    index: number
-  ): Promise<boolean> {
+  public async isSingleFacePlanarSheet(id: Id64String, index: number): Promise<boolean> {
     return this.bodyQuery(id, index, QueryBody.SingleFacePlanarSheet);
   }
 
-  public async hasOnlyPlanarFaces(
-    id: Id64String,
-    index: number
-  ): Promise<boolean> {
+  public async hasOnlyPlanarFaces(id: Id64String, index: number): Promise<boolean> {
     return this.bodyQuery(id, index, QueryBody.OnlyPlanarFaces);
   }
 
-  public async hasCurvedFaceOrEdge(
-    id: Id64String,
-    index: number
-  ): Promise<boolean> {
+  public async hasCurvedFaceOrEdge(id: Id64String, index: number): Promise<boolean> {
     return this.bodyQuery(id, index, QueryBody.CurvedFaceOrEdge);
   }
 
@@ -997,9 +886,7 @@ export class SolidModelingCommand
     options: LocateSubEntityProps
   ): Promise<SubEntityLocationProps[] | undefined> {
     let accepted: SubEntityLocationProps[] | undefined;
-    const onResult: SubEntityLocationArrayFunction = (
-      info: SubEntityLocationProps[]
-    ): void => {
+    const onResult: SubEntityLocationArrayFunction = (info: SubEntityLocationProps[]): void => {
       accepted = info;
     };
     const params: LocateSubEntityRequestProps = {
@@ -1024,9 +911,7 @@ export class SolidModelingCommand
     direction: XYZProps
   ): Promise<SubEntityLocationProps[] | undefined> {
     let accepted: SubEntityLocationProps[] | undefined;
-    const onResult: SubEntityLocationArrayFunction = (
-      info: SubEntityLocationProps[]
-    ): void => {
+    const onResult: SubEntityLocationArrayFunction = (info: SubEntityLocationProps[]): void => {
       accepted = info;
     };
     const params: LocateFaceRequestProps = {
@@ -1044,14 +929,9 @@ export class SolidModelingCommand
     return accepted;
   }
 
-  public async getClosestSubEntity(
-    id: Id64String,
-    point: XYZProps
-  ): Promise<SubEntityLocationProps | undefined> {
+  public async getClosestSubEntity(id: Id64String, point: XYZProps): Promise<SubEntityLocationProps | undefined> {
     let accepted: SubEntityLocationProps | undefined;
-    const onResult: SubEntityLocationFunction = (
-      info: SubEntityLocationProps
-    ): void => {
+    const onResult: SubEntityLocationFunction = (info: SubEntityLocationProps): void => {
       accepted = info;
     };
     const params: ClosestSubEntityRequestProps = { point, onResult };
@@ -1070,9 +950,7 @@ export class SolidModelingCommand
     direction?: XYZProps
   ): Promise<SubEntityLocationProps | undefined> {
     let accepted: SubEntityLocationProps | undefined;
-    const onResult: SubEntityLocationFunction = (
-      info: SubEntityLocationProps
-    ): void => {
+    const onResult: SubEntityLocationFunction = (info: SubEntityLocationProps): void => {
       accepted = info;
     };
     const params: ClosestSubEntityRequestProps = { point, direction, onResult };
@@ -1091,9 +969,7 @@ export class SolidModelingCommand
     point: XYZProps
   ): Promise<SubEntityLocationProps | undefined> {
     let accepted: SubEntityLocationProps | undefined;
-    const onResult: SubEntityLocationFunction = (
-      info: SubEntityLocationProps
-    ): void => {
+    const onResult: SubEntityLocationFunction = (info: SubEntityLocationProps): void => {
       accepted = info;
     };
     const params: ClosestPointRequestProps = { subEntity, point, onResult };
@@ -1106,14 +982,9 @@ export class SolidModelingCommand
     return accepted;
   }
 
-  public async isPointInside(
-    id: Id64String,
-    point: XYZProps
-  ): Promise<PointInsideResultProps[] | undefined> {
+  public async isPointInside(id: Id64String, point: XYZProps): Promise<PointInsideResultProps[] | undefined> {
     let accepted: PointInsideResultProps[] | undefined;
-    const onResult: PointInsideFunction = (
-      info: PointInsideResultProps[]
-    ): void => {
+    const onResult: PointInsideFunction = (info: PointInsideResultProps[]): void => {
       accepted = info;
     };
     const params: PointInsideRequestProps = { point, onResult };
@@ -1132,19 +1003,13 @@ export class SolidModelingCommand
     opts: ElementGeometryResultOptions,
     tools?: Id64Arg
   ): Promise<ElementGeometryResultProps | undefined> {
-    if (
-      0 === info.entryArray.length ||
-      undefined === info.categoryId ||
-      undefined === info.bbox
-    )
-      return undefined;
+    if (0 === info.entryArray.length || undefined === info.categoryId || undefined === info.bbox) return undefined;
 
     const resultProps: ElementGeometryResultProps = {};
 
     if (opts.wantGeometry) resultProps.geometry = info;
 
-    if (opts.wantRange)
-      resultProps.range = ElementGeometry.toElementAlignedBox3d(info.bbox);
+    if (opts.wantRange) resultProps.range = ElementGeometry.toElementAlignedBox3d(info.bbox);
 
     if (opts.wantAppearance) resultProps.categoryId = info.categoryId;
 
@@ -1152,9 +1017,7 @@ export class SolidModelingCommand
 
     let placement: Placement3dProps;
     const sourceToWorld =
-      undefined === info?.sourceToWorld
-        ? undefined
-        : ElementGeometry.toTransform(info.sourceToWorld);
+      undefined === info?.sourceToWorld ? undefined : ElementGeometry.toTransform(info.sourceToWorld);
     if (undefined === sourceToWorld) {
       placement = {
         origin: Point3d.createZero(),
@@ -1183,13 +1046,9 @@ export class SolidModelingCommand
       if (opts.insertProps) {
         opts.insertProps.placement = placement; // entryArray is local to this placement...
         delete opts.insertProps.geom; // Ignore geometry if present...
-        resultProps.elementId = await this.insertGeometricElement(
-          opts.insertProps,
-          { entryArray: info.entryArray }
-        );
+        resultProps.elementId = await this.insertGeometricElement(opts.insertProps, { entryArray: info.entryArray });
       } else {
-        const updateProps =
-          this.iModel.elements.getElementProps<GeometricElementProps>({ id });
+        const updateProps = this.iModel.elements.getElementProps<GeometricElementProps>({ id });
         updateProps.category = info.categoryId; // allow category change...
         updateProps.placement = placement; // entryArray is local to this placement...
         await this.updateGeometricElement(updateProps, {
@@ -1199,17 +1058,14 @@ export class SolidModelingCommand
       }
 
       if (undefined !== tools) {
-        for (const toolId of Id64.iterable(tools))
-          this.iModel.elements.deleteElement(toolId);
+        for (const toolId of Id64.iterable(tools)) this.iModel.elements.deleteElement(toolId);
       }
     }
 
     if (!opts.wantGraphic) return resultProps;
 
     const requestId = opts.requestId ? opts.requestId : `EGCacheOp:${id}`;
-    const toleranceLog10 = opts.chordTolerance
-      ? Math.floor(Math.log10(opts.chordTolerance))
-      : -2;
+    const toleranceLog10 = opts.chordTolerance ? Math.floor(Math.log10(opts.chordTolerance)) : -2;
 
     const requestProps: DynamicGraphicsRequest3dProps = {
       id: requestId,
@@ -1222,9 +1078,7 @@ export class SolidModelingCommand
       geometry: { format: "flatbuffer", data: info.entryArray },
     };
 
-    resultProps.graphic = await this.iModel.generateElementGraphics(
-      requestProps
-    );
+    resultProps.graphic = await this.iModel.generateElementGraphics(requestProps);
 
     return resultProps;
   }
@@ -1235,9 +1089,7 @@ export class SolidModelingCommand
     tools?: Id64Arg
   ): Promise<ElementGeometryResultProps | undefined> {
     let accepted: ElementGeometryInfo | undefined;
-    const onGeometry: ElementGeometryFunction = (
-      info: ElementGeometryInfo
-    ): void => {
+    const onGeometry: ElementGeometryFunction = (info: ElementGeometryInfo): void => {
       accepted = info;
     };
 
@@ -1260,11 +1112,7 @@ export class SolidModelingCommand
       op: OperationType.BooleanOp,
       params,
     };
-    return this.doElementGeometryOperation(
-      props,
-      opts,
-      undefined === opts.insertProps ? params.tools : undefined
-    );
+    return this.doElementGeometryOperation(props, opts, undefined === opts.insertProps ? params.tools : undefined);
   }
 
   public async sewSheets(
@@ -1278,11 +1126,7 @@ export class SolidModelingCommand
       op: OperationType.SewSheets,
       params,
     };
-    return this.doElementGeometryOperation(
-      props,
-      opts,
-      undefined === opts.insertProps ? params.tools : undefined
-    );
+    return this.doElementGeometryOperation(props, opts, undefined === opts.insertProps ? params.tools : undefined);
   }
 
   public async thickenSheets(
@@ -1308,11 +1152,7 @@ export class SolidModelingCommand
       op: OperationType.Cut,
       params,
     };
-    return this.doElementGeometryOperation(
-      props,
-      opts,
-      !params.keepProfile ? params.profile : undefined
-    );
+    return this.doElementGeometryOperation(props, opts, !params.keepProfile ? params.profile : undefined);
   }
 
   public async embossBody(
@@ -1325,11 +1165,7 @@ export class SolidModelingCommand
       op: OperationType.Emboss,
       params,
     };
-    return this.doElementGeometryOperation(
-      props,
-      opts,
-      !params.keepProfile ? params.profile : undefined
-    );
+    return this.doElementGeometryOperation(props, opts, !params.keepProfile ? params.profile : undefined);
   }
 
   public async imprintBody(
@@ -1345,9 +1181,7 @@ export class SolidModelingCommand
     return this.doElementGeometryOperation(
       props,
       opts,
-      !params.keepProfile && "string" === typeof params.imprint
-        ? params.imprint
-        : undefined
+      !params.keepProfile && "string" === typeof params.imprint ? params.imprint : undefined
     );
   }
 
@@ -1361,11 +1195,7 @@ export class SolidModelingCommand
       op: OperationType.SweepPath,
       params,
     };
-    return this.doElementGeometryOperation(
-      props,
-      opts,
-      !params.keepPath ? params.path : undefined
-    );
+    return this.doElementGeometryOperation(props, opts, !params.keepPath ? params.path : undefined);
   }
 
   public async loftProfiles(
@@ -1373,10 +1203,7 @@ export class SolidModelingCommand
     params: LoftProps,
     opts: ElementGeometryResultOptions
   ): Promise<ElementGeometryResultProps | undefined> {
-    const toolIds =
-      opts.writeChanges && (!params.keepTools || !params.keepGuides)
-        ? new Set<Id64String>()
-        : undefined;
+    const toolIds = opts.writeChanges && (!params.keepTools || !params.keepGuides) ? new Set<Id64String>() : undefined;
 
     if (undefined !== toolIds) {
       if (!params.keepTools) {
@@ -1384,8 +1211,7 @@ export class SolidModelingCommand
       }
 
       if (undefined !== params.guides && !params.keepGuides) {
-        for (const guideId of Id64.iterable(params.guides))
-          toolIds.add(guideId);
+        for (const guideId of Id64.iterable(params.guides)) toolIds.add(guideId);
       }
     }
 

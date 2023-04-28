@@ -7,23 +7,14 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import {
-  FillFlags,
-  RenderMode,
-  TextureTransparency,
-  ViewFlags,
-} from "@itwin/core-common";
+import { FillFlags, RenderMode, TextureTransparency, ViewFlags } from "@itwin/core-common";
 import { SurfaceType } from "../primitives/SurfaceParams";
 import { VertexIndices } from "../primitives/VertexTable";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 import { ShaderProgramParams } from "./DrawCommand";
 import { GL } from "./GL";
-import {
-  BufferHandle,
-  BufferParameters,
-  BuffersContainer,
-} from "./AttributeBuffers";
+import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
 import { MaterialInfo } from "./Material";
 import { Pass, RenderOrder, RenderPass, SurfaceBitIndex } from "./RenderFlags";
 import { System } from "./System";
@@ -50,14 +41,9 @@ export class SurfaceGeometry extends MeshGeometry {
     return this._buffers;
   }
 
-  public static create(
-    mesh: MeshData,
-    indices: VertexIndices
-  ): SurfaceGeometry | undefined {
+  public static create(mesh: MeshData, indices: VertexIndices): SurfaceGeometry | undefined {
     const indexBuffer = BufferHandle.createArrayBuffer(indices.data);
-    return undefined !== indexBuffer
-      ? new SurfaceGeometry(indexBuffer, indices.length, mesh)
-      : undefined;
+    return undefined !== indexBuffer ? new SurfaceGeometry(indexBuffer, indices.length, mesh) : undefined;
   }
 
   public get isDisposed(): boolean {
@@ -74,16 +60,10 @@ export class SurfaceGeometry extends MeshGeometry {
   }
 
   public get isLit() {
-    return (
-      SurfaceType.Lit === this.surfaceType ||
-      SurfaceType.TexturedLit === this.surfaceType
-    );
+    return SurfaceType.Lit === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType;
   }
   public get isTexturedType() {
-    return (
-      SurfaceType.Textured === this.surfaceType ||
-      SurfaceType.TexturedLit === this.surfaceType
-    );
+    return SurfaceType.Textured === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType;
   }
   public get hasTexture() {
     return this.isTexturedType && undefined !== this.texture;
@@ -124,32 +104,19 @@ export class SurfaceGeometry extends MeshGeometry {
     return undefined;
   }
 
-  protected _draw(
-    numInstances: number,
-    instanceBuffersContainer?: BuffersContainer
-  ): void {
+  protected _draw(numInstances: number, instanceBuffersContainer?: BuffersContainer): void {
     const system = System.instance;
 
     // If we can't write depth in the fragment shader, use polygonOffset to force blanking regions to draw behind.
-    const offset =
-      RenderOrder.BlankingRegion === this.renderOrder &&
-      !system.supportsLogZBuffer;
+    const offset = RenderOrder.BlankingRegion === this.renderOrder && !system.supportsLogZBuffer;
     if (offset) {
       system.context.enable(GL.POLYGON_OFFSET_FILL);
       system.context.polygonOffset(1.0, 1.0);
     }
 
-    const bufs =
-      instanceBuffersContainer !== undefined
-        ? instanceBuffersContainer
-        : this._buffers;
+    const bufs = instanceBuffersContainer !== undefined ? instanceBuffersContainer : this._buffers;
     bufs.bind();
-    system.drawArrays(
-      GL.PrimitiveType.Triangles,
-      0,
-      this._numIndices,
-      numInstances
-    );
+    system.drawArrays(GL.PrimitiveType.Triangles, 0, this._numIndices, numInstances);
     bufs.unbind();
 
     if (offset) system.context.disable(GL.POLYGON_OFFSET_FILL);
@@ -157,10 +124,7 @@ export class SurfaceGeometry extends MeshGeometry {
 
   public override wantMixMonochromeColor(target: Target): boolean {
     // Text relies on white-on-white reversal.
-    return (
-      !this.isGlyph &&
-      (this.isLitSurface || this.wantTextures(target, this.hasTexture))
-    );
+    return !this.isGlyph && (this.isLitSurface || this.wantTextures(target, this.hasTexture));
   }
 
   public get techniqueId(): TechniqueId {
@@ -173,8 +137,7 @@ export class SurfaceGeometry extends MeshGeometry {
     return this.mesh.hasBakedLighting;
   }
   public get renderOrder(): RenderOrder {
-    if (FillFlags.Behind === (this.fillFlags & FillFlags.Behind))
-      return RenderOrder.BlankingRegion;
+    if (FillFlags.Behind === (this.fillFlags & FillFlags.Behind)) return RenderOrder.BlankingRegion;
 
     let order = this.isLit ? RenderOrder.LitSurface : RenderOrder.UnlitSurface;
     if (this.isPlanar) order = order | RenderOrder.PlanarBit;
@@ -195,24 +158,16 @@ export class SurfaceGeometry extends MeshGeometry {
     let opaquePass: Pass = this.isPlanar ? "opaque-planar" : "opaque";
 
     // When reading pixels, glyphs are always opaque. Otherwise always transparent (for anti-aliasing).
-    if (this.isGlyph)
-      return target.isReadPixelsInProgress ? opaquePass : "translucent";
+    if (this.isGlyph) return target.isReadPixelsInProgress ? opaquePass : "translucent";
 
     const vf = target.currentViewFlags;
 
     // When rendering thematic isolines, we need translucency because they have anti-aliasing.
-    if (
-      target.wantThematicDisplay &&
-      this.supportsThematicDisplay &&
-      target.uniforms.thematic.wantIsoLines
-    )
+    if (target.wantThematicDisplay && this.supportsThematicDisplay && target.uniforms.thematic.wantIsoLines)
       return "translucent";
 
     // In wireframe, unless fill is explicitly enabled for planar region, surface does not draw
-    if (
-      RenderMode.Wireframe === vf.renderMode &&
-      !this.mesh.isTextureAlwaysDisplayed
-    ) {
+    if (RenderMode.Wireframe === vf.renderMode && !this.mesh.isTextureAlwaysDisplayed) {
       const fillFlags = this.fillFlags;
       const showFill =
         FillFlags.Always === (fillFlags & FillFlags.Always) ||
@@ -221,11 +176,7 @@ export class SurfaceGeometry extends MeshGeometry {
     }
 
     // If transparency disabled by render mode or view flag, always draw opaque.
-    if (
-      !vf.transparency ||
-      RenderMode.SolidFill === vf.renderMode ||
-      RenderMode.HiddenLine === vf.renderMode
-    )
+    if (!vf.transparency || RenderMode.SolidFill === vf.renderMode || RenderMode.HiddenLine === vf.renderMode)
       return opaquePass;
 
     // We have 3 sources of alpha: the material, the texture, and the color.
@@ -280,17 +231,13 @@ export class SurfaceGeometry extends MeshGeometry {
     return this.wantNormalMaps(params.target, this.hasNormalMap);
   }
 
-  public computeSurfaceFlags(
-    params: ShaderProgramParams,
-    flags: Int32Array
-  ): void {
+  public computeSurfaceFlags(params: ShaderProgramParams, flags: Int32Array): void {
     const target = params.target;
     const vf = target.currentViewFlags;
 
     const useMaterial = wantMaterials(vf);
     flags[SurfaceBitIndex.IgnoreMaterial] = useMaterial ? 0 : 1;
-    flags[SurfaceBitIndex.HasMaterialAtlas] =
-      useMaterial && this.hasMaterialAtlas ? 1 : 0;
+    flags[SurfaceBitIndex.HasMaterialAtlas] = useMaterial && this.hasMaterialAtlas ? 1 : 0;
 
     flags[SurfaceBitIndex.ApplyLighting] = 0;
     flags[SurfaceBitIndex.HasColorAndNormal] = 0;
@@ -310,20 +257,11 @@ export class SurfaceGeometry extends MeshGeometry {
 
     flags[SurfaceBitIndex.HasTexture] = this.useTexture(params) ? 1 : 0;
     flags[SurfaceBitIndex.HasNormalMap] = this.useNormalMap(params) ? 1 : 0;
-    flags[SurfaceBitIndex.UseConstantLodTextureMapping] = this.mesh
-      .textureUsesConstantLod
-      ? 1
-      : 0;
-    flags[SurfaceBitIndex.UseConstantLodNormalMapMapping] = this.mesh
-      .normalMapUsesConstantLod
-      ? 1
-      : 0;
+    flags[SurfaceBitIndex.UseConstantLodTextureMapping] = this.mesh.textureUsesConstantLod ? 1 : 0;
+    flags[SurfaceBitIndex.UseConstantLodNormalMapMapping] = this.mesh.normalMapUsesConstantLod ? 1 : 0;
 
     // The transparency threshold controls how transparent a surface must be to allow light to pass through; more opaque surfaces cast shadows.
-    flags[SurfaceBitIndex.TransparencyThreshold] = params.target
-      .isDrawingShadowMap
-      ? 1
-      : 0;
+    flags[SurfaceBitIndex.TransparencyThreshold] = params.target.isDrawingShadowMap ? 1 : 0;
     flags[SurfaceBitIndex.BackgroundFill] = 0;
     switch (params.renderPass) {
       // NB: We need this for opaque pass due to SolidFill (must compute transparency, discard below threshold, render opaque at or above threshold)
@@ -336,15 +274,9 @@ export class SurfaceGeometry extends MeshGeometry {
       case RenderPass.TranslucentLayers:
       case RenderPass.OverlayLayers: {
         const mode = vf.renderMode;
-        if (
-          !this.isGlyph &&
-          (RenderMode.HiddenLine === mode || RenderMode.SolidFill === mode)
-        ) {
+        if (!this.isGlyph && (RenderMode.HiddenLine === mode || RenderMode.SolidFill === mode)) {
           flags[SurfaceBitIndex.TransparencyThreshold] = 1;
-          if (
-            RenderMode.HiddenLine === mode &&
-            FillFlags.Always !== (this.fillFlags & FillFlags.Always)
-          ) {
+          if (RenderMode.HiddenLine === mode && FillFlags.Always !== (this.fillFlags & FillFlags.Always)) {
             // fill flags test for text - doesn't render with bg fill in hidden line mode.
             flags[SurfaceBitIndex.BackgroundFill] = 1;
           }
@@ -354,43 +286,25 @@ export class SurfaceGeometry extends MeshGeometry {
     }
   }
 
-  private constructor(
-    indices: BufferHandle,
-    numIndices: number,
-    mesh: MeshData
-  ) {
+  private constructor(indices: BufferHandle, numIndices: number, mesh: MeshData) {
     super(mesh, numIndices);
     this._buffers = BuffersContainer.create();
-    const attrPos = AttributeMap.findAttribute(
-      "a_pos",
-      TechniqueId.Surface,
-      false
-    );
+    const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.Surface, false);
     assert(undefined !== attrPos);
     this._buffers.addBuffer(indices, [
-      BufferParameters.create(
-        attrPos.location,
-        3,
-        GL.DataType.UnsignedByte,
-        false,
-        0,
-        0,
-        false
-      ),
+      BufferParameters.create(attrPos.location, 3, GL.DataType.UnsignedByte, false, 0, 0, false),
     ]);
     this._indices = indices;
   }
 
   private wantTextures(target: Target, surfaceTextureExists: boolean): boolean {
-    if (this.hasScalarAnimation && undefined !== target.analysisTexture)
-      return true;
+    if (this.hasScalarAnimation && undefined !== target.analysisTexture) return true;
 
     if (!surfaceTextureExists) return false;
 
     if (this.mesh.isTextureAlwaysDisplayed) return true;
 
-    if (this.supportsThematicDisplay && target.wantThematicDisplay)
-      return false;
+    if (this.supportsThematicDisplay && target.wantThematicDisplay) return false;
 
     const fill = this.fillFlags;
     const flags = target.currentViewFlags;

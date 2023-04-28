@@ -40,8 +40,7 @@ function getWebpackConfig(srcFile, outDir, profile) {
       __dirname: false,
       __filename: false,
     },
-    stats:
-      process.env.NODE_ENV === "production" ? "errors-warnings" : "verbose",
+    stats: process.env.NODE_ENV === "production" ? "errors-warnings" : "verbose",
     externalsPresets: {
       electron: true,
     },

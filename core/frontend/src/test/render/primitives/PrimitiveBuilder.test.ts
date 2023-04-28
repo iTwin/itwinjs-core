@@ -10,15 +10,10 @@ import { Batch, Branch, GraphicsArray, MeshGraphic } from "../../../webgl";
 import { EmptyLocalization } from "@itwin/core-common";
 
 describe("PrimitiveBuilder", () => {
-  before(async () =>
-    IModelApp.startup({ localization: new EmptyLocalization() })
-  );
+  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
 
-  function makeShape(
-    chordTolerance: number,
-    pickableId?: string
-  ): RenderGraphic {
+  function makeShape(chordTolerance: number, pickableId?: string): RenderGraphic {
     const pickable = pickableId ? { id: pickableId } : undefined;
     const builder = new PrimitiveBuilder(IModelApp.renderSystem, {
       type: GraphicType.Scene,
@@ -26,12 +21,7 @@ describe("PrimitiveBuilder", () => {
       pickable,
     });
 
-    builder.addShape([
-      new Point3d(0, 0, 0),
-      new Point3d(1, 0, 0),
-      new Point3d(1, 1, 0),
-      new Point3d(0, 0, 0),
-    ]);
+    builder.addShape([new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(1, 1, 0), new Point3d(0, 0, 0)]);
     return builder.finish();
   }
 

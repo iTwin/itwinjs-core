@@ -60,10 +60,7 @@ interface DecodedMaterialParams extends MaterialParams {
   textureWeight: number;
 }
 
-function decodeMaterialParams(
-  params: PackedMaterialParams,
-  rgba: Float32Array
-): DecodedMaterialParams {
+function decodeMaterialParams(params: PackedMaterialParams, rgba: Float32Array): DecodedMaterialParams {
   const matWeights = unpackAndNormalizeMaterialParam(params.x);
   const textureWeightAndSpecularR = unpackAndNormalizeMaterialParam(params.y);
   const specularGB = unpackAndNormalizeMaterialParam(params.z);
@@ -78,11 +75,7 @@ function decodeMaterialParams(
 
   const rgbOverridden = -1 !== rgba[0];
   const diffuseColor = rgbOverridden
-    ? ColorDef.from(
-        rgba[0] * 255 + 0.5,
-        rgba[1] * 255 + 0.5,
-        rgba[2] * 255 + 0.5
-      )
+    ? ColorDef.from(rgba[0] * 255 + 0.5, rgba[1] * 255 + 0.5, rgba[2] * 255 + 0.5)
     : undefined;
   const alphaOverridden = -1 !== rgba[3];
   const transparency = alphaOverridden ? 1 - rgba[3] : 0;
@@ -102,10 +95,7 @@ function decodeMaterialParams(
 
 function expectEqualFloats(expected: number, actual: number): void {
   const epsilon = 1.0 / 255.0;
-  expect(Math.abs(expected - actual)).to.be.at.most(
-    epsilon,
-    `Expected: ${expected} Actual: ${actual}`
-  );
+  expect(Math.abs(expected - actual)).to.be.at.most(epsilon, `Expected: ${expected} Actual: ${actual}`);
 }
 
 // eslint-disable-next-line deprecation/deprecation
@@ -131,31 +121,23 @@ function expectMaterialParams(expected: RenderMaterial.Params): void {
   }
 
   expect(actual.specularColor).not.to.be.undefined;
-  if (undefined === expected.specularColor)
-    expect(actual.specularColor!.tbgr).to.equal(0xffffff);
+  if (undefined === expected.specularColor) expect(actual.specularColor!.tbgr).to.equal(0xffffff);
   else expect(actual.specularColor!.tbgr).to.equal(expected.specularColor.tbgr);
 
   expect(actual.rgbOverridden).to.equal(undefined !== expected.diffuseColor);
   expect(actual.alphaOverridden).to.equal(undefined !== expected.alpha);
 
   expect(actual.textureWeight).to.equal(
-    undefined !== material.textureMapping
-      ? material.textureMapping.params.weight
-      : 1.0
+    undefined !== material.textureMapping ? material.textureMapping.params.weight : 1.0
   );
   expectEqualFloats(expected.specular, actual.specular);
-  if (undefined !== expected.alpha)
-    expectEqualFloats(1.0 - expected.alpha, actual.transparency);
+  if (undefined !== expected.alpha) expectEqualFloats(1.0 - expected.alpha, actual.transparency);
 }
 
 // eslint-disable-next-line deprecation/deprecation
 function makeMaterialParams(input: MaterialParams): RenderMaterial.Params {
   // eslint-disable-next-line deprecation/deprecation
-  const params = RenderMaterial.Params.fromColors(
-    undefined,
-    input.diffuseColor,
-    input.specularColor
-  );
+  const params = RenderMaterial.Params.fromColors(undefined, input.diffuseColor, input.specularColor);
   params.diffuse = input.diffuse;
   params.alpha = 1.0 - input.transparency;
   params.specular = input.specular;

@@ -38,19 +38,13 @@ export class CustomAttributes extends ECClasses {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       return {
-        errorMessage: `Schema Key ${schemaKey.toString(
-          true
-        )} not found in context`,
+        errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context`,
       };
 
-    const newClass = (await schema.createCustomAttributeClass(
-      name
-    )) as MutableCAClass;
+    const newClass = (await schema.createCustomAttributeClass(name)) as MutableCAClass;
     if (newClass === undefined)
       return {
-        errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(
-          true
-        )}.`,
+        errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.`,
       };
 
     if (baseClass !== undefined) {
@@ -65,10 +59,7 @@ export class CustomAttributes extends ECClasses {
           errorMessage: `${baseClassItem.fullName} is not of type CustomAttribute Class.`,
         };
 
-      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(
-        baseClass,
-        async () => baseClassItem
-      );
+      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(baseClass, async () => baseClassItem);
     }
 
     if (displayLabel) newClass.setDisplayLabel(displayLabel);
@@ -90,22 +81,15 @@ export class CustomAttributes extends ECClasses {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       return {
-        errorMessage: `Schema Key ${schemaKey.toString(
-          true
-        )} not found in context`,
+        errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context`,
       };
 
-    if (caProps.name === undefined)
-      return { errorMessage: `No name was supplied within props.` };
+    if (caProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
 
-    const newClass = (await schema.createCustomAttributeClass(
-      caProps.name
-    )) as MutableCAClass;
+    const newClass = (await schema.createCustomAttributeClass(caProps.name)) as MutableCAClass;
     if (newClass === undefined)
       return {
-        errorMessage: `Failed to create class ${
-          caProps.name
-        } in schema ${schemaKey.toString(true)}.`,
+        errorMessage: `Failed to create class ${caProps.name} in schema ${schemaKey.toString(true)}.`,
       };
 
     await newClass.fromJSON(caProps);

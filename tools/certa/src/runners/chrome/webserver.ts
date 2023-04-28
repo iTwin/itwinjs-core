@@ -49,9 +49,7 @@ const alreadyLogged = new Set<string>();
 app.use("*", (req, resp) => {
   // Don't repeat these warnings if the same asset was requested multiple times.
   if (!alreadyLogged.has(req.originalUrl)) {
-    console.warn(
-      `WARNING: Tests attempted to load missing asset: "${req.originalUrl}"`
-    );
+    console.warn(`WARNING: Tests attempted to load missing asset: "${req.originalUrl}"`);
     alreadyLogged.add(req.originalUrl);
   }
   resp.sendStatus(404);

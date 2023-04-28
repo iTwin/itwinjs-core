@@ -35,13 +35,10 @@ export async function configureRemoteReporter(page: puppeteer.Page) {
   );
 
   // Expose a function to the frontend for initializing the reporter on the backend.
-  await page.exposeFunction(
-    "_CertaEmitReporterEvent",
-    (name: string, stats: any, ...args: any[]) => {
-      realReporter.stats = stats;
-      mockRunner.emit(name, ...args.map((a) => MochaSerializer.deserialize(a)));
-    }
-  );
+  await page.exposeFunction("_CertaEmitReporterEvent", (name: string, stats: any, ...args: any[]) => {
+    realReporter.stats = stats;
+    mockRunner.emit(name, ...args.map((a) => MochaSerializer.deserialize(a)));
+  });
 
   await page.evaluate(() => {
     (() => {
@@ -65,18 +62,10 @@ export async function configureRemoteReporter(page: puppeteer.Page) {
             ];
             for (const event of events) {
               runner.on(event, (...args: any[]) => {
-                window._CertaEmitReporterEvent(
-                  event,
-                  runner.stats,
-                  ...args.map((a) => MochaSerializer.serialize(a))
-                );
+                window._CertaEmitReporterEvent(event, runner.stats, ...args.map((a) => MochaSerializer.serialize(a)));
               });
             }
-            window._CertaCreateReporter(
-              MochaSerializer.serialize(runner),
-              reporterName,
-              reporterOptions
-            );
+            window._CertaCreateReporter(MochaSerializer.serialize(runner), reporterName, reporterOptions);
           }
         }
         return original(RemoteReporter as Mocha.ReporterConstructor);

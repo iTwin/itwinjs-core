@@ -16,10 +16,7 @@ export interface UiItemsProvider {
     toolbarUsage: ToolbarUsage,
     toolbarOrientation: ToolbarOrientation
   ) => CommonToolbarItem[];
-  provideStatusBarItems?: (
-    stageId: string,
-    stageUsage: string
-  ) => CommonStatusBarItem[];
+  provideStatusBarItems?: (stageId: string, stageUsage: string) => CommonStatusBarItem[];
   provideBackstageItems?: () => BackstageItem[];
   provideWidgets?: (
     stageId: string,

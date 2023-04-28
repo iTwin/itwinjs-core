@@ -8,10 +8,7 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import {
-  ThematicDisplaySensor,
-  ThematicDisplaySensorSettings,
-} from "@itwin/core-common";
+import { ThematicDisplaySensor, ThematicDisplaySensorSettings } from "@itwin/core-common";
 import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
 import { Texture2DData, Texture2DHandle } from "./Texture";
@@ -47,10 +44,7 @@ export class ThematicSensors implements WebGLDisposable {
   private readonly _viewMatrix = Transform.createIdentity();
 
   public matchesTarget(target: Target): boolean {
-    return (
-      target === this.target &&
-      this.sensorSettings === target.plan.thematic?.sensorSettings
-    );
+    return target === this.target && this.sensorSettings === target.plan.thematic?.sensorSettings;
   }
 
   public static create(target: Target, range: Range3d): ThematicSensors {
@@ -127,11 +121,7 @@ export class ThematicSensors implements WebGLDisposable {
     this._view = new DataView(texture.data.buffer);
   }
 
-  public static createFloat(
-    target: Target,
-    range: Range3d,
-    sensors: ThematicDisplaySensor[]
-  ): ThematicSensors {
+  public static createFloat(target: Target, range: Range3d, sensors: ThematicDisplaySensor[]): ThematicSensors {
     const data = new Float32Array(sensors.length * 4);
     const handle = Texture2DHandle.createForData(
       1,
@@ -178,11 +168,7 @@ export class ThematicSensors implements WebGLDisposable {
   }
 }
 
-function _sensorRadiusAffectsRange(
-  sensor: ThematicDisplaySensor,
-  sensorRadius: number,
-  range: Range3d
-) {
+function _sensorRadiusAffectsRange(sensor: ThematicDisplaySensor, sensorRadius: number, range: Range3d) {
   const distance = range.distanceToPoint(sensor.position);
   return !(distance > sensorRadius);
 }
@@ -202,10 +188,7 @@ function _accumulateSensorsInRange(
   for (const sensor of sensors) {
     const position = sensor.position;
 
-    if (
-      distanceCutoff <= 0 ||
-      _sensorRadiusAffectsRange(sensor, distanceCutoff, scratchRange)
-    ) {
+    if (distanceCutoff <= 0 || _sensorRadiusAffectsRange(sensor, distanceCutoff, scratchRange)) {
       const value = sensor.value;
       retSensors.push(ThematicDisplaySensor.fromJSON({ position, value }));
     }

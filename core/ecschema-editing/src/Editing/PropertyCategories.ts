@@ -32,14 +32,10 @@ export class PropertyCategories {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       return {
-        errorMessage: `Schema Key ${schemaKey.toString(
-          true
-        )} not found in context`,
+        errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context`,
       };
 
-    const newPropCategory = (await schema.createPropertyCategory(
-      name
-    )) as MutablePropertyCategory;
+    const newPropCategory = (await schema.createPropertyCategory(name)) as MutablePropertyCategory;
     newPropCategory.setPriority(priority);
     if (displayLabel) newPropCategory.setDisplayLabel(displayLabel);
 
@@ -53,36 +49,27 @@ export class PropertyCategories {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       return {
-        errorMessage: `Schema Key ${schemaKey.toString(
-          true
-        )} not found in context`,
+        errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context`,
       };
 
-    if (propertyCategoryProps.name === undefined)
-      return { errorMessage: `No name was supplied within props.` };
+    if (propertyCategoryProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
 
     const newPropCategory = (await schema.createPropertyCategory(
       propertyCategoryProps.name
     )) as MutablePropertyCategory;
     if (newPropCategory === undefined)
       return {
-        errorMessage: `Failed to create class ${
-          propertyCategoryProps.name
-        } in schema ${schemaKey.toString(true)}.`,
+        errorMessage: `Failed to create class ${propertyCategoryProps.name} in schema ${schemaKey.toString(true)}.`,
       };
 
     await newPropCategory.fromJSON(propertyCategoryProps);
     return { itemKey: newPropCategory.key };
   }
 
-  public async setPriority(
-    propCategoryKey: SchemaItemKey,
-    priority: number
-  ): Promise<void> {
-    const propertyCategory =
-      await this._schemaEditor.schemaContext.getSchemaItem<MutablePropertyCategory>(
-        propCategoryKey
-      );
+  public async setPriority(propCategoryKey: SchemaItemKey, priority: number): Promise<void> {
+    const propertyCategory = await this._schemaEditor.schemaContext.getSchemaItem<MutablePropertyCategory>(
+      propCategoryKey
+    );
 
     if (propertyCategory === undefined)
       throw new ECObjectsError(

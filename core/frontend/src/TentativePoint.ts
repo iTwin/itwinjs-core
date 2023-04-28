@@ -9,15 +9,7 @@
 import { Point3d } from "@itwin/core-geometry";
 import { AccuSnap } from "./AccuSnap";
 import { HitListHolder } from "./ElementLocateManager";
-import {
-  HitDetail,
-  HitList,
-  HitPriority,
-  HitSource,
-  SnapDetail,
-  SnapHeat,
-  SnapMode,
-} from "./HitDetail";
+import { HitDetail, HitList, HitPriority, HitSource, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { BeButton, BeButtonEvent } from "./tools/Tool";
 import { ViewHandleType, ViewManip } from "./tools/ViewTool";
@@ -82,8 +74,7 @@ export class TentativePoint {
     this._tentativePromise = undefined;
     if (!this.isActive) return;
     IModelApp.accuSnap.erase();
-    if (this.getCurrSnap())
-      IModelApp.viewManager.invalidateDecorationsAllViews();
+    if (this.getCurrSnap()) IModelApp.viewManager.invalidateDecorationsAllViews();
     else this.viewport!.invalidateDecorations();
     this.isActive = false;
   }
@@ -96,11 +87,7 @@ export class TentativePoint {
   public showTentative(): void {
     if (this.isSnapped) {
       IModelApp.viewManager.invalidateDecorationsAllViews();
-      IModelApp.accuSnap.displayToolTip(
-        this._viewPoint,
-        this.viewport!,
-        undefined
-      ); // eslint-disable-line @typescript-eslint/no-floating-promises
+      IModelApp.accuSnap.displayToolTip(this._viewPoint, this.viewport!, undefined); // eslint-disable-line @typescript-eslint/no-floating-promises
     } else {
       this.viewport!.invalidateDecorations();
     }
@@ -171,10 +158,7 @@ export class TentativePoint {
 
   private async getSnap(newSearch: boolean): Promise<SnapDetail | undefined> {
     // Use next hit from previous search when using tentative to cycle through hits...
-    let thisHit =
-      !newSearch && undefined !== this.tpHits
-        ? this.tpHits.getNextHit()
-        : undefined;
+    let thisHit = !newSearch && undefined !== this.tpHits ? this.tpHits.getNextHit() : undefined;
 
     // Use existing AccuSnap hit list if one exists...
     if (undefined === thisHit) {
@@ -184,25 +168,15 @@ export class TentativePoint {
 
     if (undefined === thisHit) {
       // search for elements around the current raw point (search should not be affected by locks!)
-      const aperture =
-        (2.0 *
-          this.viewport!.pixelsFromInches(
-            IModelApp.locateManager.apertureInches
-          )) /
-          2.0 +
-        1.5;
+      const aperture = (2.0 * this.viewport!.pixelsFromInches(IModelApp.locateManager.apertureInches)) / 2.0 + 1.5;
       const options = IModelApp.locateManager.options.clone(); // Copy to avoid changing out from under active Tool...
       const picker = IModelApp.locateManager.picker;
 
       options.hitSource = HitSource.TentativeSnap;
-      if (
-        0 === picker.doPick(this.viewport!, this._rawPoint, aperture, options)
-      )
-        return undefined;
+      if (0 === picker.doPick(this.viewport!, this._rawPoint, aperture, options)) return undefined;
 
       this.tpHits = picker.getHitList(true);
-      thisHit =
-        undefined !== this.tpHits ? this.tpHits.getNextHit() : undefined;
+      thisHit = undefined !== this.tpHits ? this.tpHits.getNextHit() : undefined;
     } else if (thisHit instanceof SnapDetail) {
       // Make the current AccuSnap the TentativePoint snap...
       return thisHit;
@@ -211,8 +185,7 @@ export class TentativePoint {
     if (undefined === thisHit) return undefined;
 
     const snapModes = IModelApp.accuSnap.getActiveSnapModes(); // Get the list of point snap modes to consider
-    if (1 === snapModes.length && SnapMode.Intersection === snapModes[0])
-      snapModes.push(SnapMode.Nearest); // Add nearest when doing intersection by itself to support finding extended intersections...
+    if (1 === snapModes.length && SnapMode.Intersection === snapModes[0]) snapModes.push(SnapMode.Nearest); // Add nearest when doing intersection by itself to support finding extended intersections...
 
     const thisSnap = await AccuSnap.requestSnap(
       thisHit,
@@ -227,11 +200,7 @@ export class TentativePoint {
     return thisSnap;
   }
 
-  private static arePointsCloseEnough(
-    pt1: Point3d,
-    pt2: Point3d,
-    pixelDistance: number
-  ): boolean {
+  private static arePointsCloseEnough(pt1: Point3d, pt2: Point3d, pixelDistance: number): boolean {
     return pt1.distance(pt2) < pixelDistance + 1.5;
   }
 
@@ -278,16 +247,7 @@ export class TentativePoint {
           const vp = ev.viewport!;
           if (vp.isSnapAdjustmentRequired) {
             IModelApp.toolAdmin.adjustPointToACS(point, vp, false);
-            const hit = new HitDetail(
-              point,
-              vp,
-              HitSource.TentativeSnap,
-              point,
-              "",
-              HitPriority.Unknown,
-              0,
-              0
-            );
+            const hit = new HitDetail(point, vp, HitSource.TentativeSnap, point, "", HitPriority.Unknown, 0, 0);
             const snap = new SnapDetail(hit);
             this.setCurrSnap(snap);
             IModelApp.toolAdmin.adjustSnapPoint();
@@ -296,8 +256,7 @@ export class TentativePoint {
             IModelApp.accuDraw.adjustPoint(point, vp, false);
             const savePoint = point.clone();
             IModelApp.toolAdmin.adjustPointToGrid(point, vp);
-            if (!point.isExactEqual(savePoint))
-              IModelApp.accuDraw.adjustPoint(point, vp, false);
+            if (!point.isExactEqual(savePoint)) IModelApp.accuDraw.adjustPoint(point, vp, false);
             this.setPoint(point);
           }
         } else {
@@ -305,11 +264,7 @@ export class TentativePoint {
         }
 
         IModelApp.accuDraw.onTentative();
-        if (
-          currTool &&
-          currTool instanceof ViewManip &&
-          currTool.viewHandles.hasHandle(ViewHandleType.TargetCenter)
-        )
+        if (currTool && currTool instanceof ViewManip && currTool.viewHandles.hasHandle(ViewHandleType.TargetCenter))
           currTool.updateTargetCenter(); // Change target center to tentative location...
         else IModelApp.toolAdmin.updateDynamics(undefined, undefined, true); // Don't wait for motion to update dynamics...
       }

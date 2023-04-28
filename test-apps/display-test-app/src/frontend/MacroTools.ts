@@ -23,9 +23,7 @@ export class MacroTool extends Tool {
   }
 
   public override async run(macroFile: string): Promise<boolean> {
-    const macroString = await DtaRpcInterface.getClient().readExternalFile(
-      macroFile
-    );
+    const macroString = await DtaRpcInterface.getClient().readExternalFile(macroFile);
     const re = /\r/g;
     const macroStr2 = macroString.replace(re, "");
     const commands = macroStr2.split("\n");
@@ -35,10 +33,7 @@ export class MacroTool extends Tool {
 
     if (commands.length === 0) {
       IModelApp.notifications.outputMessage(
-        new NotifyMessageDetails(
-          OutputMessagePriority.Info,
-          "File not found or no content"
-        )
+        new NotifyMessageDetails(OutputMessagePriority.Info, "File not found or no content")
       );
     } else {
       for (const cmd of commands) {
@@ -59,11 +54,7 @@ export class MacroTool extends Tool {
           message = `Key-in ${cmd} produced exception: ${ex}`;
         }
         if (undefined !== message)
-          await IModelApp.notifications.openMessageBox(
-            MessageBoxType.MediumAlert,
-            message,
-            MessageBoxIconType.Warning
-          );
+          await IModelApp.notifications.openMessageBox(MessageBoxType.MediumAlert, message, MessageBoxIconType.Warning);
       }
     }
     return true;

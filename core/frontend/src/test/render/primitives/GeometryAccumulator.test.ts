@@ -3,14 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import {
-  LineString3d,
-  Loop,
-  Path,
-  Point3d,
-  Range3d,
-  Transform,
-} from "@itwin/core-geometry";
+import { LineString3d, Loop, Path, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, EmptyLocalization, GraphicParams } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
@@ -21,10 +14,7 @@ import { Branch } from "../../../render/webgl/Graphic";
 import { createBlankConnection } from "../../createBlankConnection";
 import { FakeGeometry } from "./Fake";
 import { DisplayParams } from "../../../render/primitives/DisplayParams";
-import {
-  GenerateEdges,
-  GeometryOptions,
-} from "../../../render/primitives/Primitives";
+import { GenerateEdges, GeometryOptions } from "../../../render/primitives/Primitives";
 import { GeometryAccumulator } from "../../../render/primitives/geometry/GeometryAccumulator";
 import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
 
@@ -41,11 +31,7 @@ describe("GeometryAccumulator tests", () => {
   before(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
     iModel = createBlankConnection();
-    spatialView = SpatialViewState.createBlank(
-      iModel,
-      { x: 0, y: 0, z: 0 },
-      { x: 1, y: 1, z: 1 }
-    );
+    spatialView = SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
@@ -70,8 +56,7 @@ describe("GeometryAccumulator tests", () => {
     const displayParams = DisplayParams.createForLinear(gfParams);
 
     expect(accum.geometries.isEmpty).to.be.true;
-    expect(accum.addPath(pth, displayParams, Transform.createIdentity(), false))
-      .to.be.true;
+    expect(accum.addPath(pth, displayParams, Transform.createIdentity(), false)).to.be.true;
     expect(accum.geometries.length).to.equal(1);
 
     // ###TODO test case where addPath returns false
@@ -92,15 +77,10 @@ describe("GeometryAccumulator tests", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(
-      gfParams,
-      false
-    );
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
 
     expect(accum.geometries.isEmpty).to.be.true;
-    expect(
-      accum.addLoop(loop, displayParams, Transform.createIdentity(), false)
-    ).to.be.true;
+    expect(accum.addLoop(loop, displayParams, Transform.createIdentity(), false)).to.be.true;
     expect(accum.geometries.length).to.equal(1);
 
     // ###TODO test case where addLoop returns false
@@ -121,10 +101,7 @@ describe("GeometryAccumulator tests", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(
-      gfParams,
-      false
-    );
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
 
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
@@ -148,13 +125,7 @@ describe("GeometryAccumulator tests", () => {
     expect(pfPrim.indexedPolyface.pointCount).to.equal(points.length);
 
     expect(accum.geometries.isEmpty).to.be.true;
-    expect(
-      accum.addPolyface(
-        pfPrim.indexedPolyface,
-        displayParams,
-        Transform.createIdentity()
-      )
-    ).to.be.true;
+    expect(accum.addPolyface(pfPrim.indexedPolyface, displayParams, Transform.createIdentity())).to.be.true;
     expect(accum.geometries.length).to.equal(1);
 
     // ###TODO test case where addPolyface returns false
@@ -195,10 +166,7 @@ describe("GeometryAccumulator tests", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(
-      gfParams,
-      false
-    );
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
 
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
@@ -221,22 +189,13 @@ describe("GeometryAccumulator tests", () => {
 
     const gfParams2: GraphicParams = new GraphicParams();
     gfParams2.lineColor = ColorDef.white;
-    const displayParams2: DisplayParams =
-      DisplayParams.createForLinear(gfParams2);
+    const displayParams2: DisplayParams = DisplayParams.createForLinear(gfParams2);
 
-    accum.addPolyface(
-      loopGeom.getPolyfaces(0)![0].indexedPolyface,
-      displayParams,
-      Transform.createIdentity()
-    );
+    accum.addPolyface(loopGeom.getPolyfaces(0)![0].indexedPolyface, displayParams, Transform.createIdentity());
     accum.addPath(pth, displayParams2, Transform.createIdentity(), false);
 
     expect(accum.geometries.length).to.equal(2);
-    const map = accum.toMeshBuilderMap(
-      new GeometryOptions(GenerateEdges.No),
-      0.22,
-      undefined
-    );
+    const map = accum.toMeshBuilderMap(new GeometryOptions(GenerateEdges.No), 0.22, undefined);
     expect(map.size).to.equal(2);
   });
 
@@ -255,10 +214,7 @@ describe("GeometryAccumulator tests", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(
-      gfParams,
-      false
-    );
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
 
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
@@ -281,22 +237,13 @@ describe("GeometryAccumulator tests", () => {
 
     const gfParams2: GraphicParams = new GraphicParams();
     gfParams2.lineColor = ColorDef.white;
-    const displayParams2: DisplayParams =
-      DisplayParams.createForLinear(gfParams2);
+    const displayParams2: DisplayParams = DisplayParams.createForLinear(gfParams2);
 
-    accum.addPolyface(
-      loopGeom.getPolyfaces(0)![0].indexedPolyface,
-      displayParams,
-      Transform.createIdentity()
-    );
+    accum.addPolyface(loopGeom.getPolyfaces(0)![0].indexedPolyface, displayParams, Transform.createIdentity());
     accum.addPath(pth, displayParams2, Transform.createIdentity(), false);
 
     expect(accum.geometries.length).to.equal(2);
-    const meshes = accum.toMeshes(
-      new GeometryOptions(GenerateEdges.No),
-      0.22,
-      undefined
-    );
+    const meshes = accum.toMeshes(new GeometryOptions(GenerateEdges.No), 0.22, undefined);
     expect(meshes.length).to.equal(2);
   });
 
@@ -315,10 +262,7 @@ describe("GeometryAccumulator tests", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(
-      gfParams,
-      false
-    );
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
 
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
@@ -341,23 +285,13 @@ describe("GeometryAccumulator tests", () => {
 
     const gfParams2: GraphicParams = new GraphicParams();
     gfParams2.lineColor = ColorDef.white;
-    const displayParams2: DisplayParams =
-      DisplayParams.createForLinear(gfParams2);
+    const displayParams2: DisplayParams = DisplayParams.createForLinear(gfParams2);
 
-    accum.addPolyface(
-      loopGeom.getPolyfaces(0)![0].indexedPolyface,
-      displayParams,
-      Transform.createIdentity()
-    );
+    accum.addPolyface(loopGeom.getPolyfaces(0)![0].indexedPolyface, displayParams, Transform.createIdentity());
     accum.addPath(pth, displayParams2, Transform.createIdentity(), false);
 
     const graphics = new Array<RenderGraphic>();
-    accum.saveToGraphicList(
-      graphics,
-      new GeometryOptions(GenerateEdges.No),
-      0.22,
-      undefined
-    );
+    accum.saveToGraphicList(graphics, new GeometryOptions(GenerateEdges.No), 0.22, undefined);
     expect(graphics.length).to.equal(1);
     const graphic = graphics[0];
     expect(graphic instanceof Branch).to.be.true;

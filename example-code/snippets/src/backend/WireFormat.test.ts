@@ -5,22 +5,9 @@
 
 import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import {
-  Angle,
-  AngleSweep,
-  Arc3d,
-  LineString3d,
-  Point3d,
-  YawPitchRollAngles,
-} from "@itwin/core-geometry";
+import { Angle, AngleSweep, Arc3d, LineString3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { SnapshotDb } from "@itwin/core-backend";
-import {
-  Code,
-  GeometricElement3dProps,
-  GeometryStreamBuilder,
-  IModel,
-  Placement3dProps,
-} from "@itwin/core-common";
+import { Code, GeometricElement3dProps, GeometryStreamBuilder, IModel, Placement3dProps } from "@itwin/core-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully.
@@ -68,9 +55,7 @@ describe("Wire Format Snippets", () => {
 
   it("RepositoryModel", () => {
     // __PUBLISH_EXTRACT_START__ WireFormat_RepositoryModel.code
-    const modelProps = iModel.models
-      .getModel(IModel.repositoryModelId)
-      .toJSON();
+    const modelProps = iModel.models.getModel(IModel.repositoryModelId).toJSON();
     const json = JSON.stringify(modelProps, undefined, 2);
     // __PUBLISH_EXTRACT_END__
     assert.isDefined(modelProps);
@@ -104,19 +89,12 @@ describe("Wire Format Snippets", () => {
     // Construct an Arc3d (local coordinates)
     const center = new Point3d(0, 0, 0);
     const radius = 1;
-    const sweep = AngleSweep.createStartEnd(
-      Angle.createDegrees(90),
-      Angle.createDegrees(180)
-    );
+    const sweep = AngleSweep.createStartEnd(Angle.createDegrees(90), Angle.createDegrees(180));
     const arc = Arc3d.createXY(center, radius, sweep);
     const arcJson = JSON.stringify(arc, undefined, 2);
 
     // Construct a LineString3d (local coordinates)
-    const points: Point3d[] = [
-      new Point3d(0, 0, 0),
-      new Point3d(1, 2, 0),
-      new Point3d(1, 2, 4),
-    ];
+    const points: Point3d[] = [new Point3d(0, 0, 0), new Point3d(1, 2, 0), new Point3d(1, 2, 4)];
     const lineString = LineString3d.createPoints(points);
     const lineStringJson = JSON.stringify(lineString, undefined, 2);
 
@@ -124,11 +102,7 @@ describe("Wire Format Snippets", () => {
     const builder = new GeometryStreamBuilder();
     builder.appendGeometry(arc);
     builder.appendGeometry(lineString);
-    const geometryStreamJson: string = JSON.stringify(
-      builder.geometryStream,
-      undefined,
-      2
-    );
+    const geometryStreamJson: string = JSON.stringify(builder.geometryStream, undefined, 2);
 
     // Construct a Placement (world coordinates)
     const origin = new Point3d(100, 100, 0);

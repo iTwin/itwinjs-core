@@ -77,15 +77,12 @@ describe("SQLiteDb", () => {
     const testFileName = IModelTestUtils.resolveAssetFile("test.bim");
     const db = new SQLiteDb();
     db.withOpenDb({ dbName: testFileName }, () => {
-      db.withSqliteStatement(
-        `SELECT StrData FROM be_Prop WHERE Namespace="ec_Db" AND Name="SchemaVersion"`,
-        (stmt) => {
-          expect(stmt.step()).equal(DbResult.BE_SQLITE_ROW);
-          const val = JSON.parse(stmt.getValue(0).getString());
-          expect(val.major).equal(4, "read major version");
-          expect(val.minor).equal(0, "read minor version");
-        }
-      );
+      db.withSqliteStatement(`SELECT StrData FROM be_Prop WHERE Namespace="ec_Db" AND Name="SchemaVersion"`, (stmt) => {
+        expect(stmt.step()).equal(DbResult.BE_SQLITE_ROW);
+        const val = JSON.parse(stmt.getValue(0).getString());
+        expect(val.major).equal(4, "read major version");
+        expect(val.minor).equal(0, "read minor version");
+      });
     });
   });
 });

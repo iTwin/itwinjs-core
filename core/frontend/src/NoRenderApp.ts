@@ -35,9 +35,7 @@ export class NullTarget extends RenderTarget {
   public override get animationBranches(): AnimationBranchStates | undefined {
     return undefined;
   }
-  public override set animationBranches(
-    _branches: AnimationBranchStates | undefined
-  ) {}
+  public override set animationBranches(_branches: AnimationBranchStates | undefined) {}
   public onDestroy(): void {}
   public override reset(): void {}
   public changeScene(): void {}

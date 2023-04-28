@@ -35,15 +35,9 @@ describe("SchemaKey", () => {
       expect(() => SchemaKey.parseString("invalid")).to.throw(ECObjectsError);
     });
     it("should throw for out of bounds ECVersions", () => {
-      expect(() => SchemaKey.parseString("SchemaName.01.05.56700000")).to.throw(
-        ECObjectsError
-      );
-      expect(() => SchemaKey.parseString("SchemaName.9999.05.05")).to.throw(
-        ECObjectsError
-      );
-      expect(() => SchemaKey.parseString("SchemaName.01.9999.05")).to.throw(
-        ECObjectsError
-      );
+      expect(() => SchemaKey.parseString("SchemaName.01.05.56700000")).to.throw(ECObjectsError);
+      expect(() => SchemaKey.parseString("SchemaName.9999.05.05")).to.throw(ECObjectsError);
+      expect(() => SchemaKey.parseString("SchemaName.01.9999.05")).to.throw(ECObjectsError);
     });
   });
 
@@ -95,32 +89,13 @@ describe("SchemaKey", () => {
 
     describe("matches", () => {
       it("should correctly handle SchemaMatchType.Identical", () => {
-        expect(
-          new SchemaKey("SchemaTest", 1, 0, 0).matches(
-            new SchemaKey("SchemaTest", 1, 0, 0)
-          )
-        ).true;
-        expect(
-          new SchemaKey("SchemaTest", 1, 0, 0).matches(
-            new SchemaKey("SchemaNotTest", 1, 0, 0)
-          )
-        ).false;
-        expect(
-          new SchemaKey("SchemaTest", 1, 0, 0).matches(
-            new SchemaKey("SchemaTest", 2, 0, 0)
-          )
-        ).false;
-        expect(
-          new SchemaKey("SchemaTest", 1, 0, 0).matches(
-            new SchemaKey("SchemaTest", 1, 0, 1)
-          )
-        ).false;
+        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 0, 0))).true;
+        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaNotTest", 1, 0, 0))).false;
+        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 2, 0, 0))).false;
+        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 0, 1))).false;
 
         expect(
-          new SchemaKey("SchemaTest", 1, 0, 0).matches(
-            new SchemaKey("SchemaTest", 1, 0, 0),
-            SchemaMatchType.Identical
-          )
+          new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 0, 0), SchemaMatchType.Identical)
         ).true;
         expect(
           new SchemaKey("SchemaTest", 1, 0, 0).matches(
@@ -144,55 +119,31 @@ describe("SchemaKey", () => {
 
       it("should correctly handle SchemaMatchType.Exact", () => {
         expect(
-          new SchemaKey("SchemaTest", 1, 0, 0).matches(
-            new SchemaKey("SchemaTest", 1, 0, 0),
-            SchemaMatchType.Exact
-          )
+          new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 0, 0), SchemaMatchType.Exact)
         ).true;
         expect(
-          new SchemaKey("SchemaTest", 1, 0, 0).matches(
-            new SchemaKey("SchemaNotTest", 1, 0, 0),
-            SchemaMatchType.Exact
-          )
+          new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaNotTest", 1, 0, 0), SchemaMatchType.Exact)
         ).false;
         expect(
-          new SchemaKey("SchemaTest", 1, 0, 0).matches(
-            new SchemaKey("SchemaNotTest", 2, 0, 0),
-            SchemaMatchType.Exact
-          )
+          new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaNotTest", 2, 0, 0), SchemaMatchType.Exact)
         ).false;
         expect(
-          new SchemaKey("SchemaTest", 1, 0, 0).matches(
-            new SchemaKey("SchemaNotTest", 1, 0, 1),
-            SchemaMatchType.Exact
-          )
+          new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaNotTest", 1, 0, 1), SchemaMatchType.Exact)
         ).false;
       });
 
       it("should correctly handle SchemaMatchType.Latest", () => {
         expect(
-          new SchemaKey("SchemaTest", 1, 0, 0).matches(
-            new SchemaKey("SchemaTest", 1, 0, 0),
-            SchemaMatchType.Latest
-          )
+          new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 0, 0), SchemaMatchType.Latest)
         ).true;
         expect(
-          new SchemaKey("SchemaTest", 1, 0, 0).matches(
-            new SchemaKey("SchemaNotTest", 1, 0, 0),
-            SchemaMatchType.Latest
-          )
+          new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaNotTest", 1, 0, 0), SchemaMatchType.Latest)
         ).false;
         expect(
-          new SchemaKey("SchemaTest", 1, 0, 0).matches(
-            new SchemaKey("SchemaTest", 2, 0, 0),
-            SchemaMatchType.Latest
-          )
+          new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 2, 0, 0), SchemaMatchType.Latest)
         ).true;
         expect(
-          new SchemaKey("SchemaTest", 1, 0, 1).matches(
-            new SchemaKey("SchemaTest", 1, 0, 0),
-            SchemaMatchType.Latest
-          )
+          new SchemaKey("SchemaTest", 1, 0, 1).matches(new SchemaKey("SchemaTest", 1, 0, 0), SchemaMatchType.Latest)
         ).true;
       });
 
@@ -270,10 +221,7 @@ describe("SchemaKey", () => {
 
       it("should correctly handle invalid SchemaMatchType", () => {
         expect(
-          new SchemaKey("SchemaTest", 1, 0, 0).matches(
-            new SchemaKey("SchemaTest", 1, 0, 0),
-            -1 as SchemaMatchType
-          )
+          new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 0, 0), -1 as SchemaMatchType)
         ).false;
       });
     });

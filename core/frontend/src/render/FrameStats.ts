@@ -53,9 +53,7 @@ export interface FrameStats {
  * @see [[Viewport.enableFrameStatsListener]]
  * @alpha
  */
-export type OnFrameStatsReadyEvent = BeEvent<
-  (frameStats: Readonly<FrameStats>) => void
->;
+export type OnFrameStatsReadyEvent = BeEvent<(frameStats: Readonly<FrameStats>) => void>;
 
 /** @internal */
 export class FrameStatsCollector {
@@ -119,16 +117,13 @@ export class FrameStatsCollector {
   }
 
   public beginFrame() {
-    this._shouldRecordFrame =
-      undefined !== this._onFrameStatsReady &&
-      this._onFrameStatsReady.numberOfListeners > 0;
+    this._shouldRecordFrame = undefined !== this._onFrameStatsReady && this._onFrameStatsReady.numberOfListeners > 0;
   }
 
   public endFrame(wasFrameDrawn = false) {
     if (this._shouldRecordFrame) {
       if (wasFrameDrawn) {
-        if (undefined !== this._onFrameStatsReady)
-          this._onFrameStatsReady.raiseEvent(this._frameStats); // transmit this frame's statistics to any listeners
+        if (undefined !== this._onFrameStatsReady) this._onFrameStatsReady.raiseEvent(this._frameStats); // transmit this frame's statistics to any listeners
         this._frameStats.frameId++; // increment frame counter for next pending frame
       }
       this._clearStats();

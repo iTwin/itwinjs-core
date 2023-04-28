@@ -8,18 +8,10 @@
  */
 
 import { BeDuration } from "@itwin/core-bentley";
-import {
-  IModelApp,
-  ScreenViewport,
-  ToolSettings,
-  Viewport,
-} from "@itwin/core-frontend";
+import { IModelApp, ScreenViewport, ToolSettings, Viewport } from "@itwin/core-frontend";
 import { createCheckBox } from "../ui/CheckBox";
 import { createNestedMenu } from "../ui/NestedMenu";
-import {
-  createLabeledNumericInput,
-  createNumericInput,
-} from "../ui/NumericInput";
+import { createLabeledNumericInput, createNumericInput } from "../ui/NumericInput";
 
 /** Allows the global settings controlling the behavior of viewing tools to be customized.
  * @alpha
@@ -36,8 +28,7 @@ export class ToolSettingsTracker {
       label: "Tool Settings",
       parent,
       expand: ToolSettingsTracker._expandToolSettings,
-      handler: (expanded) =>
-        (ToolSettingsTracker._expandToolSettings = expanded),
+      handler: (expanded) => (ToolSettingsTracker._expandToolSettings = expanded),
       body: settingsDiv,
     });
 
@@ -56,9 +47,7 @@ export class ToolSettingsTracker {
     div.style.textAlign = "left";
 
     // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
-    settingsDiv.style.display = ToolSettingsTracker._expandToolSettings
-      ? "block"
-      : "none";
+    settingsDiv.style.display = ToolSettingsTracker._expandToolSettings ? "block" : "none";
 
     div = IModelApp.makeHTMLElement("div", { parent: settingsDiv });
     let label = IModelApp.makeHTMLElement("label", {
@@ -75,8 +64,7 @@ export class ToolSettingsTracker {
       step: 1,
       value: ScreenViewport.animation.time.normal.milliseconds,
       handler: (value, _input) => {
-        ScreenViewport.animation.time.normal =
-          BeDuration.fromMilliseconds(value);
+        ScreenViewport.animation.time.normal = BeDuration.fromMilliseconds(value);
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         IModelApp.toolAdmin.exitViewTool();
       },
@@ -253,9 +241,7 @@ export class ToolSettingsTracker {
       parent: settingsDiv,
       value: ToolSettings.viewingInertia.duration.milliseconds / 1000,
       handler: async (value, _) => {
-        ToolSettings.viewingInertia.duration = BeDuration.fromMilliseconds(
-          value * 1000
-        );
+        ToolSettings.viewingInertia.duration = BeDuration.fromMilliseconds(value * 1000);
         return IModelApp.toolAdmin.exitViewTool();
       },
       min: 0,

@@ -57,17 +57,13 @@ export class AkimaCurve3dOptions {
   }
   /** Clone with strongly typed members reduced to simple json. */
   public clone(): AkimaCurve3dOptions {
-    const clone = new AkimaCurve3dOptions(
-      Point3dArray.clonePoint3dArray(this.fitPoints)
-    );
+    const clone = new AkimaCurve3dOptions(Point3dArray.clonePoint3dArray(this.fitPoints));
     return clone;
   }
 
   /** Clone with strongly typed members reduced to simple json. */
   public static create(source: AkimaCurve3dProps): AkimaCurve3dOptions {
-    const result = new AkimaCurve3dOptions(
-      Point3dArray.clonePoint3dArray(source.fitPoints)
-    );
+    const result = new AkimaCurve3dOptions(Point3dArray.clonePoint3dArray(source.fitPoints));
     return result;
   }
 
@@ -77,10 +73,8 @@ export class AkimaCurve3dOptions {
   ): boolean {
     if (dataA === undefined && dataB === undefined) return true;
     if (dataA !== undefined && dataB !== undefined) {
-      return Geometry.almostEqualArrays(
-        dataA.fitPoints,
-        dataB.fitPoints,
-        (a: Point3d, b: Point3d) => a.isAlmostEqual(b)
+      return Geometry.almostEqualArrays(dataA.fitPoints, dataB.fitPoints, (a: Point3d, b: Point3d) =>
+        a.isAlmostEqual(b)
       );
     }
     return false;
@@ -100,10 +94,7 @@ export class AkimaCurve3d extends ProxyCurve {
   /**
    * CAPTURE properties and proxy curve.
    */
-  private constructor(
-    properties: AkimaCurve3dOptions,
-    proxyCurve: CurvePrimitive
-  ) {
+  private constructor(properties: AkimaCurve3dOptions, proxyCurve: CurvePrimitive) {
     super(proxyCurve);
     this._options = properties;
   }
@@ -115,9 +106,7 @@ export class AkimaCurve3d extends ProxyCurve {
    * * This saves a COPY OF the options or props.
    * * Use createCapture () if the options or props can be used without copy
    */
-  public static create(
-    options: AkimaCurve3dOptions | AkimaCurve3dProps
-  ): AkimaCurve3d | undefined {
+  public static create(options: AkimaCurve3dOptions | AkimaCurve3dProps): AkimaCurve3d | undefined {
     let optionsCopy;
     if (options instanceof AkimaCurve3dOptions) {
       optionsCopy = options.clone();
@@ -127,9 +116,7 @@ export class AkimaCurve3d extends ProxyCurve {
     return AkimaCurve3d.createCapture(optionsCopy);
   }
 
-  public static createCapture(
-    options: AkimaCurve3dOptions
-  ): AkimaCurve3d | undefined {
+  public static createCapture(options: AkimaCurve3dOptions): AkimaCurve3d | undefined {
     const proxyCurve = BSplineCurve3d.createFromAkimaCurve3dOptions(options);
     if (proxyCurve) return new AkimaCurve3d(options, proxyCurve);
     return undefined;

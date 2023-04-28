@@ -36,12 +36,7 @@ export class RotationalSweep extends SolidPrimitive {
   private _contour: SweepContour;
   private _normalizedAxis: Ray3d;
   private _sweepAngle: Angle;
-  private constructor(
-    contour: SweepContour,
-    normalizedAxis: Ray3d,
-    sweepAngle: Angle,
-    capped: boolean
-  ) {
+  private constructor(contour: SweepContour, normalizedAxis: Ray3d, sweepAngle: Angle, capped: boolean) {
     super(capped);
     this._contour = contour;
     this._normalizedAxis = normalizedAxis;
@@ -68,11 +63,7 @@ export class RotationalSweep extends SolidPrimitive {
    */
   public getConstructiveFrame(): Transform | undefined {
     const contourPerpendicular = this._contour.localToWorld.matrix.columnZ();
-    const axes = Matrix3d.createRigidFromColumns(
-      contourPerpendicular,
-      this._normalizedAxis.direction,
-      AxisOrder.YZX
-    );
+    const axes = Matrix3d.createRigidFromColumns(contourPerpendicular, this._normalizedAxis.direction, AxisOrder.YZX);
     if (axes) {
       return Transform.createOriginAndMatrix(this._normalizedAxis.origin, axes);
     }
@@ -120,10 +111,7 @@ export class RotationalSweep extends SolidPrimitive {
   }
   /** Transform the contour and axis */
   public tryTransformInPlace(transform: Transform): boolean {
-    if (
-      !transform.matrix.isSingular() &&
-      this._contour.tryTransformInPlace(transform)
-    ) {
+    if (!transform.matrix.isSingular() && this._contour.tryTransformInPlace(transform)) {
       this._normalizedAxis.transformInPlace(transform);
       return this._normalizedAxis.direction.normalizeInPlace();
     }
@@ -140,10 +128,7 @@ export class RotationalSweep extends SolidPrimitive {
     return handler.handleRotationalSweep(this);
   }
   /** Return a transform that rotates around the rotational axis by a fraction of the total sweep. */
-  public getFractionalRotationTransform(
-    vFraction: number,
-    result?: Transform
-  ): Transform {
+  public getFractionalRotationTransform(vFraction: number, result?: Transform): Transform {
     const radians = this._sweepAngle.radians * vFraction;
     const rotation = Transform.createFixedPointAndMatrix(
       this._normalizedAxis.origin,
@@ -162,9 +147,7 @@ export class RotationalSweep extends SolidPrimitive {
   public constantVSection(vFraction: number): CurveCollection | undefined {
     const section = this._contour.curves.clone();
     if (section) {
-      section.tryTransformInPlace(
-        this.getFractionalRotationTransform(vFraction)
-      );
+      section.tryTransformInPlace(this.getFractionalRotationTransform(vFraction));
     }
     return section;
   }
@@ -174,12 +157,7 @@ export class RotationalSweep extends SolidPrimitive {
     const options = StrokeOptions.createForCurves();
     options.angleTol = Angle.createDegrees(degreeStep);
     const strokes = this._contour.curves.cloneStroked(options);
-    const numStep = Geometry.stepCount(
-      degreeStep,
-      this._sweepAngle.degrees,
-      4,
-      32
-    );
+    const numStep = Geometry.stepCount(degreeStep, this._sweepAngle.degrees, 4, 32);
     const stepTransform = Transform.createIdentity();
     if (transform) {
       const compositeTransform = Transform.createIdentity();
@@ -192,10 +170,7 @@ export class RotationalSweep extends SolidPrimitive {
       }
     } else {
       for (let i = 0; i <= numStep; i++)
-        strokes.extendRange(
-          range,
-          this.getFractionalRotationTransform(i / numStep, stepTransform)
-        );
+        strokes.extendRange(range, this.getFractionalRotationTransform(i / numStep, stepTransform));
     }
   }
   /**

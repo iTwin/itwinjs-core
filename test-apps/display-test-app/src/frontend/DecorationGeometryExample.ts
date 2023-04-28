@@ -3,14 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@itwin/core-bentley";
-import {
-  Box,
-  Cone,
-  Point3d,
-  Range3d,
-  Sphere,
-  Transform,
-} from "@itwin/core-geometry";
+import { Box, Cone, Point3d, Range3d, Sphere, Transform } from "@itwin/core-geometry";
 import {
   ColorDef,
   Feature,
@@ -40,10 +33,7 @@ import { Viewer } from "./Viewer";
 class GeometryDecorator {
   public readonly useCachedDecorations = true;
   private readonly _iModel: IModelConnection;
-  private readonly _decorators = new Map<
-    string,
-    (builder: GraphicBuilder) => void
-  >();
+  private readonly _decorators = new Map<string, (builder: GraphicBuilder) => void>();
   private readonly _viewIndependentOrigin?: Point3d;
   private _texture?: RenderTexture;
   private _normalMap?: RenderTexture;
@@ -99,10 +89,7 @@ class GeometryDecorator {
     this._normalMap = undefined;
   }
 
-  public setTextures(
-    texture: RenderTexture | undefined,
-    normalMap: RenderTexture | undefined
-  ) {
+  public setTextures(texture: RenderTexture | undefined, normalMap: RenderTexture | undefined) {
     this._texture = texture;
     this._normalMap = normalMap;
   }
@@ -117,12 +104,7 @@ class GeometryDecorator {
     const mode = TextureMapping.Mode.Planar;
     const worldMapping = true;
 
-    const colors = [
-      ColorDef.blue,
-      ColorDef.red,
-      ColorDef.green,
-      ColorDef.fromString("yellow"),
-    ];
+    const colors = [ColorDef.blue, ColorDef.red, ColorDef.green, ColorDef.fromString("yellow")];
     let colorIndex = 0;
     const branch = new GraphicBranch();
     for (const [key, value] of this._decorators) {
@@ -142,8 +124,7 @@ class GeometryDecorator {
       const nm = nMaps[ndx];
       let textureMapping: MaterialTextureMappingProps | undefined;
       if (undefined === nm) {
-        if (undefined !== tx)
-          textureMapping = { texture: tx, transform, mode, worldMapping };
+        if (undefined !== tx) textureMapping = { texture: tx, transform, mode, worldMapping };
       } else {
         if (undefined !== tx)
           textureMapping = {
@@ -182,10 +163,7 @@ class GeometryDecorator {
       branch.add(builder.finish());
     }
 
-    const graphic = context.createGraphicBranch(
-      branch,
-      Transform.createIdentity()
-    );
+    const graphic = context.createGraphicBranch(branch, Transform.createIdentity());
     context.addDecoration(GraphicType.Scene, graphic);
   }
 
@@ -197,9 +175,7 @@ class GeometryDecorator {
       new Point3d(ox, oy + 1, 1),
       new Point3d(ox, oy, 0),
     ];
-    this._decorators.set(this._iModel.transientIds.getNext(), (builder) =>
-      builder.addShape(points)
-    );
+    this._decorators.set(this._iModel.transientIds.getNext(), (builder) => builder.addShape(points));
   }
 
   private addDecorator(decorate: (builder: GraphicBuilder) => void): void {
@@ -207,18 +183,12 @@ class GeometryDecorator {
   }
 
   private addBox(cx: number, cy: number = 0): void {
-    const box = Box.createRange(
-      new Range3d(cx, cy, 0, cx + 1, cy + 1, 1),
-      true
-    );
+    const box = Box.createRange(new Range3d(cx, cy, 0, cx + 1, cy + 1, 1), true);
     if (box) this.addDecorator((builder) => builder.addSolidPrimitive(box));
   }
 
   private addSphere(cx: number, cy: number = 0): void {
-    const sphere = Sphere.createCenterRadius(
-      new Point3d(cx + 0.5, cy + 0.5, 0.5),
-      0.5
-    );
+    const sphere = Sphere.createCenterRadius(new Point3d(cx + 0.5, cy + 0.5, 0.5), 0.5);
     this.addDecorator((builder) => builder.addSolidPrimitive(sphere));
   }
 
@@ -253,23 +223,12 @@ class GeometryDecorator {
       assert(undefined !== box);
       builder.addSolidPrimitive(box);
 
-      builder.activateFeature(
-        new Feature(sphereId, undefined, GeometryClass.Construction)
-      );
-      const sphere = Sphere.createCenterRadius(
-        new Point3d(6.5, y + 0.5, 0.5),
-        0.5
-      );
+      builder.activateFeature(new Feature(sphereId, undefined, GeometryClass.Construction));
+      const sphere = Sphere.createCenterRadius(new Point3d(6.5, y + 0.5, 0.5), 0.5);
       builder.addSolidPrimitive(sphere);
 
       builder.activatePickableId(coneId);
-      const cone = Cone.createAxisPoints(
-        new Point3d(9.5, y + 0.5, 0),
-        new Point3d(9.5, y + 0.5, 1),
-        0.5,
-        0.25,
-        true
-      );
+      const cone = Cone.createAxisPoints(new Point3d(9.5, y + 0.5, 0), new Point3d(9.5, y + 0.5, 1), 0.5, 0.25, true);
       assert(undefined !== cone);
       builder.addSolidPrimitive(cone);
     });
@@ -278,12 +237,7 @@ class GeometryDecorator {
 
 export async function openDecorationGeometryExample(viewer: Viewer) {
   const viewIndependentOrigin = undefined; // new Point3d(4, 0, 0) -- uncomment for testing.
-  const gd = new GeometryDecorator(
-    viewer.viewport,
-    undefined,
-    undefined,
-    viewIndependentOrigin
-  );
+  const gd = new GeometryDecorator(viewer.viewport, undefined, undefined, viewIndependentOrigin);
   IModelApp.viewManager.addDecorator(gd);
 
   assert(viewer.viewport.view.is3d());

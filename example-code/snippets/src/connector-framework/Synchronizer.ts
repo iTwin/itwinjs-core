@@ -17,14 +17,7 @@ import {
   IModelDb,
   RepositoryLink,
 } from "@itwin/core-backend";
-import {
-  assert,
-  DbResult,
-  Guid,
-  Id64,
-  IModelStatus,
-  Logger,
-} from "@itwin/core-bentley";
+import { assert, DbResult, Guid, Id64, IModelStatus, Logger } from "@itwin/core-bentley";
 // eslint-disable-next-line no-duplicate-imports
 import type { AccessToken, GuidString, Id64String } from "@itwin/core-bentley";
 import { Code, IModel, IModelError, RelatedElement } from "@itwin/core-common";
@@ -42,11 +35,7 @@ class LoggerCategories {
   public static Framework: any;
 }
 
-function deleteElementSubTrees(
-  _imodel: IModelDb,
-  _id: string,
-  _args: any
-): void {}
+function deleteElementSubTrees(_imodel: IModelDb, _id: string, _args: any): void {}
 
 /** The state of the given SourceItem against the iModelDb
  * @beta
@@ -205,9 +194,7 @@ export interface RecordDocumentResults extends SynchronizationResults {
 
 type ItemWithScopeAndKind = RemoveNullable<SourceItem, "scope" | "kind">;
 
-function sourceItemHasScopeAndKind(
-  item: SourceItem
-): item is ItemWithScopeAndKind {
+function sourceItemHasScopeAndKind(item: SourceItem): item is ItemWithScopeAndKind {
   return item.scope !== undefined && item.kind !== undefined;
 }
 
@@ -227,10 +214,7 @@ export class Synchronizer {
     protected _requestContext?: AccessToken
   ) {
     if (imodel.isBriefcaseDb() && undefined === _requestContext)
-      throw new IModelError(
-        IModelStatus.BadArg,
-        "RequestContext must be set when working with a BriefcaseDb"
-      );
+      throw new IModelError(IModelStatus.BadArg, "RequestContext must be set when working with a BriefcaseDb");
   }
 
   /** @internal */
@@ -245,16 +229,12 @@ export class Synchronizer {
     this._jobSubjectId = id;
   }
   public get jobSubjectId(): string {
-    if (this._jobSubjectId === undefined)
-      throw new IModelError(IModelStatus.MissingId, "No Job Subject");
+    if (this._jobSubjectId === undefined) throw new IModelError(IModelStatus.MissingId, "No Job Subject");
     return this._jobSubjectId;
   }
 
   // __PUBLISH_EXTRACT_START__ Sychronizer-getOrCreateExternalSource.example-code
-  private getOrCreateExternalSource(
-    repositoryLinkId: Id64String,
-    modelId: Id64String
-  ): Id64String {
+  private getOrCreateExternalSource(repositoryLinkId: Id64String, modelId: Id64String): Id64String {
     const xse = this.getExternalSourceElementByLinkId(repositoryLinkId);
     if (xse !== undefined) {
       assert(xse.id !== undefined);
@@ -285,11 +265,7 @@ export class Synchronizer {
 
   // __PUBLISH_EXTRACT_START__ Synchronizer-recordDocument.example-code
   public recordDocument(sourceDocument: SourceDocument): RecordDocumentResults {
-    const code = RepositoryLink.createCode(
-      this.imodel,
-      IModel.repositoryModelId,
-      sourceDocument.docid
-    );
+    const code = RepositoryLink.createCode(this.imodel, IModel.repositoryModelId, sourceDocument.docid);
 
     const sourceItem: ItemWithScopeAndKind = {
       kind: "DocumentWithBeGuid",
@@ -307,11 +283,7 @@ export class Synchronizer {
       return existing;
     }
     // __PUBLISH_EXTRACT_END__
-    const repositoryLink = this.makeRepositoryLink(
-      code,
-      sourceDocument.description,
-      sourceDocument.docProps
-    );
+    const repositoryLink = this.makeRepositoryLink(code, sourceDocument.description, sourceDocument.docProps);
 
     if (undefined === repositoryLink) {
       throw new IModelError(
@@ -328,10 +300,7 @@ export class Synchronizer {
 
     // __PUBLISH_EXTRACT_START__ Synchronizer-detectChanges.example-code
     const changeResults = this.detectChanges(sourceItem);
-    if (
-      Id64.isValidId64(repositoryLink.id) &&
-      changeResults.state === ItemState.New
-    ) {
+    if (Id64.isValidId64(repositoryLink.id) && changeResults.state === ItemState.New) {
       const error = `A RepositoryLink element with code=${repositoryLink.code} and id=${repositoryLink.id} already exists in the bim file.
       However, no ExternalSourceAspect with scope=${sourceItem.scope} and kind=${sourceItem.kind} was found for this element.
       Maybe RecordDocument was previously called on this file with a different scope or kind.`;
@@ -346,10 +315,7 @@ export class Synchronizer {
     if (changeResults.state === ItemState.Unchanged) {
       assert(changeResults.id !== undefined);
       results.elementProps.id = changeResults.id;
-      results.source = this.getOrCreateExternalSource(
-        results.elementProps.id,
-        results.elementProps.model
-      );
+      results.source = this.getOrCreateExternalSource(results.elementProps.id, results.elementProps.model);
       assert(
         changeResults.existingExternalSourceAspect !== undefined,
         "detectChanges must set existingExternalSourceAspect whenever it returns Unchanged or Changed"
@@ -368,25 +334,14 @@ export class Synchronizer {
     const status = this.updateIModel(results, sourceItem);
 
     if (results.elementProps.id === undefined)
-      throw new IModelError(
-        status,
-        `Failed to insert repositoryLink ${JSON.stringify(
-          results.elementProps
-        )}`
-      );
+      throw new IModelError(status, `Failed to insert repositoryLink ${JSON.stringify(results.elementProps)}`);
 
-    results.source = this.getOrCreateExternalSource(
-      results.elementProps.id,
-      results.elementProps.model
-    );
+    results.source = this.getOrCreateExternalSource(results.elementProps.id, results.elementProps.model);
 
     this._links.set(key, results);
 
     // Fail-safety - see updateRepositoryLinks
-    results.postChangeAspect = this.makeExternalSourceAspectPropsFromSourceItem(
-      sourceItem,
-      results.elementProps.id
-    ); // this is what we will write in updateRepositoryLinks at the finish
+    results.postChangeAspect = this.makeExternalSourceAspectPropsFromSourceItem(sourceItem, results.elementProps.id); // this is what we will write in updateRepositoryLinks at the finish
     const aspectNoVersion: ExternalSourceAspectProps = {
       ...results.postChangeAspect,
       version: undefined,
@@ -401,8 +356,7 @@ export class Synchronizer {
   private setSourceItemDefaults(item: SourceItem) {
     if (item.scope === undefined) item.scope = this.jobSubjectId;
     if (item.kind === undefined) item.kind = "";
-    if (item.source === undefined && this.linkCount === 1)
-      item.source = this._links.values().next().value.source;
+    if (item.source === undefined && this.linkCount === 1) item.source = this._links.values().next().value.source;
     assert(sourceItemHasScopeAndKind(item));
   }
 
@@ -421,12 +375,7 @@ export class Synchronizer {
     };
 
     if (item.id !== "") {
-      ids = ExternalSourceAspect.findAllBySource(
-        this.imodel,
-        item.scope,
-        item.kind,
-        item.id
-      );
+      ids = ExternalSourceAspect.findAllBySource(this.imodel, item.scope, item.kind, item.id);
       if (ids.length === 1) ids = ids[0];
     }
 
@@ -439,16 +388,11 @@ export class Synchronizer {
     let aspect: ExternalSourceAspect | undefined;
 
     try {
-      aspect = this.imodel.elements.getAspect(
-        ids.aspectId
-      ) as ExternalSourceAspect;
+      aspect = this.imodel.elements.getAspect(ids.aspectId) as ExternalSourceAspect;
     } catch (err) {
       // Unfortunately, the only way we can find out if an aspect is NOT there is by getting an
       // error when asking for it.
-      if (
-        !(err instanceof IModelError) ||
-        err.errorNumber !== IModelStatus.NotFound
-      ) {
+      if (!(err instanceof IModelError) || err.errorNumber !== IModelStatus.NotFound) {
         throw err;
       }
 
@@ -467,10 +411,7 @@ export class Synchronizer {
       return results;
     }
 
-    if (
-      (item.checksum?.() ?? item.version) !==
-      (aspect.checksum ?? aspect.version)
-    ) {
+    if ((item.checksum?.() ?? item.version) !== (aspect.checksum ?? aspect.version)) {
       results.state = ItemState.Changed;
       return results;
     }
@@ -488,20 +429,14 @@ export class Synchronizer {
    * @see [[SourceItem]] for an explanation of how an entity from an external source is tracked.
    * @beta
    */
-  public updateIModel(
-    results: SynchronizationResults,
-    sourceItem: SourceItem
-  ): IModelStatus {
+  public updateIModel(results: SynchronizationResults, sourceItem: SourceItem): IModelStatus {
     this.setSourceItemDefaults(sourceItem);
     assert(sourceItemHasScopeAndKind(sourceItem));
 
     let status: IModelStatus = IModelStatus.Success;
 
     if (ItemState.Unchanged === results.itemState) {
-      if (
-        results.elementProps.id === undefined ||
-        !Id64.isValidId64(results.elementProps.id)
-      ) {
+      if (results.elementProps.id === undefined || !Id64.isValidId64(results.elementProps.id)) {
         throw new IModelError(IModelStatus.BadArg, "missing id");
       }
       this.onElementSeen(results.elementProps.id);
@@ -511,12 +446,7 @@ export class Synchronizer {
     // __PUBLISH_EXTRACT_START__ Synchronizer-updateIModel.example-code
     let aspectId: Id64String | undefined;
     if (sourceItem.id !== "") {
-      const xsas = ExternalSourceAspect.findAllBySource(
-        this.imodel,
-        sourceItem.scope,
-        sourceItem.kind,
-        sourceItem.id
-      );
+      const xsas = ExternalSourceAspect.findAllBySource(this.imodel, sourceItem.scope, sourceItem.kind, sourceItem.id);
       if (xsas.length > 1) return IModelStatus.DuplicateName;
       const xsa = xsas[0];
       if (xsa.aspectId !== undefined) {
@@ -533,29 +463,19 @@ export class Synchronizer {
     //   }
     // }
 
-    const aspectProps =
-      this.makeExternalSourceAspectPropsFromSourceItem(sourceItem);
+    const aspectProps = this.makeExternalSourceAspectPropsFromSourceItem(sourceItem);
 
     if (undefined !== aspectId) {
-      if (
-        IModelStatus.Success !==
-        (status = this.updateResultsInIModel(results, aspectProps))
-      ) {
+      if (IModelStatus.Success !== (status = this.updateResultsInIModel(results, aspectProps))) {
         return status;
       }
     } else {
-      if (
-        IModelStatus.Success !==
-        (status = this.insertResultsIntoIModel(results, aspectProps))
-      ) {
+      if (IModelStatus.Success !== (status = this.insertResultsIntoIModel(results, aspectProps))) {
         return status;
       }
     }
 
-    assert(
-      results.elementProps.id !== undefined &&
-        Id64.isValidId64(results.elementProps.id)
-    );
+    assert(results.elementProps.id !== undefined && Id64.isValidId64(results.elementProps.id));
 
     return status;
   }
@@ -567,20 +487,13 @@ export class Synchronizer {
    * @param sourceItem Defines the source item
    * @beta
    */
-  public setExternalSourceAspect(
-    element: ElementProps,
-    itemState: ItemState,
-    sourceItem: SourceItem
-  ): IModelStatus {
+  public setExternalSourceAspect(element: ElementProps, itemState: ItemState, sourceItem: SourceItem): IModelStatus {
     assert(element.id !== undefined && Id64.isValidId64(element.id));
 
     this.setSourceItemDefaults(sourceItem);
     assert(sourceItemHasScopeAndKind(sourceItem));
 
-    const aspectProps = this.makeExternalSourceAspectPropsFromSourceItem(
-      sourceItem,
-      element.id
-    );
+    const aspectProps = this.makeExternalSourceAspectPropsFromSourceItem(sourceItem, element.id);
 
     if (itemState === ItemState.New) {
       this.imodel.elements.insertAspect(aspectProps); // throws on error
@@ -595,9 +508,7 @@ export class Synchronizer {
    * @param repositoryLink The repository link associated with the External Source Element
    * @beta
    */
-  public getExternalSourceElement(
-    repositoryLink: Element
-  ): ExternalSourceProps | undefined {
+  public getExternalSourceElement(repositoryLink: Element): ExternalSourceProps | undefined {
     return this.getExternalSourceElementByLinkId(repositoryLink.id);
   }
 
@@ -605,24 +516,17 @@ export class Synchronizer {
    * @param repositoryLinkId The ElementId of the repository link associated with the External Source Element
    * @beta
    */
-  public getExternalSourceElementByLinkId(
-    repositoryLinkId: Id64String
-  ): ExternalSourceProps | undefined {
+  public getExternalSourceElementByLinkId(repositoryLinkId: Id64String): ExternalSourceProps | undefined {
     let sourceId;
-    this.imodel.withStatement(
-      "select * from BisCore.ExternalSource where repository.id=?",
-      (stmt) => {
-        stmt.bindValues([repositoryLinkId]);
-        stmt.step();
-        const row = stmt.getRow();
-        sourceId = row.id;
-      }
-    );
+    this.imodel.withStatement("select * from BisCore.ExternalSource where repository.id=?", (stmt) => {
+      stmt.bindValues([repositoryLinkId]);
+      stmt.step();
+      const row = stmt.getRow();
+      sourceId = row.id;
+    });
 
     if (sourceId) {
-      return this.imodel.elements.getElementProps<ExternalSourceProps>(
-        sourceId
-      );
+      return this.imodel.elements.getElementProps<ExternalSourceProps>(sourceId);
     }
 
     return;
@@ -669,10 +573,7 @@ export class Synchronizer {
    * @param results The result set to insert
    * @beta
    */
-  public updateResultsInIModel(
-    results: SynchronizationResults,
-    aspectProps: ExternalSourceAspectProps
-  ): IModelStatus {
+  public updateResultsInIModel(results: SynchronizationResults, aspectProps: ExternalSourceAspectProps): IModelStatus {
     const status = this.updateResultInIModelForOneElement(results);
     if (IModelStatus.Success !== status) {
       return status;
@@ -700,8 +601,7 @@ export class Synchronizer {
   public detectDeletedElements() {
     if (this.imodel.isSnapshotDb()) return;
 
-    if (this._supportsMultipleFilesPerChannel)
-      this.detectDeletedElementsInFiles();
+    if (this._supportsMultipleFilesPerChannel) this.detectDeletedElementsInFiles();
     else this.detectDeletedElementsInChannel();
   }
 
@@ -715,46 +615,26 @@ export class Synchronizer {
     // This detection only is called for connectors that support a single source file per channel. If we skipped that file because it was unchanged, then we don't need to delete anything
     if (this._unchangedSources.length !== 0) return;
 
-    deleteElementSubTrees(
-      this.imodel,
-      this.jobSubjectId,
-      (elementId: string) => {
-        if (
-          elementId === this.jobSubjectId ||
-          this._seenElements.has(elementId)
-        )
-          return false;
+    deleteElementSubTrees(this.imodel, this.jobSubjectId, (elementId: string) => {
+      if (elementId === this.jobSubjectId || this._seenElements.has(elementId)) return false;
 
-        // The element was not marked as having been seen.
+      // The element was not marked as having been seen.
 
-        // Don't delete it unless we know that it is tracked.
-        // Connectors create various kinds of control elements in the repository model under the Job Subject.
-        // They also create definition models full of definition elements.
-        // They don't always bother to add them to this._seenElements or to put ExternalSourceAspects on them.
-        // We will take the presence of an ExternalSourceAspect as an indication that the element is to be tracked.
-        // This is how the native-code connector framework works.
-        // It's up to the connector to do GC on untracked elements.
-        return (
-          this.imodel.elements.getAspects(
-            elementId,
-            ExternalSourceAspect.classFullName
-          ).length !== 0
-        );
-      }
-    );
+      // Don't delete it unless we know that it is tracked.
+      // Connectors create various kinds of control elements in the repository model under the Job Subject.
+      // They also create definition models full of definition elements.
+      // They don't always bother to add them to this._seenElements or to put ExternalSourceAspects on them.
+      // We will take the presence of an ExternalSourceAspect as an indication that the element is to be tracked.
+      // This is how the native-code connector framework works.
+      // It's up to the connector to do GC on untracked elements.
+      return this.imodel.elements.getAspects(elementId, ExternalSourceAspect.classFullName).length !== 0;
+    });
   }
 
   private detectDeletedElementsInFiles() {
     for (const value of this._links.values()) {
-      if (
-        value.itemState === ItemState.Unchanged ||
-        value.itemState === ItemState.New
-      )
-        continue;
-      assert(
-        value.elementProps.id !== undefined &&
-          Id64.isValidId64(value.elementProps.id)
-      );
+      if (value.itemState === ItemState.Unchanged || value.itemState === ItemState.New) continue;
+      assert(value.elementProps.id !== undefined && Id64.isValidId64(value.elementProps.id));
       this.detectDeletedElementsInScope(value.elementProps.id);
     }
   }
@@ -763,62 +643,42 @@ export class Synchronizer {
     const sql = `SELECT aspect.Element.Id FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Scope.Id=?`;
     const elementsToDelete: Id64String[] = [];
     const defElementsToDelete: Id64String[] = [];
-    this.imodel.withPreparedStatement(
-      sql,
-      (statement: ECSqlStatement): void => {
-        statement.bindId(1, scopeId);
-        while (DbResult.BE_SQLITE_ROW === statement.step()) {
-          const elementId = statement.getValue(0).getId();
-          const element = this.imodel.elements.getElement(elementId);
-          const hasSeenElement = this._seenElements.has(elementId);
-          if (!hasSeenElement) {
-            if (element instanceof DefinitionElement)
-              defElementsToDelete.push(elementId);
-            else elementsToDelete.push(elementId);
-          }
-          this.detectDeletedElementsInScope(elementId);
+    this.imodel.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+      statement.bindId(1, scopeId);
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const elementId = statement.getValue(0).getId();
+        const element = this.imodel.elements.getElement(elementId);
+        const hasSeenElement = this._seenElements.has(elementId);
+        if (!hasSeenElement) {
+          if (element instanceof DefinitionElement) defElementsToDelete.push(elementId);
+          else elementsToDelete.push(elementId);
         }
+        this.detectDeletedElementsInScope(elementId);
       }
-    );
+    });
     this.deleteElements(elementsToDelete, defElementsToDelete);
   }
 
-  private deleteElements(
-    elementIds: Id64String[],
-    defElementIds: Id64String[]
-  ) {
+  private deleteElements(elementIds: Id64String[], defElementIds: Id64String[]) {
     for (const elementId of elementIds) {
       if (this.imodel.elements.tryGetElement(elementId)) {
         this.imodel.elements.deleteElement(elementIds);
-        const aspects = this.imodel.elements.getAspects(
-          elementId,
-          ElementUniqueAspect.classFullName
-        );
+        const aspects = this.imodel.elements.getAspects(elementId, ElementUniqueAspect.classFullName);
         for (const aspect of aspects) {
-          if (!this._seenAspects.has(aspect.id))
-            this.imodel.elements.deleteAspect(aspect.id);
+          if (!this._seenAspects.has(aspect.id)) this.imodel.elements.deleteAspect(aspect.id);
         }
       }
     }
     for (const elementId of defElementIds) {
-      if (this.imodel.elements.tryGetElement(elementId))
-        this.imodel.elements.deleteDefinitionElements(defElementIds);
+      if (this.imodel.elements.tryGetElement(elementId)) this.imodel.elements.deleteDefinitionElements(defElementIds);
     }
   }
 
-  private updateResultInIModelForOneElement(
-    results: SynchronizationResults
-  ): IModelStatus {
-    assert(
-      results.elementProps !== undefined,
-      "don't call this function if you don't have a persistent element"
-    );
+  private updateResultInIModelForOneElement(results: SynchronizationResults): IModelStatus {
+    assert(results.elementProps !== undefined, "don't call this function if you don't have a persistent element");
     const elementProps = results.elementProps;
     if (elementProps.id === undefined || !Id64.isValidId64(elementProps.id))
-      throw new IModelError(
-        IModelStatus.BadArg,
-        "don't call this function if you don't have a persistent element"
-      );
+      throw new IModelError(IModelStatus.BadArg, "don't call this function if you don't have a persistent element");
     this.onElementSeen(elementProps.id);
     const existing = this.imodel.elements.tryGetElement(elementProps.id);
     if (undefined === existing) {
@@ -841,16 +701,10 @@ export class Synchronizer {
     results: SynchronizationResults,
     parentAspectProps: ExternalSourceAspectProps
   ): IModelStatus {
-    if (
-      undefined === results.childElements ||
-      results.childElements.length < 1
-    ) {
+    if (undefined === results.childElements || results.childElements.length < 1) {
       return IModelStatus.Success;
     }
-    if (
-      results.elementProps.id === undefined ||
-      !Id64.isValidId64(results.elementProps.id)
-    ) {
+    if (results.elementProps.id === undefined || !Id64.isValidId64(results.elementProps.id)) {
       const error = `Parent element id is invalid.  Unable to update the children.`;
       Logger.logError(LoggerCategories.Framework, error);
       return IModelStatus.BadArg;
@@ -863,9 +717,7 @@ export class Synchronizer {
       child.elementProps.parent = parent;
     });
 
-    const existingChildren = this.imodel.elements.queryChildren(
-      results.elementProps.id
-    );
+    const existingChildren = this.imodel.elements.queryChildren(results.elementProps.id);
     // While we could just delete all existing children and insert all new ones, we try to do better.
     // If we can figure out how the new children map to existing children, we can update them.
 
@@ -884,9 +736,7 @@ export class Synchronizer {
         if (undefined === childRes.elementProps) {
           continue;
         }
-        const index = existingChildren.findIndex(
-          (c) => c === childRes.elementProps.id
-        );
+        const index = existingChildren.findIndex((c) => c === childRes.elementProps.id);
         if (-1 !== index) {
           const stat = this.updateResultsInIModel(childRes, parentAspectProps);
           if (stat !== IModelStatus.Success) {
@@ -898,10 +748,7 @@ export class Synchronizer {
     }
 
     // The specified children do not have ElementIds.
-    const count = Math.min(
-      existingChildren.length,
-      results.childElements.length
-    );
+    const count = Math.min(existingChildren.length, results.childElements.length);
     let i = 0;
     for (; i < count; i++) {
       this.updateResultsInIModel(results.childElements[i], parentAspectProps);
@@ -917,9 +764,7 @@ export class Synchronizer {
     userLabel: string | undefined,
     docProps: DocumentProperties | undefined
   ): Element {
-    let repositoryLink = this.imodel.elements.tryGetElement(
-      code
-    ) as RepositoryLink;
+    let repositoryLink = this.imodel.elements.tryGetElement(code) as RepositoryLink;
     if (undefined === repositoryLink) {
       const elementProps: RepositoryLinkProps = {
         classFullName: RepositoryLink.classFullName,
@@ -986,9 +831,7 @@ export class Synchronizer {
     };
   }
 
-  public makeExternalSourceAspectProps(
-    sourceItem: SourceItem
-  ): ExternalSourceAspectProps {
+  public makeExternalSourceAspectProps(sourceItem: SourceItem): ExternalSourceAspectProps {
     this.setSourceItemDefaults(sourceItem);
     assert(sourceItemHasScopeAndKind(sourceItem));
     return this.makeExternalSourceAspectPropsFromSourceItem(sourceItem);

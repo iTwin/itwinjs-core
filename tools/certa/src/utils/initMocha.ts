@@ -12,12 +12,7 @@ declare let _CERTA_CONFIG: CertaConfig; // eslint-disable-line @typescript-eslin
 
   // This is essentially equivalent to `mocha.setup("bdd")`, except it works in both node and browser environments.
   mocha.ui("bdd");
-  mocha.suite.emit(
-    "pre-require",
-    typeof window === "undefined" ? global : window,
-    null,
-    mocha
-  );
+  mocha.suite.emit("pre-require", typeof window === "undefined" ? global : window, null, mocha);
 
   mocha.reporter(mochaOpts.reporter, mochaOpts.reporterOptions);
   // TODO: Come back and fix useColors to color

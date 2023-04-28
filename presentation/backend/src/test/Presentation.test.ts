@@ -10,10 +10,7 @@ import { BriefcaseDb, IModelHost, IpcHost } from "@itwin/core-backend";
 import { assert } from "@itwin/core-bentley";
 import { RpcManager } from "@itwin/core-common";
 import { PresentationError } from "@itwin/presentation-common";
-import {
-  MultiManagerPresentationProps,
-  Presentation,
-} from "../presentation-backend/Presentation";
+import { MultiManagerPresentationProps, Presentation } from "../presentation-backend/Presentation";
 import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";
 import { PresentationManager } from "../presentation-backend/PresentationManager";
 import { PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl";
@@ -34,10 +31,7 @@ describe("Presentation", () => {
     });
 
     it("registers itself as IModelHost shutdown listener", () => {
-      const addListenerSpy = sinon.spy(
-        IModelHost.onBeforeShutdown,
-        "addListener"
-      );
+      const addListenerSpy = sinon.spy(IModelHost.onBeforeShutdown, "addListener");
       Presentation.initialize();
       expect(addListenerSpy).to.be.calledOnce;
     });
@@ -68,11 +62,9 @@ describe("Presentation", () => {
         Presentation.initialize({
           unusedClientLifetime: faker.random.number(),
         });
-        const storage = (Presentation as any)
-          ._clientsStorage as TemporaryStorage<PresentationManager>;
+        const storage = (Presentation as any)._clientsStorage as TemporaryStorage<PresentationManager>;
         expect(storage.props.unusedValueLifetime).to.eq(
-          (Presentation.initProps! as MultiManagerPresentationProps)
-            .unusedClientLifetime
+          (Presentation.initProps! as MultiManagerPresentationProps).unusedClientLifetime
         );
       });
 
@@ -105,9 +97,7 @@ describe("Presentation", () => {
 
   describe("getRequestTimeout", () => {
     it("should throw PresentationError if initialize is not called", () => {
-      expect(() => Presentation.getRequestTimeout()).to.throw(
-        PresentationError
-      );
+      expect(() => Presentation.getRequestTimeout()).to.throw(PresentationError);
     });
   });
 
@@ -149,22 +139,15 @@ describe("Presentation", () => {
       const imodelMock = moq.Mock.ofType<BriefcaseDb>();
       const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
       const managerMock = moq.Mock.ofType<PresentationManager>();
-      managerMock
-        .setup((x) => x.getNativePlatform)
-        .returns(() => () => nativePlatformMock.object);
-      nativePlatformMock
-        .setup((x) => x.getImodelAddon(imodelMock.object))
-        .verifiable(moq.Times.atLeastOnce());
+      managerMock.setup((x) => x.getNativePlatform).returns(() => () => nativePlatformMock.object);
+      nativePlatformMock.setup((x) => x.getImodelAddon(imodelMock.object)).verifiable(moq.Times.atLeastOnce());
 
       Presentation.initialize({
         enableSchemasPreload: true,
         clientManagerFactory: () => managerMock.object,
       });
       BriefcaseDb.onOpened.raiseEvent(imodelMock.object, {} as any);
-      nativePlatformMock.verify(
-        async (x) => x.forceLoadSchemas(moq.It.isAny()),
-        moq.Times.once()
-      );
+      nativePlatformMock.verify(async (x) => x.forceLoadSchemas(moq.It.isAny()), moq.Times.once());
     });
   });
 });

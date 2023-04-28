@@ -6,21 +6,8 @@
  * @module WebGL
  */
 
-import {
-  assert,
-  dispose,
-  Id64,
-  Id64String,
-  IDisposable,
-} from "@itwin/core-bentley";
-import {
-  Point2d,
-  Point3d,
-  Range3d,
-  Transform,
-  XAndY,
-  XYZ,
-} from "@itwin/core-geometry";
+import { assert, dispose, Id64, Id64String, IDisposable } from "@itwin/core-bentley";
+import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@itwin/core-geometry";
 import {
   AmbientOcclusion,
   AnalysisStyle,
@@ -34,11 +21,7 @@ import {
   ThematicDisplayMode,
   ViewFlags,
 } from "@itwin/core-common";
-import {
-  canvasToImageBuffer,
-  canvasToResizedCanvasWithBars,
-  imageBufferToCanvas,
-} from "../../ImageUtil";
+import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../ImageUtil";
 import { HiliteSet, ModelSubCategoryHiliteMode } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
 import { ReadImageBufferArgs, Viewport } from "../../Viewport";
@@ -52,27 +35,14 @@ import { Pixel } from "../Pixel";
 import { GraphicList } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { createEmptyRenderPlan, RenderPlan } from "../RenderPlan";
-import {
-  PlanarClassifierMap,
-  RenderPlanarClassifier,
-} from "../RenderPlanarClassifier";
+import { PlanarClassifierMap, RenderPlanarClassifier } from "../RenderPlanarClassifier";
 import { RenderTextureDrape, TextureDrapeMap } from "../RenderSystem";
-import {
-  PrimitiveVisibility,
-  RenderTarget,
-  RenderTargetDebugControl,
-} from "../RenderTarget";
+import { PrimitiveVisibility, RenderTarget, RenderTargetDebugControl } from "../RenderTarget";
 import { ScreenSpaceEffectContext } from "../ScreenSpaceEffectBuilder";
 import { Scene } from "../Scene";
-import {
-  QueryTileFeaturesOptions,
-  QueryVisibleFeaturesCallback,
-} from "../VisibleFeature";
+import { QueryTileFeaturesOptions, QueryVisibleFeaturesCallback } from "../VisibleFeature";
 import { BranchState } from "./BranchState";
-import {
-  CachedGeometry,
-  SingleTexturedViewportQuadGeometry,
-} from "./CachedGeometry";
+import { CachedGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { ColorInfo } from "./ColorInfo";
 import { WebGLDisposable } from "./Disposable";
 import { DrawParams, ShaderProgramParams } from "./DrawCommand";
@@ -135,10 +105,7 @@ interface ReadPixelResources {
 }
 
 /** @internal */
-export abstract class Target
-  extends RenderTarget
-  implements RenderTargetDebugControl, WebGLDisposable
-{
+export abstract class Target extends RenderTarget implements RenderTargetDebugControl, WebGLDisposable {
   public readonly graphics = new TargetGraphics();
   private _planarClassifiers?: PlanarClassifierMap;
   private _textureDrapes?: TextureDrapeMap;
@@ -207,25 +174,17 @@ export abstract class Target
 
   protected constructor(rect?: ViewRect) {
     super();
-    this._renderCommands = this.uniforms.branch.createRenderCommands(
-      this.uniforms.batch.state
-    );
+    this._renderCommands = this.uniforms.branch.createRenderCommands(this.uniforms.batch.state);
     this._overlayRenderState = new RenderState();
     this._overlayRenderState.flags.depthMask = false;
     this._overlayRenderState.flags.blend = true;
-    this._overlayRenderState.blend.setBlendFunc(
-      GL.BlendFactor.One,
-      GL.BlendFactor.OneMinusSrcAlpha
-    );
+    this._overlayRenderState.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
     this._compositor = SceneCompositor.create(this); // compositor is created but not yet initialized... we are still undisposed
     this.renderRect = rect ? rect : new ViewRect(); // if the rect is undefined, expect that it will be updated dynamically in an OnScreenTarget
-    if (undefined !== System.instance.antialiasSamples)
-      this._antialiasSamples = System.instance.antialiasSamples;
+    if (undefined !== System.instance.antialiasSamples) this._antialiasSamples = System.instance.antialiasSamples;
     else
       this._antialiasSamples =
-        undefined !== System.instance.options.antialiasSamples
-          ? System.instance.options.antialiasSamples
-          : 1;
+        undefined !== System.instance.options.antialiasSamples ? System.instance.options.antialiasSamples : 1;
   }
 
   public get compositor() {
@@ -272,9 +231,7 @@ export abstract class Target
   public override get animationBranches(): AnimationBranchStates | undefined {
     return this._animationBranches;
   }
-  public override set animationBranches(
-    branches: AnimationBranchStates | undefined
-  ) {
+  public override set animationBranches(branches: AnimationBranchStates | undefined) {
     this.disposeAnimationBranches();
     this._animationBranches = branches;
   }
@@ -296,24 +253,14 @@ export abstract class Target
   public get isDrawingShadowMap(): boolean {
     return this.solarShadowMap.isEnabled && this.solarShadowMap.isDrawing;
   }
-  public override getPlanarClassifier(
-    id: Id64String
-  ): RenderPlanarClassifier | undefined {
-    return undefined !== this._planarClassifiers
-      ? this._planarClassifiers.get(id)
-      : undefined;
+  public override getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined {
+    return undefined !== this._planarClassifiers ? this._planarClassifiers.get(id) : undefined;
   }
-  public override createPlanarClassifier(
-    properties?: SpatialClassifier
-  ): PlanarClassifier {
+  public override createPlanarClassifier(properties?: SpatialClassifier): PlanarClassifier {
     return PlanarClassifier.create(properties, this);
   }
-  public override getTextureDrape(
-    id: Id64String
-  ): RenderTextureDrape | undefined {
-    return undefined !== this._textureDrapes
-      ? this._textureDrapes.get(id)
-      : undefined;
+  public override getTextureDrape(id: Id64String): RenderTextureDrape | undefined {
+    return undefined !== this._textureDrapes ? this._textureDrapes.get(id) : undefined;
   }
 
   public getWorldDecorations(decs: GraphicList): Branch {
@@ -362,19 +309,13 @@ export abstract class Target
     const drape = this.currentBranch.textureDrape;
     return undefined !== drape && drape.isReady ? drape : undefined;
   }
-  public get currentPlanarClassifierOrDrape():
-    | PlanarClassifier
-    | TextureDrape
-    | undefined {
+  public get currentPlanarClassifierOrDrape(): PlanarClassifier | TextureDrape | undefined {
     const drape = this.currentTextureDrape;
     return undefined === drape ? this.currentPlanarClassifier : drape;
   }
 
   public modelToView(modelPt: XYZ, result?: Point3d): Point3d {
-    return this.uniforms.branch.modelViewMatrix.multiplyPoint3dQuietNormalize(
-      modelPt,
-      result
-    );
+    return this.uniforms.branch.modelViewMatrix.multiplyPoint3dQuietNormalize(modelPt, result);
   }
 
   public get is2d(): boolean {
@@ -472,21 +413,14 @@ export abstract class Target
 
   /** @internal */
   public isRangeOutsideActiveVolume(range: Range3d): boolean {
-    return this.uniforms.branch.clipStack.isRangeClipped(
-      range,
-      this.currentTransform
-    );
+    return this.uniforms.branch.clipStack.isRangeClipped(range, this.currentTransform);
   }
 
   private readonly _scratchRange = new Range3d();
 
   /** @internal */
   public isGeometryOutsideActiveVolume(geom: CachedGeometry): boolean {
-    if (
-      !this.uniforms.branch.clipStack.hasClip ||
-      this.uniforms.branch.clipStack.hasOutsideColor
-    )
-      return false;
+    if (!this.uniforms.branch.clipStack.hasClip || this.uniforms.branch.clipStack.hasOutsideColor) return false;
 
     const range = geom.computeRange(this._scratchRange);
     return this.isRangeOutsideActiveVolume(range);
@@ -515,11 +449,7 @@ export abstract class Target
   }
 
   public get wantThematicDisplay(): boolean {
-    return (
-      this.currentViewFlags.thematicDisplay &&
-      this.is3d &&
-      undefined !== this.uniforms.thematic.thematicDisplay
-    );
+    return this.currentViewFlags.thematicDisplay && this.is3d && undefined !== this.uniforms.thematic.thematicDisplay;
   }
 
   public get wantAtmosphere(): boolean {
@@ -531,8 +461,7 @@ export abstract class Target
     return (
       this.wantThematicDisplay &&
       undefined !== thematic &&
-      ThematicDisplayMode.InverseDistanceWeightedSensors ===
-        thematic.displayMode &&
+      ThematicDisplayMode.InverseDistanceWeightedSensors === thematic.displayMode &&
       thematic.sensorSettings.sensors.length > 0
     );
   }
@@ -564,20 +493,14 @@ export abstract class Target
     this.changeTextureDrapes(scene.textureDrapes);
     this.changePlanarClassifiers(scene.planarClassifiers);
 
-    this.changeDrapesOrClassifiers<RenderPlanarClassifier>(
-      this._planarClassifiers,
-      scene.planarClassifiers
-    );
+    this.changeDrapesOrClassifiers<RenderPlanarClassifier>(this._planarClassifiers, scene.planarClassifiers);
     this._planarClassifiers = scene.planarClassifiers;
 
     this.activeVolumeClassifierProps = scene.volumeClassifier?.classifier;
     this.activeVolumeClassifierModelId = scene.volumeClassifier?.modelId;
   }
 
-  public override onBeforeRender(
-    viewport: Viewport,
-    setSceneNeedRedraw: (redraw: boolean) => void
-  ) {
+  public override onBeforeRender(viewport: Viewport, setSceneNeedRedraw: (redraw: boolean) => void) {
     this._viewport = viewport;
     IModelFrameLifecycle.onBeforeRender.raiseEvent({
       renderSystem: this.renderSystem,
@@ -591,38 +514,28 @@ export abstract class Target
     newMap: Map<String, T> | undefined
   ): void {
     if (undefined === newMap) {
-      if (undefined !== oldMap)
-        for (const value of oldMap.values()) value.dispose();
+      if (undefined !== oldMap) for (const value of oldMap.values()) value.dispose();
 
       return;
     }
 
     if (undefined !== oldMap) {
-      for (const entry of oldMap)
-        if (newMap.get(entry[0]) !== entry[1]) entry[1].dispose();
+      for (const entry of oldMap) if (newMap.get(entry[0]) !== entry[1]) entry[1].dispose();
     }
   }
   public changeTextureDrapes(textureDrapes: TextureDrapeMap | undefined) {
-    this.changeDrapesOrClassifiers<RenderTextureDrape>(
-      this._textureDrapes,
-      textureDrapes
-    );
+    this.changeDrapesOrClassifiers<RenderTextureDrape>(this._textureDrapes, textureDrapes);
     this._textureDrapes = textureDrapes;
   }
   public changePlanarClassifiers(planarClassifiers?: PlanarClassifierMap) {
-    this.changeDrapesOrClassifiers<RenderPlanarClassifier>(
-      this._planarClassifiers,
-      planarClassifiers
-    );
+    this.changeDrapesOrClassifiers<RenderPlanarClassifier>(this._planarClassifiers, planarClassifiers);
     this._planarClassifiers = planarClassifiers;
   }
 
   public changeDynamics(dynamics?: GraphicList) {
     this.graphics.dynamics = dynamics;
   }
-  public override overrideFeatureSymbology(
-    ovr: FeatureSymbology.Overrides
-  ): void {
+  public override overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
     this.uniforms.branch.overrideFeatureSymbology(ovr);
   }
   public override setHiliteSet(hilite: HiliteSet): void {
@@ -638,11 +551,7 @@ export abstract class Target
     this._flashIntensity = intensity;
   }
 
-  public changeFrustum(
-    newFrustum: Frustum,
-    newFraction: number,
-    is3d: boolean
-  ): void {
+  public changeFrustum(newFrustum: Frustum, newFraction: number, is3d: boolean): void {
     this.uniforms.frustum.changeFrustum(newFrustum, newFraction, is3d);
   }
 
@@ -659,11 +568,7 @@ export abstract class Target
     }
 
     if (plan.is3d !== this.decorationsState.is3d)
-      this.decorationsState.changeRenderPlan(
-        this.decorationsState.viewFlags,
-        plan.is3d,
-        undefined
-      );
+      this.decorationsState.changeRenderPlan(this.decorationsState.viewFlags, plan.is3d, undefined);
 
     if (!this.assignDC()) return;
 
@@ -676,12 +581,7 @@ export abstract class Target
     let vf = plan.viewFlags;
     if (!plan.is3d) vf = vf.withRenderMode(RenderMode.Wireframe);
 
-    if (
-      RenderMode.SmoothShade === vf.renderMode &&
-      plan.is3d &&
-      undefined !== plan.ao &&
-      vf.ambientOcclusion
-    ) {
+    if (RenderMode.SmoothShade === vf.renderMode && plan.is3d && undefined !== plan.ao && vf.ambientOcclusion) {
       this._wantAmbientOcclusion = true;
       this.ambientOcclusionSettings = plan.ao;
     } else {
@@ -745,16 +645,10 @@ export abstract class Target
   }
 
   public computeEdgeWeight(pass: RenderPass, baseWeight: number): number {
-    return (
-      this.currentEdgeSettings.getWeight(pass, this.currentViewFlags) ??
-      baseWeight
-    );
+    return this.currentEdgeSettings.getWeight(pass, this.currentViewFlags) ?? baseWeight;
   }
   public computeEdgeLineCode(pass: RenderPass, baseCode: number): number {
-    return (
-      this.currentEdgeSettings.getLineCode(pass, this.currentViewFlags) ??
-      baseCode
-    );
+    return this.currentEdgeSettings.getLineCode(pass, this.currentViewFlags) ?? baseCode;
   }
   public computeEdgeColor(baseColor: ColorInfo): ColorInfo {
     const color = this.currentEdgeSettings.getColor(this.currentViewFlags);
@@ -762,28 +656,17 @@ export abstract class Target
   }
 
   public beginPerfMetricFrame(sceneMilSecElapsed?: number, readPixels = false) {
-    if (
-      !readPixels ||
-      (this.performanceMetrics &&
-        !this.performanceMetrics.gatherCurPerformanceMetrics)
-    ) {
+    if (!readPixels || (this.performanceMetrics && !this.performanceMetrics.gatherCurPerformanceMetrics)) {
       // only capture readPixel data if in disp-perf-test-app
-      if (this.renderSystem.isGLTimerSupported)
-        this.renderSystem.glTimer.beginFrame();
-      if (this.performanceMetrics)
-        this.performanceMetrics.beginFrame(sceneMilSecElapsed);
+      if (this.renderSystem.isGLTimerSupported) this.renderSystem.glTimer.beginFrame();
+      if (this.performanceMetrics) this.performanceMetrics.beginFrame(sceneMilSecElapsed);
     }
   }
 
   public endPerfMetricFrame(readPixels = false) {
-    if (
-      !readPixels ||
-      (this.performanceMetrics &&
-        !this.performanceMetrics.gatherCurPerformanceMetrics)
-    ) {
+    if (!readPixels || (this.performanceMetrics && !this.performanceMetrics.gatherCurPerformanceMetrics)) {
       // only capture readPixel data if in disp-perf-test-app
-      if (this.renderSystem.isGLTimerSupported)
-        this.renderSystem.glTimer.endFrame();
+      if (this.renderSystem.isGLTimerSupported) this.renderSystem.glTimer.endFrame();
 
       if (undefined === this.performanceMetrics) return;
 
@@ -793,28 +676,17 @@ export abstract class Target
   }
 
   public beginPerfMetricRecord(operation: string, readPixels = false): void {
-    if (
-      !readPixels ||
-      (this.performanceMetrics &&
-        !this.performanceMetrics.gatherCurPerformanceMetrics)
-    ) {
+    if (!readPixels || (this.performanceMetrics && !this.performanceMetrics.gatherCurPerformanceMetrics)) {
       // only capture readPixel data if in disp-perf-test-app
-      if (this.renderSystem.isGLTimerSupported)
-        this.renderSystem.glTimer.beginOperation(operation);
-      if (this.performanceMetrics)
-        this.performanceMetrics.beginOperation(operation);
+      if (this.renderSystem.isGLTimerSupported) this.renderSystem.glTimer.beginOperation(operation);
+      if (this.performanceMetrics) this.performanceMetrics.beginOperation(operation);
     }
   }
 
   public endPerfMetricRecord(readPixels = false): void {
-    if (
-      !readPixels ||
-      (this.performanceMetrics &&
-        !this.performanceMetrics.gatherCurPerformanceMetrics)
-    ) {
+    if (!readPixels || (this.performanceMetrics && !this.performanceMetrics.gatherCurPerformanceMetrics)) {
       // only capture readPixel data if in disp-perf-test-app
-      if (this.renderSystem.isGLTimerSupported)
-        this.renderSystem.glTimer.endOperation();
+      if (this.renderSystem.isGLTimerSupported) this.renderSystem.glTimer.endOperation();
       if (this.performanceMetrics) this.performanceMetrics.endOperation();
     }
   }
@@ -969,16 +841,11 @@ export abstract class Target
 
     let result: Pixel.Buffer | undefined;
 
-    this.renderSystem.frameBufferStack.execute(
-      resources.fbo,
-      true,
-      false,
-      () => {
-        this._drawNonLocatable = !excludeNonLocatable;
-        result = this.readPixelsFromFbo(rect, selector);
-        this._drawNonLocatable = true;
-      }
-    );
+    this.renderSystem.frameBufferStack.execute(resources.fbo, true, false, () => {
+      this._drawNonLocatable = !excludeNonLocatable;
+      result = this.readPixelsFromFbo(rect, selector);
+      this._drawNonLocatable = true;
+    });
 
     this.disposeOrReuseReadPixelResources(resources);
 
@@ -988,9 +855,7 @@ export abstract class Target
     this.uniforms.batch.resetBatchState();
   }
 
-  private createOrReuseReadPixelResources(
-    rect: ViewRect
-  ): ReadPixelResources | undefined {
+  private createOrReuseReadPixelResources(rect: ViewRect): ReadPixelResources | undefined {
     if (this._readPixelReusableResources !== undefined) {
       // To reuse a texture, we need it to be the same size or bigger than what we need
       if (
@@ -1022,14 +887,9 @@ export abstract class Target
     return { texture, fbo };
   }
 
-  private disposeOrReuseReadPixelResources({
-    texture,
-    fbo,
-  }: ReadPixelResources) {
+  private disposeOrReuseReadPixelResources({ texture, fbo }: ReadPixelResources) {
     const maxReusableTextureSize = 256;
-    const isTooBigToReuse =
-      texture.width > maxReusableTextureSize ||
-      texture.height > maxReusableTextureSize;
+    const isTooBigToReuse = texture.width > maxReusableTextureSize || texture.height > maxReusableTextureSize;
 
     let reuseResources = !isTooBigToReuse;
 
@@ -1055,10 +915,7 @@ export abstract class Target
     }
   }
 
-  private beginReadPixels(
-    selector: Pixel.Selector,
-    cullingFrustum?: Frustum
-  ): void {
+  private beginReadPixels(selector: Pixel.Selector, cullingFrustum?: Frustum): void {
     this.beginPerfMetricRecord("Init Commands", true);
 
     this._isReadPixelsInProgress = true;
@@ -1075,9 +932,7 @@ export abstract class Target
       monochrome: false,
       materials: false,
       ambientOcclusion: false,
-      thematicDisplay:
-        this.currentViewFlags.thematicDisplay &&
-        this.uniforms.thematic.wantIsoLines,
+      thematicDisplay: this.currentViewFlags.thematicDisplay && this.uniforms.thematic.wantIsoLines,
     });
 
     const top = this.currentBranch;
@@ -1110,139 +965,36 @@ export abstract class Target
 
   private readonly _scratchTmpFrustum = new Frustum();
   private readonly _scratchRectFrustum = new Frustum();
-  private readPixelsFromFbo(
-    rect: ViewRect,
-    selector: Pixel.Selector
-  ): Pixel.Buffer | undefined {
+  private readPixelsFromFbo(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
     // Create a culling frustum based on the input rect. We can't do this if a screen-space effect is going to move pixels around.
     let rectFrust;
     if (!this.renderSystem.screenSpaceEffects.shouldApply(this)) {
       const viewRect = this.viewRect;
-      const leftScale =
-        (rect.left - viewRect.left) / (viewRect.right - viewRect.left);
-      const rightScale =
-        (viewRect.right - rect.right) / (viewRect.right - viewRect.left);
-      const topScale =
-        (rect.top - viewRect.top) / (viewRect.bottom - viewRect.top);
-      const bottomScale =
-        (viewRect.bottom - rect.bottom) / (viewRect.bottom - viewRect.top);
+      const leftScale = (rect.left - viewRect.left) / (viewRect.right - viewRect.left);
+      const rightScale = (viewRect.right - rect.right) / (viewRect.right - viewRect.left);
+      const topScale = (rect.top - viewRect.top) / (viewRect.bottom - viewRect.top);
+      const bottomScale = (viewRect.bottom - rect.bottom) / (viewRect.bottom - viewRect.top);
 
       const tmpFrust = this._scratchTmpFrustum;
       const planFrust = this.planFrustum;
-      interpolateFrustumPoint(
-        tmpFrust,
-        planFrust,
-        Npc._000,
-        leftScale,
-        Npc._100
-      );
-      interpolateFrustumPoint(
-        tmpFrust,
-        planFrust,
-        Npc._100,
-        rightScale,
-        Npc._000
-      );
-      interpolateFrustumPoint(
-        tmpFrust,
-        planFrust,
-        Npc._010,
-        leftScale,
-        Npc._110
-      );
-      interpolateFrustumPoint(
-        tmpFrust,
-        planFrust,
-        Npc._110,
-        rightScale,
-        Npc._010
-      );
-      interpolateFrustumPoint(
-        tmpFrust,
-        planFrust,
-        Npc._001,
-        leftScale,
-        Npc._101
-      );
-      interpolateFrustumPoint(
-        tmpFrust,
-        planFrust,
-        Npc._101,
-        rightScale,
-        Npc._001
-      );
-      interpolateFrustumPoint(
-        tmpFrust,
-        planFrust,
-        Npc._011,
-        leftScale,
-        Npc._111
-      );
-      interpolateFrustumPoint(
-        tmpFrust,
-        planFrust,
-        Npc._111,
-        rightScale,
-        Npc._011
-      );
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._000, leftScale, Npc._100);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._100, rightScale, Npc._000);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._010, leftScale, Npc._110);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._110, rightScale, Npc._010);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._001, leftScale, Npc._101);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._101, rightScale, Npc._001);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._011, leftScale, Npc._111);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._111, rightScale, Npc._011);
 
       rectFrust = this._scratchRectFrustum;
-      interpolateFrustumPoint(
-        rectFrust,
-        tmpFrust,
-        Npc._000,
-        bottomScale,
-        Npc._010
-      );
-      interpolateFrustumPoint(
-        rectFrust,
-        tmpFrust,
-        Npc._100,
-        bottomScale,
-        Npc._110
-      );
-      interpolateFrustumPoint(
-        rectFrust,
-        tmpFrust,
-        Npc._010,
-        topScale,
-        Npc._000
-      );
-      interpolateFrustumPoint(
-        rectFrust,
-        tmpFrust,
-        Npc._110,
-        topScale,
-        Npc._100
-      );
-      interpolateFrustumPoint(
-        rectFrust,
-        tmpFrust,
-        Npc._001,
-        bottomScale,
-        Npc._011
-      );
-      interpolateFrustumPoint(
-        rectFrust,
-        tmpFrust,
-        Npc._101,
-        bottomScale,
-        Npc._111
-      );
-      interpolateFrustumPoint(
-        rectFrust,
-        tmpFrust,
-        Npc._011,
-        topScale,
-        Npc._001
-      );
-      interpolateFrustumPoint(
-        rectFrust,
-        tmpFrust,
-        Npc._111,
-        topScale,
-        Npc._101
-      );
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._000, bottomScale, Npc._010);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._100, bottomScale, Npc._110);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._010, topScale, Npc._000);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._110, topScale, Npc._100);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._001, bottomScale, Npc._011);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._101, bottomScale, Npc._111);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._011, topScale, Npc._001);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._111, topScale, Npc._101);
     }
 
     this.beginReadPixels(selector, rectFrust);
@@ -1255,28 +1007,17 @@ export abstract class Target
       this.graphics.decorations?.viewOverlay
     );
 
-    if (
-      this.performanceMetrics &&
-      !this.performanceMetrics.gatherCurPerformanceMetrics
-    ) {
+    if (this.performanceMetrics && !this.performanceMetrics.gatherCurPerformanceMetrics) {
       // Only collect readPixels data if in disp-perf-test-app
       this.performanceMetrics.endOperation(); // End the 'CPU Total Time' operation
-      if (
-        this.performanceMetrics.gatherGlFinish &&
-        !this.renderSystem.isGLTimerSupported
-      ) {
+      if (this.performanceMetrics.gatherGlFinish && !this.renderSystem.isGLTimerSupported) {
         // Ensure all previously queued webgl commands are finished by reading back one pixel since gl.Finish didn't work
         this.performanceMetrics.beginOperation("Finish GPU Queue");
         const gl = this.renderSystem.context;
         const bytes = new Uint8Array(4);
-        this.renderSystem.frameBufferStack.execute(
-          this._fbo!,
-          true,
-          false,
-          () => {
-            gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
-          }
-        );
+        this.renderSystem.frameBufferStack.execute(this._fbo!, true, false, () => {
+          gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
+        });
         this.performanceMetrics.endOperation();
       }
     }
@@ -1292,13 +1033,9 @@ export abstract class Target
     const result = this.compositor.readPixels(rect, selector);
     this.endPerfMetricRecord(true);
 
-    if (
-      this.performanceMetrics &&
-      !this.performanceMetrics.gatherCurPerformanceMetrics
-    ) {
+    if (this.performanceMetrics && !this.performanceMetrics.gatherCurPerformanceMetrics) {
       // Only collect readPixels data if in disp-perf-test-app
-      if (this.renderSystem.isGLTimerSupported)
-        this.renderSystem.glTimer.endFrame();
+      if (this.renderSystem.isGLTimerSupported) this.renderSystem.glTimer.endFrame();
       if (this.performanceMetrics) this.performanceMetrics.endFrame();
     }
 
@@ -1311,19 +1048,11 @@ export abstract class Target
     callback: QueryVisibleFeaturesCallback
   ): void {
     this.beginReadPixels(Pixel.Selector.Feature);
-    callback(
-      new VisibleTileFeatures(this._renderCommands, options, this, iModel)
-    );
+    callback(new VisibleTileFeatures(this._renderCommands, options, this, iModel));
     this.endReadPixels();
   }
 
-  protected readImagePixels(
-    out: Uint8Array,
-    x: number,
-    y: number,
-    w: number,
-    h: number
-  ): boolean {
+  protected readImagePixels(out: Uint8Array, x: number, y: number, w: number, h: number): boolean {
     assert(this._fbo !== undefined);
     if (this._fbo === undefined) return false;
 
@@ -1331,15 +1060,7 @@ export abstract class Target
     let didSucceed = true;
     this.renderSystem.frameBufferStack.execute(this._fbo, true, false, () => {
       try {
-        context.readPixels(
-          x,
-          y,
-          w,
-          h,
-          context.RGBA,
-          context.UNSIGNED_BYTE,
-          out
-        );
+        context.readPixels(x, y, w, h, context.RGBA, context.UNSIGNED_BYTE, out);
       } catch (e) {
         didSucceed = false;
       }
@@ -1351,10 +1072,7 @@ export abstract class Target
   /** Returns a new size scaled up to a maximum size while maintaining proper aspect ratio.  The new size will be
    * curSize adjusted so that it fits fully within maxSize in one dimension, maintaining its original aspect ratio.
    */
-  private static _applyAspectRatioCorrection(
-    curSize: XAndY,
-    maxSize: XAndY
-  ): Point2d {
+  private static _applyAspectRatioCorrection(curSize: XAndY, maxSize: XAndY): Point2d {
     const widthRatio = maxSize.x / curSize.x;
     const heightRatio = maxSize.y / curSize.y;
     const bestRatio = Math.min(widthRatio, heightRatio);
@@ -1373,23 +1091,17 @@ export abstract class Target
 
     // Determine capture rect and validate
     const actualViewRect = this.renderRect; // already has device pixel ratio applied
-    const wantRect = wantRectIn.isNull
-      ? actualViewRect
-      : this.cssViewRectToDeviceViewRect(wantRectIn);
+    const wantRect = wantRectIn.isNull ? actualViewRect : this.cssViewRectToDeviceViewRect(wantRectIn);
     const lowerRight = Point2d.create(wantRect.right - 1, wantRect.bottom - 1);
     if (
-      !actualViewRect.containsPoint(
-        Point2d.create(wantRect.left, wantRect.top)
-      ) ||
+      !actualViewRect.containsPoint(Point2d.create(wantRect.left, wantRect.top)) ||
       !actualViewRect.containsPoint(lowerRight)
     )
       return undefined;
 
     // Read pixels. Note ViewRect thinks (0,0) = top-left. gl.readPixels expects (0,0) = bottom-left.
     const bytesPerPixel = 4;
-    const imageData = new Uint8Array(
-      bytesPerPixel * wantRect.width * wantRect.height
-    );
+    const imageData = new Uint8Array(bytesPerPixel * wantRect.width * wantRect.height);
     const isValidImageData = this.readImagePixels(
       imageData,
       wantRect.left,
@@ -1399,11 +1111,7 @@ export abstract class Target
     );
     if (!isValidImageData) return undefined;
 
-    let image = ImageBuffer.create(
-      imageData,
-      ImageBufferFormat.Rgba,
-      wantRect.width
-    );
+    let image = ImageBuffer.create(imageData, ImageBufferFormat.Rgba, wantRect.width);
     if (!image) return undefined;
 
     const targetSize = targetSizeIn.clone();
@@ -1443,10 +1151,7 @@ export abstract class Target
       const resizedCanvas = canvasToResizedCanvasWithBars(
         canvas,
         adjustedTargetSize,
-        new Point2d(
-          targetSize.x - adjustedTargetSize.x,
-          targetSize.y - adjustedTargetSize.y
-        ),
+        new Point2d(targetSize.x - adjustedTargetSize.x, targetSize.y - adjustedTargetSize.y),
         this.uniforms.style.backgroundHexString
       );
 
@@ -1474,43 +1179,22 @@ export abstract class Target
     return image;
   }
 
-  public override readImageBuffer(
-    args?: ReadImageBufferArgs
-  ): ImageBuffer | undefined {
+  public override readImageBuffer(args?: ReadImageBufferArgs): ImageBuffer | undefined {
     if (!this.assignDC()) return undefined;
 
     // Determine and validate capture rect.
     const viewRect = this.renderRect; // already has device pixel ratio applied
-    const captureRect = args?.rect
-      ? this.cssViewRectToDeviceViewRect(args.rect)
-      : viewRect;
+    const captureRect = args?.rect ? this.cssViewRectToDeviceViewRect(args.rect) : viewRect;
     if (captureRect.isNull) return undefined;
 
     const topLeft = Point3d.create(captureRect.left, captureRect.top);
-    const bottomRight = Point2d.create(
-      captureRect.right - 1,
-      captureRect.bottom - 1
-    );
-    if (
-      !viewRect.containsPoint(topLeft) ||
-      !viewRect.containsPoint(bottomRight)
-    )
-      return undefined;
+    const bottomRight = Point2d.create(captureRect.right - 1, captureRect.bottom - 1);
+    if (!viewRect.containsPoint(topLeft) || !viewRect.containsPoint(bottomRight)) return undefined;
 
     // ViewRect origin is at top-left. GL origin is at bottom-left.
     const bottom = viewRect.height - captureRect.bottom;
-    const imageData = new Uint8Array(
-      4 * captureRect.width * captureRect.height
-    );
-    if (
-      !this.readImagePixels(
-        imageData,
-        captureRect.left,
-        bottom,
-        captureRect.width,
-        captureRect.height
-      )
-    )
+    const imageData = new Uint8Array(4 * captureRect.width * captureRect.height);
+    if (!this.readImagePixels(imageData, captureRect.left, bottom, captureRect.width, captureRect.height))
       return undefined;
 
     // Alpha has already been blended. Make all pixels opaque, *except* for background pixels if background color is fully transparent.
@@ -1525,16 +1209,11 @@ export abstract class Target
     }
 
     // Optimization for view attachments: if image consists entirely of transparent background pixels, don't bother producing an image.
-    let image = !isEmptyImage
-      ? ImageBuffer.create(imageData, ImageBufferFormat.Rgba, captureRect.width)
-      : undefined;
+    let image = !isEmptyImage ? ImageBuffer.create(imageData, ImageBufferFormat.Rgba, captureRect.width) : undefined;
     if (!image) return undefined;
 
     // Scale image.
-    if (
-      args?.size &&
-      (args.size.x !== captureRect.width || args.size.y !== captureRect.height)
-    ) {
+    if (args?.size && (args.size.x !== captureRect.width || args.size.y !== captureRect.height)) {
       if (args.size.x <= 0 || args.size.y <= 0) return undefined;
 
       let canvas = imageBufferToCanvas(image, true);
@@ -1577,10 +1256,8 @@ export abstract class Target
 
   public copyImageToCanvas(): HTMLCanvasElement {
     const image = this.readImageBuffer();
-    const canvas =
-      undefined !== image ? imageBufferToCanvas(image, false) : undefined;
-    const retCanvas =
-      undefined !== canvas ? canvas : document.createElement("canvas");
+    const canvas = undefined !== image ? imageBufferToCanvas(image, false) : undefined;
+    const retCanvas = undefined !== canvas ? canvas : document.createElement("canvas");
     const pixelRatio = this.devicePixelRatio;
     retCanvas.getContext("2d")!.scale(pixelRatio, pixelRatio);
     return retCanvas;
@@ -1599,10 +1276,7 @@ export abstract class Target
     if (this.solarShadowMap.isEnabled) this.solarShadowMap.draw(this);
   }
   public drawTextureDrapes() {
-    if (this._textureDrapes)
-      this._textureDrapes.forEach((drape) =>
-        (drape as TextureDrape).draw(this)
-      );
+    if (this._textureDrapes) this._textureDrapes.forEach((drape) => (drape as TextureDrape).draw(this));
   }
 
   public get screenSpaceEffects(): Iterable<string> {
@@ -1622,18 +1296,14 @@ export abstract class Target
     return this._currentAnimationTransformNodeId;
   }
   public set currentAnimationTransformNodeId(id: number | undefined) {
-    assert(
-      undefined === this._currentAnimationTransformNodeId || undefined === id
-    );
+    assert(undefined === this._currentAnimationTransformNodeId || undefined === id);
     this._currentAnimationTransformNodeId = id;
   }
 
   /** Given GraphicBranch.animationId identifying *any* node in the scene's schedule script, return the transform node Id
    * that should be used to filter the branch's graphics for display, or undefined if no filtering should be applied.
    */
-  public getAnimationTransformNodeId(
-    animationNodeId: number | undefined
-  ): number | undefined {
+  public getAnimationTransformNodeId(animationNodeId: number | undefined): number | undefined {
     if (
       undefined === this.animationBranches ||
       undefined === this.currentAnimationTransformNodeId ||
@@ -1695,8 +1365,7 @@ class CanvasState {
     // Do not update the dimensions if not needed, or if new width or height is 0, which is invalid.
     // NB: the 0-dimension check indirectly resolves an issue when a viewport is dropped and immediately re-added
     // to the view manager. See ViewManager.test.ts for more details.
-    if ((w === this._width && h === this._height) || 0 === w || 0 === h)
-      return false;
+    if ((w === this._width && h === this._height) || 0 === w || 0 === h) return false;
 
     // Must ensure internal bitmap grid dimensions of on-screen canvas match its own on-screen appearance.
     this.canvas.width = this._width = w;
@@ -1769,8 +1438,7 @@ export class OnScreenTarget extends Target {
     this._devicePixelRatioOverride = ovr;
   }
   public override get devicePixelRatio(): number {
-    if (undefined !== this.devicePixelRatioOverride)
-      return this.devicePixelRatioOverride;
+    if (undefined !== this.devicePixelRatioOverride) return this.devicePixelRatioOverride;
 
     if (false === this.renderSystem.options.dpiAwareViewports) return 1.0;
 
@@ -1788,11 +1456,7 @@ export class OnScreenTarget extends Target {
   public checkFboDimensions(): boolean {
     if (undefined !== this._fbo) {
       const tx = this._fbo.getColor(0);
-      if (
-        tx.width !== this._curCanvas.width ||
-        tx.height !== this._curCanvas.height
-      )
-        return false;
+      if (tx.width !== this._curCanvas.width || tx.height !== this._curCanvas.height) return false;
     }
     return true;
   }
@@ -1804,10 +1468,7 @@ export class OnScreenTarget extends Target {
 
     const tx = fbo.getColor(0);
     assert(undefined !== tx.getHandle());
-    this._blitGeom = SingleTexturedViewportQuadGeometry.createGeometry(
-      tx.getHandle()!,
-      TechniqueId.CopyColorNoAlpha
-    );
+    this._blitGeom = SingleTexturedViewportQuadGeometry.createGeometry(tx.getHandle()!, TechniqueId.CopyColorNoAlpha);
     if (undefined === this._blitGeom) this.disposeFbo();
 
     return undefined !== this._blitGeom;
@@ -1830,24 +1491,13 @@ export class OnScreenTarget extends Target {
 
     // Ensure off-screen canvas is sufficiently large for on-screen canvas.
     // Using a portion of a larger canvas lets us avoid thrashing canvas resizes with multiple viewports.
-    if (system.canvas.width < viewRect.width)
-      system.canvas.width = viewRect.width;
-    if (system.canvas.height < viewRect.height)
-      system.canvas.height = viewRect.height;
-    assert(
-      system.context.drawingBufferWidth >= viewRect.width,
-      "offscreen context dimensions don't match onscreen"
-    );
-    assert(
-      system.context.drawingBufferHeight >= viewRect.height,
-      "offscreen context dimensions don't match onscreen"
-    );
+    if (system.canvas.width < viewRect.width) system.canvas.width = viewRect.width;
+    if (system.canvas.height < viewRect.height) system.canvas.height = viewRect.height;
+    assert(system.context.drawingBufferWidth >= viewRect.width, "offscreen context dimensions don't match onscreen");
+    assert(system.context.drawingBufferHeight >= viewRect.height, "offscreen context dimensions don't match onscreen");
   }
 
-  private getDrawParams(
-    target: OnScreenTarget,
-    geom: SingleTexturedViewportQuadGeometry
-  ) {
+  private getDrawParams(target: OnScreenTarget, geom: SingleTexturedViewportQuadGeometry) {
     if (undefined === this._scratchProgParams) {
       this._scratchProgParams = new ShaderProgramParams();
       this._scratchDrawParams = new DrawParams();
@@ -1907,8 +1557,7 @@ export class OnScreenTarget extends Target {
     if (canvasDecs) {
       for (const overlay of canvasDecs) {
         ctx.save();
-        if (overlay.position)
-          ctx.translate(overlay.position.x, overlay.position.y);
+        if (overlay.position) ctx.translate(overlay.position.x, overlay.position.y);
 
         overlay.drawDecoration(ctx);
         this._2dCanvas.needsClear = true;
@@ -1917,9 +1566,7 @@ export class OnScreenTarget extends Target {
     }
   }
 
-  public override pickOverlayDecoration(
-    pt: XAndY
-  ): CanvasDecoration | undefined {
+  public override pickOverlayDecoration(pt: XAndY): CanvasDecoration | undefined {
     const overlays = this.graphics.canvasDecorations;
     if (undefined === overlays) return undefined;
 
@@ -1935,9 +1582,7 @@ export class OnScreenTarget extends Target {
     this.disposeFbo();
   }
 
-  public override setRenderToScreen(
-    toScreen: boolean
-  ): HTMLCanvasElement | undefined {
+  public override setRenderToScreen(toScreen: boolean): HTMLCanvasElement | undefined {
     if (toScreen === this._usingWebGLCanvas) return;
 
     this._usingWebGLCanvas = toScreen;
@@ -1945,9 +1590,7 @@ export class OnScreenTarget extends Target {
   }
 
   public override readImageToCanvas(): HTMLCanvasElement {
-    return this._usingWebGLCanvas
-      ? this.copyImageToCanvas()
-      : this._2dCanvas.canvas;
+    return this._usingWebGLCanvas ? this.copyImageToCanvas() : this._2dCanvas.canvas;
   }
 }
 
@@ -1996,12 +1639,7 @@ export class OffScreenTarget extends Target {
   }
 }
 
-function interpolatePoint(
-  p0: Point3d,
-  fraction: number,
-  p1: Point3d,
-  out: Point3d
-): Point3d {
+function interpolatePoint(p0: Point3d, fraction: number, p1: Point3d, out: Point3d): Point3d {
   let x: number;
   let y: number;
   let z: number;
@@ -2026,10 +1664,5 @@ function interpolateFrustumPoint(
   scale: number,
   srcPoint: Npc
 ): void {
-  interpolatePoint(
-    srcFrust.getCorner(destPoint),
-    scale,
-    srcFrust.getCorner(srcPoint),
-    destFrust.points[destPoint]
-  );
+  interpolatePoint(srcFrust.getCorner(destPoint), scale, srcFrust.getCorner(srcPoint), destFrust.points[destPoint]);
 }

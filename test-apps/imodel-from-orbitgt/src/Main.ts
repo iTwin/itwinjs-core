@@ -42,16 +42,10 @@ const argv = yargs
     blobFileName: argv.blobFileName,
   };
 
-  const creator = new OrbitGtContextIModelCreator(
-    pcProps,
-    argv.output,
-    argv.name as string
-  );
+  const creator = new OrbitGtContextIModelCreator(pcProps, argv.output, argv.name as string);
   try {
     await creator.create();
-    process.stdout.write(
-      `IModel: ${argv.output} Created for Point Cloud: ${argv.blobFileName}`
-    );
+    process.stdout.write(`IModel: ${argv.output} Created for Point Cloud: ${argv.blobFileName}`);
     await IModelHost.shutdown();
   } catch (_error) {
     process.stdout.write("Error occurred creating IModel\n");

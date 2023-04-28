@@ -17,10 +17,7 @@ export class SchemaGraphUtil {
    * @param schemas The schema collection that will hold the ordered schemas. If null, the collection
    * will be created internally and passed along during recursive calls.
    */
-  public static buildDependencyOrderedSchemaList(
-    insertSchema: Schema,
-    schemas?: Schema[]
-  ): Schema[] {
+  public static buildDependencyOrderedSchemaList(insertSchema: Schema, schemas?: Schema[]): Schema[] {
     if (!schemas) schemas = [];
 
     this.insertSchemaInDependencyOrderedList(schemas, insertSchema);
@@ -35,10 +32,7 @@ export class SchemaGraphUtil {
    * @param schema The possible dependent schema.
    * @param possibleDependency The possible Schema dependency.
    */
-  private static dependsOn(
-    schema: Schema,
-    possibleDependency: Schema
-  ): boolean {
+  private static dependsOn(schema: Schema, possibleDependency: Schema): boolean {
     if (this.directlyReferences(schema, possibleDependency)) return true;
 
     // search for dependencies in indirect references
@@ -54,10 +48,7 @@ export class SchemaGraphUtil {
    * @param schema The possible parent schema.
    * @param possibleDependency The Schema that may be referenced.
    */
-  private static directlyReferences(
-    schema: Schema,
-    possiblyReferencedSchema: Schema
-  ): boolean {
+  private static directlyReferences(schema: Schema, possiblyReferencedSchema: Schema): boolean {
     for (const reference of schema.references) {
       if (reference === possiblyReferencedSchema) return true;
     }
@@ -71,10 +62,7 @@ export class SchemaGraphUtil {
    * @param schemas The ordered Schema collection.
    * @param insertSchema The Schema to insert.
    */
-  private static insertSchemaInDependencyOrderedList(
-    schemas: Schema[],
-    insertSchema: Schema
-  ) {
+  private static insertSchemaInDependencyOrderedList(schemas: Schema[], insertSchema: Schema) {
     if (schemas.includes(insertSchema)) return;
 
     for (let i = schemas.length - 1; i >= 0; --i) {

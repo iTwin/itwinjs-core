@@ -6,11 +6,7 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import { IpcApp } from "@itwin/core-frontend";
-import {
-  PRESENTATION_IPC_CHANNEL_NAME,
-  RulesetVariable,
-  VariableValueTypes,
-} from "@itwin/presentation-common";
+import { PRESENTATION_IPC_CHANNEL_NAME, RulesetVariable, VariableValueTypes } from "@itwin/presentation-common";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 
 describe("IpcRequestsHandler", () => {
@@ -31,15 +27,11 @@ describe("IpcRequestsHandler", () => {
         value: "test-value",
       };
       await handler.setRulesetVariable({ rulesetId, variable });
-      expect(callChannelStub).to.be.calledOnceWith(
-        PRESENTATION_IPC_CHANNEL_NAME,
-        "setRulesetVariable",
-        {
-          clientId,
-          rulesetId,
-          variable,
-        }
-      );
+      expect(callChannelStub).to.be.calledOnceWith(PRESENTATION_IPC_CHANNEL_NAME, "setRulesetVariable", {
+        clientId,
+        rulesetId,
+        variable,
+      });
     });
   });
 
@@ -48,15 +40,11 @@ describe("IpcRequestsHandler", () => {
       const callChannelStub = sinon.stub(IpcApp, "callIpcChannel");
       const rulesetId = "test-ruleset-id";
       await handler.unsetRulesetVariable({ rulesetId, variableId: "test-id" });
-      expect(callChannelStub).to.be.calledOnceWith(
-        PRESENTATION_IPC_CHANNEL_NAME,
-        "unsetRulesetVariable",
-        {
-          clientId,
-          rulesetId,
-          variableId: "test-id",
-        }
-      );
+      expect(callChannelStub).to.be.calledOnceWith(PRESENTATION_IPC_CHANNEL_NAME, "unsetRulesetVariable", {
+        clientId,
+        rulesetId,
+        variableId: "test-id",
+      });
     });
   });
 });

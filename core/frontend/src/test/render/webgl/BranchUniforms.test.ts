@@ -17,13 +17,7 @@ import { EmptyLocalization } from "@itwin/core-common";
 
 function makeClipVolume(): ClipVolume {
   const vec = ClipVector.createEmpty();
-  expect(
-    vec.appendShape([
-      Point3d.create(1, 1, 0),
-      Point3d.create(2, 1, 0),
-      Point3d.create(2, 2, 0),
-    ])
-  ).to.be.true;
+  expect(vec.appendShape([Point3d.create(1, 1, 0), Point3d.create(2, 1, 0), Point3d.create(2, 2, 0)])).to.be.true;
   const vol = ClipVolume.create(vec)!;
   expect(vol).not.to.be.undefined;
   return vol;
@@ -36,14 +30,9 @@ interface ClipInfo {
 
 function makeBranch(info: ClipInfo): Branch {
   const branch = new GraphicBranch();
-  if (undefined !== info.noViewClip)
-    branch.viewFlagOverrides.clipVolume = !info.noViewClip;
+  if (undefined !== info.noViewClip) branch.viewFlagOverrides.clipVolume = !info.noViewClip;
 
-  const graphic = IModelApp.renderSystem.createGraphicBranch(
-    branch,
-    Transform.identity,
-    { clipVolume: info.clip }
-  );
+  const graphic = IModelApp.renderSystem.createGraphicBranch(branch, Transform.identity, { clipVolume: info.clip });
   expect(graphic instanceof Branch).to.be.true;
   return graphic as Branch;
 }
@@ -53,10 +42,7 @@ function makeTarget(): Target {
   return IModelApp.renderSystem.createOffscreenTarget(rect) as Target;
 }
 
-function expectClipStack(
-  target: Target,
-  expected: Array<{ numRows: number }>
-): void {
+function expectClipStack(target: Target, expected: Array<{ numRows: number }>): void {
   const actual = target.uniforms.branch.clipStack.clips;
   expect(actual.length).to.equal(expected.length);
   expect(actual.length).least(1);
@@ -64,14 +50,11 @@ function expectClipStack(
   const actualView = actual[0];
   const expectedView = expected[0];
   expect(actualView.numRows).to.equal(expectedView.numRows);
-  expect(actualView instanceof ClipVolume).to.equal(
-    expectedView instanceof ClipVolume
-  );
+  expect(actualView instanceof ClipVolume).to.equal(expectedView instanceof ClipVolume);
   if (actualView instanceof ClipVolume && expectedView instanceof ClipVolume)
     expect(actualView.clipVector).to.equal(expectedView.clipVector);
 
-  for (let i = 1; i < actual.length; i++)
-    expect(actual[i]).to.equal(expected[i]);
+  for (let i = 1; i < actual.length; i++) expect(actual[i]).to.equal(expected[i]);
 }
 
 /** Inputs:
@@ -87,10 +70,7 @@ function testBranches(
   expectedClips: Array<{ numRows: number }>
 ): void {
   const plan = { ...createEmptyRenderPlan(), clip: viewClip.clip?.clipVector };
-  plan.viewFlags = plan.viewFlags.with(
-    "clipVolume",
-    true !== viewClip.noViewClip
-  );
+  plan.viewFlags = plan.viewFlags.with("clipVolume", true !== viewClip.noViewClip);
 
   const target = makeTarget();
   target.changeRenderPlan(plan);
@@ -105,9 +85,7 @@ function testBranches(
   for (const branch of branches) target.pushBranch(makeBranch(branch));
 
   expect(uniforms.clipStack.hasViewClip).to.equal(expectViewClip);
-  expect(uniforms.clipStack.hasClip).to.equal(
-    expectViewClip || expectedClips.length > 1
-  );
+  expect(uniforms.clipStack.hasClip).to.equal(expectViewClip || expectedClips.length > 1);
   expectClipStack(target, expectedClips);
 
   for (const _branch of branches) target.popBranch();
@@ -142,51 +120,21 @@ describe("BranchUniforms", async () => {
     testBranches({ clip }, [{}], true, [clip]);
     testBranches({ clip, noViewClip: true }, [{}], false, [clip]);
     testBranches({ clip }, [{ noViewClip: true }], false, [clip]);
-    testBranches(
-      { clip },
-      [{ noViewClip: true }, { noViewClip: false }],
-      true,
-      [clip]
-    );
-    testBranches(
-      { clip },
-      [{ noViewClip: false }, { noViewClip: true }],
-      false,
-      [clip]
-    );
+    testBranches({ clip }, [{ noViewClip: true }, { noViewClip: false }], true, [clip]);
+    testBranches({ clip }, [{ noViewClip: false }, { noViewClip: true }], false, [clip]);
   });
 
   it("should apply branch clips regardless of view flags", () => {
     const viewClip = makeClipVolume();
     const branchClip = makeClipVolume();
-    testBranches({ clip: viewClip }, [{ clip: branchClip }], true, [
+    testBranches({ clip: viewClip }, [{ clip: branchClip }], true, [viewClip, branchClip]);
+    testBranches({ clip: viewClip, noViewClip: true }, [{ clip: branchClip }], false, [viewClip, branchClip]);
+    testBranches({ clip: viewClip }, [{ clip: branchClip, noViewClip: true }], false, [viewClip, branchClip]);
+    testBranches({ clip: viewClip }, [{ clip: branchClip, noViewClip: true }, {}], false, [viewClip, branchClip]);
+    testBranches({ clip: viewClip }, [{ clip: branchClip, noViewClip: true }, { noViewClip: true }], false, [
       viewClip,
       branchClip,
     ]);
-    testBranches(
-      { clip: viewClip, noViewClip: true },
-      [{ clip: branchClip }],
-      false,
-      [viewClip, branchClip]
-    );
-    testBranches(
-      { clip: viewClip },
-      [{ clip: branchClip, noViewClip: true }],
-      false,
-      [viewClip, branchClip]
-    );
-    testBranches(
-      { clip: viewClip },
-      [{ clip: branchClip, noViewClip: true }, {}],
-      false,
-      [viewClip, branchClip]
-    );
-    testBranches(
-      { clip: viewClip },
-      [{ clip: branchClip, noViewClip: true }, { noViewClip: true }],
-      false,
-      [viewClip, branchClip]
-    );
   });
 
   it("should nest clip volumes", () => {
@@ -194,11 +142,10 @@ describe("BranchUniforms", async () => {
     const outerClip = makeClipVolume();
     const innerClip = makeClipVolume();
 
-    testBranches(
-      { clip: viewClip },
-      [{ clip: outerClip }, { clip: innerClip }],
-      true,
-      [viewClip, outerClip, innerClip]
-    );
+    testBranches({ clip: viewClip }, [{ clip: outerClip }, { clip: innerClip }], true, [
+      viewClip,
+      outerClip,
+      innerClip,
+    ]);
   });
 });

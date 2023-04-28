@@ -47,15 +47,10 @@ export class PascalCoefficients {
    * @note if the destination array is larger than needed, its leading `row+1` values are filled,
    *     and the array is returned.
    */
-  public static getBezierBasisValues(
-    order: number,
-    u: number,
-    result?: Float64Array
-  ): Float64Array {
+  public static getBezierBasisValues(order: number, u: number, result?: Float64Array): Float64Array {
     const row = order - 1;
     const pascalRow = PascalCoefficients.getRow(row);
-    if (result === undefined || result.length < order)
-      result = new Float64Array(order);
+    if (result === undefined || result.length < order) result = new Float64Array(order);
     for (let i = 0; i < order; i++) result[i] = pascalRow[i];
     // multiply by increasing powers of u ...
     let p = u;
@@ -79,11 +74,7 @@ export class PascalCoefficients {
    * @note if the destination array is larger than needed, its leading `row+1` values are filled,
    *     and the array is returned.
    */
-  public static getBezierBasisDerivatives(
-    order: number,
-    u: number,
-    result?: Float64Array
-  ): Float64Array {
+  public static getBezierBasisDerivatives(order: number, u: number, result?: Float64Array): Float64Array {
     result = this.getBezierBasisValues(order - 1, u, result);
     // derivative is df/du = (order-1 ) * sum ( q[i+1] - q[i])   summed on 0 <= i < order - 1.\
     // evaluate lower order basis, overwrite in place from right to left

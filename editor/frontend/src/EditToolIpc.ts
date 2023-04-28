@@ -19,17 +19,14 @@ import {
  * Create a type safe Proxy object to make IPC calls from an [[EditTool]] to methods of an `EditCommandIpc` interface of the current `EditCommand`.
  * @beta
  */
-export function makeEditToolIpc<
-  K extends EditCommandIpc
->(): PickAsyncMethods<K> {
+export function makeEditToolIpc<K extends EditCommandIpc>(): PickAsyncMethods<K> {
   return IpcApp.makeIpcFunctionProxy<K>(editorIpcStrings.channel, "callMethod");
 }
 
 /** Proxy for calling methods in `BasicManipulationCommandIpc`
  * @internal
  */
-export const basicManipulationIpc =
-  makeEditToolIpc<BasicManipulationCommandIpc>();
+export const basicManipulationIpc = makeEditToolIpc<BasicManipulationCommandIpc>();
 /** Proxy for calling methods in `SolidModelingCommandIpc`
  * @internal
  */

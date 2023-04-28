@@ -177,10 +177,7 @@ export class PointCloudReader {
    * @param fileContents the file contents.
    * @return the tile indexes.
    */
-  public readBlockIndexes(
-    level: int32,
-    fileContents: ContentLoader
-  ): Array<BlockIndex> {
+  public readBlockIndexes(level: int32, fileContents: ContentLoader): Array<BlockIndex> {
     return null;
   }
 
@@ -190,10 +187,7 @@ export class PointCloudReader {
    * @param fileContents the file contents.
    * @return the tile indexes.
    */
-  public readTileIndexes(
-    block: BlockIndex,
-    fileContents: ContentLoader
-  ): Array<TileIndex> {
+  public readTileIndexes(block: BlockIndex, fileContents: ContentLoader): Array<TileIndex> {
     return null;
   }
 
@@ -204,11 +198,7 @@ export class PointCloudReader {
    * @param fileContents the file contents.
    * @param processor the point processor.
    */
-  public readPoints(
-    tileIndex: TileIndex,
-    parameters: ReadRequest,
-    fileContents: ContentLoader
-  ): AList<CloudPoint> {
+  public readPoints(tileIndex: TileIndex, parameters: ReadRequest, fileContents: ContentLoader): AList<CloudPoint> {
     return null;
   }
 
@@ -234,10 +224,7 @@ export class PointCloudReader {
    * @param levelCount the number of levels.
    * @return the clipped pointcloud.
    */
-  public clipToLevelRange(
-    levelOffset: int32,
-    levelCount: int32
-  ): PointCloudReader {
+  public clipToLevelRange(levelOffset: int32, levelCount: int32): PointCloudReader {
     return null;
   }
 }

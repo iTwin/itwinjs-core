@@ -3,14 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { Id64String, JsonUtils } from "@itwin/core-bentley";
-import {
-  Matrix3d,
-  Point3d,
-  Range3d,
-  StandardViewIndex,
-  Transform,
-  Vector3d,
-} from "@itwin/core-geometry";
+import { Matrix3d, Point3d, Range3d, StandardViewIndex, Transform, Vector3d } from "@itwin/core-geometry";
 import {
   CategorySelector,
   DisplayStyle3d,
@@ -29,9 +22,7 @@ import {
 } from "@itwin/core-common";
 
 class RealityModelTileUtils {
-  public static rangeFromBoundingVolume(
-    boundingVolume: any
-  ): Range3d | undefined {
+  public static rangeFromBoundingVolume(boundingVolume: any): Range3d | undefined {
     if (undefined === boundingVolume) return undefined;
     if (Array.isArray(boundingVolume.box)) {
       const box: number[] = boundingVolume.box;
@@ -43,16 +34,7 @@ class RealityModelTileUtils {
       for (let j = 0; j < 2; j++) {
         for (let k = 0; k < 2; k++) {
           for (let l = 0; l < 2; l++) {
-            corners.push(
-              center.plus3Scaled(
-                ux,
-                j ? -1.0 : 1.0,
-                uy,
-                k ? -1.0 : 1.0,
-                uz,
-                l ? -1.0 : 1.0
-              )
-            );
+            corners.push(center.plus3Scaled(ux, j ? -1.0 : 1.0, uy, k ? -1.0 : 1.0, uz, l ? -1.0 : 1.0));
           }
         }
       }
@@ -73,16 +55,11 @@ class RealityModelTileUtils {
     return undefined;
   }
 
-  public static maximumSizeFromGeometricTolerance(
-    range: Range3d,
-    geometricError: number
-  ): number {
+  public static maximumSizeFromGeometricTolerance(range: Range3d, geometricError: number): number {
     const minToleranceRatio = 0.5; // Nominally the error on screen size of a tile.  Increasing generally increases performance (fewer draw calls) at expense of higher load times.
     return (minToleranceRatio * range.diagonal().magnitude()) / geometricError;
   }
-  public static transformFromJson(
-    jTrans: number[] | undefined
-  ): Transform | undefined {
+  public static transformFromJson(jTrans: number[] | undefined): Transform | undefined {
     return jTrans === undefined
       ? undefined
       : Transform.createOriginAndMatrix(
@@ -104,9 +81,7 @@ class RealityModelTileUtils {
     if (undefined !== json.root.boundingVolume.region) {
       const region = JsonUtils.asArray(json.root.boundingVolume.region);
       if (undefined === region)
-        throw new TypeError(
-          "Unable to determine GeoLocation - no root Transform or Region on root."
-        );
+        throw new TypeError("Unable to determine GeoLocation - no root Transform or Region on root.");
       const ecefLow = Cartographic.fromRadians({
         longitude: region[0],
         latitude: region[1],
@@ -120,12 +95,8 @@ class RealityModelTileUtils {
       return Range3d.create(ecefLow, ecefHigh);
     }
 
-    let rootTransform = RealityModelTileUtils.transformFromJson(
-      json.root.transform
-    );
-    const range = RealityModelTileUtils.rangeFromBoundingVolume(
-      json.root.boundingVolume
-    )!;
+    let rootTransform = RealityModelTileUtils.transformFromJson(json.root.transform);
+    const range = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume)!;
     if (undefined === rootTransform) rootTransform = Transform.createIdentity();
 
     return rootTransform.multiplyRange(range);
@@ -174,10 +145,7 @@ export async function insertClassifiedRealityModel(
 ): Promise<void> {
   const name = inputName ? inputName : url;
   const classificationFlags = {
-    inside: parseDisplayMode(
-      SpatialClassifierInsideDisplay.ElementColor,
-      inside
-    ),
+    inside: parseDisplayMode(SpatialClassifierInsideDisplay.ElementColor, inside),
     outside: parseDisplayMode(SpatialClassifierOutsideDisplay.Dimmed, outside),
     isVolumeClassifier: !isPlanar,
   };
@@ -190,12 +158,11 @@ export async function insertClassifiedRealityModel(
     expand: 1.0,
   };
   const realityModel = { tilesetUrl: url, name, classifiers: [classifier] };
-  const displayStyleId = DisplayStyle3d.insert(
-    iModelDb,
-    IModel.dictionaryId,
-    name,
-    { viewFlags, backgroundMap, contextRealityModels: [realityModel] }
-  );
+  const displayStyleId = DisplayStyle3d.insert(iModelDb, IModel.dictionaryId, name, {
+    viewFlags,
+    backgroundMap,
+    contextRealityModels: [realityModel],
+  });
 
   const projectExtents = Range3d.createFrom(iModelDb.projectExtents);
   let range;
@@ -211,18 +178,10 @@ export async function insertClassifiedRealityModel(
   projectExtents.high.z = Math.max(range.high.z, projectExtents.high.z);
   iModelDb.updateProjectExtents(projectExtents);
 
-  const modelSelectorId: Id64String = ModelSelector.insert(
-    iModelDb,
-    IModel.dictionaryId,
-    name,
-    []
-  );
-  const categorySelectorId: Id64String = CategorySelector.insert(
-    iModelDb,
-    IModel.dictionaryId,
-    name,
-    [classifierCategoryId]
-  );
+  const modelSelectorId: Id64String = ModelSelector.insert(iModelDb, IModel.dictionaryId, name, []);
+  const categorySelectorId: Id64String = CategorySelector.insert(iModelDb, IModel.dictionaryId, name, [
+    classifierCategoryId,
+  ]);
   OrthographicViewDefinition.insert(
     iModelDb,
     IModel.dictionaryId,

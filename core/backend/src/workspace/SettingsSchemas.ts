@@ -9,13 +9,7 @@
 import * as fs from "fs-extra";
 import { parse } from "json5";
 import { extname, join } from "path";
-import {
-  BeEvent,
-  JSONSchema,
-  JSONSchemaType,
-  JSONSchemaTypeName,
-  Mutable,
-} from "@itwin/core-bentley";
+import { BeEvent, JSONSchema, JSONSchemaType, JSONSchemaTypeName, Mutable } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelJsFs } from "../IModelJsFs";
 
@@ -73,11 +67,7 @@ export class SettingsSchemas {
   }
 
   /** @internal */
-  public static validateArrayObject<T>(
-    val: T,
-    schemaName: string,
-    msg: string
-  ): T {
+  public static validateArrayObject<T>(val: T, schemaName: string, msg: string): T {
     const schema = this.allSchemas.get(schemaName);
     const items = schema?.items;
     if (undefined === items) return val;
@@ -90,9 +80,7 @@ export class SettingsSchemas {
       const value = (val as any)[entry];
       if (entryType === "array" && Array.isArray(value)) continue;
       if (typeof value !== entryType)
-        throw new Error(
-          `invalid "${schemaName}" setting entry for "${msg}": ${entry} is ${value}`
-        );
+        throw new Error(`invalid "${schemaName}" setting entry for "${msg}": ${entry} is ${value}`);
     }
     return val;
   }
@@ -101,9 +89,7 @@ export class SettingsSchemas {
    * Add one or more [[SettingSchemaGroup]]s. `SettingSchemaGroup`s must include a `groupName` member that is used
    * to identify the group. If a group with the same name is already registered, the old values are first removed and then the new group is added.
    */
-  public static addGroup(
-    settingsGroup: SettingSchemaGroup | SettingSchemaGroup[]
-  ): void {
+  public static addGroup(settingsGroup: SettingSchemaGroup | SettingSchemaGroup[]): void {
     if (!Array.isArray(settingsGroup)) settingsGroup = [settingsGroup];
 
     this.doAdd(settingsGroup);
@@ -120,9 +106,7 @@ export class SettingsSchemas {
     try {
       this.addJson(fs.readFileSync(fileName, "utf-8"));
     } catch (e: any) {
-      throw new Error(
-        `parsing SettingSchema file "${fileName}": ${e.message}"`
-      );
+      throw new Error(`parsing SettingSchema file "${fileName}": ${e.message}"`);
     }
   }
 
@@ -130,8 +114,7 @@ export class SettingsSchemas {
   public static addDirectory(dirName: LocalDirName) {
     for (const fileName of IModelJsFs.readdirSync(dirName)) {
       const ext = extname(fileName);
-      if (ext === ".json5" || ext === ".json")
-        this.addFile(join(dirName, fileName));
+      if (ext === ".json5" || ext === ".json") this.addFile(join(dirName, fileName));
     }
   }
 
@@ -143,8 +126,7 @@ export class SettingsSchemas {
 
   private static doAdd(settingsGroup: SettingSchemaGroup[]) {
     settingsGroup.forEach((group) => {
-      if (undefined === group.groupName)
-        throw new Error(`settings group has no "groupName" member`);
+      if (undefined === group.groupName) throw new Error(`settings group has no "groupName" member`);
 
       this.doRemove(group.groupName);
       this.validateAndAdd(group);
@@ -155,22 +137,17 @@ export class SettingsSchemas {
   private static doRemove(groupName: string) {
     const group = this._allGroups.get(groupName);
     if (undefined !== group?.properties) {
-      for (const key of Object.keys(group.properties))
-        this.allSchemas.delete(key);
+      for (const key of Object.keys(group.properties)) this.allSchemas.delete(key);
     }
     this._allGroups.delete(groupName);
   }
 
   private static validateName(name: string) {
     if (!name.trim()) throw new Error(`empty property name`);
-    if (this.allSchemas.has(name))
-      throw new Error(`property "${name}" is already defined`);
+    if (this.allSchemas.has(name)) throw new Error(`property "${name}" is already defined`);
   }
 
-  private static validateProperty(
-    name: string,
-    property: SettingSchema | undefined
-  ) {
+  private static validateProperty(name: string, property: SettingSchema | undefined) {
     if (!property) throw new Error(`missing required property ${name}`);
 
     if (!property.type) throw new Error(`property ${name} has no type`);
@@ -187,8 +164,7 @@ export class SettingsSchemas {
         const required = property.required;
         const props = property.properties;
         if (required && props) {
-          for (const entry of required)
-            this.validateProperty(entry, props[entry]);
+          for (const entry of required) this.validateProperty(entry, props[entry]);
         }
         if (props) {
           for (const key of Object.keys(props))
@@ -201,8 +177,7 @@ export class SettingsSchemas {
         return;
 
       case "array":
-        if (typeof property.items !== "object")
-          throw new Error(`array property ${name} has no items member`);
+        if (typeof property.items !== "object") throw new Error(`array property ${name} has no items member`);
         try {
           this.validateProperty("items", property.items);
         } catch (e: any) {
@@ -217,22 +192,18 @@ export class SettingsSchemas {
 
   private static validateAndAdd(group: SettingSchemaGroup) {
     const properties = group.properties;
-    if (undefined === properties)
-      throw new Error(`group ${group.groupName} has no properties`);
+    if (undefined === properties) throw new Error(`group ${group.groupName} has no properties`);
 
     for (const key of Object.keys(properties)) {
       this.validateName(key);
       this.validateProperty(key, properties[key]);
       const property: Mutable<SettingSchema> = properties[key];
-      property.default =
-        property.default ?? this.getDefaultValue(property.type);
+      property.default = property.default ?? this.getDefaultValue(property.type);
       this.allSchemas.set(key, property);
     }
   }
 
-  private static getDefaultValue(
-    type: JSONSchemaTypeName | JSONSchemaTypeName[]
-  ): JSONSchemaType | undefined {
+  private static getDefaultValue(type: JSONSchemaTypeName | JSONSchemaTypeName[]): JSONSchemaType | undefined {
     type = Array.isArray(type) ? type[0] : type;
     switch (type) {
       case "boolean":

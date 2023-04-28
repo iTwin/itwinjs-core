@@ -24,10 +24,7 @@ export interface PlanarClassifierTarget {
  */
 export abstract class RenderPlanarClassifier implements IDisposable {
   public abstract dispose(): void;
-  public abstract collectGraphics(
-    context: SceneContext,
-    target: PlanarClassifierTarget
-  ): void;
+  public abstract collectGraphics(context: SceneContext, target: PlanarClassifierTarget): void;
   public abstract setSource(
     classifierTreeRef?: SpatialClassifierTileTreeReference,
     planarClipMask?: PlanarClipMaskState

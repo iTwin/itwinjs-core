@@ -67,14 +67,8 @@ export class Angle implements BeJSONFunctions {
    * @param fraction the interpolation fraction
    * @param angle1 second angle in radians
    */
-  public static createInterpolate(
-    angle0: Angle,
-    fraction: number,
-    angle1: Angle
-  ): Angle {
-    return new Angle(
-      Geometry.interpolate(angle0.radians, fraction, angle1.radians)
-    );
+  public static createInterpolate(angle0: Angle, fraction: number, angle1: Angle): Angle {
+    return new Angle(Geometry.interpolate(angle0.radians, fraction, angle1.radians));
   }
   /**
    * Return a (new) Angle object, with angle scaled from existing angle.
@@ -168,9 +162,7 @@ export class Angle implements BeJSONFunctions {
   }
   /** Return the angle measured in degrees. */
   public get degrees(): number {
-    return this._degrees !== undefined
-      ? this._degrees
-      : Angle.radiansToDegrees(this._radians);
+    return this._degrees !== undefined ? this._degrees : Angle.radiansToDegrees(this._radians);
   }
   /**
    * Convert an angle in degrees to radians.
@@ -333,15 +325,8 @@ export class Angle implements BeJSONFunctions {
    * @param other the other angle
    * @param radianTol radian tolerance with default value of Geometry.smallAngleRadians
    */
-  public isAlmostEqualAllowPeriodShift(
-    other: Angle,
-    radianTol: number = Geometry.smallAngleRadians
-  ): boolean {
-    return Angle.isAlmostEqualRadiansAllowPeriodShift(
-      this._radians,
-      other._radians,
-      radianTol
-    );
+  public isAlmostEqualAllowPeriodShift(other: Angle, radianTol: number = Geometry.smallAngleRadians): boolean {
+    return Angle.isAlmostEqualRadiansAllowPeriodShift(this._radians, other._radians, radianTol);
   }
   /**
    * Test if two angle (in radians)  almost equal, NOT allowing shift by full circle (i.e., multiples of `2 * PI`).
@@ -361,15 +346,8 @@ export class Angle implements BeJSONFunctions {
    * @param other the other angle
    * @param radianTol radian tolerance with default value of Geometry.smallAngleRadians
    */
-  public isAlmostEqualNoPeriodShift(
-    other: Angle,
-    radianTol: number = Geometry.smallAngleRadians
-  ): boolean {
-    return Angle.isAlmostEqualRadiansNoPeriodShift(
-      this._radians,
-      other._radians,
-      radianTol
-    );
+  public isAlmostEqualNoPeriodShift(other: Angle, radianTol: number = Geometry.smallAngleRadians): boolean {
+    return Angle.isAlmostEqualRadiansNoPeriodShift(this._radians, other._radians, radianTol);
   }
   /**
    * Test if two this angle and other are almost equal, NOT allowing shift by full circle (i.e., multiples of `2 * PI`).
@@ -377,10 +355,7 @@ export class Angle implements BeJSONFunctions {
    * @param other the other angle
    * @param radianTol radian tolerance with default value of Geometry.smallAngleRadians
    */
-  public isAlmostEqual(
-    other: Angle,
-    radianTol: number = Geometry.smallAngleRadians
-  ): boolean {
+  public isAlmostEqual(other: Angle, radianTol: number = Geometry.smallAngleRadians): boolean {
     return this.isAlmostEqualNoPeriodShift(other, radianTol);
   }
   /**
@@ -389,11 +364,7 @@ export class Angle implements BeJSONFunctions {
    * @param dotVV dot product of vectorV with itself
    * @param dotUV dot product of vectorU with vectorV
    */
-  public static isPerpendicularDotSet(
-    dotUU: number,
-    dotVV: number,
-    dotUV: number
-  ): boolean {
+  public static isPerpendicularDotSet(dotUU: number, dotVV: number, dotUV: number): boolean {
     return (
       dotUU > Geometry.smallMetricDistanceSquared &&
       dotVV > Geometry.smallMetricDistanceSquared &&
@@ -407,10 +378,7 @@ export class Angle implements BeJSONFunctions {
    * @param rCos2A cosine value (scaled by radius) for initial angle.
    * @param rSin2A sine value (scaled by radius) for final angle.
    */
-  public static trigValuesToHalfAngleTrigValues(
-    rCos2A: number,
-    rSin2A: number
-  ): TrigValues {
+  public static trigValuesToHalfAngleTrigValues(rCos2A: number, rSin2A: number): TrigValues {
     const r = Geometry.hypotenuseXY(rCos2A, rSin2A);
     if (r < Geometry.smallMetricDistance) {
       return { c: 1.0, s: 0.0, radians: 0.0 }; // angle = 0
@@ -455,10 +423,7 @@ export class Angle implements BeJSONFunctions {
     }
   }
   /** If value is close to -1, -0.5, 0, 0.5, 1, adjust it to the exact value. */
-  public static cleanupTrigValue(
-    value: number,
-    tolerance: number = 1.0e-15
-  ): number {
+  public static cleanupTrigValue(value: number, tolerance: number = 1.0e-15): number {
     const absValue = Math.abs(value);
     if (absValue <= tolerance) return 0;
     let a = Math.abs(absValue - 0.5);
@@ -489,11 +454,7 @@ export class Angle implements BeJSONFunctions {
   ): TrigValues {
     const cos2t0 = dotUU - dotVV;
     const sin2t0 = 2.0 * dotUV;
-    if (
-      favorZero &&
-      Math.abs(sin2t0) <
-        Geometry.smallAngleRadians * (Math.abs(dotUU) + Math.abs(dotVV))
-    )
+    if (favorZero && Math.abs(sin2t0) < Geometry.smallAngleRadians * (Math.abs(dotUU) + Math.abs(dotVV)))
       return { c: 1.0, s: 0.0, radians: 0.0 };
     return Angle.trigValuesToHalfAngleTrigValues(cos2t0, sin2t0);
   }
@@ -516,10 +477,7 @@ export class Angle implements BeJSONFunctions {
     vz: number
   ): number {
     const uDotV = ux * vx + uy * vy + uz * vz;
-    return Math.atan2(
-      Geometry.crossProductMagnitude(ux, uy, uz, vx, vy, vz),
-      uDotV
-    );
+    return Math.atan2(Geometry.crossProductMagnitude(ux, uy, uz, vx, vy, vz), uDotV);
   }
   /**
    * Returns the angle between two vectors, with the vectors given as xyz components, and an up vector to resolve

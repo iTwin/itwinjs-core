@@ -103,10 +103,8 @@ describe("RulesetManager", () => {
 
     it("calls addon's removeRuleset with RegisteredRuleset argument", async () => {
       const ruleset = { id: faker.random.uuid(), rules: [] };
-      const registered = new RegisteredRuleset(
-        ruleset,
-        faker.random.uuid(),
-        (r: RegisteredRuleset) => manager.remove(r)
+      const registered = new RegisteredRuleset(ruleset, faker.random.uuid(), (r: RegisteredRuleset) =>
+        manager.remove(r)
       );
       addonMock
         .setup((x) => x.removeRuleset(ruleset.id, registered.uniqueIdentifier))

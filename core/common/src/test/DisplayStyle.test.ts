@@ -4,11 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import {
-  CompressedId64Set,
-  Id64String,
-  OrderedId64Iterable,
-} from "@itwin/core-bentley";
+import { CompressedId64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { BackgroundMapType } from "../BackgroundMapProvider";
 import { GlobeMode } from "../BackgroundMapSettings";
 import { ColorByName } from "../ColorByName";
@@ -21,21 +17,12 @@ import {
   MonochromeMode,
 } from "../DisplayStyleSettings";
 import { LinePixels } from "../LinePixels";
-import {
-  PlanProjectionSettings,
-  PlanProjectionSettingsProps,
-} from "../PlanProjectionSettings";
-import {
-  SpatialClassifierInsideDisplay,
-  SpatialClassifierOutsideDisplay,
-} from "../SpatialClassification";
+import { PlanProjectionSettings, PlanProjectionSettingsProps } from "../PlanProjectionSettings";
+import { SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "../SpatialClassification";
 import { ThematicDisplayMode } from "../ThematicDisplay";
 import { RenderMode, ViewFlags } from "../ViewFlags";
 import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";
-import {
-  WhiteOnWhiteReversalProps,
-  WhiteOnWhiteReversalSettings,
-} from "../WhiteOnWhiteReversalSettings";
+import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "../WhiteOnWhiteReversalSettings";
 import { SkyGradient } from "../SkyBox";
 import { GroundPlane } from "../GroundPlane";
 import { Atmosphere } from "../Atmosphere";
@@ -54,9 +41,7 @@ describe("DisplayStyleSettings", () => {
         const style = new DisplayStyle3dSettings(styleProps);
         style.whiteOnWhiteReversal = newSettings;
         const result = style.toJSON();
-        expect(result.whiteOnWhiteReversal).to.deep.equal(
-          expected === "input" ? props : expected
-        );
+        expect(result.whiteOnWhiteReversal).to.deep.equal(expected === "input" ? props : expected);
       }
 
       const ignore = WhiteOnWhiteReversalSettings.fromJSON({
@@ -73,10 +58,7 @@ describe("DisplayStyleSettings", () => {
 
     it("raises event", () => {
       const style = new DisplayStyle3dSettings({ styles: {} });
-      function test(
-        expectEvent: boolean,
-        newSettings: WhiteOnWhiteReversalSettings
-      ): void {
+      function test(expectEvent: boolean, newSettings: WhiteOnWhiteReversalSettings): void {
         let eventRaised = false;
         const remove = style.onWhiteOnWhiteReversalChanged.addListener((s) => {
           expect(eventRaised).to.be.false;
@@ -93,19 +75,10 @@ describe("DisplayStyleSettings", () => {
 
       test(false, style.whiteOnWhiteReversal);
       test(false, WhiteOnWhiteReversalSettings.fromJSON());
-      test(
-        true,
-        WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor: true })
-      );
+      test(true, WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor: true }));
       test(false, style.whiteOnWhiteReversal);
-      test(
-        false,
-        WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor: true })
-      );
-      test(
-        true,
-        WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor: false })
-      );
+      test(false, WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor: true }));
+      test(true, WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor: false }));
     });
   });
 
@@ -120,9 +93,7 @@ describe("DisplayStyleSettings", () => {
           styles: { planProjections },
         });
         const json = settings.toJSON();
-        expect(JSON.stringify(json.planProjections)).to.equal(
-          JSON.stringify(planProjections)
-        );
+        expect(JSON.stringify(json.planProjections)).to.equal(JSON.stringify(planProjections));
       };
 
       roundTrip(undefined);
@@ -136,25 +107,17 @@ describe("DisplayStyleSettings", () => {
     });
 
     it("sets and round-trips plan projection settings", () => {
-      const roundTrip = (
-        planProjections: SettingsMap | undefined,
-        expected: SettingsMap | undefined | "input"
-      ) => {
+      const roundTrip = (planProjections: SettingsMap | undefined, expected: SettingsMap | undefined | "input") => {
         if ("input" === expected) expected = planProjections;
 
         const input = new DisplayStyle3dSettings({});
         if (undefined !== planProjections)
           for (const modelId of Object.keys(planProjections))
-            input.setPlanProjectionSettings(
-              modelId,
-              PlanProjectionSettings.fromJSON(planProjections[modelId])
-            );
+            input.setPlanProjectionSettings(modelId, PlanProjectionSettings.fromJSON(planProjections[modelId]));
 
         const output = new DisplayStyle3dSettings({ styles: input.toJSON() });
         const json = output.toJSON();
-        expect(JSON.stringify(json.planProjections)).to.equal(
-          JSON.stringify(expected)
-        );
+        expect(JSON.stringify(json.planProjections)).to.equal(JSON.stringify(expected));
       };
 
       roundTrip(undefined, undefined);
@@ -164,10 +127,7 @@ describe("DisplayStyleSettings", () => {
       roundTrip({ "0x1": { overlay: false } }, {});
       roundTrip({ "0x1": { enforceDisplayPriority: true } }, "input");
       roundTrip({ "0x1": { enforceDisplayPriority: false } }, {});
-      roundTrip(
-        { "0x1": { transparency: 0.5 }, "0x2": { elevation: -5 } },
-        "input"
-      );
+      roundTrip({ "0x1": { transparency: 0.5 }, "0x2": { elevation: -5 } }, "input");
     });
 
     it("deletes plan projection settings", () => {
@@ -184,8 +144,7 @@ describe("DisplayStyleSettings", () => {
         return count;
       };
 
-      const makeSettings = (props: PlanProjectionSettingsProps) =>
-        new PlanProjectionSettings(props);
+      const makeSettings = (props: PlanProjectionSettingsProps) => new PlanProjectionSettings(props);
 
       settings.setPlanProjectionSettings("0x1", makeSettings({ elevation: 1 }));
       expect(settings.planProjectionSettings).not.to.be.undefined;
@@ -196,16 +155,10 @@ describe("DisplayStyleSettings", () => {
       expect(countSettings()).to.equal(2);
       expect(settings.getPlanProjectionSettings("0x2")!.elevation).to.equal(2);
 
-      settings.setPlanProjectionSettings(
-        "0x2",
-        makeSettings({ transparency: 0.2 })
-      );
+      settings.setPlanProjectionSettings("0x2", makeSettings({ transparency: 0.2 }));
       expect(countSettings()).to.equal(2);
-      expect(settings.getPlanProjectionSettings("0x2")!.transparency).to.equal(
-        0.2
-      );
-      expect(settings.getPlanProjectionSettings("0x2")!.elevation).to.be
-        .undefined;
+      expect(settings.getPlanProjectionSettings("0x2")!.transparency).to.equal(0.2);
+      expect(settings.getPlanProjectionSettings("0x2")!.elevation).to.be.undefined;
 
       settings.setPlanProjectionSettings("0x3", undefined);
       expect(countSettings()).to.equal(2);
@@ -222,27 +175,18 @@ describe("DisplayStyleSettings", () => {
 
   describe("excluded elements", () => {
     it("synchronizes JSON and in-memory representations", () => {
-      const test = (
-        expectedExcludedElements: string | undefined,
-        func: (settings: DisplayStyleSettings) => void
-      ) => {
+      const test = (expectedExcludedElements: string | undefined, func: (settings: DisplayStyleSettings) => void) => {
         const settings = new DisplayStyleSettings({});
         func(settings);
 
-        expect(settings.toJSON().excludedElements).to.equal(
-          expectedExcludedElements
-        );
+        expect(settings.toJSON().excludedElements).to.equal(expectedExcludedElements);
         expect(settings.compressedExcludedElementIds).to.equal(
           undefined === expectedExcludedElements ? "" : expectedExcludedElements
         );
 
         const excludedIds = Array.from(settings.excludedElementIds);
-        expect(new Set<string>(settings.excludedElementIds).size).to.equal(
-          excludedIds.length
-        );
-        const set = OrderedId64Iterable.sortArray(
-          Array.from(settings.excludedElementIds)
-        );
+        expect(new Set<string>(settings.excludedElementIds).size).to.equal(excludedIds.length);
+        const set = OrderedId64Iterable.sortArray(Array.from(settings.excludedElementIds));
         expect(set).to.deep.equal(excludedIds);
       };
 
@@ -338,25 +282,17 @@ describe("DisplayStyleSettings", () => {
         ]
       );
 
-      expectMasks(
-        [makeProps(1, "0x1"), makeProps(2, "0x1")],
-        [["0x1", makeSettings(2)]]
-      );
+      expectMasks([makeProps(1, "0x1"), makeProps(2, "0x1")], [["0x1", makeSettings(2)]]);
     });
 
     it("synchronizes JSON and in-memory representations", () => {
       function expectMasks(
         initialProps: DisplayStylePlanarClipMaskProps[] | undefined,
-        func: (
-          masks: Map<Id64String, PlanarClipMaskSettings>,
-          style: DisplayStyleSettings
-        ) => void,
+        func: (masks: Map<Id64String, PlanarClipMaskSettings>, style: DisplayStyleSettings) => void,
         expectedPairs: Array<[Id64String, PlanarClipMaskSettings]>,
         expectedProps: DisplayStylePlanarClipMaskProps[] | undefined
       ) {
-        const styleProps = initialProps
-          ? { styles: { planarClipOvr: initialProps } }
-          : {};
+        const styleProps = initialProps ? { styles: { planarClipOvr: initialProps } } : {};
         const style = new DisplayStyleSettings(styleProps);
 
         func(style.planarClipMasks, style);
@@ -400,12 +336,7 @@ describe("DisplayStyleSettings", () => {
         [makeProps(1, "0x1"), makeProps(3, "0x3")]
       );
 
-      expectMasks(
-        [makeProps(1, "0x1"), makeProps(2, "0x2")],
-        (map) => map.clear(),
-        [],
-        undefined
-      );
+      expectMasks([makeProps(1, "0x1"), makeProps(2, "0x2")], (map) => map.clear(), [], undefined);
 
       expectMasks(
         [makeProps(1, "0x1"), makeProps(2, "0x2")],
@@ -668,17 +599,12 @@ describe("DisplayStyleSettings overrides", () => {
       styles: { ...baseProps, ...mapProps, ...iTwinProps, ...iModelProps },
     });
 
-    const roundTrip = (
-      options: DisplayStyleOverridesOptions,
-      expected: DisplayStyle3dSettingsProps
-    ) => {
+    const roundTrip = (options: DisplayStyleOverridesOptions, expected: DisplayStyle3dSettingsProps) => {
       const output = settings.toOverrides(options);
       expect(output).to.deep.equal(expected);
     };
 
-    const viewflags = ViewFlags.fromJSON(
-      baseProps.viewflags
-    ).toFullyDefinedJSON();
+    const viewflags = ViewFlags.fromJSON(baseProps.viewflags).toFullyDefinedJSON();
 
     const vfNoMapNoDec: Partial<typeof viewflags> = { ...viewflags };
     delete vfNoMapNoDec.acs;
@@ -690,23 +616,11 @@ describe("DisplayStyleSettings overrides", () => {
 
     roundTrip({ includeAll: true }, { ...settings.toJSON(), viewflags });
     roundTrip({}, { ...baseProps, viewflags: vfNoMapNoDec });
-    roundTrip(
-      { includeBackgroundMap: true },
-      { ...baseProps, ...mapProps, viewflags: vfNoDec }
-    );
-    roundTrip(
-      { includeDrawingAids: true },
-      { ...baseProps, viewflags: vfNoMap }
-    );
-    roundTrip(
-      { includeBackgroundMap: true, includeDrawingAids: true },
-      { ...baseProps, ...mapProps, viewflags }
-    );
+    roundTrip({ includeBackgroundMap: true }, { ...baseProps, ...mapProps, viewflags: vfNoDec });
+    roundTrip({ includeDrawingAids: true }, { ...baseProps, viewflags: vfNoMap });
+    roundTrip({ includeBackgroundMap: true, includeDrawingAids: true }, { ...baseProps, ...mapProps, viewflags });
 
-    roundTrip(
-      { includeITwinSpecific: true },
-      { ...baseProps, ...iTwinProps, viewflags: vfNoMapNoDec }
-    );
+    roundTrip({ includeITwinSpecific: true }, { ...baseProps, ...iTwinProps, viewflags: vfNoMapNoDec });
     roundTrip(
       { includeIModelSpecific: true },
       { ...baseProps, ...iTwinProps, ...iModelProps, viewflags: vfNoMapNoDec }
@@ -730,16 +644,11 @@ describe("DisplayStyleSettings overrides", () => {
       settings.applyOverrides(overrides);
       const output = settings.toJSON();
 
-      for (const key of Object.keys(overrides) as Array<
-        keyof DisplayStyle3dSettingsProps
-      >)
+      for (const key of Object.keys(overrides) as Array<keyof DisplayStyle3dSettingsProps>)
         expect(output[key]).to.deep.equal(overrides[key]);
 
-      for (const key of Object.keys(output) as Array<
-        keyof DisplayStyle3dSettingsProps
-      >)
-        if (undefined === overrides[key])
-          expect(output[key]).to.deep.equal(originalSettings[key]);
+      for (const key of Object.keys(output) as Array<keyof DisplayStyle3dSettingsProps>)
+        if (undefined === overrides[key]) expect(output[key]).to.deep.equal(originalSettings[key]);
     };
 
     const viewflags = baseProps.viewflags;
@@ -845,10 +754,7 @@ describe("DisplayStyleSettings overrides", () => {
 
     test({
       viewflags,
-      excludedElements: CompressedId64Set.compressIds([
-        "0xbaadf00d",
-        "0xdeadbeef",
-      ]),
+      excludedElements: CompressedId64Set.compressIds(["0xbaadf00d", "0xdeadbeef"]),
     });
 
     test({

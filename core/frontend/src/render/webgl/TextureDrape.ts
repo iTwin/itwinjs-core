@@ -14,9 +14,7 @@ import { WebGLDisposable } from "./Disposable";
 import { Target } from "./Target";
 import { Texture } from "./Texture";
 
-export abstract class TextureDrape
-  implements RenderTextureDrape, RenderMemory.Consumer, WebGLDisposable
-{
+export abstract class TextureDrape implements RenderTextureDrape, RenderMemory.Consumer, WebGLDisposable {
   protected _texture?: Texture;
   protected _projectionMatrix = Matrix4d.createIdentity();
   public get texture(): Texture | undefined {
@@ -32,8 +30,7 @@ export abstract class TextureDrape
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    if (undefined !== this._texture)
-      stats.addPlanarClassifier(this._texture.bytesUsed);
+    if (undefined !== this._texture) stats.addPlanarClassifier(this._texture.bytesUsed);
   }
 
   public get isDisposed(): boolean {

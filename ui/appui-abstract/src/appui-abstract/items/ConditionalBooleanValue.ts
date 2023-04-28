@@ -19,11 +19,7 @@ export class ConditionalBooleanValue {
    * @param syncEventIds An array of eventId that should be monitored to determine when to run the refresh method.
    * @param value The default value for the conditional value. If not specified then the function is run to set the value when the value is retrieved.
    */
-  constructor(
-    public readonly testFunc: () => boolean,
-    public readonly syncEventIds: string[],
-    value?: boolean
-  ) {
+  constructor(public readonly testFunc: () => boolean, public readonly syncEventIds: string[], value?: boolean) {
     this._value = value;
   }
 
@@ -50,30 +46,19 @@ export class ConditionalBooleanValue {
     conditionalValue: ConditionalBooleanValue | boolean | undefined,
     eventIds: Set<string>
   ): boolean {
-    if (
-      undefined === conditionalValue ||
-      !(conditionalValue instanceof ConditionalBooleanValue)
-    )
-      return false;
+    if (undefined === conditionalValue || !(conditionalValue instanceof ConditionalBooleanValue)) return false;
 
-    if (
-      conditionalValue.syncEventIds.some((value: string): boolean =>
-        eventIds.has(value.toLowerCase())
-      )
-    )
+    if (conditionalValue.syncEventIds.some((value: string): boolean => eventIds.has(value.toLowerCase())))
       return conditionalValue.refresh();
 
     return false;
   }
 
   /** helper function to get boolean from a ConditionalBooleanValue | boolean | undefined */
-  public static getValue(
-    conditionalValue: ConditionalBooleanValue | boolean | undefined
-  ): boolean {
+  public static getValue(conditionalValue: ConditionalBooleanValue | boolean | undefined): boolean {
     if (undefined === conditionalValue) return false;
 
-    if (conditionalValue instanceof ConditionalBooleanValue)
-      return conditionalValue.value;
+    if (conditionalValue instanceof ConditionalBooleanValue) return conditionalValue.value;
 
     return conditionalValue;
   }

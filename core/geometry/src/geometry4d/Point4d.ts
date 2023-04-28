@@ -30,14 +30,7 @@ export type Point4dProps = number[];
  * @param divH = (1/h)
  * @internal
  */
-function quotientDerivative2(
-  ddg: number,
-  dh: number,
-  ddh: number,
-  f: number,
-  df: number,
-  divH: number
-): number {
+function quotientDerivative2(ddg: number, dh: number, ddh: number, f: number, df: number, divH: number): number {
   return divH * (ddg - 2.0 * df * dh - f * ddh);
 }
 
@@ -53,12 +46,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
   /** x,y,z,w are packed into a Float64Array */
   public xyzw: Float64Array;
   /** Set x,y,z,w of this point.  */
-  public set(
-    x: number = 0,
-    y: number = 0,
-    z: number = 0,
-    w: number = 0
-  ): Point4d {
+  public set(x: number = 0, y: number = 0, z: number = 0, w: number = 0): Point4d {
     this.xyzw[0] = x;
     this.xyzw[1] = y;
     this.xyzw[2] = z;
@@ -102,12 +90,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
     this.xyzw[3] = val;
   }
   /** Construct from coordinates. */
-  protected constructor(
-    x: number = 0,
-    y: number = 0,
-    z: number = 0,
-    w: number = 0
-  ) {
+  protected constructor(x: number = 0, y: number = 0, z: number = 0, w: number = 0) {
     super();
     this.xyzw = new Float64Array(4);
     this.xyzw[0] = x;
@@ -116,13 +99,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
     this.xyzw[3] = w;
   }
   /** Return a Point4d with specified x,y,z,w */
-  public static create(
-    x: number = 0,
-    y: number = 0,
-    z: number = 0,
-    w: number = 0,
-    result?: Point4d
-  ): Point4d {
+  public static create(x: number = 0, y: number = 0, z: number = 0, w: number = 0, result?: Point4d): Point4d {
     return result ? result.set(x, y, z, w) : new Point4d(x, y, z, w);
   }
   /**
@@ -130,15 +107,8 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * @param source
    * @returns
    */
-  public static createPlaneFrom(
-    source: PlaneAltitudeEvaluator
-  ): Point4d | undefined {
-    return new Point4d(
-      source.normalX(),
-      source.normalY(),
-      source.normalZ(),
-      source.altitudeXYZ(0, 0, 0)
-    );
+  public static createPlaneFrom(source: PlaneAltitudeEvaluator): Point4d | undefined {
+    return new Point4d(source.normalX(), source.normalY(), source.normalZ(), source.altitudeXYZ(0, 0, 0));
   }
   /** Copy coordinates from `other`. */
   public setFrom(other: Point4d): Point4d {
@@ -150,14 +120,11 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
   }
   /** Clone this point */
   public clone(result?: Point4d): Point4d {
-    return result
-      ? result.setFrom(this)
-      : new Point4d(this.xyzw[0], this.xyzw[1], this.xyzw[2], this.xyzw[3]);
+    return result ? result.setFrom(this) : new Point4d(this.xyzw[0], this.xyzw[1], this.xyzw[2], this.xyzw[3]);
   }
   /** Set this point's xyzw from a json array `[x,y,z,w]` */
   public setFromJSON(json?: Point4dProps) {
-    if (Geometry.isNumberArray(json, 4))
-      this.set(json![0], json![1], json![2], json![3]);
+    if (Geometry.isNumberArray(json, 4)) this.set(json![0], json![1], json![2], json![3]);
     else this.set(0, 0, 0, 0);
   }
 
@@ -183,12 +150,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * @param z z to test
    * @param w w to test
    */
-  public isAlmostEqualXYZW(
-    x: number,
-    y: number,
-    z: number,
-    w: number
-  ): boolean {
+  public isAlmostEqualXYZW(x: number, y: number, z: number, w: number): boolean {
     return (
       Geometry.isSameCoordinate(this.x, x) &&
       Geometry.isSameCoordinate(this.y, y) &&
@@ -231,15 +193,8 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
   public realDistanceXY(other: Point4d): number | undefined {
     const wA = this.w;
     const wB = other.w;
-    if (
-      Geometry.isSmallMetricDistance(wA) ||
-      Geometry.isSmallMetricDistance(wB)
-    )
-      return undefined;
-    return Geometry.hypotenuseXY(
-      other.xyzw[0] / wB - this.xyzw[0] / wA,
-      other.xyzw[1] / wB - this.xyzw[1] / wA
-    );
+    if (Geometry.isSmallMetricDistance(wA) || Geometry.isSmallMetricDistance(wB)) return undefined;
+    return Geometry.hypotenuseXY(other.xyzw[0] / wB - this.xyzw[0] / wA, other.xyzw[1] / wB - this.xyzw[1] / wA);
   }
   /** Return the largest absolute distance between corresponding components
    * * x,y,z,w all participate without normalization.
@@ -254,29 +209,15 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
   }
   /** Return the largest absolute entry of all 4 components x,y,z,w */
   public maxAbs(): number {
-    return Math.max(
-      Math.abs(this.xyzw[0]),
-      Math.abs(this.xyzw[1]),
-      Math.abs(this.xyzw[2]),
-      Math.abs(this.xyzw[3])
-    );
+    return Math.max(Math.abs(this.xyzw[0]), Math.abs(this.xyzw[1]), Math.abs(this.xyzw[2]), Math.abs(this.xyzw[3]));
   }
   /** Returns the magnitude including all 4 components x,y,z,w */
   public magnitudeXYZW(): number {
-    return Geometry.hypotenuseXYZW(
-      this.xyzw[0],
-      this.xyzw[1],
-      this.xyzw[2],
-      this.xyzw[3]
-    );
+    return Geometry.hypotenuseXYZW(this.xyzw[0], this.xyzw[1], this.xyzw[2], this.xyzw[3]);
   }
   /** Returns the magnitude of the leading xyz components.  w is ignored.  (i.e. the leading xyz are NOT divided by w.) */
   public magnitudeSquaredXYZ(): number {
-    return Geometry.hypotenuseSquaredXYZ(
-      this.xyzw[0],
-      this.xyzw[1],
-      this.xyzw[2]
-    );
+    return Geometry.hypotenuseSquaredXYZ(this.xyzw[0], this.xyzw[1], this.xyzw[2]);
   }
 
   /** Return the difference (this-other) using all 4 components x,y,z,w */
@@ -301,10 +242,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
     );
   }
   /** Return `((other.w * this) -  (this.w * other))`, with other.w known to be 1 */
-  public crossWeightedMinusPoint3d(
-    other: Point3d,
-    result?: Vector3d
-  ): Vector3d {
+  public crossWeightedMinusPoint3d(other: Point3d, result?: Vector3d): Vector3d {
     const wa = this.xyzw[3];
     return Vector3d.create(
       this.xyzw[0] - wa * other.x,
@@ -336,11 +274,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * @param pointA first point
    * @param pointB second point
    */
-  public static createPlanePointPointZ(
-    pointA: Point4d,
-    pointB: Point4d,
-    result?: Point4d
-  ) {
+  public static createPlanePointPointZ(pointA: Point4d, pointB: Point4d, result?: Point4d) {
     return Point4d.create(
       pointA.y * pointB.w - pointA.w * pointB.y,
       pointA.w * pointB.x - pointA.x * pointB.w,
@@ -354,18 +288,8 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * @param data buffer of numbers
    * @param xIndex first index for x,y,z,w sequence
    */
-  public static createFromPackedXYZW(
-    data: Float64Array,
-    xIndex: number = 0,
-    result?: Point4d
-  ): Point4d {
-    return Point4d.create(
-      data[xIndex],
-      data[xIndex + 1],
-      data[xIndex + 2],
-      data[xIndex + 3],
-      result
-    );
+  public static createFromPackedXYZW(data: Float64Array, xIndex: number = 0, result?: Point4d): Point4d {
+    return Point4d.create(data[xIndex], data[xIndex + 1], data[xIndex + 2], data[xIndex + 3], result);
   }
   /** Create a `Point4d` with x,y,z from an `XYAndZ` input, and w from a separate number. */
   public static createFromPointAndWeight(xyz: XYAndZ, w: number): Point4d {
@@ -379,12 +303,9 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * * default w is 1.0  (array[3] can replace)
    */
 
-  public static createFromPoint(
-    point: XAndY | XYAndZ | Point4d | number[]
-  ): Point4d {
+  public static createFromPoint(point: XAndY | XYAndZ | Point4d | number[]): Point4d {
     if (point instanceof Point2d) return new Point4d(point.x, point.y, 0, 1);
-    if (point instanceof Point3d)
-      return new Point4d(point.x, point.y, point.z, 1);
+    if (point instanceof Point3d) return new Point4d(point.x, point.y, point.z, 1);
     if (point instanceof Point4d) return point.clone();
     // hm ... some flavor of x,y,z subset ...
     if (Array.isArray(point)) {
@@ -401,11 +322,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
     return new Point4d(x, y, z, w);
   }
   /** Return `point + vector * scalar` */
-  public plusScaled(
-    vector: Point4d,
-    scaleFactor: number,
-    result?: Point4d
-  ): Point4d {
+  public plusScaled(vector: Point4d, scaleFactor: number, result?: Point4d): Point4d {
     return Point4d.create(
       this.xyzw[0] + vector.xyzw[0] * scaleFactor,
       this.xyzw[1] + vector.xyzw[1] * scaleFactor,
@@ -416,11 +333,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
   }
   /** Return interpolation between instance and pointB at fraction
    */
-  public interpolate(
-    fraction: number,
-    pointB: Point4d,
-    result?: Point4d
-  ): Point4d {
+  public interpolate(fraction: number, pointB: Point4d, result?: Point4d): Point4d {
     const v = 1.0 - fraction;
     return Point4d.create(
       this.xyzw[0] * v + pointB.xyzw[0] * fraction,
@@ -431,13 +344,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
     );
   }
   /** Return `point + vectorA * scalarA + vectorB * scalarB` */
-  public plus2Scaled(
-    vectorA: Point4d,
-    scalarA: number,
-    vectorB: Point4d,
-    scalarB: number,
-    result?: Point4d
-  ): Point4d {
+  public plus2Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, result?: Point4d): Point4d {
     return Point4d.create(
       this.xyzw[0] + vectorA.xyzw[0] * scalarA + vectorB.xyzw[0] * scalarB,
       this.xyzw[1] + vectorA.xyzw[1] * scalarA + vectorB.xyzw[1] * scalarB,
@@ -457,22 +364,10 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
     result?: Point4d
   ): Point4d {
     return Point4d.create(
-      this.xyzw[0] +
-        vectorA.xyzw[0] * scalarA +
-        vectorB.xyzw[0] * scalarB +
-        vectorC.xyzw[0] * scalarC,
-      this.xyzw[1] +
-        vectorA.xyzw[1] * scalarA +
-        vectorB.xyzw[1] * scalarB +
-        vectorC.xyzw[1] * scalarC,
-      this.xyzw[2] +
-        vectorA.xyzw[2] * scalarA +
-        vectorB.xyzw[2] * scalarB +
-        vectorC.xyzw[2] * scalarC,
-      this.xyzw[3] +
-        vectorA.xyzw[3] * scalarA +
-        vectorB.xyzw[3] * scalarB +
-        vectorC.xyzw[3] * scalarC,
+      this.xyzw[0] + vectorA.xyzw[0] * scalarA + vectorB.xyzw[0] * scalarB + vectorC.xyzw[0] * scalarC,
+      this.xyzw[1] + vectorA.xyzw[1] * scalarA + vectorB.xyzw[1] * scalarB + vectorC.xyzw[1] * scalarC,
+      this.xyzw[2] + vectorA.xyzw[2] * scalarA + vectorB.xyzw[2] * scalarB + vectorC.xyzw[2] * scalarC,
+      this.xyzw[3] + vectorA.xyzw[3] * scalarA + vectorB.xyzw[3] * scalarB + vectorC.xyzw[3] * scalarC,
       result
     );
   }
@@ -503,18 +398,10 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
     result?: Point4d
   ): Point4d {
     return Point4d.create(
-      vectorA.xyzw[0] * scalarA +
-        vectorB.xyzw[0] * scalarB +
-        vectorC.xyzw[0] * scalarC,
-      vectorA.xyzw[1] * scalarA +
-        vectorB.xyzw[1] * scalarB +
-        vectorC.xyzw[1] * scalarC,
-      vectorA.xyzw[2] * scalarA +
-        vectorB.xyzw[2] * scalarB +
-        vectorC.xyzw[2] * scalarC,
-      vectorA.xyzw[3] * scalarA +
-        vectorB.xyzw[3] * scalarB +
-        vectorC.xyzw[3] * scalarC,
+      vectorA.xyzw[0] * scalarA + vectorB.xyzw[0] * scalarB + vectorC.xyzw[0] * scalarC,
+      vectorA.xyzw[1] * scalarA + vectorB.xyzw[1] * scalarB + vectorC.xyzw[1] * scalarC,
+      vectorA.xyzw[2] * scalarA + vectorB.xyzw[2] * scalarB + vectorC.xyzw[2] * scalarC,
+      vectorA.xyzw[3] * scalarA + vectorB.xyzw[3] * scalarB + vectorC.xyzw[3] * scalarC,
       result
     );
   }
@@ -538,41 +425,23 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
   }
   /** return (4d) dot product of the instance with xyzw */
   public dotProductXYZW(x: number, y: number, z: number, w: number): number {
-    return (
-      this.xyzw[0] * x + this.xyzw[1] * y + this.xyzw[2] * z + this.xyzw[3] * w
-    );
+    return this.xyzw[0] * x + this.xyzw[1] * y + this.xyzw[2] * z + this.xyzw[3] * w;
   }
   /** dotProduct with (point.x, point.y, point.z, 1) Used in PlaneAltitudeEvaluator interface */
   public altitude(point: Point3d): number {
-    return (
-      this.xyzw[0] * point.x +
-      this.xyzw[1] * point.y +
-      this.xyzw[2] * point.z +
-      this.xyzw[3]
-    );
+    return this.xyzw[0] * point.x + this.xyzw[1] * point.y + this.xyzw[2] * point.z + this.xyzw[3];
   }
   /** dotProduct with (x, y, z, 1) Used in PlaneAltitudeEvaluator interface */
   public altitudeXYZ(x: number, y: number, z: number): number {
-    return (
-      this.xyzw[0] * x + this.xyzw[1] * y + this.xyzw[2] * z + this.xyzw[3]
-    );
+    return this.xyzw[0] * x + this.xyzw[1] * y + this.xyzw[2] * z + this.xyzw[3];
   }
   /** dotProduct with (point.x, point.y, point.z, point.w) Used in PlaneAltitudeEvaluator interface */
   public weightedAltitude(point: Point4d): number {
-    return (
-      this.xyzw[0] * point.x +
-      this.xyzw[1] * point.y +
-      this.xyzw[2] * point.z +
-      this.xyzw[3] * point.w
-    );
+    return this.xyzw[0] * point.x + this.xyzw[1] * point.y + this.xyzw[2] * point.z + this.xyzw[3] * point.w;
   }
   /** dotProduct with (vector.x, vector.y, vector.z, 0).  Used in PlaneAltitudeEvaluator interface */
   public velocity(vector: Vector3d): number {
-    return (
-      this.xyzw[0] * vector.x +
-      this.xyzw[1] * vector.y +
-      this.xyzw[2] * vector.z
-    );
+    return this.xyzw[0] * vector.x + this.xyzw[1] * vector.y + this.xyzw[2] * vector.z;
   }
   /** dotProduct with (x,y,z, 0).  Used in PlaneAltitudeEvaluator interface */
   public velocityXYZ(x: number, y: number, z: number): number {
@@ -614,10 +483,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
     return new Point4d(0, 0, 0, 1);
   }
   /** Divide by denominator, but return undefined if denominator is zero. */
-  public safeDivideOrNull(
-    denominator: number,
-    result?: Point4d
-  ): Point4d | undefined {
+  public safeDivideOrNull(denominator: number, result?: Point4d): Point4d | undefined {
     if (denominator !== 0.0) {
       return this.scale(1.0 / denominator, result);
     }
@@ -632,12 +498,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
     const nn = this.magnitudeSquaredXYZ();
     const alpha = Geometry.conditionalDivideCoordinate(-h, nn);
     if (alpha === undefined) return spacePoint.clone(result);
-    return spacePoint.plusXYZ(
-      alpha * this.x,
-      alpha * this.y,
-      alpha * this.z,
-      result
-    );
+    return spacePoint.plusXYZ(alpha * this.x, alpha * this.y, alpha * this.z, result);
   }
   /** scale all components (including w!!) */
   public scale(scale: number, result?: Point4d): Point4d {
@@ -676,12 +537,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
     const mag = Geometry.correctSmallFraction(this.xyzw[3]);
     if (mag === 0.0) return undefined;
     const a = 1.0 / mag; // in zero case everything multiplies right back to true zero.
-    return Point3d.create(
-      this.xyzw[0] * a,
-      this.xyzw[1] * a,
-      this.xyzw[2] * a,
-      result
-    );
+    return Point3d.create(this.xyzw[0] * a, this.xyzw[1] * a, this.xyzw[2] * a, result);
   }
 
   /** Convert the homogeneous point to a (strongly typed) point or vector.
@@ -703,13 +559,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * @param w w coordinate
    * @param result optional result
    */
-  public static createRealPoint3dDefault000(
-    x: number,
-    y: number,
-    z: number,
-    w: number,
-    result?: Point3d
-  ): Point3d {
+  public static createRealPoint3dDefault000(x: number, y: number, z: number, w: number, result?: Point3d): Point3d {
     const mag = Geometry.correctSmallFraction(w);
     const a = mag === 0 ? 0.0 : 1.0 / mag; // in zero case everything multiplies right back to true zero.
     return Point3d.create(x * a, y * a, z * a, result);
@@ -814,12 +664,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
     if (mag === 0.0) return Point3d.create(0, 0, 0, result);
     result = result ? result : new Point3d();
     const a = 1.0 / mag;
-    return Point3d.create(
-      this.xyzw[0] * a,
-      this.xyzw[1] * a,
-      this.xyzw[2] * a,
-      result
-    );
+    return Point3d.create(this.xyzw[0] * a, this.xyzw[1] * a, this.xyzw[2] * a, result);
   }
   /** divide all components (x,y,z,w) by the 4d magnitude.
    *
@@ -861,11 +706,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * @param pointB second point
    * @param pointC third point
    */
-  public static perpendicularPoint4dPlane(
-    pointA: Point4d,
-    pointB: Point4d,
-    pointC: Point4d
-  ): Point4d {
+  public static perpendicularPoint4dPlane(pointA: Point4d, pointB: Point4d, pointC: Point4d): Point4d {
     return Point4d.create(
       Point4d.determinantIndexed3X3(pointA, pointB, pointC, 1, 2, 3),
       -Point4d.determinantIndexed3X3(pointA, pointB, pointC, 2, 3, 0),
@@ -881,9 +722,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
   }
   /** Normalize so sum of squares of all 4 coordinates is 1. */
   public normalizeQuaternion() {
-    const magnitude = Math.sqrt(
-      this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w
-    );
+    const magnitude = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
 
     if (magnitude > 0.0) {
       const f = 1.0 / magnitude;
@@ -947,12 +786,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
 
     const angle = Math.acos(dot);
     const angleOfInterpolation = angle * fractionParameter;
-    result = Point4d.createAdd2Scaled(
-      q0,
-      Math.cos(angleOfInterpolation),
-      q2,
-      Math.sin(angleOfInterpolation)
-    );
+    result = Point4d.createAdd2Scaled(q0, Math.cos(angleOfInterpolation), q2, Math.sin(angleOfInterpolation));
     return result;
   }
   /** Measure the "angle" between two points, using all 4 components in the dot product that

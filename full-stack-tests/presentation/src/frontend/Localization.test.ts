@@ -3,20 +3,9 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  IModelApp,
-  IModelConnection,
-  SnapshotConnection,
-} from "@itwin/core-frontend";
-import {
-  ChildNodeSpecificationTypes,
-  Ruleset,
-  RuleTypes,
-} from "@itwin/presentation-common";
-import {
-  Presentation,
-  PresentationManager,
-} from "@itwin/presentation-frontend";
+import { IModelApp, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
 import { initialize, terminate, testLocalization } from "../IntegrationTests";
 
 const RULESET: Ruleset = {
@@ -43,8 +32,7 @@ describe("Localization", async () => {
     await initialize({ localization: testLocalization });
     await IModelApp.localization.registerNamespace("Test");
     Presentation.presentation.activeLocale = "en";
-    const testIModelName: string =
-      "assets/datasets/Properties_60InstancesWithUrl2.ibim";
+    const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await SnapshotConnection.openFile(testIModelName);
     expect(imodel).is.not.null;
   });
@@ -68,9 +56,7 @@ describe("Localization", async () => {
     let frontends: PresentationManager[];
 
     beforeEach(async () => {
-      frontends = ["en", "test"].map((locale) =>
-        PresentationManager.create({ activeLocale: locale })
-      );
+      frontends = ["en", "test"].map((locale) => PresentationManager.create({ activeLocale: locale }));
     });
 
     afterEach(async () => {

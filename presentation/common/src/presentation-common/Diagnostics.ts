@@ -10,12 +10,7 @@
  * Type of diagnostics logger severity.
  * @beta
  */
-export type DiagnosticsLoggerSeverity =
-  | "error"
-  | "warning"
-  | "info"
-  | "debug"
-  | "trace";
+export type DiagnosticsLoggerSeverity = "error" | "warning" | "info" | "debug" | "trace";
 
 /**
  * Returns lower severity of the given two. Examples:
@@ -67,14 +62,9 @@ export function compareDiagnosticsSeverities(
   if (normalizedLhs === normalizedRhs) return 0;
   if (normalizedLhs === "error") return 1;
   if (normalizedLhs === "warning") return normalizedRhs === "error" ? -1 : 1;
-  if (normalizedLhs === "info")
-    return normalizedRhs === "warning" || normalizedRhs === "error" ? -1 : 1;
+  if (normalizedLhs === "info") return normalizedRhs === "warning" || normalizedRhs === "error" ? -1 : 1;
   if (normalizedLhs === "debug")
-    return normalizedRhs === "info" ||
-      normalizedRhs === "warning" ||
-      normalizedRhs === "error"
-      ? -1
-      : 1;
+    return normalizedRhs === "info" || normalizedRhs === "warning" || normalizedRhs === "error" ? -1 : 1;
   return -1;
 }
 
@@ -175,14 +165,10 @@ export type DiagnosticsLogEntry = DiagnosticsLogMessage | DiagnosticsScopeLogs;
  */
 export namespace DiagnosticsLogEntry {
   // eslint-disable-line @typescript-eslint/no-redeclare
-  export function isMessage(
-    entry: DiagnosticsLogEntry
-  ): entry is DiagnosticsLogMessage {
+  export function isMessage(entry: DiagnosticsLogEntry): entry is DiagnosticsLogMessage {
     return !!(entry as any).message;
   }
-  export function isScope(
-    entry: DiagnosticsLogEntry
-  ): entry is DiagnosticsScopeLogs {
+  export function isScope(entry: DiagnosticsLogEntry): entry is DiagnosticsScopeLogs {
     return !!(entry as any).scope;
   }
 }

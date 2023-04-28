@@ -52,10 +52,7 @@ function calcSunEqOfCenter(t: number) {
   const sinm = Math.sin(mrad);
   const sin2m = Math.sin(mrad + mrad);
   const sin3m = Math.sin(mrad + mrad + mrad);
-  const C =
-    sinm * (1.914602 - t * (0.004817 + 0.000014 * t)) +
-    sin2m * (0.019993 - 0.000101 * t) +
-    sin3m * 0.000289;
+  const C = sinm * (1.914602 - t * (0.004817 + 0.000014 * t)) + sin2m * (0.019993 - 0.000101 * t) + sin3m * 0.000289;
   return C; // in degrees
 }
 
@@ -110,12 +107,7 @@ function calcEquationOfTime(t: number) {
   const sin4l0 = Math.sin(4.0 * degToRad(l0));
   const sin2m = Math.sin(2.0 * degToRad(m));
 
-  const eTime =
-    y * sin2l0 -
-    2.0 * e * sinm +
-    4.0 * e * y * sinm * cos2l0 -
-    0.5 * y * y * sin4l0 -
-    1.25 * e * e * sin2m;
+  const eTime = y * sin2l0 - 2.0 * e * sinm + 4.0 * e * y * sinm * cos2l0 - 0.5 * y * y * sin4l0 - 1.25 * e * e * sin2m;
   return radToDeg(eTime) * 4.0; // in minutes of time
 }
 
@@ -149,10 +141,7 @@ function calcAzEl(
   const azDenom = Math.cos(degToRad(latitude)) * Math.sin(degToRad(zenith));
   let azimuth;
   if (Math.abs(azDenom) > 0.001) {
-    let azRad =
-      (Math.sin(degToRad(latitude)) * Math.cos(degToRad(zenith)) -
-        Math.sin(degToRad(theta))) /
-      azDenom;
+    let azRad = (Math.sin(degToRad(latitude)) * Math.cos(degToRad(zenith)) - Math.sin(degToRad(theta))) / azDenom;
     if (Math.abs(azRad) > 1.0) {
       if (azRad < 0) {
         azRad = -1.0;
@@ -184,15 +173,11 @@ function calculateJulianDay(date: Date) {
 /** @public
  * calculate solar angles (in radians) based at a given date/time and cartographic location.
  */
-export function calculateSolarAngles(
-  date: Date,
-  location: Cartographic
-): { azimuth: number; elevation: number } {
+export function calculateSolarAngles(date: Date, location: Cartographic): { azimuth: number; elevation: number } {
   const jDay = calculateJulianDay(date);
   const latitude = location.latitudeDegrees;
   const longitude = location.longitudeDegrees;
-  const utcMinutes =
-    date.getUTCHours() * 60 + date.getUTCMinutes() + date.getUTCSeconds() / 60;
+  const utcMinutes = date.getUTCHours() * 60 + date.getUTCMinutes() + date.getUTCSeconds() / 60;
   const zone = Math.floor(0.5 + longitude / 15.0); // date.getTimeZoneOffset mixes in DST.
   const localMinutes = utcMinutes + zone * 60;
   const jTotal = jDay + utcMinutes / 1440.0;
@@ -203,31 +188,19 @@ export function calculateSolarAngles(
 /** @public
  * calculate solar direction based at a given date/time and cartpgrphic location.
  */
-export function calculateSolarDirection(
-  date: Date,
-  location: Cartographic
-): Vector3d {
-  return calculateSolarDirectionFromAngles(
-    calculateSolarAngles(date, location)
-  );
+export function calculateSolarDirection(date: Date, location: Cartographic): Vector3d {
+  return calculateSolarDirectionFromAngles(calculateSolarAngles(date, location));
 }
 
 /** @public
  * calculate solar direction corresponding to the given azimuth and elevation (altitude) angles in degrees.
  */
-export function calculateSolarDirectionFromAngles(azimuthElevation: {
-  azimuth: number;
-  elevation: number;
-}): Vector3d {
+export function calculateSolarDirectionFromAngles(azimuthElevation: { azimuth: number; elevation: number }): Vector3d {
   const azimuth = Angle.degreesToRadians(azimuthElevation.azimuth);
   const elevation = Angle.degreesToRadians(azimuthElevation.elevation);
   const cosElevation = Math.cos(elevation);
   const sinElevation = Math.sin(elevation);
-  return Vector3d.create(
-    -Math.sin(azimuth) * cosElevation,
-    -Math.cos(azimuth) * cosElevation,
-    -sinElevation
-  );
+  return Vector3d.create(-Math.sin(azimuth) * cosElevation, -Math.cos(azimuth) * cosElevation, -sinElevation);
 }
 
 function dateFromUtcMinutes(date: Date, utcMinutes: number) {
@@ -239,20 +212,13 @@ function dateFromUtcMinutes(date: Date, utcMinutes: number) {
   return output;
 }
 
-function calcSunriseUtcMinutes(
-  rise: boolean,
-  lat: number,
-  longitude: number,
-  jDay: number
-) {
+function calcSunriseUtcMinutes(rise: boolean, lat: number, longitude: number, jDay: number) {
   const t = calcTimeJulianCent(jDay);
   const eqTime = calcEquationOfTime(t);
   const solarDec = calcSunDeclination(t);
   const latRad = degToRad(lat);
   const sdRad = degToRad(solarDec);
-  const hAarg =
-    Math.cos(degToRad(90.833)) / (Math.cos(latRad) * Math.cos(sdRad)) -
-    Math.tan(latRad) * Math.tan(sdRad);
+  const hAarg = Math.cos(degToRad(90.833)) / (Math.cos(latRad) * Math.cos(sdRad)) - Math.tan(latRad) * Math.tan(sdRad);
   const hourAngle = Math.acos(hAarg);
   const delta = longitude + radToDeg(rise ? hourAngle : -hourAngle);
   return 720 - 4.0 * delta - eqTime; // in UTC minutes
@@ -261,24 +227,12 @@ function calcSunriseUtcMinutes(
 /** @public
  * calculate solar sunrise or sunset for a given day and cartographic location.
  */
-export function calculateSunriseOrSunset(
-  date: Date,
-  location: Cartographic,
-  sunrise: boolean
-): Date {
+export function calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date {
   const jDay = calculateJulianDay(date);
   const longitude = location.longitudeDegrees;
   const latitude = location.latitudeDegrees;
   const utcMinutes = calcSunriseUtcMinutes(sunrise, latitude, longitude, jDay);
   return sunrise
     ? dateFromUtcMinutes(date, utcMinutes)
-    : dateFromUtcMinutes(
-        date,
-        calcSunriseUtcMinutes(
-          sunrise,
-          latitude,
-          longitude,
-          jDay + utcMinutes / 1440
-        )
-      );
+    : dateFromUtcMinutes(date, calcSunriseUtcMinutes(sunrise, latitude, longitude, jDay + utcMinutes / 1440));
 }

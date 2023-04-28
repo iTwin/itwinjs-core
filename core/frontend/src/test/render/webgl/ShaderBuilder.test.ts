@@ -16,37 +16,20 @@ import {
 import { EmptyLocalization } from "@itwin/core-common";
 
 describe("ShaderBuilder", () => {
-  before(async () =>
-    IModelApp.startup({ localization: new EmptyLocalization() })
-  );
+  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
 
   it("should convert ShaderVariable to glsl declaration", () => {
-    let variable = ShaderVariable.createGlobal(
-      "x",
-      VariableType.Float,
-      "1.0",
-      true
-    );
+    let variable = ShaderVariable.createGlobal("x", VariableType.Float, "1.0", true);
     expect(variable.buildDeclaration(true)).to.equal("const float x = 1.0;");
 
-    variable = ShaderVariable.createGlobal(
-      "x",
-      VariableType.Vec3,
-      "vec3(1.0, 0.5, 0.0)"
-    );
-    expect(variable.buildDeclaration(true)).to.equal(
-      "vec3 x = vec3(1.0, 0.5, 0.0);"
-    );
+    variable = ShaderVariable.createGlobal("x", VariableType.Vec3, "vec3(1.0, 0.5, 0.0)");
+    expect(variable.buildDeclaration(true)).to.equal("vec3 x = vec3(1.0, 0.5, 0.0);");
 
     variable = ShaderVariable.createGlobal("x", VariableType.Mat4);
     expect(variable.buildDeclaration(true)).to.equal("mat4 x;");
 
-    variable = ShaderVariable.create(
-      "x",
-      VariableType.Vec2,
-      VariableScope.Varying
-    );
+    variable = ShaderVariable.create("x", VariableType.Vec2, VariableScope.Varying);
     expect(variable.buildDeclaration(true)).to.equal("out vec2 x;");
     expect(variable.buildDeclaration(false)).to.equal("in vec2 x;");
 
@@ -57,9 +40,7 @@ describe("ShaderBuilder", () => {
       undefined,
       VariablePrecision.Medium
     );
-    expect(variable.buildDeclaration(true)).to.equal(
-      "uniform mediump sampler2D x;"
-    );
+    expect(variable.buildDeclaration(true)).to.equal("uniform mediump sampler2D x;");
   });
 
   it("should convert contents of ShaderVariables to glsl declaration", () => {
@@ -68,20 +49,11 @@ describe("ShaderBuilder", () => {
       assert.isTrue(prog !== prog); // shut up the stupid compiler complaining about unused function arg...
     };
 
-    vars.addUniform(
-      "x",
-      VariableType.Float,
-      fakeBinding,
-      VariablePrecision.High
-    );
+    vars.addUniform("x", VariableType.Float, fakeBinding, VariablePrecision.High);
     vars.addVarying("z", VariableType.Int);
     vars.addGlobal("w", VariableType.Int, "123", true);
 
-    const expectedDecls = [
-      "uniform highp float x;",
-      "const int w = 123;",
-      "out int z;\n",
-    ].join("\n");
+    const expectedDecls = ["uniform highp float x;", "const int w = 123;", "out int z;\n"].join("\n");
 
     expect(vars.buildDeclarations(true)).to.equal(expectedDecls);
   });

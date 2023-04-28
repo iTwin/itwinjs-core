@@ -6,10 +6,7 @@
  * @module DisplayStyles
  */
 
-import {
-  BackgroundMapProvider,
-  BackgroundMapType,
-} from "./BackgroundMapProvider";
+import { BackgroundMapProvider, BackgroundMapType } from "./BackgroundMapProvider";
 import { PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
 import { TerrainProps, TerrainSettings } from "./TerrainSettings";
 
@@ -86,10 +83,7 @@ export interface DeprecatedBackgroundMapProps {
  * @public
  * @extensions
  */
-export type PersistentBackgroundMapProps = Omit<
-  BackgroundMapProps,
-  keyof DeprecatedBackgroundMapProps
-> &
+export type PersistentBackgroundMapProps = Omit<BackgroundMapProps, keyof DeprecatedBackgroundMapProps> &
   DeprecatedBackgroundMapProps;
 
 function normalizeGlobeMode(mode?: GlobeMode): GlobeMode {
@@ -145,9 +139,7 @@ export class BackgroundMapSettings {
     return false !== this.transparency ? this.transparency : undefined;
   }
 
-  private constructor(
-    props: BackgroundMapProps | PersistentBackgroundMapProps
-  ) {
+  private constructor(props: BackgroundMapProps | PersistentBackgroundMapProps) {
     this.groundBias = props.groundBias ?? 0;
     this.transparency = normalizeTransparency(props.transparency);
     this.useDepthBuffer = props.useDepthBuffer ?? false;
@@ -162,9 +154,7 @@ export class BackgroundMapSettings {
   /** Create settings from their persistent representation. In general, this method should only be used when reading the settings directly from
    * the iModel - otherwise, prefer [[fromJSON]].
    */
-  public static fromPersistentJSON(
-    json?: PersistentBackgroundMapProps
-  ): BackgroundMapSettings {
+  public static fromPersistentJSON(json?: PersistentBackgroundMapProps): BackgroundMapSettings {
     return new this(json ?? {});
   }
 
@@ -183,8 +173,7 @@ export class BackgroundMapSettings {
     if (0 !== this.groundBias) props.groundBias = this.groundBias;
     if (this.applyTerrain) props.applyTerrain = true;
     if (false !== this.transparency) props.transparency = this.transparency;
-    if (GlobeMode.Ellipsoid !== this.globeMode)
-      props.globeMode = this.globeMode;
+    if (GlobeMode.Ellipsoid !== this.globeMode) props.globeMode = this.globeMode;
     if (this.useDepthBuffer) props.useDepthBuffer = true;
     if (!this._locatable) props.nonLocatable = true;
 
@@ -196,8 +185,7 @@ export class BackgroundMapSettings {
       }
     }
 
-    if (this.planarClipMask.isValid)
-      props.planarClipMask = this.planarClipMask.toJSON();
+    if (this.planarClipMask.isValid) props.planarClipMask = this.planarClipMask.toJSON();
 
     return props;
   }
@@ -209,10 +197,8 @@ export class BackgroundMapSettings {
     const props = this.toJSON() as PersistentBackgroundMapProps;
 
     // Preserve deprecated imagery provider properties.
-    if ("BingProvider" !== this._provider.name)
-      props.providerName = this._provider.name; // eslint-disable-line deprecation/deprecation
-    if (BackgroundMapType.Hybrid !== this._provider.type)
-      props.providerData = { mapType: this._provider.type }; // eslint-disable-line deprecation/deprecation
+    if ("BingProvider" !== this._provider.name) props.providerName = this._provider.name; // eslint-disable-line deprecation/deprecation
+    if (BackgroundMapType.Hybrid !== this._provider.type) props.providerData = { mapType: this._provider.type }; // eslint-disable-line deprecation/deprecation
 
     return props;
   }

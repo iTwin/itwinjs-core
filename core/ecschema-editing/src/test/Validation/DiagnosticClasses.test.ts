@@ -25,10 +25,7 @@ describe("DiagnosticClasses tests", () => {
       const params = getMessageArgsHolders(value.prototype.messageText);
       let index = 0;
       for (const param of params) {
-        expect(
-          param,
-          `Diagnostic ${key} has invalid message arguments`
-        ).to.equal(index.toString());
+        expect(param, `Diagnostic ${key} has invalid message arguments`).to.equal(index.toString());
         index++;
       }
     }

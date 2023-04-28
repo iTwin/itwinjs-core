@@ -6,15 +6,7 @@
  * @module Views
  */
 
-import {
-  assert,
-  BeEvent,
-  dispose,
-  Id64,
-  Id64Arg,
-  Id64String,
-  JsonUtils,
-} from "@itwin/core-bentley";
+import { assert, BeEvent, dispose, Id64, Id64Arg, Id64String, JsonUtils } from "@itwin/core-bentley";
 import {
   Angle,
   AxisOrder,
@@ -65,27 +57,16 @@ import {
   ViewFlags,
   ViewStateProps,
 } from "@itwin/core-common";
-import {
-  AuxCoordSystem2dState,
-  AuxCoordSystem3dState,
-  AuxCoordSystemState,
-} from "./AuxCoordSys";
+import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemState } from "./AuxCoordSys";
 import { CategorySelectorState } from "./CategorySelectorState";
-import {
-  DisplayStyle2dState,
-  DisplayStyle3dState,
-  DisplayStyleState,
-} from "./DisplayStyleState";
+import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState } from "./DisplayStyleState";
 import { DrawingViewState } from "./DrawingViewState";
 import { ElementState } from "./EntityState";
 import { Frustum2d } from "./Frustum2d";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { GeometricModel2dState, GeometricModelState } from "./ModelState";
-import {
-  NotifyMessageDetails,
-  OutputMessagePriority,
-} from "./NotificationManager";
+import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
 import { SheetViewState } from "./SheetViewState";
@@ -94,11 +75,7 @@ import { StandardView, StandardViewId } from "./StandardView";
 import { DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
 import { MarginOptions, OnViewExtentsError } from "./ViewAnimation";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import {
-  areaToEyeHeight,
-  areaToEyeHeightFromGcs,
-  GlobalLocation,
-} from "./ViewGlobalLocation";
+import { areaToEyeHeight, areaToEyeHeightFromGcs, GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
 import { Viewport } from "./Viewport";
 import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
@@ -291,9 +268,7 @@ export abstract class ViewState extends ElementState {
   /** An event raised just before assignment to the [[displayStyle]] property, *only* if the view is attached to a [[Viewport]].
    * @see [[DisplayStyleSettings]] for events raised when properties of the display style change.
    */
-  public readonly onDisplayStyleChanged = new BeEvent<
-    (newStyle: DisplayStyleState) => void
-  >();
+  public readonly onDisplayStyleChanged = new BeEvent<(newStyle: DisplayStyleState) => void>();
 
   /** Event raised just before assignment to the [[modelDisplayTransformProvider]] property, *only* if the view is attached to a [[Viewport]].
    * @beta
@@ -363,10 +338,7 @@ export abstract class ViewState extends ElementState {
   /** Create a new ViewState object from a set of properties. Generally this is called internally by [[IModelConnection.Views.load]] after the properties
    * have been read from an iModel. But, it can also be used to create a ViewState in memory, from scratch or from properties stored elsewhere.
    */
-  public static createFromProps(
-    _props: ViewStateProps,
-    _iModel: IModelConnection
-  ): ViewState | undefined {
+  public static createFromProps(_props: ViewStateProps, _iModel: IModelConnection): ViewState | undefined {
     return undefined;
   }
 
@@ -402,9 +374,7 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @internal */
-  public get scheduleScriptReference():
-    | RenderSchedule.ScriptReference
-    | undefined {
+  public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined {
     // eslint-disable-line deprecation/deprecation
     return this.displayStyle.scheduleScriptReference; // eslint-disable-line deprecation/deprecation
   }
@@ -441,11 +411,7 @@ export abstract class ViewState extends ElementState {
     if (Id64.isValid(acsId)) {
       try {
         const props = await this.iModel.elements.getProps(acsId);
-        if (0 !== props.length)
-          this._auxCoordSystem = AuxCoordSystemState.fromProps(
-            props[0],
-            this.iModel
-          );
+        if (0 !== props.length) this._auxCoordSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
       } catch {}
     }
   }
@@ -473,31 +439,21 @@ export abstract class ViewState extends ElementState {
     const hydrateRequest: HydrateViewStateRequestProps = {};
     this.preload(hydrateRequest);
     const promises: Promise<any>[] = [
-      IModelReadRpcInterface.getClientForRouting(
-        this.iModel.routingContext.token
-      )
+      IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token)
         .hydrateViewState(this.iModel.getRpcProps(), hydrateRequest)
         .then(async (hydrateResponse) => this.postload(hydrateResponse)),
       this.displayStyle.load(),
     ];
 
-    const subcategories = this.iModel.subcategories.load(
-      this.categorySelector.categories
-    );
-    if (undefined !== subcategories)
-      promises.push(subcategories.promise.then((_) => {}));
+    const subcategories = this.iModel.subcategories.load(this.categorySelector.categories);
+    if (undefined !== subcategories) promises.push(subcategories.promise.then((_) => {}));
 
     await Promise.all(promises);
   }
 
-  protected async postload(
-    hydrateResponse: HydrateViewStateResponseProps
-  ): Promise<void> {
+  protected async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
     if (hydrateResponse.acsElementProps)
-      this._auxCoordSystem = AuxCoordSystemState.fromProps(
-        hydrateResponse.acsElementProps,
-        this.iModel
-      );
+      this._auxCoordSystem = AuxCoordSystemState.fromProps(hydrateResponse.acsElementProps, this.iModel);
   }
 
   /** Returns true if all [[TileTree]]s required by this view have been loaded.
@@ -527,9 +483,7 @@ export abstract class ViewState extends ElementState {
    * @param id The Id of the subcategory.
    * @return The symbology overrides applied to all geometry belonging to the specified subcategory, or undefined if no such overrides exist.
    */
-  public getSubCategoryOverride(
-    id: Id64String
-  ): SubCategoryOverride | undefined {
+  public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined {
     return this.displayStyle.getSubCategoryOverride(id);
   }
 
@@ -537,9 +491,7 @@ export abstract class ViewState extends ElementState {
    * @param id The Id of the model.
    * @return The symbology overrides applied to the model, or undefined if no such overrides exist.
    */
-  public getModelAppearanceOverride(
-    id: Id64String
-  ): FeatureAppearance | undefined {
+  public getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined {
     return this.displayStyle.settings.getModelAppearanceOverride(id);
   }
 
@@ -612,17 +564,13 @@ export abstract class ViewState extends ElementState {
   public abstract setRotation(viewRot: Matrix3d): void;
 
   /** Execute a function on each viewed model */
-  public abstract forEachModel(
-    func: (model: GeometricModelState) => void
-  ): void;
+  public abstract forEachModel(func: (model: GeometricModelState) => void): void;
 
   /** Execute a function against the [[TileTreeReference]]s associated with each viewed model.
    * @note Each model may have more than one tile tree reference - for instance, if the view has a schedule script containing animation transforms.
    * @internal
    */
-  public abstract forEachModelTreeRef(
-    func: (treeRef: TileTreeReference) => void
-  ): void;
+  public abstract forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void;
 
   /** Execute a function against each [[TileTreeReference]] associated with this view.
    * @note This may include tile trees not associated with any [[GeometricModelState]] - e.g., context reality data.
@@ -673,9 +621,7 @@ export abstract class ViewState extends ElementState {
 
   /** @internal */
   public createScene(context: SceneContext): void {
-    this.forEachTileTreeRef((ref: TileTreeReference) =>
-      ref.addToScene(context)
-    );
+    this.forEachTileTreeRef((ref: TileTreeReference) => ref.addToScene(context));
   }
 
   /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate()
@@ -701,8 +647,7 @@ export abstract class ViewState extends ElementState {
   public setStandardGlobalRotation(id: StandardViewId) {
     const worldToView = ViewState.getStandardViewMatrix(id);
     const globeToWorld = this.getGlobeRotation();
-    if (globeToWorld)
-      return this.setRotation(worldToView.multiplyMatrixMatrix(globeToWorld));
+    if (globeToWorld) return this.setRotation(worldToView.multiplyMatrixMatrix(globeToWorld));
     else this.setRotation(worldToView);
   }
 
@@ -807,13 +752,7 @@ export abstract class ViewState extends ElementState {
 
     // calculate the root-to-npc mapping (using expanded frustum)
     return {
-      map: Map4d.createVectorFrustum(
-        origin,
-        xExtent,
-        yExtent,
-        zExtent,
-        frustFraction
-      ),
+      map: Map4d.createVectorFrustum(origin, xExtent, yExtent, zExtent, frustFraction),
       frustFraction,
     };
   }
@@ -833,11 +772,7 @@ export abstract class ViewState extends ElementState {
 
   public calculateFocusCorners() {
     const map = this.computeWorldToNpc()!.map!;
-    const focusNpcZ = Geometry.clamp(
-      map.transform0.multiplyPoint3dQuietNormalize(this.getTargetPoint()).z,
-      0,
-      1.0
-    );
+    const focusNpcZ = Geometry.clamp(map.transform0.multiplyPoint3dQuietNormalize(this.getTargetPoint()).z, 0, 1.0);
     const pts = [
       new Point3d(0.0, 0.0, focusNpcZ),
       new Point3d(1.0, 0.0, focusNpcZ),
@@ -857,10 +792,7 @@ export abstract class ViewState extends ElementState {
    * @param opts for providing onExtentsError
    * @return Success if the frustum was successfully updated, or an appropriate error code.
    */
-  public setupFromFrustum(
-    inFrustum: Frustum,
-    opts?: OnViewExtentsError
-  ): ViewStatus {
+  public setupFromFrustum(inFrustum: Frustum, opts?: OnViewExtentsError): ViewStatus {
     const frustum = inFrustum.clone(); // make sure we don't modify input frustum
     frustum.fixPointOrder();
     const frustPts = frustum.points;
@@ -868,21 +800,11 @@ export abstract class ViewState extends ElementState {
 
     // frustumX, frustumY, frustumZ are vectors along edges of the frustum. They are NOT unit vectors.
     // X and Y should be perpendicular, and Z should be right handed.
-    const frustumX = Vector3d.createFrom(
-      frustPts[Npc.RightBottomRear].minus(viewOrg)
-    );
-    const frustumY = Vector3d.createFrom(
-      frustPts[Npc.LeftTopRear].minus(viewOrg)
-    );
-    const frustumZ = Vector3d.createFrom(
-      frustPts[Npc.LeftBottomFront].minus(viewOrg)
-    );
+    const frustumX = Vector3d.createFrom(frustPts[Npc.RightBottomRear].minus(viewOrg));
+    const frustumY = Vector3d.createFrom(frustPts[Npc.LeftTopRear].minus(viewOrg));
+    const frustumZ = Vector3d.createFrom(frustPts[Npc.LeftBottomFront].minus(viewOrg));
 
-    const frustMatrix = Matrix3d.createRigidFromColumns(
-      frustumX,
-      frustumY,
-      AxisOrder.XYZ
-    );
+    const frustMatrix = Matrix3d.createRigidFromColumns(frustumX, frustumY, AxisOrder.XYZ);
     if (!frustMatrix) return ViewStatus.InvalidWindow;
 
     // if we're close to one of the standard views, adjust to it to remove any "fuzz"
@@ -901,13 +823,7 @@ export abstract class ViewState extends ElementState {
     if (zSize < 0.0) return ViewStatus.InvalidWindow;
 
     const viewDiagRoot = new Vector3d();
-    viewDiagRoot.plus2Scaled(
-      xDir,
-      xDir.dotProduct(frustumX),
-      yDir,
-      yDir.dotProduct(frustumY),
-      viewDiagRoot
-    ); // vectors on the back plane
+    viewDiagRoot.plus2Scaled(xDir, xDir.dotProduct(frustumX), yDir, yDir.dotProduct(frustumY), viewDiagRoot); // vectors on the back plane
     viewDiagRoot.plusScaled(zDir, zSize, viewDiagRoot); // add in z vector perpendicular to x,y
 
     // use center of frustum and view diagonal for origin. Original frustum may not have been orthogonal
@@ -915,13 +831,7 @@ export abstract class ViewState extends ElementState {
 
     // delta is in view coordinates
     const viewDelta = viewRot.multiplyVector(viewDiagRoot);
-    const status = this.adjustViewDelta(
-      viewDelta,
-      viewOrg,
-      viewRot,
-      undefined,
-      opts
-    );
+    const status = this.adjustViewDelta(viewDelta, viewOrg, viewRot, undefined, opts);
     if (ViewStatus.Success !== status) return status;
 
     this.setOrigin(viewOrg);
@@ -940,9 +850,7 @@ export abstract class ViewState extends ElementState {
    * @see [[resetExtentLimits]] to restore the default limits.
    */
   public get extentLimits(): ExtentLimits {
-    return undefined !== this._extentLimits
-      ? this._extentLimits
-      : this.defaultExtentLimits;
+    return undefined !== this._extentLimits ? this._extentLimits : this.defaultExtentLimits;
   }
   public set extentLimits(limits: ExtentLimits) {
     this._extentLimits = limits;
@@ -975,9 +883,7 @@ export abstract class ViewState extends ElementState {
     // adjust origin by half of the distance we modified extents to keep centered
     const origin = this.getOrigin().clone();
     origin.addScaledInPlace(
-      this.getRotation().multiplyTransposeVector(
-        extents.vectorTo(origExtents, origExtents)
-      ),
+      this.getRotation().multiplyTransposeVector(extents.vectorTo(origExtents, origExtents)),
       0.5
     );
     this.setOrigin(origin);
@@ -989,9 +895,7 @@ export abstract class ViewState extends ElementState {
     IModelApp.notifications.outputMessage(
       new NotifyMessageDetails(
         OutputMessagePriority.Error,
-        IModelApp.localization.getLocalizedString(
-          `iModelJs:Viewing.${ViewStatus[status]}`
-        )
+        IModelApp.localization.getLocalizedString(`iModelJs:Viewing.${ViewStatus[status]}`)
       )
     );
     return status;
@@ -1031,14 +935,9 @@ export abstract class ViewState extends ElementState {
     }
 
     if (!delta.isAlmostEqual(origDelta))
-      origin.addScaledInPlace(
-        rot.multiplyTransposeVector(delta.vectorTo(origDelta, origDelta)),
-        0.5
-      );
+      origin.addScaledInPlace(rot.multiplyTransposeVector(delta.vectorTo(origDelta, origDelta)), 0.5);
 
-    return status !== ViewStatus.Success && opts?.onExtentsError
-      ? opts.onExtentsError(status)
-      : status;
+    return status !== ViewStatus.Success && opts?.onExtentsError ? opts.onExtentsError(status) : status;
   }
 
   /** Adjust the aspect ratio of this ViewState so it matches the supplied value. The adjustment is accomplished by increasing one dimension
@@ -1062,8 +961,7 @@ export abstract class ViewState extends ElementState {
 
   /** get the auxiliary coordinate system state object for this ViewState. */
   public get auxiliaryCoordinateSystem(): AuxCoordSystemState {
-    if (!this._auxCoordSystem)
-      this._auxCoordSystem = this.createAuxCoordSystem("");
+    if (!this._auxCoordSystem) this._auxCoordSystem = this.createAuxCoordSystem("");
     return this._auxCoordSystem;
   }
 
@@ -1077,8 +975,7 @@ export abstract class ViewState extends ElementState {
    */
   public setAuxiliaryCoordinateSystem(acs?: AuxCoordSystemState) {
     this._auxCoordSystem = acs;
-    this.details.auxiliaryCoordinateSystemId =
-      undefined !== acs ? acs.id : Id64.invalid;
+    this.details.auxiliaryCoordinateSystemId = undefined !== acs ? acs.id : Id64.invalid;
   }
 
   /** Determine whether the specified Category is displayed in this view */
@@ -1139,11 +1036,7 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Set the grid settings for this view */
-  public setGridSettings(
-    orientation: GridOrientationType,
-    spacing: Point2d,
-    gridsPerRef: number
-  ): void {
+  public setGridSettings(orientation: GridOrientationType, spacing: Point2d, gridsPerRef: number): void {
     switch (orientation) {
       case GridOrientationType.WorldYZ:
       case GridOrientationType.WorldXZ:
@@ -1157,17 +1050,10 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Populate the given origin and rotation with information from the grid settings from the grid orientation. */
-  public getGridSettings(
-    vp: Viewport,
-    origin: Point3d,
-    rMatrix: Matrix3d,
-    orientation: GridOrientationType
-  ) {
+  public getGridSettings(vp: Viewport, origin: Point3d, rMatrix: Matrix3d, orientation: GridOrientationType) {
     // start with global origin (for spatial views) and identity matrix
     rMatrix.setIdentity();
-    origin.setFrom(
-      vp.view.isSpatialView() ? vp.view.iModel.globalOrigin : Point3d.create()
-    );
+    origin.setFrom(vp.view.isSpatialView() ? vp.view.iModel.globalOrigin : Point3d.create());
 
     switch (orientation) {
       case GridOrientationType.View: {
@@ -1230,11 +1116,7 @@ export abstract class ViewState extends ElementState {
   ) {
     const rangeBox = Frustum.fromRange(volume).points;
     this.getRotation().multiplyVectorArrayInPlace(rangeBox);
-    return this.lookAtViewAlignedVolume(
-      Range3d.createArray(rangeBox),
-      aspect,
-      options
-    );
+    return this.lookAtViewAlignedVolume(Range3d.createArray(rangeBox), aspect, options);
   }
 
   /** Look at a volume of space defined by a range in view local coordinates, keeping its current rotation.
@@ -1244,11 +1126,7 @@ export abstract class ViewState extends ElementState {
    * @param options for providing MarginPercent and onExtentsError
    * @see lookAtVolume
    */
-  public lookAtViewAlignedVolume(
-    volume: Range3d,
-    aspect?: number,
-    options?: MarginOptions & OnViewExtentsError
-  ) {
+  public lookAtViewAlignedVolume(volume: Range3d, aspect?: number, options?: MarginOptions & OnViewExtentsError) {
     if (volume.isNull)
       // make sure volume is valid
       return;
@@ -1312,11 +1190,7 @@ export abstract class ViewState extends ElementState {
 
     viewRot.multiplyTransposeVectorInPlace(newOrigin);
 
-    if (
-      ViewStatus.Success !==
-      this.adjustViewDelta(newDelta, newOrigin, viewRot, aspect, options)
-    )
-      return;
+    if (ViewStatus.Success !== this.adjustViewDelta(newDelta, newOrigin, viewRot, aspect, options)) return;
 
     this.setExtents(newDelta);
     this.setOrigin(newOrigin);
@@ -1326,8 +1200,7 @@ export abstract class ViewState extends ElementState {
     const cameraDef = this.camera;
     cameraDef.validateLens();
     // move the camera back so the entire x,y range is visible at front plane
-    const frontDist =
-      newDelta.x / (2.0 * Math.tan(cameraDef.getLensAngle().radians / 2.0));
+    const frontDist = newDelta.x / (2.0 * Math.tan(cameraDef.getLensAngle().radians / 2.0));
     const backDist = frontDist + newDelta.z;
 
     cameraDef.setFocusDistance(frontDist); // do this even if the camera isn't currently on.
@@ -1346,10 +1219,7 @@ export abstract class ViewState extends ElementState {
     if (undefined === inverse) return;
 
     const targetMatrix = inverse.multiplyMatrixMatrix(this.getRotation());
-    const worldTransform = Transform.createFixedPointAndMatrix(
-      point,
-      targetMatrix
-    );
+    const worldTransform = Transform.createFixedPointAndMatrix(point, targetMatrix);
     const frustum = this.calculateFrustum();
     if (undefined !== frustum) {
       frustum.multiply(worldTransform);
@@ -1366,10 +1236,7 @@ export abstract class ViewState extends ElementState {
     let refreshed = false;
     this.forEachModelTreeRef((ref) => {
       const tree = ref.treeOwner.tileTree;
-      if (
-        undefined !== tree &&
-        (undefined === modelIds || Id64.has(modelIds, tree.modelId))
-      ) {
+      if (undefined !== tree && (undefined === modelIds || Id64.has(modelIds, tree.modelId))) {
         ref.treeOwner.dispose();
         refreshed = true;
       }
@@ -1433,15 +1300,10 @@ export abstract class ViewState extends ElementState {
     worldToNpc.map.transform0.multiplyPoint3dArrayQuietNormalize(corners);
     scratchRange2d.setNull();
     corners.forEach((corner) => scratchRange2d.extendXY(corner.x, corner.y));
-    const intersection = scratchRange2d.intersect(
-      unitRange2d,
-      scratchRange2dIntersect
-    );
+    const intersection = scratchRange2d.intersect(unitRange2d, scratchRange2dIntersect);
     if (!intersection || intersection.isNull) return false;
 
-    const area =
-      (intersection.high.x - intersection.low.x) *
-      (intersection.high.y - intersection.low.y);
+    const area = (intersection.high.x - intersection.low.x) * (intersection.high.y - intersection.low.y);
     return area > 1.0e-2;
   }
 
@@ -1450,33 +1312,17 @@ export abstract class ViewState extends ElementState {
    * Y vector towards true north, X parallel to the equator and Z perpendicular to the ellipsoid surface
    */
   public getGlobeRotation(): Matrix3d | undefined {
-    if (
-      !this.iModel.isGeoLocated ||
-      this.globeMode !== GlobeMode.Ellipsoid ||
-      this.getIsViewingProject()
-    )
+    if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid || this.getIsViewingProject())
       return undefined;
 
     const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
     if (!backgroundMapGeometry) return undefined;
 
-    const targetRay = Ray3d.create(
-      this.getCenter(),
-      this.getRotation().rowZ().negate(),
-      scratchRay
-    );
+    const targetRay = Ray3d.create(this.getCenter(), this.getRotation().rowZ().negate(), scratchRay);
     const earthEllipsoid = backgroundMapGeometry.getEarthEllipsoid();
     const intersectFractions = new Array<number>(),
       intersectAngles = new Array<LongitudeLatitudeNumber>();
-    if (
-      earthEllipsoid.intersectRay(
-        targetRay,
-        intersectFractions,
-        undefined,
-        intersectAngles
-      ) < 2
-    )
-      return undefined;
+    if (earthEllipsoid.intersectRay(targetRay, intersectFractions, undefined, intersectAngles) < 2) return undefined;
 
     let minIndex = 0,
       minFraction = -1.0e10;
@@ -1493,11 +1339,7 @@ export abstract class ViewState extends ElementState {
       angles.latitudeRadians,
       false
     );
-    return Matrix3d.createRigidFromColumns(
-      pointAndDeriv.vectorU,
-      pointAndDeriv.vectorV,
-      AxisOrder.XYZ
-    )?.transpose();
+    return Matrix3d.createRigidFromColumns(pointAndDeriv.vectorU, pointAndDeriv.vectorV, AxisOrder.XYZ)?.transpose();
   }
 
   /** A value that represents the global scope of the view -- a value greater than one indicates that the scope of this view is global (viewing most of Earth). */
@@ -1517,10 +1359,7 @@ export abstract class ViewState extends ElementState {
   }
 
   protected _updateMaxGlobalScopeFactor() {
-    this._maxGlobalScopeFactor = Math.max(
-      this._maxGlobalScopeFactor,
-      this.globalScopeFactor
-    );
+    this._maxGlobalScopeFactor = Math.max(this._maxGlobalScopeFactor, this.globalScopeFactor);
   }
 
   /** Return elevation applied to model when displayed. This is strictly relevant to plan projection models.
@@ -1535,19 +1374,14 @@ export abstract class ViewState extends ElementState {
    * @see [[computeDisplayTransform]] to compute a full display transform for a model or an element within it, which may include a transform supplied by this provider.
    * @beta
    */
-  public get modelDisplayTransformProvider():
-    | ModelDisplayTransformProvider
-    | undefined {
+  public get modelDisplayTransformProvider(): ModelDisplayTransformProvider | undefined {
     return this._modelDisplayTransformProvider;
   }
 
-  public set modelDisplayTransformProvider(
-    provider: ModelDisplayTransformProvider | undefined
-  ) {
+  public set modelDisplayTransformProvider(provider: ModelDisplayTransformProvider | undefined) {
     if (provider === this.modelDisplayTransformProvider) return;
 
-    if (this.isAttachedToViewport)
-      this.onModelDisplayTransformProviderChanged.raiseEvent(provider);
+    if (this.isAttachedToViewport) this.onModelDisplayTransformProviderChanged.raiseEvent(provider);
 
     this._modelDisplayTransformProvider = provider;
   }
@@ -1561,14 +1395,9 @@ export abstract class ViewState extends ElementState {
    * @returns The computed transform, or `undefined` if no display transform is to be applied.
    * @beta
    */
-  public computeDisplayTransform(
-    args: ComputeDisplayTransformArgs
-  ): Transform | undefined {
+  public computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined {
     const elevation = this.getModelElevation(args.modelId);
-    const modelTransform =
-      this.modelDisplayTransformProvider?.getModelDisplayTransform(
-        args.modelId
-      );
+    const modelTransform = this.modelDisplayTransformProvider?.getModelDisplayTransform(args.modelId);
 
     // NB: A ModelTimeline can apply a transform to all elements in the model, but no code exists which actually applies that at display time.
     // So for now we continue to only consider the ElementTimeline transform.
@@ -1576,28 +1405,19 @@ export abstract class ViewState extends ElementState {
     if (this.scheduleScript && args.elementId) {
       const idPair = Id64.getUint32Pair(args.elementId);
       const modelTimeline = this.scheduleScript.find(args.modelId);
-      const elementTimeline = modelTimeline?.getTimelineForElement(
-        idPair.lower,
-        idPair.upper
-      );
+      const elementTimeline = modelTimeline?.getTimelineForElement(idPair.lower, idPair.upper);
       scriptTransform = elementTimeline?.getAnimationTransform(
         args.timePoint ?? this.displayStyle.settings.timePoint ?? 0
       );
     }
 
-    if (0 === elevation && !modelTransform && !scriptTransform)
-      return undefined;
+    if (0 === elevation && !modelTransform && !scriptTransform) return undefined;
 
     const transform = Transform.createIdentity(args.output);
     transform.origin.z = elevation;
-    if (modelTransform)
-      transform.multiplyTransformTransform(modelTransform, transform);
+    if (modelTransform) transform.multiplyTransformTransform(modelTransform, transform);
 
-    if (scriptTransform)
-      transform.multiplyTransformTransform(
-        scriptTransform as Transform,
-        transform
-      );
+    if (scriptTransform) transform.multiplyTransformTransform(scriptTransform as Transform, transform);
 
     return transform;
   }
@@ -1611,9 +1431,7 @@ export abstract class ViewState extends ElementState {
    */
   public attachToViewport(_args: AttachToViewportArgs): void {
     if (this.isAttachedToViewport)
-      throw new Error(
-        "Attempting to attach a ViewState that is already attached to a Viewport"
-      );
+      throw new Error("Attempting to attach a ViewState that is already attached to a Viewport");
 
     this.registerCategorySelectorListeners();
   }
@@ -1621,15 +1439,9 @@ export abstract class ViewState extends ElementState {
   private registerCategorySelectorListeners(): void {
     const cats = this.categorySelector.observableCategories;
     const event = () => this.onViewedCategoriesChanged.raiseEvent();
-    this._unregisterCategorySelectorListeners.push(
-      cats.onAdded.addListener(event)
-    );
-    this._unregisterCategorySelectorListeners.push(
-      cats.onDeleted.addListener(event)
-    );
-    this._unregisterCategorySelectorListeners.push(
-      cats.onCleared.addListener(event)
-    );
+    this._unregisterCategorySelectorListeners.push(cats.onAdded.addListener(event));
+    this._unregisterCategorySelectorListeners.push(cats.onDeleted.addListener(event));
+    this._unregisterCategorySelectorListeners.push(cats.onCleared.addListener(event));
   }
 
   /** Invoked when this view, previously attached to the specified [[Viewport]] via [[attachToViewport]], is no longer the view displayed by that Viewport.
@@ -1639,9 +1451,7 @@ export abstract class ViewState extends ElementState {
    */
   public detachFromViewport(): void {
     if (!this.isAttachedToViewport)
-      throw new Error(
-        "Attempting to detach a ViewState from a Viewport to which it is not attached."
-      );
+      throw new Error("Attempting to detach a ViewState from a Viewport to which it is not attached.");
 
     this.unregisterCategorySelectorListeners();
   }
@@ -1725,9 +1535,7 @@ export abstract class ViewState3d extends ViewState {
     if (this.is3d() && this.isCameraOn) this.centerEyePoint();
 
     this._details = new ViewDetails3d(this.jsonProperties);
-    this._details.onModelClipGroupsChanged.addListener((newGroups) =>
-      this.updateModelClips(newGroups)
-    );
+    this._details.onModelClipGroupsChanged.addListener((newGroups) => this.updateModelClips(newGroups));
     this.updateModelClips(this._details.modelClipGroups);
 
     this._updateMaxGlobalScopeFactor();
@@ -1736,9 +1544,7 @@ export abstract class ViewState3d extends ViewState {
   private updateModelClips(groups: ModelClipGroups): void {
     this._modelClips.length = 0;
     for (const group of groups.groups) {
-      const clip = group.clip
-        ? IModelApp.renderSystem.createClipVolume(group.clip)
-        : undefined;
+      const clip = group.clip ? IModelApp.renderSystem.createClipVolume(group.clip) : undefined;
       this._modelClips.push(clip);
     }
   }
@@ -1824,44 +1630,30 @@ export abstract class ViewState3d extends ViewState {
 
     let h = 0.0;
     if (this.isCameraOn) {
-      const carto = this.rootToCartographic(
-        this.getEyePoint(),
-        ViewState3d._scratchGlobeCarto
-      );
+      const carto = this.rootToCartographic(this.getEyePoint(), ViewState3d._scratchGlobeCarto);
       h = undefined === carto ? 0.0 : carto.height;
     } else h = this.extents.magnitudeXY();
 
     const startTransition = 0.33333 * ViewState3d._minGlobeEyeHeight;
     if (h > ViewState3d._minGlobeEyeHeight) return 1.0;
     else if (h < startTransition) return 0.0;
-    else
-      return (
-        (h - startTransition) /
-        (ViewState3d._minGlobeEyeHeight - startTransition)
-      );
+    else return (h - startTransition) / (ViewState3d._minGlobeEyeHeight - startTransition);
   }
 
   public getCartographicHeight(point: XYAndZ): number | undefined {
     const ecefLocation = this.iModel.ecefLocation;
     if (undefined === ecefLocation) return undefined;
 
-    const carto = this.rootToCartographic(
-      point,
-      ViewState3d._scratchGlobeCarto
-    );
+    const carto = this.rootToCartographic(point, ViewState3d._scratchGlobeCarto);
     return carto === undefined ? undefined : carto.height;
   }
   public getEyeCartographicHeight(): number | undefined {
-    return this.isCameraOn
-      ? this.getCartographicHeight(this.getEyePoint())
-      : undefined;
+    return this.isCameraOn ? this.getCartographicHeight(this.getEyePoint()) : undefined;
   }
 
   public isEyePointGlobalView(eyePoint: XYAndZ) {
     const cartoHeight = this.getCartographicHeight(eyePoint);
-    return undefined === cartoHeight
-      ? false
-      : cartoHeight > ViewState3d._minGlobeEyeHeight;
+    return undefined === cartoHeight ? false : cartoHeight > ViewState3d._minGlobeEyeHeight;
   }
 
   /** Look at a global location, placing the camera's eye at the specified eye height above a viewed location.
@@ -1883,16 +1675,11 @@ export abstract class ViewState3d extends ViewState {
     if (location !== undefined && location.area !== undefined)
       eyeHeight = areaToEyeHeight(this, location.area, location.center.height);
 
-    const origEyePoint =
-      eyePoint !== undefined
-        ? eyePoint.clone()
-        : this.getEyeOrOrthographicViewPoint().clone();
+    const origEyePoint = eyePoint !== undefined ? eyePoint.clone() : this.getEyeOrOrthographicViewPoint().clone();
 
     let targetPoint = origEyePoint;
     const targetPointCartographic =
-      location !== undefined
-        ? location.center.clone()
-        : this.rootToCartographic(targetPoint)!;
+      location !== undefined ? location.center.clone() : this.rootToCartographic(targetPoint)!;
     targetPointCartographic.height = 0.0;
     targetPoint = this.cartographicToRoot(targetPointCartographic)!;
 
@@ -1924,31 +1711,18 @@ export abstract class ViewState3d extends ViewState {
     if (!this.iModel.isGeoLocated) return 0;
 
     if (location !== undefined && location.area !== undefined)
-      eyeHeight = await areaToEyeHeightFromGcs(
-        this,
-        location.area,
-        location.center.height
-      );
+      eyeHeight = await areaToEyeHeightFromGcs(this, location.area, location.center.height);
 
-    const origEyePoint =
-      eyePoint !== undefined
-        ? eyePoint.clone()
-        : this.getEyeOrOrthographicViewPoint().clone();
+    const origEyePoint = eyePoint !== undefined ? eyePoint.clone() : this.getEyeOrOrthographicViewPoint().clone();
 
     let targetPoint = origEyePoint;
     const targetPointCartographic =
-      location !== undefined
-        ? location.center.clone()
-        : this.rootToCartographic(targetPoint)!;
+      location !== undefined ? location.center.clone() : this.rootToCartographic(targetPoint)!;
     targetPointCartographic.height = 0.0;
-    targetPoint = (await this.cartographicToRootFromGcs(
-      targetPointCartographic
-    ))!;
+    targetPoint = (await this.cartographicToRootFromGcs(targetPointCartographic))!;
 
     targetPointCartographic.height = eyeHeight;
-    const lEyePoint = (await this.cartographicToRootFromGcs(
-      targetPointCartographic
-    ))!;
+    const lEyePoint = (await this.cartographicToRootFromGcs(targetPointCartographic))!;
     return this.finishLookAtGlobalLocation(
       targetPointCartographic,
       origEyePoint,
@@ -1969,25 +1743,13 @@ export abstract class ViewState3d extends ViewState {
     const northOfEyePoint = this.cartographicToRoot(targetPointCartographic)!;
     let upVector = targetPoint.unitVectorTo(northOfEyePoint)!;
     if (this.globeMode === GlobeMode.Plane)
-      upVector = Vector3d.create(
-        Math.abs(upVector.x),
-        Math.abs(upVector.y),
-        Math.abs(upVector.z)
-      );
+      upVector = Vector3d.create(Math.abs(upVector.x), Math.abs(upVector.y), Math.abs(upVector.z));
 
     if (0 !== pitchAngleRadians) {
-      const pitchAxis = upVector.unitCrossProduct(
-        Vector3d.createStartEnd(targetPoint, eyePoint)
-      );
+      const pitchAxis = upVector.unitCrossProduct(Vector3d.createStartEnd(targetPoint, eyePoint));
       if (undefined !== pitchAxis) {
-        const pitchMatrix = Matrix3d.createRotationAroundVector(
-          pitchAxis,
-          Angle.createRadians(pitchAngleRadians)
-        )!;
-        const pitchTransform = Transform.createFixedPointAndMatrix(
-          targetPoint,
-          pitchMatrix
-        );
+        const pitchMatrix = Matrix3d.createRotationAroundVector(pitchAxis, Angle.createRadians(pitchAngleRadians))!;
+        const pitchTransform = Transform.createFixedPointAndMatrix(targetPoint, pitchMatrix);
         eyePoint = pitchTransform.multiplyPoint3d(eyePoint);
         pitchMatrix.multiplyVector(upVector, upVector);
       }
@@ -2006,53 +1768,30 @@ export abstract class ViewState3d extends ViewState {
   }
 
   /** Convert a point in spatial space to a cartographic coordinate. */
-  public rootToCartographic(
-    root: XYAndZ,
-    result?: Cartographic
-  ): Cartographic | undefined {
+  public rootToCartographic(root: XYAndZ, result?: Cartographic): Cartographic | undefined {
     const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
-    return backgroundMapGeometry
-      ? backgroundMapGeometry.dbToCartographic(root, result)
-      : undefined;
+    return backgroundMapGeometry ? backgroundMapGeometry.dbToCartographic(root, result) : undefined;
   }
 
   /** Convert a cartographic coordinate to a point in spatial space. */
-  public cartographicToRoot(
-    cartographic: Cartographic,
-    result?: Point3d
-  ): Point3d | undefined {
+  public cartographicToRoot(cartographic: Cartographic, result?: Point3d): Point3d | undefined {
     const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
-    return backgroundMapGeometry
-      ? backgroundMapGeometry.cartographicToDb(cartographic, result)
-      : undefined;
+    return backgroundMapGeometry ? backgroundMapGeometry.cartographicToDb(cartographic, result) : undefined;
   }
 
   /** Convert a point in spatial space to a cartographic coordinate using the GCS reprojection. */
-  public async rootToCartographicFromGcs(
-    root: XYAndZ,
-    result?: Cartographic
-  ): Promise<Cartographic | undefined> {
+  public async rootToCartographicFromGcs(root: XYAndZ, result?: Cartographic): Promise<Cartographic | undefined> {
     const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
-    return backgroundMapGeometry
-      ? backgroundMapGeometry.dbToCartographicFromGcs(root, result)
-      : undefined;
+    return backgroundMapGeometry ? backgroundMapGeometry.dbToCartographicFromGcs(root, result) : undefined;
   }
 
   /** Convert a cartographic coordinate to a point in spatial space using the GCS reprojection. */
-  public async cartographicToRootFromGcs(
-    cartographic: Cartographic,
-    result?: Point3d
-  ): Promise<Point3d | undefined> {
+  public async cartographicToRootFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d | undefined> {
     const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
-    return backgroundMapGeometry
-      ? backgroundMapGeometry.cartographicToDbFromGcs(cartographic, result)
-      : undefined;
+    return backgroundMapGeometry ? backgroundMapGeometry.cartographicToDbFromGcs(cartographic, result) : undefined;
   }
 
-  public override setupFromFrustum(
-    frustum: Frustum,
-    opts?: OnViewExtentsError
-  ): ViewStatus {
+  public override setupFromFrustum(frustum: Frustum, opts?: OnViewExtentsError): ViewStatus {
     const stat = super.setupFromFrustum(frustum, opts);
     if (ViewStatus.Success !== stat) return stat;
 
@@ -2060,21 +1799,15 @@ export abstract class ViewState3d extends ViewState {
     const frustPts = frustum.points;
 
     // use comparison of back, front plane X sizes to indicate camera or flat view ...
-    const xBack = frustPts[Npc.LeftBottomRear].distance(
-      frustPts[Npc.RightBottomRear]
-    );
-    const xFront = frustPts[Npc.LeftBottomFront].distance(
-      frustPts[Npc.RightBottomFront]
-    );
+    const xBack = frustPts[Npc.LeftBottomRear].distance(frustPts[Npc.RightBottomRear]);
+    const xFront = frustPts[Npc.LeftBottomFront].distance(frustPts[Npc.RightBottomFront]);
 
     const flatViewFractionTolerance = 1.0e-6;
-    if (xFront > xBack * (1.0 + flatViewFractionTolerance))
-      return ViewStatus.InvalidWindow;
+    if (xFront > xBack * (1.0 + flatViewFractionTolerance)) return ViewStatus.InvalidWindow;
 
     // see if the frustum is tapered, and if so, set up camera eyepoint and adjust viewOrg and delta.
     const compression = xFront / xBack;
-    if (compression >= 1.0 - flatViewFractionTolerance)
-      return ViewStatus.Success;
+    if (compression >= 1.0 - flatViewFractionTolerance) return ViewStatus.Success;
 
     // the frustum has perspective, turn camera on
     let viewOrg = frustPts[Npc.LeftBottomRear];
@@ -2085,17 +1818,10 @@ export abstract class ViewState3d extends ViewState {
     const eyePoint = viewOrg.plus(frustOrgToEye);
 
     const backDistance = frustOrgToEye.dotProduct(zDir); // distance from eye to back plane of frustum
-    const focusDistance = this.camera.isFocusValid
-      ? this.camera.focusDist
-      : backDistance - viewDelta.z / 2.0;
+    const focusDistance = this.camera.isFocusValid ? this.camera.focusDist : backDistance - viewDelta.z / 2.0;
     const focalFraction = focusDistance / backDistance; // ratio of focus plane distance to back plane distance
 
-    viewOrg = eyePoint.plus2Scaled(
-      frustOrgToEye,
-      -focalFraction,
-      zDir,
-      focusDistance - backDistance
-    ); // now project that point onto back plane
+    viewOrg = eyePoint.plus2Scaled(frustOrgToEye, -focalFraction, zDir, focusDistance - backDistance); // now project that point onto back plane
     viewDelta.x *= focalFraction; // adjust view delta for x and y so they are also at focus plane
     viewDelta.y *= focalFraction;
 
@@ -2114,9 +1840,7 @@ export abstract class ViewState3d extends ViewState {
     const maxTransformRowRatio = 1.0e5;
     const minXYComponent = Math.min(Math.abs(zVec.x), Math.abs(zVec.y));
     const maxDepthRatio =
-      0.0 === minXYComponent
-        ? depthRatioLimit
-        : Math.min(maxTransformRowRatio / minXYComponent, depthRatioLimit);
+      0.0 === minXYComponent ? depthRatioLimit : Math.min(maxTransformRowRatio / minXYComponent, depthRatioLimit);
     return Math.max(delta.x, delta.y) * maxDepthRatio;
   }
 
@@ -2152,9 +1876,7 @@ export abstract class ViewState3d extends ViewState {
   }
 
   public isEyePointAbove(elevation: number): boolean {
-    return !this._cameraOn
-      ? this.getZVector().z > 0
-      : this.getEyePoint().z > elevation;
+    return !this._cameraOn ? this.getZVector().z > 0 : this.getEyePoint().z > elevation;
   }
 
   /** The style that controls how the contents of the view are displayed. */
@@ -2189,9 +1911,7 @@ export abstract class ViewState3d extends ViewState {
 
   /** Calculate the lens angle formed by the current delta and focus distance */
   public calcLensAngle(): Angle {
-    return Angle.createRadians(
-      2.0 * Math.atan2(this.extents.x * 0.5, this.camera.getFocusDistance())
-    );
+    return Angle.createRadians(2.0 * Math.atan2(this.extents.x * 0.5, this.camera.getFocusDistance()));
   }
 
   /** Get the target point of the view. If there is no camera, view center is returned. */
@@ -2201,11 +1921,7 @@ export abstract class ViewState3d extends ViewState {
       return earthFocalPoint ? earthFocalPoint : super.getTargetPoint(result);
     }
 
-    return this.getEyePoint().plusScaled(
-      this.getZVector(),
-      -1.0 * this.getFocusDistance(),
-      result
-    );
+    return this.getEyePoint().plusScaled(this.getZVector(), -1.0 * this.getFocusDistance(), result);
   }
 
   /** Setup view state for either perspective or orthographic view.
@@ -2213,9 +1929,7 @@ export abstract class ViewState3d extends ViewState {
    * @note If the aspect ratio of viewDelta does not match the aspect ratio of a Viewport into which this view is displayed, it will be
    * adjusted when the [[Viewport]] is synchronized from this view.
    */
-  public lookAt(
-    args: LookAtPerspectiveArgs | LookAtOrthoArgs | LookAtUsingLensAngle
-  ): ViewStatus {
+  public lookAt(args: LookAtPerspectiveArgs | LookAtOrthoArgs | LookAtUsingLensAngle): ViewStatus {
     if (args.lensAngle) {
       const lensAngle = args.lensAngle;
       const eyePoint = Vector3d.createFrom(args.eyePoint);
@@ -2225,8 +1939,7 @@ export abstract class ViewState3d extends ViewState {
         // eye and target are too close together
         return ViewStatus.InvalidTargetPoint;
 
-      if (lensAngle.radians < 0.0001 || lensAngle.radians > Math.PI)
-        return ViewStatus.InvalidLens;
+      if (lensAngle.radians < 0.0001 || lensAngle.radians > Math.PI) return ViewStatus.InvalidLens;
 
       const width = 2.0 * Math.tan(lensAngle.radians / 2.0) * focus;
       const newExtents = Vector2d.createFrom(args.newExtents ?? this.extents);
@@ -2235,8 +1948,7 @@ export abstract class ViewState3d extends ViewState {
     }
 
     const isPerspective = undefined !== args.targetPoint;
-    if (isPerspective && !this.supportsCamera())
-      return ViewStatus.NotCameraView;
+    if (isPerspective && !this.supportsCamera()) return ViewStatus.NotCameraView;
 
     const eye = new Point3d(args.eyePoint.x, args.eyePoint.y, args.eyePoint.z);
     const yVec = args.upVector.normalize();
@@ -2262,34 +1974,20 @@ export abstract class ViewState3d extends ViewState {
     }
 
     const xVec = new Vector3d();
-    if (
-      yVec.crossProduct(zVec).normalizeWithLength(xVec).mag <
-      Geometry.smallMetricDistance
-    )
+    if (yVec.crossProduct(zVec).normalizeWithLength(xVec).mag < Geometry.smallMetricDistance)
       return ViewStatus.InvalidUpVector; // up is parallel to z
 
-    if (
-      zVec.crossProduct(xVec).normalizeWithLength(yVec).mag <
-      Geometry.smallMetricDistance
-    )
+    if (zVec.crossProduct(xVec).normalizeWithLength(yVec).mag < Geometry.smallMetricDistance)
       return ViewStatus.InvalidUpVector;
 
     // we now have rows of the rotation matrix
     const rotation = Matrix3d.createRows(xVec, yVec, zVec);
 
-    let backDist = args.backDistance
-      ? args.backDistance
-      : this.getBackDistance();
-    let frontDist = args.frontDistance
-      ? args.frontDistance
-      : this.getFrontDistance();
+    let backDist = args.backDistance ? args.backDistance : this.getBackDistance();
+    let frontDist = args.frontDistance ? args.frontDistance : this.getFrontDistance();
 
     const delta = args.newExtents
-      ? new Vector3d(
-          Math.abs(args.newExtents.x),
-          Math.abs(args.newExtents.y),
-          this.extents.z
-        )
+      ? new Vector3d(Math.abs(args.newExtents.x), Math.abs(args.newExtents.y), this.extents.z)
       : this.extents.clone();
 
     // The front/back distance are relatively arbitrary -- the frustum will be adjusted to include geometry.
@@ -2307,13 +2005,7 @@ export abstract class ViewState3d extends ViewState {
 
     delta.z = backDist - frontDist;
 
-    const stat = this.adjustViewDelta(
-      delta,
-      eye,
-      rotation,
-      undefined,
-      args.opts
-    );
+    const stat = this.adjustViewDelta(delta, eye, rotation, undefined, args.opts);
     if (ViewStatus.Success !== stat) return stat;
 
     if (delta.z > ViewState3d.calculateMaxDepth(delta, zVec))
@@ -2322,14 +2014,7 @@ export abstract class ViewState3d extends ViewState {
 
     // The origin is defined as the lower left of the view rectangle on the focus plane, projected to the back plane.
     // Start at eye point, and move to center of back plane, then move left half of width. and down half of height
-    const origin = eye.plus3Scaled(
-      zVec,
-      -backDist,
-      xVec,
-      -0.5 * delta.x,
-      yVec,
-      -0.5 * delta.y
-    );
+    const origin = eye.plus3Scaled(zVec, -backDist, xVec, -0.5 * delta.x, yVec, -0.5 * delta.y);
 
     this.setEyePoint(args.eyePoint);
     this.setRotation(rotation);
@@ -2352,10 +2037,7 @@ export abstract class ViewState3d extends ViewState {
     const oldExtents = this.extents.clone(); // save current extents so we can keep frustum unchanged
     this.extents.x = 2.0 * Math.tan(this.camera.lens.radians / 2.0) * newDist; // new width based on focus distance and lens angle.
     this.extents.y = this.extents.y * (this.extents.x / oldExtents.x); // preserve aspect ratio
-    this.origin.addScaledInPlace(
-      this.rotation.multiplyTransposeVector(this.extents.vectorTo(oldExtents)),
-      0.5
-    ); // move origin by half the change in extents
+    this.origin.addScaledInPlace(this.rotation.multiplyTransposeVector(this.extents.vectorTo(oldExtents)), 0.5); // move origin by half the change in extents
     this.camera.focusDist = newDist; // save new focus distance
     return ViewStatus.Success;
   }
@@ -2365,9 +2047,7 @@ export abstract class ViewState3d extends ViewState {
    * @internal
    */
   public changeFocusFromPoint(pt: Point3d) {
-    return this.changeFocusDistance(
-      this.getZVector().dotProduct(pt.vectorTo(this.camera.eye))
-    );
+    return this.changeFocusDistance(this.getZVector().dotProduct(pt.vectorTo(this.camera.eye)));
   }
 
   /** Move the camera relative to its current location by a distance in camera coordinates.
@@ -2402,11 +2082,7 @@ export abstract class ViewState3d extends ViewState {
    * @note Even though the axis is relative to the current camera orientation, the aboutPt is in world coordinates, \b not relative to the camera.
    * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
    */
-  public rotateCameraLocal(
-    angle: Angle,
-    axis: Vector3d,
-    aboutPt?: Point3d
-  ): ViewStatus {
+  public rotateCameraLocal(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus {
     const axisWorld = this.getRotation().multiplyTransposeVector(axis);
     return this.rotateCameraWorld(angle, axisWorld, aboutPt);
   }
@@ -2418,11 +2094,7 @@ export abstract class ViewState3d extends ViewState {
    *  (i.e. about the current eyePoint).
    * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
    */
-  public rotateCameraWorld(
-    angle: Angle,
-    axis: Vector3d,
-    aboutPt?: Point3d
-  ): ViewStatus {
+  public rotateCameraWorld(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus {
     const about = aboutPt ? aboutPt : this.getEyePoint();
     const rotation = Matrix3d.createRotationAroundVector(axis, angle);
     if (!rotation) return ViewStatus.InvalidUpVector; // Invalid axis given
@@ -2440,8 +2112,7 @@ export abstract class ViewState3d extends ViewState {
   public moveCameraGlobal(fromPoint: Point3d, toPoint: Point3d): ViewStatus {
     if (!this.iModel.ecefLocation) return ViewStatus.NotGeolocated;
 
-    if (this.globeMode !== GlobeMode.Ellipsoid)
-      return ViewStatus.NotEllipsoidGlobeMode;
+    if (this.globeMode !== GlobeMode.Ellipsoid) return ViewStatus.NotEllipsoidGlobeMode;
 
     const earthCenter = this.iModel.ecefLocation?.earthCenter;
     const rMatrix = Matrix3d.createRotationVectorToVector(
@@ -2450,10 +2121,7 @@ export abstract class ViewState3d extends ViewState {
     );
     if (!rMatrix) return ViewStatus.DegenerateGeometry;
 
-    const rotationTransform = Transform.createFixedPointAndMatrix(
-      earthCenter,
-      rMatrix
-    );
+    const rotationTransform = Transform.createFixedPointAndMatrix(earthCenter, rMatrix);
     const frustum = this.calculateFrustum();
     if (!frustum) return ViewStatus.DegenerateGeometry;
 
@@ -2482,13 +2150,7 @@ export abstract class ViewState3d extends ViewState {
   public centerEyePoint(backDistance?: number): void {
     const eyePoint = this.getExtents().scale(0.5);
     eyePoint.z = backDistance ? backDistance : this.getBackDistance();
-    const eye = this.getOrigin().plus(
-      this.getRotation().multiplyTransposeXYZ(
-        eyePoint.x,
-        eyePoint.y,
-        eyePoint.z
-      )
-    );
+    const eye = this.getOrigin().plus(this.getRotation().multiplyTransposeXYZ(eyePoint.x, eyePoint.y, eyePoint.z));
     this.camera.setEyePoint(eye);
   }
 
@@ -2500,10 +2162,7 @@ export abstract class ViewState3d extends ViewState {
     const backDistance = this.getBackDistance();
     const frontDistance = this.getFrontDistance();
     const eyePoint = this.getEyePoint();
-    const targetPoint = eyePoint.plusScaled(
-      this.getZVector(),
-      frontDistance - backDistance
-    );
+    const targetPoint = eyePoint.plusScaled(this.getZVector(), frontDistance - backDistance);
     this.lookAt({
       eyePoint,
       targetPoint,
@@ -2614,8 +2273,7 @@ export abstract class ViewState3d extends ViewState {
 
   public override decorate(context: DecorateContext): void {
     super.decorate(context);
-    if (this._environmentDecorations)
-      this._environmentDecorations.decorate(context);
+    if (this._environmentDecorations) this._environmentDecorations.decorate(context);
   }
 
   /** Returns the ground elevation taken from the environment added with the global z position of this imodel. */
@@ -2634,10 +2292,7 @@ export abstract class ViewState3d extends ViewState {
 
     if (undefined !== vp) {
       const viewRay = Ray3d.create(Point3d.create(), vp.rotation.rowZ());
-      const xyPlane = Plane3dByOriginAndUnitNormal.create(
-        Point3d.create(0, 0, elevation),
-        Vector3d.create(0, 0, 1)
-      );
+      const xyPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, elevation), Vector3d.create(0, 0, 1));
 
       // first determine whether the ground plane is displayed in the view
       const worldFrust = vp.getFrustum();
@@ -2665,8 +2320,7 @@ export abstract class ViewState3d extends ViewState {
 
   /** @internal */
   public override getModelElevation(modelId: Id64String): number {
-    const settings =
-      this.getDisplayStyle3d().settings.getPlanProjectionSettings(modelId);
+    const settings = this.getDisplayStyle3d().settings.getPlanProjectionSettings(modelId);
     return settings && settings.elevation ? settings.elevation : 0;
   }
 
@@ -2675,8 +2329,7 @@ export abstract class ViewState3d extends ViewState {
    * @public
    */
   public getEarthFocalPoint(): Point3d | undefined {
-    if (!this.iModel.ecefLocation || this.globeMode !== GlobeMode.Ellipsoid)
-      return undefined;
+    if (!this.iModel.ecefLocation || this.globeMode !== GlobeMode.Ellipsoid) return undefined;
 
     const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
     if (undefined === backgroundMapGeometry) return undefined;
@@ -2684,9 +2337,7 @@ export abstract class ViewState3d extends ViewState {
     const earthEllipsoid = backgroundMapGeometry.getEarthEllipsoid();
     const viewZ = this.getRotation().rowZ();
     const center = this.getCenter();
-    const eye = this.isCameraOn
-      ? this.camera.getEyePoint()
-      : center.plusScaled(viewZ, Constant.diameterOfEarth);
+    const eye = this.isCameraOn ? this.camera.getEyePoint() : center.plusScaled(viewZ, Constant.diameterOfEarth);
     const eyeRay = Ray3d.create(eye, viewZ);
     const fractions = new Array<number>(),
       points = new Array<Point3d>();
@@ -2717,8 +2368,7 @@ export abstract class ViewState3d extends ViewState {
   public alignToGlobe(target: Point3d, transition?: boolean): ViewStatus {
     if (!this.iModel.ecefLocation) return ViewStatus.NotGeolocated;
 
-    if (this.globeMode !== GlobeMode.Ellipsoid)
-      return ViewStatus.NotEllipsoidGlobeMode;
+    if (this.globeMode !== GlobeMode.Ellipsoid) return ViewStatus.NotEllipsoidGlobeMode;
 
     const globalTransition = this.globalViewTransition();
 
@@ -2727,9 +2377,7 @@ export abstract class ViewState3d extends ViewState {
     const earthCenter = this.iModel.ecefLocation?.earthCenter;
     const viewCenter = this.getCenter();
     const viewZ = this.getRotation().rowZ();
-    const eye = this.isCameraOn
-      ? this.camera.eye
-      : viewCenter.plusScaled(viewZ, Constant.diameterOfEarth);
+    const eye = this.isCameraOn ? this.camera.eye : viewCenter.plusScaled(viewZ, Constant.diameterOfEarth);
 
     const centerToEye = earthCenter.unitVectorTo(eye);
     if (!centerToEye) return ViewStatus.DegenerateGeometry;
@@ -2738,8 +2386,7 @@ export abstract class ViewState3d extends ViewState {
     if (!axis) return ViewStatus.DegenerateGeometry;
 
     const theta = viewZ.angleTo(centerToEye);
-    if (theta.radians > Angle.piOver2Radians)
-      return ViewStatus.DegenerateGeometry;
+    if (theta.radians > Angle.piOver2Radians) return ViewStatus.DegenerateGeometry;
 
     if (theta.isAlmostZero) return ViewStatus.NoTransitionRequired;
 
@@ -2749,10 +2396,7 @@ export abstract class ViewState3d extends ViewState {
     );
     if (!transitionRotation) return ViewStatus.DegenerateGeometry;
 
-    const transitionTransform = Transform.createFixedPointAndMatrix(
-      target,
-      transitionRotation
-    );
+    const transitionTransform = Transform.createFixedPointAndMatrix(target, transitionRotation);
     const frustum = this.calculateFrustum();
     if (!frustum) return ViewStatus.DegenerateGeometry;
 
@@ -2764,10 +2408,9 @@ export abstract class ViewState3d extends ViewState {
   public override attachToViewport(args: AttachToViewportArgs): void {
     super.attachToViewport(args);
 
-    const removeListener =
-      this.displayStyle.settings.onEnvironmentChanged.addListener((env) => {
-        this._environmentDecorations?.setEnvironment(env);
-      });
+    const removeListener = this.displayStyle.settings.onEnvironmentChanged.addListener((env) => {
+      this._environmentDecorations?.setEnvironment(env);
+    });
 
     this._environmentDecorations = new EnvironmentDecorations(
       this,
@@ -2805,8 +2448,7 @@ export abstract class ViewState2d extends ViewState {
   protected get _tileTreeRef(): TileTreeReference | undefined {
     if (undefined === this._treeRef) {
       const model = this.getViewedModel();
-      if (undefined !== model)
-        this._treeRef = model.createTileTreeReference(this);
+      if (undefined !== model) this._treeRef = model.createTileTreeReference(this);
     }
 
     return this._treeRef;
@@ -2877,9 +2519,7 @@ export abstract class ViewState2d extends ViewState {
    */
   public async changeViewedModel(newViewedModelId: Id64String): Promise<void> {
     if (this.isAttachedToViewport)
-      throw new Error(
-        "Cannot change the viewed model of a view that is attached to a viewport."
-      );
+      throw new Error("Cannot change the viewed model of a view that is attached to a viewport.");
 
     this._baseModelId = newViewedModelId;
     this._treeRef = undefined;
@@ -2891,26 +2531,17 @@ export abstract class ViewState2d extends ViewState {
   }
 
   /** @internal */
-  protected override preload(
-    hydrateRequest: HydrateViewStateRequestProps
-  ): void {
+  protected override preload(hydrateRequest: HydrateViewStateRequestProps): void {
     super.preload(hydrateRequest);
-    if (this.iModel.models.getLoaded(this.baseModelId) === undefined)
-      hydrateRequest.baseModelId = this.baseModelId;
+    if (this.iModel.models.getLoaded(this.baseModelId) === undefined) hydrateRequest.baseModelId = this.baseModelId;
   }
 
   /** @internal */
-  protected override async postload(
-    hydrateResponse: HydrateViewStateResponseProps
-  ): Promise<void> {
+  protected override async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
     const promises = [];
     promises.push(super.postload(hydrateResponse));
     if (hydrateResponse.baseModelProps !== undefined)
-      promises.push(
-        this.iModel.models.updateLoadedWithModelProps([
-          hydrateResponse.baseModelProps,
-        ])
-      );
+      promises.push(this.iModel.models.updateLoadedWithModelProps([hydrateResponse.baseModelProps]));
     await Promise.all(promises);
   }
 
@@ -2923,18 +2554,10 @@ export abstract class ViewState2d extends ViewState {
     return false;
   }
   public getOrigin() {
-    return new Point3d(
-      this.origin.x,
-      this.origin.y,
-      Frustum2d.minimumZExtents.low
-    );
+    return new Point3d(this.origin.x, this.origin.y, Frustum2d.minimumZExtents.low);
   }
   public getExtents() {
-    return new Vector3d(
-      this.delta.x,
-      this.delta.y,
-      Frustum2d.minimumZExtents.length()
-    );
+    return new Vector3d(this.delta.x, this.delta.y, Frustum2d.minimumZExtents.length());
   }
   public getRotation() {
     return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!;
@@ -2955,14 +2578,11 @@ export abstract class ViewState2d extends ViewState {
   }
   public forEachModel(func: (model: GeometricModelState) => void) {
     const model = this.iModel.models.getLoaded(this.baseModelId);
-    if (undefined !== model && undefined !== model.asGeometricModel2d)
-      func(model as GeometricModel2dState);
+    if (undefined !== model && undefined !== model.asGeometricModel2d) func(model as GeometricModel2dState);
   }
 
   /** @internal */
-  public override forEachModelTreeRef(
-    func: (ref: TileTreeReference) => void
-  ): void {
+  public override forEachModelTreeRef(func: (ref: TileTreeReference) => void): void {
     const ref = this._tileTreeRef;
     if (undefined !== ref) func(ref);
   }

@@ -40,13 +40,7 @@ export class ClothoidCosineEvaluator extends NewtonEvaluatorRtoRD {
     this._exitRadius = exitRadius;
     this._exitLength = exitLength;
     this._alpha = alpha;
-    this._gamma =
-      this._alpha /
-      (40.0 *
-        this._exitRadius *
-        this._exitRadius *
-        this._exitLength *
-        this._exitLength);
+    this._gamma = this._alpha / (40.0 * this._exitRadius * this._exitRadius * this._exitLength * this._exitLength);
   }
   public evaluate(x: number): boolean {
     const x2 = x * x;
@@ -63,10 +57,7 @@ describe("Newton", () => {
     const r1 = 10.0;
     const l1 = 1.0;
     const gamma = 1.0 / (40.0 * r1 * r1 * l1 * l1);
-    for (const f of [
-      new ClothoidCosineEvaluator(1.0, r1, l1),
-      new HornerEvaluator([0, 1, 0, 0, 0, gamma]),
-    ]) {
+    for (const f of [new ClothoidCosineEvaluator(1.0, r1, l1), new HornerEvaluator([0, 1, 0, 0, 0, gamma])]) {
       const iterator = new Newton1dUnbounded(f);
       for (const fraction of [0.2, 0.8]) {
         const x = fraction * l1;
@@ -83,16 +74,8 @@ describe("Newton", () => {
         iterator.setX(x + 1);
         if (ck.testTrue(iterator.runIterations())) {
           const x1 = iterator.getX();
-          ck.testCoordinate(
-            x,
-            iterator.getX(),
-            "newton converted to correct value"
-          );
-          ck.testLE(
-            iterator.numIterations,
-            5,
-            "Expect low newton iteration count for gentle function"
-          );
+          ck.testCoordinate(x, iterator.getX(), "newton converted to correct value");
+          ck.testLE(iterator.numIterations, 5, "Expect low newton iteration count for gentle function");
           if (Checker.noisy.newtonRtoRD)
             GeometryCoreTestIO.consoleLog("   ", {
               xx: x,

@@ -42,9 +42,7 @@ export interface GltfChunk {
  */
 export type TypedGltfChunk = GltfChunk & { type: number };
 
-function consumeNextChunk(
-  stream: ByteStream
-): TypedGltfChunk | undefined | false {
+function consumeNextChunk(stream: ByteStream): TypedGltfChunk | undefined | false {
   if (stream.isAtTheEnd) return undefined;
 
   const offset = stream.curPos + 8;
@@ -74,10 +72,7 @@ export class GlbHeader extends TileHeader {
 
     // Early versions of the reality data tile publisher incorrectly put version 2 into header - handle these old tiles
     // validating the chunk type.
-    if (
-      this.version === GltfVersions.Version2 &&
-      word5 === GltfVersions.Gltf1SceneFormat
-    )
+    if (this.version === GltfVersions.Version2 && word5 === GltfVersions.Gltf1SceneFormat)
       this.version = GltfVersions.Version1;
 
     this.jsonChunk = { offset: stream.curPos, length: jsonLength };

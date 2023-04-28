@@ -18,11 +18,7 @@ export class PointStringParams {
   public readonly indices: VertexIndices;
   public readonly weight: number;
 
-  public constructor(
-    vertices: VertexTable,
-    indices: VertexIndices,
-    weight: number
-  ) {
+  public constructor(vertices: VertexTable, indices: VertexIndices, weight: number) {
     this.vertices = vertices;
     this.indices = indices;
     this.weight = weight;
@@ -39,9 +35,7 @@ export class PointStringParams {
     if (1 < polylines.length) {
       // We used to assert this wouldn't happen - apparently it does...
       vertIndices = [];
-      for (const polyline of polylines)
-        for (const vertIndex of polyline.vertIndices)
-          vertIndices.push(vertIndex);
+      for (const polyline of polylines) for (const vertIndex of polyline.vertIndices) vertIndices.push(vertIndex);
     }
 
     const vertexIndices = VertexIndices.fromArray(vertIndices);

@@ -14,10 +14,7 @@ import { LinePixels } from "./LinePixels";
 import { RgbColor, RgbColorProps } from "./RgbColor";
 import { SubCategoryOverride } from "./SubCategoryOverride";
 
-function copyIdSetToUint32Set(
-  dst: Id64.Uint32Set,
-  src: Iterable<string>
-): void {
+function copyIdSetToUint32Set(dst: Id64.Uint32Set, src: Iterable<string>): void {
   dst.clear();
   if (typeof src === "string") {
     dst.addId(src);
@@ -107,10 +104,7 @@ export class FeatureAppearance {
   /** Create a FeatureAppearance that overrides the RGB and transparency.
    * The appearance's transparency is derived from the transparency component of the ColorDef.
    */
-  public static fromRgba(
-    color: ColorDef,
-    viewDependentTransparency = false
-  ): FeatureAppearance {
+  public static fromRgba(color: ColorDef, viewDependentTransparency = false): FeatureAppearance {
     return this.fromJSON({
       rgb: RgbColor.fromColorDef(color),
       transparency: color.colors.t / 255,
@@ -118,10 +112,7 @@ export class FeatureAppearance {
     });
   }
   /** Create a FeatureAppearance that overrides only the transparency */
-  public static fromTransparency(
-    transparencyValue: number,
-    viewDependent = false
-  ): FeatureAppearance {
+  public static fromTransparency(transparencyValue: number, viewDependent = false): FeatureAppearance {
     return this.fromJSON({
       transparency: transparencyValue,
       viewDependentTransparency: viewDependent ? true : undefined,
@@ -131,17 +122,11 @@ export class FeatureAppearance {
   /** Create a FeatureAppearance with overrides corresponding to those defined by the supplied SubCategoryOverride.
    * @note Subcategory overrides set [[viewDependentTransparency]] to `true`.
    */
-  public static fromSubCategoryOverride(
-    ovr: SubCategoryOverride
-  ): FeatureAppearance {
-    const rgb =
-      undefined !== ovr.color ? RgbColor.fromColorDef(ovr.color) : undefined;
+  public static fromSubCategoryOverride(ovr: SubCategoryOverride): FeatureAppearance {
+    const rgb = undefined !== ovr.color ? RgbColor.fromColorDef(ovr.color) : undefined;
     const transparency = ovr.transparency;
     const weight = ovr.weight;
-    const ignoresMaterial =
-      undefined !== ovr.material && Id64.isValid(ovr.material)
-        ? true
-        : undefined;
+    const ignoresMaterial = undefined !== ovr.material && Id64.isValid(ovr.material) ? true : undefined;
     return this.fromJSON({
       rgb,
       transparency,
@@ -213,8 +198,7 @@ export class FeatureAppearance {
 
     if (undefined !== this.transparency) {
       props.transparency = this.transparency;
-      if (this.viewDependentTransparency)
-        props.viewDependentTransparency = true;
+      if (this.viewDependentTransparency) props.viewDependentTransparency = true;
     }
 
     if (undefined !== this.linePixels) props.linePixels = this.linePixels;
@@ -236,9 +220,7 @@ export class FeatureAppearance {
    * ```
    * @see [[FeatureAppearance.clone]].
    */
-  public cloneProps(
-    changedProps: FeatureAppearanceProps
-  ): FeatureAppearanceProps {
+  public cloneProps(changedProps: FeatureAppearanceProps): FeatureAppearanceProps {
     return {
       ...this.toJSON(),
       ...changedProps,
@@ -263,26 +245,20 @@ export class FeatureAppearance {
 
     const props = base.toJSON();
     if (undefined === props.rgb) props.rgb = this.rgb;
-    if (undefined === props.transparency)
-      props.transparency = this.transparency;
+    if (undefined === props.transparency) props.transparency = this.transparency;
     if (undefined === props.linePixels) props.linePixels = this.linePixels;
     if (undefined === props.weight) props.weight = this.weight;
-    if (undefined === props.ignoresMaterial && this.ignoresMaterial)
-      props.ignoresMaterial = true;
-    if (undefined === props.nonLocatable && this.nonLocatable)
-      props.nonLocatable = true;
-    if (undefined === props.emphasized && this.emphasized)
-      props.emphasized = true;
+    if (undefined === props.ignoresMaterial && this.ignoresMaterial) props.ignoresMaterial = true;
+    if (undefined === props.nonLocatable && this.nonLocatable) props.nonLocatable = true;
+    if (undefined === props.emphasized && this.emphasized) props.emphasized = true;
 
-    if (undefined !== props.transparency && this.viewDependentTransparency)
-      props.viewDependentTransparency = true;
+    if (undefined !== props.transparency && this.viewDependentTransparency) props.viewDependentTransparency = true;
 
     return FeatureAppearance.fromJSON(props);
   }
 
   protected constructor(props: FeatureAppearanceProps) {
-    this.rgb =
-      undefined !== props.rgb ? RgbColor.fromJSON(props.rgb) : undefined;
+    this.rgb = undefined !== props.rgb ? RgbColor.fromJSON(props.rgb) : undefined;
     this.weight = props.weight;
     this.transparency = props.transparency;
     this.linePixels = props.linePixels;
@@ -290,12 +266,10 @@ export class FeatureAppearance {
     this.nonLocatable = props.nonLocatable;
     this.emphasized = props.emphasized;
 
-    if (undefined !== this.weight)
-      this.weight = Math.max(1, Math.min(this.weight, 32));
+    if (undefined !== this.weight) this.weight = Math.max(1, Math.min(this.weight, 32));
 
     if (undefined !== this.transparency) {
-      if (props.viewDependentTransparency)
-        this.viewDependentTransparency = true;
+      if (props.viewDependentTransparency) this.viewDependentTransparency = true;
 
       this.transparency = Math.max(0, Math.min(this.transparency, 1));
 
@@ -315,8 +289,7 @@ export class FeatureAppearance {
   private transparencyIsEqual(transp?: number): boolean {
     if (undefined === this.transparency) return undefined === transp;
     else if (undefined === transp) return false;
-    else
-      return Math.floor(this.transparency * 0xff) === Math.floor(transp * 0xff);
+    else return Math.floor(this.transparency * 0xff) === Math.floor(transp * 0xff);
   }
 }
 
@@ -376,8 +349,7 @@ export interface OverrideFeatureAppearanceOptions {
 /** Options for using [[FeatureOverrides.override]] to override the appearance of a [GeometricModel]($backend).
  * @public
  */
-export interface OverrideModelAppearanceOptions
-  extends OverrideFeatureAppearanceOptions {
+export interface OverrideModelAppearanceOptions extends OverrideFeatureAppearanceOptions {
   /** The Id of the model whose appearance is to be overridden. */
   modelId: Id64String;
   /** @internal */
@@ -389,8 +361,7 @@ export interface OverrideModelAppearanceOptions
 /** Options for using [[FeatureOverrides.override]] to override the appearance of a [GeometricElement]($backend).
  * @public
  */
-export interface OverrideElementAppearanceOptions
-  extends OverrideFeatureAppearanceOptions {
+export interface OverrideElementAppearanceOptions extends OverrideFeatureAppearanceOptions {
   /** The Id of the element whose appearance is to be overridden. */
   elementId: Id64String;
   /** @internal */
@@ -402,8 +373,7 @@ export interface OverrideElementAppearanceOptions
 /** Options for using [[FeatureOverrides.override]] to override the appearance of a [SubCategory]($backend).
  * @public
  */
-export interface OverrideSubCategoryAppearanceOptions
-  extends OverrideFeatureAppearanceOptions {
+export interface OverrideSubCategoryAppearanceOptions extends OverrideFeatureAppearanceOptions {
   /** The Id of the subcategory whose appearance is to be overridden. */
   subCategoryId: Id64String;
   /** @internal */
@@ -438,9 +408,7 @@ export interface IgnoreAnimationOverridesArgs {
  * element should not have its color or transparency modified by the schedule script.
  * @public
  */
-export type IgnoreAnimationOverrides = (
-  args: IgnoreAnimationOverridesArgs
-) => boolean;
+export type IgnoreAnimationOverrides = (args: IgnoreAnimationOverridesArgs) => boolean;
 
 const scratchIgnoreAnimationOverridesArgs = {
   elementId: { lower: 0, upper: 0 },
@@ -506,11 +474,9 @@ export class FeatureOverrides implements FeatureAppearanceSource {
   /** Overrides applied to all elements belonging to each model. @internal */
   protected readonly _modelOverrides = new Id64.Uint32Map<FeatureAppearance>();
   /** Overrides applied to specific elements. @internal */
-  protected readonly _elementOverrides =
-    new Id64.Uint32Map<FeatureAppearance>();
+  protected readonly _elementOverrides = new Id64.Uint32Map<FeatureAppearance>();
   /** Overrides applied to geometry belonging to each subcategory. @internal */
-  protected readonly _subCategoryOverrides =
-    new Id64.Uint32Map<FeatureAppearance>();
+  protected readonly _subCategoryOverrides = new Id64.Uint32Map<FeatureAppearance>();
   /** The set of displayed subcategories. Geometry belonging to subcategories not included in this set will not be drawn. @internal */
   protected readonly _visibleSubCategories = new Id64.Uint32Set();
   /** Display priorities assigned to subcategories, possibly overridden by display style. Only applicable for plan projection models. @internal */
@@ -520,8 +486,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
    * Populated by Viewport.
    * @internal
    */
-  protected readonly _modelSubCategoryOverrides =
-    new Id64.Uint32Map<Id64.Uint32Set>();
+  protected readonly _modelSubCategoryOverrides = new Id64.Uint32Map<Id64.Uint32Set>();
 
   /** Ids of animation nodes that should never be drawn.
    * @internal
@@ -568,11 +533,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
   }
 
   /** @internal */
-  protected isNeverDrawn(
-    elemIdLo: number,
-    elemIdHi: number,
-    animationNodeId: number
-  ): boolean {
+  protected isNeverDrawn(elemIdLo: number, elemIdHi: number, animationNodeId: number): boolean {
     if (this._neverDrawn.has(elemIdLo, elemIdHi)) return true;
     else return this.neverDrawnAnimationNodes.has(animationNodeId);
   }
@@ -585,12 +546,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     return this._visibleSubCategories.has(idLo, idHi);
   }
   /** @internal */
-  public isSubCategoryVisibleInModel(
-    subcatLo: number,
-    subcatHi: number,
-    modelLo: number,
-    modelHi: number
-  ): boolean {
+  public isSubCategoryVisibleInModel(subcatLo: number, subcatHi: number, modelLo: number, modelHi: number): boolean {
     if (this.ignoreSubCategory) return true;
 
     let vis = this.isSubCategoryVisible(subcatLo, subcatHi);
@@ -601,10 +557,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
   }
 
   /** @internal */
-  protected getModelOverrides(
-    idLo: number,
-    idHi: number
-  ): FeatureAppearance | undefined {
+  protected getModelOverrides(idLo: number, idHi: number): FeatureAppearance | undefined {
     return this._modelOverrides.get(idLo, idHi);
   }
 
@@ -618,44 +571,26 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     // NB: An animation node Id of zero means "not animated". Some providers like EmphasizeElements may provide an appearance override for unanimated nodes.
     // That should be preserved.
     const app = this.animationNodeOverrides.get(animationNodeId);
-    if (
-      !app ||
-      0 === animationNodeId ||
-      this._ignoreAnimationOverrides.length === 0
-    )
-      return app;
+    if (!app || 0 === animationNodeId || this._ignoreAnimationOverrides.length === 0) return app;
 
     const args = scratchIgnoreAnimationOverridesArgs;
     args.elementId.lower = idLo;
     args.elementId.upper = idHi;
     args.animationNodeId = animationNodeId;
-    return this._ignoreAnimationOverrides.some((ignore) => ignore(args))
-      ? undefined
-      : app;
+    return this._ignoreAnimationOverrides.some((ignore) => ignore(args)) ? undefined : app;
   }
 
   /** @internal */
-  protected getElementOverrides(
-    idLo: number,
-    idHi: number,
-    animationNodeId: number
-  ): FeatureAppearance | undefined {
+  protected getElementOverrides(idLo: number, idHi: number, animationNodeId: number): FeatureAppearance | undefined {
     const elemApp = this._elementOverrides.get(idLo, idHi);
-    const nodeApp = this.getElementAnimationOverrides(
-      idLo,
-      idHi,
-      animationNodeId
-    );
+    const nodeApp = this.getElementAnimationOverrides(idLo, idHi, animationNodeId);
     if (elemApp) return nodeApp ? nodeApp.extendAppearance(elemApp) : elemApp;
 
     return nodeApp;
   }
 
   /** @internal */
-  protected getSubCategoryOverrides(
-    idLo: number,
-    idHi: number
-  ): FeatureAppearance | undefined {
+  protected getSubCategoryOverrides(idLo: number, idHi: number): FeatureAppearance | undefined {
     return this._subCategoryOverrides.get(idLo, idHi);
   }
 
@@ -680,11 +615,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     copyIdSetToUint32Set(this._neverDrawn, ids);
   }
   /** Specify the Ids of elements that should always be drawn. */
-  public setAlwaysDrawnSet(
-    ids: Iterable<Id64String>,
-    exclusive: boolean,
-    ignoreSubCategory = true
-  ) {
+  public setAlwaysDrawnSet(ids: Iterable<Id64String>, exclusive: boolean, ignoreSubCategory = true) {
     copyIdSetToUint32Set(this._alwaysDrawn, ids);
     this.isAlwaysDrawnExclusive = exclusive;
     this.alwaysDrawnIgnoresSubCategory = ignoreSubCategory;
@@ -729,23 +660,10 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     type: BatchType,
     animationNodeId: number
   ): FeatureAppearance | undefined {
-    if (
-      BatchType.VolumeClassifier === type ||
-      BatchType.PlanarClassifier === type
-    )
-      return this.getClassifierAppearance(
-        elemLo,
-        elemHi,
-        subcatLo,
-        subcatHi,
-        modelLo,
-        modelHi,
-        animationNodeId
-      );
+    if (BatchType.VolumeClassifier === type || BatchType.PlanarClassifier === type)
+      return this.getClassifierAppearance(elemLo, elemHi, subcatLo, subcatHi, modelLo, modelHi, animationNodeId);
 
-    let app = !this._lineWeights
-      ? FeatureOverrides._weight1Appearance
-      : FeatureAppearance.defaults;
+    let app = !this._lineWeights ? FeatureOverrides._weight1Appearance : FeatureAppearance.defaults;
     const modelApp = this.getModelOverrides(modelLo, modelHi);
     if (undefined !== modelApp) app = modelApp.extendAppearance(app);
 
@@ -761,8 +679,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
 
       // Element overrides take precedence
       elemApp = this.getElementOverrides(elemLo, elemHi, animationNodeId);
-      if (undefined !== elemApp)
-        app = undefined !== modelApp ? elemApp.extendAppearance(app) : elemApp;
+      if (undefined !== elemApp) app = undefined !== modelApp ? elemApp.extendAppearance(app) : elemApp;
     }
 
     let subCatApp;
@@ -778,11 +695,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     }
 
     // Only apply default if *no* appearance was explicitly registered (doesn't matter if registered appearance does not actually override anything)
-    if (
-      undefined === elemApp &&
-      undefined === modelApp &&
-      undefined === subCatApp
-    )
+    if (undefined === elemApp && undefined === modelApp && undefined === subCatApp)
       app = this._defaultOverrides.extendAppearance(app);
 
     let visible = alwaysDrawn || this.isClassVisible(geomClass);
@@ -808,16 +721,14 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     if (undefined !== modelApp) app = modelApp.extendAppearance(app);
 
     const elemApp = this.getElementOverrides(elemLo, elemHi, animationNodeId);
-    if (undefined !== elemApp)
-      app = undefined !== modelApp ? elemApp.extendAppearance(app) : elemApp;
+    if (undefined !== elemApp) app = undefined !== modelApp ? elemApp.extendAppearance(app) : elemApp;
 
     if (!this.ignoreSubCategory && Id64.isValidUint32Pair(subcatLo, subcatHi)) {
       const subCat = this.getSubCategoryOverrides(subcatLo, subcatHi);
       if (undefined !== subCat) app = subCat.extendAppearance(app);
     }
 
-    if (undefined === elemApp && undefined === modelApp)
-      app = this._defaultOverrides.extendAppearance(app);
+    if (undefined === elemApp && undefined === modelApp) app = this._defaultOverrides.extendAppearance(app);
 
     // NB: A fully-transparent classifier means the classifier is a clip mask - classified pixels will be discarded.
     return app;
@@ -858,8 +769,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     const idLo = Id64.getLowerUint32(id);
     const idHi = Id64.getUpperUint32(id);
 
-    if (undefined !== args.elementId && this.isNeverDrawn(idLo, idHi, 0))
-      return;
+    if (undefined !== args.elementId && this.isNeverDrawn(idLo, idHi, 0)) return;
 
     const replace = "replace" === args.onConflict;
     const existing = replace ? undefined : map.get(idLo, idHi);
@@ -888,11 +798,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
    * @note If [[defaultOverrides]] are defined, they will not apply to any element within this model, even if the supplied appearance overrides nothing.
    * @deprecated in 3.x. Use [[FeatureOverrides.override]].
    */
-  public overrideModel(
-    id: Id64String,
-    app: FeatureAppearance,
-    replaceExisting: boolean = true
-  ): void {
+  public overrideModel(id: Id64String, app: FeatureAppearance, replaceExisting: boolean = true): void {
     this.override({
       modelId: id,
       appearance: app,
@@ -908,11 +814,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
    * @note If [[defaultOverrides]] are defined, they will not apply to any geometry within this subcategory, even if the supplied appearance overrides nothing.
    * @deprecated in 3.x. Use [[FeatureOverrides.override]].
    */
-  public overrideSubCategory(
-    id: Id64String,
-    app: FeatureAppearance,
-    replaceExisting: boolean = true
-  ): void {
+  public overrideSubCategory(id: Id64String, app: FeatureAppearance, replaceExisting: boolean = true): void {
     this.override({
       subCategoryId: id,
       appearance: app,
@@ -928,11 +830,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
    * @note If [[defaultOverrides]] are defined, they will not apply to this element, even if the supplied appearance overrides nothing.
    * @deprecated in 3.x. Use [[FeatureOverrides.override]].
    */
-  public overrideElement(
-    id: Id64String,
-    app: FeatureAppearance,
-    replaceExisting: boolean = true
-  ): void {
+  public overrideElement(id: Id64String, app: FeatureAppearance, replaceExisting: boolean = true): void {
     this.override({
       elementId: id,
       appearance: app,
@@ -953,12 +851,8 @@ export class FeatureOverrides implements FeatureAppearanceSource {
    * @param appearance The symbology overrides.
    * @param replaceExisting Specifies whether to replace the current default overrides if they are already defined.
    */
-  public setDefaultOverrides(
-    appearance: FeatureAppearance,
-    replaceExisting: boolean = true
-  ): void {
-    if (replaceExisting || !appearance.overridesSymbology)
-      this._defaultOverrides = appearance;
+  public setDefaultOverrides(appearance: FeatureAppearance, replaceExisting: boolean = true): void {
+    if (replaceExisting || !appearance.overridesSymbology) this._defaultOverrides = appearance;
   }
 
   /** Get the display priority of a subcategory. This is only relevant when using [[PlanProjectionSettings]].
@@ -977,55 +871,30 @@ export class FeatureOverrides implements FeatureAppearanceSource {
 
   /** Returns true if geometry belonging to the specified subcategory will be drawn. */
   public isSubCategoryIdVisible(id: Id64String): boolean {
-    return this.isSubCategoryVisible(
-      Id64.getLowerUint32(id),
-      Id64.getUpperUint32(id)
-    );
+    return this.isSubCategoryVisible(Id64.getLowerUint32(id), Id64.getUpperUint32(id));
   }
   /** Returns the overrides applied to geometry belonging to the specified model, if any such are defined. */
   public getModelOverridesById(id: Id64String): FeatureAppearance | undefined {
-    return this.getModelOverrides(
-      Id64.getLowerUint32(id),
-      Id64.getUpperUint32(id)
-    );
+    return this.getModelOverrides(Id64.getLowerUint32(id), Id64.getUpperUint32(id));
   }
   /** Returns the overrides applied to geometry belonging to the specified element, if any such are defined. */
-  public getElementOverridesById(
-    id: Id64String
-  ): FeatureAppearance | undefined {
-    return this.getElementOverrides(
-      Id64.getLowerUint32(id),
-      Id64.getUpperUint32(id),
-      0
-    );
+  public getElementOverridesById(id: Id64String): FeatureAppearance | undefined {
+    return this.getElementOverrides(Id64.getLowerUint32(id), Id64.getUpperUint32(id), 0);
   }
   /** Returns the overrides applied to geometry belonging to the specified subcategory, if any such are defined. */
-  public getSubCategoryOverridesById(
-    id: Id64String
-  ): FeatureAppearance | undefined {
-    return this.getSubCategoryOverrides(
-      Id64.getLowerUint32(id),
-      Id64.getUpperUint32(id)
-    );
+  public getSubCategoryOverridesById(id: Id64String): FeatureAppearance | undefined {
+    return this.getSubCategoryOverrides(Id64.getLowerUint32(id), Id64.getUpperUint32(id));
   }
 
   /** Returns true if the specified Feature will be drawn. */
   public isFeatureVisible(feature: Feature): boolean {
     const { elementId, subCategoryId, geometryClass } = feature;
     const isValidElemId = !Id64.isInvalid(elementId);
-    const elemIdParts = isValidElemId
-      ? Id64.getUint32Pair(elementId)
-      : undefined;
+    const elemIdParts = isValidElemId ? Id64.getUint32Pair(elementId) : undefined;
 
-    if (
-      undefined !== elemIdParts &&
-      this.isNeverDrawn(elemIdParts.lower, elemIdParts.upper, 0)
-    )
-      return false;
+    if (undefined !== elemIdParts && this.isNeverDrawn(elemIdParts.lower, elemIdParts.upper, 0)) return false;
 
-    const alwaysDrawn =
-      undefined !== elemIdParts &&
-      this.isAlwaysDrawn(elemIdParts.lower, elemIdParts.upper);
+    const alwaysDrawn = undefined !== elemIdParts && this.isAlwaysDrawn(elemIdParts.lower, elemIdParts.upper);
     if (alwaysDrawn || this.isAlwaysDrawnExclusive) return alwaysDrawn;
 
     // NB: This ignores per-model subcategory visibility overrides, because caller did not specify a model.
@@ -1076,10 +945,7 @@ export interface FeatureAppearanceProvider {
 /** @public */
 export namespace FeatureAppearanceProvider {
   /** Produce a FeatureAppearanceSource for which `getAppearance()` returns the appearance specified in `source`, potentially modified by `provider`. */
-  function wrap(
-    source: FeatureAppearanceSource,
-    provider: FeatureAppearanceProvider
-  ): FeatureAppearanceSource {
+  function wrap(source: FeatureAppearanceSource, provider: FeatureAppearanceProvider): FeatureAppearanceSource {
     return {
       getAppearance: (
         elemLo: number,

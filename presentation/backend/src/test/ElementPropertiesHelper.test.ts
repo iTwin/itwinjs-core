@@ -6,11 +6,7 @@ import { expect } from "chai";
 import * as moq from "typemoq";
 import { ECSqlStatement, ECSqlValue, IModelDb } from "@itwin/core-backend";
 import { DbResult, Id64 } from "@itwin/core-bentley";
-import {
-  Content,
-  PresentationError,
-  PropertyValueFormat,
-} from "@itwin/presentation-common";
+import { Content, PresentationError, PropertyValueFormat } from "@itwin/presentation-common";
 import {
   createTestCategoryDescription,
   createTestContentDescriptor,
@@ -32,11 +28,7 @@ describe("buildElementsProperties", () => {
   });
 
   it("returns empty array when given content with no items", () => {
-    expect(
-      buildElementsProperties(
-        new Content(createTestContentDescriptor({ fields: [] }), [])
-      )
-    ).to.be.empty;
+    expect(buildElementsProperties(new Content(createTestContentDescriptor({ fields: [] }), []))).to.be.empty;
   });
 
   it("sets class label", () => {
@@ -246,9 +238,7 @@ describe("buildElementsProperties", () => {
               createTestNestedContentField({
                 name: "nestedField",
                 category,
-                nestedFields: [
-                  createTestSimpleContentField({ name: "primitiveField" }),
-                ],
+                nestedFields: [createTestSimpleContentField({ name: "primitiveField" })],
               }),
             ],
           }),
@@ -564,14 +554,10 @@ describe("getElementsCount", () => {
 
   it("returns 0 when statement has no rows", () => {
     imodelMock
-      .setup((x) =>
-        x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())
-      )
+      .setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny()))
       .returns((_q, cb) => {
         const statementMock = moq.Mock.ofType<ECSqlStatement>();
-        statementMock
-          .setup((x) => x.step())
-          .returns(() => DbResult.BE_SQLITE_DONE);
+        statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
         return cb(statementMock.object);
       });
     expect(getElementsCount(imodelMock.object)).to.be.eq(0);
@@ -580,19 +566,13 @@ describe("getElementsCount", () => {
   it("returns count when statement has row", () => {
     const elementCount = 3;
     imodelMock
-      .setup((x) =>
-        x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())
-      )
+      .setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny()))
       .returns((_q, cb) => {
         const valueMock = moq.Mock.ofType<ECSqlValue>();
         valueMock.setup((x) => x.getInteger()).returns(() => elementCount);
         const statementMock = moq.Mock.ofType<ECSqlStatement>();
-        statementMock
-          .setup((x) => x.step())
-          .returns(() => DbResult.BE_SQLITE_ROW);
-        statementMock
-          .setup((x) => x.getValue(0))
-          .returns(() => valueMock.object);
+        statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ROW);
+        statementMock.setup((x) => x.getValue(0)).returns(() => valueMock.object);
         return cb(statementMock.object);
       });
     expect(getElementsCount(imodelMock.object)).to.be.eq(elementCount);
@@ -613,15 +593,9 @@ describe("getElementsCount", () => {
   });
 
   it("throws if class list contains invalid class name", () => {
-    expect(() =>
-      getElementsCount(imodelMock.object, ["'TestSchema:TestClass'"])
-    ).to.throw(PresentationError);
-    expect(() =>
-      getElementsCount(imodelMock.object, ["%TestSchema:TestClass%"])
-    ).to.throw(PresentationError);
-    expect(() =>
-      getElementsCount(imodelMock.object, ["TestSchema:TestClass  "])
-    ).to.throw(PresentationError);
+    expect(() => getElementsCount(imodelMock.object, ["'TestSchema:TestClass'"])).to.throw(PresentationError);
+    expect(() => getElementsCount(imodelMock.object, ["%TestSchema:TestClass%"])).to.throw(PresentationError);
+    expect(() => getElementsCount(imodelMock.object, ["TestSchema:TestClass  "])).to.throw(PresentationError);
   });
 });
 
@@ -641,19 +615,13 @@ describe("iterateElementIds", () => {
 
   it("returns empty map when statement has no rows", () => {
     imodelMock
-      .setup((x) =>
-        x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())
-      )
+      .setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny()))
       .returns((_q, cb) => {
         const statementMock = moq.Mock.ofType<ECSqlStatement>();
-        statementMock
-          .setup((x) => x.step())
-          .returns(() => DbResult.BE_SQLITE_DONE);
+        statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
         return cb(statementMock.object);
       });
-    expect(collectResults(iterateElementIds(imodelMock.object))).to.be.deep.eq([
-      new Map<string, string[]>(),
-    ]);
+    expect(collectResults(iterateElementIds(imodelMock.object))).to.be.deep.eq([new Map<string, string[]>()]);
   });
 
   it("returns ids grouped by class when statement has rows", () => {
@@ -664,15 +632,11 @@ describe("iterateElementIds", () => {
       { className: "TestSchema:TestClass", id: "0x4" },
     ];
     imodelMock
-      .setup((x) =>
-        x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())
-      )
+      .setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny()))
       .returns((_q, cb) => {
         const statementMock = moq.Mock.ofType<ECSqlStatement>();
         for (const element of elements) {
-          statementMock
-            .setup((x) => x.step())
-            .returns(() => DbResult.BE_SQLITE_ROW);
+          statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ROW);
           statementMock
             .setup((x) => x.getRow())
             .returns(() => ({
@@ -680,9 +644,7 @@ describe("iterateElementIds", () => {
               elClassName: element.className,
             }));
         }
-        statementMock
-          .setup((x) => x.step())
-          .returns(() => DbResult.BE_SQLITE_DONE);
+        statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
         return cb(statementMock.object);
       });
     const expectedResult = [
@@ -691,9 +653,7 @@ describe("iterateElementIds", () => {
         ["TestSchema:TestClass2", ["0x3"]],
       ]),
     ];
-    expect(collectResults(iterateElementIds(imodelMock.object))).to.be.deep.eq(
-      expectedResult
-    );
+    expect(collectResults(iterateElementIds(imodelMock.object))).to.be.deep.eq(expectedResult);
   });
 
   it("skips rows without class name or id", () => {
@@ -703,15 +663,11 @@ describe("iterateElementIds", () => {
       { className: "TestSchema:TestClass", id: "0x2" },
     ];
     imodelMock
-      .setup((x) =>
-        x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())
-      )
+      .setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny()))
       .returns((_q, cb) => {
         const statementMock = moq.Mock.ofType<ECSqlStatement>();
         for (const element of elements) {
-          statementMock
-            .setup((x) => x.step())
-            .returns(() => DbResult.BE_SQLITE_ROW);
+          statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ROW);
           statementMock
             .setup((x) => x.getRow())
             .returns(() => ({
@@ -719,42 +675,28 @@ describe("iterateElementIds", () => {
               elClassName: element.className,
             }));
         }
-        statementMock
-          .setup((x) => x.step())
-          .returns(() => DbResult.BE_SQLITE_DONE);
+        statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
         return cb(statementMock.object);
       });
-    const expectedResult = [
-      new Map<string, string[]>([["TestSchema:TestClass", ["0x2"]]]),
-    ];
-    expect(collectResults(iterateElementIds(imodelMock.object))).to.be.deep.eq(
-      expectedResult
-    );
+    const expectedResult = [new Map<string, string[]>([["TestSchema:TestClass", ["0x2"]]])];
+    expect(collectResults(iterateElementIds(imodelMock.object))).to.be.deep.eq(expectedResult);
   });
 
   it("adds WHERE clause when class list is defined and not empty", () => {
     imodelMock
       .setup((x) =>
         x.withPreparedStatement(
-          moq.It.is(
-            (query) =>
-              query.includes("WHERE") &&
-              query.includes("IS (TestSchema:TestClass)")
-          ),
+          moq.It.is((query) => query.includes("WHERE") && query.includes("IS (TestSchema:TestClass)")),
           moq.It.isAny()
         )
       )
       .returns((_q, cb) => {
         const statementMock = moq.Mock.ofType<ECSqlStatement>();
-        statementMock
-          .setup((x) => x.step())
-          .returns(() => DbResult.BE_SQLITE_DONE);
+        statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
         return cb(statementMock.object);
       })
       .verifiable();
-    collectResults(
-      iterateElementIds(imodelMock.object, ["TestSchema:TestClass"])
-    );
+    collectResults(iterateElementIds(imodelMock.object, ["TestSchema:TestClass"]));
     imodelMock.verifyAll();
   });
 
@@ -768,12 +710,8 @@ describe("iterateElementIds", () => {
       )
       .returns((_q, cb) => {
         const statementMock = moq.Mock.ofType<ECSqlStatement>();
-        statementMock
-          .setup((x) => x.step())
-          .returns(() => DbResult.BE_SQLITE_ROW);
-        statementMock
-          .setup((x) => x.getRow())
-          .returns(() => ({ elId: "0x1", elClassName: "TestClass" }));
+        statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ROW);
+        statementMock.setup((x) => x.getRow()).returns(() => ({ elId: "0x1", elClassName: "TestClass" }));
         return cb(statementMock.object);
       })
       .verifiable();
@@ -787,9 +725,7 @@ describe("iterateElementIds", () => {
       .returns((_q, cb) => {
         const statementMock = moq.Mock.ofType<ECSqlStatement>();
         statementMock.setup((x) => x.bindId(1, "0x1")).verifiable();
-        statementMock
-          .setup((x) => x.step())
-          .returns(() => DbResult.BE_SQLITE_DONE);
+        statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
         return cb(statementMock.object);
       })
       .verifiable();
@@ -801,66 +737,44 @@ describe("iterateElementIds", () => {
     imodelMock
       .setup((x) =>
         x.withPreparedStatement(
-          moq.It.is(
-            (query) =>
-              query.includes("IS (TestSchema:TestClass)") &&
-              !query.includes("ECInstanceId > ?")
-          ),
+          moq.It.is((query) => query.includes("IS (TestSchema:TestClass)") && !query.includes("ECInstanceId > ?")),
           moq.It.isAny()
         )
       )
       .returns((_q, cb) => {
         const statementMock = moq.Mock.ofType<ECSqlStatement>();
-        statementMock
-          .setup((x) => x.step())
-          .returns(() => DbResult.BE_SQLITE_ROW);
-        statementMock
-          .setup((x) => x.getRow())
-          .returns(() => ({ elId: "0x1", elClassName: "TestClass" }));
+        statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ROW);
+        statementMock.setup((x) => x.getRow()).returns(() => ({ elId: "0x1", elClassName: "TestClass" }));
         return cb(statementMock.object);
       })
       .verifiable();
     imodelMock
       .setup((x) =>
         x.withPreparedStatement(
-          moq.It.is(
-            (query) =>
-              query.includes("IS (TestSchema:TestClass)") &&
-              query.includes("ECInstanceId > ?")
-          ),
+          moq.It.is((query) => query.includes("IS (TestSchema:TestClass)") && query.includes("ECInstanceId > ?")),
           moq.It.isAny()
         )
       )
       .returns((_q, cb) => {
         const statementMock = moq.Mock.ofType<ECSqlStatement>();
         statementMock.setup((x) => x.bindId(1, "0x1")).verifiable();
-        statementMock
-          .setup((x) => x.step())
-          .returns(() => DbResult.BE_SQLITE_DONE);
+        statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
         return cb(statementMock.object);
       })
       .verifiable();
-    collectResults(
-      iterateElementIds(imodelMock.object, ["TestSchema:TestClass"], 1)
-    );
+    collectResults(iterateElementIds(imodelMock.object, ["TestSchema:TestClass"], 1));
     imodelMock.verifyAll();
   });
 
   it("throws if class list contains invalid class name", () => {
-    expect(() =>
-      collectResults(
-        iterateElementIds(imodelMock.object, ["'TestSchema:TestClass'"])
-      )
-    ).to.throw(PresentationError);
-    expect(() =>
-      collectResults(
-        iterateElementIds(imodelMock.object, ["%TestSchema:TestClass%"])
-      )
-    ).to.throw(PresentationError);
-    expect(() =>
-      collectResults(
-        iterateElementIds(imodelMock.object, ["TestSchema:TestClass  "])
-      )
-    ).to.throw(PresentationError);
+    expect(() => collectResults(iterateElementIds(imodelMock.object, ["'TestSchema:TestClass'"]))).to.throw(
+      PresentationError
+    );
+    expect(() => collectResults(iterateElementIds(imodelMock.object, ["%TestSchema:TestClass%"]))).to.throw(
+      PresentationError
+    );
+    expect(() => collectResults(iterateElementIds(imodelMock.object, ["TestSchema:TestClass  "]))).to.throw(
+      PresentationError
+    );
   });
 });

@@ -33,10 +33,7 @@ export class UpdatesTracker implements IDisposable {
 
   private constructor(props: UpdatesTrackerProps) {
     this._getNativePlatform = props.nativePlatformGetter;
-    this._intervalHandle = setInterval(
-      this.onInterval.bind(this),
-      props.pollInterval
-    );
+    this._intervalHandle = setInterval(this.onInterval.bind(this), props.pollInterval);
   }
 
   public static create(props: UpdatesTrackerProps) {

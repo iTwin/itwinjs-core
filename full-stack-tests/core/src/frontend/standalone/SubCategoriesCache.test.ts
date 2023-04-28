@@ -3,18 +3,8 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  BeDuration,
-  Id64,
-  Id64Arg,
-  Id64Set,
-  Id64String,
-} from "@itwin/core-bentley";
-import {
-  IModelConnection,
-  SnapshotConnection,
-  SubCategoriesCache,
-} from "@itwin/core-frontend";
+import { BeDuration, Id64, Id64Arg, Id64Set, Id64String } from "@itwin/core-bentley";
+import { IModelConnection, SnapshotConnection, SubCategoriesCache } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
 describe("SubCategoriesCache", () => {
@@ -53,8 +43,7 @@ describe("SubCategoriesCache", () => {
     const req1 = subcats.load(catIds);
     expect(req1).not.to.be.undefined;
     expect(req1!.missingCategoryIds.size).to.equal(catIds.size);
-    for (const catId of catIds)
-      expect(req1!.missingCategoryIds.has(catId)).to.be.true;
+    for (const catId of catIds) expect(req1!.missingCategoryIds.has(catId)).to.be.true;
 
     const res1 = await req1!.promise;
     expect(res1).to.be.true; // indicates all info loaded
@@ -72,8 +61,7 @@ describe("SubCategoriesCache", () => {
     const req3 = subcats.load(catIds);
     expect(req3).not.to.be.undefined;
     expect(req3!.missingCategoryIds.size).to.equal(catIds.size);
-    for (const catId of catIds)
-      expect(req3!.missingCategoryIds.has(catId)).to.be.true;
+    for (const catId of catIds) expect(req3!.missingCategoryIds.has(catId)).to.be.true;
 
     const res3 = await req3!.promise;
     expect(res3).to.be.true;
@@ -97,19 +85,11 @@ describe("SubCategoriesCache", () => {
       this.cache = new SubCategoriesCache(iModel);
     }
 
-    public q(
-      catIds: Id64Arg,
-      func: SubCategoriesCache.QueueFunc = () => undefined
-    ): void {
+    public q(catIds: Id64Arg, func: SubCategoriesCache.QueueFunc = () => undefined): void {
       this.push(this.cache, catIds, func);
     }
 
-    public expectMembers(
-      current: boolean,
-      next: boolean,
-      request: boolean,
-      disposed = false
-    ): void {
+    public expectMembers(current: boolean, next: boolean, request: boolean, disposed = false): void {
       expect(this.current !== undefined).to.equal(current);
       expect(this.next !== undefined).to.equal(next);
       expect(this.request !== undefined).to.equal(request);
@@ -117,8 +97,7 @@ describe("SubCategoriesCache", () => {
     }
 
     public expectNotLoaded(catIds: Id64Arg): void {
-      for (const catId of Id64.iterable(catIds))
-        expect(this.cache.getSubCategories(catId)).to.be.undefined;
+      for (const catId of Id64.iterable(catIds)) expect(this.cache.getSubCategories(catId)).to.be.undefined;
     }
 
     public expectLoaded(catId: Id64String, subcatIds: Id64Arg): void {

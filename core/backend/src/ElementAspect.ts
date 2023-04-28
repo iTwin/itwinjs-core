@@ -144,11 +144,7 @@ export class ChannelRootAspect extends ElementUniqueAspect {
   /** Insert a ChannelRootAspect on the specified element.
    * @deprecated in 4.0 use [[ChannelControl.insertChannelSubject]]
    */
-  public static insert(
-    iModel: IModelDb,
-    ownerId: Id64String,
-    channelName: string
-  ) {
+  public static insert(iModel: IModelDb, ownerId: Id64String, channelName: string) {
     const props: ChannelRootAspectProps = {
       classFullName: this.classFullName,
       element: { id: ownerId },
@@ -274,9 +270,7 @@ export class ExternalSourceAspect extends ElementMultiAspect {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(
-    referenceIds: EntityReferenceSet
-  ): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     if (this.scope) referenceIds.addElement(this.scope.id);
     referenceIds.addElement(this.element.id);

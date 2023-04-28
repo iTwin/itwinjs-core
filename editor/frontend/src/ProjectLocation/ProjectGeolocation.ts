@@ -26,21 +26,10 @@ import {
   ToolAssistanceSection,
   Viewport,
 } from "@itwin/core-frontend";
-import {
-  Angle,
-  Matrix3d,
-  Point3d,
-  Ray3d,
-  Vector3d,
-  XYAndZ,
-} from "@itwin/core-geometry";
+import { Angle, Matrix3d, Point3d, Ray3d, Vector3d, XYAndZ } from "@itwin/core-geometry";
 import { Cartographic, ColorDef, LinePixels } from "@itwin/core-common";
 import { ProjectExtentsClipDecoration } from "./ProjectExtentsDecoration";
-import {
-  DialogItem,
-  DialogProperty,
-  DialogPropertySyncItem,
-} from "@itwin/appui-abstract";
+import { DialogItem, DialogProperty, DialogPropertySyncItem } from "@itwin/appui-abstract";
 import { EditTools } from "../EditTool";
 
 function translatePrompt(key: string) {
@@ -72,12 +61,7 @@ class LabelDecoration implements CanvasDecoration {
     ctx.shadowColor = "black";
     ctx.shadowBlur = 10;
     ctx.fillRect(-(labelWidth / 2), -labelHeight, labelWidth, labelHeight * 2);
-    ctx.strokeRect(
-      -(labelWidth / 2),
-      -labelHeight,
-      labelWidth,
-      labelHeight * 2
-    );
+    ctx.strokeRect(-(labelWidth / 2), -labelHeight, labelWidth, labelHeight * 2);
 
     ctx.fillStyle = "white";
     ctx.shadowBlur = 0;
@@ -121,20 +105,10 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   protected _origin?: Point3d;
   protected _labelDeco?: LabelDecoration;
 
-  public override isCompatibleViewport(
-    vp: Viewport | undefined,
-    isSelectedViewChange: boolean
-  ): boolean {
-    return (
-      super.isCompatibleViewport(vp, isSelectedViewChange) &&
-      undefined !== vp &&
-      vp.view.isSpatialView()
-    );
+  public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean {
+    return super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.isSpatialView();
   }
-  public override isValidLocation(
-    _ev: BeButtonEvent,
-    _isButtonEvent: boolean
-  ): boolean {
+  public override isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean {
     return true;
   } // Allow snapping to terrain, etc. outside project extents...
   public override requireWriteableTarget(): boolean {
@@ -195,10 +169,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   public get altitudeProperty() {
     if (!this._altitudeProperty)
       this._altitudeProperty = new DialogProperty<number>(
-        new LengthDescription(
-          "altitude",
-          CoreTools.translate("Measure.Labels.Altitude")
-        ),
+        new LengthDescription("altitude", CoreTools.translate("Measure.Labels.Altitude")),
         0.0
       );
     return this._altitudeProperty;
@@ -214,10 +185,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   private _northProperty: DialogProperty<number> | undefined;
   public get northProperty() {
     if (!this._northProperty)
-      this._northProperty = new DialogProperty<number>(
-        new AngleDescription("north", translateMessage("North")),
-        0.0
-      );
+      this._northProperty = new DialogProperty<number>(new AngleDescription("north", translateMessage("North")), 0.0);
     return this._northProperty;
   }
 
@@ -237,55 +205,34 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     ]);
   }
 
-  public override async applyToolSettingPropertyChange(
-    updatedValue: DialogPropertySyncItem
-  ): Promise<boolean> {
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     return this.changeToolSettingPropertyValue(updatedValue);
   }
 
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
     this._haveToolSettings = true;
     const toolSettings = new Array<DialogItem>();
-    toolSettings.push(
-      this.latitudeProperty.toDialogItem({ rowPriority: 1, columnIndex: 2 })
-    );
-    toolSettings.push(
-      this.longitudeProperty.toDialogItem({ rowPriority: 2, columnIndex: 2 })
-    );
-    toolSettings.push(
-      this.altitudeProperty.toDialogItem({ rowPriority: 3, columnIndex: 2 })
-    );
-    toolSettings.push(
-      this.northProperty.toDialogItem({ rowPriority: 4, columnIndex: 2 })
-    );
+    toolSettings.push(this.latitudeProperty.toDialogItem({ rowPriority: 1, columnIndex: 2 }));
+    toolSettings.push(this.longitudeProperty.toDialogItem({ rowPriority: 2, columnIndex: 2 }));
+    toolSettings.push(this.altitudeProperty.toDialogItem({ rowPriority: 3, columnIndex: 2 }));
+    toolSettings.push(this.northProperty.toDialogItem({ rowPriority: 4, columnIndex: 2 }));
     return toolSettings;
   }
 
   protected provideToolAssistance(): void {
     const acceptMsg = CoreTools.translate(
-      undefined === this._origin
-        ? "ElementSet.Inputs.AcceptPoint"
-        : "ElementSet.Inputs.Accept"
+      undefined === this._origin ? "ElementSet.Inputs.AcceptPoint" : "ElementSet.Inputs.Accept"
     );
     const rejectMsg = CoreTools.translate("ElementSet.Inputs.Cancel");
     const mainInstruction = ToolAssistance.createInstruction(
       this.iconSpec,
-      translatePrompt(
-        undefined === this._origin
-          ? "IdentifyKnownLocation"
-          : "ConfirmCoordinates"
-      )
+      translatePrompt(undefined === this._origin ? "IdentifyKnownLocation" : "ConfirmCoordinates")
     );
     const sections: ToolAssistanceSection[] = [];
 
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     mouseInstructions.push(
-      ToolAssistance.createInstruction(
-        ToolAssistanceImage.LeftClick,
-        acceptMsg,
-        false,
-        ToolAssistanceInputMethod.Mouse
-      )
+      ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse)
     );
     mouseInstructions.push(
       ToolAssistance.createInstruction(
@@ -295,12 +242,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
         ToolAssistanceInputMethod.Mouse
       )
     );
-    sections.push(
-      ToolAssistance.createSection(
-        mouseInstructions,
-        ToolAssistance.inputsLabel
-      )
-    );
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
 
     const touchInstructions: ToolAssistanceInstruction[] = [];
     if (!ToolAssistance.createTouchCursorInstructions(touchInstructions))
@@ -320,17 +262,9 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
         ToolAssistanceInputMethod.Touch
       )
     );
-    sections.push(
-      ToolAssistance.createSection(
-        touchInstructions,
-        ToolAssistance.inputsLabel
-      )
-    );
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
 
-    const instructions = ToolAssistance.createInstructions(
-      mainInstruction,
-      sections
-    );
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
     IModelApp.notifications.setToolAssistance(instructions);
   }
 
@@ -358,8 +292,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   }
 
   public override decorate(context: DecorateContext): void {
-    if (undefined === this._origin || !context.viewport.view.isSpatialView())
-      return;
+    if (undefined === this._origin || !context.viewport.view.isSpatialView()) return;
 
     const deco = ProjectExtentsClipDecoration.get();
     if (undefined === deco) return;
@@ -377,9 +310,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     ev.viewport.invalidateDecorations();
   }
 
-  public override async onResetButtonUp(
-    _ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
     await this.onReinitialize(); // Calls onRestartTool to exit...
     return EventHandled.No;
   }
@@ -398,16 +329,11 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
 
     this._accept = true; // Require explicit accept to give user a chance to change values...
     this._origin = ev.point.clone();
-    this._labelDeco = new LabelDecoration(
-      this._origin,
-      translatePrompt("SpecifyCoordinates")
-    );
+    this._labelDeco = new LabelDecoration(this._origin, translatePrompt("SpecifyCoordinates"));
 
     if (!this._cartographicFromArgs) {
       if (this.iModel.isGeoLocated) {
-        const cartographic = this.iModel.spatialToCartographicFromEcef(
-          this._origin
-        );
+        const cartographic = this.iModel.spatialToCartographicFromEcef(this._origin);
         this.latitude = cartographic.latitude;
         this.longitude = cartographic.longitude;
         this.altitude = cartographic.height;
@@ -431,21 +357,12 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
       latitude: this.latitude,
       height: this.altitude,
     });
-    if (
-      !deco.updateEcefLocation(
-        origin,
-        this._origin,
-        Angle.createRadians(this.north)
-      )
-    )
-      return;
+    if (!deco.updateEcefLocation(origin, this._origin, Angle.createRadians(this.north))) return;
 
     return this.onReinitialize(); // Calls onRestartTool to exit...
   }
 
-  public override async onDataButtonDown(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (undefined === ev.viewport) return EventHandled.No; // Shouldn't really happen...
 
     const haveKnownLocation = this._accept;
@@ -458,8 +375,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   }
 
   public override async onInstall(): Promise<boolean> {
-    if (!ProjectExtentsClipDecoration.allowEcefLocationChange(false))
-      return false;
+    if (!ProjectExtentsClipDecoration.allowEcefLocationChange(false)) return false;
 
     // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o appui-react...
     this.initializeToolSettingPropertyValues([
@@ -535,20 +451,10 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
   protected _origin?: Point3d;
   protected _northDir?: Ray3d;
 
-  public override isCompatibleViewport(
-    vp: Viewport | undefined,
-    isSelectedViewChange: boolean
-  ): boolean {
-    return (
-      super.isCompatibleViewport(vp, isSelectedViewChange) &&
-      undefined !== vp &&
-      vp.view.isSpatialView()
-    );
+  public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean {
+    return super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.isSpatialView();
   }
-  public override isValidLocation(
-    _ev: BeButtonEvent,
-    _isButtonEvent: boolean
-  ): boolean {
+  public override isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean {
     return true;
   } // Allow snapping to terrain, etc. outside project extents...
   public override requireWriteableTarget(): boolean {
@@ -574,20 +480,13 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
     const rejectMsg = CoreTools.translate("ElementSet.Inputs.Cancel");
     const mainInstruction = ToolAssistance.createInstruction(
       this.iconSpec,
-      translatePrompt(
-        undefined === this._origin ? "IdentifyRefPoint" : "DefineAngle"
-      )
+      translatePrompt(undefined === this._origin ? "IdentifyRefPoint" : "DefineAngle")
     );
     const sections: ToolAssistanceSection[] = [];
 
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     mouseInstructions.push(
-      ToolAssistance.createInstruction(
-        ToolAssistanceImage.LeftClick,
-        acceptMsg,
-        false,
-        ToolAssistanceInputMethod.Mouse
-      )
+      ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse)
     );
     mouseInstructions.push(
       ToolAssistance.createInstruction(
@@ -597,12 +496,7 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
         ToolAssistanceInputMethod.Mouse
       )
     );
-    sections.push(
-      ToolAssistance.createSection(
-        mouseInstructions,
-        ToolAssistance.inputsLabel
-      )
-    );
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
 
     const touchInstructions: ToolAssistanceInstruction[] = [];
     if (!ToolAssistance.createTouchCursorInstructions(touchInstructions))
@@ -622,17 +516,9 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
         ToolAssistanceInputMethod.Touch
       )
     );
-    sections.push(
-      ToolAssistance.createSection(
-        touchInstructions,
-        ToolAssistance.inputsLabel
-      )
-    );
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
 
-    const instructions = ToolAssistance.createInstructions(
-      mainInstruction,
-      sections
-    );
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
     IModelApp.notifications.setToolAssistance(instructions);
   }
 
@@ -653,13 +539,7 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
 
   private getAdjustedPoint(ev: BeButtonEvent): Point3d | undefined {
     if (undefined === this._origin) return undefined;
-    return AccuDrawHintBuilder.projectPointToPlaneInView(
-      ev.point,
-      this._origin,
-      Vector3d.unitZ(),
-      ev.viewport!,
-      true
-    );
+    return AccuDrawHintBuilder.projectPointToPlaneInView(ev.point, this._origin, Vector3d.unitZ(), ev.viewport!, true);
   }
 
   private unsuspendDecorations() {
@@ -670,27 +550,21 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
   private updateNorthVector(ev: BeButtonEvent): void {
     if (undefined === ev.viewport) return;
 
-    if (undefined === this._northDir)
-      this._northDir = Ray3d.create(ev.point, Vector3d.unitY());
-    else
-      this._northDir.origin.setFrom(
-        undefined !== this._origin ? this._origin : ev.point
-      );
+    if (undefined === this._northDir) this._northDir = Ray3d.create(ev.point, Vector3d.unitY());
+    else this._northDir.origin.setFrom(undefined !== this._origin ? this._origin : ev.point);
 
     const dirPt = this.getAdjustedPoint(ev);
     if (undefined === dirPt) return;
 
     this._northDir.direction.setStartEnd(this._northDir.origin, dirPt);
-    if (this._northDir.direction.magnitude() < 1.0e-6)
-      this._northDir.direction.setFrom(Vector3d.unitY());
+    if (this._northDir.direction.magnitude() < 1.0e-6) this._northDir.direction.setFrom(Vector3d.unitY());
 
     this._northDir.direction.z = 0.0;
     this._northDir.direction.normalizeInPlace();
   }
 
   public override decorate(context: DecorateContext): void {
-    if (undefined === this._northDir || !context.viewport.view.isSpatialView())
-      return;
+    if (undefined === this._northDir || !context.viewport.view.isSpatialView()) return;
 
     const deco = ProjectExtentsClipDecoration.get();
     if (undefined === deco) return;
@@ -699,15 +573,9 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
     deco.drawNorthArrow(context, this._northDir);
   }
 
-  public override async onKeyTransition(
-    wentDown: boolean,
-    keyEvent: KeyboardEvent
-  ): Promise<EventHandled> {
-    if (EventHandled.Yes === (await super.onKeyTransition(wentDown, keyEvent)))
-      return EventHandled.Yes;
-    return wentDown && (await AccuDrawShortcuts.processShortcutKey(keyEvent))
-      ? EventHandled.Yes
-      : EventHandled.No;
+  public override async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
+    if (EventHandled.Yes === (await super.onKeyTransition(wentDown, keyEvent))) return EventHandled.Yes;
+    return wentDown && (await AccuDrawShortcuts.processShortcutKey(keyEvent)) ? EventHandled.Yes : EventHandled.No;
   }
 
   public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
@@ -717,16 +585,12 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
     ev.viewport.invalidateDecorations();
   }
 
-  public override async onResetButtonUp(
-    _ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
     await this.onReinitialize(); // Calls onRestartTool to exit...
     return EventHandled.No;
   }
 
-  public override async onDataButtonDown(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (undefined === ev.viewport) return EventHandled.No; // Shouldn't really happen...
 
     if (undefined === this._origin) {
@@ -764,20 +628,10 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
   protected _origin?: Point3d;
   protected _current?: Point3d;
 
-  public override isCompatibleViewport(
-    vp: Viewport | undefined,
-    isSelectedViewChange: boolean
-  ): boolean {
-    return (
-      super.isCompatibleViewport(vp, isSelectedViewChange) &&
-      undefined !== vp &&
-      vp.view.isSpatialView()
-    );
+  public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean {
+    return super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.isSpatialView();
   }
-  public override isValidLocation(
-    _ev: BeButtonEvent,
-    _isButtonEvent: boolean
-  ): boolean {
+  public override isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean {
     return true;
   } // Allow snapping to terrain, etc. outside project extents...
   public override requireWriteableTarget(): boolean {
@@ -805,20 +659,13 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
     const rejectMsg = CoreTools.translate("ElementSet.Inputs.Cancel");
     const mainInstruction = ToolAssistance.createInstruction(
       this.iconSpec,
-      translatePrompt(
-        undefined === this._origin ? "IdentifyRefPoint" : "DefineOffset"
-      )
+      translatePrompt(undefined === this._origin ? "IdentifyRefPoint" : "DefineOffset")
     );
     const sections: ToolAssistanceSection[] = [];
 
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     mouseInstructions.push(
-      ToolAssistance.createInstruction(
-        ToolAssistanceImage.LeftClick,
-        acceptMsg,
-        false,
-        ToolAssistanceInputMethod.Mouse
-      )
+      ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse)
     );
     mouseInstructions.push(
       ToolAssistance.createInstruction(
@@ -828,12 +675,7 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
         ToolAssistanceInputMethod.Mouse
       )
     );
-    sections.push(
-      ToolAssistance.createSection(
-        mouseInstructions,
-        ToolAssistance.inputsLabel
-      )
-    );
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
 
     const touchInstructions: ToolAssistanceInstruction[] = [];
     if (!ToolAssistance.createTouchCursorInstructions(touchInstructions))
@@ -853,17 +695,9 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
         ToolAssistanceInputMethod.Touch
       )
     );
-    sections.push(
-      ToolAssistance.createSection(
-        touchInstructions,
-        ToolAssistance.inputsLabel
-      )
-    );
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
 
-    const instructions = ToolAssistance.createInstructions(
-      mainInstruction,
-      sections
-    );
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
     IModelApp.notifications.setToolAssistance(instructions);
   }
 
@@ -899,38 +733,20 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
   }
 
   public override decorate(context: DecorateContext): void {
-    if (
-      undefined === this._origin ||
-      undefined === this._current ||
-      !context.viewport.view.isSpatialView()
-    )
-      return;
+    if (undefined === this._origin || undefined === this._current || !context.viewport.view.isSpatialView()) return;
 
     const deco = ProjectExtentsClipDecoration.get();
     if (undefined === deco) return;
 
-    const builderAccVis = context.createGraphicBuilder(
-      GraphicType.WorldDecoration
-    );
-    const builderAccHid = context.createGraphicBuilder(
-      GraphicType.WorldOverlay
-    );
-    const colorAccVis = ColorDef.white.adjustedForContrast(
-      context.viewport.view.backgroundColor
-    );
+    const builderAccVis = context.createGraphicBuilder(GraphicType.WorldDecoration);
+    const builderAccHid = context.createGraphicBuilder(GraphicType.WorldOverlay);
+    const colorAccVis = ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor);
     const colorAccHid = colorAccVis.withAlpha(100);
 
     builderAccVis.setSymbology(colorAccVis, ColorDef.black, 3);
-    builderAccHid.setSymbology(
-      colorAccHid,
-      ColorDef.black,
-      1,
-      LinePixels.Code2
-    );
+    builderAccHid.setSymbology(colorAccHid, ColorDef.black, 1, LinePixels.Code2);
 
-    const extents = this.iModel.projectExtents.cloneTranslated(
-      Vector3d.createStartEnd(this._origin, this._current)
-    );
+    const extents = this.iModel.projectExtents.cloneTranslated(Vector3d.createStartEnd(this._origin, this._current));
 
     builderAccVis.addRangeBox(extents);
     builderAccHid.addRangeBox(extents);
@@ -942,15 +758,9 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
     deco.suspendGeolocationDecorations = true;
   }
 
-  public override async onKeyTransition(
-    wentDown: boolean,
-    keyEvent: KeyboardEvent
-  ): Promise<EventHandled> {
-    if (EventHandled.Yes === (await super.onKeyTransition(wentDown, keyEvent)))
-      return EventHandled.Yes;
-    return wentDown && (await AccuDrawShortcuts.processShortcutKey(keyEvent))
-      ? EventHandled.Yes
-      : EventHandled.No;
+  public override async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
+    if (EventHandled.Yes === (await super.onKeyTransition(wentDown, keyEvent))) return EventHandled.Yes;
+    return wentDown && (await AccuDrawShortcuts.processShortcutKey(keyEvent)) ? EventHandled.Yes : EventHandled.No;
   }
 
   public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
@@ -960,18 +770,13 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
     ev.viewport.invalidateDecorations();
   }
 
-  public override async onResetButtonUp(
-    _ev: BeButtonEvent
-  ): Promise<EventHandled> {
-    if (undefined === this._origin)
-      await this.exitTool(); // exit to select tool if we haven't gotten first point...
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+    if (undefined === this._origin) await this.exitTool(); // exit to select tool if we haven't gotten first point...
     else await this.onReinitialize(); // Calls onRestartTool...
     return EventHandled.No;
   }
 
-  public override async onDataButtonDown(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (undefined === ev.viewport) return EventHandled.No; // Shouldn't really happen...
 
     if (undefined === this._origin) {

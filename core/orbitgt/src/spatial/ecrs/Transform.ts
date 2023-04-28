@@ -67,25 +67,15 @@ export class Transform {
     /* Vertical transform ? */
     if (source.hasVerticalComponent() || target.hasVerticalComponent()) {
       /* Get the horizontal components */
-      let sourceHor: CRS = source.hasVerticalComponent()
-        ? source.getHorizontalComponent()
-        : source;
-      let targetHor: CRS = target.hasVerticalComponent()
-        ? target.getHorizontalComponent()
-        : target;
+      let sourceHor: CRS = source.hasVerticalComponent() ? source.getHorizontalComponent() : source;
+      let targetHor: CRS = target.hasVerticalComponent() ? target.getHorizontalComponent() : target;
       /* Check transform in the horizontal CRS */
-      return Transform.canTransform(
-        "" + sourceHor.getCode(),
-        "" + targetHor.getCode()
-      );
+      return Transform.canTransform("" + sourceHor.getCode(), "" + targetHor.getCode());
     }
     /* Same datum ? */
     if (source.getDatum().isCompatible(target.getDatum())) return true;
     /* Chained transform ? */
-    if (
-      source.getCode() != CRS.WGS84_2D_CRS_CODE &&
-      target.getCode() != CRS.WGS84_2D_CRS_CODE
-    ) {
+    if (source.getCode() != CRS.WGS84_2D_CRS_CODE && target.getCode() != CRS.WGS84_2D_CRS_CODE) {
       /* Use WGS as in-between */
       if (source.isWGSCompatible() == false) return false;
       if (target.isWGSCompatible() == false) return false;
@@ -137,14 +127,11 @@ export class Transform {
       /* Get the geoid separation */
       let geoidModel: VerticalModel = toVerticalCRS.getVerticalModel();
       let toZ: float64 = from.getZ();
-      if (geoidModel != null)
-        toZ = geoidModel.toLocalHeight(horizontalCRS, from);
+      if (geoidModel != null) toZ = geoidModel.toLocalHeight(horizontalCRS, from);
       else
         Message.printWarning(
           Transform.MODULE,
-          "Target vertical CRS " +
-            toVerticalCRS +
-            " does not have a height model"
+          "Target vertical CRS " + toVerticalCRS + " does not have a height model"
         );
       //Message.print(MODULE,"_VERTICAL: ellipsoid->local: "+from.getZ()+"->"+toZ);
       /* Substract the separation */
@@ -156,14 +143,11 @@ export class Transform {
       /* Get the geoid separation */
       let geoidModel: VerticalModel = fromVerticalCRS.getVerticalModel();
       let toZ: float64 = from.getZ();
-      if (geoidModel != null)
-        toZ = geoidModel.toEllipsoidHeight(horizontalCRS, from);
+      if (geoidModel != null) toZ = geoidModel.toEllipsoidHeight(horizontalCRS, from);
       else
         Message.printWarning(
           Transform.MODULE,
-          "Source vertical CRS " +
-            fromVerticalCRS +
-            " does not have a height model"
+          "Source vertical CRS " + fromVerticalCRS + " does not have a height model"
         );
       //Message.print(MODULE,"_VERTICAL: local->ellipsoid: "+from.getZ()+"->"+toZ);
       /* Add the separation */
@@ -183,14 +167,11 @@ export class Transform {
         /* Get the 'from' ellipsoid height */
         let fromGeoidModel: VerticalModel = fromVerticalCRS.getVerticalModel();
         let fromZ: float64 = from.getZ();
-        if (fromGeoidModel != null)
-          fromZ = fromGeoidModel.toEllipsoidHeight(horizontalCRS, from);
+        if (fromGeoidModel != null) fromZ = fromGeoidModel.toEllipsoidHeight(horizontalCRS, from);
         else
           Message.printWarning(
             Transform.MODULE,
-            "Source vertical CRS " +
-              fromVerticalCRS +
-              " does not have a height model"
+            "Source vertical CRS " + fromVerticalCRS + " does not have a height model"
           );
         /* Copy */
         to.setX(from.getX());
@@ -199,14 +180,11 @@ export class Transform {
         /* Get the 'to' local height */
         let toGeoidModel: VerticalModel = toVerticalCRS.getVerticalModel();
         let toZ: float64 = to.getZ();
-        if (toGeoidModel != null)
-          toZ = toGeoidModel.toLocalHeight(horizontalCRS, to);
+        if (toGeoidModel != null) toZ = toGeoidModel.toLocalHeight(horizontalCRS, to);
         else
           Message.printWarning(
             Transform.MODULE,
-            "Target vertical CRS " +
-              toVerticalCRS +
-              " does not have a height model"
+            "Target vertical CRS " + toVerticalCRS + " does not have a height model"
           );
         //Message.print(MODULE,"_VERTICAL: local->local: "+from.getZ()+"->"+fromZ+"->"+toZ);
         /* Copy */
@@ -272,13 +250,7 @@ export class Transform {
    * @param targetCRS the target reference system.
    * @param to the coordinate to convert to.
    */
-  public static transformWithPath(
-    path: int32,
-    sourceCRS: CRS,
-    from: Coordinate,
-    targetCRS: CRS,
-    to: Coordinate
-  ): void {
+  public static transformWithPath(path: int32, sourceCRS: CRS, from: Coordinate, targetCRS: CRS, to: Coordinate): void {
     //Message.print(MODULE,"---------->>>");
     //Message.print(MODULE,"TRANSFORM: sourceCRS = "+sourceCRS.getCode());
     //Message.print(MODULE,"TRANSFORM: targetCRS = "+targetCRS.getCode());
@@ -361,19 +333,11 @@ export class Transform {
     if (path == Transform._VERTICAL) {
       //Message.print(MODULE,"TRANSFORM: _VERTICAL");
       /* Get the horizontal components */
-      let sourceHorCRS: CRS = sourceCRS.hasVerticalComponent()
-        ? sourceCRS.getHorizontalComponent()
-        : sourceCRS;
-      let targetHorCRS: CRS = targetCRS.hasVerticalComponent()
-        ? targetCRS.getHorizontalComponent()
-        : targetCRS;
+      let sourceHorCRS: CRS = sourceCRS.hasVerticalComponent() ? sourceCRS.getHorizontalComponent() : sourceCRS;
+      let targetHorCRS: CRS = targetCRS.hasVerticalComponent() ? targetCRS.getHorizontalComponent() : targetCRS;
       /* Get the vertical components */
-      let sourceVerCRS: CRS = sourceCRS.hasVerticalComponent()
-        ? sourceCRS.getVerticalComponent()
-        : null;
-      let targetVerCRS: CRS = targetCRS.hasVerticalComponent()
-        ? targetCRS.getVerticalComponent()
-        : null;
+      let sourceVerCRS: CRS = sourceCRS.hasVerticalComponent() ? sourceCRS.getVerticalComponent() : null;
+      let targetVerCRS: CRS = targetCRS.hasVerticalComponent() ? targetCRS.getVerticalComponent() : null;
       /* Put the source coordinate in the ellipsoid height */
       if (sourceVerCRS != null) {
         /* Move to the default 'ellipsoid' height */
@@ -422,19 +386,8 @@ export class Transform {
    * @param targetCRS the target reference system.
    * @param to the coordinate to convert to.
    */
-  public static transformCRS(
-    sourceCRS: CRS,
-    from: Coordinate,
-    targetCRS: CRS,
-    to: Coordinate
-  ): void {
-    Transform.transformWithPath(
-      Transform.getTransformPath(sourceCRS, targetCRS),
-      sourceCRS,
-      from,
-      targetCRS,
-      to
-    );
+  public static transformCRS(sourceCRS: CRS, from: Coordinate, targetCRS: CRS, to: Coordinate): void {
+    Transform.transformWithPath(Transform.getTransformPath(sourceCRS, targetCRS), sourceCRS, from, targetCRS, to);
   }
 
   /**
@@ -444,12 +397,7 @@ export class Transform {
    * @param targetCRS the name/code of the target reference system.
    * @param to the coordinate to convert to.
    */
-  public static transform(
-    sourceCRS: string,
-    from: Coordinate,
-    targetCRS: string,
-    to: Coordinate
-  ): void {
+  public static transform(sourceCRS: string, from: Coordinate, targetCRS: string, to: Coordinate): void {
     /* Same CRS ? */
     if (Strings.equalsIgnoreCase(targetCRS, sourceCRS)) {
       /* Straight copy */

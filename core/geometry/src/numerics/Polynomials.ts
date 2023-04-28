@@ -11,10 +11,7 @@
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { AngleSweep } from "../geometry3d/AngleSweep";
-import {
-  GrowableFloat64Array,
-  OptionalGrowableFloat64Array,
-} from "../geometry3d/GrowableFloat64Array";
+import { GrowableFloat64Array, OptionalGrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { LongitudeLatitudeNumber } from "../geometry3d/LongitudeLatitudeAltitude";
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
@@ -44,11 +41,7 @@ export class Degree2PowerPolynomial {
    * * The solutions are always in algebraic order.
    * @returns 0, 1, or 2 solutions of the usual quadratic (a*x*x + b * x + c = 0)
    */
-  public static solveQuadratic(
-    a: number,
-    b: number,
-    c: number
-  ): number[] | undefined {
+  public static solveQuadratic(a: number, b: number, c: number): number[] | undefined {
     const b1 = Geometry.conditionalDivideFraction(b, a);
     const c1 = Geometry.conditionalDivideFraction(c, a);
     if (b1 !== undefined && c1 !== undefined) {
@@ -81,11 +74,7 @@ export class Degree2PowerPolynomial {
   }
   /** Return the real roots of this polynomial */
   public realRoots(): number[] | undefined {
-    const ss = Degree2PowerPolynomial.solveQuadratic(
-      this.coffs[2],
-      this.coffs[1],
-      this.coffs[0]
-    );
+    const ss = Degree2PowerPolynomial.solveQuadratic(this.coffs[2], this.coffs[1], this.coffs[0]);
     if (ss && ss.length > 1) {
       if (ss[0] > ss[1]) {
         const temp = ss[0];
@@ -110,13 +99,8 @@ export class Degree2PowerPolynomial {
   }
 
   /** Factor the polynomial in to the form `y0 + c * (x-x0)^2)`, i.e. complete the square. */
-  public tryGetVertexFactorization():
-    | { x0: number; y0: number; c: number }
-    | undefined {
-    const x = Geometry.conditionalDivideFraction(
-      -this.coffs[1],
-      2.0 * this.coffs[2]
-    );
+  public tryGetVertexFactorization(): { x0: number; y0: number; c: number } | undefined {
+    const x = Geometry.conditionalDivideFraction(-this.coffs[1], 2.0 * this.coffs[2]);
     if (x !== undefined) {
       const y = this.evaluate(x);
       return { c: this.coffs[2], x0: x, y0: y };
@@ -124,16 +108,8 @@ export class Degree2PowerPolynomial {
     return undefined;
   }
   /** Construct a quadratic from input form `c2 * (x-root0) * (x-root1)` */
-  public static fromRootsAndC2(
-    root0: number,
-    root1: number,
-    c2: number = 1
-  ): Degree2PowerPolynomial {
-    return new Degree2PowerPolynomial(
-      c2 * root0 * root1,
-      -c2 * (root0 + root1),
-      c2
-    );
+  public static fromRootsAndC2(root0: number, root1: number, c2: number = 1): Degree2PowerPolynomial {
+    return new Degree2PowerPolynomial(c2 * root0 * root1, -c2 * (root0 + root1), c2);
   }
 }
 /**
@@ -164,10 +140,7 @@ export class Degree3PowerPolynomial {
    * @param u parameter for evaluation
    */
   public evaluate(x: number): number {
-    return (
-      this.coffs[0] +
-      x * (this.coffs[1] + x * (this.coffs[2] + x * this.coffs[3]))
-    );
+    return this.coffs[0] + x * (this.coffs[1] + x * (this.coffs[2] + x * this.coffs[3]));
   }
 
   /**
@@ -178,12 +151,7 @@ export class Degree3PowerPolynomial {
     return this.coffs[1] + x * (2.0 * this.coffs[2] + x * 3.0 * this.coffs[3]);
   }
   /** Construct a cubic from the form `c3 * (x-root0) * (x - root1) * (x- root2)` */
-  public static fromRootsAndC3(
-    root0: number,
-    root1: number,
-    root2: number,
-    c3: number = 1.0
-  ): Degree3PowerPolynomial {
+  public static fromRootsAndC3(root0: number, root1: number, root2: number, c3: number = 1.0): Degree3PowerPolynomial {
     return new Degree3PowerPolynomial(
       -c3 * root0 * root1 * root2,
       c3 * (root0 * root1 + root1 * root2 + root0 * root2),
@@ -200,13 +168,7 @@ export class Degree4PowerPolynomial {
   /** polynomial coefficients, index corresponds to power */
   public coffs: number[];
 
-  constructor(
-    c0: number = 0,
-    c1: number = 0,
-    c2: number = 0,
-    c3: number = 0,
-    c4: number = 0
-  ) {
+  constructor(c0: number = 0, c1: number = 0, c2: number = 0, c3: number = 0, c4: number = 0) {
     this.coffs = [c0, c1, c2, c3, c4];
   }
   /** Add `a` to the constant term. */
@@ -219,12 +181,7 @@ export class Degree4PowerPolynomial {
    * @param x x coordinate for evaluation
    */
   public evaluate(x: number): number {
-    return (
-      this.coffs[0] +
-      x *
-        (this.coffs[1] +
-          x * (this.coffs[2] + x * (this.coffs[3] + x * this.coffs[4])))
-    );
+    return this.coffs[0] + x * (this.coffs[1] + x * (this.coffs[2] + x * (this.coffs[3] + x * this.coffs[4])));
   }
 
   /**
@@ -232,12 +189,7 @@ export class Degree4PowerPolynomial {
    * @param x x coordinate for evaluation
    */
   public evaluateDerivative(x: number): number {
-    return (
-      this.coffs[1] +
-      x *
-        (2.0 * this.coffs[2] +
-          x * (3.0 * this.coffs[3] + x * 4.0 * this.coffs[4]))
-    );
+    return this.coffs[1] + x * (2.0 * this.coffs[2] + x * (3.0 * this.coffs[3] + x * 4.0 * this.coffs[4]));
   }
 
   /** Construct a quartic from the form `c3 * (x-root0) * (x - root1) * (x- root2) * (x-root3)` */
@@ -250,18 +202,8 @@ export class Degree4PowerPolynomial {
   ): Degree4PowerPolynomial {
     return new Degree4PowerPolynomial(
       c4 * (root0 * root1 * root2 * root3),
-      -c4 *
-        (root0 * root1 * root2 +
-          root0 * root1 * root3 +
-          root0 * root2 * root3 +
-          root1 * root2 * root3),
-      c4 *
-        (root0 * root1 +
-          root0 * root2 +
-          root0 * root3 +
-          root1 * root2 +
-          root1 * root3 +
-          root2 * root3),
+      -c4 * (root0 * root1 * root2 + root0 * root1 * root3 + root0 * root2 * root3 + root1 * root2 * root3),
+      c4 * (root0 * root1 + root0 * root2 + root0 * root3 + root1 * root2 + root1 * root3 + root2 * root3),
       -c4 * (root0 + root1 + root2 + root3),
       c4
     );
@@ -317,12 +259,7 @@ export class TorusImplicit {
     return this.evaluateImplicitFunctionXYZ(xyz.x, xyz.y, xyz.z);
   }
   /** Evaluate the implicit function at homogeneous coordinates */
-  public evaluateImplicitFunctionXYZW(
-    x: number,
-    y: number,
-    z: number,
-    w: number
-  ) {
+  public evaluateImplicitFunctionXYZW(x: number, y: number, z: number, w: number) {
     const rho2 = x * x + y * y;
     const z2 = z * z;
     const w2 = w * w;
@@ -344,12 +281,7 @@ export class TorusImplicit {
   }
 
   /** Evaluate partial derivatives at angles (int radians) on major and minor circles. */
-  public evaluateDerivativesThetaPhi(
-    thetaRadians: number,
-    phiRadians: number,
-    dxdTheta: Vector3d,
-    dxdPhi: Vector3d
-  ) {
+  public evaluateDerivativesThetaPhi(thetaRadians: number, phiRadians: number, dxdTheta: Vector3d, dxdPhi: Vector3d) {
     const cTheta = Math.cos(thetaRadians);
     const sTheta = Math.sin(thetaRadians);
     const bx = this.minorRadius * Math.cos(phiRadians);
@@ -360,11 +292,7 @@ export class TorusImplicit {
   }
 
   /** Evaluate space point at major and minor angles (in radians) and distance from major hoop. */
-  public evaluateThetaPhiDistance(
-    thetaRadians: number,
-    phiRadians: number,
-    distance: number
-  ): Point3d {
+  public evaluateThetaPhiDistance(thetaRadians: number, phiRadians: number, distance: number): Point3d {
     const c = Math.cos(thetaRadians);
     const s = Math.sin(thetaRadians);
     // theta=0 point
@@ -388,28 +316,18 @@ export class TorusImplicit {
     safePhi: boolean;
   } {
     const rho = xyz.magnitudeXY();
-    const majorRadiusFactor = Geometry.conditionalDivideFraction(
-      this.majorRadius,
-      rho
-    );
+    const majorRadiusFactor = Geometry.conditionalDivideFraction(this.majorRadius, rho);
     let safeMajor;
     let majorCirclePoint;
     if (majorRadiusFactor) {
       safeMajor = true;
-      majorCirclePoint = Point3d.create(
-        majorRadiusFactor * xyz.x,
-        majorRadiusFactor * xyz.y,
-        0.0
-      );
+      majorCirclePoint = Point3d.create(majorRadiusFactor * xyz.x, majorRadiusFactor * xyz.y, 0.0);
     } else {
       safeMajor = false;
       majorCirclePoint = Point3d.create(xyz.x, xyz.y, 0.0);
     }
     const theta = safeMajor ? Math.atan2(xyz.y, xyz.x) : 0.0;
-    const vectorFromMajorCircle = Vector3d.createStartEnd(
-      majorCirclePoint,
-      xyz
-    );
+    const vectorFromMajorCircle = Vector3d.createStartEnd(majorCirclePoint, xyz);
     const distance = vectorFromMajorCircle.magnitude();
     const dRho = rho - this.majorRadius;
     let safePhi;
@@ -465,12 +383,7 @@ export class SphereImplicit {
   }
 
   /** Evaluate the implicit function at homogeneous coordinates x,y,z,w */
-  public evaluateImplicitFunctionXYZW(
-    wx: number,
-    wy: number,
-    wz: number,
-    w: number
-  ): number {
+  public evaluateImplicitFunctionXYZW(wx: number, wy: number, wz: number, w: number): number {
     return wx * wx + wy * wy + wz * wz - this.radius * this.radius * w * w;
   }
 
@@ -517,10 +430,7 @@ export class SphereImplicit {
     phi1Radians: number,
     result?: Range3d
   ): Range3d {
-    const thetaSweep = AngleSweep.createStartEndRadians(
-      theta0Radians,
-      theta1Radians
-    );
+    const thetaSweep = AngleSweep.createStartEndRadians(theta0Radians, theta1Radians);
     const phiSweep = AngleSweep.createStartEndRadians(phi0Radians, phi1Radians);
     const range = Range3d.createNull(result);
     const xyz = Point3d.create();
@@ -545,10 +455,7 @@ export class SphereImplicit {
       ]) {
         theta = thetaPhi[0];
         phi = thetaPhi[1];
-        if (
-          thetaSweep.isRadiansInSweep(theta) &&
-          phiSweep.isRadiansInSweep(phi)
-        )
+        if (thetaSweep.isRadiansInSweep(theta) && phiSweep.isRadiansInSweep(phi))
           range.extendPoint(sphere.evaluateThetaPhi(theta, phi, xyz));
       }
 
@@ -626,20 +533,14 @@ export class SphereImplicit {
       return 0;
     }
     const sphere = new SphereImplicit(radius);
-    if (rayFractions !== undefined)
-      for (const f of parameters) rayFractions.push(f);
+    if (rayFractions !== undefined) for (const f of parameters) rayFractions.push(f);
     if (xyz !== undefined || thetaPhiRadians !== undefined) {
       for (const f of parameters) {
         const point = ray.fractionToPoint(f);
         if (xyz !== undefined) xyz.push(point);
         if (thetaPhiRadians !== undefined) {
           const data = sphere.xyzToThetaPhiR(point);
-          thetaPhiRadians.push(
-            LongitudeLatitudeNumber.createRadians(
-              data.thetaRadians,
-              data.phiRadians
-            )
-          );
+          thetaPhiRadians.push(LongitudeLatitudeNumber.createRadians(data.thetaRadians, data.phiRadians));
         }
       }
     }
@@ -669,32 +570,19 @@ export class SphereImplicit {
    * @param thetaRadians latitude angle
    * @param phiRadians longitude angle
    */
-  public evaluateThetaPhi(
-    thetaRadians: number,
-    phiRadians: number,
-    result?: Point3d
-  ): Point3d {
+  public evaluateThetaPhi(thetaRadians: number, phiRadians: number, result?: Point3d): Point3d {
     const rc = this.radius * Math.cos(thetaRadians);
     const rs = this.radius * Math.sin(thetaRadians);
     const cosPhi = Math.cos(phiRadians);
     const sinPhi = Math.sin(phiRadians);
-    return Point3d.create(
-      rc * cosPhi,
-      rs * cosPhi,
-      this.radius * sinPhi,
-      result
-    );
+    return Point3d.create(rc * cosPhi, rs * cosPhi, this.radius * sinPhi, result);
   }
   /**
    * * convert radians to xyz on unit sphere
    * * Note that there is no radius used -- implicitly radius is 1
    * * Evaluation is always to a preallocated xyz.
    */
-  public static radiansToUnitSphereXYZ(
-    thetaRadians: number,
-    phiRadians: number,
-    xyz: XYZ
-  ) {
+  public static radiansToUnitSphereXYZ(thetaRadians: number, phiRadians: number, xyz: XYZ) {
     const cosTheta = Math.cos(thetaRadians);
     const sinTheta = Math.sin(thetaRadians);
     const cosPhi = Math.cos(phiRadians);
@@ -707,12 +595,7 @@ export class SphereImplicit {
    * @param thetaRadians latitude angle
    * @param phiRadians longitude angle
    */
-  public evaluateDerivativesThetaPhi(
-    thetaRadians: number,
-    phiRadians: number,
-    dxdTheta: Vector3d,
-    dxdPhi: Vector3d
-  ) {
+  public evaluateDerivativesThetaPhi(thetaRadians: number, phiRadians: number, dxdTheta: Vector3d, dxdPhi: Vector3d) {
     const rc = this.radius * Math.cos(thetaRadians);
     const rs = this.radius * Math.sin(thetaRadians);
     const cosPhi = Math.cos(phiRadians);
@@ -759,21 +642,12 @@ export class AnalyticRoots {
    * @param absTol absolute tolerance
    * @param relTol relative tolerance
    */
-  private static isSmallRatio(
-    x: number,
-    y: number,
-    absTol: number = 1.0e-9,
-    relTol: number = 8.0e-16
-  ) {
+  private static isSmallRatio(x: number, y: number, absTol: number = 1.0e-9, relTol: number = 8.0e-16) {
     return Math.abs(x) <= absTol || Math.abs(x) < relTol * Math.abs(y);
   }
   /** Return the (real, signed) principal cube root of x */
   public static cbrt(x: number): number {
-    return x > 0.0
-      ? Math.pow(x, 1.0 / 3.0)
-      : x < 0.0
-      ? -Math.pow(-x, 1.0 / 3.0)
-      : 0.0;
+    return x > 0.0 ? Math.pow(x, 1.0 / 3.0) : x < 0.0 ? -Math.pow(-x, 1.0 / 3.0) : 0.0;
   }
   /**
    * Try to divide `numerator/denominator` and place the result (or defaultValue) in `values[offset]`
@@ -798,10 +672,7 @@ export class AnalyticRoots {
     return false;
   }
   // Used in NewtonMethod for testing if a root has been adjusted past its bounding region
-  private static checkRootProximity(
-    roots: GrowableFloat64Array,
-    i: number
-  ): boolean {
+  private static checkRootProximity(roots: GrowableFloat64Array, i: number): boolean {
     if (i === 0) {
       // Case 1: Beginning Root (check root following it)
       return roots.atUncheckedIndex(i) < roots.atUncheckedIndex(i + 1);
@@ -842,11 +713,7 @@ export class AnalyticRoots {
 
     // Loop through each root
     for (let i = 0; i < roots.length; i++) {
-      let dx = this.newtonMethodAdjustment(
-        coffs,
-        roots.atUncheckedIndex(i),
-        degree
-      );
+      let dx = this.newtonMethodAdjustment(coffs, roots.atUncheckedIndex(i), degree);
       if (dx === undefined || dx === 0.0) continue; // skip if newton step had divide by zero.
       const originalValue = roots.atUncheckedIndex(i);
       let counter = 0;
@@ -855,10 +722,7 @@ export class AnalyticRoots {
       // Loop through applying changes to found root until dx is diminished or counter is hit
       while (dx !== undefined && dx !== 0.0 && counter < 12) {
         // consider it converged if two successive iterations satisfy the (not too demanding) tolerance.
-        if (
-          Math.abs(dx) <
-          relTol * (1.0 + Math.abs(roots.atUncheckedIndex(i)))
-        ) {
+        if (Math.abs(dx) < relTol * (1.0 + Math.abs(roots.atUncheckedIndex(i)))) {
           if (++convergenceCounter > 1) break;
         } else {
           convergenceCounter = 0;
@@ -874,11 +738,7 @@ export class AnalyticRoots {
           break;
         }
 
-        dx = this.newtonMethodAdjustment(
-          coffs,
-          roots.atUncheckedIndex(i),
-          degree
-        );
+        dx = this.newtonMethodAdjustment(coffs, roots.atUncheckedIndex(i), degree);
         counter++;
       }
     }
@@ -888,10 +748,7 @@ export class AnalyticRoots {
    * @param value optional value to append
    * @param results growing array
    */
-  private static appendSolution(
-    value: number | undefined,
-    results: GrowableFloat64Array
-  ) {
+  private static appendSolution(value: number | undefined, results: GrowableFloat64Array) {
     if (value !== undefined) {
       results.push(value);
     }
@@ -902,11 +759,7 @@ export class AnalyticRoots {
    * @param value2
    * @param results
    */
-  private static append2Solutions(
-    valueA: number,
-    valueB: number,
-    results: GrowableFloat64Array
-  ) {
+  private static append2Solutions(valueA: number, valueB: number, results: GrowableFloat64Array) {
     results.push(valueA);
     results.push(valueB);
   }
@@ -917,23 +770,14 @@ export class AnalyticRoots {
    * @param c1 denominator
    * @param values array to expand
    */
-  public static appendLinearRoot(
-    c0: number,
-    c1: number,
-    values: GrowableFloat64Array
-  ) {
-    AnalyticRoots.appendSolution(
-      Geometry.conditionalDivideFraction(-c0, c1),
-      values
-    );
+  public static appendLinearRoot(c0: number, c1: number, values: GrowableFloat64Array) {
+    AnalyticRoots.appendSolution(Geometry.conditionalDivideFraction(-c0, c1), values);
   }
   /**
    * * Compute the mean of all the entries in `data`
    * * Return the data value that is farthest away
    */
-  public static mostDistantFromMean(
-    data: GrowableFloat64Array | undefined
-  ): number {
+  public static mostDistantFromMean(data: GrowableFloat64Array | undefined): number {
     if (!data || data.length === 0) return 0;
     let a = 0.0; // to become the sum and finally the average.
     for (let i = 0; i < data.length; i++) a += data.atUncheckedIndex(i);
@@ -954,10 +798,7 @@ export class AnalyticRoots {
    * @param c array of coefficients for quadratic `c[0] + c[1] * x + c[2] * x*x`
    * @param values array to be expanded.
    */
-  public static appendQuadraticRoots(
-    c: Float64Array | number[],
-    values: GrowableFloat64Array
-  ) {
+  public static appendQuadraticRoots(c: Float64Array | number[], values: GrowableFloat64Array) {
     // Normal form: x^2 + 2px + q = 0
 
     const divFactor = Geometry.conditionalDivideFraction(1.0, c[2]);
@@ -985,8 +826,7 @@ export class AnalyticRoots {
   }
   /** Add `a` to the constant term. */
   private static addConstant(value: number, data: GrowableFloat64Array) {
-    for (let i = 0; i < data.length; i++)
-      data.reassign(i, data.atUncheckedIndex(i) + value);
+    for (let i = 0; i < data.length; i++) data.reassign(i, data.atUncheckedIndex(i) + value);
   }
 
   private static signedCubeRoot(y: number): number {
@@ -999,13 +839,7 @@ export class AnalyticRoots {
    * * ASSUME a is nonzero.
    */
   // Solve full cubic ASSUMING a3 is nonzero.
-  private static appendFullCubicSolutions(
-    a: number,
-    b: number,
-    c: number,
-    d: number,
-    result: GrowableFloat64Array
-  ) {
+  private static appendFullCubicSolutions(a: number, b: number, c: number, d: number, result: GrowableFloat64Array) {
     const q = b * b - 3.0 * a * c;
     const aa = a * a;
     const delta2 = q / (9.0 * aa);
@@ -1018,11 +852,7 @@ export class AnalyticRoots {
       // 1 real root
       const r = Math.sqrt(discriminant);
       const f = 0.5 / a;
-      result.push(
-        xN +
-          this.signedCubeRoot(f * (-yN + r)) +
-          this.signedCubeRoot(f * (-yN - r))
-      );
+      result.push(xN + this.signedCubeRoot(f * (-yN + r)) + this.signedCubeRoot(f * (-yN - r)));
     } else if (discriminant < 0) {
       // 3 real roots
       let h = Math.sqrt(h2);
@@ -1123,10 +953,7 @@ export class AnalyticRoots {
   }
   */
   /** Compute roots of cubic 'c[0] + c[1] * x + c[2] * x^2 + c[3] * x^3 */
-  public static appendCubicRoots(
-    c: Float64Array | number[],
-    results: GrowableFloat64Array
-  ) {
+  public static appendCubicRoots(c: Float64Array | number[], results: GrowableFloat64Array) {
     if (Geometry.conditionalDivideCoordinate(1.0, c[3]) !== undefined) {
       this.appendFullCubicSolutions(c[3], c[2], c[1], c[0], results);
       // EDL April 5, 2020 replace classic GraphicsGems solver by RWDNickalls.
@@ -1141,10 +968,7 @@ export class AnalyticRoots {
     results.sort();
   }
   /** Compute roots of quartic 'c[0] + c[1] * x + c[2] * x^2 + c[3] * x^3 + c[4] * x^4 */
-  public static appendQuarticRoots(
-    c: Float64Array | number[],
-    results: GrowableFloat64Array
-  ) {
+  public static appendQuarticRoots(c: Float64Array | number[], results: GrowableFloat64Array) {
     const coffs = new Float64Array(4); // at various times .. coefficients of quadratic an cubic intermediates.
     let u: number;
     let v: number;
@@ -1166,11 +990,7 @@ export class AnalyticRoots {
     const sq_A: number = A * A;
     const p: number = (-3.0 / 8) * sq_A + B;
     const q: number = 0.125 * sq_A * A - 0.5 * A * B + C;
-    const r: number =
-      (-3.0 / 256) * sq_A * sq_A +
-      (1.0 / 16) * sq_A * B -
-      (1.0 / 4) * A * C +
-      D;
+    const r: number = (-3.0 / 256) * sq_A * sq_A + (1.0 / 16) * sq_A * B - (1.0 / 4) * A * C + D;
 
     const tempStack = new GrowableFloat64Array();
 
@@ -1303,58 +1123,22 @@ export class AnalyticRoots {
       if (D2 < -twoTol) {
         const delta = Math.sqrt(delta2);
         const iota = alpha < 0 ? 1.0 / delta : -1.0 / delta;
-        this.appendCosSinRadians(
-          lambda * beta,
-          lambda * gamma,
-          cosValues,
-          sinValues,
-          radiansValues
-        );
-        this.appendCosSinRadians(
-          beta * iota,
-          gamma * iota,
-          cosValues,
-          sinValues,
-          radiansValues
-        );
+        this.appendCosSinRadians(lambda * beta, lambda * gamma, cosValues, sinValues, radiansValues);
+        this.appendCosSinRadians(beta * iota, gamma * iota, cosValues, sinValues, radiansValues);
         solutionType = 0;
       } else if (D2 < twoTol) {
         const delta = Math.sqrt(delta2);
         const iota = alpha < 0 ? 1.0 / delta : -1.0 / delta;
-        this.appendCosSinRadians(
-          lambda * beta,
-          lambda * gamma,
-          cosValues,
-          sinValues,
-          radiansValues
-        );
-        this.appendCosSinRadians(
-          beta * iota,
-          gamma * iota,
-          cosValues,
-          sinValues,
-          radiansValues
-        );
+        this.appendCosSinRadians(lambda * beta, lambda * gamma, cosValues, sinValues, radiansValues);
+        this.appendCosSinRadians(beta * iota, gamma * iota, cosValues, sinValues, radiansValues);
         solutionType = 1;
       } else {
         const mu = Math.sqrt(D2 / delta2);
         /* c0,s0 = closest approach of line to origin */
         const c0 = lambda * beta;
         const s0 = lambda * gamma;
-        this.appendCosSinRadians(
-          c0 - mu * gamma,
-          s0 + mu * beta,
-          cosValues,
-          sinValues,
-          radiansValues
-        );
-        this.appendCosSinRadians(
-          c0 + mu * gamma,
-          s0 - mu * beta,
-          cosValues,
-          sinValues,
-          radiansValues
-        );
+        this.appendCosSinRadians(c0 - mu * gamma, s0 + mu * beta, cosValues, sinValues, radiansValues);
+        this.appendCosSinRadians(c0 + mu * gamma, s0 - mu * beta, cosValues, sinValues, radiansValues);
         solutionType = 2;
       }
     }
@@ -1368,11 +1152,7 @@ export class AnalyticRoots {
 
 export class PowerPolynomial {
   /** Evaluate a standard basis polynomial at `x`, with `degree` possibly less than `coff.length` */
-  public static degreeKnownEvaluate(
-    coff: Float64Array,
-    degree: number,
-    x: number
-  ): number {
+  public static degreeKnownEvaluate(coff: Float64Array, degree: number, x: number): number {
     if (degree < 0) {
       return 0.0;
     }
@@ -1390,11 +1170,7 @@ export class PowerPolynomial {
    * * (Expect Address exceptions if P is smaller than Q)
    * * Returns degree of result as determined by comparing trailing coefficients to zero
    */
-  public static accumulate(
-    coffP: Float64Array,
-    coffQ: Float64Array,
-    scaleQ: number
-  ): number {
+  public static accumulate(coffP: Float64Array, coffQ: Float64Array, scaleQ: number): number {
     let degreeP = coffP.length - 1;
     const degreeQ = coffQ.length - 1;
 
@@ -1441,9 +1217,7 @@ export class TrigPolynomial {
   /** Standard Basis coefficients for weight^2 */
   public static readonly WW = Float64Array.from([1.0, -4.0, 8.0, -8.0, 4.0]);
   /** Standard Basis coefficients for (Math.Cos^2 - sine^2) numerator */
-  public static readonly CCminusSS = Float64Array.from([
-    1.0, -4.0, 0.0, 8.0, -4.0,
-  ]);
+  public static readonly CCminusSS = Float64Array.from([1.0, -4.0, 0.0, 8.0, -4.0]);
 
   /**
    *  Solve a polynomial created from trigonometric condition using
@@ -1512,14 +1286,8 @@ export class TrigPolynomial {
         //  Math.Cos(theta)=C(t)/W(t),  ,sin(theta)=S(t)/W(t)
         // Division by W has no effect on Atan2 calculations, so we just compute S(t),C(t)
         for (let i = 0; i < roots.length; i++) {
-          const ss = PowerPolynomial.evaluate(
-            this.S,
-            roots.atUncheckedIndex(i)
-          );
-          const cc = PowerPolynomial.evaluate(
-            this.C,
-            roots.atUncheckedIndex(i)
-          );
+          const ss = PowerPolynomial.evaluate(this.S, roots.atUncheckedIndex(i));
+          const cc = PowerPolynomial.evaluate(this.C, roots.atUncheckedIndex(i));
           radians.push(Math.atan2(ss, cc));
         }
 
@@ -1578,15 +1346,7 @@ export class TrigPolynomial {
     }
 
     let maxCoff = 0.0;
-    maxCoff = Math.max(
-      maxCoff,
-      Math.abs(axx),
-      Math.abs(ayy),
-      Math.abs(axy),
-      Math.abs(ax),
-      Math.abs(ay),
-      Math.abs(a1)
-    );
+    maxCoff = Math.max(maxCoff, Math.abs(axx), Math.abs(ayy), Math.abs(axy), Math.abs(ax), Math.abs(ay), Math.abs(a1));
 
     const b = this.solveAngles(Coffs, degree, maxCoff, radians);
     /*
@@ -1630,15 +1390,7 @@ export class TrigPolynomial {
     const ac = 2.0 * (ux * cx + uy * cy);
     const asi = 2.0 * (vx * cx + vy * cy);
     const a = cx * cx + cy * cy - 1.0;
-    const status = this.solveUnitCircleImplicitQuadricIntersection(
-      acc,
-      acs,
-      ass,
-      ac,
-      asi,
-      a,
-      ellipseRadians
-    );
+    const status = this.solveUnitCircleImplicitQuadricIntersection(acc, acs, ass, ac, asi, a, ellipseRadians);
     for (const radians of ellipseRadians) {
       const cc = Math.cos(radians);
       const ss = Math.sin(radians);
@@ -1684,15 +1436,7 @@ export class TrigPolynomial {
     const ac = 2.0 * (ux * cx + uy * cy - uw * cw);
     const asi = 2.0 * (vx * cx + vy * cy - vw * cw);
     const a = cx * cx + cy * cy - cw * cw;
-    const status = this.solveUnitCircleImplicitQuadricIntersection(
-      acc,
-      acs,
-      ass,
-      ac,
-      asi,
-      a,
-      ellipseRadians
-    );
+    const status = this.solveUnitCircleImplicitQuadricIntersection(acc, acs, ass, ac, asi, a, ellipseRadians);
     for (const radians of ellipseRadians) {
       const cc = Math.cos(radians);
       const ss = Math.sin(radians);
@@ -1836,61 +1580,14 @@ export class SmallSystem {
     // Considering only x,y,w parts....
     // Point Q along B is (in full homogeneous)  `(1-lambda) B0 + lambda 1`
     // PointQ is colinear with A0,A1 when the determinant det (A0,A1,Q) is zero.  (Each column takes xyw parts)
-    const alpha0 = Geometry.tripleProduct(
-      hA0.x,
-      hA1.x,
-      hB0.x,
-      hA0.y,
-      hA1.y,
-      hB0.y,
-      hA0.w,
-      hA1.w,
-      hB0.w
-    );
-    const alpha1 = Geometry.tripleProduct(
-      hA0.x,
-      hA1.x,
-      hB1.x,
-      hA0.y,
-      hA1.y,
-      hB1.y,
-      hA0.w,
-      hA1.w,
-      hB1.w
-    );
-    const fractionB = Geometry.conditionalDivideFraction(
-      -alpha0,
-      alpha1 - alpha0
-    );
+    const alpha0 = Geometry.tripleProduct(hA0.x, hA1.x, hB0.x, hA0.y, hA1.y, hB0.y, hA0.w, hA1.w, hB0.w);
+    const alpha1 = Geometry.tripleProduct(hA0.x, hA1.x, hB1.x, hA0.y, hA1.y, hB1.y, hA0.w, hA1.w, hB1.w);
+    const fractionB = Geometry.conditionalDivideFraction(-alpha0, alpha1 - alpha0);
     if (fractionB !== undefined) {
-      const beta0 = Geometry.tripleProduct(
-        hB0.x,
-        hB1.x,
-        hA0.x,
-        hB0.y,
-        hB1.y,
-        hA0.y,
-        hB0.w,
-        hB1.w,
-        hA0.w
-      );
-      const beta1 = Geometry.tripleProduct(
-        hB0.x,
-        hB1.x,
-        hA1.x,
-        hB0.y,
-        hB1.y,
-        hA1.y,
-        hB0.w,
-        hB1.w,
-        hA1.w
-      );
-      const fractionA = Geometry.conditionalDivideFraction(
-        -beta0,
-        beta1 - beta0
-      );
-      if (fractionA !== undefined)
-        return Vector2d.create(fractionA, fractionB, result);
+      const beta0 = Geometry.tripleProduct(hB0.x, hB1.x, hA0.x, hB0.y, hB1.y, hA0.y, hB0.w, hB1.w, hA0.w);
+      const beta1 = Geometry.tripleProduct(hB0.x, hB1.x, hA1.x, hB0.y, hB1.y, hA1.y, hB0.w, hB1.w, hA1.w);
+      const fractionA = Geometry.conditionalDivideFraction(-beta0, beta1 - beta0);
+      if (fractionA !== undefined) return Vector2d.create(fractionA, fractionB, result);
     }
     return undefined;
   }
@@ -1913,28 +1610,8 @@ export class SmallSystem {
     // PointQ is colinear with spacePoint and and W when the xyw homogeneous determinant | Q W spacePoint | is zero.
     const tx = hA1.x * hA0.w - hA0.x * hA1.w;
     const ty = hA1.y * hA0.w - hA0.y * hA1.w;
-    const det0 = Geometry.tripleProduct(
-      hA0.x,
-      -ty,
-      spacePoint.x,
-      hA0.y,
-      tx,
-      spacePoint.y,
-      hA0.w,
-      0,
-      spacePoint.w
-    );
-    const det1 = Geometry.tripleProduct(
-      hA1.x,
-      -ty,
-      spacePoint.x,
-      hA1.y,
-      tx,
-      spacePoint.y,
-      hA1.w,
-      0,
-      spacePoint.w
-    );
+    const det0 = Geometry.tripleProduct(hA0.x, -ty, spacePoint.x, hA0.y, tx, spacePoint.y, hA0.w, 0, spacePoint.w);
+    const det1 = Geometry.tripleProduct(hA1.x, -ty, spacePoint.x, hA1.y, tx, spacePoint.y, hA1.w, 0, spacePoint.w);
     return Geometry.conditionalDivideFraction(-det0, det1 - det0);
   }
 
@@ -2112,50 +1789,10 @@ export class SmallSystem {
     result?: Vector3d
   ): Vector3d | undefined {
     // determinants of various combinations of columns ...
-    const detXYZ = Geometry.tripleProduct(
-      axx,
-      ayx,
-      azx,
-      axy,
-      ayy,
-      azy,
-      axz,
-      ayz,
-      azz
-    );
-    const detCYZ = Geometry.tripleProduct(
-      cx,
-      cy,
-      cz,
-      axy,
-      ayy,
-      azy,
-      axz,
-      ayz,
-      azz
-    );
-    const detXCZ = Geometry.tripleProduct(
-      axx,
-      ayx,
-      azx,
-      cx,
-      cy,
-      cz,
-      axz,
-      ayz,
-      azz
-    );
-    const detXYC = Geometry.tripleProduct(
-      axx,
-      ayx,
-      azx,
-      axy,
-      ayy,
-      azy,
-      cx,
-      cy,
-      cz
-    );
+    const detXYZ = Geometry.tripleProduct(axx, ayx, azx, axy, ayy, azy, axz, ayz, azz);
+    const detCYZ = Geometry.tripleProduct(cx, cy, cz, axy, ayy, azy, axz, ayz, azz);
+    const detXCZ = Geometry.tripleProduct(axx, ayx, azx, cx, cy, cz, axz, ayz, azz);
+    const detXYC = Geometry.tripleProduct(axx, ayx, azx, axy, ayy, azy, cx, cy, cz);
     const s = Geometry.conditionalDivideFraction(detCYZ, detXYZ);
     const t = Geometry.conditionalDivideFraction(detXCZ, detXYZ);
     const u = Geometry.conditionalDivideFraction(detXYC, detXYZ);
@@ -2194,30 +1831,9 @@ export class SmallSystem {
       normalC.x,
       normalC.y,
       normalC.z,
-      Geometry.dotProductXYZXYZ(
-        xyzA.x,
-        xyzA.y,
-        xyzA.z,
-        normalA.x,
-        normalA.y,
-        normalA.z
-      ),
-      Geometry.dotProductXYZXYZ(
-        xyzB.x,
-        xyzB.y,
-        xyzB.z,
-        normalB.x,
-        normalB.y,
-        normalB.z
-      ),
-      Geometry.dotProductXYZXYZ(
-        xyzC.x,
-        xyzC.y,
-        xyzC.z,
-        normalC.x,
-        normalC.y,
-        normalC.z
-      ),
+      Geometry.dotProductXYZXYZ(xyzA.x, xyzA.y, xyzA.z, normalA.x, normalA.y, normalA.z),
+      Geometry.dotProductXYZXYZ(xyzB.x, xyzB.y, xyzB.z, normalB.x, normalB.y, normalB.z),
+      Geometry.dotProductXYZXYZ(xyzC.x, xyzC.y, xyzC.z, normalC.x, normalC.y, normalC.z),
       result
     );
   }
@@ -2228,17 +1844,9 @@ export class SmallSystem {
    * @param pivotIndex index of pivot (divisor) in rowA.
    * @param rowB row where elimination occurs.
    */
-  public static eliminateFromPivot(
-    rowA: Float64Array,
-    pivotIndex: number,
-    rowB: Float64Array,
-    a: number
-  ): boolean {
+  public static eliminateFromPivot(rowA: Float64Array, pivotIndex: number, rowB: Float64Array, a: number): boolean {
     const n = rowA.length;
-    let q = Geometry.conditionalDivideFraction(
-      rowB[pivotIndex],
-      rowA[pivotIndex]
-    );
+    let q = Geometry.conditionalDivideFraction(rowB[pivotIndex], rowA[pivotIndex]);
     if (q === undefined) return false;
     q *= a;
     for (let j = pivotIndex + 1; j < n; j++) rowB[j] += q * rowA[j];
@@ -2261,22 +1869,14 @@ export class SmallSystem {
   ): Point2d[] | undefined {
     // constant linear, and quadratic coefficients for c0 + c1 * u + c2 * u*u = 0
     const e0 = Geometry.crossProductXYXY(a0, a1, c0, c1);
-    const e1 =
-      Geometry.crossProductXYXY(b0, b1, c0, c1) +
-      Geometry.crossProductXYXY(a0, a1, d0, d1);
+    const e1 = Geometry.crossProductXYXY(b0, b1, c0, c1) + Geometry.crossProductXYXY(a0, a1, d0, d1);
     const e2 = Geometry.crossProductXYXY(b0, b1, d0, d1);
     const uRoots = Degree2PowerPolynomial.solveQuadratic(e2, e1, e0);
     if (uRoots === undefined) return undefined;
     const uv = [];
     for (const u of uRoots) {
-      const v0 = Geometry.conditionalDivideFraction(
-        -(a0 + b0 * u),
-        c0 + d0 * u
-      );
-      const v1 = Geometry.conditionalDivideFraction(
-        -(a1 + b1 * u),
-        c1 + d1 * u
-      );
+      const v0 = Geometry.conditionalDivideFraction(-(a0 + b0 * u), c0 + d0 * u);
+      const v1 = Geometry.conditionalDivideFraction(-(a1 + b1 * u), c1 + d1 * u);
       if (v0 !== undefined) uv.push(Point2d.create(u, v0));
       else if (v1 !== undefined) uv.push(Point2d.create(u, v1));
     }
@@ -2318,12 +1918,7 @@ export class BilinearPolynomial {
   }
   /** Create a bilinear polynomial z=f(u,v) given z values at 00, 10, 01, 11.
    */
-  public static createUnitSquareValues(
-    f00: number,
-    f10: number,
-    f01: number,
-    f11: number
-  ): BilinearPolynomial {
+  public static createUnitSquareValues(f00: number, f10: number, f01: number, f11: number): BilinearPolynomial {
     return new BilinearPolynomial(f00, f10, f10, f11 - f10 - f01);
   }
   /**
@@ -2341,16 +1936,7 @@ export class BilinearPolynomial {
     q: BilinearPolynomial,
     qValue: number
   ): Point2d[] | undefined {
-    return SmallSystem.solveBilinearPair(
-      p.a - pValue,
-      p.b,
-      p.c,
-      p.d,
-      q.a - qValue,
-      q.b,
-      q.c,
-      q.d
-    );
+    return SmallSystem.solveBilinearPair(p.a - pValue, p.b, p.c, p.d, q.a - qValue, q.b, q.c, q.d);
   }
 }
 
@@ -2384,11 +1970,7 @@ export class SineCosinePolynomial {
   }
   /** Return the function value at given angle in radians */
   public evaluateRadians(theta: number): number {
-    return (
-      this.a +
-      this.cosineCoff * Math.cos(theta) +
-      this.sineCoff * Math.sin(theta)
-    );
+    return this.a + this.cosineCoff * Math.cos(theta) + this.sineCoff * Math.sin(theta);
   }
   /** Return the range of function values over the entire angle range. */
   public range(result?: Range1d): Range1d {
@@ -2396,35 +1978,20 @@ export class SineCosinePolynomial {
     return Range1d.createXX(this.a - q, this.a + q, result);
   }
   /** Return the min and max values of the function over theta range from radians0 to radians1  inclusive. */
-  public rangeInStartEndRadians(
-    radians0: number,
-    radians1: number,
-    result?: Range1d
-  ): Range1d {
-    if (Angle.isFullCircleRadians(radians1 - radians0))
-      return this.range(result);
-    result = Range1d.createXX(
-      this.evaluateRadians(radians0),
-      this.evaluateRadians(radians1),
-      result
-    );
+  public rangeInStartEndRadians(radians0: number, radians1: number, result?: Range1d): Range1d {
+    if (Angle.isFullCircleRadians(radians1 - radians0)) return this.range(result);
+    result = Range1d.createXX(this.evaluateRadians(radians0), this.evaluateRadians(radians1), result);
     // angles of min and max ...
     // angles for min and max of the sine wave . ..
     const alphaA = Math.atan2(this.sineCoff, this.cosineCoff);
     const alphaB = alphaA + Math.PI;
-    if (AngleSweep.isRadiansInStartEnd(alphaA, radians0, radians1))
-      result.extendX(this.evaluateRadians(alphaA));
-    if (AngleSweep.isRadiansInStartEnd(alphaB, radians0, radians1))
-      result.extendX(this.evaluateRadians(alphaB));
+    if (AngleSweep.isRadiansInStartEnd(alphaA, radians0, radians1)) result.extendX(this.evaluateRadians(alphaA));
+    if (AngleSweep.isRadiansInStartEnd(alphaB, radians0, radians1)) result.extendX(this.evaluateRadians(alphaB));
     return result;
   }
   /** Return the min and max values of the function over theta range from radians0 to radians1  inclusive. */
   public rangeInSweep(sweep: AngleSweep, result?: Range1d): Range1d {
-    return this.rangeInStartEndRadians(
-      sweep.startRadians,
-      sweep.endRadians,
-      result
-    );
+    return this.rangeInStartEndRadians(sweep.startRadians, sweep.endRadians, result);
   }
   /**
    * Return a representative angle (in radians) for min and max values.
@@ -2472,10 +2039,7 @@ export class ImplicitLineXY {
     const uy = alpha * this.ay;
     const px = -alpha * ux;
     const py = -alpha * uy;
-    return [
-      Point3d.create(px - b * uy, py + b * ux),
-      Point3d.create(px + b * uy, py - b * ux),
-    ];
+    return [Point3d.create(px - b * uy, py + b * ux), Point3d.create(px + b * uy, py - b * ux)];
   }
   /**
    * Evaluate the half-space function at an xy point
@@ -2488,12 +2052,7 @@ export class ImplicitLineXY {
   /**
    * add scale * (a,ax,ay) to the respective coefficients.
    */
-  public addScaledCoefficientsInPlace(
-    a: number,
-    ax: number,
-    ay: number,
-    scale: number
-  ) {
+  public addScaledCoefficientsInPlace(a: number, ax: number, ay: number, scale: number) {
     this.a += scale * a;
     this.ax += scale * ax;
     this.ay += scale * ay;

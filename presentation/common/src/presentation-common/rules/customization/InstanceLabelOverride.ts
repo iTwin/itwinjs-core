@@ -65,8 +65,7 @@ export interface InstanceLabelOverrideValueSpecificationBase {
  * @see [Composite value specification reference documentation page]($docs/presentation/customization/InstanceLabelOverride.md#composite-value-specification)
  * @public
  */
-export interface InstanceLabelOverrideCompositeValueSpecification
-  extends InstanceLabelOverrideValueSpecificationBase {
+export interface InstanceLabelOverrideCompositeValueSpecification extends InstanceLabelOverrideValueSpecificationBase {
   specType: "Composite";
 
   /**
@@ -90,8 +89,7 @@ export interface InstanceLabelOverrideCompositeValueSpecification
  * @see [Property value specification reference documentation page]($docs/presentation/customization/InstanceLabelOverride.md#property-value-specification)
  * @public
  */
-export interface InstanceLabelOverridePropertyValueSpecification
-  extends InstanceLabelOverrideValueSpecificationBase {
+export interface InstanceLabelOverridePropertyValueSpecification extends InstanceLabelOverrideValueSpecificationBase {
   specType: "Property";
 
   /**
@@ -113,8 +111,7 @@ export interface InstanceLabelOverridePropertyValueSpecification
  * @see [Class name value specification reference documentation page]($docs/presentation/customization/InstanceLabelOverride.md#class-name-value-specification)
  * @public
  */
-export interface InstanceLabelOverrideClassNameSpecification
-  extends InstanceLabelOverrideValueSpecificationBase {
+export interface InstanceLabelOverrideClassNameSpecification extends InstanceLabelOverrideValueSpecificationBase {
   specType: "ClassName";
 
   /** Should full (`{schemaName}.{className}`) class name be used */
@@ -127,8 +124,7 @@ export interface InstanceLabelOverrideClassNameSpecification
  * @see [Class label value specification reference documentation page]($docs/presentation/customization/InstanceLabelOverride.md#class-label-value-specification)
  * @public
  */
-export interface InstanceLabelOverrideClassLabelSpecification
-  extends InstanceLabelOverrideValueSpecificationBase {
+export interface InstanceLabelOverrideClassLabelSpecification extends InstanceLabelOverrideValueSpecificationBase {
   specType: "ClassLabel";
 }
 
@@ -138,8 +134,7 @@ export interface InstanceLabelOverrideClassLabelSpecification
  * @see [BriefcaseId value specification reference documentation page]($docs/presentation/customization/InstanceLabelOverride.md#briefcaseid-value-specification)
  * @public
  */
-export interface InstanceLabelOverrideBriefcaseIdSpecification
-  extends InstanceLabelOverrideValueSpecificationBase {
+export interface InstanceLabelOverrideBriefcaseIdSpecification extends InstanceLabelOverrideValueSpecificationBase {
   specType: "BriefcaseId";
 }
 
@@ -149,8 +144,7 @@ export interface InstanceLabelOverrideBriefcaseIdSpecification
  * @see [LocalId value specification reference documentation page]($docs/presentation/customization/InstanceLabelOverride.md#localid-value-specification)
  * @public
  */
-export interface InstanceLabelOverrideLocalIdSpecification
-  extends InstanceLabelOverrideValueSpecificationBase {
+export interface InstanceLabelOverrideLocalIdSpecification extends InstanceLabelOverrideValueSpecificationBase {
   specType: "LocalId";
 }
 
@@ -160,8 +154,7 @@ export interface InstanceLabelOverrideLocalIdSpecification
  * @see [String value specification reference documentation page]($docs/presentation/customization/InstanceLabelOverride.md#string-value-specification)
  * @public
  */
-export interface InstanceLabelOverrideStringValueSpecification
-  extends InstanceLabelOverrideValueSpecificationBase {
+export interface InstanceLabelOverrideStringValueSpecification extends InstanceLabelOverrideValueSpecificationBase {
   specType: "String";
 
   /** The value to use as the label content. */

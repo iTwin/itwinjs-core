@@ -54,11 +54,7 @@ export class Segment1d {
    * @param x1 end value
    * @param result optional pre-existing result to be reinitialized.
    */
-  public static create(
-    x0: number = 0,
-    x1: number = 1,
-    result?: Segment1d
-  ): Segment1d {
+  public static create(x0: number = 0, x1: number = 1, result?: Segment1d): Segment1d {
     if (!result) return new Segment1d(x0, x1);
     result.set(x0, x1);
     return result;
@@ -123,10 +119,7 @@ export class Segment1d {
    * Near equality test, using Geometry.isSameCoordinate for tolerances.
    */
   public isAlmostEqual(other: Segment1d): boolean {
-    return (
-      Geometry.isSameCoordinate(this.x0, other.x0) &&
-      Geometry.isSameCoordinate(this.x1, other.x1)
-    );
+    return Geometry.isSameCoordinate(this.x0, other.x0) && Geometry.isSameCoordinate(this.x1, other.x1);
   }
   /**
    * Return true if the segment limits are (exactly) 0 and 1

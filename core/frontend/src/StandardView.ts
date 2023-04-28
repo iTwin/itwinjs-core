@@ -34,61 +34,11 @@ function getMatrices(): Matrix3d[] {
   standardViewMatrices = [];
 
   standardViewMatrices[StandardViewId.Top] = Matrix3d.identity;
-  standardViewMatrices[StandardViewId.Bottom] = Matrix3d.createRowValues(
-    1,
-    0,
-    0,
-    0,
-    -1,
-    0,
-    0,
-    0,
-    -1
-  );
-  standardViewMatrices[StandardViewId.Left] = Matrix3d.createRowValues(
-    0,
-    -1,
-    0,
-    0,
-    0,
-    1,
-    -1,
-    0,
-    0
-  );
-  standardViewMatrices[StandardViewId.Right] = Matrix3d.createRowValues(
-    0,
-    1,
-    0,
-    0,
-    0,
-    1,
-    1,
-    0,
-    0
-  );
-  standardViewMatrices[StandardViewId.Front] = Matrix3d.createRowValues(
-    1,
-    0,
-    0,
-    0,
-    0,
-    1,
-    0,
-    -1,
-    0
-  );
-  standardViewMatrices[StandardViewId.Back] = Matrix3d.createRowValues(
-    -1,
-    0,
-    0,
-    0,
-    0,
-    1,
-    0,
-    1,
-    0
-  );
+  standardViewMatrices[StandardViewId.Bottom] = Matrix3d.createRowValues(1, 0, 0, 0, -1, 0, 0, 0, -1);
+  standardViewMatrices[StandardViewId.Left] = Matrix3d.createRowValues(0, -1, 0, 0, 0, 1, -1, 0, 0);
+  standardViewMatrices[StandardViewId.Right] = Matrix3d.createRowValues(0, 1, 0, 0, 0, 1, 1, 0, 0);
+  standardViewMatrices[StandardViewId.Front] = Matrix3d.createRowValues(1, 0, 0, 0, 0, 1, 0, -1, 0);
+  standardViewMatrices[StandardViewId.Back] = Matrix3d.createRowValues(-1, 0, 0, 0, 0, 1, 0, 1, 0);
   standardViewMatrices[StandardViewId.Iso] = Matrix3d.createRowValues(
     0.707106781186548,
     -0.70710678118654757,
@@ -150,8 +100,7 @@ export class StandardView {
    * @return A rotation matrix corresponding to the requested standard view ID, or a "top" view rotation if the input does not correspond to a standard rotation.
    */
   public static getStandardRotation(id: StandardViewId): Matrix3d {
-    if (id < StandardViewId.Top || id > StandardViewId.RightIso)
-      id = StandardViewId.Top;
+    if (id < StandardViewId.Top || id > StandardViewId.RightIso) id = StandardViewId.Top;
 
     return getMatrices()[id];
   }

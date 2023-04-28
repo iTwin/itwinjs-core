@@ -24,9 +24,7 @@ describe("PresentationIpcHandler", () => {
 
   beforeEach(() => {
     presentationManagerMock.reset();
-    sinon
-      .stub(Presentation, "getManager")
-      .returns(presentationManagerMock.object);
+    sinon.stub(Presentation, "getManager").returns(presentationManagerMock.object);
   });
 
   describe("setRulesetVariable", () => {
@@ -34,9 +32,7 @@ describe("PresentationIpcHandler", () => {
     const variablesManagerMock = moq.Mock.ofType<RulesetVariablesManager>();
 
     beforeEach(() => {
-      presentationManagerMock
-        .setup((x) => x.vars(testRulesetId))
-        .returns(() => variablesManagerMock.object);
+      presentationManagerMock.setup((x) => x.vars(testRulesetId)).returns(() => variablesManagerMock.object);
     });
 
     it("sets ruleset variable", async () => {
@@ -46,9 +42,7 @@ describe("PresentationIpcHandler", () => {
         value: "test-val",
       };
       variablesManagerMock
-        .setup((x) =>
-          x.setValue(testVariable.id, testVariable.type, testVariable.value)
-        )
+        .setup((x) => x.setValue(testVariable.id, testVariable.type, testVariable.value))
         .verifiable(moq.Times.once());
 
       const ipcHandler = new PresentationIpcHandler();
@@ -62,10 +56,7 @@ describe("PresentationIpcHandler", () => {
     });
 
     it("decompresses ids set before setting value variables", async () => {
-      const ids = OrderedId64Iterable.sortArray([
-        createRandomId(),
-        createRandomId(),
-      ]);
+      const ids = OrderedId64Iterable.sortArray([createRandomId(), createRandomId()]);
       const testVariable: Id64sRulesetVariableJSON = {
         type: VariableValueTypes.Id64Array,
         id: "test",
@@ -91,15 +82,11 @@ describe("PresentationIpcHandler", () => {
     const variablesManagerMock = moq.Mock.ofType<RulesetVariablesManager>();
 
     beforeEach(() => {
-      presentationManagerMock
-        .setup((x) => x.vars(testRulesetId))
-        .returns(() => variablesManagerMock.object);
+      presentationManagerMock.setup((x) => x.vars(testRulesetId)).returns(() => variablesManagerMock.object);
     });
 
     it("unsets ruleset variable", async () => {
-      variablesManagerMock
-        .setup((x) => x.unset("test-id"))
-        .verifiable(moq.Times.once());
+      variablesManagerMock.setup((x) => x.unset("test-id")).verifiable(moq.Times.once());
 
       const ipcHandler = new PresentationIpcHandler();
       const params: UnsetRulesetVariableParams = {

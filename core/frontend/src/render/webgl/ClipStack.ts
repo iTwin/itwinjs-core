@@ -7,13 +7,7 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import {
-  ClipPlaneContainment,
-  ClipVector,
-  Point3d,
-  Range3d,
-  Transform,
-} from "@itwin/core-geometry";
+import { ClipPlaneContainment, ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { RgbColor } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { RenderClipVolume } from "../RenderClipVolume";
@@ -78,10 +72,7 @@ export class ClipStack {
   /** For detecting whether the transform changed from one invocation of setViewClip to the next. */
   protected readonly _prevTransform = Transform.createZero();
 
-  public constructor(
-    getTransform: () => Transform,
-    wantViewClip: () => boolean
-  ) {
+  public constructor(getTransform: () => Transform, wantViewClip: () => boolean) {
     this._getTransform = getTransform;
     this._wantViewClip = wantViewClip;
 
@@ -106,10 +97,7 @@ export class ClipStack {
     return this._texture ? this._texture.bytesUsed : 0;
   }
 
-  public setViewClip(
-    clip: ClipVector | undefined,
-    style: { insideColor?: RgbColor; outsideColor?: RgbColor }
-  ): void {
+  public setViewClip(clip: ClipVector | undefined, style: { insideColor?: RgbColor; outsideColor?: RgbColor }): void {
     assert(this._stack.length === 1);
 
     this.updateColor(style.insideColor, this._insideColor);
@@ -195,16 +183,11 @@ export class ClipStack {
 
     range = transform.multiplyRange(range, range);
     const corners = getRangeCorners(range);
-    const startIndex =
-      this._wantViewClip() && emptyClip !== this._stack[0] ? 0 : 1;
+    const startIndex = this._wantViewClip() && emptyClip !== this._stack[0] ? 0 : 1;
     for (let i = startIndex; i < this._stack.length; i++) {
       const clip = this._stack[i];
       assert(clip instanceof ClipVolume);
-      if (
-        ClipPlaneContainment.StronglyOutside ===
-        clip.clipVector.classifyPointContainment(corners)
-      )
-        return true;
+      if (ClipPlaneContainment.StronglyOutside === clip.clipVector.classifyPointContainment(corners)) return true;
     }
 
     return false;
@@ -221,10 +204,7 @@ export class ClipStack {
   }
 
   protected updateTexture(): void {
-    if (
-      this._numTotalRows > 0 &&
-      (!this._texture || this._texture.height < this._numTotalRows)
-    ) {
+    if (this._numTotalRows > 0 && (!this._texture || this._texture.height < this._numTotalRows)) {
       // We need to resize the texture.
       assert(this._isStackDirty);
       this._isStackDirty = true;

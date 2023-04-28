@@ -4,17 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import {
-  Content,
-  ContentJSON,
-} from "../../presentation-common/content/Content";
+import { Content, ContentJSON } from "../../presentation-common/content/Content";
 import { Item } from "../../presentation-common/content/Item";
 import { createTestContentDescriptor } from "../_helpers/Content";
-import {
-  createRandomECClassInfo,
-  createRandomECInstanceKey,
-  createRandomLabelDefinition,
-} from "../_helpers/random";
+import { createRandomECClassInfo, createRandomECInstanceKey, createRandomLabelDefinition } from "../_helpers/random";
 
 describe("Content", () => {
   describe("constructor", () => {

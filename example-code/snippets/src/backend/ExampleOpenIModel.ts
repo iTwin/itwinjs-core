@@ -4,18 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 import { AccessToken, OpenMode } from "@itwin/core-bentley";
 import { BriefcaseDb } from "@itwin/core-backend";
-import {
-  IModelError,
-  IModelStatus,
-  OpenBriefcaseProps,
-} from "@itwin/core-common";
+import { IModelError, IModelStatus, OpenBriefcaseProps } from "@itwin/core-common";
 import { TestUserCredentials, TestUtility } from "@itwin/oidc-signin-tool";
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 
-async function getUserAccessToken(
-  userCredentials: TestUserCredentials
-): Promise<AccessToken> {
+async function getUserAccessToken(userCredentials: TestUserCredentials): Promise<AccessToken> {
   return TestUtility.getAccessToken(userCredentials);
 }
 
@@ -23,8 +17,7 @@ function configureIModel() {
   // __PUBLISH_EXTRACT_START__ BriefcaseDb.onOpen
   BriefcaseDb.onOpen.addListener((briefcaseProps: OpenBriefcaseProps) => {
     // A read-only application might want to reject all requests to open an iModel for writing. It can do this in the onOpen event.
-    if (!briefcaseProps.readonly)
-      throw new IModelError(IModelStatus.BadRequest, "This app is readonly");
+    if (!briefcaseProps.readonly) throw new IModelError(IModelStatus.BadRequest, "This app is readonly");
   });
   // __PUBLISH_EXTRACT_END__
 

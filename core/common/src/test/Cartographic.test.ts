@@ -13,11 +13,7 @@ describe("Cartographic", () => {
       latitude: 40,
       height: 0,
     });
-    assert.equal(
-      exton.toString(),
-      "(1.3089969389957472, 0.6981317007977318, 0)",
-      "exton toString"
-    );
+    assert.equal(exton.toString(), "(1.3089969389957472, 0.6981317007977318, 0)", "exton toString");
     assert.isTrue(exton.equals(exton.clone()));
 
     const ecef1 = exton.toEcef();

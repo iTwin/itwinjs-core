@@ -6,14 +6,7 @@
 import { assert } from "chai";
 import * as path from "path";
 import { IModelHost, IModelJsFs, IModelJsNative } from "@itwin/core-backend";
-import {
-  AccessToken,
-  ChangeSetStatus,
-  GuidString,
-  Logger,
-  OpenMode,
-  PerfLogger,
-} from "@itwin/core-bentley";
+import { AccessToken, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
 import { ChangesetFileProps, ChangesetType } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { HubUtility } from "../HubUtility";
@@ -22,18 +15,9 @@ import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after al
 
 // Useful utilities to download/upload test cases from/to iModelHub
 describe("ApplyChangesets", () => {
-  const testAllChangesetOperations = async (
-    accessToken: AccessToken,
-    iTwinId: string,
-    iModelId: GuidString
-  ) => {
+  const testAllChangesetOperations = async (accessToken: AccessToken, iTwinId: string, iModelId: GuidString) => {
     const iModelDir = path.join(IModelHost.cacheDir, iModelId.toString());
-    await validateAllChangesetOperations(
-      accessToken,
-      iTwinId,
-      iModelId,
-      iModelDir
-    );
+    await validateAllChangesetOperations(accessToken, iTwinId, iModelId, iModelDir);
     IModelJsFs.purgeDirSync(iModelDir);
   };
 
@@ -41,22 +25,13 @@ describe("ApplyChangesets", () => {
     const accessToken = await TestUtility.getAccessToken(TestUsers.regular);
 
     const iTwinId = await HubUtility.getTestITwinId(accessToken);
-    let iModelId = await HubUtility.getTestIModelId(
-      accessToken,
-      HubUtility.testIModelNames.readOnly
-    );
+    let iModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.readOnly);
     await testAllChangesetOperations(accessToken, iTwinId, iModelId);
 
-    iModelId = await HubUtility.getTestIModelId(
-      accessToken,
-      HubUtility.testIModelNames.readWrite
-    );
+    iModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.readWrite);
     await testAllChangesetOperations(accessToken, iTwinId, iModelId);
 
-    iModelId = await HubUtility.getTestIModelId(
-      accessToken,
-      HubUtility.testIModelNames.noVersions
-    );
+    iModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.noVersions);
     await testAllChangesetOperations(accessToken, iTwinId, iModelId);
   });
 });
@@ -71,17 +46,8 @@ async function validateAllChangesetOperations(
   iModelId: GuidString,
   iModelDir: string
 ) {
-  Logger.logInfo(
-    HubUtility.logCategory,
-    "Downloading seed file and all available changesets"
-  );
-  await HubUtility.downloadIModelById(
-    accessToken,
-    iTwinId,
-    iModelId,
-    iModelDir,
-    true /* =reDownload */
-  );
+  Logger.logInfo(HubUtility.logCategory, "Downloading seed file and all available changesets");
+  await HubUtility.downloadIModelById(accessToken, iTwinId, iModelId, iModelDir, true /* =reDownload */);
 
   return validateAllChangesetOperationsOnDisk(iModelDir);
 }
@@ -95,11 +61,7 @@ async function validateAllChangesetOperationsOnDisk(iModelDir: string) {
   const briefcasePathname = HubUtility.getBriefcasePathname(iModelDir);
 
   Logger.logInfo(HubUtility.logCategory, "Making a local copy of the seed");
-  HubUtility.copyIModelFromSeed(
-    briefcasePathname,
-    iModelDir,
-    true /* =overwrite */
-  );
+  HubUtility.copyIModelFromSeed(briefcasePathname, iModelDir, true /* =overwrite */);
 
   const nativeDb = new IModelHost.platform.DgnDb();
   nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
@@ -112,39 +74,25 @@ async function validateAllChangesetOperationsOnDisk(iModelDir: string) {
 
   // Reverse changes until there's a schema change set (note that schema change sets cannot be reversed)
   const reverseChangesets = changesets.reverse();
-  const schemaChangeIndex = reverseChangesets.findIndex(
-    (token) => token.changesType === ChangesetType.Schema
-  );
+  const schemaChangeIndex = reverseChangesets.findIndex((token) => token.changesType === ChangesetType.Schema);
   const filteredChangesets = reverseChangesets.slice(0, schemaChangeIndex); // exclusive of element at schemaChangeIndex
   if (status === ChangeSetStatus.Success) {
-    Logger.logInfo(
-      HubUtility.logCategory,
-      "Reversing all available changesets"
-    );
+    Logger.logInfo(HubUtility.logCategory, "Reversing all available changesets");
     status = applyChangesetsToNativeDb(nativeDb, filteredChangesets);
   }
 
   if (status === ChangeSetStatus.Success) {
-    Logger.logInfo(
-      HubUtility.logCategory,
-      "Reinstating all available changesets"
-    );
+    Logger.logInfo(HubUtility.logCategory, "Reinstating all available changesets");
     filteredChangesets.reverse();
     status = applyChangesetsToNativeDb(nativeDb, filteredChangesets);
   }
 
   nativeDb.closeIModel();
-  assert.isTrue(
-    status === ChangeSetStatus.Success,
-    "Error applying changesets"
-  );
+  assert.isTrue(status === ChangeSetStatus.Success, "Error applying changesets");
 }
 
 /** Applies changesets one by one (for debugging) */
-function applyChangesetsToNativeDb(
-  nativeDb: IModelJsNative.DgnDb,
-  changeSets: ChangesetFileProps[]
-): ChangeSetStatus {
+function applyChangesetsToNativeDb(nativeDb: IModelJsNative.DgnDb, changeSets: ChangesetFileProps[]): ChangeSetStatus {
   const perfLogger = new PerfLogger(`Applying change sets]}`);
 
   // Apply change sets one by one to debug any issues
@@ -153,24 +101,14 @@ function applyChangesetsToNativeDb(
     ++count;
     Logger.logInfo(
       HubUtility.logCategory,
-      `Started applying Changeset: ${count} of ${changeSets.length} (${new Date(
-        Date.now()
-      ).toString()})`,
+      `Started applying Changeset: ${count} of ${changeSets.length} (${new Date(Date.now()).toString()})`,
       () => ({ ...changeSet })
     );
     try {
       nativeDb.applyChangeset(changeSet);
-      Logger.logInfo(
-        HubUtility.logCategory,
-        "Successfully applied Changeset",
-        () => ({ ...changeSet, status })
-      );
+      Logger.logInfo(HubUtility.logCategory, "Successfully applied Changeset", () => ({ ...changeSet, status }));
     } catch (err: any) {
-      Logger.logError(
-        HubUtility.logCategory,
-        `Error applying Changeset ${err.errorNumber}`,
-        () => ({ ...changeSet })
-      );
+      Logger.logError(HubUtility.logCategory, `Error applying Changeset ${err.errorNumber}`, () => ({ ...changeSet }));
       perfLogger.dispose();
       return err.errorNumber;
     }

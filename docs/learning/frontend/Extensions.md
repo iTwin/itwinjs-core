@@ -208,7 +208,5 @@ IModelApp.extensionAdmin.registerHost("localhost:3001");
 The last step is to add the Extension to the ExtensionAdmin. Once the Extension has been added, its default function will immediately execute if the onStartup Activation Event was defined in the manifest.
 
 ```ts
-IModelApp.extensionAdmin
-  .addExtension(extensionProvider)
-  .catch((e) => console.log(e));
+IModelApp.extensionAdmin.addExtension(extensionProvider).catch((e) => console.log(e));
 ```

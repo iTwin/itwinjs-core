@@ -32,8 +32,7 @@ export class Strings {
   /** The 'newline' (linux line terminator) character */
   public static NL: string = String.fromCharCode(10);
   /** The 'carriage return+newline' (dos line terminator) character sequence */
-  public static CR_NL: string =
-    String.fromCharCode(13) + String.fromCharCode(10);
+  public static CR_NL: string = String.fromCharCode(13) + String.fromCharCode(10);
 
   private constructor() {}
 
@@ -166,11 +165,7 @@ export class Strings {
       /* Escaped character ? */
       if (i > 0 && value.substring(i - 1, i) === "\\") continue;
       /* Quote bound ? */
-      if (
-        literal != null
-          ? literal === c
-          : literals.length > 0 && literals.indexOf(c) >= 0
-      ) {
+      if (literal != null ? literal === c : literals.length > 0 && literals.indexOf(c) >= 0) {
         /* Toggle */
         literal = literal == null ? c : null;
         continue;

@@ -17,10 +17,7 @@ import { KindOfQuantity } from "../Metadata/KindOfQuantity";
 import { Mixin } from "../Metadata/Mixin";
 import { Phenomenon } from "../Metadata/Phenomenon";
 import { PropertyCategory } from "../Metadata/PropertyCategory";
-import {
-  RelationshipClass,
-  RelationshipConstraint,
-} from "../Metadata/RelationshipClass";
+import { RelationshipClass, RelationshipConstraint } from "../Metadata/RelationshipClass";
 import { Schema } from "../Metadata/Schema";
 import { Unit } from "../Metadata/Unit";
 import { UnitSystem } from "../Metadata/UnitSystem";
@@ -45,8 +42,7 @@ describe("SchemaPartVisitorDelegate Tests", () => {
       helper = new SchemaPartVisitorDelegate(mockVisitor);
 
       await helper.visitSchema(schema, false);
-      expect(mockVisitor.visitEmptySchema.calledOnceWithExactly(schema)).to.be
-        .true;
+      expect(mockVisitor.visitEmptySchema.calledOnceWithExactly(schema)).to.be.true;
       expect(mockVisitor.visitFullSchema.notCalled).to.be.true;
     });
 
@@ -58,8 +54,7 @@ describe("SchemaPartVisitorDelegate Tests", () => {
       helper = new SchemaPartVisitorDelegate(mockVisitor);
 
       await helper.visitSchema(schema);
-      expect(mockVisitor.visitFullSchema.calledOnceWithExactly(schema)).to.be
-        .true;
+      expect(mockVisitor.visitFullSchema.calledOnceWithExactly(schema)).to.be.true;
       expect(mockVisitor.visitEmptySchema.notCalled).to.be.true;
     });
   });
@@ -73,8 +68,7 @@ describe("SchemaPartVisitorDelegate Tests", () => {
       helper = new SchemaPartVisitorDelegate(mockVisitor);
 
       helper.visitSchemaSync(schema, false);
-      expect(mockVisitor.visitEmptySchemaSync.calledOnceWithExactly(schema)).to
-        .be.true;
+      expect(mockVisitor.visitEmptySchemaSync.calledOnceWithExactly(schema)).to.be.true;
       expect(mockVisitor.visitFullSchemaSync.notCalled).to.be.true;
     });
 
@@ -86,8 +80,7 @@ describe("SchemaPartVisitorDelegate Tests", () => {
       helper = new SchemaPartVisitorDelegate(mockVisitor);
 
       helper.visitSchemaSync(schema);
-      expect(mockVisitor.visitFullSchemaSync.calledOnceWithExactly(schema)).to
-        .be.true;
+      expect(mockVisitor.visitFullSchemaSync.calledOnceWithExactly(schema)).to.be.true;
       expect(mockVisitor.visitEmptySchemaSync.notCalled).to.be.true;
     });
   });
@@ -108,10 +101,8 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(mockVisitor.visitConstant.calledOnceWithExactly(testItem)).to.be
-        .true;
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitConstant.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitCustomAttributeContainer.notCalled).to.be.true;
       expect(mockVisitor.visitClass.notCalled).to.be.true;
     });
@@ -123,8 +114,7 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitCustomAttributeContainer.notCalled).to.be.true;
       expect(mockVisitor.visitClass.notCalled).to.be.true;
     });
@@ -136,16 +126,9 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(
-        mockVisitor.visitCustomAttributeClass.calledOnceWithExactly(testItem)
-      ).to.be.true;
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
-      expect(
-        mockVisitor.visitCustomAttributeContainer.calledOnceWithExactly(
-          testItem
-        )
-      ).to.be.true;
+      expect(mockVisitor.visitCustomAttributeClass.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainer.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClass.calledOnceWithExactly(testItem)).to.be.true;
     });
 
@@ -156,13 +139,8 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
-      expect(
-        mockVisitor.visitCustomAttributeContainer.calledOnceWithExactly(
-          testItem
-        )
-      ).to.be.true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainer.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClass.calledOnceWithExactly(testItem)).to.be.true;
     });
 
@@ -173,16 +151,10 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(mockVisitor.visitEntityClass.calledOnceWithExactly(testItem)).to.be
-        .true;
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitEntityClass.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClass.calledOnceWithExactly(testItem)).to.be.true;
-      expect(
-        mockVisitor.visitCustomAttributeContainer.calledOnceWithExactly(
-          testItem
-        )
-      ).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainer.calledOnceWithExactly(testItem)).to.be.true;
     });
 
     it("EntityClass, no visitor, call does not error", async () => {
@@ -192,14 +164,9 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClass.calledOnceWithExactly(testItem)).to.be.true;
-      expect(
-        mockVisitor.visitCustomAttributeContainer.calledOnceWithExactly(
-          testItem
-        )
-      ).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainer.calledOnceWithExactly(testItem)).to.be.true;
     });
 
     it("Enumeration, visit methods called correctly", async () => {
@@ -209,10 +176,8 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(mockVisitor.visitEnumeration.calledOnceWithExactly(testItem)).to.be
-        .true;
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitEnumeration.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClass.notCalled).to.be.true;
       expect(mockVisitor.visitCustomAttributeContainer.notCalled).to.be.true;
     });
@@ -224,8 +189,7 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitCustomAttributeContainer.notCalled).to.be.true;
       expect(mockVisitor.visitClass.notCalled).to.be.true;
     });
@@ -237,10 +201,8 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(mockVisitor.visitFormat.calledOnceWithExactly(testItem)).to.be
-        .true;
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitFormat.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClass.notCalled).to.be.true;
       expect(mockVisitor.visitCustomAttributeContainer.notCalled).to.be.true;
     });
@@ -252,8 +214,7 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitCustomAttributeContainer.notCalled).to.be.true;
       expect(mockVisitor.visitClass.notCalled).to.be.true;
     });
@@ -265,10 +226,8 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(mockVisitor.visitInvertedUnit.calledOnceWithExactly(testItem)).to
-        .be.true;
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitInvertedUnit.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClass.notCalled).to.be.true;
       expect(mockVisitor.visitCustomAttributeContainer.notCalled).to.be.true;
     });
@@ -280,8 +239,7 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitCustomAttributeContainer.notCalled).to.be.true;
       expect(mockVisitor.visitClass.notCalled).to.be.true;
     });
@@ -293,10 +251,8 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(mockVisitor.visitKindOfQuantity.calledOnceWithExactly(testItem)).to
-        .be.true;
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitKindOfQuantity.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClass.notCalled).to.be.true;
       expect(mockVisitor.visitCustomAttributeContainer.notCalled).to.be.true;
     });
@@ -308,8 +264,7 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitCustomAttributeContainer.notCalled).to.be.true;
       expect(mockVisitor.visitClass.notCalled).to.be.true;
     });
@@ -322,14 +277,9 @@ describe("SchemaPartVisitorDelegate Tests", () => {
       await helper.visitSchemaPart(testItem);
 
       expect(mockVisitor.visitMixin.calledOnceWithExactly(testItem)).to.be.true;
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClass.calledOnceWithExactly(testItem)).to.be.true;
-      expect(
-        mockVisitor.visitCustomAttributeContainer.calledOnceWithExactly(
-          testItem
-        )
-      ).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainer.calledOnceWithExactly(testItem)).to.be.true;
     });
 
     it("Mixin, no visitor, call does not error", async () => {
@@ -339,14 +289,9 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClass.calledOnceWithExactly(testItem)).to.be.true;
-      expect(
-        mockVisitor.visitCustomAttributeContainer.calledOnceWithExactly(
-          testItem
-        )
-      ).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainer.calledOnceWithExactly(testItem)).to.be.true;
     });
 
     it("Phenomenon, visit methods called correctly", async () => {
@@ -356,10 +301,8 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(mockVisitor.visitPhenomenon.calledOnceWithExactly(testItem)).to.be
-        .true;
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitPhenomenon.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClass.notCalled).to.be.true;
       expect(mockVisitor.visitCustomAttributeContainer.notCalled).to.be.true;
     });
@@ -371,8 +314,7 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitCustomAttributeContainer.notCalled).to.be.true;
       expect(mockVisitor.visitClass.notCalled).to.be.true;
     });
@@ -384,10 +326,8 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(mockVisitor.visitPropertyCategory.calledOnceWithExactly(testItem))
-        .to.be.true;
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitPropertyCategory.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClass.notCalled).to.be.true;
       expect(mockVisitor.visitCustomAttributeContainer.notCalled).to.be.true;
     });
@@ -399,8 +339,7 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitCustomAttributeContainer.notCalled).to.be.true;
       expect(mockVisitor.visitClass.notCalled).to.be.true;
     });
@@ -412,16 +351,10 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(mockVisitor.visitRelationshipClass.calledOnceWithExactly(testItem))
-        .to.be.true;
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitRelationshipClass.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClass.calledOnceWithExactly(testItem)).to.be.true;
-      expect(
-        mockVisitor.visitCustomAttributeContainer.calledOnceWithExactly(
-          testItem
-        )
-      ).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainer.calledOnceWithExactly(testItem)).to.be.true;
     });
 
     it("RelationshipClass, no visitor, call does not error", async () => {
@@ -431,14 +364,9 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClass.calledOnceWithExactly(testItem)).to.be.true;
-      expect(
-        mockVisitor.visitCustomAttributeContainer.calledOnceWithExactly(
-          testItem
-        )
-      ).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainer.calledOnceWithExactly(testItem)).to.be.true;
     });
 
     it("StructClass, visit methods called correctly", async () => {
@@ -448,16 +376,10 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(mockVisitor.visitStructClass.calledOnceWithExactly(testItem)).to.be
-        .true;
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitStructClass.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClass.calledOnceWithExactly(testItem)).to.be.true;
-      expect(
-        mockVisitor.visitCustomAttributeContainer.calledOnceWithExactly(
-          testItem
-        )
-      ).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainer.calledOnceWithExactly(testItem)).to.be.true;
     });
 
     it("StructClass, no visitor, call does not error", async () => {
@@ -467,14 +389,9 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClass.calledOnceWithExactly(testItem)).to.be.true;
-      expect(
-        mockVisitor.visitCustomAttributeContainer.calledOnceWithExactly(
-          testItem
-        )
-      ).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainer.calledOnceWithExactly(testItem)).to.be.true;
     });
 
     it("Unit, visit methods called correctly", async () => {
@@ -485,8 +402,7 @@ describe("SchemaPartVisitorDelegate Tests", () => {
       await helper.visitSchemaPart(testItem);
 
       expect(mockVisitor.visitUnit.calledOnceWithExactly(testItem)).to.be.true;
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClass.notCalled).to.be.true;
       expect(mockVisitor.visitCustomAttributeContainer.notCalled).to.be.true;
     });
@@ -498,8 +414,7 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitCustomAttributeContainer.notCalled).to.be.true;
       expect(mockVisitor.visitClass.notCalled).to.be.true;
     });
@@ -511,10 +426,8 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(mockVisitor.visitUnitSystem.calledOnceWithExactly(testItem)).to.be
-        .true;
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitUnitSystem.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClass.notCalled).to.be.true;
       expect(mockVisitor.visitCustomAttributeContainer.notCalled).to.be.true;
     });
@@ -526,39 +439,31 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitSchemaItem.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitCustomAttributeContainer.notCalled).to.be.true;
       expect(mockVisitor.visitClass.notCalled).to.be.true;
     });
 
     it("Property, visit methods called correctly", async () => {
       const testItem = new EntityClass(schema, "TestItem");
-      const property = await (
-        testItem as ECClass as MutableClass
-      ).createPrimitiveProperty("TestProperty", PrimitiveType.String);
+      const property = await (testItem as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.String
+      );
       mockVisitor = { ...mockVisitor, visitProperty: sinon.spy() };
       helper = new SchemaPartVisitorDelegate(mockVisitor);
 
       await helper.visitSchemaPart(property);
 
-      expect(mockVisitor.visitProperty.calledOnceWithExactly(property)).to.be
-        .true;
-      expect(
-        mockVisitor.visitCustomAttributeContainer.calledOnceWithExactly(
-          property
-        )
-      ).to.be.true;
+      expect(mockVisitor.visitProperty.calledOnceWithExactly(property)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainer.calledOnceWithExactly(property)).to.be.true;
       expect(mockVisitor.visitSchemaItem.notCalled).to.be.true;
       expect(mockVisitor.visitClass.notCalled).to.be.true;
     });
 
     it("RelationshipConstraint, visit methods called correctly", async () => {
       const relationship = new RelationshipClass(schema, "TestRelationship");
-      const testItem = new RelationshipConstraint(
-        relationship,
-        RelationshipEnd.Source
-      );
+      const testItem = new RelationshipConstraint(relationship, RelationshipEnd.Source);
       mockVisitor = {
         ...mockVisitor,
         visitRelationshipConstraint: sinon.spy(),
@@ -567,14 +472,8 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       await helper.visitSchemaPart(testItem);
 
-      expect(
-        mockVisitor.visitRelationshipConstraint.calledOnceWithExactly(testItem)
-      ).to.be.true;
-      expect(
-        mockVisitor.visitCustomAttributeContainer.calledOnceWithExactly(
-          testItem
-        )
-      ).to.be.true;
+      expect(mockVisitor.visitRelationshipConstraint.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainer.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitSchemaItem.notCalled).to.be.true;
       expect(mockVisitor.visitClass.notCalled).to.be.true;
     });
@@ -596,12 +495,9 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(mockVisitor.visitConstantSync.calledOnceWithExactly(testItem)).to
-        .be.true;
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
-      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be
-        .true;
+      expect(mockVisitor.visitConstantSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be.true;
       expect(mockVisitor.visitClassSync.notCalled).to.be.true;
     });
 
@@ -612,10 +508,8 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
-      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be
-        .true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be.true;
       expect(mockVisitor.visitClassSync.notCalled).to.be.true;
     });
 
@@ -629,20 +523,10 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(
-        mockVisitor.visitCustomAttributeClassSync.calledOnceWithExactly(
-          testItem
-        )
-      ).to.be.true;
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
-      expect(
-        mockVisitor.visitCustomAttributeContainerSync.calledOnceWithExactly(
-          testItem
-        )
-      ).to.be.true;
-      expect(mockVisitor.visitClassSync.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitCustomAttributeClassSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitClassSync.calledOnceWithExactly(testItem)).to.be.true;
     });
 
     it("CustomAttributeClass, no visitor, call does not error", async () => {
@@ -652,15 +536,9 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
-      expect(
-        mockVisitor.visitCustomAttributeContainerSync.calledOnceWithExactly(
-          testItem
-        )
-      ).to.be.true;
-      expect(mockVisitor.visitClassSync.calledOnceWithExactly(testItem)).to.be
-        .true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitClassSync.calledOnceWithExactly(testItem)).to.be.true;
     });
 
     it("EntityClass, visit methods called correctly", async () => {
@@ -670,17 +548,10 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(mockVisitor.visitEntityClassSync.calledOnceWithExactly(testItem))
-        .to.be.true;
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
-      expect(mockVisitor.visitClassSync.calledOnceWithExactly(testItem)).to.be
-        .true;
-      expect(
-        mockVisitor.visitCustomAttributeContainerSync.calledOnceWithExactly(
-          testItem
-        )
-      ).to.be.true;
+      expect(mockVisitor.visitEntityClassSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitClassSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.calledOnceWithExactly(testItem)).to.be.true;
     });
 
     it("EntityClass, no visitor, call does not error", async () => {
@@ -690,15 +561,9 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
-      expect(mockVisitor.visitClassSync.calledOnceWithExactly(testItem)).to.be
-        .true;
-      expect(
-        mockVisitor.visitCustomAttributeContainerSync.calledOnceWithExactly(
-          testItem
-        )
-      ).to.be.true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitClassSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.calledOnceWithExactly(testItem)).to.be.true;
     });
 
     it("Enumeration, visit methods called correctly", () => {
@@ -708,13 +573,10 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(mockVisitor.visitEnumerationSync.calledOnceWithExactly(testItem))
-        .to.be.true;
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
+      expect(mockVisitor.visitEnumerationSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClassSync.notCalled).to.be.true;
-      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be
-        .true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be.true;
     });
 
     it("Enumeration, no visitor, call does not error", () => {
@@ -724,10 +586,8 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
-      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be
-        .true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be.true;
       expect(mockVisitor.visitClassSync.notCalled).to.be.true;
     });
 
@@ -738,13 +598,10 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(mockVisitor.visitFormatSync.calledOnceWithExactly(testItem)).to.be
-        .true;
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
+      expect(mockVisitor.visitFormatSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClassSync.notCalled).to.be.true;
-      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be
-        .true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be.true;
     });
 
     it("Format, no visitor, call does not error", () => {
@@ -754,10 +611,8 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
-      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be
-        .true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be.true;
       expect(mockVisitor.visitClassSync.notCalled).to.be.true;
     });
 
@@ -768,13 +623,10 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(mockVisitor.visitInvertedUnitSync.calledOnceWithExactly(testItem))
-        .to.be.true;
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
+      expect(mockVisitor.visitInvertedUnitSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClassSync.notCalled).to.be.true;
-      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be
-        .true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be.true;
     });
 
     it("InvertedUnit, no visitor, call does not error", () => {
@@ -784,10 +636,8 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
-      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be
-        .true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be.true;
       expect(mockVisitor.visitClassSync.notCalled).to.be.true;
     });
 
@@ -798,14 +648,10 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(
-        mockVisitor.visitKindOfQuantitySync.calledOnceWithExactly(testItem)
-      ).to.be.true;
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
+      expect(mockVisitor.visitKindOfQuantitySync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClassSync.notCalled).to.be.true;
-      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be
-        .true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be.true;
     });
 
     it("KindOfQuantity, no visitor, call does not error", () => {
@@ -815,10 +661,8 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
-      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be
-        .true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be.true;
       expect(mockVisitor.visitClassSync.notCalled).to.be.true;
     });
 
@@ -829,17 +673,10 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(mockVisitor.visitMixinSync.calledOnceWithExactly(testItem)).to.be
-        .true;
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
-      expect(mockVisitor.visitClassSync.calledOnceWithExactly(testItem)).to.be
-        .true;
-      expect(
-        mockVisitor.visitCustomAttributeContainerSync.calledOnceWithExactly(
-          testItem
-        )
-      ).to.be.true;
+      expect(mockVisitor.visitMixinSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitClassSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.calledOnceWithExactly(testItem)).to.be.true;
     });
 
     it("Mixin, no visitor, call does not error", () => {
@@ -849,15 +686,9 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
-      expect(mockVisitor.visitClassSync.calledOnceWithExactly(testItem)).to.be
-        .true;
-      expect(
-        mockVisitor.visitCustomAttributeContainerSync.calledOnceWithExactly(
-          testItem
-        )
-      ).to.be.true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitClassSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.calledOnceWithExactly(testItem)).to.be.true;
     });
 
     it("Phenomenon, visit methods called correctly", () => {
@@ -867,13 +698,10 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(mockVisitor.visitPhenomenonSync.calledOnceWithExactly(testItem)).to
-        .be.true;
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
+      expect(mockVisitor.visitPhenomenonSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClassSync.notCalled).to.be.true;
-      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be
-        .true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be.true;
     });
 
     it("Phenomenon, no visitor, call does not error", () => {
@@ -883,10 +711,8 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
-      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be
-        .true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be.true;
       expect(mockVisitor.visitClassSync.notCalled).to.be.true;
     });
 
@@ -897,14 +723,10 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(
-        mockVisitor.visitPropertyCategorySync.calledOnceWithExactly(testItem)
-      ).to.be.true;
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
+      expect(mockVisitor.visitPropertyCategorySync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClassSync.notCalled).to.be.true;
-      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be
-        .true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be.true;
     });
 
     it("PropertyCategory, no visitor, call does not error", () => {
@@ -914,10 +736,8 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
-      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be
-        .true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be.true;
       expect(mockVisitor.visitClassSync.notCalled).to.be.true;
     });
 
@@ -928,18 +748,10 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(
-        mockVisitor.visitRelationshipClassSync.calledOnceWithExactly(testItem)
-      ).to.be.true;
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
-      expect(mockVisitor.visitClassSync.calledOnceWithExactly(testItem)).to.be
-        .true;
-      expect(
-        mockVisitor.visitCustomAttributeContainerSync.calledOnceWithExactly(
-          testItem
-        )
-      ).to.be.true;
+      expect(mockVisitor.visitRelationshipClassSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitClassSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.calledOnceWithExactly(testItem)).to.be.true;
     });
 
     it("RelationshipClass, no visitor, call does not error", () => {
@@ -949,15 +761,9 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
-      expect(mockVisitor.visitClassSync.calledOnceWithExactly(testItem)).to.be
-        .true;
-      expect(
-        mockVisitor.visitCustomAttributeContainerSync.calledOnceWithExactly(
-          testItem
-        )
-      ).to.be.true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitClassSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.calledOnceWithExactly(testItem)).to.be.true;
     });
 
     it("StructClass, visit methods called correctly", () => {
@@ -967,17 +773,10 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(mockVisitor.visitStructClassSync.calledOnceWithExactly(testItem))
-        .to.be.true;
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
-      expect(mockVisitor.visitClassSync.calledOnceWithExactly(testItem)).to.be
-        .true;
-      expect(
-        mockVisitor.visitCustomAttributeContainerSync.calledOnceWithExactly(
-          testItem
-        )
-      ).to.be.true;
+      expect(mockVisitor.visitStructClassSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitClassSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.calledOnceWithExactly(testItem)).to.be.true;
     });
 
     it("StructClass, no visitor, call does not error", () => {
@@ -987,15 +786,9 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
-      expect(mockVisitor.visitClassSync.calledOnceWithExactly(testItem)).to.be
-        .true;
-      expect(
-        mockVisitor.visitCustomAttributeContainerSync.calledOnceWithExactly(
-          testItem
-        )
-      ).to.be.true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitClassSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.calledOnceWithExactly(testItem)).to.be.true;
     });
 
     it("Unit, visit methods called correctly", () => {
@@ -1005,13 +798,10 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(mockVisitor.visitUnitSync.calledOnceWithExactly(testItem)).to.be
-        .true;
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
+      expect(mockVisitor.visitUnitSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClassSync.notCalled).to.be.true;
-      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be
-        .true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be.true;
     });
 
     it("Unit, no visitor, call does not error", () => {
@@ -1021,10 +811,8 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
-      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be
-        .true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be.true;
       expect(mockVisitor.visitClassSync.notCalled).to.be.true;
     });
 
@@ -1035,13 +823,10 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(mockVisitor.visitUnitSystemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
+      expect(mockVisitor.visitUnitSystemSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitClassSync.notCalled).to.be.true;
-      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be
-        .true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be.true;
     });
 
     it("UnitSystem, no visitor, call does not error", () => {
@@ -1051,40 +836,31 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to
-        .be.true;
-      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be
-        .true;
+      expect(mockVisitor.visitSchemaItemSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.notCalled).to.be.true;
       expect(mockVisitor.visitClassSync.notCalled).to.be.true;
     });
 
     it("Property, visit methods called correctly", async () => {
       const testItem = new EntityClass(schema, "TestItem");
-      const property = await (
-        testItem as ECClass as MutableClass
-      ).createPrimitiveProperty("TestProperty", PrimitiveType.String);
+      const property = await (testItem as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.String
+      );
       mockVisitor = { ...mockVisitor, visitPropertySync: sinon.spy() };
       helper = new SchemaPartVisitorDelegate(mockVisitor);
 
       helper.visitSchemaPartSync(property);
 
-      expect(mockVisitor.visitPropertySync.calledOnceWithExactly(property)).to
-        .be.true;
-      expect(
-        mockVisitor.visitCustomAttributeContainerSync.calledOnceWithExactly(
-          property
-        )
-      ).to.be.true;
+      expect(mockVisitor.visitPropertySync.calledOnceWithExactly(property)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.calledOnceWithExactly(property)).to.be.true;
       expect(mockVisitor.visitSchemaItemSync.notCalled).to.be.true;
       expect(mockVisitor.visitClassSync.notCalled).to.be.true;
     });
 
     it("RelationshipConstraint, visit methods called correctly", () => {
       const relationship = new RelationshipClass(schema, "TestRelationship");
-      const testItem = new RelationshipConstraint(
-        relationship,
-        RelationshipEnd.Source
-      );
+      const testItem = new RelationshipConstraint(relationship, RelationshipEnd.Source);
       mockVisitor = {
         ...mockVisitor,
         visitRelationshipConstraintSync: sinon.spy(),
@@ -1093,16 +869,8 @@ describe("SchemaPartVisitorDelegate Tests", () => {
 
       helper.visitSchemaPartSync(testItem);
 
-      expect(
-        mockVisitor.visitRelationshipConstraintSync.calledOnceWithExactly(
-          testItem
-        )
-      ).to.be.true;
-      expect(
-        mockVisitor.visitCustomAttributeContainerSync.calledOnceWithExactly(
-          testItem
-        )
-      ).to.be.true;
+      expect(mockVisitor.visitRelationshipConstraintSync.calledOnceWithExactly(testItem)).to.be.true;
+      expect(mockVisitor.visitCustomAttributeContainerSync.calledOnceWithExactly(testItem)).to.be.true;
       expect(mockVisitor.visitSchemaItemSync.notCalled).to.be.true;
       expect(mockVisitor.visitClassSync.notCalled).to.be.true;
     });

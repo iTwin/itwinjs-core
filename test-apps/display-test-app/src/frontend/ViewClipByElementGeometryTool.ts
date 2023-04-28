@@ -22,10 +22,7 @@ import {
   ViewClipTool,
   Viewport,
 } from "@itwin/core-frontend";
-import {
-  ConvexMeshDecomposition,
-  Options as DecompositionOptions,
-} from "vhacd-js";
+import { ConvexMeshDecomposition, Options as DecompositionOptions } from "vhacd-js";
 
 /** Settings that control the behavior of the ViewClipByElementGeometryTool. */
 interface Settings extends ElementMeshOptions {
@@ -46,17 +43,12 @@ class ConvexDecomposer {
   private readonly _impl: ConvexMeshDecomposition;
   private readonly _opts: DecompositionOptions;
 
-  private constructor(
-    impl: ConvexMeshDecomposition,
-    options: DecompositionOptions
-  ) {
+  private constructor(impl: ConvexMeshDecomposition, options: DecompositionOptions) {
     this._impl = impl;
     this._opts = options;
   }
 
-  public static async create(
-    options: DecompositionOptions
-  ): Promise<ConvexDecomposer> {
+  public static async create(options: DecompositionOptions): Promise<ConvexDecomposer> {
     const impl = await ConvexMeshDecomposition.create();
     return new ConvexDecomposer(impl, options);
   }
@@ -76,28 +68,20 @@ class ConvexDecomposer {
 
       // `points` is a GrowableXYZArray, which may allocate more space than it needs for the number of points it stores.
       // Make sure to only pass the used portion of the allocation to vhacd-js.
-      const positions = new Float64Array(
-        points.float64Data().buffer,
-        0,
-        points.float64Length
-      );
+      const positions = new Float64Array(points.float64Data().buffer, 0, points.float64Length);
 
       // Unfortunately we must copy the indices rather than passing them directly to vhacd-js.
       const indices = new Uint32Array(polyface.data.pointIndex);
       if (indices.length === 0 || positions.length === 0) continue;
 
       // Decompose the polyface into any number of convex hulls.
-      const meshes = this._impl.computeConvexHulls(
-        { positions, indices },
-        this._opts
-      );
+      const meshes = this._impl.computeConvexHulls({ positions, indices }, this._opts);
 
       // Convert each hull into a polyface.
       for (const mesh of meshes) {
         const builder = PolyfaceBuilder.create();
         for (let i = 0; i < mesh.indices.length; i += 3) {
-          for (let j = 0; j < 3; j++)
-            this.getPoint(mesh.indices[i + j], mesh.positions, polygon[j]);
+          for (let j = 0; j < 3; j++) this.getPoint(mesh.indices[i + j], mesh.positions, polygon[j]);
 
           builder.addPolygon(polygon);
         }
@@ -109,17 +93,9 @@ class ConvexDecomposer {
     return decomposedPolyfaces;
   }
 
-  private getPoint(
-    index: number,
-    positions: Float64Array,
-    output: Point3d
-  ): void {
+  private getPoint(index: number, positions: Float64Array, output: Point3d): void {
     index *= 3;
-    output.set(
-      positions[index + 0],
-      positions[index + 1],
-      positions[index + 2]
-    );
+    output.set(positions[index + 0], positions[index + 1], positions[index + 2]);
   }
 }
 
@@ -156,17 +132,10 @@ export class ViewClipByElementGeometryTool extends ViewClipTool {
     }
 
     // Wait for the user to select the elements to use for clipping.
-    this.initLocateElements(
-      true,
-      false,
-      "default",
-      CoordinateLockOverrides.All
-    );
+    this.initLocateElements(true, false, "default", CoordinateLockOverrides.All);
   }
 
-  public override async onDataButtonDown(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (!this.targetView) return EventHandled.No;
 
     // Identify the element selected.
@@ -180,33 +149,21 @@ export class ViewClipByElementGeometryTool extends ViewClipTool {
     if (!hit || !hit.isElementHit) return EventHandled.No;
 
     // Clip the view using the selected element's geometry.
-    return (await this.doClipToElements(
-      this.targetView,
-      new Set<string>([hit.sourceId])
-    ))
+    return (await this.doClipToElements(this.targetView, new Set<string>([hit.sourceId])))
       ? EventHandled.Yes
       : EventHandled.No;
   }
 
   /** Clip the view using the geometry of all elements currently in the selection set. */
   private async doClipToSelectedElements(viewport: Viewport): Promise<boolean> {
-    if (
-      await this.doClipToElements(
-        viewport,
-        viewport.iModel.selectionSet.elements
-      )
-    )
-      return true;
+    if (await this.doClipToElements(viewport, viewport.iModel.selectionSet.elements)) return true;
 
     await this.exitTool();
     return false;
   }
 
   /** Clip the view using the geometry of the specified elements. */
-  private async doClipToElements(
-    viewport: Viewport,
-    ids: Set<string>
-  ): Promise<boolean> {
+  private async doClipToElements(viewport: Viewport, ids: Set<string>): Promise<boolean> {
     try {
       const union = UnionOfConvexClipPlaneSets.createEmpty();
       const decomposer = settings.computeConvexHulls
@@ -224,19 +181,13 @@ export class ViewClipByElementGeometryTool extends ViewClipTool {
         // Offset if specified - typically used to expand the element envelope slightly.
         // ###TODO cloneOffset should return IndexedPolyface, not Polyface?
         const offset = settings.offset;
-        if (offset)
-          polyfaces = polyfaces.map((pf) =>
-            PolyfaceQuery.cloneOffset(pf, offset)
-          );
+        if (offset) polyfaces = polyfaces.map((pf) => PolyfaceQuery.cloneOffset(pf, offset));
 
         // Convert to convex hulls unless otherwise specified.
         if (decomposer) polyfaces = decomposer.decompose(polyfaces);
 
         // Add each polyface as a clipper.
-        for (const polyface of polyfaces)
-          union.addConvexSet(
-            ConvexClipPlaneSet.createConvexPolyface(polyface).clipper
-          );
+        for (const polyface of polyfaces) union.addConvexSet(ConvexClipPlaneSet.createConvexPolyface(polyface).clipper);
       }
 
       // Apply the clip to the view.

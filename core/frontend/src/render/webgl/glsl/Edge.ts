@@ -24,13 +24,7 @@ import { addFrustum, addShaderFlags } from "./Common";
 import { addWhiteOnWhiteReversal } from "./Fragment";
 import { addAdjustWidth, addLineCode } from "./Polyline";
 import { octDecodeNormal } from "./Surface";
-import {
-  addLineWeight,
-  addModelViewMatrix,
-  addNormalMatrix,
-  addProjectionMatrix,
-  addSamplePosition,
-} from "./Vertex";
+import { addLineWeight, addModelViewMatrix, addNormalMatrix, addProjectionMatrix, addSamplePosition } from "./Vertex";
 import { addModelToWindowCoordinates, addViewport } from "./Viewport";
 import { addLookupTable } from "./LookupTable";
 import { addRenderOrder, addRenderOrderConstants } from "./FeatureSymbology";
@@ -217,9 +211,7 @@ export function addEdgeContrast(vert: VertexShaderBuilder): void {
       let bgi = -1;
       if (
         params.geometry.isEdge &&
-        params.target.currentEdgeSettings.wantContrastingColor(
-          params.target.currentViewFlags.renderMode
-        )
+        params.target.currentEdgeSettings.wantContrastingColor(params.target.currentViewFlags.renderMode)
       )
         bgi = params.target.uniforms.style.backgroundIntensity;
 
@@ -241,11 +233,7 @@ function createBase(
   const isInstanced = IsInstanced.Yes === instanced;
   const isSilhouette = "Silhouette" === type;
   const isIndexed = "IndexedEdge" === type;
-  const techId = isSilhouette
-    ? TechniqueId.SilhouetteEdge
-    : isIndexed
-    ? TechniqueId.IndexedEdge
-    : TechniqueId.Edge;
+  const techId = isSilhouette ? TechniqueId.SilhouetteEdge : isIndexed ? TechniqueId.IndexedEdge : TechniqueId.Edge;
   const attrMap = AttributeMap.findAttributeMap(techId, isInstanced);
 
   const builder = new ProgramBuilder(attrMap, {
@@ -289,23 +277,13 @@ function createBase(
       });
     });
 
-    vert.set(
-      VertexShaderComponent.ComputeQuantizedPosition,
-      `${initLut}\n\n${computeIndexedQuantizedPosition}`
-    );
+    vert.set(VertexShaderComponent.ComputeQuantizedPosition, `${initLut}\n\n${computeIndexedQuantizedPosition}`);
     vert.addInitializer(initializeIndexed);
 
     addRenderOrder(vert);
     addRenderOrderConstants(vert);
-    builder.addInlineComputedVarying(
-      "v_renderOrder",
-      VariableType.Float,
-      computeIndexedRenderOrder
-    );
-    builder.frag.set(
-      FragmentShaderComponent.OverrideRenderOrder,
-      "return v_renderOrder;"
-    );
+    builder.addInlineComputedVarying("v_renderOrder", VariableType.Float, computeIndexedRenderOrder);
+    builder.frag.set(FragmentShaderComponent.OverrideRenderOrder, "return v_renderOrder;");
   } else {
     vert.addInitializer(decodeEndPointAndQuadIndices);
   }
@@ -337,9 +315,7 @@ function createBase(
     vert.addFunction(octDecodeNormal);
     vert.set(
       VertexShaderComponent.CheckForEarlyDiscard,
-      isSilhouette
-        ? checkForSilhouetteDiscardNonIndexed
-        : checkForSilhouetteDiscardIndexed
+      isSilhouette ? checkForSilhouetteDiscardNonIndexed : checkForSilhouetteDiscardIndexed
     );
   }
 

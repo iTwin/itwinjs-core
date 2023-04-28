@@ -21,9 +21,7 @@ describe("CustomViewState3dCreator", () => {
     imodel = SnapshotDb.openFile(filename);
   });
   function setsAreEqual<T>(set1: Set<T>, set2: Set<T>): boolean {
-    return (
-      set1.size === set2.size && [...set1].every((value) => set2.has(value))
-    );
+    return set1.size === set2.size && [...set1].every((value) => set2.has(value));
   }
 
   it("should get correct data from customviewstate3dcreator", async () => {
@@ -39,39 +37,26 @@ describe("CustomViewState3dCreator", () => {
     );
 
     const customViewStateCreator = new CustomViewState3dCreator(imodel);
-    const result: CustomViewState3dProps =
-      await customViewStateCreator.getCustomViewState3dData({});
+    const result: CustomViewState3dProps = await customViewStateCreator.getCustomViewState3dData({});
     const catIds = CompressedId64Set.decompressSet(result.categoryIds);
     const modelIds = CompressedId64Set.decompressSet(result.modelIds);
     assert.isTrue(setsAreEqual(expectedCatIds, catIds));
     assert.isTrue(setsAreEqual(expectedModelIds, modelIds));
-    assert.isTrue(
-      expectedModelExtents.isAlmostEqual(Range3d.fromJSON(result.modelExtents))
-    );
+    assert.isTrue(expectedModelExtents.isAlmostEqual(Range3d.fromJSON(result.modelExtents)));
   });
   it("should get correct data from customviewstate3dcreator when passing specific modelId", async () => {
     const expectedCatIds = new Set<Id64String>().add("0x17");
     const expectedModelIds = new Set<Id64String>().add("0x28");
-    const expectedModelExtents: Range3d = new Range3d(
-      1e200,
-      1e200,
-      1e200,
-      -1e200,
-      -1e200,
-      -1e200
-    );
+    const expectedModelExtents: Range3d = new Range3d(1e200, 1e200, 1e200, -1e200, -1e200, -1e200);
 
     const customViewStateCreator = new CustomViewState3dCreator(imodel);
-    const result: CustomViewState3dProps =
-      await customViewStateCreator.getCustomViewState3dData({
-        modelIds: CompressedId64Set.compressArray(["0x28"]),
-      });
+    const result: CustomViewState3dProps = await customViewStateCreator.getCustomViewState3dData({
+      modelIds: CompressedId64Set.compressArray(["0x28"]),
+    });
     const catIds = CompressedId64Set.decompressSet(result.categoryIds);
     const modelIds = CompressedId64Set.decompressSet(result.modelIds);
     assert.isTrue(setsAreEqual(expectedCatIds, catIds));
     assert.isTrue(setsAreEqual(expectedModelIds, modelIds));
-    assert.isTrue(
-      expectedModelExtents.isAlmostEqual(Range3d.fromJSON(result.modelExtents))
-    );
+    assert.isTrue(expectedModelExtents.isAlmostEqual(Range3d.fromJSON(result.modelExtents)));
   });
 });

@@ -16,10 +16,7 @@ import {
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
 import { getRpcInterfaces, Settings } from "../../common/Settings";
-import {
-  getClientAccessTokenFromBackend,
-  getProcessEnvFromBackend,
-} from "../../common/SideChannels";
+import { getClientAccessTokenFromBackend, getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
 
 declare const PACKAGE_VERSION: string;
@@ -55,10 +52,7 @@ export class TestContext {
     // eslint-disable-line deprecation/deprecation
     // Url without trailing slash
     const uriPrefix: string = this.settings.Backend.location.replace(/\/$/, "");
-    BentleyCloudRpcManager.initializeClient(
-      { info, uriPrefix },
-      getRpcInterfaces(this.settings)
-    );
+    BentleyCloudRpcManager.initializeClient({ info, uriPrefix }, getRpcInterfaces(this.settings));
   }
 
   private async initialize() {
@@ -76,11 +70,7 @@ export class TestContext {
 
     // Configure iTwin.js frontend logging to go to the console
     Logger.initializeToConsole();
-    Logger.setLevelDefault(
-      this.settings.logLevel === undefined
-        ? LogLevel.Warning
-        : this.settings.logLevel
-    );
+    Logger.setLevelDefault(this.settings.logLevel === undefined ? LogLevel.Warning : this.settings.logLevel);
 
     if (undefined !== this.settings.oidcClientId) {
       this.adminUserAccessToken = await getAccessTokenFromBackend(
@@ -107,30 +97,20 @@ export class TestContext {
 
     const iModelClient = new IModelsClient({
       api: {
-        baseUrl: `https://${
-          process.env.IMJS_URL_PREFIX ?? ""
-        }api.bentley.com/imodels`,
+        baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`,
       },
     });
     await NoRenderApp.startup({
       applicationVersion: PACKAGE_VERSION,
       applicationId: this.settings.gprid,
-      authorizationClient: new TestFrontendAuthorizationClient(
-        this.adminUserAccessToken
-      ),
+      authorizationClient: new TestFrontendAuthorizationClient(this.adminUserAccessToken),
       hubAccess: new FrontendIModelsAccess(iModelClient),
     });
 
-    this.iModelWithChangesets = await IModelSession.create(
-      this.adminUserAccessToken,
-      this.settings.iModel
-    );
+    this.iModelWithChangesets = await IModelSession.create(this.adminUserAccessToken, this.settings.iModel);
     this.iTwinId = this.iModelWithChangesets.iTwinId;
     if (this.settings.runiModelWriteRpcTests)
-      this.iModelForWrite = await IModelSession.create(
-        this.adminUserAccessToken,
-        this.settings.writeIModel
-      );
+      this.iModelForWrite = await IModelSession.create(this.adminUserAccessToken, this.settings.writeIModel);
 
     console.log("TestSetup: Done");
   }

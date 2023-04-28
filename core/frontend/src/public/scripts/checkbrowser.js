@@ -12,8 +12,7 @@ if (!!document.documentMode || !!window.StyleMedia) {
   newDiv.style.justifyContent = "center";
   newDiv.style.position = "relative";
   newDiv.style.top = "25%";
-  newDiv.innerHTML =
-    "Sorry, the browser you are using is not supported. Please use Firefox, Chrome, or Safari.";
+  newDiv.innerHTML = "Sorry, the browser you are using is not supported. Please use Firefox, Chrome, or Safari.";
   body.appendChild(newDiv);
   document.body = body;
 

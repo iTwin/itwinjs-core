@@ -24,38 +24,25 @@ import {
 
 /* eslint-disable deprecation/deprecation */
 
-function parseHeaders(
-  protocol: WebAppRpcProtocol,
-  req: HttpServerRequest
-): SerializedRpcActivity {
-  const headerNames: SerializedRpcActivity =
-    protocol.serializedClientRequestContextHeaderNames;
+function parseHeaders(protocol: WebAppRpcProtocol, req: HttpServerRequest): SerializedRpcActivity {
+  const headerNames: SerializedRpcActivity = protocol.serializedClientRequestContextHeaderNames;
   const parsedHeaders: SerializedRpcActivity = {
     id: req.header(headerNames.id) || "",
     applicationId: req.header(headerNames.applicationId) || "",
     applicationVersion: req.header(headerNames.applicationVersion) || "",
     sessionId: req.header(headerNames.sessionId) || "",
-    authorization:
-      (headerNames.authorization
-        ? req.header(headerNames.authorization)
-        : "") ?? "",
+    authorization: (headerNames.authorization ? req.header(headerNames.authorization) : "") ?? "",
   };
   return parsedHeaders;
 }
 
 function parseFromPath(operation: SerializedRpcOperation): RpcSerializedValue {
-  const decoded = operation.encodedRequest
-    ? Buffer.from(operation.encodedRequest, "base64").toString("binary")
-    : "";
+  const decoded = operation.encodedRequest ? Buffer.from(operation.encodedRequest, "base64").toString("binary") : "";
   return RpcSerializedValue.create(decoded);
 }
 
-async function parseFromBody(
-  req: HttpServerRequest
-): Promise<RpcSerializedValue> {
-  const contentType = WebAppRpcProtocol.computeContentType(
-    req.header(WEB_RPC_CONSTANTS.CONTENT)
-  );
+async function parseFromBody(req: HttpServerRequest): Promise<RpcSerializedValue> {
+  const contentType = WebAppRpcProtocol.computeContentType(req.header(WEB_RPC_CONSTANTS.CONTENT));
   if (contentType === RpcContentType.Binary) {
     const objects = JSON.stringify([MarshalingBinaryMarker.createDefault()]);
     const data = [req.body as Buffer];
@@ -68,10 +55,7 @@ async function parseFromBody(
 }
 
 /** @internal */
-export async function parseRequest(
-  protocol: WebAppRpcProtocol,
-  req: HttpServerRequest
-): Promise<SerializedRpcRequest> {
+export async function parseRequest(protocol: WebAppRpcProtocol, req: HttpServerRequest): Promise<SerializedRpcRequest> {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const operation = protocol.getOperationFromPath(req.url!);
 
@@ -87,12 +71,8 @@ export async function parseRequest(
     method: req.method,
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     path: req.url!,
-    parameters: operation.encodedRequest
-      ? parseFromPath(operation)
-      : await parseFromBody(req),
-    caching: operation.encodedRequest
-      ? RpcResponseCacheControl.Immutable
-      : RpcResponseCacheControl.None,
+    parameters: operation.encodedRequest ? parseFromPath(operation) : await parseFromBody(req),
+    caching: operation.encodedRequest ? RpcResponseCacheControl.Immutable : RpcResponseCacheControl.None,
   };
 
   request.ip = req.ip;
@@ -107,10 +87,7 @@ export async function parseRequest(
   }
 
   if (!request.id) {
-    throw new IModelError(
-      BentleyStatus.ERROR,
-      `Invalid request: Missing required activity ID.`
-    );
+    throw new IModelError(BentleyStatus.ERROR, `Invalid request: Missing required activity ID.`);
   }
 
   return request;

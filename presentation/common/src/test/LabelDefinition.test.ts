@@ -5,14 +5,8 @@
 
 import { expect } from "chai";
 import * as faker from "faker";
-import {
-  LabelCompositeValue,
-  LabelDefinition,
-} from "../presentation-common/LabelDefinition";
-import {
-  createRandomLabelCompositeValue,
-  createRandomLabelDefinition,
-} from "./_helpers/random";
+import { LabelCompositeValue, LabelDefinition } from "../presentation-common/LabelDefinition";
+import { createRandomLabelCompositeValue, createRandomLabelDefinition } from "./_helpers/random";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -81,16 +75,11 @@ describe("LabelDefinition", () => {
         displayValue: "Composite-Value",
         rawValue: {
           separator: "-",
-          values: [
-            LabelDefinition.fromLabelString("Composite"),
-            LabelDefinition.fromLabelString("Value"),
-          ],
+          values: [LabelDefinition.fromLabelString("Composite"), LabelDefinition.fromLabelString("Value")],
         },
       };
-      expect(LabelDefinition.isCompositeDefinition(stringDefinition)).to.be
-        .false;
-      expect(LabelDefinition.isCompositeDefinition(compositeDefinition)).to.be
-        .true;
+      expect(LabelDefinition.isCompositeDefinition(stringDefinition)).to.be.false;
+      expect(LabelDefinition.isCompositeDefinition(compositeDefinition)).to.be.true;
     });
   });
 });

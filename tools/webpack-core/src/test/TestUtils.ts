@@ -4,13 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import * as fs from "fs-extra";
-import {
-  Compiler,
-  Configuration,
-  Stats,
-  StatsCompilation,
-  webpack,
-} from "webpack";
+import { Compiler, Configuration, Stats, StatsCompilation, webpack } from "webpack";
 const MODULE = require("module");
 const { usedDeps } = require("../utils/resolve-recurse/resolve");
 
@@ -21,10 +15,7 @@ function createTestCompiler(config: Configuration, vol?: any): Compiler {
   return compiler;
 }
 
-export async function runWebpack(
-  config: Configuration,
-  vol?: any
-): Promise<StatsCompilation> {
+export async function runWebpack(config: Configuration, vol?: any): Promise<StatsCompilation> {
   const compiler = createTestCompiler(config, vol);
   return new Promise<any>((resolve, reject) => {
     compiler.run((err?: Error | null, stats?: Stats) =>
@@ -72,11 +63,7 @@ export function fsFromJson(json: any) {
 
 function clearModuleCache(paths: string) {
   for (const [key, value] of Object.entries(MODULE._pathCache)) {
-    if (
-      (value as string).startsWith(paths) ||
-      key.startsWith(paths) ||
-      key.includes("resolve-recurse")
-    ) {
+    if ((value as string).startsWith(paths) || key.startsWith(paths) || key.includes("resolve-recurse")) {
       delete MODULE._pathCache[key];
     }
   }

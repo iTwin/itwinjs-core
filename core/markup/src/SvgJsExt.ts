@@ -61,13 +61,7 @@ declare module "@svgdotjs/svg.js" {
     /** turn off flash color */
     unFlash(): void;
     /** reposition and resize this element */
-    markupStretch(
-      x: number,
-      y: number,
-      w: number,
-      h: number,
-      mtx: Matrix
-    ): void;
+    markupStretch(x: number, y: number, w: number, h: number, mtx: Matrix): void;
     /** return true if this element is a child of the supplied Svg. */
     isChildOf(svg: Svg): boolean;
     /** return selectable element or the outermost group containing this element if it's a child of the supplied Svg. */
@@ -126,16 +120,14 @@ extend(MarkupElement, {
     let oldColor = me.data(OLDCOLOR) as MarkupColor | undefined;
     if (undefined === oldColor) {
       const css = window.getComputedStyle(me.node);
-      const colorOrNone = (c: string | null) =>
-        c && c !== "none" ? c : "none";
+      const colorOrNone = (c: string | null) => (c && c !== "none" ? c : "none");
       oldColor = {
         fill: colorOrNone(css.fill),
         stroke: colorOrNone(css.stroke),
       };
       me.data(OLDCOLOR, oldColor);
     }
-    const toColor = (val: string | null) =>
-      !val || val === "none" ? "none" : color;
+    const toColor = (val: string | null) => (!val || val === "none" ? "none" : color);
     me.css({ fill: toColor(oldColor.fill), stroke: toColor(oldColor.stroke) });
   },
   resetColor() {
@@ -172,31 +164,22 @@ extend(MarkupElement, {
   },
   isChildOf(svg: Svg) {
     const parent = (this as MarkupElement).parent();
-    return parent === svg
-      ? true
-      : parent instanceof MarkupElement
-      ? parent.isChildOf(svg)
-      : false;
+    return parent === svg ? true : parent instanceof MarkupElement ? parent.isChildOf(svg) : false;
   },
   getChildOrGroupOf(svg: G): MarkupElement | undefined {
     const me = this as MarkupElement;
     const parents = me.parents(svg.parent());
-    if (0 === parents.length || parents[parents.length - 1].node !== svg.node)
-      return undefined;
+    if (0 === parents.length || parents[parents.length - 1].node !== svg.node) return undefined;
     if (parents.length > 1) {
       for (let index = parents.length - 2; index >= 0; --index)
-        if (parents[index] instanceof G || parents[index] instanceof Text)
-          return parents[index];
+        if (parents[index] instanceof G || parents[index] instanceof Text) return parents[index];
     }
     return me;
   },
   getNpcToVp(): Matrix {
     const me = this as MarkupElement;
     const bb = me.bbox();
-    return new Matrix()
-      .scaleO(bb.w, bb.h)
-      .translateO(bb.x, bb.y)
-      .lmultiplyO(me.matrixify());
+    return new Matrix().scaleO(bb.w, bb.h).translateO(bb.x, bb.y).lmultiplyO(me.matrixify());
   },
   getOutline(expand?: number): Rect {
     const me = this as MarkupElement;
@@ -255,8 +238,7 @@ extend(Text, {
     const me = this as Text;
     const node = me.node;
     const content = node.textContent;
-    if (content !== null && content.length > 0)
-      return MarkupElement.prototype.getOutline.call(me, expand);
+    if (content !== null && content.length > 0) return MarkupElement.prototype.getOutline.call(me, expand);
     node.textContent = "M";
     const outline = MarkupElement.prototype.getOutline.call(me, expand);
     node.textContent = content;
@@ -275,20 +257,7 @@ extend(Text, {
 extend(Matrix, {
   toIModelTransform() {
     const m = this as Matrix;
-    return Transform.createRowValues(
-      m.a,
-      m.c,
-      0,
-      m.e,
-      m.b,
-      m.d,
-      0,
-      m.f,
-      0,
-      0,
-      1,
-      0
-    );
+    return Transform.createRowValues(m.a, m.c, 0, m.e, m.b, m.d, 0, m.f, 0, 0, 1, 0);
   },
   fromIModelTransform(t: Transform) {
     const m = this as Matrix;

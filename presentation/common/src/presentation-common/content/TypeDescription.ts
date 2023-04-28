@@ -80,7 +80,4 @@ export interface StructTypeDescription extends BaseTypeDescription {
  * One of content field type descriptions.
  * @public
  */
-export type TypeDescription =
-  | PrimitiveTypeDescription
-  | ArrayTypeDescription
-  | StructTypeDescription;
+export type TypeDescription = PrimitiveTypeDescription | ArrayTypeDescription | StructTypeDescription;

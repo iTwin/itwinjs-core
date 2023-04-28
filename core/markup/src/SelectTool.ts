@@ -7,13 +7,7 @@
  */
 
 import { BeEvent } from "@itwin/core-bentley";
-import {
-  Point2d,
-  Point3d,
-  Transform,
-  Vector2d,
-  XAndY,
-} from "@itwin/core-geometry";
+import { Point2d, Point3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
 import {
   BeButton,
   BeButtonEvent,
@@ -82,19 +76,14 @@ export abstract class ModifyHandle {
     const node = target.node;
     node.addEventListener("mousedown", (event) => {
       const ev = event as MouseEvent;
-      if (0 === ev.button && undefined === this.handles.active)
-        this.handles.active = this;
+      if (0 === ev.button && undefined === this.handles.active) this.handles.active = this;
     });
     node.addEventListener("touchstart", () => {
       if (undefined === this.handles.active) this.handles.active = this;
     });
   }
-  public addTouchPadding(
-    visible: MarkupElement,
-    handles: Handles
-  ): MarkupElement {
-    if (InputSource.Touch !== IModelApp.toolAdmin.currentInputState.inputSource)
-      return visible;
+  public addTouchPadding(visible: MarkupElement, handles: Handles): MarkupElement {
+    if (InputSource.Touch !== IModelApp.toolAdmin.currentInputState.inputSource) return visible;
     const padding = visible.cloneMarkup().scale(3).attr("opacity", 0);
     const g = handles.group.group();
     padding.addTo(g);
@@ -132,9 +121,7 @@ class StretchHandle extends ModifyHandle {
 
   public override startDrag(_ev: BeButtonEvent) {
     const handles = this.handles;
-    this.startCtm = handles.el
-      .screenCTM()
-      .lmultiplyO(MarkupApp.screenToVbMtx());
+    this.startCtm = handles.el.screenCTM().lmultiplyO(MarkupApp.screenToVbMtx());
     this.startBox = handles.el.bbox(); // save starting size so we can preserve aspect ratio
     this.startPos = handles.npcToBox(this.posNpc);
     this.opposite = handles.npcToBox({
@@ -147,16 +134,12 @@ class StretchHandle extends ModifyHandle {
   /** perform the stretch. Always stretch element with anchor at the opposite corner of the one being moved. */
   public modify(ev: BeButtonEvent): void {
     const evPt = MarkupApp.convertVpToVb(ev.viewPoint); // get cursor location in viewbox coords
-    const diff = this.startPos.vectorTo(
-      this.vbToStartTrn.multiplyPoint2d(evPt)
-    ); // movement of cursor from start, in viewbox coords
+    const diff = this.startPos.vectorTo(this.vbToStartTrn.multiplyPoint2d(evPt)); // movement of cursor from start, in viewbox coords
     const diag = this.startPos.vectorTo(this.opposite).normalize()!; // vector from opposite corner to this handle
     let diagVec = diag.scaleToLength(diff.dotProduct(diag)); // projected distance along diagonal
     if (diagVec === undefined) diagVec = Vector2d.createZero();
     // if the shift key is down, don't preserve aspect ratio
-    const adjusted = ev.isShiftKey
-      ? { x: diff.x, y: diff.y }
-      : { x: diagVec.x, y: diagVec.y };
+    const adjusted = ev.isShiftKey ? { x: diff.x, y: diff.y } : { x: diagVec.x, y: diagVec.y };
     let { x, y, h, w } = this.startBox;
     if (this.posNpc.x === 0) {
       x += adjusted.x; // left edge
@@ -172,12 +155,7 @@ class StretchHandle extends ModifyHandle {
     }
     const mtx = this.startCtm
       .inverse()
-      .scaleO(
-        this.startBox.w / w,
-        this.startBox.h / h,
-        this.opposite.x,
-        this.opposite.y
-      )
+      .scaleO(this.startBox.w / w, this.startBox.h / h, this.opposite.x, this.opposite.y)
       .inverseO();
     const minSize = 10;
     if (w > minSize && h > minSize)
@@ -198,10 +176,7 @@ class RotateHandle extends ModifyHandle {
     super(handles);
     const props = MarkupApp.props.handles;
 
-    this._line = handles.group
-      .line(0, 0, 1, 1)
-      .attr(props.rotateLine)
-      .addClass(MarkupApp.rotateLineClass);
+    this._line = handles.group.line(0, 0, 1, 1).attr(props.rotateLine).addClass(MarkupApp.rotateLineClass);
     this._circle = handles.group
       .circle(props.size * 1.25)
       .attr(props.rotate)
@@ -218,10 +193,7 @@ class RotateHandle extends ModifyHandle {
   public setPosition(): void {
     const anchor = this.anchorVb;
     const dir = this.centerVb.vectorTo(anchor).normalize()!;
-    const loc = (this.location = anchor.plusScaled(
-      dir,
-      MarkupApp.props.handles.size * 3
-    ));
+    const loc = (this.location = anchor.plusScaled(dir, MarkupApp.props.handles.size * 3));
     this._line.plot(anchor.x, anchor.y, loc.x, loc.y);
     this._circle.center(loc.x, loc.y);
   }
@@ -244,32 +216,21 @@ class VertexHandle extends ModifyHandle {
   constructor(public override handles: Handles, index: number) {
     super(handles);
     const props = MarkupApp.props.handles;
-    this._circle = handles.group
-      .circle(props.size)
-      .attr(props.vertex)
-      .addClass(MarkupApp.vertexHandleClass);
+    this._circle = handles.group.circle(props.size).attr(props.vertex).addClass(MarkupApp.vertexHandleClass);
     this._x = `x${index + 1}`;
     this._y = `y${index + 1}`;
     this._circle = this.addTouchPadding(this._circle, handles);
     this.setMouseHandler(this._circle);
   }
   public setPosition(): void {
-    let point = new Point(
-      this.handles.el.attr(this._x),
-      this.handles.el.attr(this._y)
-    );
-    const matrix = this.handles.el
-      .screenCTM()
-      .lmultiplyO(MarkupApp.screenToVbMtx());
+    let point = new Point(this.handles.el.attr(this._x), this.handles.el.attr(this._y));
+    const matrix = this.handles.el.screenCTM().lmultiplyO(MarkupApp.screenToVbMtx());
     point = point.transform(matrix);
     this._circle.center(point.x, point.y);
   }
   public modify(ev: BeButtonEvent): void {
     let point = new Point(ev.viewPoint.x, ev.viewPoint.y);
-    const matrix = this.handles.el
-      .screenCTM()
-      .inverseO()
-      .multiplyO(MarkupApp.getVpToScreenMtx());
+    const matrix = this.handles.el.screenCTM().inverseO().multiplyO(MarkupApp.getVpToScreenMtx());
     point = point.transform(matrix);
     const el = this.handles.el;
     el.attr(this._x, point.x);
@@ -293,10 +254,7 @@ class MoveHandle extends ModifyHandle {
 
     if (showBBox) {
       this._outline = handles.group.polygon().attr(props.moveOutline);
-      const rect = this.handles.el
-        .getOutline()
-        .attr(props.move)
-        .attr({ fill: "none" });
+      const rect = this.handles.el.getOutline().attr(props.move).attr({ fill: "none" });
 
       const group = handles.group.group();
       group.add(this._outline);
@@ -314,26 +272,15 @@ class MoveHandle extends ModifyHandle {
   public override async onClick(_ev: BeButtonEvent): Promise<void> {
     const el = this.handles.el;
     // eslint-disable-next-line deprecation/deprecation
-    if (
-      el instanceof MarkupText ||
-      (el instanceof G &&
-        el.node.className.baseVal === MarkupApp.boxedTextClass)
-    )
+    if (el instanceof MarkupText || (el instanceof G && el.node.className.baseVal === MarkupApp.boxedTextClass))
       // if they click on the move handle of a text element, start the text editor
       await new EditTextTool(el).run();
   }
   /** draw the outline of the element's bbox (in viewbox coordinates) */
   public setPosition() {
     if (undefined !== this._outline) {
-      const pts = [
-        new Point2d(0, 0),
-        new Point2d(0, 1),
-        new Point2d(1, 1),
-        new Point2d(1, 0),
-      ];
-      this._outline.plot(
-        this.handles.npcToVbArray(pts).map((pt) => [pt.x, pt.y] as ArrayXY)
-      );
+      const pts = [new Point2d(0, 0), new Point2d(0, 1), new Point2d(1, 1), new Point2d(1, 0)];
+      this._outline.plot(this.handles.npcToVbArray(pts).map((pt) => [pt.x, pt.y] as ArrayXY));
     }
   }
   public override startDrag(ev: BeButtonEvent) {
@@ -391,13 +338,7 @@ export class Handles {
     const angle = el.screenCTM().decompose().rotate || 0;
     const start = Math.round(-angle / 45); // so that we rotate the cursors for rotated elements
     order.forEach((index) =>
-      this.handles.push(
-        new StretchHandle(
-          this,
-          pts[index] as ArrayXY,
-          cursors[(index + start + 8) % 8]
-        )
-      )
+      this.handles.push(new StretchHandle(this, pts[index] as ArrayXY, cursors[(index + start + 8) % 8]))
     );
     this.draw(); // show starting state
   }
@@ -423,11 +364,7 @@ export class Handles {
     const bb = el.bbox();
     const ctm = el.screenCTM().lmultiplyO(MarkupApp.screenToVbMtx());
     this.vbToBoxTrn = ctm.inverse().toIModelTransform();
-    this.npcToVbTrn = new Matrix()
-      .scaleO(bb.w, bb.h)
-      .translateO(bb.x, bb.y)
-      .lmultiplyO(ctm)
-      .toIModelTransform();
+    this.npcToVbTrn = new Matrix().scaleO(bb.w, bb.h).translateO(bb.x, bb.y).lmultiplyO(ctm).toIModelTransform();
     this.handles.forEach((h) => h.setPosition());
   }
 
@@ -526,8 +463,7 @@ export class MarkupSelected {
   }
   public sizeChanged() {
     this.clearEditors();
-    if (this.elements.size === 1)
-      this.handles = new Handles(this, this.elements.values().next().value);
+    if (this.elements.size === 1) this.handles = new Handles(this, this.elements.values().next().value);
     this.onChanged.raiseEvent(this);
   }
   /** Add a new element to the SS */
@@ -610,11 +546,7 @@ export class MarkupSelected {
   }
 
   /** Move all of the entries to a new position in the DOM via a callback. */
-  public reposition(
-    cmdName: string,
-    undo: UndoManager,
-    fn: (el: MarkupElement) => void
-  ) {
+  public reposition(cmdName: string, undo: UndoManager, fn: (el: MarkupElement) => void) {
     undo.performOperation(cmdName, () =>
       this.elements.forEach((el) => {
         const oldParent = el.parent() as MarkupElement;
@@ -651,10 +583,7 @@ export class SelectTool extends MarkupTool {
     this._flashedElement = el;
   }
   protected unflashSelected(): void {
-    if (
-      undefined !== this._flashedElement &&
-      this.markup.selected.has(this._flashedElement)
-    )
+    if (undefined !== this._flashedElement && this.markup.selected.has(this._flashedElement))
       this.flashedElement = undefined;
   }
   private initSelect() {
@@ -682,16 +611,12 @@ export class SelectTool extends MarkupTool {
   protected override showPrompt(): void {
     const mainInstruction = ToolAssistance.createInstruction(
       this.iconSpec,
-      IModelApp.localization.getLocalizedString(
-        `${MarkupTool.toolKey}Select.Prompts.IdentifyMarkup`
-      )
+      IModelApp.localization.getLocalizedString(`${MarkupTool.toolKey}Select.Prompts.IdentifyMarkup`)
     );
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
-    const acceptMsg = IModelApp.localization.getLocalizedString(
-      `${MarkupTool.toolKey}Select.Prompts.AcceptMarkup`
-    );
+    const acceptMsg = IModelApp.localization.getLocalizedString(`${MarkupTool.toolKey}Select.Prompts.AcceptMarkup`);
     touchInstructions.push(
       ToolAssistance.createInstruction(
         ToolAssistanceImage.OneTouchTap,
@@ -701,12 +626,7 @@ export class SelectTool extends MarkupTool {
       )
     );
     mouseInstructions.push(
-      ToolAssistance.createInstruction(
-        ToolAssistanceImage.LeftClick,
-        acceptMsg,
-        false,
-        ToolAssistanceInputMethod.Mouse
-      )
+      ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse)
     );
 
     touchInstructions.push(
@@ -755,23 +675,10 @@ export class SelectTool extends MarkupTool {
     );
 
     const sections: ToolAssistanceSection[] = [];
-    sections.push(
-      ToolAssistance.createSection(
-        mouseInstructions,
-        ToolAssistance.inputsLabel
-      )
-    );
-    sections.push(
-      ToolAssistance.createSection(
-        touchInstructions,
-        ToolAssistance.inputsLabel
-      )
-    );
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
 
-    const instructions = ToolAssistance.createInstructions(
-      mainInstruction,
-      sections
-    );
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
     IModelApp.notifications.setToolAssistance(instructions);
   }
 
@@ -783,9 +690,7 @@ export class SelectTool extends MarkupTool {
     this._dragging.length = 0;
     this.boxSelectInit();
   }
-  public override async onResetButtonUp(
-    _ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
     const selected = this.markup.selected;
     const handles = selected.handles;
     if (handles && handles.dragging) handles.cancelDrag();
@@ -796,9 +701,7 @@ export class SelectTool extends MarkupTool {
   }
 
   /** Called when there is a mouse "click" (down+up without any motion) */
-  public override async onDataButtonUp(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onDataButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     const markup = this.markup;
     const selected = markup.selected;
     const handles = selected.handles;
@@ -859,10 +762,7 @@ export class SelectTool extends MarkupTool {
     if (width < 1 || height < 1) return true;
     const rightToLeft = start.x > end.x;
     const overlapMode = ev.isShiftKey ? !rightToLeft : rightToLeft; // Shift inverts inside/overlap selection...
-    const offset = Point3d.create(
-      vec.x < 0 ? end.x : start.x,
-      vec.y < 0 ? end.y : start.y
-    ); // define location by corner points...
+    const offset = Point3d.create(vec.x < 0 ? end.x : start.x, vec.y < 0 ? end.y : start.y); // define location by corner points...
     this.markup.svgDynamics!.clear();
     this.markup.svgDynamics!.rect(width, height).move(offset.x, offset.y).css({
       "stroke-width": 1,
@@ -899,10 +799,7 @@ export class SelectTool extends MarkupTool {
       const accept = inside || (overlap && overlapMode);
       if (undefined !== outlinesG) {
         if (inside || overlap) {
-          const outline = child
-            .getOutline()
-            .attr(MarkupApp.props.handles.moveOutline)
-            .addTo(outlinesG);
+          const outline = child.getOutline().attr(MarkupApp.props.handles.moveOutline).addTo(outlinesG);
           if (accept)
             outline.attr({
               fill: MarkupApp.props.hilite.flash,
@@ -918,9 +815,7 @@ export class SelectTool extends MarkupTool {
   }
 
   /** called when the mouse moves while the data button is down. */
-  public override async onMouseStartDrag(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
     if (BeButton.Data !== ev.button) return EventHandled.No;
 
     const markup = this.markup;
@@ -932,8 +827,7 @@ export class SelectTool extends MarkupTool {
     }
 
     const flashed = (this.flashedElement = this.pickElement(ev.viewPoint));
-    if (undefined === flashed)
-      return this.boxSelectStart(ev) ? EventHandled.Yes : EventHandled.No;
+    if (undefined === flashed) return this.boxSelectStart(ev) ? EventHandled.Yes : EventHandled.No;
 
     if (!selected.has(flashed)) selected.restart(flashed); // we clicked on an element not in the selection set, replace current selection with just this element
 
@@ -962,8 +856,7 @@ export class SelectTool extends MarkupTool {
 
     if (this._dragging.length === 0) {
       if (this.boxSelect(ev, true)) return;
-      if (InputSource.Touch !== ev.inputSource)
-        this.flashedElement = this.pickElement(ev.viewPoint); // if we're not dragging, try to find an element under the cursor
+      if (InputSource.Touch !== ev.inputSource) this.flashedElement = this.pickElement(ev.viewPoint); // if we're not dragging, try to find an element under the cursor
       return;
     }
 
@@ -975,9 +868,7 @@ export class SelectTool extends MarkupTool {
   }
 
   /** Called when the mouse goes up after dragging. */
-  public override async onMouseEndDrag(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled> {
     const markup = this.markup;
     const selected = markup.selected;
     const handles = selected.handles;
@@ -985,8 +876,7 @@ export class SelectTool extends MarkupTool {
       // if we have handles up, and if they're in the "dragging" state, send the event to them
       return handles.endDrag(markup.undo);
 
-    if (this._dragging.length === 0)
-      return this.boxSelect(ev, false) ? EventHandled.Yes : EventHandled.No;
+    if (this._dragging.length === 0) return this.boxSelect(ev, false) ? EventHandled.Yes : EventHandled.No;
 
     // NOTE: all units should be in viewbox coordinates
     const delta = MarkupApp.convertVpToVb(ev.viewPoint).minus(this._anchorPt);
@@ -1032,16 +922,11 @@ export class SelectTool extends MarkupTool {
       return EventHandled.No;
     const ev = new BeButtonEvent(); // we need to simulate a mouse motion by sending a drag event at the last cursor position
     IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
-    return undefined === ev.viewport
-      ? EventHandled.No
-      : (handles.drag(ev), EventHandled.Yes);
+    return undefined === ev.viewport ? EventHandled.No : (handles.drag(ev), EventHandled.Yes);
   }
 
   /** called whenever a key is pressed while this tool is active. */
-  public override async onKeyTransition(
-    wentDown: boolean,
-    key: KeyboardEvent
-  ): Promise<EventHandled> {
+  public override async onKeyTransition(wentDown: boolean, key: KeyboardEvent): Promise<EventHandled> {
     if (!wentDown) return EventHandled.No;
     const markup = this.markup;
     switch (key.key.toLowerCase()) {
@@ -1054,21 +939,13 @@ export class SelectTool extends MarkupTool {
         await this.exitTool();
         return EventHandled.Yes;
       case "b": // alt-shift-b = send to back
-        return key.altKey && key.shiftKey
-          ? (markup.sendToBack(), EventHandled.Yes)
-          : EventHandled.No;
+        return key.altKey && key.shiftKey ? (markup.sendToBack(), EventHandled.Yes) : EventHandled.No;
       case "f": // alt-shift-f = bring to front
-        return key.altKey && key.shiftKey
-          ? (markup.bringToFront(), EventHandled.Yes)
-          : EventHandled.No;
+        return key.altKey && key.shiftKey ? (markup.bringToFront(), EventHandled.Yes) : EventHandled.No;
       case "g": // ctrl-g = create group
-        return key.ctrlKey
-          ? (this.unflashSelected(), markup.groupSelected(), EventHandled.Yes)
-          : EventHandled.No;
+        return key.ctrlKey ? (this.unflashSelected(), markup.groupSelected(), EventHandled.Yes) : EventHandled.No;
       case "u": // ctrl-u = ungroup
-        return key.ctrlKey
-          ? (this.unflashSelected(), markup.ungroupSelected(), EventHandled.Yes)
-          : EventHandled.No;
+        return key.ctrlKey ? (this.unflashSelected(), markup.ungroupSelected(), EventHandled.Yes) : EventHandled.No;
     }
     return EventHandled.No;
   }

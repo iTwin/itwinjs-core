@@ -18,10 +18,7 @@ import { DevTools, DevToolsStatsFormatter } from "../DevTools";
 /** The backend implementation of WipRpcInterface.
  * @internal
  */
-export class DevToolsRpcImpl
-  extends RpcInterface
-  implements DevToolsRpcInterface
-{
+export class DevToolsRpcImpl extends RpcInterface implements DevToolsRpcInterface {
   // eslint-disable-line deprecation/deprecation
   public static register() {
     RpcManager.registerImpl(DevToolsRpcInterface, DevToolsRpcImpl);
@@ -33,10 +30,7 @@ export class DevToolsRpcImpl
   }
 
   // Returns JSON object with statistics
-  public async stats(
-    _tokenProps: IModelRpcProps,
-    options: DevToolsStatsOptions
-  ): Promise<any> {
+  public async stats(_tokenProps: IModelRpcProps, options: DevToolsStatsOptions): Promise<any> {
     const stats = DevTools.stats();
     if (options === DevToolsStatsOptions.None) return stats;
     const formattedStats = DevToolsStatsFormatter.toFormattedJson(stats);

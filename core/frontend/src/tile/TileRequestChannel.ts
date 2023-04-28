@@ -96,8 +96,7 @@ export class TileRequestChannelStatistics {
     stats.decoding.max = Math.max(this.decoding.max, stats.decoding.max);
     stats.decoding.min = Math.min(this.decoding.min, stats.decoding.min);
 
-    if (stats.totalCompletedRequests > 0)
-      stats.decoding.mean = stats.decoding.total / stats.totalCompletedRequests;
+    if (stats.totalCompletedRequests > 0) stats.decoding.mean = stats.decoding.total / stats.totalCompletedRequests;
   }
 
   /** @internal */
@@ -201,11 +200,7 @@ export class TileRequestChannel {
   /** Invoked by [[TileRequest]] after a request completes.
    * @internal
    */
-  public recordCompletion(
-    tile: Tile,
-    content: TileContent,
-    elapsedMilliseconds: number
-  ): void {
+  public recordCompletion(tile: Tile, content: TileContent, elapsedMilliseconds: number): void {
     this._statistics.recordCompletion(tile, elapsedMilliseconds);
 
     if (this.contentCallback) this.contentCallback(tile, content);
@@ -236,24 +231,19 @@ export class TileRequestChannel {
 
     // Recompute priority of each request.
     for (const pending of this._pending)
-      pending.priority = pending.tile.computeLoadPriority(
-        pending.viewports,
-        pending.users
-      );
+      pending.priority = pending.tile.computeLoadPriority(pending.viewports, pending.users);
 
     // Sort pending requests by priority.
     this._pending.sort();
 
     // Cancel any previously pending requests that are no longer needed.
-    for (const queued of this._previouslyPending)
-      if (queued.users.isEmpty) this.cancel(queued);
+    for (const queued of this._previouslyPending) if (queued.users.isEmpty) this.cancel(queued);
 
     this._previouslyPending.clear();
 
     // Cancel any active requests that are no longer needed.
     // NB: Do NOT remove them from the active set until their http activity has completed.
-    for (const active of this._active)
-      if (active.users.isEmpty) this.cancel(active);
+    for (const active of this._active) if (active.users.isEmpty) this.cancel(active);
 
     // Batch-cancel running requests.
     this.processCancellations();
@@ -302,10 +292,7 @@ export class TileRequestChannel {
   public onIModelClosed(_iModel: IModelConnection): void {}
 
   /** Request content for the specified tile. The default implementation simply forwards to [[Tile.requestContent]]. */
-  public async requestContent(
-    tile: Tile,
-    isCanceled: () => boolean
-  ): Promise<TileRequest.Response> {
+  public async requestContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response> {
     return tile.requestContent(isCanceled);
   }
 

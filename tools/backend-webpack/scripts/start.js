@@ -6,10 +6,7 @@
 
 const path = require("path");
 const chalk = require("chalk");
-const {
-  spawn,
-  handleInterrupts,
-} = require("@itwin/build-tools/scripts/utils/simpleSpawn");
+const { spawn, handleInterrupts } = require("@itwin/build-tools/scripts/utils/simpleSpawn");
 
 exports.command = "start";
 exports.describe = chalk.bold("Runs the app's backend in development mode.");

@@ -56,11 +56,7 @@
     });
     /******/
     /******/ // Execute the module function
-    /******/ __webpack_modules__[moduleId](
-      module,
-      module.exports,
-      __webpack_require__
-    );
+    /******/ __webpack_modules__[moduleId](module, module.exports, __webpack_require__);
     /******/
     /******/ // Return the exports of the module
     /******/ return module.exports;
@@ -72,10 +68,7 @@
   /******/ (() => {
     /******/ // getDefaultExport function for compatibility with non-harmony modules
     /******/ __webpack_require__.n = (module) => {
-      /******/ var getter =
-        module && module.__esModule
-          ? /******/ () => module["default"]
-          : /******/ () => module;
+      /******/ var getter = module && module.__esModule ? /******/ () => module["default"] : /******/ () => module;
       /******/ __webpack_require__.d(getter, { a: getter });
       /******/ return getter;
       /******/
@@ -88,10 +81,7 @@
     /******/ // define getter functions for harmony exports
     /******/ __webpack_require__.d = (exports, definition) => {
       /******/ for (var key in definition) {
-        /******/ if (
-          __webpack_require__.o(definition, key) &&
-          !__webpack_require__.o(exports, key)
-        ) {
+        /******/ if (__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
           /******/ Object.defineProperty(exports, key, {
             enumerable: true,
             get: definition[key],
@@ -107,8 +97,7 @@
   /******/
   /******/ /* webpack/runtime/hasOwnProperty shorthand */
   /******/ (() => {
-    /******/ __webpack_require__.o = (obj, prop) =>
-      Object.prototype.hasOwnProperty.call(obj, prop);
+    /******/ __webpack_require__.o = (obj, prop) => Object.prototype.hasOwnProperty.call(obj, prop);
     /******/
   })();
   /******/
@@ -136,14 +125,14 @@
   !*** ./lib-esnext/scripts/install-run-rush.js ***!
   \************************************************/
     __webpack_require__.r(__webpack_exports__);
-    /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_0__ =
-      __webpack_require__(/*! path */ 371017);
-    /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_0___default =
-      /*#__PURE__*/ __webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_0__);
-    /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_1__ =
-      __webpack_require__(/*! fs */ 657147);
-    /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_1___default =
-      /*#__PURE__*/ __webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_1__);
+    /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! path */ 371017);
+    /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/ __webpack_require__.n(
+      path__WEBPACK_IMPORTED_MODULE_0__
+    );
+    /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! fs */ 657147);
+    /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/ __webpack_require__.n(
+      fs__WEBPACK_IMPORTED_MODULE_1__
+    );
     // Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
     // See the @microsoft/rush package's LICENSE file for license information.
 
@@ -155,31 +144,20 @@
     } = require("./install-run");
     const PACKAGE_NAME = "@microsoft/rush";
     const RUSH_PREVIEW_VERSION = "RUSH_PREVIEW_VERSION";
-    const INSTALL_RUN_RUSH_LOCKFILE_PATH_VARIABLE =
-      "INSTALL_RUN_RUSH_LOCKFILE_PATH";
+    const INSTALL_RUN_RUSH_LOCKFILE_PATH_VARIABLE = "INSTALL_RUN_RUSH_LOCKFILE_PATH";
     function _getRushVersion(logger) {
       const rushPreviewVersion = process.env[RUSH_PREVIEW_VERSION];
       if (rushPreviewVersion !== undefined) {
-        logger.info(
-          `Using Rush version from environment variable ${RUSH_PREVIEW_VERSION}=${rushPreviewVersion}`
-        );
+        logger.info(`Using Rush version from environment variable ${RUSH_PREVIEW_VERSION}=${rushPreviewVersion}`);
         return rushPreviewVersion;
       }
       const rushJsonFolder = findRushJsonFolder();
-      const rushJsonPath = path__WEBPACK_IMPORTED_MODULE_0__.join(
-        rushJsonFolder,
-        RUSH_JSON_FILENAME
-      );
+      const rushJsonPath = path__WEBPACK_IMPORTED_MODULE_0__.join(rushJsonFolder, RUSH_JSON_FILENAME);
       try {
-        const rushJsonContents = fs__WEBPACK_IMPORTED_MODULE_1__.readFileSync(
-          rushJsonPath,
-          "utf-8"
-        );
+        const rushJsonContents = fs__WEBPACK_IMPORTED_MODULE_1__.readFileSync(rushJsonPath, "utf-8");
         // Use a regular expression to parse out the rushVersion value because rush.json supports comments,
         // but JSON.parse does not and we don't want to pull in more dependencies than we need to in this script.
-        const rushJsonMatches = rushJsonContents.match(
-          /\"rushVersion\"\s*\:\s*\"([0-9a-zA-Z.+\-]+)\"/
-        );
+        const rushJsonMatches = rushJsonContents.match(/\"rushVersion\"\s*\:\s*\"([0-9a-zA-Z.+\-]+)\"/);
         return rushJsonMatches[1];
       } catch (e) {
         throw new Error(
@@ -210,9 +188,7 @@
       const scriptName = path__WEBPACK_IMPORTED_MODULE_0__.basename(scriptPath);
       const bin = _getBin(scriptName);
       if (!nodePath || !scriptPath) {
-        throw new Error(
-          "Unexpected exception: could not detect node path or script path"
-        );
+        throw new Error("Unexpected exception: could not detect node path or script path");
       }
       let commandFound = false;
       let logger = { info: console.log, error: console.error };
@@ -247,24 +223,12 @@
       }
       runWithErrorAndStatusCode(logger, () => {
         const version = _getRushVersion(logger);
-        logger.info(
-          `The rush.json configuration requests Rush version ${version}`
-        );
-        const lockFilePath =
-          process.env[INSTALL_RUN_RUSH_LOCKFILE_PATH_VARIABLE];
+        logger.info(`The rush.json configuration requests Rush version ${version}`);
+        const lockFilePath = process.env[INSTALL_RUN_RUSH_LOCKFILE_PATH_VARIABLE];
         if (lockFilePath) {
-          logger.info(
-            `Found ${INSTALL_RUN_RUSH_LOCKFILE_PATH_VARIABLE}="${lockFilePath}", installing with lockfile.`
-          );
+          logger.info(`Found ${INSTALL_RUN_RUSH_LOCKFILE_PATH_VARIABLE}="${lockFilePath}", installing with lockfile.`);
         }
-        return installAndRun(
-          logger,
-          PACKAGE_NAME,
-          version,
-          bin,
-          packageBinArgs,
-          lockFilePath
-        );
+        return installAndRun(logger, PACKAGE_NAME, version, bin, packageBinArgs, lockFilePath);
       });
     }
     _run();

@@ -24,10 +24,7 @@ export interface TileTreeSupplier {
   compareTileTreeIds(lhs: any, rhs: any): number;
 
   /** Produce the TileTree corresponding to the specified tree Id. The returned TileTree will be associated with its Id in a Map. */
-  createTileTree(
-    id: any,
-    iModel: IModelConnection
-  ): Promise<TileTree | undefined>;
+  createTileTree(id: any, iModel: IModelConnection): Promise<TileTree | undefined>;
 
   /** `true` if this supplier is dependent upon the [[IModelConnection]]'s [EcefLocation]($common).
    * Typically this returns true for suppliers of tile trees for map tiles.
@@ -51,8 +48,5 @@ export interface TileTreeSupplier {
    * @see [[Tiles.getSpatialModels]].
    * @internal
    */
-  addSpatialModels?: (
-    modelIds: Set<Id64String>,
-    trees: Iterable<{ id: any; owner: TileTreeOwner }>
-  ) => void;
+  addSpatialModels?: (modelIds: Set<Id64String>, trees: Iterable<{ id: any; owner: TileTreeOwner }>) => void;
 }

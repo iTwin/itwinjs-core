@@ -77,9 +77,7 @@ class PixelWidthFactor {
       halfPixelHeight = (scale.y * 0.5 * (top - bottom)) / height;
     }
 
-    this._factor = Math.sqrt(
-      halfPixelWidth * halfPixelWidth + halfPixelHeight * halfPixelHeight
-    );
+    this._factor = Math.sqrt(halfPixelWidth * halfPixelWidth + halfPixelHeight * halfPixelHeight);
   }
 }
 
@@ -98,10 +96,7 @@ class SunDirection {
 
   public update(sunDir: Vector3d | undefined): void {
     const haveWorldDir = undefined !== sunDir;
-    if (
-      haveWorldDir !== this._haveWorldDir ||
-      (sunDir && !sunDir.isExactEqual(this._worldDir))
-    ) {
+    if (haveWorldDir !== this._haveWorldDir || (sunDir && !sunDir.isExactEqual(this._worldDir))) {
       this._updated = true;
       desync(this);
 
@@ -116,10 +111,7 @@ class SunDirection {
   public bind(uniform: UniformHandle, uniforms: TargetUniforms): void {
     if (!sync(uniforms.frustum, this) || this._updated) {
       if (this._haveWorldDir) {
-        uniforms.frustum.viewMatrix.multiplyVector(
-          this._worldDir,
-          this._viewDir
-        );
+        uniforms.frustum.viewMatrix.multiplyVector(this._worldDir, this._viewDir);
         this._viewDir.negate(this._viewDir);
       } else {
         defaultSunDirectionView.clone(this._viewDir);
@@ -166,21 +158,14 @@ export class TargetUniforms {
   }
 
   public getProjectionMatrix(forViewCoords: boolean): Matrix4d {
-    return forViewCoords
-      ? this.viewRect.projectionMatrix
-      : this.frustum.projectionMatrix;
+    return forViewCoords ? this.viewRect.projectionMatrix : this.frustum.projectionMatrix;
   }
 
   public getProjectionMatrix32(forViewCoords: boolean): Matrix4 {
-    return forViewCoords
-      ? this.viewRect.projectionMatrix32
-      : this.frustum.projectionMatrix32;
+    return forViewCoords ? this.viewRect.projectionMatrix32 : this.frustum.projectionMatrix32;
   }
 
-  public bindProjectionMatrix(
-    uniform: UniformHandle,
-    forViewCoords: boolean
-  ): void {
+  public bindProjectionMatrix(uniform: UniformHandle, forViewCoords: boolean): void {
     if (forViewCoords) this.viewRect.bindProjectionMatrix(uniform);
     else this.frustum.bindProjectionMatrix(uniform);
   }
@@ -201,8 +186,7 @@ export class TargetUniforms {
     if (plan.lights) {
       this.lights.update(plan.lights);
 
-      const useSunDir =
-        plan.viewFlags.shadows || plan.lights.solar.alwaysEnabled;
+      const useSunDir = plan.viewFlags.shadows || plan.lights.solar.alwaysEnabled;
       if (useSunDir) sunDir = plan.lights.solar.direction;
     }
 

@@ -11,10 +11,7 @@ import "./IModelDb"; // DO NOT REMOVE OR MOVE THIS LINE!
 
 import * as os from "os";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
-import {
-  DependenciesConfig,
-  Types as ExtensionTypes,
-} from "@itwin/cloud-agnostic-core";
+import { DependenciesConfig, Types as ExtensionTypes } from "@itwin/cloud-agnostic-core";
 import {
   AccessToken,
   assert,
@@ -27,13 +24,7 @@ import {
   Mutable,
   ProcessDetector,
 } from "@itwin/core-bentley";
-import {
-  AuthorizationClient,
-  BentleyStatus,
-  IModelError,
-  LocalDirName,
-  SessionProps,
-} from "@itwin/core-common";
+import { AuthorizationClient, BentleyStatus, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { TelemetryManager } from "@itwin/core-telemetry";
 import { AzureServerStorageBindings } from "@itwin/object-storage-azure";
 import { ServerStorage } from "@itwin/object-storage-core";
@@ -53,17 +44,9 @@ import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { TileStorage } from "./TileStorage";
-import {
-  BaseSettings,
-  SettingDictionary,
-  SettingsPriority,
-} from "./workspace/Settings";
+import { BaseSettings, SettingDictionary, SettingsPriority } from "./workspace/Settings";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
-import {
-  ITwinWorkspace,
-  Workspace,
-  WorkspaceOpts,
-} from "./workspace/Workspace";
+import { ITwinWorkspace, Workspace, WorkspaceOpts } from "./workspace/Workspace";
 import { Container } from "inversify";
 import { join, normalize as normalizeDir } from "path";
 
@@ -238,17 +221,13 @@ export class IModelHostConfiguration implements IModelHostOptions {
   /** @beta */
   public tileCacheAzureCredentials?: AzureBlobStorageCredentials;
   /** @internal */
-  public tileTreeRequestTimeout =
-    IModelHostConfiguration.defaultTileRequestTimeout;
+  public tileTreeRequestTimeout = IModelHostConfiguration.defaultTileRequestTimeout;
   /** @internal */
-  public tileContentRequestTimeout =
-    IModelHostConfiguration.defaultTileRequestTimeout;
+  public tileContentRequestTimeout = IModelHostConfiguration.defaultTileRequestTimeout;
   /** @internal */
-  public logTileLoadTimeThreshold =
-    IModelHostConfiguration.defaultLogTileLoadTimeThreshold;
+  public logTileLoadTimeThreshold = IModelHostConfiguration.defaultLogTileLoadTimeThreshold;
   /** @internal */
-  public logTileSizeThreshold =
-    IModelHostConfiguration.defaultLogTileSizeThreshold;
+  public logTileSizeThreshold = IModelHostConfiguration.defaultLogTileSizeThreshold;
   /** @internal */
   public crashReportingConfig?: CrashReportingConfig;
 }
@@ -274,9 +253,7 @@ class ApplicationSettings extends BaseSettings {
 
   public constructor() {
     super();
-    this._remove = SettingsSchemas.onSchemaChanged.addListener(() =>
-      this.updateDefaults()
-    );
+    this._remove = SettingsSchemas.onSchemaChanged.addListener(() => this.updateDefaults());
     this.updateDefaults();
   }
 
@@ -309,8 +286,7 @@ export class IModelHost {
   private static _platform?: typeof IModelJsNative;
   /** @internal */
   public static get platform(): typeof IModelJsNative {
-    if (this._platform === undefined)
-      throw new Error("IModelHost.startup must be called first");
+    if (this._platform === undefined) throw new Error("IModelHost.startup must be called first");
     return this._platform;
   }
 
@@ -424,9 +400,7 @@ export class IModelHost {
     if (undefined !== this._platform) return;
 
     this._platform = ProcessDetector.isMobileAppBackend
-      ? ((process as any)._linkedBinding(
-          "iModelJsNative"
-        ) as typeof IModelJsNative)
+      ? ((process as any)._linkedBinding("iModelJsNative") as typeof IModelJsNative)
       : NativeLibrary.load();
     this._platform.logger = Logger;
     Logger.logLevelChangedFn = () => IModelHost.syncNativeLogLevels(); // the arrow function exists only so that it can be spied in tests
@@ -453,10 +427,7 @@ export class IModelHost {
           process.report.directory = options.crashReportingConfig.crashDir;
           Logger.logTrace(loggerCategory, "Configured Node.js crash reporting");
         } else {
-          Logger.logWarning(
-            loggerCategory,
-            "Unable to configure Node.js crash reporting"
-          );
+          Logger.logWarning(loggerCategory, "Unable to configure Node.js crash reporting");
         }
       }
     }
@@ -485,37 +456,25 @@ export class IModelHost {
    */
   public static get hubAccess(): BackendHubAccess {
     if (IModelHost._hubAccess === undefined)
-      throw new IModelError(
-        IModelStatus.BadRequest,
-        "No BackendHubAccess supplied in IModelHostOptions"
-      );
+      throw new IModelError(IModelStatus.BadRequest, "No BackendHubAccess supplied in IModelHostOptions");
     return IModelHost._hubAccess;
   }
 
   private static initializeWorkspace(configuration: IModelHostOptions) {
     const settingAssets = join(KnownLocations.packageAssetsDir, "Settings");
     SettingsSchemas.addDirectory(join(settingAssets, "Schemas"));
-    this._appWorkspace = new ITwinWorkspace(
-      new ApplicationSettings(),
-      configuration.workspace
-    );
+    this._appWorkspace = new ITwinWorkspace(new ApplicationSettings(), configuration.workspace);
 
     // Create the CloudCache for Workspaces. This will fail if another process is already using the same profile.
     try {
       this.appWorkspace.getCloudCache();
     } catch (e: any) {
       throw e.errorNumber === DbResult.BE_SQLITE_BUSY
-        ? new IModelError(
-            DbResult.BE_SQLITE_BUSY,
-            `Profile [${this.profileDir}] is already in use by another process`
-          )
+        ? new IModelError(DbResult.BE_SQLITE_BUSY, `Profile [${this.profileDir}] is already in use by another process`)
         : e;
     }
 
-    this.appWorkspace.settings.addDirectory(
-      settingAssets,
-      SettingsPriority.defaults
-    );
+    this.appWorkspace.settings.addDirectory(settingAssets, SettingsPriority.defaults);
 
     GeoCoordConfig.onStartup();
     // allow applications to load their default settings
@@ -552,17 +511,11 @@ export class IModelHost {
 
     BriefcaseManager.initialize(join(this._cacheDir, "imodels"));
 
-    [
-      IModelReadRpcImpl,
-      IModelTileRpcImpl,
-      SnapshotIModelRpcImpl,
-      WipRpcImpl,
-      DevToolsRpcImpl,
-    ].forEach((rpc) => rpc.register()); // register all of the RPC implementations
+    [IModelReadRpcImpl, IModelTileRpcImpl, SnapshotIModelRpcImpl, WipRpcImpl, DevToolsRpcImpl].forEach((rpc) =>
+      rpc.register()
+    ); // register all of the RPC implementations
 
-    [BisCoreSchema, GenericSchema, FunctionalSchema].forEach((schema) =>
-      schema.registerSchema()
-    ); // register all of the schemas
+    [BisCoreSchema, GenericSchema, FunctionalSchema].forEach((schema) => schema.registerSchema()); // register all of the schemas
 
     if (undefined !== options.hubAccess) this._hubAccess = options.hubAccess;
 
@@ -574,16 +527,11 @@ export class IModelHost {
   }
 
   private static setupCacheDir(configuration: IModelHostOptions) {
-    this._cacheDir = normalizeDir(
-      configuration.cacheDir ?? NativeLibrary.defaultCacheDir
-    );
+    this._cacheDir = normalizeDir(configuration.cacheDir ?? NativeLibrary.defaultCacheDir);
     IModelJsFs.recursiveMkDirSync(this._cacheDir);
 
     this._profileName = configuration.profileName ?? "default";
-    Logger.logInfo(
-      loggerCategory,
-      `cacheDir: [${this.cacheDir}], profileDir: [${this.profileDir}]`
-    );
+    Logger.logInfo(loggerCategory, `cacheDir: [${this.cacheDir}], profileDir: [${this.profileDir}]`);
   }
 
   /** This method must be called when an iTwin.js host is shut down. Raises [[onBeforeShutdown]] */
@@ -633,43 +581,31 @@ export class IModelHost {
 
   /** The directory where application assets may be found */
   public static get appAssetsDir(): string | undefined {
-    return undefined !== IModelHost.configuration
-      ? IModelHost.configuration.appAssetsDir
-      : undefined;
+    return undefined !== IModelHost.configuration ? IModelHost.configuration.appAssetsDir : undefined;
   }
 
   /** The time, in milliseconds, for which IModelTileRpcInterface.requestTileTreeProps should wait before returning a "pending" status.
    * @internal
    */
   public static get tileTreeRequestTimeout(): number {
-    return (
-      IModelHost.configuration?.tileTreeRequestTimeout ??
-      IModelHostConfiguration.defaultTileRequestTimeout
-    );
+    return IModelHost.configuration?.tileTreeRequestTimeout ?? IModelHostConfiguration.defaultTileRequestTimeout;
   }
   /** The time, in milliseconds, for which IModelTileRpcInterface.requestTileContent should wait before returning a "pending" status.
    * @internal
    */
   public static get tileContentRequestTimeout(): number {
-    return (
-      IModelHost.configuration?.tileContentRequestTimeout ??
-      IModelHostConfiguration.defaultTileRequestTimeout
-    );
+    return IModelHost.configuration?.tileContentRequestTimeout ?? IModelHostConfiguration.defaultTileRequestTimeout;
   }
 
   /** The backend will log when a tile took longer to load than this threshold in seconds. */
   public static get logTileLoadTimeThreshold(): number {
     return (
-      IModelHost.configuration?.logTileLoadTimeThreshold ??
-      IModelHostConfiguration.defaultLogTileLoadTimeThreshold
+      IModelHost.configuration?.logTileLoadTimeThreshold ?? IModelHostConfiguration.defaultLogTileLoadTimeThreshold
     );
   }
   /** The backend will log when a tile is loaded with a size in bytes above this threshold. */
   public static get logTileSizeThreshold(): number {
-    return (
-      IModelHost.configuration?.logTileSizeThreshold ??
-      IModelHostConfiguration.defaultLogTileSizeThreshold
-    );
+    return IModelHost.configuration?.logTileSizeThreshold ?? IModelHostConfiguration.defaultLogTileSizeThreshold;
   }
 
   /** Whether external tile caching is active.
@@ -684,8 +620,7 @@ export class IModelHost {
    */
   public static get restrictTileUrlsByClientIp(): boolean {
     return (
-      undefined !== IModelHost.configuration &&
-      (IModelHost.configuration.restrictTileUrlsByClientIp ? true : false)
+      undefined !== IModelHost.configuration && (IModelHost.configuration.restrictTileUrlsByClientIp ? true : false)
     );
   }
 
@@ -703,10 +638,7 @@ export class IModelHost {
     const credentials = config.tileCacheAzureCredentials;
 
     if (!storage && !credentials) {
-      this.platform.setMaxTileCacheSize(
-        config.maxTileCacheDbSize ??
-          IModelHostConfiguration.defaultMaxTileCacheDbSize
-      );
+      this.platform.setMaxTileCacheSize(config.maxTileCacheDbSize ?? IModelHostConfiguration.defaultMaxTileCacheDbSize);
       return;
     }
 
@@ -729,15 +661,11 @@ export class IModelHost {
         dependencyName: "azure",
         accountName: credentials.account,
         accountKey: credentials.accessKey,
-        baseUrl:
-          credentials.baseUrl ??
-          `https://${credentials.account}.blob.core.windows.net`,
+        baseUrl: credentials.baseUrl ?? `https://${credentials.account}.blob.core.windows.net`,
       },
     };
     const ioc: Container = new Container();
-    ioc
-      .bind<DependenciesConfig>(ExtensionTypes.dependenciesConfig)
-      .toConstantValue(config);
+    ioc.bind<DependenciesConfig>(ExtensionTypes.dependenciesConfig).toConstantValue(config);
     new AzureServerStorageBindings().register(ioc, config.ServerSideStorage);
     IModelHost.tileStorage = new TileStorage(ioc.get(ServerStorage));
   }
@@ -757,13 +685,7 @@ export class IModelHost {
  */
 export class Platform {
   /** Get the name of the platform. */
-  public static get platformName():
-    | "win32"
-    | "linux"
-    | "darwin"
-    | "ios"
-    | "android"
-    | "uwp" {
+  public static get platformName(): "win32" | "linux" | "darwin" | "ios" | "android" | "uwp" {
     return process.platform as any;
   }
 }
@@ -826,13 +748,9 @@ export abstract class FileNameResolver {
    * @throws [[IModelError]] if not found.
    */
   public resolveFileName(inFileName: string): string {
-    const resolvedFileName: string | undefined =
-      this.tryResolveFileName(inFileName);
+    const resolvedFileName: string | undefined = this.tryResolveFileName(inFileName);
     if (undefined === resolvedFileName) {
-      throw new IModelError(
-        IModelStatus.NotFound,
-        `${inFileName} not resolved`
-      );
+      throw new IModelError(IModelStatus.NotFound, `${inFileName} not resolved`);
     }
     return resolvedFileName;
   }

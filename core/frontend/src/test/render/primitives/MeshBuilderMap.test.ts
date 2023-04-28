@@ -3,14 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import {
-  Arc3d,
-  LineString3d,
-  Loop,
-  Point3d,
-  Range3d,
-  Transform,
-} from "@itwin/core-geometry";
+import { Arc3d, LineString3d, Loop, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, GraphicParams } from "@itwin/core-common";
 import { GraphicType } from "../../../render/GraphicBuilder";
 import { IModelApp } from "../../../IModelApp";
@@ -49,11 +42,7 @@ describe("MeshBuilderMap Tests", () => {
     // Create a ViewState to load into a Viewport
     await MockRender.App.startup();
     imodel = createBlankConnection();
-    spatialView = SpatialViewState.createBlank(
-      imodel,
-      { x: 0, y: 0, z: 0 },
-      { x: 1, y: 1, z: 1 }
-    );
+    spatialView = SpatialViewState.createBlank(imodel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
@@ -77,13 +66,7 @@ describe("MeshBuilderMap Tests", () => {
     const tolerance = 0.15;
     const areaTolerance = ToleranceRatio.facetArea * tolerance;
 
-    const map = new MeshBuilderMap(
-      tolerance,
-      range,
-      is2d,
-      new GeometryOptions(GenerateEdges.No),
-      undefined
-    );
+    const map = new MeshBuilderMap(tolerance, range, is2d, new GeometryOptions(GenerateEdges.No), undefined);
     expect(map.range).to.equal(range);
     expect(map.tolerance).to.equal(tolerance);
     expect(map.is2d).to.equal(is2d);
@@ -138,10 +121,7 @@ describe("MeshBuilderMap Tests", () => {
       undefined
     );
 
-    const range = Range3d.createArray([
-      new Point3d(),
-      new Point3d(1000, 1000, 1000),
-    ]);
+    const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
     const is2d = false;
     const tolerance = 0.22;
     const geomList = new GeometryList();
@@ -191,10 +171,7 @@ describe("MeshBuilderMap Tests", () => {
     const gfParams2: GraphicParams = new GraphicParams();
     gfParams2.lineColor = ColorDef.white;
     gfParams2.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(
-      gfParams2,
-      false
-    );
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams2, false);
 
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
@@ -209,10 +186,7 @@ describe("MeshBuilderMap Tests", () => {
       undefined
     );
 
-    const range = Range3d.createArray([
-      new Point3d(),
-      new Point3d(1000, 1000, 1000),
-    ]);
+    const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
     const is2d = false;
     const tolerance = 0.22;
     const geomList = new GeometryList();
@@ -256,38 +230,20 @@ describe("MeshBuilderMap Tests", () => {
     const strokesPrimList = arcGeom.getStrokes(0.22)!;
     assert(strokesPrimList !== undefined);
 
-    const range = Range3d.createArray([
-      new Point3d(),
-      new Point3d(1000, 1000, 1000),
-    ]);
+    const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
     const is2d = false;
     const tolerance = 0.22;
-    const map = new MeshBuilderMap(
-      tolerance,
-      range,
-      is2d,
-      new GeometryOptions(GenerateEdges.No),
-      undefined
-    );
+    const map = new MeshBuilderMap(tolerance, range, is2d, new GeometryOptions(GenerateEdges.No), undefined);
 
     expect(map.size).to.equal(0);
     map.loadGeometry(arcGeom);
     expect(map.size).to.equal(1);
-    const type = strokesPrimList[0].isDisjoint
-      ? Mesh.PrimitiveType.Point
-      : Mesh.PrimitiveType.Polyline;
-    const builder = map.getBuilder(
-      arcGeom.displayParams,
-      type,
-      false,
-      strokesPrimList[0].isPlanar
-    );
+    const type = strokesPrimList[0].isDisjoint ? Mesh.PrimitiveType.Point : Mesh.PrimitiveType.Polyline;
+    const builder = map.getBuilder(arcGeom.displayParams, type, false, strokesPrimList[0].isPlanar);
     expect(map.size).to.equal(1);
     // EDL Why is this a hard coded count?
     expect(builder.vertexMap.length).to.lte(25);
-    expect(builder.mesh.polylines!.length).to.equal(
-      strokesPrimList[0].strokes.length
-    );
+    expect(builder.mesh.polylines!.length).to.equal(strokesPrimList[0].strokes.length);
     const map2 = new MeshBuilderMap(
       tolerance,
       range,
@@ -313,10 +269,7 @@ describe("MeshBuilderMap Tests", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(
-      gfParams,
-      false
-    );
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
 
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
@@ -337,19 +290,10 @@ describe("MeshBuilderMap Tests", () => {
     const pfPrim = pfPrimList[0];
     expect(pfPrim.indexedPolyface.pointCount).to.equal(points.length);
 
-    const range = Range3d.createArray([
-      new Point3d(),
-      new Point3d(1000, 1000, 1000),
-    ]);
+    const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
     const is2d = false;
     const tolerance = 0.15;
-    const map = new MeshBuilderMap(
-      tolerance,
-      range,
-      is2d,
-      new GeometryOptions(GenerateEdges.No),
-      undefined
-    );
+    const map = new MeshBuilderMap(tolerance, range, is2d, new GeometryOptions(GenerateEdges.No), undefined);
 
     expect(pfPrim.indexedPolyface.pointCount).to.be.greaterThan(0);
     expect(map.size).to.equal(0);
@@ -380,10 +324,7 @@ describe("MeshBuilderMap Tests", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(
-      gfParams,
-      false
-    );
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
 
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
@@ -420,19 +361,10 @@ describe("MeshBuilderMap Tests", () => {
 
     const emptyPfPrim = emptyPfPrimList[0];
 
-    const range = Range3d.createArray([
-      new Point3d(),
-      new Point3d(1000, 1000, 1000),
-    ]);
+    const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
     const is2d = false;
     const tolerance = 0.15;
-    let map = new MeshBuilderMap(
-      tolerance,
-      range,
-      is2d,
-      new GeometryOptions(GenerateEdges.No),
-      undefined
-    );
+    let map = new MeshBuilderMap(tolerance, range, is2d, new GeometryOptions(GenerateEdges.No), undefined);
 
     expect(pfPrim.indexedPolyface.pointCount).to.be.greaterThan(0);
     expect(map.size).to.equal(0);
@@ -448,13 +380,7 @@ describe("MeshBuilderMap Tests", () => {
     expect(builder.triangleSet.length).to.equal(2);
 
     // test case: when polyface has no points, no builder is created
-    map = new MeshBuilderMap(
-      tolerance,
-      range,
-      is2d,
-      new GeometryOptions(GenerateEdges.No),
-      undefined
-    );
+    map = new MeshBuilderMap(tolerance, range, is2d, new GeometryOptions(GenerateEdges.No), undefined);
     expect(emptyPfPrim.indexedPolyface.pointCount).to.equal(0);
     expect(map.size).to.equal(0);
     map.loadIndexedPolyface(emptyPfPrim, undefined);
@@ -484,37 +410,19 @@ describe("MeshBuilderMap Tests", () => {
 
     const strokesPrimList = arcGeom.getStrokes(0.22)!;
     assert(strokesPrimList !== undefined);
-    const range = Range3d.createArray([
-      new Point3d(),
-      new Point3d(1000, 1000, 1000),
-    ]);
+    const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
     const is2d = false;
     const tolerance = 0.22;
-    const map = new MeshBuilderMap(
-      tolerance,
-      range,
-      is2d,
-      new GeometryOptions(GenerateEdges.No),
-      undefined
-    );
+    const map = new MeshBuilderMap(tolerance, range, is2d, new GeometryOptions(GenerateEdges.No), undefined);
 
     expect(map.size).to.equal(0);
     map.loadStrokePrimitiveList(arcGeom);
     expect(map.size).to.equal(1);
-    const type = strokesPrimList[0].isDisjoint
-      ? Mesh.PrimitiveType.Point
-      : Mesh.PrimitiveType.Polyline;
-    const builder = map.getBuilder(
-      arcGeom.displayParams,
-      type,
-      false,
-      strokesPrimList[0].isPlanar
-    );
+    const type = strokesPrimList[0].isDisjoint ? Mesh.PrimitiveType.Point : Mesh.PrimitiveType.Polyline;
+    const builder = map.getBuilder(arcGeom.displayParams, type, false, strokesPrimList[0].isPlanar);
     expect(map.size).to.equal(1);
     expect(builder.vertexMap.length).to.equal(25);
-    expect(builder.mesh.polylines!.length).to.equal(
-      strokesPrimList[0].strokes.length
-    );
+    expect(builder.mesh.polylines!.length).to.equal(strokesPrimList[0].strokes.length);
   });
 
   it("loadStrokesPrimitive", () => {
@@ -540,37 +448,19 @@ describe("MeshBuilderMap Tests", () => {
 
     const strokesPrimList = arcGeom.getStrokes(0.22)!;
     assert(strokesPrimList !== undefined);
-    const range = Range3d.createArray([
-      new Point3d(),
-      new Point3d(1000, 1000, 1000),
-    ]);
+    const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
     const is2d = false;
     const tolerance = 0.22;
-    const map = new MeshBuilderMap(
-      tolerance,
-      range,
-      is2d,
-      new GeometryOptions(GenerateEdges.No),
-      undefined
-    );
+    const map = new MeshBuilderMap(tolerance, range, is2d, new GeometryOptions(GenerateEdges.No), undefined);
 
     expect(map.size).to.equal(0);
     map.loadStrokesPrimitive(strokesPrimList[0], undefined);
     expect(map.size).to.equal(1);
-    const type = strokesPrimList[0].isDisjoint
-      ? Mesh.PrimitiveType.Point
-      : Mesh.PrimitiveType.Polyline;
-    const builder = map.getBuilder(
-      arcGeom.displayParams,
-      type,
-      false,
-      strokesPrimList[0].isPlanar
-    );
+    const type = strokesPrimList[0].isDisjoint ? Mesh.PrimitiveType.Point : Mesh.PrimitiveType.Polyline;
+    const builder = map.getBuilder(arcGeom.displayParams, type, false, strokesPrimList[0].isPlanar);
     expect(map.size).to.equal(1);
     expect(builder.vertexMap.length).to.equal(25);
-    expect(builder.mesh.polylines!.length).to.equal(
-      strokesPrimList[0].strokes.length
-    );
+    expect(builder.mesh.polylines!.length).to.equal(strokesPrimList[0].strokes.length);
   });
 
   it("getBuilder", () => {
@@ -581,13 +471,7 @@ describe("MeshBuilderMap Tests", () => {
     const is2d = false;
     const tolerance = 0.15;
     const hasNormals = false;
-    const map = new MeshBuilderMap(
-      tolerance,
-      range,
-      is2d,
-      new GeometryOptions(GenerateEdges.No),
-      undefined
-    );
+    const map = new MeshBuilderMap(tolerance, range, is2d, new GeometryOptions(GenerateEdges.No), undefined);
 
     expect(map.size).to.equal(0);
     const builder = map.getBuilder(displayParams, type, hasNormals, isPlanar);
@@ -607,13 +491,7 @@ describe("MeshBuilderMap Tests", () => {
     const displayParams = new FakeDisplayParams();
     const type = Mesh.PrimitiveType.Mesh;
     const isPlanar = true;
-    let map = new MeshBuilderMap(
-      tolerance,
-      range,
-      is2d,
-      new GeometryOptions(GenerateEdges.No),
-      undefined
-    );
+    let map = new MeshBuilderMap(tolerance, range, is2d, new GeometryOptions(GenerateEdges.No), undefined);
     let key = map.getKey(displayParams, type, hasNormals, isPlanar);
 
     expect(key.order).to.equal(0);
@@ -623,12 +501,7 @@ describe("MeshBuilderMap Tests", () => {
       tolerance,
       range,
       is2d,
-      new GeometryOptions(
-        GenerateEdges.No,
-        undefined,
-        undefined,
-        PreserveOrder.Yes
-      ),
+      new GeometryOptions(GenerateEdges.No, undefined, undefined, PreserveOrder.Yes),
       undefined
     );
     key = map.getKey(displayParams, type, hasNormals, isPlanar);
@@ -644,13 +517,7 @@ describe("MeshBuilderMap Tests", () => {
     const tolerance = 0.15;
     const hasNormals = false;
     const areaTolerance = ToleranceRatio.facetArea * tolerance;
-    const map = new MeshBuilderMap(
-      tolerance,
-      range,
-      is2d,
-      new GeometryOptions(GenerateEdges.No),
-      undefined
-    );
+    const map = new MeshBuilderMap(tolerance, range, is2d, new GeometryOptions(GenerateEdges.No), undefined);
     const key = map.getKey(displayParams, type, hasNormals, isPlanar);
     const builder = map.getBuilderFromKey(key, {
       quantizePositions: false,

@@ -22,9 +22,7 @@ export class IModelHubUserMgr implements AuthorizationClient {
     this.onAccessTokenChanged.raiseEvent(this._token);
   }
 
-  public readonly onAccessTokenChanged = new BeEvent<
-    (token: AccessToken) => void
-  >();
+  public readonly onAccessTokenChanged = new BeEvent<(token: AccessToken) => void>();
   public get isAuthorized(): boolean {
     return this._token !== "";
   }

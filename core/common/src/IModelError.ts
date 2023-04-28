@@ -33,23 +33,14 @@ export {
  * The values within each of these `enum`s are guaranteed not to conflict with one another.
  * @public
  */
-export type IModelErrorNumber =
-  | IModelStatus
-  | DbResult
-  | BentleyStatus
-  | BriefcaseStatus
-  | ChangeSetStatus;
+export type IModelErrorNumber = IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | ChangeSetStatus;
 
 /** The error type thrown by this module.
  * @see [[IModelErrorNumber]] for commonly-used error codes.
  * @public
  */
 export class IModelError extends BentleyError {
-  public constructor(
-    errorNumber: IModelErrorNumber | number,
-    message: string,
-    getMetaData?: LoggingMetaData
-  ) {
+  public constructor(errorNumber: IModelErrorNumber | number, message: string, getMetaData?: LoggingMetaData) {
     super(errorNumber, message, getMetaData);
   }
 }
@@ -72,12 +63,7 @@ export class ServerTimeoutError extends ServerError {
 
 /** @public */
 export class BackendError extends IModelError {
-  public constructor(
-    errorNumber: number,
-    name: string,
-    message: string,
-    getMetaData?: LoggingMetaData
-  ) {
+  public constructor(errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData) {
     super(errorNumber, message, getMetaData);
     this.name = name;
   }

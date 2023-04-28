@@ -129,9 +129,7 @@ async function filterAppLog(loggerTest, inputLogFile, outputLogFile) {
           .mapSync(function (line) {
             s.pause();
             //Nov  6 21:50:28 iPad imodeljs-backend-test-app(libiModelJsHostM02.dylib)[235] <Notice>:"
-            const m = line.match(
-              /^(\w+\s+\d+\s+\d+:\d+:\d+)\s+\w+\s+([^\s]+)\s+[^\s]+:/
-            );
+            const m = line.match(/^(\w+\s+\d+\s+\d+:\d+:\d+)\s+\w+\s+([^\s]+)\s+[^\s]+:/);
             if (m) {
               const loggerName = m[2];
               if (loggerName.match(loggerTest)) {
@@ -189,9 +187,7 @@ async function outputMochaLog(inputLogFile) {
             //Nov  6 21:50:28: MOCHA ERROR message"
             //Nov  8 16:28:32: [MOCHA ERROR]    [FAILED] ORed ECEnums
 
-            const m = line.match(
-              /^\w+\s+\d+\s+\d+:\d+:\d+\s*:\s*\[MOCHA\s+(\w+)\]/i
-            );
+            const m = line.match(/^\w+\s+\d+\s+\d+:\d+:\d+\s*:\s*\[MOCHA\s+(\w+)\]/i);
             if (m) {
               writeToConsole(loglevel, logEntry);
               loglevel = m[1].toUpperCase();

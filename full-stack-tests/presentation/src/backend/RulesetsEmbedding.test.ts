@@ -8,11 +8,7 @@ import fs from "fs";
 import { IModelDb, StandaloneDb } from "@itwin/core-backend";
 import { Id64, Logger, LogLevel } from "@itwin/core-bentley";
 import { Presentation, RulesetEmbedder } from "@itwin/presentation-backend";
-import {
-  ChildNodeSpecificationTypes,
-  Ruleset,
-  RuleTypes,
-} from "@itwin/presentation-common";
+import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { createRandomRuleset } from "@itwin/presentation-common/lib/cjs/test";
 import { initialize, terminate } from "../IntegrationTests";
 import { prepareOutputFilePath } from "../Utils";
@@ -102,15 +98,13 @@ describe("RulesEmbedding", () => {
     expect(rulesets.length).equals(2);
 
     const actualRuleset = rulesets.find(
-      (value: Ruleset, _index: number, _obj: Ruleset[]): boolean =>
-        value.id === ruleset.id
+      (value: Ruleset, _index: number, _obj: Ruleset[]): boolean => value.id === ruleset.id
     );
     expect(actualRuleset).to.not.be.undefined;
     expect(ruleset).to.deep.eq(actualRuleset as Ruleset);
 
     const actualOtherRuleset = rulesets.find(
-      (value: Ruleset, _index: number, _obj: Ruleset[]): boolean =>
-        value.id === otherRuleset.id
+      (value: Ruleset, _index: number, _obj: Ruleset[]): boolean => value.id === otherRuleset.id
     );
     expect(actualOtherRuleset).to.not.be.undefined;
     expect(otherRuleset).to.deep.eq(actualOtherRuleset as Ruleset);

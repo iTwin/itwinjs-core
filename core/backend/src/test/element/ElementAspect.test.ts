@@ -29,13 +29,8 @@ describe("ElementAspect", () => {
 
   before(() => {
     // NOTE: see ElementAspectTests.PresentationRuleScenarios in DgnPlatform\Tests\DgnProject\NonPublished\ElementAspect_Test.cpp for how ElementAspectTest.bim was created
-    const seedFileName = IModelTestUtils.resolveAssetFile(
-      "ElementAspectTest.bim"
-    );
-    const testFileName = IModelTestUtils.prepareOutputFile(
-      "ElementAspect",
-      "ElementAspectTest.bim"
-    );
+    const seedFileName = IModelTestUtils.resolveAssetFile("ElementAspectTest.bim");
+    const testFileName = IModelTestUtils.prepareOutputFile("ElementAspect", "ElementAspectTest.bim");
     iModel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
   });
 
@@ -54,27 +49,18 @@ describe("ElementAspect", () => {
     )[0];
     assert.exists(aspect1);
     assert.isTrue(aspect1 instanceof ElementUniqueAspect);
-    assert.equal(
-      aspect1.classFullName,
-      "DgnPlatformTest:TestUniqueAspectNoHandler"
-    );
+    assert.equal(aspect1.classFullName, "DgnPlatformTest:TestUniqueAspectNoHandler");
     assert.equal(aspect1.asAny.testUniqueAspectProperty, "Aspect1-Updated");
     assert.equal(aspect1.asAny.length, 1);
     // cross-check getAspects against getAspect
     const aspect1X: ElementAspect = iModel.elements.getAspect(aspect1.id);
     assert.exists(aspect1X);
     assert.isTrue(aspect1X instanceof ElementUniqueAspect);
-    assert.equal(
-      aspect1X.classFullName,
-      "DgnPlatformTest:TestUniqueAspectNoHandler"
-    );
+    assert.equal(aspect1X.classFullName, "DgnPlatformTest:TestUniqueAspectNoHandler");
     assert.equal(aspect1X.asAny.testUniqueAspectProperty, "Aspect1-Updated");
     assert.equal(aspect1X.asAny.length, 1);
 
-    const aspect2: ElementAspect = iModel.elements.getAspects(
-      element.id,
-      "DgnPlatformTest:TestUniqueAspect"
-    )[0];
+    const aspect2: ElementAspect = iModel.elements.getAspects(element.id, "DgnPlatformTest:TestUniqueAspect")[0];
     assert.exists(aspect2);
     assert.isTrue(aspect2 instanceof ElementUniqueAspect);
     assert.equal(aspect2.classFullName, "DgnPlatformTest:TestUniqueAspect");
@@ -94,10 +80,7 @@ describe("ElementAspect", () => {
     );
     assert.equal(uniqueAspects.length, 2);
     uniqueAspects.forEach((aspect) => {
-      assert.isTrue(
-        aspect.classFullName === aspect1.classFullName ||
-          aspect.classFullName === aspect2.classFullName
-      );
+      assert.isTrue(aspect.classFullName === aspect1.classFullName || aspect.classFullName === aspect2.classFullName);
       // cross-check against getting the aspects individually
       const aspectX: ElementAspect = iModel.elements.getAspect(aspect.id);
       assert.exists(aspectX);
@@ -123,16 +106,10 @@ describe("ElementAspect", () => {
       assert.equal(aspectX.schemaName, aspect.schemaName);
       assert.equal(aspectX.className, aspect.className);
       assert.exists(aspectX.asAny.testMultiAspectProperty);
-      assert.equal(
-        aspectX.asAny.testMultiAspectProperty,
-        aspect.asAny.testMultiAspectProperty
-      );
+      assert.equal(aspectX.asAny.testMultiAspectProperty, aspect.asAny.testMultiAspectProperty);
     });
 
-    const multiAspectsB: ElementAspect[] = iModel.elements.getAspects(
-      element.id,
-      "DgnPlatformTest:TestMultiAspect"
-    );
+    const multiAspectsB: ElementAspect[] = iModel.elements.getAspects(element.id, "DgnPlatformTest:TestMultiAspect");
     assert.exists(multiAspectsB);
     assert.isArray(multiAspectsB);
     assert.equal(multiAspectsB.length, 2);
@@ -149,10 +126,7 @@ describe("ElementAspect", () => {
       assert.exists(aspectX.asAny.testMultiAspectProperty);
     });
 
-    const multiAspects: ElementAspect[] = iModel.elements.getAspects(
-      element.id,
-      ElementMultiAspect.classFullName
-    );
+    const multiAspects: ElementAspect[] = iModel.elements.getAspects(element.id, ElementMultiAspect.classFullName);
     assert.equal(multiAspects.length, 4);
     multiAspects.forEach((aspect) => {
       assert.isTrue(
@@ -169,39 +143,22 @@ describe("ElementAspect", () => {
     const rootSubject = iModel.elements.getRootSubject();
     assert.equal(
       0,
-      iModel.elements.getAspects(
-        rootSubject.id,
-        "DgnPlatformTest:TestUniqueAspect"
-      ).length,
+      iModel.elements.getAspects(rootSubject.id, "DgnPlatformTest:TestUniqueAspect").length,
       "Don't expect DgnPlatformTest:TestUniqueAspect aspects on the root Subject"
     );
     assert.equal(
       0,
-      iModel.elements.getAspects(
-        rootSubject.id,
-        "DgnPlatformTest:TestMultiAspect"
-      ).length,
+      iModel.elements.getAspects(rootSubject.id, "DgnPlatformTest:TestMultiAspect").length,
       "Don't expect DgnPlatformTest:TestMultiAspect aspects on the root Subject"
     );
-    assert.equal(
-      0,
-      iModel.elements.getAspects(rootSubject.id).length,
-      "Don't expect any aspects on the root Subject"
-    );
+    assert.equal(0, iModel.elements.getAspects(rootSubject.id).length, "Don't expect any aspects on the root Subject");
 
     // The 'Element' property is introduced by ElementUniqueAspect and ElementMultiAspect, but is not available at the ElementAspect base class.
     // This is unfortunate, but is expected behavior and the reason why the getAllAspects method exists.
 
     const slm = new SequentialLogMatcher();
-    slm
-      .append()
-      .error()
-      .category("ECDb")
-      .message("No property or enumeration found for expression 'Element.Id'.");
-    assert.throws(
-      () => iModel.elements.getAspects(element.id, ElementAspect.classFullName),
-      IModelError
-    );
+    slm.append().error().category("ECDb").message("No property or enumeration found for expression 'Element.Id'.");
+    assert.throws(() => iModel.elements.getAspects(element.id, ElementAspect.classFullName), IModelError);
     assert.isTrue(slm.finishAndDispose());
 
     const allAspects: ElementAspect[] = iModel.elements.getAspects(element.id);
@@ -222,10 +179,7 @@ describe("ElementAspect", () => {
       testMultiAspectProperty: "MultiAspectInsertTest1",
     };
     iModel.elements.insertAspect(aspectProps);
-    let aspects: ElementAspect[] = iModel.elements.getAspects(
-      element.id,
-      aspectProps.classFullName
-    );
+    let aspects: ElementAspect[] = iModel.elements.getAspects(element.id, aspectProps.classFullName);
     assert.isAtLeast(aspects.length, 1);
     const numAspects = aspects.length;
 
@@ -233,29 +187,19 @@ describe("ElementAspect", () => {
     let foundIndex: number = -1;
     for (const aspect of aspects) {
       foundIndex++;
-      if (
-        aspect.asAny.testMultiAspectProperty ===
-        aspectProps.testMultiAspectProperty
-      ) {
+      if (aspect.asAny.testMultiAspectProperty === aspectProps.testMultiAspectProperty) {
         found = true;
         break;
       }
     }
     assert.isTrue(found);
 
-    aspects[foundIndex].asAny.testMultiAspectProperty =
-      "MultiAspectInsertTest1-Updated";
+    aspects[foundIndex].asAny.testMultiAspectProperty = "MultiAspectInsertTest1-Updated";
     iModel.elements.updateAspect(aspects[foundIndex].toJSON());
 
-    const aspectsUpdated: ElementAspect[] = iModel.elements.getAspects(
-      element.id,
-      aspectProps.classFullName
-    );
+    const aspectsUpdated: ElementAspect[] = iModel.elements.getAspects(element.id, aspectProps.classFullName);
     assert.equal(aspectsUpdated.length, aspects.length);
-    assert.equal(
-      aspectsUpdated[foundIndex].asAny.testMultiAspectProperty,
-      "MultiAspectInsertTest1-Updated"
-    );
+    assert.equal(aspectsUpdated[foundIndex].asAny.testMultiAspectProperty, "MultiAspectInsertTest1-Updated");
 
     iModel.elements.deleteAspect(aspects[foundIndex].id);
     aspects = iModel.elements.getAspects(element.id, aspectProps.classFullName);
@@ -273,28 +217,15 @@ describe("ElementAspect", () => {
       testUniqueAspectProperty: "UniqueAspectInsertTest1",
     };
     iModel.elements.insertAspect(aspectProps);
-    const aspects: ElementAspect[] = iModel.elements.getAspects(
-      element.id,
-      aspectProps.classFullName
-    );
+    const aspects: ElementAspect[] = iModel.elements.getAspects(element.id, aspectProps.classFullName);
     assert.isTrue(aspects.length === 1);
-    assert.equal(
-      aspects[0].asAny.testUniqueAspectProperty,
-      aspectProps.testUniqueAspectProperty
-    );
+    assert.equal(aspects[0].asAny.testUniqueAspectProperty, aspectProps.testUniqueAspectProperty);
 
-    aspects[0].asAny.testUniqueAspectProperty =
-      "UniqueAspectInsertTest1-Updated";
+    aspects[0].asAny.testUniqueAspectProperty = "UniqueAspectInsertTest1-Updated";
     iModel.elements.updateAspect(aspects[0].toJSON());
-    const aspectsUpdated: ElementAspect[] = iModel.elements.getAspects(
-      element.id,
-      aspectProps.classFullName
-    );
+    const aspectsUpdated: ElementAspect[] = iModel.elements.getAspects(element.id, aspectProps.classFullName);
     assert.equal(aspectsUpdated.length, 1);
-    assert.equal(
-      aspectsUpdated[0].asAny.testUniqueAspectProperty,
-      "UniqueAspectInsertTest1-Updated"
-    );
+    assert.equal(aspectsUpdated[0].asAny.testUniqueAspectProperty, "UniqueAspectInsertTest1-Updated");
 
     iModel.elements.deleteAspect(aspects[0].id);
     try {
@@ -306,10 +237,7 @@ describe("ElementAspect", () => {
   });
 
   it("should be able to insert ExternalSourceAspects", () => {
-    const fileName = IModelTestUtils.prepareOutputFile(
-      "ElementAspect",
-      "ExternalSourceAspect.bim"
-    );
+    const fileName = IModelTestUtils.prepareOutputFile("ElementAspect", "ExternalSourceAspect.bim");
     let iModelDb = SnapshotDb.createEmpty(fileName, {
       rootSubject: { name: "ExternalSourceAspect" },
     });
@@ -339,10 +267,7 @@ describe("ElementAspect", () => {
     iModelDb.close();
     iModelDb = SnapshotDb.openFile(fileName);
 
-    const aspects: ElementAspect[] = iModelDb.elements.getAspects(
-      elementId,
-      aspectProps.classFullName
-    );
+    const aspects: ElementAspect[] = iModelDb.elements.getAspects(elementId, aspectProps.classFullName);
     assert.equal(aspects.length, 1);
     expect(aspects[0]).to.deep.subsetEqual(aspectProps, {
       normalizeClassNameProps: true,
@@ -367,10 +292,7 @@ describe("ElementAspect", () => {
   });
 
   it("should be able to insert multiple ExternalSourceAspects", () => {
-    const fileName = IModelTestUtils.prepareOutputFile(
-      "MultipleElementAspects",
-      "ExternalSourceAspect.bim"
-    );
+    const fileName = IModelTestUtils.prepareOutputFile("MultipleElementAspects", "ExternalSourceAspect.bim");
     let iModelDb = SnapshotDb.createEmpty(fileName, {
       rootSubject: { name: "MultipleExternalSourceAspects" },
     });
@@ -443,109 +365,54 @@ describe("ElementAspect", () => {
     iModelDb.close();
     iModelDb = SnapshotDb.openFile(fileName);
 
-    const equalProps = (
-      aspect: ElementAspect,
-      wantProps: ExternalSourceAspectProps
-    ): boolean => {
+    const equalProps = (aspect: ElementAspect, wantProps: ExternalSourceAspectProps): boolean => {
       return (
         aspect.element.id === wantProps.element.id &&
         aspect.asAny.scope.id === wantProps.scope.id &&
-        aspect.asAny.scope.relClassName.endsWith(
-          "ElementScopesExternalSourceIdentifier"
-        ) &&
+        aspect.asAny.scope.relClassName.endsWith("ElementScopesExternalSourceIdentifier") &&
         aspect.asAny.identifier === wantProps.identifier &&
         aspect.asAny.kind === wantProps.kind &&
         aspect.asAny.checksum === wantProps.checksum &&
         aspect.asAny.version === wantProps.version
       );
     };
-    const findInProps = (
-      have: ElementAspect,
-      wantArray: Array<ExternalSourceAspectProps>
-    ): boolean => {
+    const findInProps = (have: ElementAspect, wantArray: Array<ExternalSourceAspectProps>): boolean => {
       return wantArray.find((want) => equalProps(have, want)) !== undefined;
     };
 
-    const e1Aspects: ElementAspect[] = iModelDb.elements.getAspects(
-      e1,
-      aspectProps.classFullName
-    );
+    const e1Aspects: ElementAspect[] = iModelDb.elements.getAspects(e1, aspectProps.classFullName);
     assert.equal(e1Aspects.length, e1AspectProps.length);
     e1Aspects.forEach((x) => {
       assert.isTrue(findInProps(x, e1AspectProps));
     });
 
-    const e2Aspects: ElementAspect[] = iModelDb.elements.getAspects(
-      e2,
-      aspectProps.classFullName
-    );
+    const e2Aspects: ElementAspect[] = iModelDb.elements.getAspects(e2, aspectProps.classFullName);
     assert.equal(e2Aspects.length, e2AspectProps.length);
     e2Aspects.forEach((x) => {
       assert.isTrue(findInProps(x, e2AspectProps));
     });
 
-    const allA = ExternalSourceAspect.findAllBySource(
-      iModelDb,
-      scopeId1,
-      kind,
-      "A"
-    );
-    assert.equal(
-      allA.filter((x) => x.elementId === e1).length,
-      2,
-      "there are two A's in scope 1 on e1"
-    );
-    assert.equal(
-      allA.filter((x) => x.elementId === e2).length,
-      1,
-      "there is one A in scope 1 on e2"
-    );
+    const allA = ExternalSourceAspect.findAllBySource(iModelDb, scopeId1, kind, "A");
+    assert.equal(allA.filter((x) => x.elementId === e1).length, 2, "there are two A's in scope 1 on e1");
+    assert.equal(allA.filter((x) => x.elementId === e2).length, 1, "there is one A in scope 1 on e2");
     assert.equal(allA.length, 3);
 
-    const allA2 = ExternalSourceAspect.findAllBySource(
-      iModelDb,
-      scopeId2,
-      kind,
-      "A"
-    );
+    const allA2 = ExternalSourceAspect.findAllBySource(iModelDb, scopeId2, kind, "A");
     assert.equal(allA2.length, 1);
     assert.equal(allA2[0].elementId, e1, "there is one A in scope 2 on e1");
 
-    const allB = ExternalSourceAspect.findAllBySource(
-      iModelDb,
-      scopeId1,
-      kind,
-      "B"
-    );
+    const allB = ExternalSourceAspect.findAllBySource(iModelDb, scopeId1, kind, "B");
     assert.equal(allB.length, 1);
     assert.equal(allB[0].elementId, e1, "there is one B on e1");
 
-    const allC = ExternalSourceAspect.findAllBySource(
-      iModelDb,
-      scopeId1,
-      kind,
-      "C"
-    );
+    const allC = ExternalSourceAspect.findAllBySource(iModelDb, scopeId1, kind, "C");
     assert.equal(allC.length, 1);
     assert.equal(allC[0].elementId, e2, "there is one C of kind1 on e2");
 
-    const allCK2 = ExternalSourceAspect.findAllBySource(
-      iModelDb,
-      scopeId1,
-      kind2,
-      "C"
-    );
+    const allCK2 = ExternalSourceAspect.findAllBySource(iModelDb, scopeId1, kind2, "C");
     assert.equal(allCK2.length, 1);
     assert.equal(allCK2[0].elementId, e1, "there is one C of kind 2 on e1");
 
-    assert.equal(
-      ExternalSourceAspect.findAllBySource(
-        iModelDb,
-        scopeId1,
-        kind,
-        "<notfound>"
-      ).length,
-      0
-    );
+    assert.equal(ExternalSourceAspect.findAllBySource(iModelDb, scopeId1, kind, "<notfound>").length, 0);
   });
 });

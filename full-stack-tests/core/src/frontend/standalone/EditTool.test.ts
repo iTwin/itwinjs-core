@@ -5,19 +5,9 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { ProcessDetector } from "@itwin/core-bentley";
-import {
-  IModelApp,
-  PrimitiveTool,
-  SnapshotConnection,
-  Viewport,
-} from "@itwin/core-frontend";
+import { IModelApp, PrimitiveTool, SnapshotConnection, Viewport } from "@itwin/core-frontend";
 import { EditTools, makeEditToolIpc } from "@itwin/editor-frontend";
-import {
-  testCmdIds,
-  TestCmdOjb1,
-  TestCmdResult,
-  TestCommandIpc,
-} from "../../common/TestEditCommandIpc";
+import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc";
 import { TestUtility } from "../TestUtility";
 
 const expect = chai.expect;
@@ -32,10 +22,7 @@ let cmdStr: string;
 
 class TestEditTool1 extends PrimitiveTool {
   public static override toolId = "TestEditTool1";
-  public override isCompatibleViewport(
-    _vp: Viewport | undefined,
-    _isSelectedViewChange: boolean
-  ): boolean {
+  public override isCompatibleViewport(_vp: Viewport | undefined, _isSelectedViewChange: boolean): boolean {
     return true;
   }
   public async onRestartTool() {
@@ -44,16 +31,8 @@ class TestEditTool1 extends PrimitiveTool {
 
   public testIpc = makeEditToolIpc<TestCommandIpc>();
 
-  public async go(
-    commandId: string,
-    str1: string,
-    str2: string,
-    obj1: TestCmdOjb1
-  ) {
-    cmdStr = await EditTools.startCommand<string>(
-      { commandId, iModelKey: iModel.key },
-      cmdArg
-    );
+  public async go(commandId: string, str1: string, str2: string, obj1: TestCmdOjb1) {
+    cmdStr = await EditTools.startCommand<string>({ commandId, iModelKey: iModel.key }, cmdArg);
     testOut = await this.testIpc.testMethod1(str1, str2, obj1);
   }
 }

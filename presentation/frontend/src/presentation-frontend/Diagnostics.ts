@@ -21,36 +21,27 @@ import {
  */
 export function consoleDiagnosticsHandler(diagnostics: ClientDiagnostics) {
   // eslint-disable-next-line no-console
-  diagnostics.backendVersion &&
-    console.log(`Backend version: ${diagnostics.backendVersion}`);
+  diagnostics.backendVersion && console.log(`Backend version: ${diagnostics.backendVersion}`);
   diagnostics.logs &&
-    handleDiagnosticLogs(
-      diagnostics.logs,
-      (msg: DiagnosticsLogMessage, stack: DiagnosticsScopeLogs[]) => {
-        /* note: we're duplicating the message if it's logged at both editor and dev severity levels */
-        const str = buildLogMessageString(msg, stack);
-        if (msg.severity.editor) getConsoleLogFunc(msg.severity.editor)(str);
-        if (msg.severity.dev) getConsoleLogFunc(msg.severity.dev)(str);
-      }
-    );
+    handleDiagnosticLogs(diagnostics.logs, (msg: DiagnosticsLogMessage, stack: DiagnosticsScopeLogs[]) => {
+      /* note: we're duplicating the message if it's logged at both editor and dev severity levels */
+      const str = buildLogMessageString(msg, stack);
+      if (msg.severity.editor) getConsoleLogFunc(msg.severity.editor)(str);
+      if (msg.severity.dev) getConsoleLogFunc(msg.severity.dev)(str);
+    });
 }
 
 /**
  * A function which calls all diagnostics handlers passed to it.
  * @beta
  */
-export function createCombinedDiagnosticsHandler(
-  handlers: ClientDiagnosticsHandler[]
-) {
+export function createCombinedDiagnosticsHandler(handlers: ClientDiagnosticsHandler[]) {
   return (diagnostics: ClientDiagnostics) => {
     handlers.forEach((handler) => handler(diagnostics));
   };
 }
 
-type DiagnosticsLogMessageHandler = (
-  msg: DiagnosticsLogMessage,
-  stack: DiagnosticsScopeLogs[]
-) => void;
+type DiagnosticsLogMessageHandler = (msg: DiagnosticsLogMessage, stack: DiagnosticsScopeLogs[]) => void;
 
 function handleDiagnosticLogs(
   logs: DiagnosticsLogEntry[],
@@ -66,10 +57,7 @@ function handleDiagnosticLogs(
   });
 }
 
-function buildLogMessageString(
-  msg: DiagnosticsLogMessage,
-  _stack: DiagnosticsScopeLogs[]
-) {
+function buildLogMessageString(msg: DiagnosticsLogMessage, _stack: DiagnosticsScopeLogs[]) {
   return msg.message;
 }
 

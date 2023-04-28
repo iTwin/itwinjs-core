@@ -27,12 +27,7 @@ import {
   ShowSignOption,
   showSignOptionToString,
 } from "./FormatEnums";
-import {
-  CloneOptions,
-  CustomFormatProps,
-  FormatProps,
-  isCustomFormatProps,
-} from "./Interfaces";
+import { CloneOptions, CustomFormatProps, FormatProps, isCustomFormatProps } from "./Interfaces";
 
 // cSpell:ignore ZERONORMALIZED, nosign, onlynegative, signalways, negativeparentheses
 // cSpell:ignore trailzeroes, keepsinglezero, zeroempty, keepdecimalpoint, applyrounding, fractiondash, showunitlabel, prependunitlabel, exponentonlynegative
@@ -46,10 +41,8 @@ export class BaseFormat {
   protected _type: FormatType = FormatType.Decimal; // required; options are decimal, fractional, scientific, station
   protected _precision: number = DecimalPrecision.Six; // required
   protected _showSignOption: ShowSignOption = ShowSignOption.OnlyNegative; // options: noSign, onlyNegative, signAlways, negativeParentheses
-  protected _decimalSeparator: string =
-    QuantityConstants.LocaleSpecificDecimalSeparator;
-  protected _thousandSeparator: string =
-    QuantityConstants.LocaleSpecificThousandSeparator;
+  protected _decimalSeparator: string = QuantityConstants.LocaleSpecificDecimalSeparator;
+  protected _thousandSeparator: string = QuantityConstants.LocaleSpecificThousandSeparator;
   protected _uomSeparator = " "; // optional; default is " "; defined separator between magnitude and the unit
   protected _stationSeparator = "+"; // optional; default is "+"
   protected _formatTraits: FormatTraits = FormatTraits.Uninitialized;
@@ -193,11 +186,7 @@ export class BaseFormat {
           `The Format ${this.name} has an invalid 'precision' attribute. It should be an integer.`
         );
 
-      this._precision = parsePrecision(
-        formatProps.precision,
-        this._type,
-        this.name
-      );
+      this._precision = parsePrecision(formatProps.precision, this._type, this.name);
     }
     if (this.type === FormatType.Scientific) {
       if (undefined === formatProps.scientificType)
@@ -207,10 +196,7 @@ export class BaseFormat {
           `The Format ${this.name} is 'Scientific' type therefore the attribute 'scientificType' is required.`
         );
 
-      this._scientificType = parseScientificType(
-        formatProps.scientificType,
-        this.name
-      );
+      this._scientificType = parseScientificType(formatProps.scientificType, this.name);
     }
 
     if (undefined !== formatProps.roundFactor) {
@@ -241,10 +227,7 @@ export class BaseFormat {
           QuantityStatus.InvalidJson,
           `The Format ${this.name} is 'Station' type therefore the attribute 'stationOffsetSize' is required.`
         );
-      if (
-        !Number.isInteger(formatProps.stationOffsetSize) ||
-        formatProps.stationOffsetSize < 0
-      )
+      if (!Number.isInteger(formatProps.stationOffsetSize) || formatProps.stationOffsetSize < 0)
         // must be a positive int > 0
         throw new QuantityError(
           QuantityStatus.InvalidJson,
@@ -255,21 +238,12 @@ export class BaseFormat {
 
     if (undefined !== formatProps.showSignOption) {
       // optional; default is "onlyNegative"
-      this._showSignOption = parseShowSignOption(
-        formatProps.showSignOption,
-        this.name
-      );
+      this._showSignOption = parseShowSignOption(formatProps.showSignOption, this.name);
     }
 
-    if (
-      undefined !== formatProps.formatTraits &&
-      formatProps.formatTraits.length !== 0
-    ) {
+    if (undefined !== formatProps.formatTraits && formatProps.formatTraits.length !== 0) {
       // FormatTraits is optional
-      if (
-        !Array.isArray(formatProps.formatTraits) &&
-        typeof formatProps.formatTraits !== "string"
-      )
+      if (!Array.isArray(formatProps.formatTraits) && typeof formatProps.formatTraits !== "string")
         // must be either an array of strings or a string
         throw new QuantityError(
           QuantityStatus.InvalidJson,
@@ -316,10 +290,7 @@ export class BaseFormat {
           QuantityStatus.InvalidJson,
           `The Format ${this.name} has an invalid 'uomSeparator' attribute. It should be of type 'string'.`
         );
-      if (
-        formatProps.uomSeparator.length < 0 ||
-        formatProps.uomSeparator.length > 1
-      )
+      if (formatProps.uomSeparator.length < 0 || formatProps.uomSeparator.length > 1)
         throw new QuantityError(
           QuantityStatus.InvalidJson,
           `The Format ${this.name} has an invalid 'uomSeparator' attribute. It should be an empty or one character string.`
@@ -368,30 +339,17 @@ export class Format extends BaseFormat {
     return this._customProps;
   }
 
-  public static isFormatTraitSetInProps(
-    formatProps: FormatProps,
-    trait: FormatTraits
-  ) {
+  public static isFormatTraitSetInProps(formatProps: FormatProps, trait: FormatTraits) {
     if (!formatProps.formatTraits) return false;
     const formatTraits = Array.isArray(formatProps.formatTraits)
       ? formatProps.formatTraits
       : formatProps.formatTraits.split(/,|;|\|/);
     const traitStr = getTraitString(trait);
-    return formatTraits.find((traitEntry) => traitStr === traitEntry)
-      ? true
-      : false;
+    return formatTraits.find((traitEntry) => traitStr === traitEntry) ? true : false;
   }
 
-  private async createUnit(
-    unitsProvider: UnitsProvider,
-    name: string,
-    label?: string
-  ): Promise<void> {
-    if (
-      name === undefined ||
-      typeof name !== "string" ||
-      (label !== undefined && typeof label !== "string")
-    )
+  private async createUnit(unitsProvider: UnitsProvider, name: string, label?: string): Promise<void> {
+    if (name === undefined || typeof name !== "string" || (label !== undefined && typeof label !== "string"))
       // throws if name is undefined or name isn't a string or if label is defined and isn't a string
       throw new QuantityError(
         QuantityStatus.InvalidJson,
@@ -401,17 +359,11 @@ export class Format extends BaseFormat {
       const unitObj = unit[0].name;
       if (unitObj.toLowerCase() === name.toLowerCase())
         // duplicate names are not allowed
-        throw new QuantityError(
-          QuantityStatus.InvalidJson,
-          `The unit ${unitObj} has a duplicate name.`
-        );
+        throw new QuantityError(QuantityStatus.InvalidJson, `The unit ${unitObj} has a duplicate name.`);
     }
     const newUnit: UnitProps = await unitsProvider.findUnitByName(name);
     if (!newUnit || !newUnit.isValid)
-      throw new QuantityError(
-        QuantityStatus.InvalidJson,
-        `Invalid unit name '${name}'.`
-      );
+      throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${name}'.`);
     this.units!.push([newUnit, label]);
   }
 
@@ -443,18 +395,13 @@ export class Format extends BaseFormat {
       }
     }
 
-    if (undefined !== options?.traits)
-      newFormat._formatTraits = options?.traits;
+    if (undefined !== options?.traits) newFormat._formatTraits = options?.traits;
 
     if (undefined !== options?.type) newFormat._type = options.type;
 
     if (undefined !== options?.precision) {
       // ensure specified precision is valid
-      const precision = parsePrecision(
-        options?.precision,
-        newFormat._type,
-        newFormat.name
-      );
+      const precision = parsePrecision(options?.precision, newFormat._type, newFormat.name);
       newFormat._precision = precision;
     }
 
@@ -474,10 +421,7 @@ export class Format extends BaseFormat {
   /**
    * Populates this Format with the values from the provided.
    */
-  public async fromJSON(
-    unitsProvider: UnitsProvider,
-    jsonObj: FormatProps
-  ): Promise<void> {
+  public async fromJSON(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<void> {
     this.loadFormatProperties(jsonObj);
 
     if (isCustomFormatProps(jsonObj)) this._customProps = jsonObj.custom;
@@ -517,17 +461,12 @@ export class Format extends BaseFormat {
             `The Format ${this.name} has a Composite with an invalid 'units' attribute. It must be of type 'array'`
           );
         }
-        if (
-          jsonObj.composite.units.length > 0 &&
-          jsonObj.composite.units.length <= 4
-        ) {
+        if (jsonObj.composite.units.length > 0 && jsonObj.composite.units.length <= 4) {
           // Composite requires 1-4 units
           try {
             const createUnitPromises: Array<Promise<void>> = [];
             for (const unit of jsonObj.composite.units) {
-              createUnitPromises.push(
-                this.createUnit(unitsProvider, unit.name, unit.label)
-              );
+              createUnitPromises.push(this.createUnit(unitsProvider, unit.name, unit.label));
             }
 
             await Promise.all(createUnitPromises);
@@ -545,11 +484,7 @@ export class Format extends BaseFormat {
   }
 
   /** Create a Format from FormatProps */
-  public static async createFromJSON(
-    name: string,
-    unitsProvider: UnitsProvider,
-    formatProps: FormatProps
-  ) {
+  public static async createFromJSON(name: string, unitsProvider: UnitsProvider, formatProps: FormatProps) {
     const actualFormat = new Format(name);
     await actualFormat.fromJSON(unitsProvider, formatProps);
     return actualFormat;
@@ -562,8 +497,7 @@ export class Format extends BaseFormat {
     let composite;
     if (this.units) {
       const units = this.units.map((value) => {
-        if (undefined !== value[1])
-          return { name: value[0].name, label: value[1] };
+        if (undefined !== value[1]) return { name: value[0].name, label: value[1] };
         else return { name: value[0].name };
       });
 
@@ -585,9 +519,7 @@ export class Format extends BaseFormat {
         decimalSeparator: this.decimalSeparator,
         thousandSeparator: this.thousandSeparator,
         uomSeparator: this.uomSeparator,
-        scientificType: this.scientificType
-          ? scientificTypeToString(this.scientificType)
-          : undefined,
+        scientificType: this.scientificType ? scientificTypeToString(this.scientificType) : undefined,
         stationOffsetSize: this.stationOffsetSize,
         stationSeparator: this.stationSeparator,
         composite,
@@ -604,9 +536,7 @@ export class Format extends BaseFormat {
       decimalSeparator: this.decimalSeparator,
       thousandSeparator: this.thousandSeparator,
       uomSeparator: this.uomSeparator,
-      scientificType: this.scientificType
-        ? scientificTypeToString(this.scientificType)
-        : undefined,
+      scientificType: this.scientificType ? scientificTypeToString(this.scientificType) : undefined,
       stationOffsetSize: this.stationOffsetSize,
       stationSeparator: this.stationSeparator,
       composite,

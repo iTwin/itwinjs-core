@@ -13,10 +13,7 @@ import {
   TileTreeReference,
 } from "@itwin/core-frontend";
 import { BatchedTileTreeReference } from "./BatchedTileTreeReference";
-import {
-  ComputeSpatialTilesetBaseUrl,
-  createFallbackSpatialTileTreeReferences,
-} from "./FrontendTiles";
+import { ComputeSpatialTilesetBaseUrl, createFallbackSpatialTileTreeReferences } from "./FrontendTiles";
 
 // Obtains tiles pre-published by mesh export service.
 class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
@@ -84,10 +81,7 @@ class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
   // Retained if attachToViewport is called while we are still loading; and reset if detachFromViewport is called while loading.
   private _attachArgs?: AttachToViewportArgs;
 
-  public constructor(
-    view: SpatialViewState,
-    getBaseUrl: Promise<URL | undefined>
-  ) {
+  public constructor(view: SpatialViewState, getBaseUrl: Promise<URL | undefined>) {
     this._proxyRef = new ProxyTileTreeReference(view.iModel);
     getBaseUrl
       .then((url: URL | undefined) => {
@@ -137,10 +131,7 @@ class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
   }
 }
 
-const iModelToBaseUrl = new Map<
-  IModelConnection,
-  URL | null | Promise<URL | undefined>
->();
+const iModelToBaseUrl = new Map<IModelConnection, URL | null | Promise<URL | undefined>>();
 
 /** @internal */
 export function createBatchedSpatialTileTreeReferences(
@@ -155,8 +146,7 @@ export function createBatchedSpatialTileTreeReferences(
     iModel.onClose.addOnce(() => iModelToBaseUrl.delete(iModel));
     promise
       .then((url: URL | undefined) => {
-        if (iModelToBaseUrl.has(iModel))
-          iModelToBaseUrl.set(iModel, url ?? null);
+        if (iModelToBaseUrl.has(iModel)) iModelToBaseUrl.set(iModel, url ?? null);
       })
       .catch(() => {
         if (iModelToBaseUrl.has(iModel)) iModelToBaseUrl.set(iModel, null);
@@ -168,8 +158,7 @@ export function createBatchedSpatialTileTreeReferences(
     return createFallbackSpatialTileTreeReferences(view);
   }
 
-  if (entry instanceof Promise)
-    return new ProxySpatialTileTreeReferences(view, entry);
+  if (entry instanceof Promise) return new ProxySpatialTileTreeReferences(view, entry);
 
   const ref = BatchedTileTreeReference.create(view, entry);
   return new BatchedSpatialTileTreeReferences(ref);

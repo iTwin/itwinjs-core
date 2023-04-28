@@ -42,24 +42,10 @@ describe("SchemaJsonFileLocater tests: ", () => {
   it("getSchema called multiple times for same schema", async () => {
     const schemaKey = new EC.SchemaKey("SchemaD", 4, 4, 4);
 
-    const locater1 = await locater.getSchema(
-      schemaKey,
-      EC.SchemaMatchType.Exact,
-      new EC.SchemaContext()
-    );
-    const locater2 = await locater.getSchema(
-      schemaKey,
-      EC.SchemaMatchType.Exact,
-      new EC.SchemaContext()
-    );
-    const context1 = await context.getSchema(
-      schemaKey,
-      EC.SchemaMatchType.Exact
-    );
-    const context2 = await context.getSchema(
-      schemaKey,
-      EC.SchemaMatchType.Exact
-    );
+    const locater1 = await locater.getSchema(schemaKey, EC.SchemaMatchType.Exact, new EC.SchemaContext());
+    const locater2 = await locater.getSchema(schemaKey, EC.SchemaMatchType.Exact, new EC.SchemaContext());
+    const context1 = await context.getSchema(schemaKey, EC.SchemaMatchType.Exact);
+    const context2 = await context.getSchema(schemaKey, EC.SchemaMatchType.Exact);
 
     // locater should not cache, but context should cache
     assert.notEqual(locater1, locater2);
@@ -70,16 +56,8 @@ describe("SchemaJsonFileLocater tests: ", () => {
   it("getSchema called multiple times for same schema synchronously", () => {
     const schemaKey = new EC.SchemaKey("SchemaD", 4, 4, 4);
 
-    const locater1 = locater.getSchemaSync(
-      schemaKey,
-      EC.SchemaMatchType.Exact,
-      new EC.SchemaContext()
-    );
-    const locater2 = locater.getSchemaSync(
-      schemaKey,
-      EC.SchemaMatchType.Exact,
-      new EC.SchemaContext()
-    );
+    const locater1 = locater.getSchemaSync(schemaKey, EC.SchemaMatchType.Exact, new EC.SchemaContext());
+    const locater2 = locater.getSchemaSync(schemaKey, EC.SchemaMatchType.Exact, new EC.SchemaContext());
     const context1 = context.getSchemaSync(schemaKey, EC.SchemaMatchType.Exact);
     const context2 = context.getSchemaSync(schemaKey, EC.SchemaMatchType.Exact);
 
@@ -91,11 +69,7 @@ describe("SchemaJsonFileLocater tests: ", () => {
 
   it("getSchema which does not exist, returns undefined", async () => {
     const schemaKey = new EC.SchemaKey("DoesNotExist");
-    const result = await locater.getSchema(
-      schemaKey,
-      EC.SchemaMatchType.Exact,
-      context
-    );
+    const result = await locater.getSchema(schemaKey, EC.SchemaMatchType.Exact, context);
     assert.isUndefined(result);
   });
 
@@ -128,11 +102,7 @@ describe("SchemaJsonFileLocater tests: ", () => {
   });
 
   it("getSchema, full version, succeeds", async () => {
-    const stub = await locater.getSchema(
-      new EC.SchemaKey("SchemaA", 1, 1, 1),
-      EC.SchemaMatchType.Exact,
-      context
-    );
+    const stub = await locater.getSchema(new EC.SchemaKey("SchemaA", 1, 1, 1), EC.SchemaMatchType.Exact, context);
 
     assert.isDefined(stub);
     const key = stub!.schemaKey as FileSchemaKey;
@@ -142,20 +112,12 @@ describe("SchemaJsonFileLocater tests: ", () => {
 
   it("getSchema, exact version, wrong minor, fails", async () => {
     assert.isUndefined(
-      await locater.getSchema(
-        new EC.SchemaKey("SchemaA", 1, 1, 2),
-        EC.SchemaMatchType.Exact,
-        context
-      )
+      await locater.getSchema(new EC.SchemaKey("SchemaA", 1, 1, 2), EC.SchemaMatchType.Exact, context)
     );
   });
 
   it("getSchema, latest, succeeds", async () => {
-    const schema = await locater.getSchema(
-      new EC.SchemaKey("SchemaA", 1, 1, 0),
-      EC.SchemaMatchType.Latest,
-      context
-    );
+    const schema = await locater.getSchema(new EC.SchemaKey("SchemaA", 1, 1, 0), EC.SchemaMatchType.Latest, context);
     assert.isDefined(schema);
     assert.strictEqual(schema!.schemaKey.name, "SchemaA");
     assert.strictEqual(schema!.schemaKey.version.toString(), "02.00.02");
@@ -175,11 +137,7 @@ describe("SchemaJsonFileLocater tests: ", () => {
 
   it("getSchema, latest write compatible, write version wrong, fails", async () => {
     assert.isUndefined(
-      await locater.getSchema(
-        new EC.SchemaKey("SchemaA", 1, 2, 0),
-        EC.SchemaMatchType.LatestWriteCompatible,
-        context
-      )
+      await locater.getSchema(new EC.SchemaKey("SchemaA", 1, 2, 0), EC.SchemaMatchType.LatestWriteCompatible, context)
     );
   });
 
@@ -197,11 +155,7 @@ describe("SchemaJsonFileLocater tests: ", () => {
 
   it("getSchema, latest read compatible, read version wrong, fails", async () => {
     assert.isUndefined(
-      await locater.getSchema(
-        new EC.SchemaKey("SchemaA", 2, 1, 1),
-        EC.SchemaMatchType.LatestReadCompatible,
-        context
-      )
+      await locater.getSchema(new EC.SchemaKey("SchemaA", 2, 1, 1), EC.SchemaMatchType.LatestReadCompatible, context)
     );
   });
 });

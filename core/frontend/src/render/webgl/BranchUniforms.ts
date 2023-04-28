@@ -7,14 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import {
-  ClipVector,
-  Matrix3d,
-  Matrix4d,
-  Point3d,
-  Transform,
-  XYZ,
-} from "@itwin/core-geometry";
+import { ClipVector, Matrix3d, Matrix4d, Point3d, Transform, XYZ } from "@itwin/core-geometry";
 import { ClipStyle, HiddenLine, ViewFlags } from "@itwin/core-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { BranchState } from "./BranchState";
@@ -112,9 +105,7 @@ export class BranchUniforms {
     if (this.top.clipVolume) this.clipStack.push(this.top.clipVolume);
 
     if (branch.branch.realityModelDisplaySettings)
-      this._target.uniforms.realityModel.update(
-        branch.branch.realityModelDisplaySettings
-      );
+      this._target.uniforms.realityModel.update(branch.branch.realityModelDisplaySettings);
   }
 
   public pushState(state: BranchState): void {
@@ -122,10 +113,7 @@ export class BranchUniforms {
     this._stack.pushState(state);
     if (this.top.clipVolume) this.clipStack.push(this.top.clipVolume);
 
-    if (state.realityModelDisplaySettings)
-      this._target.uniforms.realityModel.update(
-        state.realityModelDisplaySettings
-      );
+    if (state.realityModelDisplaySettings) this._target.uniforms.realityModel.update(state.realityModelDisplaySettings);
   }
 
   public pop(): void {
@@ -140,24 +128,16 @@ export class BranchUniforms {
     this._viewClipEnabled = true;
 
     // Target.readPixels() pushes another BranchState before pushing view clip...
-    assert(
-      (this._target.isReadPixelsInProgress ? 2 : 1) === this._stack.length
-    );
+    assert((this._target.isReadPixelsInProgress ? 2 : 1) === this._stack.length);
   }
 
   public popViewClip(): void {
     assert(this._viewClipEnabled);
     this._viewClipEnabled = false;
-    assert(
-      (this._target.isReadPixelsInProgress ? 2 : 1) === this._stack.length
-    );
+    assert((this._target.isReadPixelsInProgress ? 2 : 1) === this._stack.length);
   }
 
-  public changeRenderPlan(
-    vf: ViewFlags,
-    is3d: boolean,
-    hline: HiddenLine.Settings | undefined
-  ): void {
+  public changeRenderPlan(vf: ViewFlags, is3d: boolean, hline: HiddenLine.Settings | undefined): void {
     this._stack.changeRenderPlan(vf, is3d, hline);
   }
 
@@ -169,47 +149,24 @@ export class BranchUniforms {
     this._stack.setSymbologyOverrides(ovr);
   }
 
-  public bindModelViewMatrix(
-    uniform: UniformHandle,
-    geom: CachedGeometry,
-    isViewCoords: boolean
-  ): void {
-    if (this.update(uniform, geom, isViewCoords))
-      uniform.setMatrix4(this._mv32);
+  public bindModelViewMatrix(uniform: UniformHandle, geom: CachedGeometry, isViewCoords: boolean): void {
+    if (this.update(uniform, geom, isViewCoords)) uniform.setMatrix4(this._mv32);
   }
 
-  public bindModelViewProjectionMatrix(
-    uniform: UniformHandle,
-    geom: CachedGeometry,
-    isViewCoords: boolean
-  ): void {
-    if (this.update(uniform, geom, isViewCoords))
-      uniform.setMatrix4(this._mvp32);
+  public bindModelViewProjectionMatrix(uniform: UniformHandle, geom: CachedGeometry, isViewCoords: boolean): void {
+    if (this.update(uniform, geom, isViewCoords)) uniform.setMatrix4(this._mvp32);
   }
 
-  public bindModelToWorldTransform(
-    uniform: UniformHandle,
-    geom: CachedGeometry,
-    isViewCoords: boolean
-  ) {
+  public bindModelToWorldTransform(uniform: UniformHandle, geom: CachedGeometry, isViewCoords: boolean) {
     if (this.update(uniform, geom, isViewCoords)) uniform.setMatrix4(this._m32);
   }
 
-  public bindWorldToViewNTransform(
-    uniform: UniformHandle,
-    geom: CachedGeometry,
-    isViewCoords: boolean
-  ) {
+  public bindWorldToViewNTransform(uniform: UniformHandle, geom: CachedGeometry, isViewCoords: boolean) {
     if (this.update(uniform, geom, isViewCoords)) uniform.setMatrix3(this._v32);
   }
 
-  private update(
-    uniform: UniformHandle,
-    geometry: CachedGeometry,
-    isViewCoords: boolean
-  ): boolean {
-    const uniforms =
-      this._target.uniforms[isViewCoords ? "viewRect" : "frustum"];
+  private update(uniform: UniformHandle, geometry: CachedGeometry, isViewCoords: boolean): boolean {
+    const uniforms = this._target.uniforms[isViewCoords ? "viewRect" : "frustum"];
     if (!sync(uniforms, this)) desync(this);
 
     const instancedGeom = geometry.asInstanced;
@@ -236,11 +193,7 @@ export class BranchUniforms {
 
       // Scale based on device-pixel ratio.
       const scale = this._target.devicePixelRatio;
-      const viewMatrix = Transform.createScaleAboutPoint(
-        this._zeroPoint,
-        scale,
-        this._scratchTransform2
-      );
+      const viewMatrix = Transform.createScaleAboutPoint(this._zeroPoint, scale, this._scratchTransform2);
       viewMatrix.multiplyTransformTransform(mv, mv);
     } else {
       const viewMatrix = this._target.uniforms.frustum.viewMatrix;
@@ -249,22 +202,13 @@ export class BranchUniforms {
         // For instanced geometry, the "model view" matrix is really a transform from center of instanced geometry range to view.
         // Shader will compute final model-view matrix based on this and the per-instance transform.
         if (vio) {
-          const viewToWorldRot = viewMatrix.matrix.inverse(
-            this._scratchViewToWorld
-          )!;
-          const rotateAboutOrigin = Transform.createFixedPointAndMatrix(
-            vio,
-            viewToWorldRot,
-            this._scratchTransform2
-          );
+          const viewToWorldRot = viewMatrix.matrix.inverse(this._scratchViewToWorld)!;
+          const rotateAboutOrigin = Transform.createFixedPointAndMatrix(vio, viewToWorldRot, this._scratchTransform2);
           const viModelMatrix = rotateAboutOrigin.multiplyTransformTransform(
             instancedGeom.getRtcModelTransform(modelMatrix),
             this._scratchVIModelMatrix
           );
-          mv = viewMatrix.multiplyTransformTransform(
-            viModelMatrix,
-            this._scratchTransform
-          );
+          mv = viewMatrix.multiplyTransformTransform(viModelMatrix, this._scratchTransform);
         } else {
           mv = viewMatrix.multiplyTransformTransform(
             instancedGeom.getRtcModelTransform(modelMatrix),
@@ -273,36 +217,19 @@ export class BranchUniforms {
         }
       } else {
         if (undefined !== vio) {
-          const viewToWorldRot = viewMatrix.matrix.inverse(
-            this._scratchViewToWorld
-          )!;
-          const rotateAboutOrigin = Transform.createFixedPointAndMatrix(
-            vio,
-            viewToWorldRot,
-            this._scratchTransform2
-          );
-          const viModelMatrix = rotateAboutOrigin.multiplyTransformTransform(
-            modelMatrix,
-            this._scratchVIModelMatrix
-          );
-          mv = viewMatrix.multiplyTransformTransform(
-            viModelMatrix,
-            this._scratchTransform
-          );
+          const viewToWorldRot = viewMatrix.matrix.inverse(this._scratchViewToWorld)!;
+          const rotateAboutOrigin = Transform.createFixedPointAndMatrix(vio, viewToWorldRot, this._scratchTransform2);
+          const viModelMatrix = rotateAboutOrigin.multiplyTransformTransform(modelMatrix, this._scratchVIModelMatrix);
+          mv = viewMatrix.multiplyTransformTransform(viModelMatrix, this._scratchTransform);
         } else {
-          mv = viewMatrix.multiplyTransformTransform(
-            modelMatrix,
-            this._scratchTransform
-          );
+          mv = viewMatrix.multiplyTransformTransform(modelMatrix, this._scratchTransform);
         }
       }
     }
 
     if (this._target.wantThematicDisplay) {
       this._m32.initFromTransform(modelMatrix);
-      this._v32.initFromMatrix3d(
-        this._target.uniforms.frustum.viewMatrix.matrix
-      );
+      this._v32.initFromMatrix3d(this._target.uniforms.frustum.viewMatrix.matrix);
     } else if (undefined !== geometry.asSurface?.mesh.constantLodVParams) {
       this._m32.initFromTransform(modelMatrix);
     }

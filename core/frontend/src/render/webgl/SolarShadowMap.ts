@@ -31,12 +31,7 @@ import {
   ViewFlags,
 } from "@itwin/core-common";
 import { RenderType } from "@itwin/webgl-compatibility";
-import {
-  Tile,
-  TileDrawArgs,
-  TileTreeReference,
-  TileVisibility,
-} from "../../tile/internal";
+import { Tile, TileDrawArgs, TileTreeReference, TileVisibility } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
@@ -126,19 +121,11 @@ function createDrawArgs(
       process: ProcessTiles
     ) {
       const args = tileTree.createDrawArgs(context);
-      return undefined !== args
-        ? new SolarShadowMapDrawArgs(planes, shadowMap, args, process)
-        : undefined;
+      return undefined !== args ? new SolarShadowMapDrawArgs(planes, shadowMap, args, process) : undefined;
     }
   }
 
-  return SolarShadowMapDrawArgs.create(
-    sceneContext,
-    solarShadowMap,
-    tree,
-    frustumPlanes,
-    processTiles
-  );
+  return SolarShadowMapDrawArgs.create(sceneContext, solarShadowMap, tree, frustumPlanes, processTiles);
 }
 
 const shadowMapWidth = 4096; // size of original depth buffer map
@@ -175,15 +162,8 @@ class Bundle implements WebGLDisposable {
     public readonly renderCommands: RenderCommands
   ) {}
 
-  public static create(
-    target: Target,
-    stack: BranchStack,
-    batch: BatchState
-  ): Bundle | undefined {
-    const depthTextureHandle = System.instance.createDepthBuffer(
-      shadowMapWidth,
-      shadowMapHeight
-    ) as TextureHandle;
+  public static create(target: Target, stack: BranchStack, batch: BatchState): Bundle | undefined {
+    const depthTextureHandle = System.instance.createDepthBuffer(shadowMapWidth, shadowMapHeight) as TextureHandle;
     if (undefined === depthTextureHandle) return undefined;
 
     let pixelDataType = GL.Texture.DataType.Float;
@@ -221,11 +201,7 @@ class Bundle implements WebGLDisposable {
       handle: depthTextureHandle,
       transparency: TextureTransparency.Opaque,
     });
-    const evsmGeom = EVSMGeometry.createGeometry(
-      depthTexture.texture.getHandle()!,
-      shadowMapWidth,
-      shadowMapHeight
-    );
+    const evsmGeom = EVSMGeometry.createGeometry(depthTexture.texture.getHandle()!, shadowMapWidth, shadowMapHeight);
     if (undefined === evsmGeom) return undefined;
 
     const shadowMapTexture = new Texture({
@@ -235,14 +211,7 @@ class Bundle implements WebGLDisposable {
       transparency: TextureTransparency.Opaque,
     });
     const renderCommands = new RenderCommands(target, stack, batch);
-    return new Bundle(
-      depthTexture,
-      shadowMapTexture,
-      fbo,
-      fboSM,
-      evsmGeom,
-      renderCommands
-    );
+    return new Bundle(depthTexture, shadowMapTexture, fbo, fboSM, evsmGeom, renderCommands);
   }
 
   public get isDisposed(): boolean {
@@ -270,21 +239,13 @@ class ShadowMapParams {
   public readonly viewFrustum = new Frustum();
   public settings: SolarShadowSettings;
 
-  public constructor(
-    viewFrustum: Frustum,
-    direction: Vector3d,
-    settings: SolarShadowSettings
-  ) {
+  public constructor(viewFrustum: Frustum, direction: Vector3d, settings: SolarShadowSettings) {
     direction.clone(this.direction);
     this.viewFrustum.setFrom(viewFrustum);
     this.settings = settings;
   }
 
-  public update(
-    viewFrustum: Frustum,
-    direction: Vector3d,
-    settings: SolarShadowSettings
-  ): void {
+  public update(viewFrustum: Frustum, direction: Vector3d, settings: SolarShadowSettings): void {
     this.settings = settings;
     this.viewFrustum.setFrom(viewFrustum);
     direction.clone(this.direction);
@@ -319,11 +280,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
 
   private getBundle(target: Target): Bundle | undefined {
     if (undefined === this._bundle) {
-      this._bundle = Bundle.create(
-        target,
-        target.uniforms.branch.stack,
-        this._batchState
-      );
+      this._bundle = Bundle.create(target, target.uniforms.branch.stack, this._batchState);
       assert(undefined !== this._bundle);
     }
 
@@ -346,9 +303,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     return undefined !== this._bundle ? this._bundle.depthTexture : undefined;
   }
   public get shadowMapTexture(): Texture | undefined {
-    return undefined !== this._bundle
-      ? this._bundle.shadowMapTexture
-      : undefined;
+    return undefined !== this._bundle ? this._bundle.shadowMapTexture : undefined;
   }
   public get settings(): SolarShadowSettings | undefined {
     return undefined !== this._params ? this._params.settings : undefined;
@@ -388,10 +343,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     const bundle = this._bundle;
-    if (undefined !== bundle)
-      stats.addShadowMap(
-        bundle.depthTexture.bytesUsed + bundle.shadowMapTexture.bytesUsed
-      );
+    if (undefined !== bundle) stats.addShadowMap(bundle.depthTexture.bytesUsed + bundle.shadowMapTexture.bytesUsed);
   }
 
   public get isDisposed(): boolean {
@@ -411,8 +363,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
   }
 
   private notifyGraphicsChanged(): void {
-    if (undefined !== this.onGraphicsChanged)
-      this.onGraphicsChanged(this._graphics);
+    if (undefined !== this.onGraphicsChanged) this.onGraphicsChanged(this._graphics);
   }
 
   public update(context: SceneContext | undefined) {
@@ -438,8 +389,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     this._enabled = true;
     const viewFrustum = context.viewingSpace.getFrustum();
     const settings = style.settings.solarShadows;
-    if (undefined === this._params)
-      this._params = new ShadowMapParams(viewFrustum, sunDirection, settings);
+    if (undefined === this._params) this._params = new ShadowMapParams(viewFrustum, sunDirection, settings);
     else this._params.update(viewFrustum, sunDirection, settings);
 
     const iModel = view.iModel;
@@ -452,9 +402,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     const mapToWorld = worldToMap.createInverse()!;
 
     // Start with entire project.
-    const shadowRange = worldToMapTransform.multiplyRange(
-      iModel.projectExtents
-    );
+    const shadowRange = worldToMapTransform.multiplyRange(iModel.projectExtents);
 
     // Limit the map to only displayed models.
     const viewTileRange = Range3d.createNull();
@@ -478,34 +426,25 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     // Expand shadow range to include both the shadowers and shadowed portion of background map.
     scratchFrustum.initFromRange(shadowRange);
     mapToWorld.multiplyPoint3dArrayQuietNormalize(scratchFrustum.points); // This frustum represents the shadwowing geometry.  Intersect it with background geometry and expand the range depth to include that intersection.
-    const backgroundMapGeometry =
-      context.viewport.view.displayStyle.getBackgroundMapGeometry();
+    const backgroundMapGeometry = context.viewport.view.displayStyle.getBackgroundMapGeometry();
     if (undefined !== backgroundMapGeometry) {
-      const backgroundDepthRange =
-        backgroundMapGeometry.getFrustumIntersectionDepthRange(
-          this._shadowFrustum,
-          iModel.projectExtents
-        );
-      if (!backgroundDepthRange.isNull)
-        shadowRange.low.z = Math.min(
-          shadowRange.low.z,
-          backgroundDepthRange.low
-        );
+      const backgroundDepthRange = backgroundMapGeometry.getFrustumIntersectionDepthRange(
+        this._shadowFrustum,
+        iModel.projectExtents
+      );
+      if (!backgroundDepthRange.isNull) shadowRange.low.z = Math.min(shadowRange.low.z, backgroundDepthRange.low);
     }
 
     this._params.viewFrustum.transformBy(worldToMapTransform, scratchFrustum);
     scratchFrustumPlanes.init(scratchFrustum);
 
     const viewIntersectShadowRange = Range3d.createNull();
-    const viewClipPlanes = ConvexClipPlaneSet.createPlanes(
-      scratchFrustumPlanes.planes
-    );
+    const viewClipPlanes = ConvexClipPlaneSet.createPlanes(scratchFrustumPlanes.planes);
     ClipUtilities.announceLoopsOfConvexClipPlaneSetIntersectRange(
       viewClipPlanes,
       shadowRange,
       (points: GrowableXYZArray) => {
-        for (const point of points.getPoint3dArray())
-          viewIntersectShadowRange.extendPoint(point);
+        for (const point of points.getPoint3dArray()) viewIntersectShadowRange.extendPoint(point);
       }
     );
     if (viewIntersectShadowRange.isNull) {
@@ -522,18 +461,10 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     view.forEachTileTreeRef((ref) => {
       if (!ref.castsShadows) return;
 
-      const drawArgs = createDrawArgs(
-        context,
-        this,
-        ref,
-        scratchFrustumPlanes,
-        (tiles: Tile[]) => {
-          for (const tile of tiles)
-            tileRange.extendRange(
-              tileToMapTransform.multiplyRange(tile.range, this._scratchRange)
-            );
-        }
-      );
+      const drawArgs = createDrawArgs(context, this, ref, scratchFrustumPlanes, (tiles: Tile[]) => {
+        for (const tile of tiles)
+          tileRange.extendRange(tileToMapTransform.multiplyRange(tile.range, this._scratchRange));
+      });
 
       if (undefined === drawArgs) return;
 
@@ -566,9 +497,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
 
       this._projectionMatrix = frustumMap.transform0.clone();
 
-      const worldToNpc = postProjectionMatrixNpc.multiplyMatrixMatrix(
-        this._projectionMatrix
-      );
+      const worldToNpc = postProjectionMatrixNpc.multiplyMatrixMatrix(this._projectionMatrix);
       const npcToView = Map4d.createBoxMap(
         Point3d.create(0, 0, 0),
         Point3d.create(1, 1, 1),
@@ -619,23 +548,11 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     System.instance.applyRenderState(this._renderState);
     const prevPlan = target.plan;
 
-    target.changeFrustum(
-      this._shadowFrustum,
-      this._shadowFrustum.getFraction(),
-      true
-    );
-    target.uniforms.branch.changeRenderPlan(
-      viewFlags,
-      target.plan.is3d,
-      target.plan.hline
-    );
+    target.changeFrustum(this._shadowFrustum, this._shadowFrustum.getFraction(), true);
+    target.uniforms.branch.changeRenderPlan(viewFlags, target.plan.is3d, target.plan.hline);
 
     const renderCommands = bundle.renderCommands;
-    renderCommands.reset(
-      target,
-      target.uniforms.branch.stack,
-      this._batchState
-    );
+    renderCommands.reset(target, target.uniforms.branch.stack, this._batchState);
     renderCommands.addGraphics(this._graphics);
 
     System.instance.frameBufferStack.execute(bundle.fbo, true, false, () => {
@@ -662,16 +579,9 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     });
 
     // mipmap resulting EVSM texture and set filtering options
-    System.instance.activateTexture2d(
-      TextureUnit.ShadowMap,
-      bundle.shadowMapTexture.texture.getHandle()
-    );
+    System.instance.activateTexture2d(TextureUnit.ShadowMap, bundle.shadowMapTexture.texture.getHandle());
     gl.generateMipmap(gl.TEXTURE_2D);
-    gl.texParameteri(
-      gl.TEXTURE_2D,
-      gl.TEXTURE_MIN_FILTER,
-      gl.LINEAR_MIPMAP_LINEAR
-    );
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
     System.instance.setMaxAnisotropy(undefined);
@@ -681,12 +591,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     target.changeRenderPlan(prevPlan);
 
     System.instance.applyRenderState(prevState);
-    System.instance.context.viewport(
-      0,
-      0,
-      target.viewRect.width,
-      target.viewRect.height
-    ); // Restore viewport
+    System.instance.context.viewport(0, 0, target.viewRect.width, target.viewRect.height); // Restore viewport
     this.clearGraphics(false);
     this._isDrawing = false;
     this._isReady = true;

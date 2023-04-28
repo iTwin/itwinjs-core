@@ -8,28 +8,19 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import {
-  InstancedGraphicParams,
-  PatternGraphicParams,
-} from "../InstancedGraphicParams";
+import { InstancedGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
 import { ShaderProgramParams } from "./DrawCommand";
 import { GL } from "./GL";
-import {
-  BufferHandle,
-  BufferParameters,
-  BuffersContainer,
-} from "./AttributeBuffers";
+import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { Matrix4 } from "./Matrix";
 
 /** @internal */
-export function isInstancedGraphicParams(
-  params: any
-): params is InstancedGraphicParams {
+export function isInstancedGraphicParams(params: any): params is InstancedGraphicParams {
   return (
     typeof params === "object" &&
     typeof params.count === "number" &&
@@ -48,11 +39,7 @@ class InstanceData {
   // The model matrix from which _rtcModelTransform was previously computed. If it changes, _rtcModelTransform must be recomputed.
   private readonly _modelMatrix = Transform.createIdentity();
 
-  protected constructor(
-    numInstances: number,
-    rtcCenter: Point3d,
-    range: Range3d
-  ) {
+  protected constructor(numInstances: number, rtcCenter: Point3d, range: Range3d) {
     this.numInstances = numInstances;
     this.range = range;
     this._rtcOnlyTransform = Transform.createTranslation(rtcCenter);
@@ -62,10 +49,7 @@ class InstanceData {
   public getRtcModelTransform(modelMatrix: Transform): Transform {
     if (!this._modelMatrix.isAlmostEqual(modelMatrix)) {
       modelMatrix.clone(this._modelMatrix);
-      modelMatrix.multiplyTransformTransform(
-        this._rtcOnlyTransform,
-        this._rtcModelTransform
-      );
+      modelMatrix.multiplyTransformTransform(this._rtcOnlyTransform, this._rtcModelTransform);
     }
 
     return this._rtcModelTransform;
@@ -116,9 +100,7 @@ export class InstanceBuffers extends InstanceData {
     this.symbology = symbology;
   }
 
-  public static createTransformBufferParameters(
-    techniqueId: TechniqueId
-  ): BufferParameters[] {
+  public static createTransformBufferParameters(techniqueId: TechniqueId): BufferParameters[] {
     const params: BufferParameters[] = [];
     const numRows = 3;
     let row = 0;
@@ -146,45 +128,25 @@ export class InstanceBuffers extends InstanceData {
     return params;
   }
 
-  public static create(
-    params: InstancedGraphicParams,
-    range: Range3d
-  ): InstanceBuffers | undefined {
+  public static create(params: InstancedGraphicParams, range: Range3d): InstanceBuffers | undefined {
     const { count, featureIds, symbologyOverrides, transforms } = params;
 
     assert(count > 0 && Math.floor(count) === count);
     assert(count === transforms.length / 12);
     assert(undefined === featureIds || count === featureIds.length / 3);
-    assert(
-      undefined === symbologyOverrides ||
-        count * 8 === symbologyOverrides.length
-    );
+    assert(undefined === symbologyOverrides || count * 8 === symbologyOverrides.length);
 
     let idBuf: BufferHandle | undefined;
-    if (
-      undefined !== featureIds &&
-      undefined === (idBuf = BufferHandle.createArrayBuffer(featureIds))
-    )
+    if (undefined !== featureIds && undefined === (idBuf = BufferHandle.createArrayBuffer(featureIds)))
       return undefined;
 
     let symBuf: BufferHandle | undefined;
-    if (
-      undefined !== symbologyOverrides &&
-      undefined ===
-        (symBuf = BufferHandle.createArrayBuffer(symbologyOverrides))
-    )
+    if (undefined !== symbologyOverrides && undefined === (symBuf = BufferHandle.createArrayBuffer(symbologyOverrides)))
       return undefined;
 
     const tfBuf = BufferHandle.createArrayBuffer(transforms);
     return undefined !== tfBuf
-      ? new InstanceBuffers(
-          count,
-          tfBuf,
-          params.transformCenter,
-          range,
-          symBuf,
-          idBuf
-        )
+      ? new InstanceBuffers(count, tfBuf, params.transformCenter, range, symBuf, idBuf)
       : undefined;
   }
 
@@ -203,23 +165,14 @@ export class InstanceBuffers extends InstanceData {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    const featureBytes =
-      undefined !== this.featureIds ? this.featureIds.bytesUsed : 0;
-    const symBytes =
-      undefined !== this.symbology ? this.symbology.bytesUsed : 0;
+    const featureBytes = undefined !== this.featureIds ? this.featureIds.bytesUsed : 0;
+    const symBytes = undefined !== this.symbology ? this.symbology.bytesUsed : 0;
 
     const bytesUsed = this.transforms.bytesUsed + symBytes + featureBytes;
     stats.addInstances(bytesUsed);
   }
 
-  private static extendTransformedRange(
-    tfs: Float32Array,
-    i: number,
-    range: Range3d,
-    x: number,
-    y: number,
-    z: number
-  ) {
+  private static extendTransformedRange(tfs: Float32Array, i: number, range: Range3d, x: number, y: number, z: number) {
     range.extendXYZ(
       tfs[i + 3] + tfs[i + 0] * x + tfs[i + 1] * y + tfs[i + 2] * z,
       tfs[i + 7] + tfs[i + 4] * x + tfs[i + 5] * y + tfs[i + 6] * z,
@@ -227,82 +180,21 @@ export class InstanceBuffers extends InstanceData {
     );
   }
 
-  public static computeRange(
-    reprRange: Range3d,
-    tfs: Float32Array,
-    rtcCenter: Point3d,
-    out?: Range3d
-  ): Range3d {
+  public static computeRange(reprRange: Range3d, tfs: Float32Array, rtcCenter: Point3d, out?: Range3d): Range3d {
     const range = out ?? new Range3d();
 
     const numFloatsPerTransform = 3 * 4;
     assert(0 === tfs.length % (3 * 4));
 
     for (let i = 0; i < tfs.length; i += numFloatsPerTransform) {
-      this.extendTransformedRange(
-        tfs,
-        i,
-        range,
-        reprRange.low.x,
-        reprRange.low.y,
-        reprRange.low.z
-      );
-      this.extendTransformedRange(
-        tfs,
-        i,
-        range,
-        reprRange.low.x,
-        reprRange.low.y,
-        reprRange.high.z
-      );
-      this.extendTransformedRange(
-        tfs,
-        i,
-        range,
-        reprRange.low.x,
-        reprRange.high.y,
-        reprRange.low.z
-      );
-      this.extendTransformedRange(
-        tfs,
-        i,
-        range,
-        reprRange.low.x,
-        reprRange.high.y,
-        reprRange.high.z
-      );
-      this.extendTransformedRange(
-        tfs,
-        i,
-        range,
-        reprRange.high.x,
-        reprRange.low.y,
-        reprRange.low.z
-      );
-      this.extendTransformedRange(
-        tfs,
-        i,
-        range,
-        reprRange.high.x,
-        reprRange.low.y,
-        reprRange.high.z
-      );
-      this.extendTransformedRange(
-        tfs,
-        i,
-        range,
-        reprRange.high.x,
-        reprRange.high.y,
-        reprRange.low.z
-      );
-      this.extendTransformedRange(
-        tfs,
-        i,
-        range,
-        reprRange.high.x,
-        reprRange.high.y,
-        reprRange.high.z
-      );
+      this.extendTransformedRange(tfs, i, range, reprRange.low.x, reprRange.low.y, reprRange.low.z);
+      this.extendTransformedRange(tfs, i, range, reprRange.low.x, reprRange.low.y, reprRange.high.z);
+      this.extendTransformedRange(tfs, i, range, reprRange.low.x, reprRange.high.y, reprRange.low.z);
+      this.extendTransformedRange(tfs, i, range, reprRange.low.x, reprRange.high.y, reprRange.high.z);
+      this.extendTransformedRange(tfs, i, range, reprRange.high.x, reprRange.low.y, reprRange.low.z);
+      this.extendTransformedRange(tfs, i, range, reprRange.high.x, reprRange.low.y, reprRange.high.z);
+      this.extendTransformedRange(tfs, i, range, reprRange.high.x, reprRange.high.y, reprRange.low.z);
+      this.extendTransformedRange(tfs, i, range, reprRange.high.x, reprRange.high.y, reprRange.high.z);
     }
 
     range.low.addInPlace(rtcCenter);
@@ -340,9 +232,7 @@ export class PatternBuffers extends InstanceData {
     }
   }
 
-  public static create(
-    params: PatternGraphicParams
-  ): PatternBuffers | undefined {
+  public static create(params: PatternGraphicParams): PatternBuffers | undefined {
     const count = params.xyOffsets.byteLength / 2;
     assert(Math.floor(count) === count);
 
@@ -357,9 +247,7 @@ export class PatternBuffers extends InstanceData {
       new Float32Array([params.origin.x, params.origin.y]),
       Matrix4.fromTransform(params.orgTransform),
       Matrix4.fromTransform(params.patternToModel),
-      Matrix4.fromTransform(
-        Transform.createTranslation(params.symbolTranslation)
-      ),
+      Matrix4.fromTransform(Transform.createTranslation(params.symbolTranslation)),
       offsets,
       params.featureId,
       params.viewIndependentOrigin
@@ -485,82 +373,35 @@ export class InstancedGeometry extends CachedGeometry {
     return this._repr.wantMixMonochromeColor(target);
   }
 
-  public static create(
-    repr: LUTGeometry,
-    ownsBuffers: boolean,
-    buffers: InstanceBuffers
-  ): InstancedGeometry {
+  public static create(repr: LUTGeometry, ownsBuffers: boolean, buffers: InstanceBuffers): InstancedGeometry {
     const techId = repr.techniqueId;
     const container = BuffersContainer.create();
     container.appendLinkages(repr.lutBuffers.linkages);
 
-    container.addBuffer(
-      buffers.transforms,
-      InstanceBuffers.createTransformBufferParameters(repr.techniqueId)
-    );
+    container.addBuffer(buffers.transforms, InstanceBuffers.createTransformBufferParameters(repr.techniqueId));
 
     if (buffers.symbology) {
-      const attrInstanceOverrides = AttributeMap.findAttribute(
-        "a_instanceOverrides",
-        techId,
-        true
-      );
-      const attrInstanceRgba = AttributeMap.findAttribute(
-        "a_instanceRgba",
-        techId,
-        true
-      );
+      const attrInstanceOverrides = AttributeMap.findAttribute("a_instanceOverrides", techId, true);
+      const attrInstanceRgba = AttributeMap.findAttribute("a_instanceRgba", techId, true);
       assert(attrInstanceOverrides !== undefined);
       assert(attrInstanceRgba !== undefined);
       container.addBuffer(buffers.symbology, [
-        BufferParameters.create(
-          attrInstanceOverrides.location,
-          4,
-          GL.DataType.UnsignedByte,
-          false,
-          8,
-          0,
-          true
-        ),
-        BufferParameters.create(
-          attrInstanceRgba.location,
-          4,
-          GL.DataType.UnsignedByte,
-          false,
-          8,
-          4,
-          true
-        ),
+        BufferParameters.create(attrInstanceOverrides.location, 4, GL.DataType.UnsignedByte, false, 8, 0, true),
+        BufferParameters.create(attrInstanceRgba.location, 4, GL.DataType.UnsignedByte, false, 8, 4, true),
       ]);
     }
     if (buffers.featureIds) {
-      const attrFeatureId = AttributeMap.findAttribute(
-        "a_featureId",
-        techId,
-        true
-      );
+      const attrFeatureId = AttributeMap.findAttribute("a_featureId", techId, true);
       assert(attrFeatureId !== undefined);
       container.addBuffer(buffers.featureIds, [
-        BufferParameters.create(
-          attrFeatureId.location,
-          3,
-          GL.DataType.UnsignedByte,
-          false,
-          0,
-          0,
-          true
-        ),
+        BufferParameters.create(attrFeatureId.location, 3, GL.DataType.UnsignedByte, false, 0, 0, true),
       ]);
     }
 
     return new this(repr, ownsBuffers, buffers, container);
   }
 
-  public static createPattern(
-    repr: LUTGeometry,
-    ownsBuffers: boolean,
-    buffers: PatternBuffers
-  ): InstancedGeometry {
+  public static createPattern(repr: LUTGeometry, ownsBuffers: boolean, buffers: PatternBuffers): InstancedGeometry {
     const techId = repr.techniqueId;
     const container = BuffersContainer.create();
     container.appendLinkages(repr.lutBuffers.linkages);
@@ -569,24 +410,8 @@ export class InstancedGeometry extends CachedGeometry {
     const attrY = AttributeMap.findAttribute("a_patternY", techId, true);
     assert(undefined !== attrX && undefined !== attrY);
     container.addBuffer(buffers.offsets, [
-      BufferParameters.create(
-        attrX.location,
-        1,
-        GL.DataType.Float,
-        false,
-        8,
-        0,
-        true
-      ),
-      BufferParameters.create(
-        attrY.location,
-        1,
-        GL.DataType.Float,
-        false,
-        8,
-        4,
-        true
-      ),
+      BufferParameters.create(attrX.location, 1, GL.DataType.Float, false, 8, 0, true),
+      BufferParameters.create(attrY.location, 1, GL.DataType.Float, false, 8, 4, true),
     ]);
 
     return new this(repr, ownsBuffers, buffers, container);
@@ -622,10 +447,7 @@ export class InstancedGeometry extends CachedGeometry {
   }
 
   public draw() {
-    this._repr.drawInstanced(
-      this._buffers.numInstances,
-      this._buffersContainer
-    );
+    this._repr.drawInstanced(this._buffers.numInstances, this._buffersContainer);
   }
 
   public override computeRange(output?: Range3d): Range3d {

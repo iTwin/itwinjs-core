@@ -28,54 +28,32 @@ describe("ArcGisUtilities", () => {
     scales = ArcGisUtilities.computeZoomLevelsScales();
     expect(scales.length).to.equals(wsg84Lods256px.length);
     for (let i = 0; i < scales.length; i++) {
-      expect(
-        Math.abs(scales[i].resolution - wsg84Lods256px[i].resolution)
-      ).to.be.lessThan(tolerance);
-      expect(
-        Math.abs(scales[i].scale - wsg84Lods256px[i].scale)
-      ).to.be.lessThan(tolerance);
+      expect(Math.abs(scales[i].resolution - wsg84Lods256px[i].resolution)).to.be.lessThan(tolerance);
+      expect(Math.abs(scales[i].scale - wsg84Lods256px[i].scale)).to.be.lessThan(tolerance);
     }
 
     // Test scales for 512px tiles
     scales = ArcGisUtilities.computeZoomLevelsScales(0, 20, 0, 512);
     expect(scales.length).to.equals(wsg84Lods512px.length);
     for (let i = 0; i < scales.length; i++) {
-      expect(
-        Math.abs(scales[i].resolution - wsg84Lods512px[i].resolution)
-      ).to.be.lessThan(tolerance);
-      expect(
-        Math.abs(scales[i].scale - wsg84Lods512px[i].scale)
-      ).to.be.lessThan(tolerance);
+      expect(Math.abs(scales[i].resolution - wsg84Lods512px[i].resolution)).to.be.lessThan(tolerance);
+      expect(Math.abs(scales[i].scale - wsg84Lods512px[i].scale)).to.be.lessThan(tolerance);
     }
 
     // Make sure we can get zooms level one by one.
     for (let i = 0; i < wsg84Lods256px.length; i++) {
       scales = ArcGisUtilities.computeZoomLevelsScales(i, i, 0, 256);
       expect(scales.length).to.equals(1);
-      expect(
-        Math.abs(scales[0].resolution - wsg84Lods256px[i].resolution)
-      ).to.be.lessThan(tolerance);
-      expect(
-        Math.abs(scales[0].scale - wsg84Lods256px[i].scale)
-      ).to.be.lessThan(tolerance);
+      expect(Math.abs(scales[0].resolution - wsg84Lods256px[i].resolution)).to.be.lessThan(tolerance);
+      expect(Math.abs(scales[0].scale - wsg84Lods256px[i].scale)).to.be.lessThan(tolerance);
     }
 
     // Test parameters validation
-    expect(
-      ArcGisUtilities.computeZoomLevelsScales(-1, 20, 0, 0, 256).length
-    ).to.equals(0);
-    expect(
-      ArcGisUtilities.computeZoomLevelsScales(0, -20, 0, 0, 256).length
-    ).to.equals(0);
-    expect(
-      ArcGisUtilities.computeZoomLevelsScales(4, 1, 0, 256).length
-    ).to.equals(0);
-    expect(
-      ArcGisUtilities.computeZoomLevelsScales(0, 20, 0, -256).length
-    ).to.equals(0);
-    expect(
-      ArcGisUtilities.computeZoomLevelsScales(0, 20, 0, 256, 0).length
-    ).to.equals(0);
+    expect(ArcGisUtilities.computeZoomLevelsScales(-1, 20, 0, 0, 256).length).to.equals(0);
+    expect(ArcGisUtilities.computeZoomLevelsScales(0, -20, 0, 0, 256).length).to.equals(0);
+    expect(ArcGisUtilities.computeZoomLevelsScales(4, 1, 0, 256).length).to.equals(0);
+    expect(ArcGisUtilities.computeZoomLevelsScales(0, 20, 0, -256).length).to.equals(0);
+    expect(ArcGisUtilities.computeZoomLevelsScales(0, 20, 0, 256, 0).length).to.equals(0);
   });
 
   it("should match minScale/maxScale to corresponding LOD", async () => {
@@ -113,11 +91,7 @@ describe("ArcGisUtilities", () => {
           accessTokenRequired: false,
         };
       });
-    const result = ArcGisUtilities.validateSource(
-      "https:/localhost/Mapserver",
-      "ArcGIS",
-      []
-    );
+    const result = ArcGisUtilities.validateSource("https:/localhost/Mapserver", "ArcGIS", []);
     expect((await result).status).to.equals(MapLayerSourceStatus.Valid);
   });
 
@@ -136,13 +110,7 @@ describe("ArcGisUtilities", () => {
           accessTokenRequired: false,
         };
       });
-    const result = ArcGisUtilities.validateSource(
-      "https:/localhost/Mapserver",
-      "ArcGIS",
-      []
-    );
-    expect((await result).status).to.equals(
-      MapLayerSourceStatus.InvalidCoordinateSystem
-    );
+    const result = ArcGisUtilities.validateSource("https:/localhost/Mapserver", "ArcGIS", []);
+    expect((await result).status).to.equals(MapLayerSourceStatus.InvalidCoordinateSystem);
   });
 });

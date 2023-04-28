@@ -26,28 +26,13 @@ import {
   matchesWords,
   or,
 } from "../../appui-abstract/utils/filter/filters";
-import {
-  equalsIgnoreCase,
-  startsWithIgnoreCase,
-} from "../../appui-abstract/utils/filter/strings";
+import { equalsIgnoreCase, startsWithIgnoreCase } from "../../appui-abstract/utils/filter/strings";
 
-function filterNotOk(
-  filter: IFilter,
-  word: string,
-  wordToMatchAgainst: string
-) {
-  assert(
-    !filter(word, wordToMatchAgainst),
-    `${word} matched ${wordToMatchAgainst}`
-  );
+function filterNotOk(filter: IFilter, word: string, wordToMatchAgainst: string) {
+  assert(!filter(word, wordToMatchAgainst), `${word} matched ${wordToMatchAgainst}`);
 }
 
-function filterOk(
-  filter: IFilter,
-  word: string,
-  wordToMatchAgainst: string,
-  highlights?: IMatch[]
-) {
+function filterOk(filter: IFilter, word: string, wordToMatchAgainst: string, highlights?: IMatch[]) {
   const r = filter(word, wordToMatchAgainst);
   assert(r, `${word} didn't match ${wordToMatchAgainst}`);
   if (highlights) {
@@ -88,17 +73,11 @@ describe("Filters", () => {
   });
 
   it("fuzzySeparateFilter", function () {
-    const fuzzySeparateFilter = or(
-      matchesPrefix,
-      matchesCamelCase,
-      matchesSubString
-    );
+    const fuzzySeparateFilter = or(matchesPrefix, matchesCamelCase, matchesSubString);
     filterOk(fuzzySeparateFilter, "", "");
     filterOk(fuzzySeparateFilter, "", "anything", []);
     filterOk(fuzzySeparateFilter, "alpha", "alpha", [{ start: 0, end: 5 }]);
-    filterOk(fuzzySeparateFilter, "alpha", "alphasomething", [
-      { start: 0, end: 5 },
-    ]);
+    filterOk(fuzzySeparateFilter, "alpha", "alphasomething", [{ start: 0, end: 5 }]);
     filterNotOk(fuzzySeparateFilter, "alpha", "alp");
     filterOk(fuzzySeparateFilter, "a", "alpha", [{ start: 0, end: 1 }]);
     filterNotOk(fuzzySeparateFilter, "x", "alpha");
@@ -134,9 +113,7 @@ describe("Filters", () => {
     filterNotOk(matchesStrictPrefix, "", "");
     filterOk(matchesStrictPrefix, "", "anything", []);
     filterOk(matchesStrictPrefix, "alpha", "alpha", [{ start: 0, end: 5 }]);
-    filterOk(matchesStrictPrefix, "alpha", "alphasomething", [
-      { start: 0, end: 5 },
-    ]);
+    filterOk(matchesStrictPrefix, "alpha", "alphasomething", [{ start: 0, end: 5 }]);
     filterNotOk(matchesStrictPrefix, "alpha", "alp");
     filterOk(matchesStrictPrefix, "a", "alpha", [{ start: 0, end: 1 }]);
     filterNotOk(matchesStrictPrefix, "x", "alpha");
@@ -161,9 +138,7 @@ describe("Filters", () => {
     filterOk(matchesCamelCase, "", "anything", []);
     filterOk(matchesCamelCase, "alpha", "alpha", [{ start: 0, end: 5 }]);
     filterOk(matchesCamelCase, "AlPhA", "alpha", [{ start: 0, end: 5 }]);
-    filterOk(matchesCamelCase, "alpha", "alphasomething", [
-      { start: 0, end: 5 },
-    ]);
+    filterOk(matchesCamelCase, "alpha", "alphasomething", [{ start: 0, end: 5 }]);
     filterNotOk(matchesCamelCase, "alpha", "alp");
 
     filterOk(matchesCamelCase, "c", "CamelCaseRocks", [{ start: 0, end: 1 }]);
@@ -235,9 +210,7 @@ describe("Filters", () => {
   });
 
   it("matchesContiguousSubString", () => {
-    filterOk(matchesContiguousSubString, "cela", "cancelAnimationFrame()", [
-      { start: 3, end: 7 },
-    ]);
+    filterOk(matchesContiguousSubString, "cela", "cancelAnimationFrame()", [{ start: 3, end: 7 }]);
   });
 
   it("matchesSubString", () => {
@@ -255,11 +228,7 @@ describe("Filters", () => {
   });
 
   it("matchesSubString performance (#35346)", function () {
-    filterNotOk(
-      matchesSubString,
-      "aaaaaaaaaaaaaaaaaaaax",
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-    );
+    filterNotOk(matchesSubString, "aaaaaaaaaaaaaaaaaaaax", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
   });
 
   it("WordFilter", () => {
@@ -362,10 +331,7 @@ describe("Filters", () => {
       let pos = 0;
       for (const match of matches) {
         actualWord += word.substring(pos, match.start);
-        actualWord += `^${word
-          .substring(match.start, match.end)
-          .split("")
-          .join("^")}`;
+        actualWord += `^${word.substring(match.start, match.end).split("").join("^")}`;
         pos = match.end;
       }
       actualWord += word.substring(pos);
@@ -376,57 +342,22 @@ describe("Filters", () => {
   it("fuzzyScore, #23215", function () {
     assertMatches("tit", "win.tit", "win.^t^i^t", fuzzyScore);
     assertMatches("title", "win.title", "win.^t^i^t^l^e", fuzzyScore);
-    assertMatches(
-      "WordCla",
-      "WordCharacterClassifier",
-      "^W^o^r^dCharacter^C^l^assifier",
-      fuzzyScore
-    );
-    assertMatches(
-      "WordCCla",
-      "WordCharacterClassifier",
-      "^W^o^r^d^Character^C^l^assifier",
-      fuzzyScore
-    );
+    assertMatches("WordCla", "WordCharacterClassifier", "^W^o^r^dCharacter^C^l^assifier", fuzzyScore);
+    assertMatches("WordCCla", "WordCharacterClassifier", "^W^o^r^d^Character^C^l^assifier", fuzzyScore);
   });
 
   it("fuzzyScore, #23332", function () {
-    assertMatches(
-      "dete",
-      '"editor.quickSuggestionsDelay"',
-      undefined,
-      fuzzyScore
-    );
+    assertMatches("dete", '"editor.quickSuggestionsDelay"', undefined, fuzzyScore);
   });
 
   it("fuzzyScore, #23190", function () {
-    assertMatches(
-      "c:\\do",
-      "& 'C:\\Documents and Settings'",
-      "& '^C^:^\\^D^ocuments and Settings'",
-      fuzzyScore
-    );
-    assertMatches(
-      "c:\\do",
-      "& 'c:\\Documents and Settings'",
-      "& '^c^:^\\^D^ocuments and Settings'",
-      fuzzyScore
-    );
+    assertMatches("c:\\do", "& 'C:\\Documents and Settings'", "& '^C^:^\\^D^ocuments and Settings'", fuzzyScore);
+    assertMatches("c:\\do", "& 'c:\\Documents and Settings'", "& '^c^:^\\^D^ocuments and Settings'", fuzzyScore);
   });
 
   it("fuzzyScore, #23581", function () {
-    assertMatches(
-      "close",
-      "css.lint.importStatement",
-      "^css.^lint.imp^ort^Stat^ement",
-      fuzzyScore
-    );
-    assertMatches(
-      "close",
-      "css.colorDecorators.enable",
-      "^css.co^l^orDecorator^s.^enable",
-      fuzzyScore
-    );
+    assertMatches("close", "css.lint.importStatement", "^css.^lint.imp^ort^Stat^ement", fuzzyScore);
+    assertMatches("close", "css.colorDecorators.enable", "^css.co^l^orDecorator^s.^enable", fuzzyScore);
     assertMatches(
       "close",
       "workbench.quickOpen.closeOnFocusOut",
@@ -444,18 +375,8 @@ describe("Filters", () => {
   });
 
   it("fuzzyScore, #23458", function () {
-    assertMatches(
-      "highlight",
-      "editorHoverHighlight",
-      "editorHover^H^i^g^h^l^i^g^h^t",
-      fuzzyScore
-    );
-    assertMatches(
-      "hhighlight",
-      "editorHoverHighlight",
-      "editor^Hover^H^i^g^h^l^i^g^h^t",
-      fuzzyScore
-    );
+    assertMatches("highlight", "editorHoverHighlight", "editorHover^H^i^g^h^l^i^g^h^t", fuzzyScore);
+    assertMatches("hhighlight", "editorHoverHighlight", "editor^Hover^H^i^g^h^l^i^g^h^t", fuzzyScore);
     assertMatches("dhhighlight", "editorHoverHighlight", undefined, fuzzyScore);
   });
   it("fuzzyScore, #23746", function () {
@@ -473,30 +394,15 @@ describe("Filters", () => {
     assertMatches("cmcm", "camelCase", undefined, fuzzyScore);
     assertMatches("BK", "the_black_knight", "the_^black_^knight", fuzzyScore);
     assertMatches("KeyboardLayout=", "KeyboardLayout", undefined, fuzzyScore);
-    assertMatches(
-      "LLL",
-      "SVisualLoggerLogsList",
-      "SVisual^Logger^Logs^List",
-      fuzzyScore
-    );
+    assertMatches("LLL", "SVisualLoggerLogsList", "SVisual^Logger^Logs^List", fuzzyScore);
     assertMatches("LLLL", "SVilLoLosLi", undefined, fuzzyScore);
     assertMatches("LLLL", "SVisualLoggerLogsList", undefined, fuzzyScore);
     assertMatches("TEdit", "TextEdit", "^Text^E^d^i^t", fuzzyScore);
     assertMatches("TEdit", "TextEditor", "^Text^E^d^i^tor", fuzzyScore);
     assertMatches("TEdit", "Textedit", "^T^exte^d^i^t", fuzzyScore);
     assertMatches("TEdit", "text_edit", "^text_^e^d^i^t", fuzzyScore);
-    assertMatches(
-      "TEditDit",
-      "TextEditorDecorationType",
-      "^Text^E^d^i^tor^Decorat^ion^Type",
-      fuzzyScore
-    );
-    assertMatches(
-      "TEdit",
-      "TextEditorDecorationType",
-      "^Text^E^d^i^torDecorationType",
-      fuzzyScore
-    );
+    assertMatches("TEditDit", "TextEditorDecorationType", "^Text^E^d^i^tor^Decorat^ion^Type", fuzzyScore);
+    assertMatches("TEdit", "TextEditorDecorationType", "^Text^E^d^i^torDecorationType", fuzzyScore);
     assertMatches("Tedit", "TextEdit", "^Text^E^d^i^t", fuzzyScore);
     assertMatches("ba", "?AB?", undefined, fuzzyScore);
     assertMatches("bkn", "the_black_knight", "the_^black_^k^night", fuzzyScore);
@@ -506,12 +412,7 @@ describe("Filters", () => {
     assertMatches("fob", "foobar", "^f^oo^bar", fuzzyScore);
     assertMatches("fobz", "foobar", undefined, fuzzyScore);
     assertMatches("foobar", "foobar", "^f^o^o^b^a^r", fuzzyScore);
-    assertMatches(
-      "form",
-      "editor.formatOnSave",
-      "editor.^f^o^r^matOnSave",
-      fuzzyScore
-    );
+    assertMatches("form", "editor.formatOnSave", "editor.^f^o^r^matOnSave", fuzzyScore);
     assertMatches("g p", "Git: Pull", "^Git:^ ^Pull", fuzzyScore);
     assertMatches("g p", "Git: Pull", "^Git:^ ^Pull", fuzzyScore);
     assertMatches("gip", "Git: Pull", "^G^it: ^Pull", fuzzyScore);
@@ -525,18 +426,8 @@ describe("Filters", () => {
     assertMatches("no", "", undefined, fuzzyScore);
     assertMatches("no", "match", undefined, fuzzyScore);
     assertMatches("ob", "foobar", undefined, fuzzyScore);
-    assertMatches(
-      "sl",
-      "SVisualLoggerLogsList",
-      "^SVisual^LoggerLogsList",
-      fuzzyScore
-    );
-    assertMatches(
-      "sllll",
-      "SVisualLoggerLogsList",
-      "^SVisua^l^Logger^Logs^List",
-      fuzzyScore
-    );
+    assertMatches("sl", "SVisualLoggerLogsList", "^SVisual^LoggerLogsList", fuzzyScore);
+    assertMatches("sllll", "SVisualLoggerLogsList", "^SVisua^l^Logger^Logs^List", fuzzyScore);
     assertMatches("Three", "HTMLHRElement", undefined, fuzzyScore);
     assertMatches("Three", "Three", "^T^h^r^e^e", fuzzyScore);
     assertMatches("fo", "barfoo", undefined, fuzzyScore);
@@ -602,12 +493,7 @@ describe("Filters", () => {
   it("fuzzyScore, issue #26423", function () {
     assertMatches("baba", "abababab", undefined, fuzzyScore);
 
-    assertMatches(
-      "fsfsfs",
-      "dsafdsafdsafdsafdsafdsafdsafasdfdsa",
-      undefined,
-      fuzzyScore
-    );
+    assertMatches("fsfsfs", "dsafdsafdsafdsafdsafdsafdsafasdfdsa", undefined, fuzzyScore);
     assertMatches(
       "fsfsfsfsfsfsfsf",
       "dsafdsafdsafdsafdsafdsafdsafasdfdsafdsafdsafdsafdsfdsafdsfdfdfasdnfdsajfndsjnafjndsajlknfdsa",
@@ -628,15 +514,7 @@ describe("Filters", () => {
   it("Cannot set property '1' of undefined, #26511", function () {
     const word = new Array<void>(123).join("a");
     const pattern = new Array<void>(120).join("a");
-    fuzzyScore(
-      pattern,
-      pattern.toLowerCase(),
-      0,
-      word,
-      word.toLowerCase(),
-      0,
-      false
-    );
+    fuzzyScore(pattern, pattern.toLowerCase(), 0, word, word.toLowerCase(), 0, false);
     assert.ok(true); // must not explode
   });
 
@@ -674,25 +552,12 @@ describe("Filters", () => {
     });
   });
 
-  function assertTopScore(
-    filter: typeof fuzzyScore,
-    pattern: string,
-    expected: number,
-    ...words: string[]
-  ) {
+  function assertTopScore(filter: typeof fuzzyScore, pattern: string, expected: number, ...words: string[]) {
     let topScore = -(100 * 10);
     let topIdx = 0;
     for (let i = 0; i < words.length; i++) {
       const word = words[i];
-      const m = filter(
-        pattern,
-        pattern.toLowerCase(),
-        0,
-        word,
-        word.toLowerCase(),
-        0,
-        false
-      );
+      const m = filter(pattern, pattern.toLowerCase(), 0, word, word.toLowerCase(), 0, false);
       if (m) {
         const [score] = m;
         if (score > topScore) {
@@ -701,33 +566,15 @@ describe("Filters", () => {
         }
       }
     }
-    assert.strictEqual(
-      topIdx,
-      expected,
-      `${pattern} -> actual=${words[topIdx]} <> expected=${words[expected]}`
-    );
+    assert.strictEqual(topIdx, expected, `${pattern} -> actual=${words[topIdx]} <> expected=${words[expected]}`);
   }
 
   it("topScore - fuzzyScore", function () {
-    assertTopScore(
-      fuzzyScore,
-      "cons",
-      2,
-      "ArrayBufferConstructor",
-      "Console",
-      "console"
-    );
+    assertTopScore(fuzzyScore, "cons", 2, "ArrayBufferConstructor", "Console", "console");
     assertTopScore(fuzzyScore, "Foo", 1, "foo", "Foo", "foo");
 
     // #24904
-    assertTopScore(
-      fuzzyScore,
-      "onMess",
-      1,
-      "onmessage",
-      "onMessage",
-      "onThisMegaEscape"
-    );
+    assertTopScore(fuzzyScore, "onMess", 1, "onmessage", "onMessage", "onThisMegaEscape");
 
     assertTopScore(fuzzyScore, "CC", 1, "camelCase", "CamelCase");
     assertTopScore(fuzzyScore, "cC", 0, "camelCase", "CamelCase");
@@ -750,14 +597,7 @@ describe("Filters", () => {
       "log",
       "logger"
     );
-    assertTopScore(
-      fuzzyScore,
-      "e",
-      2,
-      "AbstractWorker",
-      "ActiveXObject",
-      "else"
-    );
+    assertTopScore(fuzzyScore, "e", 2, "AbstractWorker", "ActiveXObject", "else");
 
     // issue #14446
     assertTopScore(
@@ -793,13 +633,7 @@ describe("Filters", () => {
     // // dupe, issue #14942
     assertTopScore(fuzzyScore, "is", 0, "isValidViewletId", "import statement");
 
-    assertTopScore(
-      fuzzyScore,
-      "title",
-      1,
-      "files.trimTrailingWhitespace",
-      "window.title"
-    );
+    assertTopScore(fuzzyScore, "title", 1, "files.trimTrailingWhitespace", "window.title");
 
     assertTopScore(fuzzyScore, "const", 1, "constructor", "const", "cuOnstrul");
   });
@@ -863,12 +697,7 @@ describe("Filters", () => {
   });
 
   it("Suggestion is not highlighted #85826", function () {
-    assertMatches(
-      "SemanticTokens",
-      "SemanticTokensEdits",
-      "^S^e^m^a^n^t^i^c^T^o^k^e^n^sEdits",
-      fuzzyScore
-    );
+    assertMatches("SemanticTokens", "SemanticTokensEdits", "^S^e^m^a^n^t^i^c^T^o^k^e^n^sEdits", fuzzyScore);
     assertMatches(
       "SemanticTokens",
       "SemanticTokensEdits",
@@ -983,9 +812,7 @@ describe("Filters", () => {
   }
 
   it("matches fuzzy simple", function () {
-    filterOk(matchesFuzzy, "par", "HTMLParagraphElement", [
-      { start: 4, end: 7 },
-    ]);
+    filterOk(matchesFuzzy, "par", "HTMLParagraphElement", [{ start: 4, end: 7 }]);
   });
 
   it("matches fuzzy", function () {
@@ -998,9 +825,7 @@ describe("Filters", () => {
       { start: 1, end: 2 },
       { start: 5, end: 7 },
     ]);
-    filterOk(matchesFuzzy2, "tab", "HTMLTableSectionElement", [
-      { start: 4, end: 7 },
-    ]);
+    filterOk(matchesFuzzy2, "tab", "HTMLTableSectionElement", [{ start: 4, end: 7 }]);
   });
 
   it("matches fuzzy2", function () {
@@ -1032,10 +857,7 @@ describe("Filters", () => {
       assert.ok(matchesCamelCase("A", "aAaAaAaAaAaAaAaA") === null);
       assert.ok(matchesCamelCase("A", "NOTACAMELCASEWORD") === null);
       assert.ok(
-        matchesCamelCase(
-          "A",
-          "This-Word-is-over-sixty-characters-long-and-will-not-be-processed-too-long"
-        ) === null
+        matchesCamelCase("A", "This-Word-is-over-sixty-characters-long-and-will-not-be-processed-too-long") === null
       );
     });
   });

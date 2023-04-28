@@ -11,11 +11,7 @@ export class ArcGisFeatureRenderer {
   private _transform: Transform | undefined;
   private _context: CanvasRenderingContext2D;
 
-  constructor(
-    context: CanvasRenderingContext2D,
-    symbol: ArcGisSymbologyRenderer,
-    world2PixelTransform?: Transform
-  ) {
+  constructor(context: CanvasRenderingContext2D, symbol: ArcGisSymbologyRenderer, world2PixelTransform?: Transform) {
     this._symbol = symbol;
     this._context = context;
     this._transform = world2PixelTransform;
@@ -139,12 +135,7 @@ export class ArcGisFeatureRenderer {
    * @param geometryCoords Array that linearly encodes vertices.
    * @param stride Dimension of each vertices (i.e. 2 or 3.  3 could be X,Y,Z, X,YM) Currently 3rd dimension is ignored.
    */
-  public renderPoint(
-    geometryLengths: number[],
-    geometryCoords: number[],
-    stride: number,
-    relativeCoords: boolean
-  ) {
+  public renderPoint(geometryLengths: number[], geometryCoords: number[], stride: number, relativeCoords: boolean) {
     if (stride < 2 || stride > 3) {
       return;
     }
@@ -157,17 +148,9 @@ export class ArcGisFeatureRenderer {
             x: geometryCoords[0],
             y: geometryCoords[1],
           });
-          this._symbol.drawPoint(
-            this._context,
-            transformedPoint.x,
-            transformedPoint.y
-          );
+          this._symbol.drawPoint(this._context, transformedPoint.x, transformedPoint.y);
         } else {
-          this._symbol.drawPoint(
-            this._context,
-            geometryCoords[0],
-            geometryCoords[1]
-          );
+          this._symbol.drawPoint(this._context, geometryCoords[0], geometryCoords[1]);
         }
       }
     } else {

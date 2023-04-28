@@ -7,31 +7,15 @@
  */
 
 import { assert, Id64String } from "@itwin/core-bentley";
-import {
-  Matrix3d,
-  Point2d,
-  Point3d,
-  Range1d,
-  Transform,
-  XAndY,
-} from "@itwin/core-geometry";
-import {
-  Frustum,
-  FrustumPlanes,
-  SpatialClassifier,
-  ViewFlags,
-} from "@itwin/core-common";
+import { Matrix3d, Point2d, Point3d, Range1d, Transform, XAndY } from "@itwin/core-geometry";
+import { Frustum, FrustumPlanes, SpatialClassifier, ViewFlags } from "@itwin/core-common";
 import { CachedDecoration, DecorationsCache } from "./DecorationsCache";
 import { IModelApp } from "./IModelApp";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { CanvasDecoration } from "./render/CanvasDecoration";
 import { Decorations } from "./render/Decorations";
 import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
-import {
-  GraphicBuilder,
-  GraphicType,
-  ViewportGraphicBuilderOptions,
-} from "./render/GraphicBuilder";
+import { GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "./render/GraphicBuilder";
 import { GraphicList, RenderGraphic } from "./render/RenderGraphic";
 import { RenderPlanarClassifier } from "./render/RenderPlanarClassifier";
 import { RenderSystem, RenderTextureDrape } from "./render/RenderSystem";
@@ -45,12 +29,7 @@ import {
   TileTreeReference,
 } from "./tile/internal";
 import { ViewingSpace } from "./ViewingSpace";
-import {
-  ELEMENT_MARKED_FOR_REMOVAL,
-  ScreenViewport,
-  Viewport,
-  ViewportDecorator,
-} from "./Viewport";
+import { ELEMENT_MARKED_FOR_REMOVAL, ScreenViewport, Viewport, ViewportDecorator } from "./Viewport";
 
 /** Provides context for producing [[RenderGraphic]]s for drawing within a [[Viewport]].
  * @public
@@ -93,9 +72,7 @@ export class RenderContext {
   }
 
   /** @internal */
-  protected _createGraphicBuilder(
-    options: Omit<ViewportGraphicBuilderOptions, "viewport">
-  ): GraphicBuilder {
+  protected _createGraphicBuilder(options: Omit<ViewportGraphicBuilderOptions, "viewport">): GraphicBuilder {
     return this.target.createGraphicBuilder({
       ...options,
       viewport: this.viewport,
@@ -114,11 +91,7 @@ export class RenderContext {
   }
 
   /** Create a graphic from a [[GraphicBranch]]. */
-  public createGraphicBranch(
-    branch: GraphicBranch,
-    location: Transform,
-    opts?: GraphicBranchOptions
-  ): RenderGraphic {
+  public createGraphicBranch(branch: GraphicBranch, location: Transform, opts?: GraphicBranchOptions): RenderGraphic {
     return this.target.renderSystem.createGraphicBranch(branch, location, opts);
   }
 
@@ -128,10 +101,7 @@ export class RenderContext {
    * @returns A RenderGraphic suitable for drawing the scene graph node within this context's [[Viewport]].
    * @see [[RenderSystem.createBranch]]
    */
-  public createBranch(
-    branch: GraphicBranch,
-    location: Transform
-  ): RenderGraphic {
+  public createBranch(branch: GraphicBranch, location: Transform): RenderGraphic {
     return this.createGraphicBranch(branch, location);
   }
 
@@ -166,9 +136,7 @@ export class DynamicsContext extends RenderContext {
    * @param options Options describing how to create the builder.
    * @returns A builder that produces a [[RenderGraphic]].
    */
-  public createGraphic(
-    options: Omit<ViewportGraphicBuilderOptions, "viewport">
-  ): GraphicBuilder {
+  public createGraphic(options: Omit<ViewportGraphicBuilderOptions, "viewport">): GraphicBuilder {
     return this._createGraphicBuilder(options);
   }
 }
@@ -188,11 +156,7 @@ export class DecorateContext extends RenderContext {
   }
 
   /** @internal */
-  constructor(
-    vp: ScreenViewport,
-    decorations: Decorations,
-    cache: DecorationsCache
-  ) {
+  constructor(vp: ScreenViewport, decorations: Decorations, cache: DecorationsCache) {
     super(vp);
     this._decorations = decorations;
     this._cache = cache;
@@ -206,11 +170,7 @@ export class DecorateContext extends RenderContext {
    * @see [[IModelConnection.transientIds]] for obtaining an ID for a pickable decoration.
    * @see [[createGraphic]] for more options.
    */
-  public createGraphicBuilder(
-    type: GraphicType,
-    transform?: Transform,
-    id?: Id64String
-  ): GraphicBuilder {
+  public createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder {
     return this.createGraphic({
       type,
       placement: transform,
@@ -222,9 +182,7 @@ export class DecorateContext extends RenderContext {
    * @param options Options describing how to create the builder.
    * @returns A builder that produces a [[RenderGraphic]].
    */
-  public createGraphic(
-    options: Omit<ViewportGraphicBuilderOptions, "viewport">
-  ): GraphicBuilder {
+  public createGraphic(options: Omit<ViewportGraphicBuilderOptions, "viewport">): GraphicBuilder {
     return this._createGraphicBuilder(options);
   }
 
@@ -253,16 +211,10 @@ export class DecorateContext extends RenderContext {
     cachedDecorations.forEach((cachedDecoration) => {
       switch (cachedDecoration.type) {
         case "graphic":
-          this.addDecoration(
-            cachedDecoration.graphicType,
-            cachedDecoration.graphicOwner
-          );
+          this.addDecoration(cachedDecoration.graphicType, cachedDecoration.graphicOwner);
           break;
         case "canvas":
-          this.addCanvasDecoration(
-            cachedDecoration.canvasDecoration,
-            cachedDecoration.atFront
-          );
+          this.addCanvasDecoration(cachedDecoration.canvasDecoration, cachedDecoration.atFront);
           break;
         case "html":
           this.addHtmlDecoration(cachedDecoration.htmlElement);
@@ -293,16 +245,14 @@ export class DecorateContext extends RenderContext {
    */
   public addDecoration(type: GraphicType, decoration: RenderGraphic) {
     if (this._curCacheableDecorator) {
-      const graphicOwner =
-        this.target.renderSystem.createGraphicOwner(decoration);
+      const graphicOwner = this.target.renderSystem.createGraphicOwner(decoration);
       this._appendToCache({ type: "graphic", graphicOwner, graphicType: type });
       decoration = graphicOwner;
     }
 
     switch (type) {
       case GraphicType.Scene:
-        if (undefined === this._decorations.normal)
-          this._decorations.normal = [];
+        if (undefined === this._decorations.normal) this._decorations.normal = [];
         this._decorations.normal.push(decoration);
         break;
 
@@ -312,8 +262,7 @@ export class DecorateContext extends RenderContext {
         break;
 
       case GraphicType.WorldOverlay:
-        if (!this._decorations.worldOverlay)
-          this._decorations.worldOverlay = [];
+        if (!this._decorations.worldOverlay) this._decorations.worldOverlay = [];
         this._decorations.worldOverlay.push(decoration);
         break;
 
@@ -337,8 +286,7 @@ export class DecorateContext extends RenderContext {
         atFront,
       });
 
-    if (undefined === this._decorations.canvasDecorations)
-      this._decorations.canvasDecorations = [];
+    if (undefined === this._decorations.canvasDecorations) this._decorations.canvasDecorations = [];
 
     const list = this._decorations.canvasDecorations;
     if (0 === list.length || true === atFront) list.push(decoration);
@@ -347,8 +295,7 @@ export class DecorateContext extends RenderContext {
 
   /** Add an HTMLElement to be drawn as a decoration in this context's [[ScreenViewport]]. */
   public addHtmlDecoration(decoration: HTMLElement) {
-    if (this._curCacheableDecorator)
-      this._appendToCache({ type: "html", htmlElement: decoration });
+    if (this._curCacheableDecorator) this._appendToCache({ type: "html", htmlElement: decoration });
 
     // an element decoration being added might already be on the decorationDiv, just marked for removal
     if (decoration[ELEMENT_MARKED_FOR_REMOVAL]) {
@@ -372,10 +319,13 @@ export class DecorateContext extends RenderContext {
     if (vp.viewingGlobe) return;
 
     const color = vp.getContrastToBackgroundColor();
-    const planarGrid = this.viewport.target.renderSystem.createPlanarGrid(
-      vp.getFrustum(),
-      { origin: gridOrigin, rMatrix, spacing, gridsPerRef, color }
-    );
+    const planarGrid = this.viewport.target.renderSystem.createPlanarGrid(vp.getFrustum(), {
+      origin: gridOrigin,
+      rMatrix,
+      spacing,
+      gridsPerRef,
+      color,
+    });
     if (planarGrid) {
       this.addDecoration(GraphicType.WorldDecoration, planarGrid);
     }
@@ -426,9 +376,7 @@ export class SceneContext extends RenderContext {
 
   /** The viewed volume containing the scene. */
   public get viewingSpace(): ViewingSpace {
-    return undefined !== this._viewingSpace
-      ? this._viewingSpace
-      : this.viewport.viewingSpace;
+    return undefined !== this._viewingSpace ? this._viewingSpace : this.viewport.viewingSpace;
   }
 
   /** @internal */
@@ -474,12 +422,9 @@ export class SceneContext extends RenderContext {
     planarClipMask?: PlanarClipMaskState
   ): RenderPlanarClassifier | undefined {
     // Target may have the classifier from a previous frame; if not we must create one.
-    let classifier =
-      this.viewport.target.getPlanarClassifier(classifiedModelId);
+    let classifier = this.viewport.target.getPlanarClassifier(classifiedModelId);
     if (undefined === classifier)
-      classifier = this.viewport.target.createPlanarClassifier(
-        classifierTree?.activeClassifier
-      );
+      classifier = this.viewport.target.createPlanarClassifier(classifierTree?.activeClassifier);
 
     // Either way, we need to collect the graphics to draw for this frame, and record that we did so.
     if (undefined !== classifier) {
@@ -556,10 +501,7 @@ export class SceneContext extends RenderContext {
   }
 
   /** @internal */
-  public setVolumeClassifier(
-    classifier: SpatialClassifier,
-    modelId: Id64String
-  ): void {
+  public setVolumeClassifier(classifier: SpatialClassifier, modelId: Id64String): void {
     this.scene.volumeClassifier = { classifier, modelId };
   }
 }

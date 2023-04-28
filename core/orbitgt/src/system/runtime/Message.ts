@@ -28,11 +28,7 @@ export class Message {
     if (Message.DISPLAY) console.log("WARNING: " + module + " : " + message);
   }
 
-  public static printError(
-    module: string,
-    exception: any,
-    message: string
-  ): void {
+  public static printError(module: string, exception: any, message: string): void {
     if (Message.DISPLAY) console.log("ERROR: " + module + " : " + message);
     if (Message.DISPLAY && exception != null) console.log("" + exception);
   }

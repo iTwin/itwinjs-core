@@ -84,10 +84,7 @@ export abstract class AbstractNewtonIterator {
     this._numAccepted = 0;
     this.numIterations = 0;
     while (this.numIterations++ < this._maxIterations && this.computeStep()) {
-      if (
-        this.testConvergence(this.currentStepSize()) &&
-        this.applyCurrentStep(true)
-      ) {
+      if (this.testConvergence(this.currentStepSize()) && this.applyCurrentStep(true)) {
         return true;
       }
       this.applyCurrentStep(false);
@@ -145,10 +142,7 @@ export class Newton1dUnbounded extends AbstractNewtonIterator {
   /** Compute the univariate newton step. */
   public computeStep(): boolean {
     if (this._func.evaluate(this._currentX)) {
-      const dx = Geometry.conditionalDivideFraction(
-        this._func.currentF - this._target,
-        this._func.currentdFdX
-      );
+      const dx = Geometry.conditionalDivideFraction(this._func.currentF - this._target, this._func.currentdFdX);
       if (dx !== undefined) {
         this._currentStep = dx;
         return true;
@@ -213,10 +207,7 @@ export class Newton1dUnboundedApproximateDerivative extends AbstractNewtonIterat
       const fA = this._func.currentF;
       if (this._func.evaluate(this._currentX + this.derivativeH)) {
         const fB = this._func.currentF;
-        const dx = Geometry.conditionalDivideFraction(
-          fA,
-          (fB - fA) / this.derivativeH
-        );
+        const dx = Geometry.conditionalDivideFraction(fA, (fB - fA) / this.derivativeH);
         if (dx !== undefined) {
           this._currentStep = dx;
           return true;
@@ -281,10 +272,7 @@ export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
   }
   /** Move the currentUV coordinate by currentStep. */
   public applyCurrentStep(): boolean {
-    return this.setUV(
-      this._currentUV.x - this._currentStep.x,
-      this._currentUV.y - this._currentStep.y
-    );
+    return this.setUV(this._currentUV.x - this._currentStep.x, this._currentUV.y - this._currentStep.y);
   }
   /** Evaluate the functions and derivatives at this._currentUV
    * Invert the jacobian and compute the this._currentStep.

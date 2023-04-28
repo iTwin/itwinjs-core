@@ -59,38 +59,16 @@ describe("GreedyTriangulationBetweenLineStrings", () => {
         let y0 = 0;
         for (let nB = 1; nB <= dataB.length; nB++) {
           const pointB = GrowableXYZArray.create(dataB.slice(0, nB));
-          GeometryCoreTestIO.captureGeometry(
-            allGeometry,
-            LineString3d.create(pointA),
-            x0,
-            y0,
-            -dz
-          );
-          GeometryCoreTestIO.captureGeometry(
-            allGeometry,
-            LineString3d.create(pointB),
-            x0,
-            y0,
-            dz
-          );
+          GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(pointA), x0, y0, -dz);
+          GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(pointB), x0, y0, dz);
           const builder = PolyfaceBuilder.create();
           builder.addGreedyTriangulationBetweenLineStrings(pointA, pointB);
           y0 += dy;
-          GeometryCoreTestIO.captureGeometry(
-            allGeometry,
-            builder.claimPolyface(),
-            x0,
-            y0
-          );
+          GeometryCoreTestIO.captureGeometry(allGeometry, builder.claimPolyface(), x0, y0);
           const builder1 = PolyfaceBuilder.create();
           builder1.addGreedyTriangulationBetweenLineStrings(pointB, pointA);
           y0 += dy;
-          GeometryCoreTestIO.captureGeometry(
-            allGeometry,
-            builder1.claimPolyface(),
-            x0,
-            y0
-          );
+          GeometryCoreTestIO.captureGeometry(allGeometry, builder1.claimPolyface(), x0, y0);
           y0 += 2 * dy;
         }
         x0 += dx;
@@ -98,11 +76,7 @@ describe("GreedyTriangulationBetweenLineStrings", () => {
       x0 += 2 * dx;
     }
 
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "GreedyTriangulationBetweenLineStrings",
-      "zigzag"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "GreedyTriangulationBetweenLineStrings", "zigzag");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -137,38 +111,17 @@ describe("GreedyTriangulationBetweenLineStrings", () => {
       const pointA = makeArrayWithDuplicates(dataA, nA, numDup);
       for (let nB = 0; nB < dataB.length; nB++) {
         const pointB = makeArrayWithDuplicates(dataB, nB, numDup);
-        GeometryCoreTestIO.captureGeometry(
-          allGeometry,
-          LineString3d.create(pointA),
-          x0,
-          y0,
-          -dz
-        );
-        GeometryCoreTestIO.captureGeometry(
-          allGeometry,
-          LineString3d.create(pointB),
-          x0,
-          y0,
-          dz
-        );
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(pointA), x0, y0, -dz);
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(pointB), x0, y0, dz);
         const builder = PolyfaceBuilder.create();
         builder.addGreedyTriangulationBetweenLineStrings(pointA, pointB);
-        GeometryCoreTestIO.captureGeometry(
-          allGeometry,
-          builder.claimPolyface(),
-          x0,
-          y0
-        );
+        GeometryCoreTestIO.captureGeometry(allGeometry, builder.claimPolyface(), x0, y0);
         x0 += step;
       }
       y0 += step;
     }
 
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "GreedyTriangulationBetweenLineStrings",
-      "zigzagDuplicates"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "GreedyTriangulationBetweenLineStrings", "zigzagDuplicates");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -210,43 +163,18 @@ describe("GreedyTriangulationBetweenLineStrings", () => {
           const lineStringB1 = LineString3d.create();
           options.maxEdgeLength = edgeLengthB;
           lineStringB.emitStrokes(lineStringB1, options);
-          GeometryCoreTestIO.captureCloneGeometry(
-            allGeometry,
-            lineStringA1,
-            x0,
-            y0,
-            z0 - dz
-          );
-          GeometryCoreTestIO.captureCloneGeometry(
-            allGeometry,
-            lineStringB1,
-            x0,
-            y0,
-            z0 + dz
-          );
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineStringA1, x0, y0, z0 - dz);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineStringB1, x0, y0, z0 + dz);
           const builder = PolyfaceBuilder.create();
-          builder.addGreedyTriangulationBetweenLineStrings(
-            lineStringA1.points,
-            lineStringB1.points
-          );
-          GeometryCoreTestIO.captureGeometry(
-            allGeometry,
-            builder.claimPolyface(),
-            x0,
-            y0,
-            z0
-          );
+          builder.addGreedyTriangulationBetweenLineStrings(lineStringA1.points, lineStringB1.points);
+          GeometryCoreTestIO.captureGeometry(allGeometry, builder.claimPolyface(), x0, y0, z0);
           y0 += dy;
         }
         x0 += dx;
       }
       x0 += 5.0 * dx;
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "GreedyTriangulationBetweenLineStrings",
-      "quadQuad"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "GreedyTriangulationBetweenLineStrings", "quadQuad");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -260,24 +188,8 @@ describe("GreedyTriangulationBetweenLineStrings", () => {
     const z0 = 0.0;
     const rX = 0.5;
     for (const numStarPoints of [3, 4]) {
-      const dataA = Sample.createRegularPolygon(
-        0,
-        0,
-        zA,
-        Angle.createDegrees(0),
-        rX,
-        4,
-        true
-      );
-      const dataB = Sample.createStar(
-        0.0,
-        0.0,
-        zB,
-        0.5,
-        0.45,
-        numStarPoints,
-        true
-      );
+      const dataA = Sample.createRegularPolygon(0, 0, zA, Angle.createDegrees(0), rX, 4, true);
+      const dataB = Sample.createStar(0.0, 0.0, zB, 0.5, 0.45, numStarPoints, true);
       const lineStringA = LineString3d.create(dataA);
       const lineStringB = LineString3d.create(dataB);
       const dx = 8;
@@ -293,43 +205,18 @@ describe("GreedyTriangulationBetweenLineStrings", () => {
           const lineStringB1 = LineString3d.create();
           options.maxEdgeLength = edgeLengthB;
           lineStringB.emitStrokes(lineStringB1, options);
-          GeometryCoreTestIO.captureCloneGeometry(
-            allGeometry,
-            lineStringA1,
-            x0,
-            y0,
-            z0 - dz
-          );
-          GeometryCoreTestIO.captureCloneGeometry(
-            allGeometry,
-            lineStringB1,
-            x0,
-            y0,
-            z0 + dz
-          );
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineStringA1, x0, y0, z0 - dz);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineStringB1, x0, y0, z0 + dz);
           const builder = PolyfaceBuilder.create();
-          builder.addGreedyTriangulationBetweenLineStrings(
-            lineStringA1.points,
-            lineStringB1.points
-          );
-          GeometryCoreTestIO.captureGeometry(
-            allGeometry,
-            builder.claimPolyface(),
-            x0,
-            y0,
-            z0
-          );
+          builder.addGreedyTriangulationBetweenLineStrings(lineStringA1.points, lineStringB1.points);
+          GeometryCoreTestIO.captureGeometry(allGeometry, builder.claimPolyface(), x0, y0, z0);
           y0 += dy;
         }
         x0 += dx;
       }
       x0 += 5.0 * dx;
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "GreedyTriangulationBetweenLineStrings",
-      "quadStar"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "GreedyTriangulationBetweenLineStrings", "quadStar");
     expect(ck.getNumErrors()).equals(0);
   });
 });
@@ -340,17 +227,12 @@ describe("GreedyTriangulationBetweenLineStrings", () => {
  * @param n
  * @param numDuplicate
  */
-function makeArrayWithDuplicates(
-  data: number[][],
-  n: number,
-  numDuplicate: number
-): Point3d[] {
+function makeArrayWithDuplicates(data: number[][], n: number, numDuplicate: number): Point3d[] {
   const result: Point3d[] = [];
   const m = Math.min(n, data.length);
   for (let k = 0; k < m; k++) {
     const xyz = data[k];
-    for (let i = 0; i < numDuplicate; i++)
-      result.push(Point3d.create(xyz[0], xyz[1], xyz[2]));
+    for (let i = 0; i < numDuplicate; i++) result.push(Point3d.create(xyz[0], xyz[1], xyz[2]));
   }
   return result;
 }

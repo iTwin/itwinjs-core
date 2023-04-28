@@ -23,8 +23,7 @@ export type CachedDecoration =
   | { type: "html"; htmlElement: HTMLElement };
 
 function disposeCachedDecorations(decorations: CachedDecoration[]): void {
-  for (const dec of decorations)
-    if ("graphic" === dec.type) dec.graphicOwner.disposeGraphic();
+  for (const dec of decorations) if ("graphic" === dec.type) dec.graphicOwner.disposeGraphic();
 }
 
 /** A cache of decorations previously produced by a [[ViewportDecorator]] for which `useCachedDecorations` is `true`.
@@ -78,8 +77,7 @@ export class DecorationsCache {
   public clear(): void {
     if (this.prohibitRemoval) return;
 
-    for (const decorations of this._cache.values())
-      disposeCachedDecorations(decorations);
+    for (const decorations of this._cache.values()) disposeCachedDecorations(decorations);
 
     this._cache.clear();
   }

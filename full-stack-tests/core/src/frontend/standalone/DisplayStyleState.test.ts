@@ -93,12 +93,8 @@ describe("DisplayStyle", () => {
     style.settings.applyOverrides({
       thematic: { displayMode: ThematicDisplayMode.Height },
     });
-    expect(style.settings.thematic.range.low).to.equal(
-      imodel.projectExtents.zLow
-    );
-    expect(style.settings.thematic.range.high).to.equal(
-      imodel.projectExtents.zHigh
-    );
+    expect(style.settings.thematic.range.low).to.equal(imodel.projectExtents.zLow);
+    expect(style.settings.thematic.range.high).to.equal(imodel.projectExtents.zHigh);
 
     style.settings.applyOverrides({
       thematic: { displayMode: ThematicDisplayMode.Slope },
@@ -108,38 +104,25 @@ describe("DisplayStyle", () => {
 
   it("should override selected settings", async () => {
     const style = new DisplayStyle3dState(styleProps, imodel);
-    const test = (
-      overrides: DisplayStyle3dSettingsProps,
-      changed?: DisplayStyle3dSettingsProps
-    ) => {
+    const test = (overrides: DisplayStyle3dSettingsProps, changed?: DisplayStyle3dSettingsProps) => {
       const originalSettings = { ...style.settings.toJSON() };
       style.settings.applyOverrides(overrides);
       const output = style.settings.toJSON();
 
       const expected = { ...overrides, changed };
-      for (const key of Object.keys(expected) as Array<
-        keyof DisplayStyle3dSettingsProps
-      >)
+      for (const key of Object.keys(expected) as Array<keyof DisplayStyle3dSettingsProps>)
         expect(output[key]).to.deep.equal(expected[key]);
 
-      for (const key of Object.keys(output) as Array<
-        keyof DisplayStyle3dSettingsProps
-      >)
-        if (undefined === expected[key])
-          expect(output[key]).to.deep.equal(originalSettings[key]);
+      for (const key of Object.keys(output) as Array<keyof DisplayStyle3dSettingsProps>)
+        if (undefined === expected[key]) expect(output[key]).to.deep.equal(originalSettings[key]);
 
-      if (undefined !== expected.contextRealityModels)
-        compareRealityModels(style, expected);
+      if (undefined !== expected.contextRealityModels) compareRealityModels(style, expected);
 
       // eslint-disable-next-line deprecation/deprecation
-      if (undefined !== expected.scheduleScript)
-        compareScheduleScripts(style, expected);
+      if (undefined !== expected.scheduleScript) compareScheduleScripts(style, expected);
     };
 
-    function compareRealityModels(
-      style3d: DisplayStyle3dState,
-      expected: DisplayStyle3dSettingsProps
-    ): void {
+    function compareRealityModels(style3d: DisplayStyle3dState, expected: DisplayStyle3dSettingsProps): void {
       const models: ContextRealityModelState[] = [];
       style3d.forEachRealityModel((model) => models.push(model));
       if (undefined !== expected.contextRealityModels) {
@@ -154,29 +137,15 @@ describe("DisplayStyle", () => {
           expect(a.description).to.equal(e.description);
           expect(a.treeRef).not.to.be.undefined;
 
-          expect(undefined === a.classifiers).to.equal(
-            undefined === e.classifiers
-          );
+          expect(undefined === a.classifiers).to.equal(undefined === e.classifiers);
           if (undefined !== a.classifiers && undefined !== e.classifiers)
             expect(a.classifiers.size).to.equal(e.classifiers.length);
 
-          expect(undefined === a.planarClipMaskSettings).to.equal(
-            undefined === e.planarClipMask
-          );
-          if (
-            undefined !== a.planarClipMaskSettings &&
-            undefined !== e.planarClipMask
-          )
-            expect(
-              a.planarClipMaskSettings.equals(
-                PlanarClipMaskSettings.fromJSON(e.planarClipMask)
-              )
-            );
+          expect(undefined === a.planarClipMaskSettings).to.equal(undefined === e.planarClipMask);
+          if (undefined !== a.planarClipMaskSettings && undefined !== e.planarClipMask)
+            expect(a.planarClipMaskSettings.equals(PlanarClipMaskSettings.fromJSON(e.planarClipMask)));
 
-          const foundIndex =
-            style3d.settings.contextRealityModels.models.findIndex(
-              (x) => x.url === a.url
-            );
+          const foundIndex = style3d.settings.contextRealityModels.models.findIndex((x) => x.url === a.url);
           expect(foundIndex).to.equal(i);
         }
         // Detach all.
@@ -187,15 +156,10 @@ describe("DisplayStyle", () => {
       }
     }
 
-    function compareScheduleScripts(
-      style3d: DisplayStyle3dState,
-      expected: DisplayStyle3dSettingsProps
-    ): void {
+    function compareScheduleScripts(style3d: DisplayStyle3dState, expected: DisplayStyle3dSettingsProps): void {
       if (undefined !== style3d.scheduleScript) {
         // eslint-disable-next-line deprecation/deprecation
-        expect(JSON.stringify(style3d.scheduleScript.toJSON())).to.equal(
-          JSON.stringify(expected.scheduleScript)
-        );
+        expect(JSON.stringify(style3d.scheduleScript.toJSON())).to.equal(JSON.stringify(expected.scheduleScript));
       } else {
         // eslint-disable-next-line deprecation/deprecation
         expect(expected.scheduleScript).to.be.undefined;
@@ -213,10 +177,7 @@ describe("DisplayStyle", () => {
           mode: PlanarClipMaskMode.IncludeSubCategories,
           modelIds: CompressedId64Set.compressArray(["0x123", "0x456"]),
           transparency: 0.5,
-          subCategoryOrElementIds: CompressedId64Set.compressArray([
-            "0x123",
-            "0x456",
-          ]),
+          subCategoryOrElementIds: CompressedId64Set.compressArray(["0x123", "0x456"]),
           priority: 0,
         },
       },
@@ -363,10 +324,7 @@ describe("DisplayStyle", () => {
             mode: PlanarClipMaskMode.IncludeSubCategories,
             modelIds: CompressedId64Set.compressArray(["0x123", "0x456"]),
             transparency: 0.5,
-            subCategoryOrElementIds: CompressedId64Set.compressArray([
-              "0x123",
-              "0x456",
-            ]),
+            subCategoryOrElementIds: CompressedId64Set.compressArray(["0x123", "0x456"]),
             priority: 1024,
           },
           classifiers: [

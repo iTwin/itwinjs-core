@@ -140,11 +140,8 @@ function createDefaultContext(
   useWebGL2: boolean = true,
   attributes?: WebGLContextAttributes
 ): WebGLContext | undefined {
-  let context = useWebGL2
-    ? canvas.getContext("webgl2", attributes)
-    : canvas.getContext("webgl", attributes);
-  if (context === null && useWebGL2)
-    context = canvas.getContext("webgl", attributes);
+  let context = useWebGL2 ? canvas.getContext("webgl2", attributes) : canvas.getContext("webgl", attributes);
+  if (context === null && useWebGL2) context = canvas.getContext("webgl", attributes);
   return context ?? undefined;
 }
 
@@ -174,8 +171,7 @@ export function queryRenderCompatibility(
     "webglcontextcreationerror",
     (event) => {
       errorMessage =
-        (event as WebGLContextEvent).statusMessage ||
-        "webglcontextcreationerror was triggered with no error provided";
+        (event as WebGLContextEvent).statusMessage || "webglcontextcreationerror was triggered with no error provided";
     },
     false
   );
@@ -204,13 +200,8 @@ export function queryRenderCompatibility(
   const compatibility = capabilities.init(context, undefined);
   compatibility.contextErrorMessage = errorMessage;
 
-  if (
-    hasMajorPerformanceCaveat &&
-    compatibility.status !==
-      WebGLRenderCompatibilityStatus.MissingRequiredFeatures
-  )
-    compatibility.status =
-      WebGLRenderCompatibilityStatus.MajorPerformanceCaveat;
+  if (hasMajorPerformanceCaveat && compatibility.status !== WebGLRenderCompatibilityStatus.MissingRequiredFeatures)
+    compatibility.status = WebGLRenderCompatibilityStatus.MajorPerformanceCaveat;
 
   return compatibility;
 }

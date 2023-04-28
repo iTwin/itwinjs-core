@@ -42,10 +42,7 @@ export class MobilePushTransport extends RpcPushTransport {
     this._last = response.status;
 
     if (this.onMessage) {
-      const messageData = RpcMarshaling.deserialize(
-        this._protocol,
-        response.result
-      );
+      const messageData = RpcMarshaling.deserialize(this._protocol, response.result);
       this.onMessage(response.id, messageData);
     }
 
@@ -58,11 +55,7 @@ export class MobilePushConnection<T> extends RpcPushConnection<T> {
   private _protocol: MobileRpcProtocol;
   private _next: number = -1;
 
-  public constructor(
-    channel: RpcPushChannel<T>,
-    client: unknown,
-    protocol: MobileRpcProtocol
-  ) {
+  public constructor(channel: RpcPushChannel<T>, client: unknown, protocol: MobileRpcProtocol) {
     super(channel, client);
     this._protocol = protocol;
   }

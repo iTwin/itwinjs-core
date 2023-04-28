@@ -59,14 +59,8 @@ export class PropertyRecord {
   }
 
   /** Creates a copy of this PropertyRecord with a new value and optionally a new PropertyDescription */
-  public copyWithNewValue(
-    newValue: PropertyValue,
-    newDescription?: PropertyDescription
-  ): PropertyRecord {
-    const rec = new PropertyRecord(
-      newValue,
-      newDescription ? newDescription : this.property
-    );
+  public copyWithNewValue(newValue: PropertyValue, newDescription?: PropertyDescription): PropertyRecord {
+    const rec = new PropertyRecord(newValue, newDescription ? newDescription : this.property);
     assignMemberIfExists(rec, this, "description");
     assignMemberIfExists(rec, this, "isReadonly");
     assignMemberIfExists(rec, this, "isDisabled");
@@ -90,10 +84,7 @@ export class PropertyRecord {
   }
 
   /** Creates a PropertyRecord based on a value string and an optional property description or name */
-  public static fromString(
-    value: string,
-    descriptionOrName?: PropertyDescription | string
-  ): PropertyRecord {
+  public static fromString(value: string, descriptionOrName?: PropertyDescription | string): PropertyRecord {
     let description: PropertyDescription;
     if (descriptionOrName && typeof descriptionOrName === "object") {
       description = descriptionOrName;
@@ -121,11 +112,6 @@ export class PropertyRecord {
   }
 }
 
-function assignMemberIfExists<T extends Object>(
-  target: T,
-  source: T,
-  memberName: keyof T
-) {
-  if (source.hasOwnProperty(memberName))
-    target[memberName] = source[memberName];
+function assignMemberIfExists<T extends Object>(target: T, source: T, memberName: keyof T) {
+  if (source.hasOwnProperty(memberName)) target[memberName] = source[memberName];
 }

@@ -7,10 +7,7 @@
  */
 
 import * as semver from "semver";
-import {
-  RpcConfiguration,
-  RpcConfigurationSupplier,
-} from "./rpc/core/RpcConfiguration";
+import { RpcConfiguration, RpcConfigurationSupplier } from "./rpc/core/RpcConfiguration";
 import { CURRENT_REQUEST } from "./rpc/core/RpcRegistry";
 import { aggregateLoad, RpcRequest } from "./rpc/core/RpcRequest";
 import { RpcRoutingToken } from "./rpc/core/RpcRoutingToken";
@@ -39,8 +36,7 @@ export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> {
  * A class that implements the operations of an RPC interface.
  * @beta
  */
-export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> =
-  new () => T;
+export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = new () => T;
 
 /** An RPC interface is a set of operations exposed by a service that a client can call, using configurable protocols,
  * in a platform-independent way. TheRpcInterface class is the base class for RPC interface definitions and implementations.
@@ -48,25 +44,17 @@ export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> =
  */
 export abstract class RpcInterface {
   /** Determines whether the backend version of an RPC interface is compatible (according to semantic versioning) with the frontend version of the interface. */
-  public static isVersionCompatible(
-    backend: string,
-    frontend: string
-  ): boolean {
+  public static isVersionCompatible(backend: string, frontend: string): boolean {
     const difference = semver.diff(backend, frontend);
     if (semver.prerelease(backend) || semver.prerelease(frontend)) {
       return difference === null;
     } else if (semver.major(backend) === 0 || semver.major(frontend) === 0) {
-      return (
-        difference === null ||
-        (difference === "patch" &&
-          semver.patch(frontend) < semver.patch(backend))
-      );
+      return difference === null || (difference === "patch" && semver.patch(frontend) < semver.patch(backend));
     } else {
       return (
         difference === null ||
         difference === "patch" ||
-        (difference === "minor" &&
-          semver.minor(frontend) < semver.minor(backend))
+        (difference === "minor" && semver.minor(frontend) < semver.minor(backend))
       );
     }
   }
@@ -87,10 +75,7 @@ export abstract class RpcInterface {
 
   /** Obtains the implementation result for an RPC operation. */
   public async forward<T = any>(parameters: IArguments): Promise<T> {
-    const parametersCompat =
-      arguments.length === 1 && typeof parameters === "object"
-        ? parameters
-        : arguments;
+    const parametersCompat = arguments.length === 1 && typeof parameters === "object" ? parameters : arguments;
     const parametersArray = Array.isArray(parametersCompat)
       ? parametersCompat
       : Array.prototype.slice.call(parametersCompat);
@@ -129,12 +114,7 @@ class InterceptedRequest extends RpcRequest {
   }
 }
 
-async function intercept(
-  session: IpcSession,
-  client: RpcInterface,
-  operation: string,
-  parameters: any[]
-) {
+async function intercept(session: IpcSession, client: RpcInterface, operation: string, parameters: any[]) {
   const request = new InterceptedRequest(client, operation, []);
   (client as any)[CURRENT_REQUEST] = request;
 
@@ -186,30 +166,18 @@ async function intercept(
   return dispatch();
 }
 
-async function handlePending(
-  request: InterceptedRequest,
-  status: RpcManagedStatus,
-  dispatch: () => Promise<any>
-) {
+async function handlePending(request: InterceptedRequest, status: RpcManagedStatus, dispatch: () => Promise<any>) {
   request._status = RpcRequestStatus.Pending;
-  request._extendedStatus = (
-    status.responseValue as { message: string }
-  ).message;
+  request._extendedStatus = (status.responseValue as { message: string }).message;
   RpcRequest.events.raiseEvent(RpcRequestEvent.PendingUpdateReceived, request);
 
-  const delay = request.operation.policy.retryInterval(
-    request.client.configuration
-  );
+  const delay = request.operation.policy.retryInterval(request.client.configuration);
 
   await BeDuration.wait(delay);
   return dispatch();
 }
 
-async function handleNotFound(
-  request: InterceptedRequest,
-  status: RpcManagedStatus,
-  dispatch: () => Promise<any>
-) {
+async function handleNotFound(request: InterceptedRequest, status: RpcManagedStatus, dispatch: () => Promise<any>) {
   return new Promise((resolve, reject) => {
     let resubmitted = false;
 
@@ -218,10 +186,7 @@ async function handleNotFound(
       status.responseValue as RpcNotFoundResponse,
       async () => {
         if (resubmitted) {
-          throw new IModelError(
-            BentleyStatus.ERROR,
-            `Already resubmitted using this handler.`
-          );
+          throw new IModelError(BentleyStatus.ERROR, `Already resubmitted using this handler.`);
         }
 
         resubmitted = true;

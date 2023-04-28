@@ -25,20 +25,14 @@ export abstract class FormattedQuantityDescription extends BaseQuantityDescripti
 
   protected formatValue(numberValue: number): string {
     if (this.formatterSpec) {
-      return IModelApp.quantityFormatter.formatQuantity(
-        numberValue,
-        this.formatterSpec
-      );
+      return IModelApp.quantityFormatter.formatQuantity(numberValue, this.formatterSpec);
     }
     return numberValue.toFixed(2);
   }
 
   protected parseString(userInput: string): ParseResults {
     if (this.parserSpec) {
-      const parseResult = IModelApp.quantityFormatter.parseToQuantityValue(
-        userInput,
-        this.parserSpec
-      );
+      const parseResult = IModelApp.quantityFormatter.parseToQuantityValue(userInput, this.parserSpec);
       if (Parser.isParsedQuantity(parseResult)) {
         return { value: parseResult.value };
       } else {
@@ -51,10 +45,7 @@ export abstract class FormattedQuantityDescription extends BaseQuantityDescripti
   public get formatterSpec(): FormatterSpec | undefined {
     if (this._formatterSpec) return this._formatterSpec;
 
-    const formatterSpec =
-      IModelApp.quantityFormatter.findFormatterSpecByQuantityType(
-        this.formatterQuantityType
-      );
+    const formatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(this.formatterQuantityType);
     if (formatterSpec) {
       this._formatterSpec = formatterSpec;
       return formatterSpec;
@@ -66,9 +57,7 @@ export abstract class FormattedQuantityDescription extends BaseQuantityDescripti
   public get parserSpec(): ParserSpec | undefined {
     if (this._parserSpec) return this._parserSpec;
 
-    const parserSpec = IModelApp.quantityFormatter.findParserSpecByQuantityType(
-      this.formatterQuantityType
-    );
+    const parserSpec = IModelApp.quantityFormatter.findParserSpecByQuantityType(this.formatterQuantityType);
     if (parserSpec) {
       this._parserSpec = parserSpec;
       return parserSpec;

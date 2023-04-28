@@ -8,12 +8,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { TextureUnit } from "../RenderFlags";
-import {
-  FragmentShaderComponent,
-  ProgramBuilder,
-  VariablePrecision,
-  VariableType,
-} from "../ShaderBuilder";
+import { FragmentShaderComponent, ProgramBuilder, VariablePrecision, VariableType } from "../ShaderBuilder";
 import { addEyeSpace } from "./Common";
 import { addModelViewMatrix } from "./Vertex";
 
@@ -89,8 +84,7 @@ const applyClipPlanesPostlude = `
   return false;
 `;
 
-const applyClipPlanes =
-  applyClipPlanesPrelude + applyClipPlanesLoop + applyClipPlanesPostlude;
+const applyClipPlanes = applyClipPlanesPrelude + applyClipPlanesLoop + applyClipPlanesPostlude;
 
 const clipParams = new Int32Array(3);
 
@@ -142,8 +136,7 @@ export function addClipping(prog: ProgramBuilder) {
       program.addGraphicUniform("s_clipSampler", (uniform, params) => {
         const texture = params.target.uniforms.branch.clipStack.texture;
         assert(texture !== undefined);
-        if (texture !== undefined)
-          texture.bindSampler(uniform, TextureUnit.ClipVolume);
+        if (texture !== undefined) texture.bindSampler(uniform, TextureUnit.ClipVolume);
       });
     },
     VariablePrecision.High

@@ -44,12 +44,7 @@ export class StandardRotations extends ToolBarDropDown {
       div.appendChild(
         createToolButton({
           iconUnicode: entries[i],
-          click: async () =>
-            IModelApp.tools.run(
-              "View.Standard",
-              IModelApp.viewManager.selectedView,
-              i
-            ),
+          click: async () => IModelApp.tools.run("View.Standard", IModelApp.viewManager.selectedView, i),
         })
       );
     }
@@ -68,9 +63,7 @@ export class StandardRotations extends ToolBarDropDown {
   }
 
   public override get onViewChanged(): Promise<void> {
-    this._parent.style.display = this._vp.view.allow3dManipulations()
-      ? "block"
-      : "none";
+    this._parent.style.display = this._vp.view.allow3dManipulations() ? "block" : "none";
     return Promise.resolve();
   }
 }

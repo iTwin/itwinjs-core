@@ -30,8 +30,7 @@ function configureResponse(
   fulfillment: RpcRequestFulfillment,
   res: HttpServerResponse
 ) {
-  const success =
-    protocol.getStatus(fulfillment.status) === RpcRequestStatus.Resolved;
+  const success = protocol.getStatus(fulfillment.status) === RpcRequestStatus.Resolved;
   // TODO: Use stale-while-revalidate in cache headers. This needs to be tested, and does not currently have support in the router/caching-service.
   // This will allow browsers to use stale cached responses while also revalidating with the router, allowing us to start up a backend if necessary.
 
@@ -45,25 +44,12 @@ function configureResponse(
       res.set("Cache-Control", "no-store");
     } else if (request.operation.operationName === "getConnectionProps") {
       // GetConnectionprops can't be cached on the browser longer than the lifespan of the backend. The lifespan of backend may shrink too. Keep it at 1 second to be safe.
-      res.set(
-        "Cache-Control",
-        `s-maxage=${oneHourInSeconds * 24}, max-age=1, immutable`
-      );
+      res.set("Cache-Control", `s-maxage=${oneHourInSeconds * 24}, max-age=1, immutable`);
     } else if (request.operation.operationName === "getTileCacheContainerUrl") {
       // getTileCacheContainerUrl returns a SAS with an expiry of 23:59:59. We can't exceed that time when setting the max-age.
-      res.set(
-        "Cache-Control",
-        `s-maxage=${oneHourInSeconds * 23}, max-age=${
-          oneHourInSeconds * 23
-        }, immutable`
-      );
+      res.set("Cache-Control", `s-maxage=${oneHourInSeconds * 23}, max-age=${oneHourInSeconds * 23}, immutable`);
     } else {
-      res.set(
-        "Cache-Control",
-        `s-maxage=${oneHourInSeconds * 24}, max-age=${
-          oneHourInSeconds * 48
-        }, immutable`
-      );
+      res.set("Cache-Control", `s-maxage=${oneHourInSeconds * 24}, max-age=${oneHourInSeconds * 48}, immutable`);
     }
   }
 
@@ -72,27 +58,18 @@ function configureResponse(
   }
 }
 
-function configureText(
-  fulfillment: RpcRequestFulfillment,
-  res: HttpServerResponse
-): string {
+function configureText(fulfillment: RpcRequestFulfillment, res: HttpServerResponse): string {
   res.set(WEB_RPC_CONSTANTS.CONTENT, WEB_RPC_CONSTANTS.TEXT);
   return fulfillment.status === 204 ? "" : fulfillment.result.objects;
 }
 
-function configureBinary(
-  fulfillment: RpcRequestFulfillment,
-  res: HttpServerResponse
-): Buffer {
+function configureBinary(fulfillment: RpcRequestFulfillment, res: HttpServerResponse): Buffer {
   res.set(WEB_RPC_CONSTANTS.CONTENT, WEB_RPC_CONSTANTS.BINARY);
   const data = fulfillment.result.data[0];
   return Buffer.isBuffer(data) ? data : Buffer.from(data);
 }
 
-function configureMultipart(
-  fulfillment: RpcRequestFulfillment,
-  res: HttpServerResponse
-): ReadableFormData {
+function configureMultipart(fulfillment: RpcRequestFulfillment, res: HttpServerResponse): ReadableFormData {
   const response = RpcMultipart.createStream(fulfillment.result);
   const headers = response.getHeaders();
   for (const header in headers) {
@@ -125,10 +102,7 @@ export async function sendResponse(
   const { Readable, Stream } = await import(/* webpackIgnore: true */ "stream");
   const { createGzip } = await import(/* webpackIgnore: true */ "zlib");
 
-  const transportType = WebAppRpcRequest.computeTransportType(
-    fulfillment.result,
-    fulfillment.rawResult
-  );
+  const transportType = WebAppRpcRequest.computeTransportType(fulfillment.result, fulfillment.rawResult);
   let responseBody;
   if (transportType === RpcContentType.Binary) {
     responseBody = configureBinary(fulfillment, res);
@@ -143,15 +117,9 @@ export async function sendResponse(
   configureResponse(protocol, request, fulfillment, res);
   res.status(fulfillment.status);
 
-  if (
-    fulfillment.allowCompression &&
-    req.header("Accept-Encoding")?.includes("gzip")
-  ) {
+  if (fulfillment.allowCompression && req.header("Accept-Encoding")?.includes("gzip")) {
     res.set("Content-Encoding", "gzip");
-    const readableResponseBody =
-      responseBody instanceof Stream
-        ? responseBody
-        : Readable.from(responseBody);
+    const readableResponseBody = responseBody instanceof Stream ? responseBody : Readable.from(responseBody);
     responseBody = readableResponseBody.pipe(createGzip());
   }
 

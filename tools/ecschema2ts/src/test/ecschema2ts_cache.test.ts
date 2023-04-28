@@ -57,8 +57,7 @@ export class Building extends SpatialLocationElement {
 
     const schema = utils.deserializeXml(context, schemaXml);
     const ecschema2ts = new ECSchemaToTs();
-    const { schemaTsString, elemTsString, propsTsString } =
-      ecschema2ts.convertSchemaToTs(schema);
+    const { schemaTsString, elemTsString, propsTsString } = ecschema2ts.convertSchemaToTs(schema);
     assert.equal(schemaTsString, expectedSchemaString);
     assert.equal(propsTsString, `\n`);
     assert.equal(elemTsString, expectedElementString);

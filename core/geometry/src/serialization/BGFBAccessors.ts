@@ -101,12 +101,7 @@ export namespace BGFBAccessors {
      * @param number z
      * @returns flatbuffers.Offset
      */
-    static createDPoint3d(
-      builder: flatbuffers.Builder,
-      x: number,
-      y: number,
-      z: number
-    ): flatbuffers.Offset {
+    static createDPoint3d(builder: flatbuffers.Builder, x: number, y: number, z: number): flatbuffers.Offset {
       builder.prep(8, 24);
       builder.writeFloat64(z);
       builder.writeFloat64(y);
@@ -241,11 +236,7 @@ export namespace BGFBAccessors {
      * @param number y
      * @returns flatbuffers.Offset
      */
-    static createDPoint2d(
-      builder: flatbuffers.Builder,
-      x: number,
-      y: number
-    ): flatbuffers.Offset {
+    static createDPoint2d(builder: flatbuffers.Builder, x: number, y: number): flatbuffers.Offset {
       builder.prep(8, 16);
       builder.writeFloat64(y);
       builder.writeFloat64(x);
@@ -298,12 +289,7 @@ export namespace BGFBAccessors {
      * @param number z
      * @returns flatbuffers.Offset
      */
-    static createDVector3d(
-      builder: flatbuffers.Builder,
-      x: number,
-      y: number,
-      z: number
-    ): flatbuffers.Offset {
+    static createDVector3d(builder: flatbuffers.Builder, x: number, y: number, z: number): flatbuffers.Offset {
       builder.prep(8, 24);
       builder.writeFloat64(z);
       builder.writeFloat64(y);
@@ -341,10 +327,7 @@ export namespace BGFBAccessors {
      * @param number degrees
      * @returns flatbuffers.Offset
      */
-    static createAngle(
-      builder: flatbuffers.Builder,
-      degrees: number
-    ): flatbuffers.Offset {
+    static createAngle(builder: flatbuffers.Builder, degrees: number): flatbuffers.Offset {
       builder.prep(8, 8);
       builder.writeFloat64(degrees);
       return builder.offset();
@@ -1395,14 +1378,8 @@ export namespace BGFBAccessors {
      * @param LineSegment= obj
      * @returns LineSegment
      */
-    static getRootAsLineSegment(
-      bb: flatbuffers.ByteBuffer,
-      obj?: LineSegment
-    ): LineSegment {
-      return (obj || new LineSegment()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsLineSegment(bb: flatbuffers.ByteBuffer, obj?: LineSegment): LineSegment {
+      return (obj || new LineSegment()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -1410,15 +1387,9 @@ export namespace BGFBAccessors {
      * @param LineSegment= obj
      * @returns LineSegment
      */
-    static getSizePrefixedRootAsLineSegment(
-      bb: flatbuffers.ByteBuffer,
-      obj?: LineSegment
-    ): LineSegment {
+    static getSizePrefixedRootAsLineSegment(bb: flatbuffers.ByteBuffer, obj?: LineSegment): LineSegment {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new LineSegment()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new LineSegment()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -1427,9 +1398,7 @@ export namespace BGFBAccessors {
      */
     segment(obj?: DSegment3d): DSegment3d | null {
       const offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset
-        ? (obj || new DSegment3d()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DSegment3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -1443,10 +1412,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset segmentOffset
      */
-    static addSegment(
-      builder: flatbuffers.Builder,
-      segmentOffset: flatbuffers.Offset
-    ) {
+    static addSegment(builder: flatbuffers.Builder, segmentOffset: flatbuffers.Offset) {
       builder.addFieldStruct(0, segmentOffset, 0);
     }
 
@@ -1459,10 +1425,7 @@ export namespace BGFBAccessors {
       return offset;
     }
 
-    static createLineSegment(
-      builder: flatbuffers.Builder,
-      segmentOffset: flatbuffers.Offset
-    ): flatbuffers.Offset {
+    static createLineSegment(builder: flatbuffers.Builder, segmentOffset: flatbuffers.Offset): flatbuffers.Offset {
       LineSegment.startLineSegment(builder);
       LineSegment.addSegment(builder, segmentOffset);
       return LineSegment.endLineSegment(builder);
@@ -1491,14 +1454,8 @@ export namespace BGFBAccessors {
      * @param LineString= obj
      * @returns LineString
      */
-    static getRootAsLineString(
-      bb: flatbuffers.ByteBuffer,
-      obj?: LineString
-    ): LineString {
-      return (obj || new LineString()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsLineString(bb: flatbuffers.ByteBuffer, obj?: LineString): LineString {
+      return (obj || new LineString()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -1506,15 +1463,9 @@ export namespace BGFBAccessors {
      * @param LineString= obj
      * @returns LineString
      */
-    static getSizePrefixedRootAsLineString(
-      bb: flatbuffers.ByteBuffer,
-      obj?: LineString
-    ): LineString {
+    static getSizePrefixedRootAsLineString(bb: flatbuffers.ByteBuffer, obj?: LineString): LineString {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new LineString()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new LineString()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -1523,11 +1474,7 @@ export namespace BGFBAccessors {
      */
     points(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset
-        ? this.bb!.readFloat64(
-            this.bb!.__vector(this.bb_pos + offset) + index * 8
-          )
-        : 0;
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
@@ -1546,8 +1493,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Float64Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -1564,10 +1510,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset pointsOffset
      */
-    static addPoints(
-      builder: flatbuffers.Builder,
-      pointsOffset: flatbuffers.Offset
-    ) {
+    static addPoints(builder: flatbuffers.Builder, pointsOffset: flatbuffers.Offset) {
       builder.addFieldOffset(0, pointsOffset, 0);
     }
 
@@ -1576,10 +1519,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createPointsVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createPointsVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(8, data.length, 8);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addFloat64(data[i]);
@@ -1604,10 +1544,7 @@ export namespace BGFBAccessors {
       return offset;
     }
 
-    static createLineString(
-      builder: flatbuffers.Builder,
-      pointsOffset: flatbuffers.Offset
-    ): flatbuffers.Offset {
+    static createLineString(builder: flatbuffers.Builder, pointsOffset: flatbuffers.Offset): flatbuffers.Offset {
       LineString.startLineString(builder);
       LineString.addPoints(builder, pointsOffset);
       return LineString.endLineString(builder);
@@ -1636,14 +1573,8 @@ export namespace BGFBAccessors {
      * @param PointString= obj
      * @returns PointString
      */
-    static getRootAsPointString(
-      bb: flatbuffers.ByteBuffer,
-      obj?: PointString
-    ): PointString {
-      return (obj || new PointString()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsPointString(bb: flatbuffers.ByteBuffer, obj?: PointString): PointString {
+      return (obj || new PointString()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -1651,15 +1582,9 @@ export namespace BGFBAccessors {
      * @param PointString= obj
      * @returns PointString
      */
-    static getSizePrefixedRootAsPointString(
-      bb: flatbuffers.ByteBuffer,
-      obj?: PointString
-    ): PointString {
+    static getSizePrefixedRootAsPointString(bb: flatbuffers.ByteBuffer, obj?: PointString): PointString {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new PointString()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new PointString()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -1668,11 +1593,7 @@ export namespace BGFBAccessors {
      */
     points(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset
-        ? this.bb!.readFloat64(
-            this.bb!.__vector(this.bb_pos + offset) + index * 8
-          )
-        : 0;
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
@@ -1691,8 +1612,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Float64Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -1709,10 +1629,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset pointsOffset
      */
-    static addPoints(
-      builder: flatbuffers.Builder,
-      pointsOffset: flatbuffers.Offset
-    ) {
+    static addPoints(builder: flatbuffers.Builder, pointsOffset: flatbuffers.Offset) {
       builder.addFieldOffset(0, pointsOffset, 0);
     }
 
@@ -1721,10 +1638,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createPointsVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createPointsVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(8, data.length, 8);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addFloat64(data[i]);
@@ -1749,10 +1663,7 @@ export namespace BGFBAccessors {
       return offset;
     }
 
-    static createPointString(
-      builder: flatbuffers.Builder,
-      pointsOffset: flatbuffers.Offset
-    ): flatbuffers.Offset {
+    static createPointString(builder: flatbuffers.Builder, pointsOffset: flatbuffers.Offset): flatbuffers.Offset {
       PointString.startPointString(builder);
       PointString.addPoints(builder, pointsOffset);
       return PointString.endPointString(builder);
@@ -1781,14 +1692,8 @@ export namespace BGFBAccessors {
      * @param EllipticArc= obj
      * @returns EllipticArc
      */
-    static getRootAsEllipticArc(
-      bb: flatbuffers.ByteBuffer,
-      obj?: EllipticArc
-    ): EllipticArc {
-      return (obj || new EllipticArc()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsEllipticArc(bb: flatbuffers.ByteBuffer, obj?: EllipticArc): EllipticArc {
+      return (obj || new EllipticArc()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -1796,15 +1701,9 @@ export namespace BGFBAccessors {
      * @param EllipticArc= obj
      * @returns EllipticArc
      */
-    static getSizePrefixedRootAsEllipticArc(
-      bb: flatbuffers.ByteBuffer,
-      obj?: EllipticArc
-    ): EllipticArc {
+    static getSizePrefixedRootAsEllipticArc(bb: flatbuffers.ByteBuffer, obj?: EllipticArc): EllipticArc {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new EllipticArc()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new EllipticArc()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -1813,9 +1712,7 @@ export namespace BGFBAccessors {
      */
     arc(obj?: DEllipse3d): DEllipse3d | null {
       const offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset
-        ? (obj || new DEllipse3d()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DEllipse3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -1842,10 +1739,7 @@ export namespace BGFBAccessors {
       return offset;
     }
 
-    static createEllipticArc(
-      builder: flatbuffers.Builder,
-      arcOffset: flatbuffers.Offset
-    ): flatbuffers.Offset {
+    static createEllipticArc(builder: flatbuffers.Builder, arcOffset: flatbuffers.Offset): flatbuffers.Offset {
       EllipticArc.startEllipticArc(builder);
       EllipticArc.addArc(builder, arcOffset);
       return EllipticArc.endEllipticArc(builder);
@@ -1874,14 +1768,8 @@ export namespace BGFBAccessors {
      * @param BsplineCurve= obj
      * @returns BsplineCurve
      */
-    static getRootAsBsplineCurve(
-      bb: flatbuffers.ByteBuffer,
-      obj?: BsplineCurve
-    ): BsplineCurve {
-      return (obj || new BsplineCurve()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsBsplineCurve(bb: flatbuffers.ByteBuffer, obj?: BsplineCurve): BsplineCurve {
+      return (obj || new BsplineCurve()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -1889,15 +1777,9 @@ export namespace BGFBAccessors {
      * @param BsplineCurve= obj
      * @returns BsplineCurve
      */
-    static getSizePrefixedRootAsBsplineCurve(
-      bb: flatbuffers.ByteBuffer,
-      obj?: BsplineCurve
-    ): BsplineCurve {
+    static getSizePrefixedRootAsBsplineCurve(bb: flatbuffers.ByteBuffer, obj?: BsplineCurve): BsplineCurve {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new BsplineCurve()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new BsplineCurve()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -1922,11 +1804,7 @@ export namespace BGFBAccessors {
      */
     poles(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset
-        ? this.bb!.readFloat64(
-            this.bb!.__vector(this.bb_pos + offset) + index * 8
-          )
-        : 0;
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
@@ -1945,8 +1823,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Float64Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -1958,11 +1835,7 @@ export namespace BGFBAccessors {
      */
     weights(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset
-        ? this.bb!.readFloat64(
-            this.bb!.__vector(this.bb_pos + offset) + index * 8
-          )
-        : 0;
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
@@ -1981,8 +1854,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Float64Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -1994,11 +1866,7 @@ export namespace BGFBAccessors {
      */
     knots(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 12);
-      return offset
-        ? this.bb!.readFloat64(
-            this.bb!.__vector(this.bb_pos + offset) + index * 8
-          )
-        : 0;
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
@@ -2017,8 +1885,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Float64Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -2051,10 +1918,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset polesOffset
      */
-    static addPoles(
-      builder: flatbuffers.Builder,
-      polesOffset: flatbuffers.Offset
-    ) {
+    static addPoles(builder: flatbuffers.Builder, polesOffset: flatbuffers.Offset) {
       builder.addFieldOffset(2, polesOffset, 0);
     }
 
@@ -2063,10 +1927,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createPolesVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createPolesVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(8, data.length, 8);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addFloat64(data[i]);
@@ -2086,10 +1947,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset weightsOffset
      */
-    static addWeights(
-      builder: flatbuffers.Builder,
-      weightsOffset: flatbuffers.Offset
-    ) {
+    static addWeights(builder: flatbuffers.Builder, weightsOffset: flatbuffers.Offset) {
       builder.addFieldOffset(3, weightsOffset, 0);
     }
 
@@ -2098,10 +1956,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createWeightsVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createWeightsVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(8, data.length, 8);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addFloat64(data[i]);
@@ -2121,10 +1976,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset knotsOffset
      */
-    static addKnots(
-      builder: flatbuffers.Builder,
-      knotsOffset: flatbuffers.Offset
-    ) {
+    static addKnots(builder: flatbuffers.Builder, knotsOffset: flatbuffers.Offset) {
       builder.addFieldOffset(4, knotsOffset, 0);
     }
 
@@ -2133,10 +1985,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createKnotsVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createKnotsVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(8, data.length, 8);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addFloat64(data[i]);
@@ -2201,14 +2050,8 @@ export namespace BGFBAccessors {
      * @param InterpolationCurve= obj
      * @returns InterpolationCurve
      */
-    static getRootAsInterpolationCurve(
-      bb: flatbuffers.ByteBuffer,
-      obj?: InterpolationCurve
-    ): InterpolationCurve {
-      return (obj || new InterpolationCurve()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsInterpolationCurve(bb: flatbuffers.ByteBuffer, obj?: InterpolationCurve): InterpolationCurve {
+      return (obj || new InterpolationCurve()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -2221,10 +2064,7 @@ export namespace BGFBAccessors {
       obj?: InterpolationCurve
     ): InterpolationCurve {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new InterpolationCurve()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new InterpolationCurve()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -2281,9 +2121,7 @@ export namespace BGFBAccessors {
      */
     startTangent(obj?: DPoint3d): DPoint3d | null {
       const offset = this.bb!.__offset(this.bb_pos, 16);
-      return offset
-        ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -2292,9 +2130,7 @@ export namespace BGFBAccessors {
      */
     endTangent(obj?: DVector3d): DVector3d | null {
       const offset = this.bb!.__offset(this.bb_pos, 18);
-      return offset
-        ? (obj || new DVector3d()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DVector3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -2303,11 +2139,7 @@ export namespace BGFBAccessors {
      */
     fitPoints(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 20);
-      return offset
-        ? this.bb!.readFloat64(
-            this.bb!.__vector(this.bb_pos + offset) + index * 8
-          )
-        : 0;
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
@@ -2326,8 +2158,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Float64Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -2339,11 +2170,7 @@ export namespace BGFBAccessors {
      */
     knots(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 22);
-      return offset
-        ? this.bb!.readFloat64(
-            this.bb!.__vector(this.bb_pos + offset) + index * 8
-          )
-        : 0;
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
@@ -2362,8 +2189,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Float64Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -2396,10 +2222,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param number isChordLenKnots
      */
-    static addIsChordLenKnots(
-      builder: flatbuffers.Builder,
-      isChordLenKnots: number
-    ) {
+    static addIsChordLenKnots(builder: flatbuffers.Builder, isChordLenKnots: number) {
       builder.addFieldInt32(2, isChordLenKnots, 0);
     }
 
@@ -2407,10 +2230,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param number isColinearTangents
      */
-    static addIsColinearTangents(
-      builder: flatbuffers.Builder,
-      isColinearTangents: number
-    ) {
+    static addIsColinearTangents(builder: flatbuffers.Builder, isColinearTangents: number) {
       builder.addFieldInt32(3, isColinearTangents, 0);
     }
 
@@ -2418,10 +2238,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param number isChordLenTangents
      */
-    static addIsChordLenTangents(
-      builder: flatbuffers.Builder,
-      isChordLenTangents: number
-    ) {
+    static addIsChordLenTangents(builder: flatbuffers.Builder, isChordLenTangents: number) {
       builder.addFieldInt32(4, isChordLenTangents, 0);
     }
 
@@ -2429,10 +2246,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param number isNaturalTangents
      */
-    static addIsNaturalTangents(
-      builder: flatbuffers.Builder,
-      isNaturalTangents: number
-    ) {
+    static addIsNaturalTangents(builder: flatbuffers.Builder, isNaturalTangents: number) {
       builder.addFieldInt32(5, isNaturalTangents, 0);
     }
 
@@ -2440,10 +2254,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset startTangentOffset
      */
-    static addStartTangent(
-      builder: flatbuffers.Builder,
-      startTangentOffset: flatbuffers.Offset
-    ) {
+    static addStartTangent(builder: flatbuffers.Builder, startTangentOffset: flatbuffers.Offset) {
       builder.addFieldStruct(6, startTangentOffset, 0);
     }
 
@@ -2451,10 +2262,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset endTangentOffset
      */
-    static addEndTangent(
-      builder: flatbuffers.Builder,
-      endTangentOffset: flatbuffers.Offset
-    ) {
+    static addEndTangent(builder: flatbuffers.Builder, endTangentOffset: flatbuffers.Offset) {
       builder.addFieldStruct(7, endTangentOffset, 0);
     }
 
@@ -2462,10 +2270,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset fitPointsOffset
      */
-    static addFitPoints(
-      builder: flatbuffers.Builder,
-      fitPointsOffset: flatbuffers.Offset
-    ) {
+    static addFitPoints(builder: flatbuffers.Builder, fitPointsOffset: flatbuffers.Offset) {
       builder.addFieldOffset(8, fitPointsOffset, 0);
     }
 
@@ -2474,10 +2279,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createFitPointsVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createFitPointsVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(8, data.length, 8);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addFloat64(data[i]);
@@ -2489,10 +2291,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param number numElems
      */
-    static startFitPointsVector(
-      builder: flatbuffers.Builder,
-      numElems: number
-    ) {
+    static startFitPointsVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(8, numElems, 8);
     }
 
@@ -2500,10 +2299,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset knotsOffset
      */
-    static addKnots(
-      builder: flatbuffers.Builder,
-      knotsOffset: flatbuffers.Offset
-    ) {
+    static addKnots(builder: flatbuffers.Builder, knotsOffset: flatbuffers.Offset) {
       builder.addFieldOffset(9, knotsOffset, 0);
     }
 
@@ -2512,10 +2308,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createKnotsVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createKnotsVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(8, data.length, 8);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addFloat64(data[i]);
@@ -2535,9 +2328,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @returns flatbuffers.Offset
      */
-    static endInterpolationCurve(
-      builder: flatbuffers.Builder
-    ): flatbuffers.Offset {
+    static endInterpolationCurve(builder: flatbuffers.Builder): flatbuffers.Offset {
       const offset = builder.endObject();
       return offset;
     }
@@ -2592,14 +2383,8 @@ export namespace BGFBAccessors {
      * @param AkimaCurve= obj
      * @returns AkimaCurve
      */
-    static getRootAsAkimaCurve(
-      bb: flatbuffers.ByteBuffer,
-      obj?: AkimaCurve
-    ): AkimaCurve {
-      return (obj || new AkimaCurve()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsAkimaCurve(bb: flatbuffers.ByteBuffer, obj?: AkimaCurve): AkimaCurve {
+      return (obj || new AkimaCurve()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -2607,15 +2392,9 @@ export namespace BGFBAccessors {
      * @param AkimaCurve= obj
      * @returns AkimaCurve
      */
-    static getSizePrefixedRootAsAkimaCurve(
-      bb: flatbuffers.ByteBuffer,
-      obj?: AkimaCurve
-    ): AkimaCurve {
+    static getSizePrefixedRootAsAkimaCurve(bb: flatbuffers.ByteBuffer, obj?: AkimaCurve): AkimaCurve {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new AkimaCurve()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new AkimaCurve()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -2624,11 +2403,7 @@ export namespace BGFBAccessors {
      */
     points(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset
-        ? this.bb!.readFloat64(
-            this.bb!.__vector(this.bb_pos + offset) + index * 8
-          )
-        : 0;
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
@@ -2647,8 +2422,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Float64Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -2665,10 +2439,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset pointsOffset
      */
-    static addPoints(
-      builder: flatbuffers.Builder,
-      pointsOffset: flatbuffers.Offset
-    ) {
+    static addPoints(builder: flatbuffers.Builder, pointsOffset: flatbuffers.Offset) {
       builder.addFieldOffset(0, pointsOffset, 0);
     }
 
@@ -2677,10 +2448,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createPointsVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createPointsVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(8, data.length, 8);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addFloat64(data[i]);
@@ -2705,10 +2473,7 @@ export namespace BGFBAccessors {
       return offset;
     }
 
-    static createAkimaCurve(
-      builder: flatbuffers.Builder,
-      pointsOffset: flatbuffers.Offset
-    ): flatbuffers.Offset {
+    static createAkimaCurve(builder: flatbuffers.Builder, pointsOffset: flatbuffers.Offset): flatbuffers.Offset {
       AkimaCurve.startAkimaCurve(builder);
       AkimaCurve.addPoints(builder, pointsOffset);
       return AkimaCurve.endAkimaCurve(builder);
@@ -2737,14 +2502,8 @@ export namespace BGFBAccessors {
      * @param CatenaryCurve= obj
      * @returns CatenaryCurve
      */
-    static getRootAsCatenaryCurve(
-      bb: flatbuffers.ByteBuffer,
-      obj?: CatenaryCurve
-    ): CatenaryCurve {
-      return (obj || new CatenaryCurve()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsCatenaryCurve(bb: flatbuffers.ByteBuffer, obj?: CatenaryCurve): CatenaryCurve {
+      return (obj || new CatenaryCurve()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -2752,15 +2511,9 @@ export namespace BGFBAccessors {
      * @param CatenaryCurve= obj
      * @returns CatenaryCurve
      */
-    static getSizePrefixedRootAsCatenaryCurve(
-      bb: flatbuffers.ByteBuffer,
-      obj?: CatenaryCurve
-    ): CatenaryCurve {
+    static getSizePrefixedRootAsCatenaryCurve(bb: flatbuffers.ByteBuffer, obj?: CatenaryCurve): CatenaryCurve {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new CatenaryCurve()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new CatenaryCurve()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -2777,9 +2530,7 @@ export namespace BGFBAccessors {
      */
     origin(obj?: DPoint3d): DPoint3d | null {
       const offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset
-        ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -2788,9 +2539,7 @@ export namespace BGFBAccessors {
      */
     vectorU(obj?: DVector3d): DVector3d | null {
       const offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset
-        ? (obj || new DVector3d()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DVector3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -2799,9 +2548,7 @@ export namespace BGFBAccessors {
      */
     vectorV(obj?: DVector3d): DVector3d | null {
       const offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset
-        ? (obj || new DVector3d()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DVector3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -2839,10 +2586,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset originOffset
      */
-    static addOrigin(
-      builder: flatbuffers.Builder,
-      originOffset: flatbuffers.Offset
-    ) {
+    static addOrigin(builder: flatbuffers.Builder, originOffset: flatbuffers.Offset) {
       builder.addFieldStruct(1, originOffset, 0);
     }
 
@@ -2850,10 +2594,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset vectorUOffset
      */
-    static addVectorU(
-      builder: flatbuffers.Builder,
-      vectorUOffset: flatbuffers.Offset
-    ) {
+    static addVectorU(builder: flatbuffers.Builder, vectorUOffset: flatbuffers.Offset) {
       builder.addFieldStruct(2, vectorUOffset, 0);
     }
 
@@ -2861,10 +2602,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset vectorVOffset
      */
-    static addVectorV(
-      builder: flatbuffers.Builder,
-      vectorVOffset: flatbuffers.Offset
-    ) {
+    static addVectorV(builder: flatbuffers.Builder, vectorVOffset: flatbuffers.Offset) {
       builder.addFieldStruct(3, vectorVOffset, 0);
     }
 
@@ -2935,14 +2673,8 @@ export namespace BGFBAccessors {
      * @param PartialCurve= obj
      * @returns PartialCurve
      */
-    static getRootAsPartialCurve(
-      bb: flatbuffers.ByteBuffer,
-      obj?: PartialCurve
-    ): PartialCurve {
-      return (obj || new PartialCurve()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsPartialCurve(bb: flatbuffers.ByteBuffer, obj?: PartialCurve): PartialCurve {
+      return (obj || new PartialCurve()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -2950,15 +2682,9 @@ export namespace BGFBAccessors {
      * @param PartialCurve= obj
      * @returns PartialCurve
      */
-    static getSizePrefixedRootAsPartialCurve(
-      bb: flatbuffers.ByteBuffer,
-      obj?: PartialCurve
-    ): PartialCurve {
+    static getSizePrefixedRootAsPartialCurve(bb: flatbuffers.ByteBuffer, obj?: PartialCurve): PartialCurve {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new PartialCurve()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new PartialCurve()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -2983,12 +2709,7 @@ export namespace BGFBAccessors {
      */
     target(obj?: VariantGeometry): VariantGeometry | null {
       const offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset
-        ? (obj || new VariantGeometry()).__init(
-            this.bb!.__indirect(this.bb_pos + offset),
-            this.bb!
-          )
-        : null;
+      return offset ? (obj || new VariantGeometry()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
     }
 
     /**
@@ -3018,10 +2739,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset targetOffset
      */
-    static addTarget(
-      builder: flatbuffers.Builder,
-      targetOffset: flatbuffers.Offset
-    ) {
+    static addTarget(builder: flatbuffers.Builder, targetOffset: flatbuffers.Offset) {
       builder.addFieldOffset(2, targetOffset, 0);
     }
 
@@ -3070,14 +2788,8 @@ export namespace BGFBAccessors {
      * @param CurvePrimitiveId= obj
      * @returns CurvePrimitiveId
      */
-    static getRootAsCurvePrimitiveId(
-      bb: flatbuffers.ByteBuffer,
-      obj?: CurvePrimitiveId
-    ): CurvePrimitiveId {
-      return (obj || new CurvePrimitiveId()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsCurvePrimitiveId(bb: flatbuffers.ByteBuffer, obj?: CurvePrimitiveId): CurvePrimitiveId {
+      return (obj || new CurvePrimitiveId()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -3085,15 +2797,9 @@ export namespace BGFBAccessors {
      * @param CurvePrimitiveId= obj
      * @returns CurvePrimitiveId
      */
-    static getSizePrefixedRootAsCurvePrimitiveId(
-      bb: flatbuffers.ByteBuffer,
-      obj?: CurvePrimitiveId
-    ): CurvePrimitiveId {
+    static getSizePrefixedRootAsCurvePrimitiveId(bb: flatbuffers.ByteBuffer, obj?: CurvePrimitiveId): CurvePrimitiveId {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new CurvePrimitiveId()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new CurvePrimitiveId()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -3126,9 +2832,7 @@ export namespace BGFBAccessors {
      */
     bytes(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset
-        ? this.bb!.readUint8(this.bb!.__vector(this.bb_pos + offset) + index)
-        : 0;
+      return offset ? this.bb!.readUint8(this.bb!.__vector(this.bb_pos + offset) + index) : 0;
     }
 
     /**
@@ -3147,8 +2851,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Uint8Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -3189,10 +2892,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset bytesOffset
      */
-    static addBytes(
-      builder: flatbuffers.Builder,
-      bytesOffset: flatbuffers.Offset
-    ) {
+    static addBytes(builder: flatbuffers.Builder, bytesOffset: flatbuffers.Offset) {
       builder.addFieldOffset(3, bytesOffset, 0);
     }
 
@@ -3201,10 +2901,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createBytesVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createBytesVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(1, data.length, 1);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addInt8(data[i]);
@@ -3224,9 +2921,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @returns flatbuffers.Offset
      */
-    static endCurvePrimitiveId(
-      builder: flatbuffers.Builder
-    ): flatbuffers.Offset {
+    static endCurvePrimitiveId(builder: flatbuffers.Builder): flatbuffers.Offset {
       const offset = builder.endObject();
       return offset;
     }
@@ -3269,14 +2964,8 @@ export namespace BGFBAccessors {
      * @param CurveVector= obj
      * @returns CurveVector
      */
-    static getRootAsCurveVector(
-      bb: flatbuffers.ByteBuffer,
-      obj?: CurveVector
-    ): CurveVector {
-      return (obj || new CurveVector()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsCurveVector(bb: flatbuffers.ByteBuffer, obj?: CurveVector): CurveVector {
+      return (obj || new CurveVector()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -3284,15 +2973,9 @@ export namespace BGFBAccessors {
      * @param CurveVector= obj
      * @returns CurveVector
      */
-    static getSizePrefixedRootAsCurveVector(
-      bb: flatbuffers.ByteBuffer,
-      obj?: CurveVector
-    ): CurveVector {
+    static getSizePrefixedRootAsCurveVector(bb: flatbuffers.ByteBuffer, obj?: CurveVector): CurveVector {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new CurveVector()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new CurveVector()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -3312,9 +2995,7 @@ export namespace BGFBAccessors {
       const offset = this.bb!.__offset(this.bb_pos, 6);
       return offset
         ? (obj || new VariantGeometry()).__init(
-            this.bb!.__indirect(
-              this.bb!.__vector(this.bb_pos + offset) + index * 4
-            ),
+            this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4),
             this.bb!
           )
         : null;
@@ -3347,10 +3028,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset curvesOffset
      */
-    static addCurves(
-      builder: flatbuffers.Builder,
-      curvesOffset: flatbuffers.Offset
-    ) {
+    static addCurves(builder: flatbuffers.Builder, curvesOffset: flatbuffers.Offset) {
       builder.addFieldOffset(1, curvesOffset, 0);
     }
 
@@ -3359,10 +3037,7 @@ export namespace BGFBAccessors {
      * @param Array.<flatbuffers.Offset> data
      * @returns flatbuffers.Offset
      */
-    static createCurvesVector(
-      builder: flatbuffers.Builder,
-      data: flatbuffers.Offset[]
-    ): flatbuffers.Offset {
+    static createCurvesVector(builder: flatbuffers.Builder, data: flatbuffers.Offset[]): flatbuffers.Offset {
       builder.startVector(4, data.length, 4);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addOffset(data[i]);
@@ -3425,10 +3100,7 @@ export namespace BGFBAccessors {
       bb: flatbuffers.ByteBuffer,
       obj?: VectorOfVariantGeometry
     ): VectorOfVariantGeometry {
-      return (obj || new VectorOfVariantGeometry()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new VectorOfVariantGeometry()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -3441,10 +3113,7 @@ export namespace BGFBAccessors {
       obj?: VectorOfVariantGeometry
     ): VectorOfVariantGeometry {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new VectorOfVariantGeometry()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new VectorOfVariantGeometry()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -3456,9 +3125,7 @@ export namespace BGFBAccessors {
       const offset = this.bb!.__offset(this.bb_pos, 4);
       return offset
         ? (obj || new VariantGeometry()).__init(
-            this.bb!.__indirect(
-              this.bb!.__vector(this.bb_pos + offset) + index * 4
-            ),
+            this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4),
             this.bb!
           )
         : null;
@@ -3483,10 +3150,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset membersOffset
      */
-    static addMembers(
-      builder: flatbuffers.Builder,
-      membersOffset: flatbuffers.Offset
-    ) {
+    static addMembers(builder: flatbuffers.Builder, membersOffset: flatbuffers.Offset) {
       builder.addFieldOffset(0, membersOffset, 0);
     }
 
@@ -3495,10 +3159,7 @@ export namespace BGFBAccessors {
      * @param Array.<flatbuffers.Offset> data
      * @returns flatbuffers.Offset
      */
-    static createMembersVector(
-      builder: flatbuffers.Builder,
-      data: flatbuffers.Offset[]
-    ): flatbuffers.Offset {
+    static createMembersVector(builder: flatbuffers.Builder, data: flatbuffers.Offset[]): flatbuffers.Offset {
       builder.startVector(4, data.length, 4);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addOffset(data[i]);
@@ -3518,9 +3179,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @returns flatbuffers.Offset
      */
-    static endVectorOfVariantGeometry(
-      builder: flatbuffers.Builder
-    ): flatbuffers.Offset {
+    static endVectorOfVariantGeometry(builder: flatbuffers.Builder): flatbuffers.Offset {
       const offset = builder.endObject();
       return offset;
     }
@@ -3557,14 +3216,8 @@ export namespace BGFBAccessors {
      * @param BsplineSurface= obj
      * @returns BsplineSurface
      */
-    static getRootAsBsplineSurface(
-      bb: flatbuffers.ByteBuffer,
-      obj?: BsplineSurface
-    ): BsplineSurface {
-      return (obj || new BsplineSurface()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsBsplineSurface(bb: flatbuffers.ByteBuffer, obj?: BsplineSurface): BsplineSurface {
+      return (obj || new BsplineSurface()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -3572,15 +3225,9 @@ export namespace BGFBAccessors {
      * @param BsplineSurface= obj
      * @returns BsplineSurface
      */
-    static getSizePrefixedRootAsBsplineSurface(
-      bb: flatbuffers.ByteBuffer,
-      obj?: BsplineSurface
-    ): BsplineSurface {
+    static getSizePrefixedRootAsBsplineSurface(bb: flatbuffers.ByteBuffer, obj?: BsplineSurface): BsplineSurface {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new BsplineSurface()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new BsplineSurface()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -3589,11 +3236,7 @@ export namespace BGFBAccessors {
      */
     poles(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset
-        ? this.bb!.readFloat64(
-            this.bb!.__vector(this.bb_pos + offset) + index * 8
-          )
-        : 0;
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
@@ -3612,8 +3255,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Float64Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -3625,11 +3267,7 @@ export namespace BGFBAccessors {
      */
     weights(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset
-        ? this.bb!.readFloat64(
-            this.bb!.__vector(this.bb_pos + offset) + index * 8
-          )
-        : 0;
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
@@ -3648,8 +3286,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Float64Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -3661,11 +3298,7 @@ export namespace BGFBAccessors {
      */
     knotsU(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset
-        ? this.bb!.readFloat64(
-            this.bb!.__vector(this.bb_pos + offset) + index * 8
-          )
-        : 0;
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
@@ -3684,8 +3317,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Float64Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -3697,11 +3329,7 @@ export namespace BGFBAccessors {
      */
     knotsV(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset
-        ? this.bb!.readFloat64(
-            this.bb!.__vector(this.bb_pos + offset) + index * 8
-          )
-        : 0;
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
@@ -3720,8 +3348,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Float64Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -3789,12 +3416,7 @@ export namespace BGFBAccessors {
      */
     boundaries(obj?: CurveVector): CurveVector | null {
       const offset = this.bb!.__offset(this.bb_pos, 26);
-      return offset
-        ? (obj || new CurveVector()).__init(
-            this.bb!.__indirect(this.bb_pos + offset),
-            this.bb!
-          )
-        : null;
+      return offset ? (obj || new CurveVector()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
     }
 
     /**
@@ -3824,10 +3446,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset polesOffset
      */
-    static addPoles(
-      builder: flatbuffers.Builder,
-      polesOffset: flatbuffers.Offset
-    ) {
+    static addPoles(builder: flatbuffers.Builder, polesOffset: flatbuffers.Offset) {
       builder.addFieldOffset(0, polesOffset, 0);
     }
 
@@ -3836,10 +3455,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createPolesVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createPolesVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(8, data.length, 8);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addFloat64(data[i]);
@@ -3859,10 +3475,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset weightsOffset
      */
-    static addWeights(
-      builder: flatbuffers.Builder,
-      weightsOffset: flatbuffers.Offset
-    ) {
+    static addWeights(builder: flatbuffers.Builder, weightsOffset: flatbuffers.Offset) {
       builder.addFieldOffset(1, weightsOffset, 0);
     }
 
@@ -3871,10 +3484,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createWeightsVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createWeightsVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(8, data.length, 8);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addFloat64(data[i]);
@@ -3894,10 +3504,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset knotsUOffset
      */
-    static addKnotsU(
-      builder: flatbuffers.Builder,
-      knotsUOffset: flatbuffers.Offset
-    ) {
+    static addKnotsU(builder: flatbuffers.Builder, knotsUOffset: flatbuffers.Offset) {
       builder.addFieldOffset(2, knotsUOffset, 0);
     }
 
@@ -3906,10 +3513,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createKnotsUVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createKnotsUVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(8, data.length, 8);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addFloat64(data[i]);
@@ -3929,10 +3533,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset knotsVOffset
      */
-    static addKnotsV(
-      builder: flatbuffers.Builder,
-      knotsVOffset: flatbuffers.Offset
-    ) {
+    static addKnotsV(builder: flatbuffers.Builder, knotsVOffset: flatbuffers.Offset) {
       builder.addFieldOffset(3, knotsVOffset, 0);
     }
 
@@ -3941,10 +3542,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createKnotsVVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createKnotsVVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(8, data.length, 8);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addFloat64(data[i]);
@@ -4020,10 +3618,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset boundariesOffset
      */
-    static addBoundaries(
-      builder: flatbuffers.Builder,
-      boundariesOffset: flatbuffers.Offset
-    ) {
+    static addBoundaries(builder: flatbuffers.Builder, boundariesOffset: flatbuffers.Offset) {
       builder.addFieldOffset(11, boundariesOffset, 0);
     }
 
@@ -4111,10 +3706,7 @@ export namespace BGFBAccessors {
      * @returns DgnBox
      */
     static getRootAsDgnBox(bb: flatbuffers.ByteBuffer, obj?: DgnBox): DgnBox {
-      return (obj || new DgnBox()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new DgnBox()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -4122,15 +3714,9 @@ export namespace BGFBAccessors {
      * @param DgnBox= obj
      * @returns DgnBox
      */
-    static getSizePrefixedRootAsDgnBox(
-      bb: flatbuffers.ByteBuffer,
-      obj?: DgnBox
-    ): DgnBox {
+    static getSizePrefixedRootAsDgnBox(bb: flatbuffers.ByteBuffer, obj?: DgnBox): DgnBox {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new DgnBox()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new DgnBox()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -4139,9 +3725,7 @@ export namespace BGFBAccessors {
      */
     detail(obj?: DgnBoxDetail): DgnBoxDetail | null {
       const offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset
-        ? (obj || new DgnBoxDetail()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DgnBoxDetail()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -4155,10 +3739,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset detailOffset
      */
-    static addDetail(
-      builder: flatbuffers.Builder,
-      detailOffset: flatbuffers.Offset
-    ) {
+    static addDetail(builder: flatbuffers.Builder, detailOffset: flatbuffers.Offset) {
       builder.addFieldStruct(0, detailOffset, 0);
     }
 
@@ -4171,10 +3752,7 @@ export namespace BGFBAccessors {
       return offset;
     }
 
-    static createDgnBox(
-      builder: flatbuffers.Builder,
-      detailOffset: flatbuffers.Offset
-    ): flatbuffers.Offset {
+    static createDgnBox(builder: flatbuffers.Builder, detailOffset: flatbuffers.Offset): flatbuffers.Offset {
       DgnBox.startDgnBox(builder);
       DgnBox.addDetail(builder, detailOffset);
       return DgnBox.endDgnBox(builder);
@@ -4203,14 +3781,8 @@ export namespace BGFBAccessors {
      * @param DgnSphere= obj
      * @returns DgnSphere
      */
-    static getRootAsDgnSphere(
-      bb: flatbuffers.ByteBuffer,
-      obj?: DgnSphere
-    ): DgnSphere {
-      return (obj || new DgnSphere()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsDgnSphere(bb: flatbuffers.ByteBuffer, obj?: DgnSphere): DgnSphere {
+      return (obj || new DgnSphere()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -4218,15 +3790,9 @@ export namespace BGFBAccessors {
      * @param DgnSphere= obj
      * @returns DgnSphere
      */
-    static getSizePrefixedRootAsDgnSphere(
-      bb: flatbuffers.ByteBuffer,
-      obj?: DgnSphere
-    ): DgnSphere {
+    static getSizePrefixedRootAsDgnSphere(bb: flatbuffers.ByteBuffer, obj?: DgnSphere): DgnSphere {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new DgnSphere()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new DgnSphere()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -4235,9 +3801,7 @@ export namespace BGFBAccessors {
      */
     detail(obj?: DgnSphereDetail): DgnSphereDetail | null {
       const offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset
-        ? (obj || new DgnSphereDetail()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DgnSphereDetail()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -4251,10 +3815,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset detailOffset
      */
-    static addDetail(
-      builder: flatbuffers.Builder,
-      detailOffset: flatbuffers.Offset
-    ) {
+    static addDetail(builder: flatbuffers.Builder, detailOffset: flatbuffers.Offset) {
       builder.addFieldStruct(0, detailOffset, 0);
     }
 
@@ -4267,10 +3828,7 @@ export namespace BGFBAccessors {
       return offset;
     }
 
-    static createDgnSphere(
-      builder: flatbuffers.Builder,
-      detailOffset: flatbuffers.Offset
-    ): flatbuffers.Offset {
+    static createDgnSphere(builder: flatbuffers.Builder, detailOffset: flatbuffers.Offset): flatbuffers.Offset {
       DgnSphere.startDgnSphere(builder);
       DgnSphere.addDetail(builder, detailOffset);
       return DgnSphere.endDgnSphere(builder);
@@ -4299,14 +3857,8 @@ export namespace BGFBAccessors {
      * @param DgnCone= obj
      * @returns DgnCone
      */
-    static getRootAsDgnCone(
-      bb: flatbuffers.ByteBuffer,
-      obj?: DgnCone
-    ): DgnCone {
-      return (obj || new DgnCone()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsDgnCone(bb: flatbuffers.ByteBuffer, obj?: DgnCone): DgnCone {
+      return (obj || new DgnCone()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -4314,15 +3866,9 @@ export namespace BGFBAccessors {
      * @param DgnCone= obj
      * @returns DgnCone
      */
-    static getSizePrefixedRootAsDgnCone(
-      bb: flatbuffers.ByteBuffer,
-      obj?: DgnCone
-    ): DgnCone {
+    static getSizePrefixedRootAsDgnCone(bb: flatbuffers.ByteBuffer, obj?: DgnCone): DgnCone {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new DgnCone()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new DgnCone()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -4331,9 +3877,7 @@ export namespace BGFBAccessors {
      */
     detail(obj?: DgnConeDetail): DgnConeDetail | null {
       const offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset
-        ? (obj || new DgnConeDetail()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DgnConeDetail()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -4347,10 +3891,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset detailOffset
      */
-    static addDetail(
-      builder: flatbuffers.Builder,
-      detailOffset: flatbuffers.Offset
-    ) {
+    static addDetail(builder: flatbuffers.Builder, detailOffset: flatbuffers.Offset) {
       builder.addFieldStruct(0, detailOffset, 0);
     }
 
@@ -4363,10 +3904,7 @@ export namespace BGFBAccessors {
       return offset;
     }
 
-    static createDgnCone(
-      builder: flatbuffers.Builder,
-      detailOffset: flatbuffers.Offset
-    ): flatbuffers.Offset {
+    static createDgnCone(builder: flatbuffers.Builder, detailOffset: flatbuffers.Offset): flatbuffers.Offset {
       DgnCone.startDgnCone(builder);
       DgnCone.addDetail(builder, detailOffset);
       return DgnCone.endDgnCone(builder);
@@ -4395,14 +3933,8 @@ export namespace BGFBAccessors {
      * @param DgnTorusPipe= obj
      * @returns DgnTorusPipe
      */
-    static getRootAsDgnTorusPipe(
-      bb: flatbuffers.ByteBuffer,
-      obj?: DgnTorusPipe
-    ): DgnTorusPipe {
-      return (obj || new DgnTorusPipe()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsDgnTorusPipe(bb: flatbuffers.ByteBuffer, obj?: DgnTorusPipe): DgnTorusPipe {
+      return (obj || new DgnTorusPipe()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -4410,15 +3942,9 @@ export namespace BGFBAccessors {
      * @param DgnTorusPipe= obj
      * @returns DgnTorusPipe
      */
-    static getSizePrefixedRootAsDgnTorusPipe(
-      bb: flatbuffers.ByteBuffer,
-      obj?: DgnTorusPipe
-    ): DgnTorusPipe {
+    static getSizePrefixedRootAsDgnTorusPipe(bb: flatbuffers.ByteBuffer, obj?: DgnTorusPipe): DgnTorusPipe {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new DgnTorusPipe()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new DgnTorusPipe()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -4427,12 +3953,7 @@ export namespace BGFBAccessors {
      */
     detail(obj?: DgnTorusPipeDetail): DgnTorusPipeDetail | null {
       const offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset
-        ? (obj || new DgnTorusPipeDetail()).__init(
-            this.bb_pos + offset,
-            this.bb!
-          )
-        : null;
+      return offset ? (obj || new DgnTorusPipeDetail()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -4446,10 +3967,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset detailOffset
      */
-    static addDetail(
-      builder: flatbuffers.Builder,
-      detailOffset: flatbuffers.Offset
-    ) {
+    static addDetail(builder: flatbuffers.Builder, detailOffset: flatbuffers.Offset) {
       builder.addFieldStruct(0, detailOffset, 0);
     }
 
@@ -4462,10 +3980,7 @@ export namespace BGFBAccessors {
       return offset;
     }
 
-    static createDgnTorusPipe(
-      builder: flatbuffers.Builder,
-      detailOffset: flatbuffers.Offset
-    ): flatbuffers.Offset {
+    static createDgnTorusPipe(builder: flatbuffers.Builder, detailOffset: flatbuffers.Offset): flatbuffers.Offset {
       DgnTorusPipe.startDgnTorusPipe(builder);
       DgnTorusPipe.addDetail(builder, detailOffset);
       return DgnTorusPipe.endDgnTorusPipe(builder);
@@ -4494,14 +4009,8 @@ export namespace BGFBAccessors {
      * @param DgnExtrusion= obj
      * @returns DgnExtrusion
      */
-    static getRootAsDgnExtrusion(
-      bb: flatbuffers.ByteBuffer,
-      obj?: DgnExtrusion
-    ): DgnExtrusion {
-      return (obj || new DgnExtrusion()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsDgnExtrusion(bb: flatbuffers.ByteBuffer, obj?: DgnExtrusion): DgnExtrusion {
+      return (obj || new DgnExtrusion()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -4509,15 +4018,9 @@ export namespace BGFBAccessors {
      * @param DgnExtrusion= obj
      * @returns DgnExtrusion
      */
-    static getSizePrefixedRootAsDgnExtrusion(
-      bb: flatbuffers.ByteBuffer,
-      obj?: DgnExtrusion
-    ): DgnExtrusion {
+    static getSizePrefixedRootAsDgnExtrusion(bb: flatbuffers.ByteBuffer, obj?: DgnExtrusion): DgnExtrusion {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new DgnExtrusion()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new DgnExtrusion()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -4526,12 +4029,7 @@ export namespace BGFBAccessors {
      */
     baseCurve(obj?: CurveVector): CurveVector | null {
       const offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset
-        ? (obj || new CurveVector()).__init(
-            this.bb!.__indirect(this.bb_pos + offset),
-            this.bb!
-          )
-        : null;
+      return offset ? (obj || new CurveVector()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
     }
 
     /**
@@ -4540,9 +4038,7 @@ export namespace BGFBAccessors {
      */
     extrusionVector(obj?: DVector3d): DVector3d | null {
       const offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset
-        ? (obj || new DVector3d()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DVector3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -4564,10 +4060,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset baseCurveOffset
      */
-    static addBaseCurve(
-      builder: flatbuffers.Builder,
-      baseCurveOffset: flatbuffers.Offset
-    ) {
+    static addBaseCurve(builder: flatbuffers.Builder, baseCurveOffset: flatbuffers.Offset) {
       builder.addFieldOffset(0, baseCurveOffset, 0);
     }
 
@@ -4575,10 +4068,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset extrusionVectorOffset
      */
-    static addExtrusionVector(
-      builder: flatbuffers.Builder,
-      extrusionVectorOffset: flatbuffers.Offset
-    ) {
+    static addExtrusionVector(builder: flatbuffers.Builder, extrusionVectorOffset: flatbuffers.Offset) {
       builder.addFieldStruct(1, extrusionVectorOffset, 0);
     }
 
@@ -4635,14 +4125,8 @@ export namespace BGFBAccessors {
      * @param DgnRotationalSweep= obj
      * @returns DgnRotationalSweep
      */
-    static getRootAsDgnRotationalSweep(
-      bb: flatbuffers.ByteBuffer,
-      obj?: DgnRotationalSweep
-    ): DgnRotationalSweep {
-      return (obj || new DgnRotationalSweep()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsDgnRotationalSweep(bb: flatbuffers.ByteBuffer, obj?: DgnRotationalSweep): DgnRotationalSweep {
+      return (obj || new DgnRotationalSweep()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -4655,10 +4139,7 @@ export namespace BGFBAccessors {
       obj?: DgnRotationalSweep
     ): DgnRotationalSweep {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new DgnRotationalSweep()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new DgnRotationalSweep()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -4667,12 +4148,7 @@ export namespace BGFBAccessors {
      */
     baseCurve(obj?: CurveVector): CurveVector | null {
       const offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset
-        ? (obj || new CurveVector()).__init(
-            this.bb!.__indirect(this.bb_pos + offset),
-            this.bb!
-          )
-        : null;
+      return offset ? (obj || new CurveVector()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
     }
 
     /**
@@ -4681,9 +4157,7 @@ export namespace BGFBAccessors {
      */
     axis(obj?: DRay3d): DRay3d | null {
       const offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset
-        ? (obj || new DRay3d()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DRay3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -4721,10 +4195,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset baseCurveOffset
      */
-    static addBaseCurve(
-      builder: flatbuffers.Builder,
-      baseCurveOffset: flatbuffers.Offset
-    ) {
+    static addBaseCurve(builder: flatbuffers.Builder, baseCurveOffset: flatbuffers.Offset) {
       builder.addFieldOffset(0, baseCurveOffset, 0);
     }
 
@@ -4732,10 +4203,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset axisOffset
      */
-    static addAxis(
-      builder: flatbuffers.Builder,
-      axisOffset: flatbuffers.Offset
-    ) {
+    static addAxis(builder: flatbuffers.Builder, axisOffset: flatbuffers.Offset) {
       builder.addFieldStruct(1, axisOffset, 0);
     }
 
@@ -4767,9 +4235,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @returns flatbuffers.Offset
      */
-    static endDgnRotationalSweep(
-      builder: flatbuffers.Builder
-    ): flatbuffers.Offset {
+    static endDgnRotationalSweep(builder: flatbuffers.Builder): flatbuffers.Offset {
       const offset = builder.endObject();
       return offset;
     }
@@ -4814,14 +4280,8 @@ export namespace BGFBAccessors {
      * @param DgnRuledSweep= obj
      * @returns DgnRuledSweep
      */
-    static getRootAsDgnRuledSweep(
-      bb: flatbuffers.ByteBuffer,
-      obj?: DgnRuledSweep
-    ): DgnRuledSweep {
-      return (obj || new DgnRuledSweep()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsDgnRuledSweep(bb: flatbuffers.ByteBuffer, obj?: DgnRuledSweep): DgnRuledSweep {
+      return (obj || new DgnRuledSweep()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -4829,15 +4289,9 @@ export namespace BGFBAccessors {
      * @param DgnRuledSweep= obj
      * @returns DgnRuledSweep
      */
-    static getSizePrefixedRootAsDgnRuledSweep(
-      bb: flatbuffers.ByteBuffer,
-      obj?: DgnRuledSweep
-    ): DgnRuledSweep {
+    static getSizePrefixedRootAsDgnRuledSweep(bb: flatbuffers.ByteBuffer, obj?: DgnRuledSweep): DgnRuledSweep {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new DgnRuledSweep()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new DgnRuledSweep()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -4849,9 +4303,7 @@ export namespace BGFBAccessors {
       const offset = this.bb!.__offset(this.bb_pos, 4);
       return offset
         ? (obj || new CurveVector()).__init(
-            this.bb!.__indirect(
-              this.bb!.__vector(this.bb_pos + offset) + index * 4
-            ),
+            this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4),
             this.bb!
           )
         : null;
@@ -4884,10 +4336,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset curvesOffset
      */
-    static addCurves(
-      builder: flatbuffers.Builder,
-      curvesOffset: flatbuffers.Offset
-    ) {
+    static addCurves(builder: flatbuffers.Builder, curvesOffset: flatbuffers.Offset) {
       builder.addFieldOffset(0, curvesOffset, 0);
     }
 
@@ -4896,10 +4345,7 @@ export namespace BGFBAccessors {
      * @param Array.<flatbuffers.Offset> data
      * @returns flatbuffers.Offset
      */
-    static createCurvesVector(
-      builder: flatbuffers.Builder,
-      data: flatbuffers.Offset[]
-    ): flatbuffers.Offset {
+    static createCurvesVector(builder: flatbuffers.Builder, data: flatbuffers.Offset[]): flatbuffers.Offset {
       builder.startVector(4, data.length, 4);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addOffset(data[i]);
@@ -4970,10 +4416,7 @@ export namespace BGFBAccessors {
       bb: flatbuffers.ByteBuffer,
       obj?: PolyfaceAuxChannelData
     ): PolyfaceAuxChannelData {
-      return (obj || new PolyfaceAuxChannelData()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new PolyfaceAuxChannelData()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -4986,10 +4429,7 @@ export namespace BGFBAccessors {
       obj?: PolyfaceAuxChannelData
     ): PolyfaceAuxChannelData {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new PolyfaceAuxChannelData()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new PolyfaceAuxChannelData()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -5006,11 +4446,7 @@ export namespace BGFBAccessors {
      */
     values(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset
-        ? this.bb!.readFloat64(
-            this.bb!.__vector(this.bb_pos + offset) + index * 8
-          )
-        : 0;
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
@@ -5029,8 +4465,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Float64Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -5055,10 +4490,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset valuesOffset
      */
-    static addValues(
-      builder: flatbuffers.Builder,
-      valuesOffset: flatbuffers.Offset
-    ) {
+    static addValues(builder: flatbuffers.Builder, valuesOffset: flatbuffers.Offset) {
       builder.addFieldOffset(1, valuesOffset, 0);
     }
 
@@ -5067,10 +4499,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createValuesVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createValuesVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(8, data.length, 8);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addFloat64(data[i]);
@@ -5090,9 +4519,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @returns flatbuffers.Offset
      */
-    static endPolyfaceAuxChannelData(
-      builder: flatbuffers.Builder
-    ): flatbuffers.Offset {
+    static endPolyfaceAuxChannelData(builder: flatbuffers.Builder): flatbuffers.Offset {
       const offset = builder.endObject();
       return offset;
     }
@@ -5131,14 +4558,8 @@ export namespace BGFBAccessors {
      * @param PolyfaceAuxChannel= obj
      * @returns PolyfaceAuxChannel
      */
-    static getRootAsPolyfaceAuxChannel(
-      bb: flatbuffers.ByteBuffer,
-      obj?: PolyfaceAuxChannel
-    ): PolyfaceAuxChannel {
-      return (obj || new PolyfaceAuxChannel()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsPolyfaceAuxChannel(bb: flatbuffers.ByteBuffer, obj?: PolyfaceAuxChannel): PolyfaceAuxChannel {
+      return (obj || new PolyfaceAuxChannel()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -5151,10 +4572,7 @@ export namespace BGFBAccessors {
       obj?: PolyfaceAuxChannel
     ): PolyfaceAuxChannel {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new PolyfaceAuxChannel()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new PolyfaceAuxChannel()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -5173,9 +4591,7 @@ export namespace BGFBAccessors {
     name(optionalEncoding: flatbuffers.Encoding): string | Uint8Array | null;
     name(optionalEncoding?: any): string | Uint8Array | null {
       const offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset
-        ? this.bb!.__string(this.bb_pos + offset, optionalEncoding)
-        : null;
+      return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
     }
 
     /**
@@ -5183,14 +4599,10 @@ export namespace BGFBAccessors {
      * @returns string|Uint8Array|null
      */
     inputName(): string | null;
-    inputName(
-      optionalEncoding: flatbuffers.Encoding
-    ): string | Uint8Array | null;
+    inputName(optionalEncoding: flatbuffers.Encoding): string | Uint8Array | null;
     inputName(optionalEncoding?: any): string | Uint8Array | null {
       const offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset
-        ? this.bb!.__string(this.bb_pos + offset, optionalEncoding)
-        : null;
+      return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
     }
 
     /**
@@ -5198,16 +4610,11 @@ export namespace BGFBAccessors {
      * @param PolyfaceAuxChannelData= obj
      * @returns PolyfaceAuxChannelData
      */
-    data(
-      index: number,
-      obj?: PolyfaceAuxChannelData
-    ): PolyfaceAuxChannelData | null {
+    data(index: number, obj?: PolyfaceAuxChannelData): PolyfaceAuxChannelData | null {
       const offset = this.bb!.__offset(this.bb_pos, 10);
       return offset
         ? (obj || new PolyfaceAuxChannelData()).__init(
-            this.bb!.__indirect(
-              this.bb!.__vector(this.bb_pos + offset) + index * 4
-            ),
+            this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4),
             this.bb!
           )
         : null;
@@ -5240,10 +4647,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset nameOffset
      */
-    static addName(
-      builder: flatbuffers.Builder,
-      nameOffset: flatbuffers.Offset
-    ) {
+    static addName(builder: flatbuffers.Builder, nameOffset: flatbuffers.Offset) {
       builder.addFieldOffset(1, nameOffset, 0);
     }
 
@@ -5251,10 +4655,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset inputNameOffset
      */
-    static addInputName(
-      builder: flatbuffers.Builder,
-      inputNameOffset: flatbuffers.Offset
-    ) {
+    static addInputName(builder: flatbuffers.Builder, inputNameOffset: flatbuffers.Offset) {
       builder.addFieldOffset(2, inputNameOffset, 0);
     }
 
@@ -5262,10 +4663,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset dataOffset
      */
-    static addData(
-      builder: flatbuffers.Builder,
-      dataOffset: flatbuffers.Offset
-    ) {
+    static addData(builder: flatbuffers.Builder, dataOffset: flatbuffers.Offset) {
       builder.addFieldOffset(3, dataOffset, 0);
     }
 
@@ -5274,10 +4672,7 @@ export namespace BGFBAccessors {
      * @param Array.<flatbuffers.Offset> data
      * @returns flatbuffers.Offset
      */
-    static createDataVector(
-      builder: flatbuffers.Builder,
-      data: flatbuffers.Offset[]
-    ): flatbuffers.Offset {
+    static createDataVector(builder: flatbuffers.Builder, data: flatbuffers.Offset[]): flatbuffers.Offset {
       builder.startVector(4, data.length, 4);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addOffset(data[i]);
@@ -5297,9 +4692,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @returns flatbuffers.Offset
      */
-    static endPolyfaceAuxChannel(
-      builder: flatbuffers.Builder
-    ): flatbuffers.Offset {
+    static endPolyfaceAuxChannel(builder: flatbuffers.Builder): flatbuffers.Offset {
       const offset = builder.endObject();
       return offset;
     }
@@ -5342,14 +4735,8 @@ export namespace BGFBAccessors {
      * @param PolyfaceAuxData= obj
      * @returns PolyfaceAuxData
      */
-    static getRootAsPolyfaceAuxData(
-      bb: flatbuffers.ByteBuffer,
-      obj?: PolyfaceAuxData
-    ): PolyfaceAuxData {
-      return (obj || new PolyfaceAuxData()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsPolyfaceAuxData(bb: flatbuffers.ByteBuffer, obj?: PolyfaceAuxData): PolyfaceAuxData {
+      return (obj || new PolyfaceAuxData()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -5357,15 +4744,9 @@ export namespace BGFBAccessors {
      * @param PolyfaceAuxData= obj
      * @returns PolyfaceAuxData
      */
-    static getSizePrefixedRootAsPolyfaceAuxData(
-      bb: flatbuffers.ByteBuffer,
-      obj?: PolyfaceAuxData
-    ): PolyfaceAuxData {
+    static getSizePrefixedRootAsPolyfaceAuxData(bb: flatbuffers.ByteBuffer, obj?: PolyfaceAuxData): PolyfaceAuxData {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new PolyfaceAuxData()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new PolyfaceAuxData()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -5374,11 +4755,7 @@ export namespace BGFBAccessors {
      */
     indices(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset
-        ? this.bb!.readInt32(
-            this.bb!.__vector(this.bb_pos + offset) + index * 4
-          )
-        : 0;
+      return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
     }
 
     /**
@@ -5397,8 +4774,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Int32Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -5409,16 +4785,11 @@ export namespace BGFBAccessors {
      * @param PolyfaceAuxChannel= obj
      * @returns PolyfaceAuxChannel
      */
-    channels(
-      index: number,
-      obj?: PolyfaceAuxChannel
-    ): PolyfaceAuxChannel | null {
+    channels(index: number, obj?: PolyfaceAuxChannel): PolyfaceAuxChannel | null {
       const offset = this.bb!.__offset(this.bb_pos, 6);
       return offset
         ? (obj || new PolyfaceAuxChannel()).__init(
-            this.bb!.__indirect(
-              this.bb!.__vector(this.bb_pos + offset) + index * 4
-            ),
+            this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4),
             this.bb!
           )
         : null;
@@ -5443,10 +4814,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset indicesOffset
      */
-    static addIndices(
-      builder: flatbuffers.Builder,
-      indicesOffset: flatbuffers.Offset
-    ) {
+    static addIndices(builder: flatbuffers.Builder, indicesOffset: flatbuffers.Offset) {
       builder.addFieldOffset(0, indicesOffset, 0);
     }
 
@@ -5455,10 +4823,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createIndicesVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createIndicesVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(4, data.length, 4);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addInt32(data[i]);
@@ -5478,10 +4843,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset channelsOffset
      */
-    static addChannels(
-      builder: flatbuffers.Builder,
-      channelsOffset: flatbuffers.Offset
-    ) {
+    static addChannels(builder: flatbuffers.Builder, channelsOffset: flatbuffers.Offset) {
       builder.addFieldOffset(1, channelsOffset, 0);
     }
 
@@ -5490,10 +4852,7 @@ export namespace BGFBAccessors {
      * @param Array.<flatbuffers.Offset> data
      * @returns flatbuffers.Offset
      */
-    static createChannelsVector(
-      builder: flatbuffers.Builder,
-      data: flatbuffers.Offset[]
-    ): flatbuffers.Offset {
+    static createChannelsVector(builder: flatbuffers.Builder, data: flatbuffers.Offset[]): flatbuffers.Offset {
       builder.startVector(4, data.length, 4);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addOffset(data[i]);
@@ -5513,9 +4872,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @returns flatbuffers.Offset
      */
-    static endPolyfaceAuxData(
-      builder: flatbuffers.Builder
-    ): flatbuffers.Offset {
+    static endPolyfaceAuxData(builder: flatbuffers.Builder): flatbuffers.Offset {
       const offset = builder.endObject();
       return offset;
     }
@@ -5554,14 +4911,8 @@ export namespace BGFBAccessors {
      * @param TaggedNumericData= obj
      * @returns TaggedNumericData
      */
-    static getRootAsTaggedNumericData(
-      bb: flatbuffers.ByteBuffer,
-      obj?: TaggedNumericData
-    ): TaggedNumericData {
-      return (obj || new TaggedNumericData()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsTaggedNumericData(bb: flatbuffers.ByteBuffer, obj?: TaggedNumericData): TaggedNumericData {
+      return (obj || new TaggedNumericData()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -5574,10 +4925,7 @@ export namespace BGFBAccessors {
       obj?: TaggedNumericData
     ): TaggedNumericData {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new TaggedNumericData()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new TaggedNumericData()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -5602,11 +4950,7 @@ export namespace BGFBAccessors {
      */
     intData(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset
-        ? this.bb!.readInt32(
-            this.bb!.__vector(this.bb_pos + offset) + index * 4
-          )
-        : 0;
+      return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
     }
 
     /**
@@ -5625,8 +4969,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Int32Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -5638,11 +4981,7 @@ export namespace BGFBAccessors {
      */
     doubleData(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset
-        ? this.bb!.readFloat64(
-            this.bb!.__vector(this.bb_pos + offset) + index * 8
-          )
-        : 0;
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
@@ -5661,8 +5000,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Float64Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -5695,10 +5033,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset intDataOffset
      */
-    static addIntData(
-      builder: flatbuffers.Builder,
-      intDataOffset: flatbuffers.Offset
-    ) {
+    static addIntData(builder: flatbuffers.Builder, intDataOffset: flatbuffers.Offset) {
       builder.addFieldOffset(2, intDataOffset, 0);
     }
 
@@ -5707,10 +5042,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createIntDataVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createIntDataVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(4, data.length, 4);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addInt32(data[i]);
@@ -5730,10 +5062,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset doubleDataOffset
      */
-    static addDoubleData(
-      builder: flatbuffers.Builder,
-      doubleDataOffset: flatbuffers.Offset
-    ) {
+    static addDoubleData(builder: flatbuffers.Builder, doubleDataOffset: flatbuffers.Offset) {
       builder.addFieldOffset(3, doubleDataOffset, 0);
     }
 
@@ -5742,10 +5071,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createDoubleDataVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createDoubleDataVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(8, data.length, 8);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addFloat64(data[i]);
@@ -5757,10 +5083,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param number numElems
      */
-    static startDoubleDataVector(
-      builder: flatbuffers.Builder,
-      numElems: number
-    ) {
+    static startDoubleDataVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(8, numElems, 8);
     }
 
@@ -5768,9 +5091,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @returns flatbuffers.Offset
      */
-    static endTaggedNumericData(
-      builder: flatbuffers.Builder
-    ): flatbuffers.Offset {
+    static endTaggedNumericData(builder: flatbuffers.Builder): flatbuffers.Offset {
       const offset = builder.endObject();
       return offset;
     }
@@ -5813,14 +5134,8 @@ export namespace BGFBAccessors {
      * @param Polyface= obj
      * @returns Polyface
      */
-    static getRootAsPolyface(
-      bb: flatbuffers.ByteBuffer,
-      obj?: Polyface
-    ): Polyface {
-      return (obj || new Polyface()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsPolyface(bb: flatbuffers.ByteBuffer, obj?: Polyface): Polyface {
+      return (obj || new Polyface()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -5828,15 +5143,9 @@ export namespace BGFBAccessors {
      * @param Polyface= obj
      * @returns Polyface
      */
-    static getSizePrefixedRootAsPolyface(
-      bb: flatbuffers.ByteBuffer,
-      obj?: Polyface
-    ): Polyface {
+    static getSizePrefixedRootAsPolyface(bb: flatbuffers.ByteBuffer, obj?: Polyface): Polyface {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new Polyface()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new Polyface()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -5845,11 +5154,7 @@ export namespace BGFBAccessors {
      */
     point(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset
-        ? this.bb!.readFloat64(
-            this.bb!.__vector(this.bb_pos + offset) + index * 8
-          )
-        : 0;
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
@@ -5868,8 +5173,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Float64Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -5881,11 +5185,7 @@ export namespace BGFBAccessors {
      */
     param(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset
-        ? this.bb!.readFloat64(
-            this.bb!.__vector(this.bb_pos + offset) + index * 8
-          )
-        : 0;
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
@@ -5904,8 +5204,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Float64Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -5917,11 +5216,7 @@ export namespace BGFBAccessors {
      */
     normal(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset
-        ? this.bb!.readFloat64(
-            this.bb!.__vector(this.bb_pos + offset) + index * 8
-          )
-        : 0;
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
@@ -5940,8 +5235,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Float64Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -5953,11 +5247,7 @@ export namespace BGFBAccessors {
      */
     doubleColor(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset
-        ? this.bb!.readFloat64(
-            this.bb!.__vector(this.bb_pos + offset) + index * 8
-          )
-        : 0;
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
@@ -5976,8 +5266,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Float64Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -5989,11 +5278,7 @@ export namespace BGFBAccessors {
      */
     intColor(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 12);
-      return offset
-        ? this.bb!.readInt32(
-            this.bb!.__vector(this.bb_pos + offset) + index * 4
-          )
-        : 0;
+      return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
     }
 
     /**
@@ -6012,8 +5297,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Uint32Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -6025,11 +5309,7 @@ export namespace BGFBAccessors {
      */
     pointIndex(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 14);
-      return offset
-        ? this.bb!.readInt32(
-            this.bb!.__vector(this.bb_pos + offset) + index * 4
-          )
-        : 0;
+      return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
     }
 
     /**
@@ -6048,8 +5328,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Int32Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -6061,11 +5340,7 @@ export namespace BGFBAccessors {
      */
     paramIndex(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 16);
-      return offset
-        ? this.bb!.readInt32(
-            this.bb!.__vector(this.bb_pos + offset) + index * 4
-          )
-        : 0;
+      return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
     }
 
     /**
@@ -6084,8 +5359,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Int32Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -6097,11 +5371,7 @@ export namespace BGFBAccessors {
      */
     normalIndex(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 18);
-      return offset
-        ? this.bb!.readInt32(
-            this.bb!.__vector(this.bb_pos + offset) + index * 4
-          )
-        : 0;
+      return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
     }
 
     /**
@@ -6120,8 +5390,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Int32Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -6133,11 +5402,7 @@ export namespace BGFBAccessors {
      */
     colorIndex(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 20);
-      return offset
-        ? this.bb!.readInt32(
-            this.bb!.__vector(this.bb_pos + offset) + index * 4
-          )
-        : 0;
+      return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
     }
 
     /**
@@ -6156,8 +5421,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Int32Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -6169,11 +5433,7 @@ export namespace BGFBAccessors {
      */
     colorTable(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 22);
-      return offset
-        ? this.bb!.readInt32(
-            this.bb!.__vector(this.bb_pos + offset) + index * 4
-          )
-        : 0;
+      return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
     }
 
     /**
@@ -6192,8 +5452,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Int32Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -6237,11 +5496,7 @@ export namespace BGFBAccessors {
      */
     faceIndex(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 32);
-      return offset
-        ? this.bb!.readInt32(
-            this.bb!.__vector(this.bb_pos + offset) + index * 4
-          )
-        : 0;
+      return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
     }
 
     /**
@@ -6260,8 +5515,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Int32Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -6273,11 +5527,7 @@ export namespace BGFBAccessors {
      */
     faceData(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 34);
-      return offset
-        ? this.bb!.readFloat64(
-            this.bb!.__vector(this.bb_pos + offset) + index * 8
-          )
-        : 0;
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
@@ -6296,8 +5546,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Float64Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -6309,12 +5558,7 @@ export namespace BGFBAccessors {
      */
     auxData(obj?: PolyfaceAuxData): PolyfaceAuxData | null {
       const offset = this.bb!.__offset(this.bb_pos, 36);
-      return offset
-        ? (obj || new PolyfaceAuxData()).__init(
-            this.bb!.__indirect(this.bb_pos + offset),
-            this.bb!
-          )
-        : null;
+      return offset ? (obj || new PolyfaceAuxData()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
     }
 
     /**
@@ -6332,10 +5576,7 @@ export namespace BGFBAccessors {
     taggedNumericData(obj?: TaggedNumericData): TaggedNumericData | null {
       const offset = this.bb!.__offset(this.bb_pos, 40);
       return offset
-        ? (obj || new TaggedNumericData()).__init(
-            this.bb!.__indirect(this.bb_pos + offset),
-            this.bb!
-          )
+        ? (obj || new TaggedNumericData()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!)
         : null;
     }
 
@@ -6350,10 +5591,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset pointOffset
      */
-    static addPoint(
-      builder: flatbuffers.Builder,
-      pointOffset: flatbuffers.Offset
-    ) {
+    static addPoint(builder: flatbuffers.Builder, pointOffset: flatbuffers.Offset) {
       builder.addFieldOffset(0, pointOffset, 0);
     }
 
@@ -6362,10 +5600,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createPointVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createPointVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(8, data.length, 8);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addFloat64(data[i]);
@@ -6385,10 +5620,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset paramOffset
      */
-    static addParam(
-      builder: flatbuffers.Builder,
-      paramOffset: flatbuffers.Offset
-    ) {
+    static addParam(builder: flatbuffers.Builder, paramOffset: flatbuffers.Offset) {
       builder.addFieldOffset(1, paramOffset, 0);
     }
 
@@ -6397,10 +5629,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createParamVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createParamVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(8, data.length, 8);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addFloat64(data[i]);
@@ -6420,10 +5649,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset normalOffset
      */
-    static addNormal(
-      builder: flatbuffers.Builder,
-      normalOffset: flatbuffers.Offset
-    ) {
+    static addNormal(builder: flatbuffers.Builder, normalOffset: flatbuffers.Offset) {
       builder.addFieldOffset(2, normalOffset, 0);
     }
 
@@ -6432,10 +5658,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createNormalVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createNormalVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(8, data.length, 8);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addFloat64(data[i]);
@@ -6455,10 +5678,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset doubleColorOffset
      */
-    static addDoubleColor(
-      builder: flatbuffers.Builder,
-      doubleColorOffset: flatbuffers.Offset
-    ) {
+    static addDoubleColor(builder: flatbuffers.Builder, doubleColorOffset: flatbuffers.Offset) {
       builder.addFieldOffset(3, doubleColorOffset, 0);
     }
 
@@ -6467,10 +5687,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createDoubleColorVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createDoubleColorVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(8, data.length, 8);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addFloat64(data[i]);
@@ -6482,10 +5699,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param number numElems
      */
-    static startDoubleColorVector(
-      builder: flatbuffers.Builder,
-      numElems: number
-    ) {
+    static startDoubleColorVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(8, numElems, 8);
     }
 
@@ -6493,10 +5707,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset intColorOffset
      */
-    static addIntColor(
-      builder: flatbuffers.Builder,
-      intColorOffset: flatbuffers.Offset
-    ) {
+    static addIntColor(builder: flatbuffers.Builder, intColorOffset: flatbuffers.Offset) {
       builder.addFieldOffset(4, intColorOffset, 0);
     }
 
@@ -6505,10 +5716,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createIntColorVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createIntColorVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(4, data.length, 4);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addInt32(data[i]);
@@ -6528,10 +5736,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset pointIndexOffset
      */
-    static addPointIndex(
-      builder: flatbuffers.Builder,
-      pointIndexOffset: flatbuffers.Offset
-    ) {
+    static addPointIndex(builder: flatbuffers.Builder, pointIndexOffset: flatbuffers.Offset) {
       builder.addFieldOffset(5, pointIndexOffset, 0);
     }
 
@@ -6540,10 +5745,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createPointIndexVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createPointIndexVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(4, data.length, 4);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addInt32(data[i]);
@@ -6555,10 +5757,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param number numElems
      */
-    static startPointIndexVector(
-      builder: flatbuffers.Builder,
-      numElems: number
-    ) {
+    static startPointIndexVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(4, numElems, 4);
     }
 
@@ -6566,10 +5765,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset paramIndexOffset
      */
-    static addParamIndex(
-      builder: flatbuffers.Builder,
-      paramIndexOffset: flatbuffers.Offset
-    ) {
+    static addParamIndex(builder: flatbuffers.Builder, paramIndexOffset: flatbuffers.Offset) {
       builder.addFieldOffset(6, paramIndexOffset, 0);
     }
 
@@ -6578,10 +5774,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createParamIndexVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createParamIndexVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(4, data.length, 4);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addInt32(data[i]);
@@ -6593,10 +5786,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param number numElems
      */
-    static startParamIndexVector(
-      builder: flatbuffers.Builder,
-      numElems: number
-    ) {
+    static startParamIndexVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(4, numElems, 4);
     }
 
@@ -6604,10 +5794,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset normalIndexOffset
      */
-    static addNormalIndex(
-      builder: flatbuffers.Builder,
-      normalIndexOffset: flatbuffers.Offset
-    ) {
+    static addNormalIndex(builder: flatbuffers.Builder, normalIndexOffset: flatbuffers.Offset) {
       builder.addFieldOffset(7, normalIndexOffset, 0);
     }
 
@@ -6616,10 +5803,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createNormalIndexVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createNormalIndexVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(4, data.length, 4);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addInt32(data[i]);
@@ -6631,10 +5815,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param number numElems
      */
-    static startNormalIndexVector(
-      builder: flatbuffers.Builder,
-      numElems: number
-    ) {
+    static startNormalIndexVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(4, numElems, 4);
     }
 
@@ -6642,10 +5823,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset colorIndexOffset
      */
-    static addColorIndex(
-      builder: flatbuffers.Builder,
-      colorIndexOffset: flatbuffers.Offset
-    ) {
+    static addColorIndex(builder: flatbuffers.Builder, colorIndexOffset: flatbuffers.Offset) {
       builder.addFieldOffset(8, colorIndexOffset, 0);
     }
 
@@ -6654,10 +5832,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createColorIndexVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createColorIndexVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(4, data.length, 4);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addInt32(data[i]);
@@ -6669,10 +5844,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param number numElems
      */
-    static startColorIndexVector(
-      builder: flatbuffers.Builder,
-      numElems: number
-    ) {
+    static startColorIndexVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(4, numElems, 4);
     }
 
@@ -6680,10 +5852,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset colorTableOffset
      */
-    static addColorTable(
-      builder: flatbuffers.Builder,
-      colorTableOffset: flatbuffers.Offset
-    ) {
+    static addColorTable(builder: flatbuffers.Builder, colorTableOffset: flatbuffers.Offset) {
       builder.addFieldOffset(9, colorTableOffset, 0);
     }
 
@@ -6692,10 +5861,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createColorTableVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createColorTableVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(4, data.length, 4);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addInt32(data[i]);
@@ -6707,10 +5873,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param number numElems
      */
-    static startColorTableVector(
-      builder: flatbuffers.Builder,
-      numElems: number
-    ) {
+    static startColorTableVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(4, numElems, 4);
     }
 
@@ -6750,10 +5913,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset faceIndexOffset
      */
-    static addFaceIndex(
-      builder: flatbuffers.Builder,
-      faceIndexOffset: flatbuffers.Offset
-    ) {
+    static addFaceIndex(builder: flatbuffers.Builder, faceIndexOffset: flatbuffers.Offset) {
       builder.addFieldOffset(14, faceIndexOffset, 0);
     }
 
@@ -6762,10 +5922,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createFaceIndexVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createFaceIndexVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(4, data.length, 4);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addInt32(data[i]);
@@ -6777,10 +5934,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param number numElems
      */
-    static startFaceIndexVector(
-      builder: flatbuffers.Builder,
-      numElems: number
-    ) {
+    static startFaceIndexVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(4, numElems, 4);
     }
 
@@ -6788,10 +5942,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset faceDataOffset
      */
-    static addFaceData(
-      builder: flatbuffers.Builder,
-      faceDataOffset: flatbuffers.Offset
-    ) {
+    static addFaceData(builder: flatbuffers.Builder, faceDataOffset: flatbuffers.Offset) {
       builder.addFieldOffset(15, faceDataOffset, 0);
     }
 
@@ -6800,10 +5951,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createFaceDataVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createFaceDataVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(8, data.length, 8);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addFloat64(data[i]);
@@ -6823,10 +5971,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset auxDataOffset
      */
-    static addAuxData(
-      builder: flatbuffers.Builder,
-      auxDataOffset: flatbuffers.Offset
-    ) {
+    static addAuxData(builder: flatbuffers.Builder, auxDataOffset: flatbuffers.Offset) {
       builder.addFieldOffset(16, auxDataOffset, 0);
     }
 
@@ -6834,10 +5979,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param number expectedClosure
      */
-    static addExpectedClosure(
-      builder: flatbuffers.Builder,
-      expectedClosure: number
-    ) {
+    static addExpectedClosure(builder: flatbuffers.Builder, expectedClosure: number) {
       builder.addFieldInt32(17, expectedClosure, 0);
     }
 
@@ -6845,10 +5987,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset taggedNumericDataOffset
      */
-    static addTaggedNumericData(
-      builder: flatbuffers.Builder,
-      taggedNumericDataOffset: flatbuffers.Offset
-    ) {
+    static addTaggedNumericData(builder: flatbuffers.Builder, taggedNumericDataOffset: flatbuffers.Offset) {
       builder.addFieldOffset(18, taggedNumericDataOffset, 0);
     }
 
@@ -7172,14 +6311,8 @@ export namespace BGFBAccessors {
      * @param TransitionSpiral= obj
      * @returns TransitionSpiral
      */
-    static getRootAsTransitionSpiral(
-      bb: flatbuffers.ByteBuffer,
-      obj?: TransitionSpiral
-    ): TransitionSpiral {
-      return (obj || new TransitionSpiral()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsTransitionSpiral(bb: flatbuffers.ByteBuffer, obj?: TransitionSpiral): TransitionSpiral {
+      return (obj || new TransitionSpiral()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -7187,15 +6320,9 @@ export namespace BGFBAccessors {
      * @param TransitionSpiral= obj
      * @returns TransitionSpiral
      */
-    static getSizePrefixedRootAsTransitionSpiral(
-      bb: flatbuffers.ByteBuffer,
-      obj?: TransitionSpiral
-    ): TransitionSpiral {
+    static getSizePrefixedRootAsTransitionSpiral(bb: flatbuffers.ByteBuffer, obj?: TransitionSpiral): TransitionSpiral {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new TransitionSpiral()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new TransitionSpiral()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -7204,12 +6331,7 @@ export namespace BGFBAccessors {
      */
     detail(obj?: TransitionSpiralDetail): TransitionSpiralDetail | null {
       const offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset
-        ? (obj || new TransitionSpiralDetail()).__init(
-            this.bb_pos + offset,
-            this.bb!
-          )
-        : null;
+      return offset ? (obj || new TransitionSpiralDetail()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -7218,11 +6340,7 @@ export namespace BGFBAccessors {
      */
     extraData(index: number): number | null {
       const offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset
-        ? this.bb!.readFloat64(
-            this.bb!.__vector(this.bb_pos + offset) + index * 8
-          )
-        : 0;
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
@@ -7241,8 +6359,7 @@ export namespace BGFBAccessors {
       return offset
         ? new Float64Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -7254,12 +6371,7 @@ export namespace BGFBAccessors {
      */
     directDetail(obj?: DirectSpiralDetail): DirectSpiralDetail | null {
       const offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset
-        ? (obj || new DirectSpiralDetail()).__init(
-            this.bb_pos + offset,
-            this.bb!
-          )
-        : null;
+      return offset ? (obj || new DirectSpiralDetail()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -7273,10 +6385,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset detailOffset
      */
-    static addDetail(
-      builder: flatbuffers.Builder,
-      detailOffset: flatbuffers.Offset
-    ) {
+    static addDetail(builder: flatbuffers.Builder, detailOffset: flatbuffers.Offset) {
       builder.addFieldStruct(0, detailOffset, 0);
     }
 
@@ -7284,10 +6393,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset extraDataOffset
      */
-    static addExtraData(
-      builder: flatbuffers.Builder,
-      extraDataOffset: flatbuffers.Offset
-    ) {
+    static addExtraData(builder: flatbuffers.Builder, extraDataOffset: flatbuffers.Offset) {
       builder.addFieldOffset(1, extraDataOffset, 0);
     }
 
@@ -7296,10 +6402,7 @@ export namespace BGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createExtraDataVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createExtraDataVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(8, data.length, 8);
       for (let i = data.length - 1; i >= 0; i--) {
         builder.addFloat64(data[i]);
@@ -7311,10 +6414,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param number numElems
      */
-    static startExtraDataVector(
-      builder: flatbuffers.Builder,
-      numElems: number
-    ) {
+    static startExtraDataVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(8, numElems, 8);
     }
 
@@ -7322,10 +6422,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset directDetailOffset
      */
-    static addDirectDetail(
-      builder: flatbuffers.Builder,
-      directDetailOffset: flatbuffers.Offset
-    ) {
+    static addDirectDetail(builder: flatbuffers.Builder, directDetailOffset: flatbuffers.Offset) {
       builder.addFieldStruct(2, directDetailOffset, 0);
     }
 
@@ -7333,9 +6430,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @returns flatbuffers.Offset
      */
-    static endTransitionSpiral(
-      builder: flatbuffers.Builder
-    ): flatbuffers.Offset {
+    static endTransitionSpiral(builder: flatbuffers.Builder): flatbuffers.Offset {
       const offset = builder.endObject();
       return offset;
     }
@@ -7376,14 +6471,8 @@ export namespace BGFBAccessors {
      * @param VariantGeometry= obj
      * @returns VariantGeometry
      */
-    static getRootAsVariantGeometry(
-      bb: flatbuffers.ByteBuffer,
-      obj?: VariantGeometry
-    ): VariantGeometry {
-      return (obj || new VariantGeometry()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsVariantGeometry(bb: flatbuffers.ByteBuffer, obj?: VariantGeometry): VariantGeometry {
+      return (obj || new VariantGeometry()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -7391,15 +6480,9 @@ export namespace BGFBAccessors {
      * @param VariantGeometry= obj
      * @returns VariantGeometry
      */
-    static getSizePrefixedRootAsVariantGeometry(
-      bb: flatbuffers.ByteBuffer,
-      obj?: VariantGeometry
-    ): VariantGeometry {
+    static getSizePrefixedRootAsVariantGeometry(bb: flatbuffers.ByteBuffer, obj?: VariantGeometry): VariantGeometry {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new VariantGeometry()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new VariantGeometry()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -7407,9 +6490,7 @@ export namespace BGFBAccessors {
      */
     geometryType(): VariantGeometryUnion {
       const offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset
-        ? /**  */ this.bb!.readUint8(this.bb_pos + offset)
-        : VariantGeometryUnion.tagNONE;
+      return offset ? /**  */ this.bb!.readUint8(this.bb_pos + offset) : VariantGeometryUnion.tagNONE;
     }
 
     /**
@@ -7428,10 +6509,7 @@ export namespace BGFBAccessors {
     tag(obj?: CurvePrimitiveId): CurvePrimitiveId | null {
       const offset = this.bb!.__offset(this.bb_pos, 8);
       return offset
-        ? (obj || new CurvePrimitiveId()).__init(
-            this.bb!.__indirect(this.bb_pos + offset),
-            this.bb!
-          )
+        ? (obj || new CurvePrimitiveId()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!)
         : null;
     }
 
@@ -7446,10 +6524,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param VariantGeometryUnion geometryType
      */
-    static addGeometryType(
-      builder: flatbuffers.Builder,
-      geometryType: VariantGeometryUnion
-    ) {
+    static addGeometryType(builder: flatbuffers.Builder, geometryType: VariantGeometryUnion) {
       builder.addFieldInt8(0, geometryType, VariantGeometryUnion.tagNONE);
     }
 
@@ -7457,10 +6532,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset geometryOffset
      */
-    static addGeometry(
-      builder: flatbuffers.Builder,
-      geometryOffset: flatbuffers.Offset
-    ) {
+    static addGeometry(builder: flatbuffers.Builder, geometryOffset: flatbuffers.Offset) {
       builder.addFieldOffset(1, geometryOffset, 0);
     }
 
@@ -7476,9 +6548,7 @@ export namespace BGFBAccessors {
      * @param flatbuffers.Builder builder
      * @returns flatbuffers.Offset
      */
-    static endVariantGeometry(
-      builder: flatbuffers.Builder
-    ): flatbuffers.Offset {
+    static endVariantGeometry(builder: flatbuffers.Builder): flatbuffers.Offset {
       const offset = builder.endObject();
       return offset;
     }

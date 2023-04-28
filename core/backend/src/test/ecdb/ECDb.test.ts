@@ -62,9 +62,7 @@ describe("ECDb", () => {
     });
 
     using(new ECDb(), (ecdb: ECDb) => {
-      assert.doesNotThrow(() =>
-        ecdb.openDb(ecdbPath, ECDbOpenMode.FileUpgrade)
-      );
+      assert.doesNotThrow(() => ecdb.openDb(ecdbPath, ECDbOpenMode.FileUpgrade));
     });
   });
 
@@ -103,16 +101,13 @@ describe("ECDb", () => {
       ecdb.openDb(ecdbPath, ECDbOpenMode.Readonly);
       assert.isTrue(ecdb.isOpen);
 
-      ecdb.withPreparedStatement(
-        "SELECT Name, Age FROM test.Person WHERE ECInstanceId=?",
-        (stmt: ECSqlStatement) => {
-          stmt.bindId(1, id);
-          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-          const row = stmt.getRow();
-          assert.equal(row.name, "Mary");
-          assert.equal(row.age, 45);
-        }
-      );
+      ecdb.withPreparedStatement("SELECT Name, Age FROM test.Person WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
+        stmt.bindId(1, id);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+        const row = stmt.getRow();
+        assert.equal(row.name, "Mary");
+        assert.equal(row.age, 45);
+      });
     });
   });
 
@@ -129,39 +124,27 @@ describe("ECDb", () => {
         }
       );
 
-      testECDb.withPreparedSqliteStatement(
-        "INSERT INTO Test(Name,Code) VALUES(?,?)",
-        (stmt: SqliteStatement) => {
-          stmt.bindValue(1, "Dummy 1");
-          stmt.bindValue(2, 100);
-          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-        }
-      );
+      testECDb.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(?,?)", (stmt: SqliteStatement) => {
+        stmt.bindValue(1, "Dummy 1");
+        stmt.bindValue(2, 100);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
 
-      testECDb.withPreparedSqliteStatement(
-        "INSERT INTO Test(Name,Code) VALUES(?,?)",
-        (stmt: SqliteStatement) => {
-          stmt.bindValues(["Dummy 2", 200]);
-          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-        }
-      );
+      testECDb.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(?,?)", (stmt: SqliteStatement) => {
+        stmt.bindValues(["Dummy 2", 200]);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
 
-      testECDb.withPreparedSqliteStatement(
-        "INSERT INTO Test(Name,Code) VALUES(:p1,:p2)",
-        (stmt: SqliteStatement) => {
-          stmt.bindValue(":p1", "Dummy 3");
-          stmt.bindValue(":p2", 300);
-          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-        }
-      );
+      testECDb.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(:p1,:p2)", (stmt: SqliteStatement) => {
+        stmt.bindValue(":p1", "Dummy 3");
+        stmt.bindValue(":p2", 300);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
 
-      testECDb.withPreparedSqliteStatement(
-        "INSERT INTO Test(Name,Code) VALUES(:p1,:p2)",
-        (stmt: SqliteStatement) => {
-          stmt.bindValues({ ":p1": "Dummy 4", ":p2": 400 });
-          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-        }
-      );
+      testECDb.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(:p1,:p2)", (stmt: SqliteStatement) => {
+        stmt.bindValues({ ":p1": "Dummy 4", ":p2": 400 });
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
 
       testECDb.saveChanges();
     });
@@ -170,38 +153,35 @@ describe("ECDb", () => {
       ecdb.openDb(ecdbPath, ECDbOpenMode.Readonly);
       assert.isTrue(ecdb.isOpen);
 
-      ecdb.withPreparedSqliteStatement(
-        "SELECT Id,Name,Code FROM Test ORDER BY Id",
-        (stmt: SqliteStatement) => {
-          for (let i: number = 1; i <= 4; i++) {
-            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-            assert.equal(stmt.getColumnCount(), 3);
-            const val0: SqliteValue = stmt.getValue(0);
-            assert.equal(val0.columnName, "Id");
-            assert.equal(val0.type, SqliteValueType.Integer);
-            assert.isFalse(val0.isNull);
-            assert.equal(val0.getInteger(), i);
+      ecdb.withPreparedSqliteStatement("SELECT Id,Name,Code FROM Test ORDER BY Id", (stmt: SqliteStatement) => {
+        for (let i: number = 1; i <= 4; i++) {
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          assert.equal(stmt.getColumnCount(), 3);
+          const val0: SqliteValue = stmt.getValue(0);
+          assert.equal(val0.columnName, "Id");
+          assert.equal(val0.type, SqliteValueType.Integer);
+          assert.isFalse(val0.isNull);
+          assert.equal(val0.getInteger(), i);
 
-            const val1: SqliteValue = stmt.getValue(1);
-            assert.equal(val1.columnName, "Name");
-            assert.equal(val1.type, SqliteValueType.String);
-            assert.isFalse(val1.isNull);
-            assert.equal(val1.getString(), `Dummy ${i}`);
+          const val1: SqliteValue = stmt.getValue(1);
+          assert.equal(val1.columnName, "Name");
+          assert.equal(val1.type, SqliteValueType.String);
+          assert.isFalse(val1.isNull);
+          assert.equal(val1.getString(), `Dummy ${i}`);
 
-            const val2: SqliteValue = stmt.getValue(2);
-            assert.equal(val2.columnName, "Code");
-            assert.equal(val2.type, SqliteValueType.Integer);
-            assert.isFalse(val2.isNull);
-            assert.equal(val2.getInteger(), i * 100);
+          const val2: SqliteValue = stmt.getValue(2);
+          assert.equal(val2.columnName, "Code");
+          assert.equal(val2.type, SqliteValueType.Integer);
+          assert.isFalse(val2.isNull);
+          assert.equal(val2.getInteger(), i * 100);
 
-            const row: any = stmt.getRow();
-            assert.equal(row.id, i);
-            assert.equal(row.name, `Dummy ${i}`);
-            assert.equal(row.code, i * 100);
-          }
-          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+          const row: any = stmt.getRow();
+          assert.equal(row.id, i);
+          assert.equal(row.name, `Dummy ${i}`);
+          assert.equal(row.code, i * 100);
         }
-      );
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
     });
   });
 });

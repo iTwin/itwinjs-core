@@ -62,13 +62,7 @@ export class Datum {
    * @param ellipsoid the ellipsoid.
    * @param primeMeridian the prime meridian.
    */
-  public constructor(
-    code: int32,
-    name: string,
-    type: string,
-    ellipsoid: Ellipsoid,
-    primeMeridian: PrimeMeridian
-  ) {
+  public constructor(code: int32, name: string, type: string, ellipsoid: Ellipsoid, primeMeridian: PrimeMeridian) {
     /* Check the parameters */
     ASystem.assertNot(name == null, "A datum needs a name");
     ASystem.assertNot(type == null, "A datum needs a type");
@@ -82,24 +76,12 @@ export class Datum {
     /* Check the parameters */
     if (this.isTypeGeodetic()) {
       /* Check ellipsoid and prime meridian */
-      ASystem.assertNot(
-        ellipsoid == null,
-        "A geodetic datum needs an ellipsoid"
-      );
-      ASystem.assertNot(
-        primeMeridian == null,
-        "A geodetic datum needs a prime meridian"
-      );
+      ASystem.assertNot(ellipsoid == null, "A geodetic datum needs an ellipsoid");
+      ASystem.assertNot(primeMeridian == null, "A geodetic datum needs a prime meridian");
     } else if (this.isTypeVertical()) {
       /* No ellipsoid and prime meridian */
-      ASystem.assertNot(
-        ellipsoid != null,
-        "A vertical datum does not have an ellipsoid"
-      );
-      ASystem.assertNot(
-        primeMeridian != null,
-        "A vertical datum does not have a prime meridian"
-      );
+      ASystem.assertNot(ellipsoid != null, "A vertical datum does not have an ellipsoid");
+      ASystem.assertNot(primeMeridian != null, "A vertical datum does not have a prime meridian");
     } else {
       /* Invalid type */
       ASystem.assertNot(true, "Invalid datum type '" + type + "'");
@@ -185,11 +167,9 @@ export class Datum {
    */
   public isCompatible(other: Datum): boolean {
     if (other._code == this._code) return true;
-    if (Strings.equalsIgnoreCase(other._type, this._type) == false)
-      return false;
+    if (Strings.equalsIgnoreCase(other._type, this._type) == false) return false;
     if (other._ellipsoid.isCompatible(this._ellipsoid) == false) return false;
-    if (other._primeMeridian.isCompatible(this._primeMeridian) == false)
-      return false;
+    if (other._primeMeridian.isCompatible(this._primeMeridian) == false) return false;
     return true;
   }
 

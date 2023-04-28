@@ -73,11 +73,7 @@ export class ObliqueStereographic extends OperationMethod {
    * @param parameters the values of the parameters.
    */
   public constructor(parameters: ParameterValueList) {
-    super(
-      ObliqueStereographic.METHOD_CODE,
-      "Oblique Stereographic",
-      parameters
-    );
+    super(ObliqueStereographic.METHOD_CODE, "Oblique Stereographic", parameters);
     /* Store the parameters */
     this._lat0 = parameters != null ? parameters.getValue(8801) : 0.0;
     this._lon0 = parameters != null ? parameters.getValue(8802) : 0.0;
@@ -94,13 +90,7 @@ export class ObliqueStereographic extends OperationMethod {
    * @param fe false easting.
    * @param fn false northing.
    */
-  public static create(
-    lat0: float64,
-    lon0: float64,
-    k0: float64,
-    fe: float64,
-    fn: float64
-  ): ObliqueStereographic {
+  public static create(lat0: float64, lon0: float64, k0: float64, fe: float64, fn: float64): ObliqueStereographic {
     const projection: ObliqueStereographic = new ObliqueStereographic(null);
     projection._lat0 = lat0;
     projection._lon0 = lon0;
@@ -179,40 +169,24 @@ export class ObliqueStereographic extends OperationMethod {
     this._e2 = this._e * this._e;
     const sinLat0: float64 = ObliqueStereographic.sin(this._lat0);
     const t0: float64 = 1.0 - this._e2 * sinLat0 * sinLat0;
-    const rho0: float64 =
-      (a * (1 - this._e2)) / ObliqueStereographic.pow(t0, 1.5);
+    const rho0: float64 = (a * (1 - this._e2)) / ObliqueStereographic.pow(t0, 1.5);
     const nu0: float64 = a / ObliqueStereographic.pow(t0, 0.5);
     this._R = ObliqueStereographic.pow(rho0 * nu0, 0.5);
     this._n = ObliqueStereographic.pow(
-      1.0 +
-        (this._e2 *
-          ObliqueStereographic.pow(ObliqueStereographic.cos(this._lat0), 4)) /
-          (1.0 - this._e2),
+      1.0 + (this._e2 * ObliqueStereographic.pow(ObliqueStereographic.cos(this._lat0), 4)) / (1.0 - this._e2),
       0.5
     );
     const S1: float64 = (1.0 + sinLat0) / (1.0 - sinLat0);
     const S2: float64 = (1.0 - this._e * sinLat0) / (1.0 + this._e * sinLat0);
-    const w1: float64 = ObliqueStereographic.pow(
-      S1 * ObliqueStereographic.pow(S2, this._e),
-      this._n
-    );
+    const w1: float64 = ObliqueStereographic.pow(S1 * ObliqueStereographic.pow(S2, this._e), this._n);
     const sinChi0: float64 = (w1 - 1.0) / (w1 + 1.0);
-    this._c =
-      ((this._n + sinLat0) * (1.0 - sinChi0)) /
-      ((this._n - sinLat0) * (1.0 + sinChi0));
+    this._c = ((this._n + sinLat0) * (1.0 - sinChi0)) / ((this._n - sinLat0) * (1.0 + sinChi0));
     const w2: float64 = this._c * w1;
     this._chi0 = ObliqueStereographic.asin((w2 - 1.0) / (w2 + 1.0));
     this._lambda0 = this._lon0;
     /* For reverse calculation */
-    this._g =
-      2.0 *
-      this._R *
-      this._k0 *
-      ObliqueStereographic.tan(
-        ObliqueStereographic.PI / 4.0 - this._chi0 / 2.0
-      );
-    this._h =
-      4.0 * this._R * this._k0 * ObliqueStereographic.tan(this._chi0) + this._g;
+    this._g = 2.0 * this._R * this._k0 * ObliqueStereographic.tan(ObliqueStereographic.PI / 4.0 - this._chi0 / 2.0);
+    this._h = 4.0 * this._R * this._k0 * ObliqueStereographic.tan(this._chi0) + this._g;
     /* Return the projection */
     return this;
   }
@@ -229,12 +203,7 @@ export class ObliqueStereographic extends OperationMethod {
    * OperationMethod interface method.
    * @see OperationMethod#forward
    */
-  public forward(
-    sourceCRS: CRS,
-    source: Coordinate,
-    targetCRS: CRS,
-    target: Coordinate
-  ): void {
+  public forward(sourceCRS: CRS, source: Coordinate, targetCRS: CRS, target: Coordinate): void {
     /* Get the parameters */
     const lon: float64 = source.getX();
     const lat: float64 = source.getY();
@@ -243,12 +212,7 @@ export class ObliqueStereographic extends OperationMethod {
     const lambda: float64 = this._n * (lon - this._lambda0) + this._lambda0;
     const Sa: float64 = (1.0 + sinLat) / (1.0 - sinLat);
     const Sb: float64 = (1.0 - this._e * sinLat) / (1.0 + this._e * sinLat);
-    const w: float64 =
-      this._c *
-      ObliqueStereographic.pow(
-        Sa * ObliqueStereographic.pow(Sb, this._e),
-        this._n
-      );
+    const w: float64 = this._c * ObliqueStereographic.pow(Sa * ObliqueStereographic.pow(Sb, this._e), this._n);
     const chi: float64 = ObliqueStereographic.asin((w - 1.0) / (w + 1.0));
     /* Calculate easting and northing */
     const B: float64 =
@@ -259,12 +223,7 @@ export class ObliqueStereographic extends OperationMethod {
         ObliqueStereographic.cos(lambda - this._lambda0);
     const E: float64 =
       this._fe +
-      (2.0 *
-        this._R *
-        this._k0 *
-        ObliqueStereographic.cos(chi) *
-        ObliqueStereographic.sin(lambda - this._lambda0)) /
-        B;
+      (2.0 * this._R * this._k0 * ObliqueStereographic.cos(chi) * ObliqueStereographic.sin(lambda - this._lambda0)) / B;
     const N: float64 =
       this._fn +
       (2.0 *
@@ -285,12 +244,7 @@ export class ObliqueStereographic extends OperationMethod {
    * OperationMethod interface method.
    * @see OperationMethod#reverse
    */
-  public reverse(
-    sourceCRS: CRS,
-    source: Coordinate,
-    targetCRS: CRS,
-    target: Coordinate
-  ): void {
+  public reverse(sourceCRS: CRS, source: Coordinate, targetCRS: CRS, target: Coordinate): void {
     /* Get the parameters */
     const E: float64 = target.getX() - this._fe;
     const N: float64 = target.getY() - this._fn;
@@ -299,37 +253,21 @@ export class ObliqueStereographic extends OperationMethod {
     const j: float64 = ObliqueStereographic.atan(E / (this._g - N)) - i;
     const chi: float64 =
       this._chi0 +
-      2.0 *
-        ObliqueStereographic.atan(
-          (N - E * ObliqueStereographic.tan(j / 2.0)) /
-            (2.0 * this._R * this._k0)
-        );
+      2.0 * ObliqueStereographic.atan((N - E * ObliqueStereographic.tan(j / 2.0)) / (2.0 * this._R * this._k0));
     const lambda: float64 = j + 2.0 * i + this._lambda0;
     const lon: float64 = (lambda - this._lambda0) / this._n + this._lambda0;
     /* Iterate to get isometric (psi) and geodetic (phi) latitude */
     const sinChi: float64 = ObliqueStereographic.sin(chi);
-    const psi: float64 =
-      (0.5 *
-        ObliqueStereographic.log((1.0 + sinChi) / (this._c * (1.0 - sinChi)))) /
-      this._n;
-    let phiK: float64 =
-      2.0 * ObliqueStereographic.atan(ObliqueStereographic.exp(psi)) -
-      ObliqueStereographic.PI / 2.0;
+    const psi: float64 = (0.5 * ObliqueStereographic.log((1.0 + sinChi) / (this._c * (1.0 - sinChi)))) / this._n;
+    let phiK: float64 = 2.0 * ObliqueStereographic.atan(ObliqueStereographic.exp(psi)) - ObliqueStereographic.PI / 2.0;
     for (let k: number = 1; k < 8; k++) {
       const esinPhi: float64 = this._e * ObliqueStereographic.sin(phiK);
       const psiK: float64 = ObliqueStereographic.log(
         ObliqueStereographic.tan(phiK / 2.0 + ObliqueStereographic.PI / 4.0) *
-          ObliqueStereographic.pow(
-            (1.0 - esinPhi) / (1.0 + esinPhi),
-            this._e / 2.0
-          )
+          ObliqueStereographic.pow((1.0 - esinPhi) / (1.0 + esinPhi), this._e / 2.0)
       );
       const phiNextK: float64 =
-        phiK -
-        ((psiK - psi) *
-          ObliqueStereographic.cos(phiK) *
-          (1.0 - esinPhi * esinPhi)) /
-          (1.0 - this._e2);
+        phiK - ((psiK - psi) * ObliqueStereographic.cos(phiK) * (1.0 - esinPhi * esinPhi)) / (1.0 - this._e2);
       const change: float64 = Math.abs(phiNextK - phiK);
       phiK = phiNextK;
       if (change < 1.0e-12) break; // normally after 4 iterations

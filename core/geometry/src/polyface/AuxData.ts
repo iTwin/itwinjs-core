@@ -58,15 +58,9 @@ export class AuxChannelData {
   }
 
   /** Copy blocks of size `blockSize` from (blocked index) `thisIndex` in this AuxChannelData to (blockIndex) `otherIndex` of `other` */
-  public copyValues(
-    other: AuxChannelData,
-    thisIndex: number,
-    otherIndex: number,
-    blockSize: number
-  ): void {
+  public copyValues(other: AuxChannelData, thisIndex: number, otherIndex: number, blockSize: number): void {
     for (let i = 0; i < blockSize; i++)
-      this.values[thisIndex * blockSize + i] =
-        other.values[otherIndex * blockSize + i];
+      this.values[thisIndex * blockSize + i] = other.values[otherIndex * blockSize + i];
   }
 
   /** return a deep copy */
@@ -80,8 +74,7 @@ export class AuxChannelData {
   public isAlmostEqual(other: AuxChannelData, tol?: number): boolean {
     const tolerance = tol ? tol : 1.0e-8;
     return (
-      Math.abs(this.input - other.input) < tolerance &&
-      NumberArray.isAlmostEqual(this.values, other.values, tolerance)
+      Math.abs(this.input - other.input) < tolerance && NumberArray.isAlmostEqual(this.values, other.values, tolerance)
     );
   }
 }
@@ -100,12 +93,7 @@ export class AuxChannel {
   public inputName?: string;
 
   /** Create a [[AuxChannel]] */
-  public constructor(
-    data: AuxChannelData[],
-    dataType: AuxChannelDataType,
-    name?: string,
-    inputName?: string
-  ) {
+  public constructor(data: AuxChannelData[], dataType: AuxChannelDataType, name?: string, inputName?: string) {
     this.data = data;
     this.dataType = dataType;
     this.name = name;
@@ -129,18 +117,14 @@ export class AuxChannel {
     )
       return false;
 
-    for (let i = 0; i < this.data.length; i++)
-      if (!this.data[i].isAlmostEqual(other.data[i], tol)) return false;
+    for (let i = 0; i < this.data.length; i++) if (!this.data[i].isAlmostEqual(other.data[i], tol)) return false;
 
     return true;
   }
 
   /** True if [[entriesPerValue]] is `1`. */
   public get isScalar(): boolean {
-    return (
-      this.dataType === AuxChannelDataType.Distance ||
-      this.dataType === AuxChannelDataType.Scalar
-    );
+    return this.dataType === AuxChannelDataType.Distance || this.dataType === AuxChannelDataType.Scalar;
   }
 
   /** The number of values in `data.values` per entry - 1 for scalar and distance types, 3 for normal and vector types. */
@@ -150,9 +134,7 @@ export class AuxChannel {
 
   /** The number of entries in `data.values`. */
   public get valueCount(): number {
-    return 0 === this.data.length
-      ? 0
-      : this.data[0].values.length / this.entriesPerValue;
+    return 0 === this.data.length ? 0 : this.data[0].values.length / this.entriesPerValue;
   }
 
   /** The minimum and maximum values in `data.values`, or `undefined` if [[isScalar]] is false. */
@@ -176,8 +158,7 @@ export class AuxChannel {
     if (AuxChannelDataType.Vector === this.dataType) {
       for (const data of this.data) {
         const v = data.values;
-        for (let i = 0; i < v.length; i += 3)
-          result.extendXYZ(v[i] * scale, v[i + 1] * scale, v[i + 2] * scale);
+        for (let i = 0; i < v.length; i += 3) result.extendXYZ(v[i] * scale, v[i + 1] * scale, v[i + 2] * scale);
       }
     }
 
@@ -215,15 +196,11 @@ export class PolyfaceAuxData {
    * The indices are compared for exact equality. The data in the channels are compared using `tolerance`, which defaults to 1.0e-8.
    */
   public isAlmostEqual(other: PolyfaceAuxData, tolerance?: number): boolean {
-    if (
-      !NumberArray.isExactEqual(this.indices, other.indices) ||
-      this.channels.length !== other.channels.length
-    )
+    if (!NumberArray.isExactEqual(this.indices, other.indices) || this.channels.length !== other.channels.length)
       return false;
 
     for (let i = 0; i < this.channels.length; i++)
-      if (!this.channels[i].isAlmostEqual(other.channels[i], tolerance))
-        return false;
+      if (!this.channels[i].isAlmostEqual(other.channels[i], tolerance)) return false;
 
     return true;
   }
@@ -248,17 +225,10 @@ export class PolyfaceAuxData {
     for (const parentChannel of this.channels) {
       const visitorChannelData: AuxChannelData[] = [];
       for (const parentChannelData of parentChannel.data)
-        visitorChannelData.push(
-          new AuxChannelData(parentChannelData.input, [])
-        );
+        visitorChannelData.push(new AuxChannelData(parentChannelData.input, []));
 
       visitorChannels.push(
-        new AuxChannel(
-          visitorChannelData,
-          parentChannel.dataType,
-          parentChannel.name,
-          parentChannel.inputName
-        )
+        new AuxChannel(visitorChannelData, parentChannel.dataType, parentChannel.name, parentChannel.inputName)
       );
     }
 
@@ -282,8 +252,7 @@ export class PolyfaceAuxData {
           case AuxChannelDataType.Scalar:
             continue;
           case AuxChannelDataType.Distance: {
-            for (let i = 0; i < data.values.length; i++)
-              data.values[i] *= scale;
+            for (let i = 0; i < data.values.length; i++) data.values[i] *= scale;
 
             break;
           }
@@ -291,15 +260,11 @@ export class PolyfaceAuxData {
             inverseRot = inverseRot ?? rot.inverse();
             if (!inverseRot) return false;
 
-            transformPoints(data.values, (point) =>
-              inverseRot!.multiplyTransposeVectorInPlace(point)
-            );
+            transformPoints(data.values, (point) => inverseRot!.multiplyTransposeVectorInPlace(point));
             break;
           }
           case AuxChannelDataType.Vector: {
-            transformPoints(data.values, (point) =>
-              rot.multiplyVectorInPlace(point)
-            );
+            transformPoints(data.values, (point) => rot.multiplyVectorInPlace(point));
             break;
           }
         }
@@ -310,10 +275,7 @@ export class PolyfaceAuxData {
   }
 }
 
-function transformPoints(
-  coords: number[],
-  transform: (point: Point3d) => void
-): void {
+function transformPoints(coords: number[], transform: (point: Point3d) => void): void {
   const point = new Point3d();
   for (let i = 0; i < coords.length; i += 3) {
     point.set(coords[i], coords[i + 1], coords[i + 2]);

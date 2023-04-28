@@ -20,10 +20,7 @@ import { NewtonRtoRStrokeHandler } from "./NewtonRtoRStrokeHandler";
  * Context for computing intersections of a CurvePrimitive with a plane.
  * @internal
  */
-export class AppendPlaneIntersectionStrokeHandler
-  extends NewtonRtoRStrokeHandler
-  implements IStrokeHandler
-{
+export class AppendPlaneIntersectionStrokeHandler extends NewtonRtoRStrokeHandler implements IStrokeHandler {
   private _curve: CurvePrimitive | undefined;
   private _plane: PlaneAltitudeEvaluator;
   private _intersections: CurveLocationDetail[];
@@ -48,10 +45,7 @@ export class AppendPlaneIntersectionStrokeHandler
     return this._derivativeB; // <--- _derivativeB is not currently used anywhere. Provided getter to suppress lint error
   }
 
-  public constructor(
-    plane: PlaneAltitudeEvaluator,
-    intersections: CurveLocationDetail[]
-  ) {
+  public constructor(plane: PlaneAltitudeEvaluator, intersections: CurveLocationDetail[]) {
     super();
     this._plane = plane;
     this._intersections = intersections;
@@ -82,11 +76,7 @@ export class AppendPlaneIntersectionStrokeHandler
     for (let i = 0; i <= numStrokes; i++) {
       const fraction = Geometry.interpolate(fraction0, i * df, fraction1);
       cp.fractionToPointAndDerivative(fraction, this._ray);
-      this.announcePointTangent(
-        this._ray.origin,
-        fraction,
-        this._ray.direction
-      );
+      this.announcePointTangent(this._ray.origin, fraction, this._ray.direction);
     }
   }
 
@@ -118,13 +108,7 @@ export class AppendPlaneIntersectionStrokeHandler
     const curve = this.effectiveCurve();
     if (curve) {
       this._ray = curve.fractionToPointAndDerivative(fraction, this._ray);
-      this._intersections.push(
-        CurveLocationDetail.createCurveFractionPoint(
-          curve,
-          fraction,
-          this._ray.origin
-        )
-      );
+      this._intersections.push(CurveLocationDetail.createCurveFractionPoint(curve, fraction, this._ray.origin));
     }
   }
 
@@ -145,16 +129,10 @@ export class AppendPlaneIntersectionStrokeHandler
     if (this._functionA === 0) this.announceSolutionFraction(this._fractionA);
     if (this._functionB === 0) this.announceSolutionFraction(this._fractionB);
     if (this._functionA * this._functionB < 0) {
-      const fraction = Geometry.inverseInterpolate(
-        this._fractionA,
-        this._functionA,
-        this._fractionB,
-        this._functionB
-      );
+      const fraction = Geometry.inverseInterpolate(this._fractionA, this._functionA, this._fractionB, this._functionB);
       if (fraction) {
         this._newtonSolver.setX(fraction);
-        if (this._newtonSolver.runIterations())
-          this.announceSolutionFraction(this._newtonSolver.getX());
+        if (this._newtonSolver.runIterations()) this.announceSolutionFraction(this._newtonSolver.getX());
       }
     }
   }
@@ -176,11 +154,7 @@ export class AppendPlaneIntersectionStrokeHandler
    * @param fraction
    * @param tangent
    */
-  public announcePointTangent(
-    xyz: Point3d,
-    fraction: number,
-    tangent: Vector3d
-  ): void {
+  public announcePointTangent(xyz: Point3d, fraction: number, tangent: Vector3d): void {
     this.evaluateB(xyz, fraction, tangent);
     if (this._numThisCurve++ > 0) this.searchInterval();
     this._functionA = this._functionB;

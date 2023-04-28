@@ -33,10 +33,7 @@ function compareMaterials(lhs?: RenderMaterial, rhs?: RenderMaterial): number {
   );
 }
 
-function compareTextureMappings(
-  _lhs?: TextureMapping,
-  _rhs?: TextureMapping
-): number {
+function compareTextureMappings(_lhs?: TextureMapping, _rhs?: TextureMapping): number {
   // ###TODO we don't have a way of ordering the textures from the pattern/normal map(s) - not all textures have keys defined.
   // For now this will only work if the GraphicBuilder uses a single material for all geometry.
   // return comparePossiblyUndefined((lhTex: TextureMapping, rhTex: TextureMapping) => lhTex === rhTex ? 0 : compareStringsOrUndefined(lhTex.texture.key, rhTex.texture.key), lhs, rhs);
@@ -99,10 +96,7 @@ export class DisplayParams {
         if (undefined !== gf.gradient && undefined !== resolveGradient) {
           const gradientTexture = resolveGradient(gf.gradient);
           if (undefined !== gradientTexture)
-            gradientMapping = new TextureMapping(
-              gradientTexture,
-              new TextureMapping.Params()
-            );
+            gradientMapping = new TextureMapping(gradientTexture, new TextureMapping.Params());
         }
         return new DisplayParams(
           type,
@@ -118,13 +112,7 @@ export class DisplayParams {
         );
       }
       case DisplayParams.Type.Linear:
-        return new DisplayParams(
-          type,
-          lineColor,
-          lineColor,
-          gf.rasterWidth,
-          gf.linePixels
-        );
+        return new DisplayParams(type, lineColor, lineColor, gf.rasterWidth, gf.linePixels);
       default: // DisplayParams.Type.Text
         return new DisplayParams(
           type,
@@ -146,12 +134,7 @@ export class DisplayParams {
     ignoreLighting: boolean,
     resolveGradient?: (grad: Gradient.Symb) => RenderTexture | undefined
   ): DisplayParams {
-    return DisplayParams.createForType(
-      DisplayParams.Type.Mesh,
-      gf,
-      resolveGradient,
-      ignoreLighting
-    );
+    return DisplayParams.createForType(DisplayParams.Type.Mesh, gf, resolveGradient, ignoreLighting);
   }
 
   /** Creates a DisplayParams object that describes linear geometry based on the specified GraphicParams. */
@@ -170,10 +153,7 @@ export class DisplayParams {
     if (this.gradient !== undefined && undefined !== this.gradient.flags) {
       // Even if the gradient is not outlined, produce an outline to be displayed as the region's edges when fill ViewFlag is off.
       const gradFlags: Gradient.Flags = this.gradient.flags;
-      if (
-        0 !== (gradFlags & Gradient.Flags.Outline) ||
-        FillFlags.None === (this.fillFlags & FillFlags.Always)
-      )
+      if (0 !== (gradFlags & Gradient.Flags.Outline) || FillFlags.None === (this.fillFlags & FillFlags.Always))
         return DisplayParams.RegionEdgeType.Outline;
       return DisplayParams.RegionEdgeType.None;
     }
@@ -196,9 +176,7 @@ export class DisplayParams {
     return 255 !== this.lineColor.getAlpha();
   }
   public get textureMapping(): TextureMapping | undefined {
-    return undefined !== this.material
-      ? this.material.textureMapping
-      : this._textureMapping;
+    return undefined !== this.material ? this.material.textureMapping : this._textureMapping;
   }
   public get isTextured(): boolean {
     return undefined !== this.textureMapping;
@@ -209,8 +187,7 @@ export class DisplayParams {
     rhs: DisplayParams,
     purpose: DisplayParams.ComparePurpose = DisplayParams.ComparePurpose.Strict
   ): boolean {
-    if (DisplayParams.ComparePurpose.Merge === purpose)
-      return 0 === this.compareForMerge(rhs);
+    if (DisplayParams.ComparePurpose.Merge === purpose) return 0 === this.compareForMerge(rhs);
     else if (rhs === this) return true;
 
     if (this.type !== rhs.type) return false;
@@ -241,31 +218,15 @@ export class DisplayParams {
           if (0 === diff) {
             diff = compareNumbers(this.fillFlags, rhs.fillFlags);
             if (0 === diff) {
-              diff = compareBooleans(
-                this.wantRegionOutline,
-                rhs.wantRegionOutline
-              );
+              diff = compareBooleans(this.wantRegionOutline, rhs.wantRegionOutline);
               if (0 === diff) {
-                diff = compareBooleans(
-                  this.hasFillTransparency,
-                  rhs.hasFillTransparency
-                );
+                diff = compareBooleans(this.hasFillTransparency, rhs.hasFillTransparency);
                 if (0 === diff) {
-                  diff = compareBooleans(
-                    this.hasLineTransparency,
-                    rhs.hasLineTransparency
-                  );
+                  diff = compareBooleans(this.hasLineTransparency, rhs.hasLineTransparency);
                   if (0 === diff) {
                     diff = compareMaterials(this.material, rhs.material);
-                    if (
-                      0 === diff &&
-                      undefined === this.material &&
-                      this.isTextured
-                    ) {
-                      diff = compareTextureMappings(
-                        this.textureMapping,
-                        rhs.textureMapping
-                      );
+                    if (0 === diff && undefined === this.material && this.isTextured) {
+                      diff = compareTextureMappings(this.textureMapping, rhs.textureMapping);
                     }
                   }
                 }
@@ -284,9 +245,7 @@ export class DisplayParams {
    * @return The original reference to the color provided, which has possibly been modified.
    */
   public static adjustTransparency(color: ColorDef): ColorDef {
-    return color.colors.t < DisplayParams.minTransparency
-      ? color.withTransparency(0)
-      : color;
+    return color.colors.t < DisplayParams.minTransparency ? color.withTransparency(0) : color;
   }
 }
 

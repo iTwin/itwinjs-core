@@ -12,10 +12,7 @@ describe("MaskManager", () => {
     const ck = new Checker();
     const allFreeMasks = 0x000f0f00;
     const numFreeMasks = 8;
-    ck.testUndefined(
-      MaskManager.create(0),
-      " Expect undefined when no masks are provided."
-    );
+    ck.testUndefined(MaskManager.create(0), " Expect undefined when no masks are provided.");
     const manager = MaskManager.create(allFreeMasks)!;
     ck.testDefined(manager, "Mask manager created");
     const grabList = [];
@@ -26,8 +23,7 @@ describe("MaskManager", () => {
       for (let i = 0; i < numFreeMasks; i++) {
         const q = manager.grabMask();
         if (ck.testTrue(q > 0, "grab mask")) {
-          for (const q1 of grabList)
-            ck.testFalse(q === q1, "should not get same mask");
+          for (const q1 of grabList) ck.testFalse(q === q1, "should not get same mask");
           grabList.push(q);
         }
       }

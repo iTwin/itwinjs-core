@@ -5,13 +5,7 @@
 import { assert } from "chai";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
-import {
-  ECSqlStatement,
-  Element,
-  GeometricElement3d,
-  PhysicalPartition,
-  SnapshotDb,
-} from "@itwin/core-backend";
+import { ECSqlStatement, Element, GeometricElement3d, PhysicalPartition, SnapshotDb } from "@itwin/core-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
@@ -83,17 +77,12 @@ describe("Useful ECSQL spatial queries", () => {
         WHERE e.model.id=? AND e.ecinstanceid=g.ecinstanceid
     `;
 
-    const rangeSum: Range3dProps = iModel.withPreparedStatement(
-      bboxUnionStmtECSQL,
-      (stmt: ECSqlStatement) => {
-        stmt.bindId(1, modelId!);
-        if (stmt.step() !== DbResult.BE_SQLITE_ROW) return {} as Range3dProps;
-        // Note that the the ECSQL value is a blob. Its data must be extracted and interpreted as a Range3d.
-        return Range3d.fromArrayBuffer(
-          stmt.getValue(0).getBlob().buffer as ArrayBuffer
-        );
-      }
-    );
+    const rangeSum: Range3dProps = iModel.withPreparedStatement(bboxUnionStmtECSQL, (stmt: ECSqlStatement) => {
+      stmt.bindId(1, modelId!);
+      if (stmt.step() !== DbResult.BE_SQLITE_ROW) return {} as Range3dProps;
+      // Note that the the ECSQL value is a blob. Its data must be extracted and interpreted as a Range3d.
+      return Range3d.fromArrayBuffer(stmt.getValue(0).getBlob().buffer as ArrayBuffer);
+    });
     reportRange(rangeSum);
     // __PUBLISH_EXTRACT_END__
 

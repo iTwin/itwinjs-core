@@ -23,22 +23,14 @@ describe("BriefcaseManager", async () => {
   it("Open iModels with various names causing potential issues on Windows/Unix", async () => {
     HubMock.startup("bad names", KnownTestLocations.outputDir);
     let iModelName = "iModel Name With Spaces";
-    let iModelId = await HubWrappers.createIModel(
-      managerAccessToken,
-      testITwinId,
-      iModelName
-    );
+    let iModelId = await HubWrappers.createIModel(managerAccessToken, testITwinId, iModelName);
     const args = { accessToken, iTwinId: testITwinId, iModelId };
     assert.isDefined(iModelId);
     let iModel = await HubWrappers.openCheckpointUsingRpc(args);
     assert.isDefined(iModel);
 
     iModelName = "iModel Name With :/<>?* Characters";
-    iModelId = await HubWrappers.createIModel(
-      managerAccessToken,
-      testITwinId,
-      iModelName
-    );
+    iModelId = await HubWrappers.createIModel(managerAccessToken, testITwinId, iModelName);
     assert.isDefined(iModelId);
     iModel = await HubWrappers.openCheckpointUsingRpc(args);
     assert.isDefined(iModel);
@@ -50,11 +42,7 @@ describe("BriefcaseManager", async () => {
       "01234567890123456789"; // 35 + 2*100 + 20 = 255
     // Note: iModelHub does not accept a name that's longer than 255 characters.
     assert.equal(255, iModelName.length);
-    iModelId = await HubWrappers.createIModel(
-      managerAccessToken,
-      testITwinId,
-      iModelName
-    );
+    iModelId = await HubWrappers.createIModel(managerAccessToken, testITwinId, iModelName);
     assert.isDefined(iModelId);
     iModel = await HubWrappers.openCheckpointUsingRpc(args);
     assert.isDefined(iModel);
@@ -64,11 +52,7 @@ describe("BriefcaseManager", async () => {
 
   it("should set appropriate briefcase ids for FixedVersion, PullOnly and PullAndPush workflows", async () => {
     HubMock.startup("briefcaseIds", KnownTestLocations.outputDir);
-    const iModelId = await HubWrappers.createIModel(
-      accessToken,
-      testITwinId,
-      "imodel1"
-    );
+    const iModelId = await HubWrappers.createIModel(accessToken, testITwinId, "imodel1");
     const args = {
       accessToken,
       iTwinId: testITwinId,
@@ -76,26 +60,17 @@ describe("BriefcaseManager", async () => {
       deleteFirst: true,
     };
     const iModel1 = await HubWrappers.openCheckpointUsingRpc(args);
-    assert.equal(
-      BriefcaseIdValue.Unassigned,
-      iModel1.nativeDb.getBriefcaseId(),
-      "checkpoint should be 0"
-    );
+    assert.equal(BriefcaseIdValue.Unassigned, iModel1.nativeDb.getBriefcaseId(), "checkpoint should be 0");
 
     const iModel2 = await HubWrappers.openBriefcaseUsingRpc({
       ...args,
       briefcaseId: 0,
     });
-    assert.equal(
-      BriefcaseIdValue.Unassigned,
-      iModel2.briefcaseId,
-      "pullOnly should be 0"
-    );
+    assert.equal(BriefcaseIdValue.Unassigned, iModel2.briefcaseId, "pullOnly should be 0");
 
     const iModel3 = await HubWrappers.openBriefcaseUsingRpc(args);
     assert.isTrue(
-      iModel3.briefcaseId >= BriefcaseIdValue.FirstValid &&
-        iModel3.briefcaseId <= BriefcaseIdValue.LastValid,
+      iModel3.briefcaseId >= BriefcaseIdValue.FirstValid && iModel3.briefcaseId <= BriefcaseIdValue.LastValid,
       "valid briefcaseId"
     );
 
@@ -107,11 +82,7 @@ describe("BriefcaseManager", async () => {
 
   it("should reuse a briefcaseId when re-opening iModels for pullAndPush workflows", async () => {
     HubMock.startup("briefcaseIdsReopen", KnownTestLocations.outputDir);
-    const iModelId = await HubWrappers.createIModel(
-      accessToken,
-      testITwinId,
-      "imodel1"
-    );
+    const iModelId = await HubWrappers.createIModel(accessToken, testITwinId, "imodel1");
 
     const args = {
       accessToken,
@@ -137,10 +108,7 @@ describe("BriefcaseManager", async () => {
     const userToken2 = "super manager token";
 
     // User1 creates an iModel on the Hub
-    const testUtility = new TestChangeSetUtility(
-      userToken1,
-      IModelTestUtils.generateUniqueName("BriefcaseReuseTest")
-    );
+    const testUtility = new TestChangeSetUtility(userToken1, IModelTestUtils.generateUniqueName("BriefcaseReuseTest"));
     await testUtility.createTestIModel();
 
     // User2 opens and then closes the iModel pullOnly/pullPush, keeping the briefcase

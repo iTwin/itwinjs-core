@@ -67,12 +67,7 @@ export class UVSurfaceOps {
     offsetDistance: number | undefined,
     options?: StrokeOptions
   ): Range3d {
-    const numU = StrokeOptions.applyAngleTol(
-      options,
-      2,
-      patch.latitudeSweep.sweepRadians,
-      Angle.degreesToRadians(5.0)
-    );
+    const numU = StrokeOptions.applyAngleTol(options, 2, patch.latitudeSweep.sweepRadians, Angle.degreesToRadians(5.0));
     const numV = StrokeOptions.applyAngleTol(
       options,
       2,

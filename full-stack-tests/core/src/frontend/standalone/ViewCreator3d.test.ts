@@ -4,12 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { SubCategoryAppearance } from "@itwin/core-common";
-import {
-  IModelConnection,
-  ScreenViewport,
-  SnapshotConnection,
-  ViewCreator3d,
-} from "@itwin/core-frontend";
+import { IModelConnection, ScreenViewport, SnapshotConnection, ViewCreator3d } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
 describe("ViewCreator3d", async () => {
@@ -56,9 +51,7 @@ describe("ViewCreator3d", async () => {
       expect(view.isSubCategoryVisible("0x20")).to.equal(subcat20Vis);
     }
 
-    expect(Array.from(view.categorySelector.categories)).to.deep.equal([
-      "0x17",
-    ]);
+    expect(Array.from(view.categorySelector.categories)).to.deep.equal(["0x17"]);
     expectVisible(true, true);
 
     const invisibleAppearance = new SubCategoryAppearance({ invisible: true });

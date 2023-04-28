@@ -25,8 +25,7 @@ describe("Diagnostics", async () => {
         ruleType: RuleTypes.RootNodes,
         specifications: [
           {
-            specType:
-              ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
             classes: { schemaName: "Generic", classNames: ["PhysicalObject"] },
           },
         ],
@@ -37,9 +36,7 @@ describe("Diagnostics", async () => {
   let imodel: IModelDb;
   before(async () => {
     await initialize();
-    imodel = SnapshotDb.openFile(
-      "assets/datasets/Properties_60InstancesWithUrl2.ibim"
-    );
+    imodel = SnapshotDb.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
     expect(imodel).is.not.null;
   });
 
@@ -183,9 +180,7 @@ describe("Diagnostics", async () => {
             return entry.severity.dev !== undefined;
           }
           return (
-            ((entry.duration !== undefined &&
-              entry.scopeCreateTimestamp !== undefined) ||
-              entry.logs !== undefined) &&
+            ((entry.duration !== undefined && entry.scopeCreateTimestamp !== undefined) || entry.logs !== undefined) &&
             (!entry.logs || entry.logs.every(isPerfOrDevLog))
           );
         }
@@ -217,9 +212,7 @@ describe("Learning Snippets", () => {
     let imodel: IModelDb;
     before(async () => {
       await initialize();
-      imodel = SnapshotDb.openFile(
-        "assets/datasets/Properties_60InstancesWithUrl2.ibim"
-      );
+      imodel = SnapshotDb.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
       expect(imodel).is.not.null;
     });
 
@@ -257,9 +250,7 @@ describe("Learning Snippets", () => {
       Presentation.terminate();
 
       let requestIndex = 0;
-      const getCurrentActivityId = sinon.fake(() =>
-        (++requestIndex).toString()
-      );
+      const getCurrentActivityId = sinon.fake(() => (++requestIndex).toString());
 
       const log = sinon.stub();
       const id1 = "0x1";

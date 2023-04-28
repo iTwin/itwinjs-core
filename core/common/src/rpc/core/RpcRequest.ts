@@ -11,20 +11,11 @@ import { IModelRpcProps } from "../../IModel";
 import { BackendError, IModelError, NoContentError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcConfiguration } from "./RpcConfiguration";
-import {
-  RpcProtocolEvent,
-  RpcRequestEvent,
-  RpcRequestStatus,
-  RpcResponseCacheControl,
-} from "./RpcConstants";
+import { RpcProtocolEvent, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl } from "./RpcConstants";
 import { RpcNotFoundResponse } from "./RpcControl";
 import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
-import {
-  RpcManagedStatus,
-  RpcProtocol,
-  RpcProtocolVersion,
-} from "./RpcProtocol";
+import { RpcManagedStatus, RpcProtocol, RpcProtocolVersion } from "./RpcProtocol";
 import { CURRENT_REQUEST } from "./RpcRegistry";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -94,16 +85,12 @@ export class ResponseLike implements Response {
 /** Supplies an IModelRpcProps for an RPC request.
  * @internal
  */
-export type RpcRequestTokenSupplier_T = (
-  request: RpcRequest
-) => IModelRpcProps | undefined;
+export type RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelRpcProps | undefined;
 
 /** Supplies the initial retry interval for an RPC request.
  * @internal
  */
-export type RpcRequestInitialRetryIntervalSupplier_T = (
-  configuration: RpcConfiguration
-) => number;
+export type RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfiguration) => number;
 
 /** Notification callback for an RPC request.
  * @internal
@@ -113,9 +100,7 @@ export type RpcRequestCallback_T = (request: RpcRequest) => void;
 /** Determines if caching is permitted for a RPC response.
  * @internal
  */
-export type RpcResponseCachingCallback_T = (
-  request: RpcRequest
-) => RpcResponseCacheControl;
+export type RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl;
 
 /** Runtime information related to the operation load of one or more RPC interfaces.
  * @internal
@@ -128,10 +113,7 @@ export interface RpcOperationsProfile {
 /** Handles RPC request events.
  * @internal
  */
-export type RpcRequestEventHandler = (
-  type: RpcRequestEvent,
-  request: RpcRequest
-) => void;
+export type RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest) => void;
 
 /** Resolves "not found" responses for RPC requests.
  * @internal
@@ -161,12 +143,8 @@ class Cancellable<T> {
  */
 export abstract class RpcRequest<TResponse = any> {
   private static _activeRequests: Map<string, RpcRequest> = new Map();
-  private _resolve: (
-    value?: TResponse | PromiseLike<TResponse> | undefined
-  ) => void = () => undefined;
-  protected _resolveRaw: (
-    value?: Response | PromiseLike<Response> | undefined
-  ) => void = () => undefined;
+  private _resolve: (value?: TResponse | PromiseLike<TResponse> | undefined) => void = () => undefined;
+  protected _resolveRaw: (value?: Response | PromiseLike<Response> | undefined) => void = () => undefined;
   private _reject: (reason?: any) => void = () => undefined;
   private _rejectRaw: (reason?: any) => void = () => undefined;
   private _created: number = 0;
@@ -197,12 +175,10 @@ export abstract class RpcRequest<TResponse = any> {
   }
 
   /** Events raised by RpcRequest. See [[RpcRequestEvent]] */
-  public static readonly events: BeEvent<RpcRequestEventHandler> =
-    new BeEvent();
+  public static readonly events: BeEvent<RpcRequestEventHandler> = new BeEvent();
 
   /** Resolvers for "not found" requests. See [[RpcRequestNotFoundHandler]] */
-  public static readonly notFoundHandlers: BeEvent<RpcRequestNotFoundHandler> =
-    new BeEvent();
+  public static readonly notFoundHandlers: BeEvent<RpcRequestNotFoundHandler> = new BeEvent();
 
   /** The aggregate operations profile of all active RPC interfaces. */
   public static get aggregateLoad(): RpcOperationsProfile {
@@ -294,16 +270,11 @@ export abstract class RpcRequest<TResponse = any> {
   }
 
   /** Finds the first parameter of a given structural type if present. */
-  public findParameterOfType<T>(requiredProperties: {
-    [index: string]: string;
-  }): T | undefined {
+  public findParameterOfType<T>(requiredProperties: { [index: string]: string }): T | undefined {
     for (const param of this.parameters) {
       if (typeof param === "object" && param !== null) {
         for (const prop of Object.getOwnPropertyNames(requiredProperties)) {
-          if (
-            param.hasOwnProperty(prop) &&
-            typeof param[prop] === requiredProperties[prop]
-          ) {
+          if (param.hasOwnProperty(prop) && typeof param[prop] === requiredProperties[prop]) {
             return param;
           }
         }
@@ -325,11 +296,7 @@ export abstract class RpcRequest<TResponse = any> {
   }
 
   /** Constructs an RPC request. */
-  public constructor(
-    client: RpcInterface,
-    operation: string,
-    parameters: any[]
-  ) {
+  public constructor(client: RpcInterface, operation: string, parameters: any[]) {
     this._created = new Date().getTime();
     this.path = "";
     this.method = "";
@@ -337,9 +304,7 @@ export abstract class RpcRequest<TResponse = any> {
     this.protocol = client.configuration.protocol;
     this.operation = RpcOperation.lookup(client.constructor as any, operation);
     this.parameters = parameters;
-    this.retryInterval = this.operation.policy.retryInterval(
-      client.configuration
-    );
+    this.retryInterval = this.operation.policy.retryInterval(client.configuration);
     this.response = new Promise((resolve, reject) => {
       this._resolve = resolve;
       this._reject = reject;
@@ -387,10 +352,8 @@ export abstract class RpcRequest<TResponse = any> {
     }
 
     return (
-      RpcProtocol.protocolVersion >=
-        RpcProtocolVersion.IntroducedStatusCategory &&
-      this.responseProtocolVersion >=
-        RpcProtocolVersion.IntroducedStatusCategory
+      RpcProtocol.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory &&
+      this.responseProtocolVersion >= RpcProtocolVersion.IntroducedStatusCategory
     );
   }
 
@@ -428,9 +391,7 @@ export abstract class RpcRequest<TResponse = any> {
       this._connecting = true;
       RpcRequest._activeRequests.set(this.id, this);
       this.protocol.events.raiseEvent(RpcProtocolEvent.RequestCreated, this);
-      this._sending = new Cancellable(
-        this.setHeaders().then(async () => this.send())
-      );
+      this._sending = new Cancellable(this.setHeaders().then(async () => this.send()));
       this.operation.policy.sentCallback(this);
 
       const response = await this._sending.promise;
@@ -442,11 +403,7 @@ export abstract class RpcRequest<TResponse = any> {
 
       const status = this.protocol.getStatus(response);
 
-      if (
-        this._hasRawListener &&
-        status === RpcRequestStatus.Resolved &&
-        typeof this._response !== "undefined"
-      ) {
+      if (this._hasRawListener && status === RpcRequestStatus.Resolved && typeof this._response !== "undefined") {
         this._connecting = false;
         RpcRequest._activeRequests.delete(this.id);
         this.resolveRaw();
@@ -467,11 +424,7 @@ export abstract class RpcRequest<TResponse = any> {
         this.handleResponse(response, value);
       }
     } catch (err) {
-      this.protocol.events.raiseEvent(
-        RpcProtocolEvent.ConnectionErrorReceived,
-        this,
-        err
-      );
+      this.protocol.events.raiseEvent(RpcProtocolEvent.ConnectionErrorReceived, this, err);
       RpcRequest._activeRequests.delete(this.id);
       this._connecting = false;
       this.reject(err);
@@ -479,9 +432,7 @@ export abstract class RpcRequest<TResponse = any> {
   }
 
   protected handleUnknownResponse(code: number) {
-    this.reject(
-      new IModelError(BentleyStatus.ERROR, `Unknown response ${code}.`)
-    );
+    this.reject(new IModelError(BentleyStatus.ERROR, `Unknown response ${code}.`));
   }
 
   private handleResponse(code: number, value: RpcSerializedValue) {
@@ -515,10 +466,7 @@ export abstract class RpcRequest<TResponse = any> {
     }
   }
 
-  private transformResponseStatus(
-    protocolStatus: RpcRequestStatus,
-    value: RpcSerializedValue
-  ): RpcRequestStatus {
+  private transformResponseStatus(protocolStatus: RpcRequestStatus, value: RpcSerializedValue): RpcRequestStatus {
     if (!this.supportsStatusCategory()) {
       return protocolStatus;
     }
@@ -533,10 +481,7 @@ export abstract class RpcRequest<TResponse = any> {
       status = RpcRequestStatus.Rejected;
     }
 
-    if (
-      value.objects.indexOf("iTwinRpcCoreResponse") !== -1 &&
-      value.objects.indexOf("managedStatus") !== -1
-    ) {
+    if (value.objects.indexOf("iTwinRpcCoreResponse") !== -1 && value.objects.indexOf("managedStatus") !== -1) {
       const managedStatus: RpcManagedStatus = JSON.parse(value.objects);
       value.objects = managedStatus.responseValue as string;
 
@@ -566,27 +511,16 @@ export abstract class RpcRequest<TResponse = any> {
   }
 
   private handleRejected(value: RpcSerializedValue) {
-    this.protocol.events.raiseEvent(
-      RpcProtocolEvent.BackendErrorReceived,
-      this
-    );
+    this.protocol.events.raiseEvent(RpcProtocolEvent.BackendErrorReceived, this);
 
     try {
       const error = RpcMarshaling.deserialize(this.protocol, value);
       const hasInfo =
-        error &&
-        typeof error === "object" &&
-        error.hasOwnProperty("name") &&
-        error.hasOwnProperty("message");
+        error && typeof error === "object" && error.hasOwnProperty("name") && error.hasOwnProperty("message");
       const name = hasInfo ? error.name : "";
       const message = hasInfo ? error.message : "";
-      const errorNumber =
-        hasInfo && error.hasOwnProperty("errorNumber")
-          ? error.errorNumber
-          : BentleyStatus.ERROR;
-      return this.reject(
-        new BackendError(errorNumber, name, message, () => error)
-      );
+      const errorNumber = hasInfo && error.hasOwnProperty("errorNumber") ? error.errorNumber : BentleyStatus.ERROR;
+      return this.reject(new BackendError(errorNumber, name, message, () => error));
     } catch (err) {
       return this.reject(err);
     }
@@ -605,11 +539,7 @@ export abstract class RpcRequest<TResponse = any> {
       this,
       response,
       () => {
-        if (resubmitted)
-          throw new IModelError(
-            BentleyStatus.ERROR,
-            `Already resubmitted using this handler.`
-          );
+        if (resubmitted) throw new IModelError(BentleyStatus.ERROR, `Already resubmitted using this handler.`);
 
         resubmitted = true;
         this.submit(); // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -628,10 +558,7 @@ export abstract class RpcRequest<TResponse = any> {
 
     if (this._hasRawListener) {
       if (typeof this._raw === "undefined") {
-        throw new IModelError(
-          BentleyStatus.ERROR,
-          "Cannot access raw response."
-        );
+        throw new IModelError(BentleyStatus.ERROR, "Cannot access raw response.");
       }
 
       this._resolveRaw(new ResponseLike(this._raw));
@@ -680,10 +607,7 @@ export abstract class RpcRequest<TResponse = any> {
     }
   }
 
-  private setPending(
-    status: RpcRequestStatus.Pending,
-    extendedStatus: string
-  ): void {
+  private setPending(status: RpcRequestStatus.Pending, extendedStatus: string): void {
     if (!this._active) return;
 
     this.setLastUpdatedTime();
@@ -698,18 +622,11 @@ export abstract class RpcRequest<TResponse = any> {
     this.setLastUpdatedTime();
     this._retryAfter = this.computeRetryAfter(this._attempts - 1);
 
-    if (
-      this._transientFaults > this.protocol.configuration.transientFaultLimit
-    ) {
-      this.reject(
-        new IModelError(BentleyStatus.ERROR, `Exceeded transient fault limit.`)
-      );
+    if (this._transientFaults > this.protocol.configuration.transientFaultLimit) {
+      this.reject(new IModelError(BentleyStatus.ERROR, `Exceeded transient fault limit.`));
     } else {
       this.setStatus(status);
-      RpcRequest.events.raiseEvent(
-        RpcRequestEvent.TransientErrorReceived,
-        this
-      );
+      RpcRequest.events.raiseEvent(RpcRequestEvent.TransientErrorReceived, this);
     }
   }
 
@@ -721,29 +638,18 @@ export abstract class RpcRequest<TResponse = any> {
     const headerNames = this.protocol.serializedClientRequestContextHeaderNames;
     const headerValues = await RpcConfiguration.requestContext.serialize(this);
 
-    if (headerNames.id)
-      this.setHeader(headerNames.id, headerValues.id || this.id); // Cannot be empty
+    if (headerNames.id) this.setHeader(headerNames.id, headerValues.id || this.id); // Cannot be empty
 
-    if (headerNames.applicationVersion)
-      this.setHeader(
-        headerNames.applicationVersion,
-        headerValues.applicationVersion
-      );
+    if (headerNames.applicationVersion) this.setHeader(headerNames.applicationVersion, headerValues.applicationVersion);
 
-    if (headerNames.applicationId)
-      this.setHeader(headerNames.applicationId, headerValues.applicationId);
+    if (headerNames.applicationId) this.setHeader(headerNames.applicationId, headerValues.applicationId);
 
-    if (headerNames.sessionId)
-      this.setHeader(headerNames.sessionId, headerValues.sessionId);
+    if (headerNames.sessionId) this.setHeader(headerNames.sessionId, headerValues.sessionId);
 
     if (headerNames.authorization && headerValues.authorization)
       this.setHeader(headerNames.authorization, headerValues.authorization);
 
-    if (headerValues.csrfToken)
-      this.setHeader(
-        headerValues.csrfToken.headerName,
-        headerValues.csrfToken.headerValue
-      );
+    if (headerValues.csrfToken) this.setHeader(headerValues.csrfToken.headerName, headerValues.csrfToken.headerValue);
   }
 
   private setStatus(status: RpcRequestStatus): void {

@@ -6,12 +6,7 @@
  * @module Widgets
  */
 
-import {
-  IModelApp,
-  IModelConnection,
-  RenderMemory,
-  Tile,
-} from "@itwin/core-frontend";
+import { IModelApp, IModelConnection, RenderMemory, Tile } from "@itwin/core-frontend";
 import { createCheckBox } from "../ui/CheckBox";
 import { formatMemory } from "./MemoryTracker";
 
@@ -36,8 +31,7 @@ class TileMemoryTracer {
   public numSelected = 0;
 
   public constructor() {
-    for (let i = 0; i < TileMemorySelector.Count; i++)
-      this.counters.push({ numTiles: 0, bytesUsed: 0 });
+    for (let i = 0; i < TileMemorySelector.Count; i++) this.counters.push({ numTiles: 0, bytesUsed: 0 });
   }
 
   public update(): void {
@@ -51,8 +45,7 @@ class TileMemoryTracer {
       if (tiles) for (const tile of tiles) selectedTiles.add(tile);
     }
 
-    for (const selected of selectedTiles)
-      this.add(selected, TileMemorySelector.Selected);
+    for (const selected of selectedTiles) this.add(selected, TileMemorySelector.Selected);
 
     for (const selected of selectedTiles) {
       this.processParent(selected.parent);
@@ -79,8 +72,7 @@ class TileMemoryTracer {
   private reset(): void {
     this._processedTiles.clear();
     this.numSelected = 0;
-    for (const counter of this.counters)
-      counter.numTiles = counter.bytesUsed = 0;
+    for (const counter of this.counters) counter.numTiles = counter.bytesUsed = 0;
   }
 
   private add(tile: Tile, selector: TileMemorySelector): void {
@@ -115,21 +107,14 @@ class TileMemoryTracer {
   }
 
   private processOrphan(tile: Tile): void {
-    if (!this._processedTiles.has(tile))
-      this.add(tile, TileMemorySelector.Orphaned);
+    if (!this._processedTiles.has(tile)) this.add(tile, TileMemorySelector.Orphaned);
 
     const children = tile.children;
     if (children) for (const child of children) this.processOrphan(child);
   }
 }
 
-const statsLabels = [
-  "Selected",
-  "Ancestors",
-  "Descendants",
-  "Orphaned",
-  "Total",
-];
+const statsLabels = ["Selected", "Ancestors", "Descendants", "Orphaned", "Total"];
 
 function format(count: number, label: string, bytesUsed: number): string {
   return `${count} ${label}: ${formatMemory(bytesUsed)}`;
@@ -225,11 +210,7 @@ export class TileMemoryBreakdown {
     this._tracer.update();
     for (let i = 0; i < this._statsElements.length; i++) {
       const counter = this._tracer.counters[i];
-      this._statsElements[i].innerText = format(
-        counter.numTiles,
-        statsLabels[i],
-        counter.bytesUsed
-      );
+      this._statsElements[i].innerText = format(counter.numTiles, statsLabels[i], counter.bytesUsed);
     }
 
     let numUnselected = 0;
@@ -246,16 +227,8 @@ export class TileMemoryBreakdown {
       selectedBytes += selected.bytesUsed;
     }
 
-    this._totalsElements[0].innerText = format(
-      numSelected,
-      "Selected",
-      selectedBytes
-    );
-    this._totalsElements[1].innerText = format(
-      numUnselected,
-      "Unselected",
-      unselectedBytes
-    );
+    this._totalsElements[0].innerText = format(numSelected, "Selected", selectedBytes);
+    this._totalsElements[1].innerText = format(numUnselected, "Unselected", unselectedBytes);
     this._totalsElements[2].innerText = format(
       numSelected + numUnselected,
       "Total",

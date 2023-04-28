@@ -75,16 +75,9 @@ describe("Relationship tests from an existing schema", () => {
       target: targetJson,
     };
 
-    const result = await testEditor.relationships.createFromProps(
-      testKey,
-      relClassProps
-    );
-    const relClass = (await testEditor.schemaContext.getSchemaItem(
-      result.itemKey!
-    )) as RelationshipClass;
-    const baseSourceClassKey = testSchema.getSchemaItemKey(
-      "TestSchema.SourceBaseEntity"
-    );
+    const result = await testEditor.relationships.createFromProps(testKey, relClassProps);
+    const relClass = (await testEditor.schemaContext.getSchemaItem(result.itemKey!)) as RelationshipClass;
+    const baseSourceClassKey = testSchema.getSchemaItemKey("TestSchema.SourceBaseEntity");
     expect(await relClass.source.abstractConstraint).to.eql(
       await testEditor.schemaContext.getSchemaItem(baseSourceClassKey)
     );
@@ -114,16 +107,9 @@ describe("Relationship tests from an existing schema", () => {
       target: targetJson,
     };
 
-    const result = await testEditor.relationships.createFromProps(
-      testKey,
-      relClassProps
-    );
-    const relClass = (await testEditor.schemaContext.getSchemaItem(
-      result.itemKey!
-    )) as RelationshipClass;
-    const baseSourceClassKey = testSchema.getSchemaItemKey(
-      "TestSchema.SourceBaseEntity"
-    );
+    const result = await testEditor.relationships.createFromProps(testKey, relClassProps);
+    const relClass = (await testEditor.schemaContext.getSchemaItem(result.itemKey!)) as RelationshipClass;
+    const baseSourceClassKey = testSchema.getSchemaItemKey("TestSchema.SourceBaseEntity");
     expect(await relClass.source.abstractConstraint).to.eql(
       await testEditor.schemaContext.getSchemaItem(baseSourceClassKey)
     );

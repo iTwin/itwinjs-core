@@ -4,15 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import {
-  Arc3d,
-  Loop,
-  Path,
-  Point2d,
-  Point3d,
-  Polyface,
-  SolidPrimitive,
-} from "@itwin/core-geometry";
+import { Arc3d, Loop, Path, Point2d, Point3d, Polyface, SolidPrimitive } from "@itwin/core-geometry";
 import { GraphicBuilder, GraphicType } from "../../render/GraphicBuilder";
 import { GraphicPrimitive } from "../../render/GraphicPrimitive";
 
@@ -58,12 +50,7 @@ describe("GraphicPrimitive", () => {
     public addArc(arc: Arc3d, isEllipse: boolean, filled: boolean) {
       this.primitive = { type: "arc", arc, isEllipse, filled };
     }
-    public addArc2d(
-      arc: Arc3d,
-      isEllipse: boolean,
-      filled: boolean,
-      zDepth: number
-    ) {
+    public addArc2d(arc: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number) {
       this.primitive = { type: "arc2d", arc, isEllipse, filled, zDepth };
     }
     public addPath(path: Path) {
@@ -110,14 +97,8 @@ describe("GraphicPrimitive", () => {
         { type: "arc2d", zDepth, arc },
         { type: "arc2d", arc, isEllipse: false, filled: false, zDepth },
       ],
-      [
-        { type: "arc2d", zDepth, arc, isEllipse: true, filled: true },
-        undefined,
-      ],
-      [
-        { type: "arc2d", zDepth, arc, isEllipse: false, filled: false },
-        undefined,
-      ],
+      [{ type: "arc2d", zDepth, arc, isEllipse: true, filled: true }, undefined],
+      [{ type: "arc2d", zDepth, arc, isEllipse: false, filled: false }, undefined],
     ];
 
     const builder = new Builder();

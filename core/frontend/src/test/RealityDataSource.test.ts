@@ -3,12 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-  OrbitGtBlobProps,
-  RealityDataFormat,
-  RealityDataProvider,
-  RealityDataSourceKey,
-} from "@itwin/core-common";
+import { OrbitGtBlobProps, RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
 import { expect } from "chai";
 import { CesiumIonAssetProvider, getCesiumAssetUrl } from "../core-frontend";
 import { RealityDataSource } from "../RealityDataSource";
@@ -33,35 +28,25 @@ describe("RealityDataSource", () => {
     expect(rdSourceKey.id).to.be.equal(CesiumIonAssetProvider.osmBuildingId);
     expect(rdSourceKey.iTwinId).to.be.undefined;
     const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
-    expect(rdSourceKeyStr).to.be.equal(
-      "CesiumIonAsset:ThreeDTile:OSMBuildings:undefined"
-    );
+    expect(rdSourceKeyStr).to.be.equal("CesiumIonAsset:ThreeDTile:OSMBuildings:undefined");
   });
   it("should handle creation from any CesiumIonAsset url (not OSM Building)", () => {
-    const rdSourceKey = RealityDataSource.createCesiumIonAssetKey(
-      75343,
-      "ThisIsADummyCesiumIonKey"
-    );
+    const rdSourceKey = RealityDataSource.createCesiumIonAssetKey(75343, "ThisIsADummyCesiumIonKey");
     expect(rdSourceKey.provider).to.equal(RealityDataProvider.CesiumIonAsset);
     expect(rdSourceKey.format).to.equal(RealityDataFormat.ThreeDTile);
     const tilesetUrl = getCesiumAssetUrl(75343, "ThisIsADummyCesiumIonKey");
     expect(rdSourceKey.id).to.be.equal(tilesetUrl);
     expect(rdSourceKey.iTwinId).to.be.undefined;
     const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
-    expect(rdSourceKeyStr).to.be.equal(
-      `CesiumIonAsset:ThreeDTile:${tilesetUrl}:undefined`
-    );
+    expect(rdSourceKeyStr).to.be.equal(`CesiumIonAsset:ThreeDTile:${tilesetUrl}:undefined`);
     // Key createdFromUrl should be equal to key created from call to createCesiumIonAssetKey
     const rdSourceKeyFromURL = RealityDataSource.createKeyFromUrl(tilesetUrl);
     expect(rdSourceKeyFromURL.id).to.be.equal(rdSourceKey.id);
     expect(rdSourceKeyFromURL.iTwinId).to.be.equal(rdSourceKey.iTwinId);
     expect(rdSourceKeyFromURL.format).to.be.equal(rdSourceKey.format);
     expect(rdSourceKeyFromURL.provider).to.be.equal(rdSourceKey.provider);
-    const rdSourceKeyFromURLStr =
-      RealityDataSourceKey.convertToString(rdSourceKeyFromURL);
-    expect(rdSourceKeyFromURLStr).to.be.equal(
-      `CesiumIonAsset:ThreeDTile:${tilesetUrl}:undefined`
-    );
+    const rdSourceKeyFromURLStr = RealityDataSourceKey.convertToString(rdSourceKeyFromURL);
+    expect(rdSourceKeyFromURLStr).to.be.equal(`CesiumIonAsset:ThreeDTile:${tilesetUrl}:undefined`);
   });
   it("should handle creation from Context Share url", () => {
     const tilesetUrl =
@@ -70,9 +55,7 @@ describe("RealityDataSource", () => {
     expect(rdSourceKey.provider).to.equal(RealityDataProvider.ContextShare);
     expect(rdSourceKey.format).to.equal(RealityDataFormat.ThreeDTile);
     expect(rdSourceKey.id).to.be.equal("994fc408-401f-4ee1-91f0-3d7bfba50136");
-    expect(rdSourceKey.iTwinId).to.equal(
-      "5b4ebd22-d94b-456b-8bd8-d59563de9acd"
-    );
+    expect(rdSourceKey.iTwinId).to.equal("5b4ebd22-d94b-456b-8bd8-d59563de9acd");
     const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
     expect(rdSourceKeyStr).to.be.equal(
       "ContextShare:ThreeDTile:994fc408-401f-4ee1-91f0-3d7bfba50136:5b4ebd22-d94b-456b-8bd8-d59563de9acd"
@@ -87,9 +70,7 @@ describe("RealityDataSource", () => {
     expect(rdSourceKey.id).to.be.equal("994fc408-401f-4ee1-91f0-3d7bfba50136");
     expect(rdSourceKey.iTwinId).to.equal("server");
     const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
-    expect(rdSourceKeyStr).to.be.equal(
-      "ContextShare:ThreeDTile:994fc408-401f-4ee1-91f0-3d7bfba50136:server"
-    );
+    expect(rdSourceKeyStr).to.be.equal("ContextShare:ThreeDTile:994fc408-401f-4ee1-91f0-3d7bfba50136:server");
   });
   it("should handle creation from Context Share url with empty guid context", () => {
     const tilesetUrl =
@@ -98,9 +79,7 @@ describe("RealityDataSource", () => {
     expect(rdSourceKey.provider).to.equal(RealityDataProvider.ContextShare);
     expect(rdSourceKey.format).to.equal(RealityDataFormat.ThreeDTile);
     expect(rdSourceKey.id).to.be.equal("994fc408-401f-4ee1-91f0-3d7bfba50136");
-    expect(rdSourceKey.iTwinId).to.equal(
-      "00000000-0000-0000-0000-000000000000"
-    );
+    expect(rdSourceKey.iTwinId).to.equal("00000000-0000-0000-0000-000000000000");
     const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
     expect(rdSourceKeyStr).to.be.equal(
       "ContextShare:ThreeDTile:994fc408-401f-4ee1-91f0-3d7bfba50136:00000000-0000-0000-0000-000000000000"
@@ -113,9 +92,7 @@ describe("RealityDataSource", () => {
     expect(rdSourceKey.provider).to.equal(RealityDataProvider.ContextShare);
     expect(rdSourceKey.format).to.equal(RealityDataFormat.ThreeDTile);
     expect(rdSourceKey.id).to.be.equal("c9fddf2c-e519-468b-b6fa-6d0e39f198a7");
-    expect(rdSourceKey.iTwinId).to.equal(
-      "a57f6b1c-747d-4253-b0ce-9900c4dd7c1c"
-    );
+    expect(rdSourceKey.iTwinId).to.equal("a57f6b1c-747d-4253-b0ce-9900c4dd7c1c");
     const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
     expect(rdSourceKeyStr).to.be.equal(
       "ContextShare:ThreeDTile:c9fddf2c-e519-468b-b6fa-6d0e39f198a7:a57f6b1c-747d-4253-b0ce-9900c4dd7c1c"
@@ -128,9 +105,7 @@ describe("RealityDataSource", () => {
     expect(rdSourceKey.provider).to.equal(RealityDataProvider.ContextShare);
     expect(rdSourceKey.format).to.equal(RealityDataFormat.ThreeDTile);
     expect(rdSourceKey.id).to.be.equal("c9fddf2c-e519-468b-b6fa-6d0e39f198a7");
-    expect(rdSourceKey.iTwinId).to.equal(
-      "a57f6b1c-747d-4253-b0ce-9900c4dd7c1c"
-    );
+    expect(rdSourceKey.iTwinId).to.equal("a57f6b1c-747d-4253-b0ce-9900c4dd7c1c");
     const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
     expect(rdSourceKeyStr).to.be.equal(
       "ContextShare:ThreeDTile:c9fddf2c-e519-468b-b6fa-6d0e39f198a7:a57f6b1c-747d-4253-b0ce-9900c4dd7c1c"
@@ -145,9 +120,7 @@ describe("RealityDataSource", () => {
     expect(rdSourceKey.id).to.be.equal("fe8d32a5-f6ab-4157-b3ec-a9b53db923e3");
     expect(rdSourceKey.iTwinId).to.be.undefined;
     const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
-    expect(rdSourceKeyStr).to.be.equal(
-      "ContextShare:OPC:fe8d32a5-f6ab-4157-b3ec-a9b53db923e3:undefined"
-    );
+    expect(rdSourceKeyStr).to.be.equal("ContextShare:OPC:fe8d32a5-f6ab-4157-b3ec-a9b53db923e3:undefined");
   });
   it("should handle creation from url to any http server", () => {
     const tilesetUrl = "https://customserver/myFile.json";
@@ -157,9 +130,7 @@ describe("RealityDataSource", () => {
     expect(rdSourceKey.id).to.be.equal(tilesetUrl);
     expect(rdSourceKey.iTwinId).to.be.undefined;
     const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
-    expect(rdSourceKeyStr).to.be.equal(
-      "TilesetUrl:ThreeDTile:https://customserver/myFile.json:undefined"
-    );
+    expect(rdSourceKeyStr).to.be.equal("TilesetUrl:ThreeDTile:https://customserver/myFile.json:undefined");
   });
   it("should handle creation from url to any local file", () => {
     const tilesetUrl = "c:\\customserver\\myFile.json";
@@ -169,9 +140,7 @@ describe("RealityDataSource", () => {
     expect(rdSourceKey.id).to.be.equal(tilesetUrl);
     expect(rdSourceKey.iTwinId).to.be.undefined;
     const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
-    expect(rdSourceKeyStr).to.be.equal(
-      "TilesetUrl:ThreeDTile:c:\\customserver\\myFile.json:undefined"
-    );
+    expect(rdSourceKeyStr).to.be.equal("TilesetUrl:ThreeDTile:c:\\customserver\\myFile.json:undefined");
   });
   it("should handle creation from url to an OPC local file", () => {
     // we detect format based on extension-> .opc -> OPC format, otherwise 3dTile
@@ -182,9 +151,7 @@ describe("RealityDataSource", () => {
     expect(rdSourceKey.id).to.be.equal(tilesetUrl);
     expect(rdSourceKey.iTwinId).to.be.undefined;
     const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
-    expect(rdSourceKeyStr).to.be.equal(
-      "TilesetUrl:OPC:c:\\customserver\\myFile.opc:undefined"
-    );
+    expect(rdSourceKeyStr).to.be.equal("TilesetUrl:OPC:c:\\customserver\\myFile.opc:undefined");
   });
   it("should handle invalid url and fallback to simply returns it in id as tileset url", () => {
     const tilesetUrl = "Anything that is not a valid url";
@@ -194,24 +161,17 @@ describe("RealityDataSource", () => {
     expect(rdSourceKey.id).to.be.equal(tilesetUrl);
     expect(rdSourceKey.iTwinId).to.be.undefined;
     const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
-    expect(rdSourceKeyStr).to.be.equal(
-      "TilesetUrl:ThreeDTile:Anything that is not a valid url:undefined"
-    );
+    expect(rdSourceKeyStr).to.be.equal("TilesetUrl:ThreeDTile:Anything that is not a valid url:undefined");
   });
   it("should handle creation from Context Share url with provider override", () => {
     const tilesetUrl =
       "https://connect-realitydataservices.bentley.com/v2.9/Repositories/S3MXECPlugin--5b4ebd22-d94b-456b-8bd8-d59563de9acd/S3MX/RealityData/994fc408-401f-4ee1-91f0-3d7bfba50136";
     const forceProvider = RealityDataProvider.TilesetUrl;
-    const rdSourceKey = RealityDataSource.createKeyFromUrl(
-      tilesetUrl,
-      forceProvider
-    );
+    const rdSourceKey = RealityDataSource.createKeyFromUrl(tilesetUrl, forceProvider);
     expect(rdSourceKey.provider).to.equal(forceProvider);
     expect(rdSourceKey.format).to.equal(RealityDataFormat.ThreeDTile);
     expect(rdSourceKey.id).to.be.equal("994fc408-401f-4ee1-91f0-3d7bfba50136");
-    expect(rdSourceKey.iTwinId).to.equal(
-      "5b4ebd22-d94b-456b-8bd8-d59563de9acd"
-    );
+    expect(rdSourceKey.iTwinId).to.equal("5b4ebd22-d94b-456b-8bd8-d59563de9acd");
     const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
     expect(rdSourceKeyStr).to.be.equal(
       "TilesetUrl:ThreeDTile:994fc408-401f-4ee1-91f0-3d7bfba50136:5b4ebd22-d94b-456b-8bd8-d59563de9acd"
@@ -221,17 +181,11 @@ describe("RealityDataSource", () => {
     const tilesetUrl =
       "https://connect-realitydataservices.bentley.com/v2.9/Repositories/S3MXECPlugin--5b4ebd22-d94b-456b-8bd8-d59563de9acd/S3MX/RealityData/994fc408-401f-4ee1-91f0-3d7bfba50136";
     const forceFormat = RealityDataFormat.OPC;
-    const rdSourceKey = RealityDataSource.createKeyFromUrl(
-      tilesetUrl,
-      undefined,
-      forceFormat
-    );
+    const rdSourceKey = RealityDataSource.createKeyFromUrl(tilesetUrl, undefined, forceFormat);
     expect(rdSourceKey.provider).to.equal(RealityDataProvider.ContextShare);
     expect(rdSourceKey.format).to.equal(forceFormat);
     expect(rdSourceKey.id).to.be.equal("994fc408-401f-4ee1-91f0-3d7bfba50136");
-    expect(rdSourceKey.iTwinId).to.equal(
-      "5b4ebd22-d94b-456b-8bd8-d59563de9acd"
-    );
+    expect(rdSourceKey.iTwinId).to.equal("5b4ebd22-d94b-456b-8bd8-d59563de9acd");
     const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
     expect(rdSourceKeyStr).to.be.equal(
       "ContextShare:OPC:994fc408-401f-4ee1-91f0-3d7bfba50136:5b4ebd22-d94b-456b-8bd8-d59563de9acd"
@@ -247,56 +201,41 @@ describe("RealityDataSource", () => {
     expect(rdSourceKey.id).to.be.equal("fe8d32a5-f6ab-4157-b3ec-a9b53db923e3");
     expect(rdSourceKey.iTwinId).to.be.undefined;
     const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
-    expect(rdSourceKeyStr).to.be.equal(
-      "ContextShare:OPC:fe8d32a5-f6ab-4157-b3ec-a9b53db923e3:undefined"
-    );
+    expect(rdSourceKeyStr).to.be.equal("ContextShare:OPC:fe8d32a5-f6ab-4157-b3ec-a9b53db923e3:undefined");
   });
   it("should handle creation from blob url with provider override", () => {
     const blobUrl =
       "https://realityblobqaeussa01.blob.core.windows.net/fe8d32a5-f6ab-4157-b3ec-a9b53db923e3/Tuxford.opc?sv=2020-08-04&se=2021-08-26T05%3A11%3A31Z&sr=c&sp=rl&sig=J9wGT1f3nyKePPj%2FI%2BJdx086GylEfM0P4ZXBQL%2FaRD4%3D";
     const forceProvider = RealityDataProvider.TilesetUrl;
-    const rdSourceKey = RealityDataSource.createKeyFromBlobUrl(
-      blobUrl,
-      forceProvider
-    );
+    const rdSourceKey = RealityDataSource.createKeyFromBlobUrl(blobUrl, forceProvider);
     expect(rdSourceKey.provider).to.equal(forceProvider);
     expect(rdSourceKey.format).to.equal(RealityDataFormat.OPC);
     expect(rdSourceKey.id).to.be.equal("fe8d32a5-f6ab-4157-b3ec-a9b53db923e3");
     expect(rdSourceKey.iTwinId).to.be.undefined;
     const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
-    expect(rdSourceKeyStr).to.be.equal(
-      "TilesetUrl:OPC:fe8d32a5-f6ab-4157-b3ec-a9b53db923e3:undefined"
-    );
+    expect(rdSourceKeyStr).to.be.equal("TilesetUrl:OPC:fe8d32a5-f6ab-4157-b3ec-a9b53db923e3:undefined");
   });
   it("should handle creation from blob url with format override", () => {
     const blobUrl =
       "https://realityblobqaeussa01.blob.core.windows.net/fe8d32a5-f6ab-4157-b3ec-a9b53db923e3/Tuxford.opc?sv=2020-08-04&se=2021-08-26T05%3A11%3A31Z&sr=c&sp=rl&sig=J9wGT1f3nyKePPj%2FI%2BJdx086GylEfM0P4ZXBQL%2FaRD4%3D";
     const forceFormat = RealityDataFormat.ThreeDTile;
-    const rdSourceKey = RealityDataSource.createKeyFromBlobUrl(
-      blobUrl,
-      undefined,
-      forceFormat
-    );
+    const rdSourceKey = RealityDataSource.createKeyFromBlobUrl(blobUrl, undefined, forceFormat);
     expect(rdSourceKey.provider).to.equal(RealityDataProvider.ContextShare);
     expect(rdSourceKey.format).to.equal(forceFormat);
     expect(rdSourceKey.id).to.be.equal("fe8d32a5-f6ab-4157-b3ec-a9b53db923e3");
     expect(rdSourceKey.iTwinId).to.be.undefined;
     const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
-    expect(rdSourceKeyStr).to.be.equal(
-      "ContextShare:ThreeDTile:fe8d32a5-f6ab-4157-b3ec-a9b53db923e3:undefined"
-    );
+    expect(rdSourceKeyStr).to.be.equal("ContextShare:ThreeDTile:fe8d32a5-f6ab-4157-b3ec-a9b53db923e3:undefined");
   });
   it("should handle creation from orbitGtBlobProps", () => {
     const orbitGtBlob: OrbitGtBlobProps = {
       accountName: "ocpalphaeudata001",
       containerName: "a5932aa8-2fde-470d-b5ab-637412ec4e49",
-      blobFileName:
-        "/datasources/0b2ad731-ec01-4b8b-8f0f-c99a593f1ff3/Seinajoki_Trees_utm.opc",
+      blobFileName: "/datasources/0b2ad731-ec01-4b8b-8f0f-c99a593f1ff3/Seinajoki_Trees_utm.opc",
       sasToken:
         "sig=EaHCCCSX6bWw%2FOHgad%2Fn3VCgUs2gPbDn%2BE2p5osMYIg%3D&se=2022-01-11T12%3A01%3A20Z&sv=2019-02-02&sp=r&sr=b",
     };
-    const rdSourceKey =
-      RealityDataSource.createKeyFromOrbitGtBlobProps(orbitGtBlob);
+    const rdSourceKey = RealityDataSource.createKeyFromOrbitGtBlobProps(orbitGtBlob);
     expect(rdSourceKey.provider).to.equal(RealityDataProvider.OrbitGtBlob);
     expect(rdSourceKey.format).to.equal(RealityDataFormat.OPC);
     expect(rdSourceKey.id).to.be.equal(
@@ -307,17 +246,12 @@ describe("RealityDataSource", () => {
     expect(rdSourceKeyStr).to.be.equal(
       "OrbitGtBlob:OPC:ocpalphaeudata001:a5932aa8-2fde-470d-b5ab-637412ec4e49:/datasources/0b2ad731-ec01-4b8b-8f0f-c99a593f1ff3/Seinajoki_Trees_utm.opc:?sig=EaHCCCSX6bWw%2FOHgad%2Fn3VCgUs2gPbDn%2BE2p5osMYIg%3D&se=2022-01-11T12%3A01%3A20Z&sv=2019-02-02&sp=r&sr=b:undefined"
     );
-    const orbitGtBlobFromKey =
-      RealityDataSource.createOrbitGtBlobPropsFromKey(rdSourceKey);
+    const orbitGtBlobFromKey = RealityDataSource.createOrbitGtBlobPropsFromKey(rdSourceKey);
     expect(orbitGtBlobFromKey).to.not.be.undefined;
     if (orbitGtBlobFromKey !== undefined) {
       expect(orbitGtBlob.accountName).to.equal(orbitGtBlobFromKey.accountName);
-      expect(orbitGtBlob.containerName).to.equal(
-        orbitGtBlobFromKey.containerName
-      );
-      expect(orbitGtBlob.blobFileName).to.equal(
-        orbitGtBlobFromKey.blobFileName
-      );
+      expect(orbitGtBlob.containerName).to.equal(orbitGtBlobFromKey.containerName);
+      expect(orbitGtBlob.blobFileName).to.equal(orbitGtBlobFromKey.blobFileName);
       expect(orbitGtBlob.sasToken).to.equal(orbitGtBlobFromKey.sasToken);
     }
   });
@@ -329,19 +263,15 @@ describe("RealityDataSource", () => {
         "https://realityblobqaeussa01.blob.core.windows.net/fe8d32a5-f6ab-4157-b3ec-a9b53db923e3/Tuxford.opc?sv=2020-08-04&se=2021-08-26T05%3A11%3A31Z&sr=c&sp=rl&sig=J9wGT1f3nyKePPj%2FI%2BJdx086GylEfM0P4ZXBQL%2FaRD4%3D",
       sasToken: "",
     };
-    const rdSourceKey =
-      RealityDataSource.createKeyFromOrbitGtBlobProps(orbitGtBlob);
+    const rdSourceKey = RealityDataSource.createKeyFromOrbitGtBlobProps(orbitGtBlob);
     expect(rdSourceKey.provider).to.equal(RealityDataProvider.ContextShare);
     expect(rdSourceKey.format).to.equal(RealityDataFormat.OPC);
     expect(rdSourceKey.id).to.be.equal("fe8d32a5-f6ab-4157-b3ec-a9b53db923e3");
     expect(rdSourceKey.iTwinId).to.be.undefined;
-    const orbitGtBlobFromKey =
-      RealityDataSource.createOrbitGtBlobPropsFromKey(rdSourceKey);
+    const orbitGtBlobFromKey = RealityDataSource.createOrbitGtBlobPropsFromKey(rdSourceKey);
     expect(orbitGtBlobFromKey).to.be.undefined;
     const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
-    expect(rdSourceKeyStr).to.be.equal(
-      "ContextShare:OPC:fe8d32a5-f6ab-4157-b3ec-a9b53db923e3:undefined"
-    );
+    expect(rdSourceKeyStr).to.be.equal("ContextShare:OPC:fe8d32a5-f6ab-4157-b3ec-a9b53db923e3:undefined");
   });
   it("should handle creation from orbitGtBlobProps when rdsUrl is defined", () => {
     const orbitGtBlob: OrbitGtBlobProps = {
@@ -352,16 +282,12 @@ describe("RealityDataSource", () => {
       blobFileName: "",
       sasToken: "",
     };
-    const rdSourceKey =
-      RealityDataSource.createKeyFromOrbitGtBlobProps(orbitGtBlob);
+    const rdSourceKey = RealityDataSource.createKeyFromOrbitGtBlobProps(orbitGtBlob);
     expect(rdSourceKey.provider).to.equal(RealityDataProvider.ContextShare);
     expect(rdSourceKey.format).to.equal(RealityDataFormat.OPC);
     expect(rdSourceKey.id).to.be.equal("994fc408-401f-4ee1-91f0-3d7bfba50136");
-    expect(rdSourceKey.iTwinId).to.be.equal(
-      "5b4ebd22-d94b-456b-8bd8-d59563de9acd"
-    );
-    const orbitGtBlobFromKey =
-      RealityDataSource.createOrbitGtBlobPropsFromKey(rdSourceKey);
+    expect(rdSourceKey.iTwinId).to.be.equal("5b4ebd22-d94b-456b-8bd8-d59563de9acd");
+    const orbitGtBlobFromKey = RealityDataSource.createOrbitGtBlobPropsFromKey(rdSourceKey);
     expect(orbitGtBlobFromKey).to.be.undefined;
     const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
     expect(rdSourceKeyStr).to.be.equal(

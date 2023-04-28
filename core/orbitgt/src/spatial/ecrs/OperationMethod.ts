@@ -39,11 +39,7 @@ export abstract class OperationMethod {
    * @param code the code.
    * @param name the name.
    */
-  public constructor(
-    code: int32,
-    name: string,
-    parameters: ParameterValueList
-  ) {
+  public constructor(code: int32, name: string, parameters: ParameterValueList) {
     this._code = code;
     this._name = name;
     this._parameters = parameters;
@@ -102,12 +98,7 @@ export abstract class OperationMethod {
    * @param targetCRS the target CRS.
    * @param target the coordinates in the target CRS.
    */
-  public abstract forward(
-    sourceCRS: CRS,
-    source: Coordinate,
-    targetCRS: CRS,
-    target: Coordinate
-  ): void;
+  public abstract forward(sourceCRS: CRS, source: Coordinate, targetCRS: CRS, target: Coordinate): void;
 
   /**
    * Convert a target coordinate to a source coordinate.
@@ -116,10 +107,5 @@ export abstract class OperationMethod {
    * @param targetCRS the target CRS.
    * @param target the coordinates in the target CRS.
    */
-  public abstract reverse(
-    sourceCRS: CRS,
-    source: Coordinate,
-    targetCRS: CRS,
-    target: Coordinate
-  ): void;
+  public abstract reverse(sourceCRS: CRS, source: Coordinate, targetCRS: CRS, target: Coordinate): void;
 }

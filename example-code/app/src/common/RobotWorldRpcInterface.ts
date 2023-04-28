@@ -14,19 +14,13 @@ export abstract class RobotWorldReadRpcInterface extends RpcInterface {
   public static getClient() {
     return RpcManager.getClientForInterface(this);
   }
-  public async countRobotsInArray(
-    _iModelToken: IModelRpcProps,
-    _elemIds: Id64String[]
-  ): Promise<number> {
+  public async countRobotsInArray(_iModelToken: IModelRpcProps, _elemIds: Id64String[]): Promise<number> {
     return this.forward(arguments);
   }
   public async countRobots(_iModelToken: IModelRpcProps): Promise<number> {
     return this.forward(arguments);
   }
-  public async queryObstaclesHitByRobot(
-    _iModelToken: IModelRpcProps,
-    _rid: Id64String
-  ): Promise<Id64String[]> {
+  public async queryObstaclesHitByRobot(_iModelToken: IModelRpcProps, _rid: Id64String): Promise<Id64String[]> {
     return this.forward(arguments);
   }
 }
@@ -50,11 +44,7 @@ export abstract class RobotWorldWriteRpcInterface extends RpcInterface {
   ): Promise<Id64String> {
     return this.forward(arguments);
   }
-  public async moveRobot(
-    _iModelToken: IModelRpcProps,
-    _id: Id64String,
-    _location: XYZProps
-  ): Promise<void> {
+  public async moveRobot(_iModelToken: IModelRpcProps, _id: Id64String, _location: XYZProps): Promise<void> {
     return this.forward(arguments);
   }
   public async insertBarrier(

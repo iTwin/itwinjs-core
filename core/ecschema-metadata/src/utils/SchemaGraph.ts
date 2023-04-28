@@ -44,12 +44,7 @@ export class SchemaGraph {
     return undefined;
   }
 
-  private detectCycleUtil(
-    schema: Schema,
-    visited: any,
-    recStack: any,
-    cycles: ReferenceCycle[]
-  ): boolean {
+  private detectCycleUtil(schema: Schema, visited: any, recStack: any, cycles: ReferenceCycle[]): boolean {
     let cycleFound = false;
 
     if (!visited[schema.name]) {
@@ -57,10 +52,7 @@ export class SchemaGraph {
       recStack[schema.name] = true;
 
       for (const refSchema of schema.references) {
-        if (
-          !visited[refSchema.name] &&
-          this.detectCycleUtil(refSchema, visited, recStack, cycles)
-        ) {
+        if (!visited[refSchema.name] && this.detectCycleUtil(refSchema, visited, recStack, cycles)) {
           cycles.push({ schema, refSchema });
           cycleFound = true;
         } else if (recStack[refSchema.name]) {

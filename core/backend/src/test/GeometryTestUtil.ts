@@ -14,10 +14,7 @@ export const brepData: { data: string } = JSON.parse(
   })
 );
 
-export function createBRepDataProps(
-  origin?: Point3d,
-  angles?: YawPitchRollAngles
-): BRepEntity.DataProps {
+export function createBRepDataProps(origin?: Point3d, angles?: YawPitchRollAngles): BRepEntity.DataProps {
   // This brep has a face symbology attribute attached to one face, make it green.
   const faceSymb: BRepEntity.FaceSymbologyProps[] = [
     { color: ColorDef.blue.toJSON() }, // base symbology should match appearance...
@@ -27,10 +24,7 @@ export function createBRepDataProps(
   const brepProps: BRepEntity.DataProps = {
     data: brepData.data,
     faceSymbology: faceSymb,
-    transform: Transform.createOriginAndMatrix(
-      origin,
-      angles ? angles.toMatrix3d() : undefined
-    ).toJSON(),
+    transform: Transform.createOriginAndMatrix(origin, angles ? angles.toMatrix3d() : undefined).toJSON(),
   };
 
   return brepProps;

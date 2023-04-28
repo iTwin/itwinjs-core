@@ -39,26 +39,11 @@ describe("AnalyticRoots.SolveLinear", () => {
         AnalyticRoots.appendLinearRoot(-slope * a, slope, s);
         if (slope !== 0) {
           if (ck.testPointer(s)) {
-            ck.testExactNumber(
-              s.length,
-              1,
-              "SolveLinear (root a, slope)",
-              a,
-              slope
-            );
-            ck.testCoordinate(
-              s.atUncheckedIndex(0),
-              a,
-              "SolveLinear",
-              powerCoffs
-            );
+            ck.testExactNumber(s.length, 1, "SolveLinear (root a, slope)", a, slope);
+            ck.testCoordinate(s.atUncheckedIndex(0), a, "SolveLinear", powerCoffs);
           }
         } else {
-          ck.testExactNumber(
-            s.length,
-            0,
-            " Expect no roots for linear equation with zero slope."
-          );
+          ck.testExactNumber(s.length, 0, " Expect no roots for linear equation with zero slope.");
         }
       }
     }
@@ -72,18 +57,11 @@ describe("AnalyticRoots.SolveQuadric", () => {
     for (let i = 3; i < 8; i += 2) {
       const quadric = Degree2PowerPolynomial.fromRootsAndC2(i, i);
       const roots = new GrowableFloat64Array();
-      AnalyticRoots.appendQuadraticRoots(
-        Float64Array.from(quadric.coffs),
-        roots
-      );
+      AnalyticRoots.appendQuadraticRoots(Float64Array.from(quadric.coffs), roots);
       if (ck.testPointer(roots)) {
         roots.sort(compare);
         ck.testExactNumber(roots.length, 1, `SolveQuadric s = [${i}, ${i}]`);
-        ck.testCoordinate(
-          roots.atUncheckedIndex(0),
-          i,
-          "Quadratic double root"
-        );
+        ck.testCoordinate(roots.atUncheckedIndex(0), i, "Quadratic double root");
       }
     }
     ck.checkpoint("DoubleRoot");
@@ -94,10 +72,7 @@ describe("AnalyticRoots.SolveQuadric", () => {
     const c = 3.5;
     for (const a of [3, 2, 9]) {
       const roots = new GrowableFloat64Array();
-      AnalyticRoots.appendQuadraticRoots(
-        Float64Array.from([c, Math.sqrt((4.0 * a * c) / 7), a]),
-        roots
-      );
+      AnalyticRoots.appendQuadraticRoots(Float64Array.from([c, Math.sqrt((4.0 * a * c) / 7), a]), roots);
       ck.testExactNumber(roots.length, 0, "Expect no roots from quadratic");
     }
     expect(ck.getNumErrors()).equals(0);
@@ -109,30 +84,12 @@ describe("AnalyticRoots.SolveQuadric", () => {
       for (const root1 of [5.4, 2.3]) {
         const quadric = Degree2PowerPolynomial.fromRootsAndC2(root0, root1);
         const roots = new GrowableFloat64Array();
-        AnalyticRoots.appendQuadraticRoots(
-          Float64Array.from(quadric.coffs),
-          roots
-        );
+        AnalyticRoots.appendQuadraticRoots(Float64Array.from(quadric.coffs), roots);
         if (ck.testPointer(roots)) {
           roots.sort(compare);
-          ck.testExactNumber(
-            roots.length,
-            2,
-            "appendQuadraticSolutions ",
-            roots,
-            root0,
-            root1
-          );
-          ck.testCoordinate(
-            roots.atUncheckedIndex(0),
-            Math.min(root0, root1),
-            "Quadratic two roots"
-          );
-          ck.testCoordinate(
-            roots.atUncheckedIndex(1),
-            Math.max(root0, root1),
-            "Quadratic two roots"
-          );
+          ck.testExactNumber(roots.length, 2, "appendQuadraticSolutions ", roots, root0, root1);
+          ck.testCoordinate(roots.atUncheckedIndex(0), Math.min(root0, root1), "Quadratic two roots");
+          ck.testCoordinate(roots.atUncheckedIndex(1), Math.max(root0, root1), "Quadratic two roots");
         }
       }
     }
@@ -146,51 +103,19 @@ describe("AnalyticRoots.SolveQuadric", () => {
     const tol = 1.0e-12;
     ck.testExactNumber(
       1,
-      AnalyticRoots.appendImplicitLineUnitCircleIntersections(
-        1,
-        0,
-        1,
-        cosValues,
-        sinValues,
-        radiansValues,
-        tol
-      )
+      AnalyticRoots.appendImplicitLineUnitCircleIntersections(1, 0, 1, cosValues, sinValues, radiansValues, tol)
     );
     ck.testExactNumber(
       2,
-      AnalyticRoots.appendImplicitLineUnitCircleIntersections(
-        0.1,
-        0,
-        1,
-        cosValues,
-        sinValues,
-        radiansValues,
-        tol
-      )
+      AnalyticRoots.appendImplicitLineUnitCircleIntersections(0.1, 0, 1, cosValues, sinValues, radiansValues, tol)
     );
     ck.testExactNumber(
       -2,
-      AnalyticRoots.appendImplicitLineUnitCircleIntersections(
-        0,
-        0,
-        0,
-        cosValues,
-        sinValues,
-        radiansValues,
-        tol
-      )
+      AnalyticRoots.appendImplicitLineUnitCircleIntersections(0, 0, 0, cosValues, sinValues, radiansValues, tol)
     );
     ck.testExactNumber(
       -1,
-      AnalyticRoots.appendImplicitLineUnitCircleIntersections(
-        1,
-        0,
-        0,
-        cosValues,
-        sinValues,
-        radiansValues,
-        -1
-      )
+      AnalyticRoots.appendImplicitLineUnitCircleIntersections(1, 0, 0, cosValues, sinValues, radiansValues, -1)
     );
 
     ck.checkpoint("ImplicitLineUnitCircle");
@@ -201,22 +126,8 @@ describe("AnalyticRoots.SolveQuadric", () => {
     const coffs = new Float64Array([1, 2, 3, 4]);
     ck.testExactNumber(0, PowerPolynomial.degreeKnownEvaluate(coffs, -1, 4));
     const radians: number[] = [];
-    ck.testTrue(
-      TrigPolynomial.solveAngles(
-        new Float64Array([1, 1, 0, 0, 0]),
-        4,
-        100,
-        radians
-      )
-    );
-    ck.testTrue(
-      TrigPolynomial.solveAngles(
-        new Float64Array([0, 1, 1, 0, 0, 0]),
-        4,
-        100,
-        radians
-      )
-    );
+    ck.testTrue(TrigPolynomial.solveAngles(new Float64Array([1, 1, 0, 0, 0]), 4, 100, radians));
+    ck.testTrue(TrigPolynomial.solveAngles(new Float64Array([0, 1, 1, 0, 0, 0]), 4, 100, radians));
 
     const z3 = new Degree3PowerPolynomial();
     const z2 = new Degree2PowerPolynomial();
@@ -227,9 +138,7 @@ describe("AnalyticRoots.SolveQuadric", () => {
   });
   it("SmallSystemFailures", () => {
     const ck = new Checker();
-    ck.testUndefined(
-      SmallSystem.linearSystem3d(1, 2, 3, 1, 2, 5, 1, 2, 0, 1, 2, 3)
-    );
+    ck.testUndefined(SmallSystem.linearSystem3d(1, 2, 3, 1, 2, 5, 1, 2, 0, 1, 2, 3));
     const result = Vector2d.create();
     ck.testFalse(SmallSystem.linearSystem2d(1, 2, 1, 2, 1, 2, result));
 
@@ -268,11 +177,7 @@ describe("AnalyticRoots.SolveQuadric", () => {
     const pointA = Point3d.create(1, 0.1, 3);
     const pointB = Point3d.create(3, 2, -1);
     const pointC = Point3d.create(2, 1, 0.4);
-    const r = SmallSystem.lineSegment3dClosestPointUnbounded(
-      pointA,
-      pointB,
-      pointC
-    );
+    const r = SmallSystem.lineSegment3dClosestPointUnbounded(pointA, pointB, pointC);
     if (ck.testDefined(r) && r !== undefined) {
       const pointD = pointA.interpolate(r, pointB);
       ck.testPerpendicular(
@@ -316,8 +221,7 @@ describe("AnalyticRoots.SolveQuadric", () => {
             }
             ck.testLE(1, numMatch, "evaluate point appears in roots.");
             const uvArrayB = BilinearPolynomial.solvePair(q, qValue, p, pValue);
-            if (ck.testDefined(uvArrayB) && uvArrayB !== undefined)
-              ck.testExactNumber(uvArray.length, uvArrayB.length);
+            if (ck.testDefined(uvArrayB) && uvArrayB !== undefined) ck.testExactNumber(uvArray.length, uvArrayB.length);
           }
         }
       }
@@ -388,10 +292,8 @@ function newtonStep(coffs: Float64Array, u: number) {
 }
 
 function newtonStep4(coffs: Float64Array, u: number) {
-  const f =
-    coffs[0] + u * (coffs[1] + u * (coffs[2] + u * (coffs[3] + u * coffs[4])));
-  const df =
-    coffs[1] + u * (2.0 * coffs[2] + u * (3.0 * coffs[3] + u * 4.0 * coffs[4]));
+  const f = coffs[0] + u * (coffs[1] + u * (coffs[2] + u * (coffs[3] + u * coffs[4])));
+  const df = coffs[1] + u * (2.0 * coffs[2] + u * (3.0 * coffs[3] + u * 4.0 * coffs[4]));
   return f / df;
 }
 
@@ -413,10 +315,7 @@ describe("AnalyticRoots.SolveCubic", () => {
         ck.testCoordinate(actual.length, 1, "simple root count");
 
         const eMax = matchRoots(target, actual);
-        ck.testTrue(
-          eMax < 1.0e-14 * (1.0 + NumberArray.maxAbsArray(target)),
-          "root error"
-        );
+        ck.testTrue(eMax < 1.0e-14 * (1.0 + NumberArray.maxAbsArray(target)), "root error");
 
         if (Checker.noisy.cubicRoots) {
           GeometryCoreTestIO.consoleLog(`  (target ${a}) (b ${b} + )`);
@@ -433,19 +332,12 @@ describe("AnalyticRoots.SolveCubic", () => {
     const ck = new Checker();
 
     for (let e = 1.0; e > 2.0e-8; e *= 0.1) {
-      for (
-        let x0 = 0.0;
-        x0 < Math.max(rangeScale * e, 20.0);
-        x0 = 10.0 * (x0 + 1.0)
-      ) {
+      for (let x0 = 0.0; x0 < Math.max(rangeScale * e, 20.0); x0 = 10.0 * (x0 + 1.0)) {
         const u0 = x0 - e;
         const u1 = x0;
         const u2 = x0 + 1;
         if (Checker.noisy.cubicRoots)
-          GeometryCoreTestIO.consoleLog(
-            `Cubic Roots for [${u0}, ${u1}, ${u2}]`,
-            { ee: e, x00: x0 }
-          );
+          GeometryCoreTestIO.consoleLog(`Cubic Roots for [${u0}, ${u1}, ${u2}]`, { ee: e, x00: x0 });
 
         const coffs = new Float64Array(4);
         coffs[3] = 1.0;
@@ -458,10 +350,7 @@ describe("AnalyticRoots.SolveCubic", () => {
         const actual = new GrowableFloat64Array();
         AnalyticRoots.appendCubicRoots(coffs, actual);
 
-        if (
-          ck.testPointer(actual) &&
-          ck.testExactNumber(3, actual.length, "3 root cubic")
-        ) {
+        if (ck.testPointer(actual) && ck.testExactNumber(3, actual.length, "3 root cubic")) {
           const uMax = NumberArray.maxAbsArray(target);
           const eMax = matchRoots(target, actual) / uMax;
           const eSafe = maxDiffMatchedArrays(target, actual) / uMax;
@@ -476,27 +365,21 @@ describe("AnalyticRoots.SolveCubic", () => {
               `   (known roots ${target[0]} ${target[1]} ${target[2]})  (eMax ${eMax}) (eSafe ${eSafe}`
             );
             GeometryCoreTestIO.consoleLog(
-              `   (computed roots ${actual.atUncheckedIndex(
-                0
-              )} ${actual.atUncheckedIndex(1)} ${actual.atUncheckedIndex(2)}`
+              `   (computed roots ${actual.atUncheckedIndex(0)} ${actual.atUncheckedIndex(1)} ${actual.atUncheckedIndex(
+                2
+              )}`
             );
             GeometryCoreTestIO.consoleLog(
               `   (correction by newton from computed root  ${newtonStep(
                 coffs,
                 actual.atUncheckedIndex(0)
-              )} ${newtonStep(coffs, actual.atUncheckedIndex(1))} ${newtonStep(
-                coffs,
-                actual.atUncheckedIndex(2)
-              )}`
+              )} ${newtonStep(coffs, actual.atUncheckedIndex(1))} ${newtonStep(coffs, actual.atUncheckedIndex(2))}`
             );
             GeometryCoreTestIO.consoleLog(
-              `   (correction by newton from known root  ${newtonStep(
+              `   (correction by newton from known root  ${newtonStep(coffs, target[0])} ${newtonStep(
                 coffs,
-                target[0]
-              )} ${newtonStep(coffs, target[1])} ${newtonStep(
-                coffs,
-                target[2]
-              )}`
+                target[1]
+              )} ${newtonStep(coffs, target[2])}`
             );
           }
         }
@@ -572,14 +455,7 @@ describe("AnalyticRoots.SolveCubic", () => {
     */
 });
 
-function checkQuartic(
-  u0: number,
-  u1: number,
-  u2: number,
-  u3: number,
-  tolerance: number,
-  ck: Checker
-) {
+function checkQuartic(u0: number, u1: number, u2: number, u3: number, tolerance: number, ck: Checker) {
   const coffs = new Float64Array(5);
   coffs[4] = 1.0;
   coffs[3] = -NumberArray.preciseSum([u0, u1, u2, u3]);
@@ -591,12 +467,7 @@ function checkQuartic(
   xx[4] = u1 * u3;
   xx[5] = u2 * u3;
   coffs[2] = NumberArray.preciseSum(xx);
-  coffs[1] = -NumberArray.preciseSum([
-    u0 * u1 * u2,
-    u0 * u1 * u3,
-    u0 * u2 * u3,
-    u1 * u2 * u3,
-  ]);
+  coffs[1] = -NumberArray.preciseSum([u0 * u1 * u2, u0 * u1 * u3, u0 * u2 * u3, u1 * u2 * u3]);
   coffs[0] = u0 * u1 * u2 * u3;
 
   const target = [u0, u1, u2, u3];
@@ -609,51 +480,35 @@ function checkQuartic(
 
   const uMax = NumberArray.maxAbsArray(target);
   let eMax = matchRoots(target, actual) / uMax;
-  const ok: boolean = ck.testTrue(
-    eMax < tolerance,
-    "quartic root tolerance",
-    eMax,
-    tolerance
-  );
+  const ok: boolean = ck.testTrue(eMax < tolerance, "quartic root tolerance", eMax, tolerance);
   // Accurate when compared to multiple of 1.0e-8... any higher negative power likely to fail
   if (Checker.noisy.quarticRoots) {
     GeometryCoreTestIO.consoleLog(
-      `   (actual ${actual.atUncheckedIndex(0)} ${actual.atUncheckedIndex(
-        1
-      )} ${actual.atUncheckedIndex(2)} ${actual.atUncheckedIndex(3)})`
+      `   (actual ${actual.atUncheckedIndex(0)} ${actual.atUncheckedIndex(1)} ${actual.atUncheckedIndex(
+        2
+      )} ${actual.atUncheckedIndex(3)})`
     );
-    GeometryCoreTestIO.consoleLog(
-      `   (target ${target[0]} ${target[1]} ${target[2]} ${target[3]})`
-    );
+    GeometryCoreTestIO.consoleLog(`   (target ${target[0]} ${target[1]} ${target[2]} ${target[3]})`);
   }
 
   // Additional testing based on NewtonStep
   for (let step = 0; step < 10 && eMax > 1.0e-14; step++) {
     if (!ok || printAll) {
       GeometryCoreTestIO.consoleLog(
-        `   (actualDX   ${newtonStep4(
+        `   (actualDX   ${newtonStep4(coffs, actual.atUncheckedIndex(0))} ${newtonStep4(
           coffs,
-          actual.atUncheckedIndex(0)
-        )} ${newtonStep4(coffs, actual.atUncheckedIndex(1))} ${newtonStep4(
-          coffs,
-          actual.atUncheckedIndex(2)
-        )} ${newtonStep4(coffs, actual.atUncheckedIndex(3))} `
+          actual.atUncheckedIndex(1)
+        )} ${newtonStep4(coffs, actual.atUncheckedIndex(2))} ${newtonStep4(coffs, actual.atUncheckedIndex(3))} `
       );
       for (let k = 0; k < actual.length; k++) {
-        actual.reassign(
-          k,
-          actual.atUncheckedIndex(k) -
-            newtonStep4(coffs, actual.atUncheckedIndex(k))
-        );
+        actual.reassign(k, actual.atUncheckedIndex(k) - newtonStep4(coffs, actual.atUncheckedIndex(k)));
       }
       eMax = matchRoots(target, actual) / uMax;
       if (!ok || printAll) {
         GeometryCoreTestIO.consoleLog(
-          `   (actual ${actual.atUncheckedIndex(0)} ${actual.atUncheckedIndex(
-            1
-          )} ${actual.atUncheckedIndex(2)} ${actual.atUncheckedIndex(
-            3
-          )}   (eMax ${eMax}) `
+          `   (actual ${actual.atUncheckedIndex(0)} ${actual.atUncheckedIndex(1)} ${actual.atUncheckedIndex(
+            2
+          )} ${actual.atUncheckedIndex(3)}   (eMax ${eMax}) `
         );
       }
     }
@@ -700,17 +555,13 @@ describe("AnalyticRoots.CheckQuartic", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  function testRoots4(
-    coff: Float64Array,
-    roots: GrowableFloat64Array
-  ): boolean {
+  function testRoots4(coff: Float64Array, roots: GrowableFloat64Array): boolean {
     let maxF = 0.0;
     const ff: number[] = [];
     const numRoots = roots.length;
     for (let i = 0; i < numRoots; i++) {
       const r = roots.atUncheckedIndex(i);
-      const f =
-        coff[0] + r * (coff[1] + r * (coff[2] + r * (coff[3] + r * coff[4])));
+      const f = coff[0] + r * (coff[1] + r * (coff[2] + r * (coff[3] + r * coff[4])));
       maxF = Math.max(f, Math.abs(maxF));
       ff.push(f);
     }
@@ -778,10 +629,7 @@ describe("AnalyticRoots.CheckOrder3Bezier", () => {
 */
 /* Test Earlin's formulation of the resultant for quartic roots.  This only proceeds far enough to see roots of the resultant -- not quartic roots. */
 export class AnalyticRoots1 extends AnalyticRoots {
-  public static appendQuarticRoots1(
-    c: Float64Array,
-    roots: GrowableFloat64Array
-  ) {
+  public static appendQuarticRoots1(c: Float64Array, roots: GrowableFloat64Array) {
     const coffScale = 1.0 / c[4];
     const A = c[3] * coffScale;
     const B = c[2] * coffScale;
@@ -793,11 +641,7 @@ export class AnalyticRoots1 extends AnalyticRoots {
     const squareA = A * A;
     const p = (-3.0 / 8) * squareA + B;
     const q = 0.125 * squareA * A - 0.5 * A * B + C;
-    const r =
-      (-3.0 / 256) * squareA * squareA +
-      (1.0 / 16) * squareA * B -
-      (1.0 / 4) * A * C +
-      D;
+    const r = (-3.0 / 256) * squareA * squareA + (1.0 / 16) * squareA * B - (1.0 / 4) * A * C + D;
     const cubicCoffs = new Float64Array([-q * q, p * p - 4 * r, 2.0 * p, 1.0]);
     // const cubicRoots = new GrowableFloat64Array (3);
     AnalyticRoots.appendCubicRoots(cubicCoffs, roots);
@@ -832,11 +676,7 @@ describe("AnalyticRoots", () => {
           if (noisy) {
             GeometryCoreTestIO.consoleLog("[roots0]", quarticRoots0);
             AnalyticRoots1.appendQuarticRoots1(quarticCoffs, bSquared);
-            GeometryCoreTestIO.consoleLog("real b squared", [
-              b12 * b12,
-              b13 * b13,
-              b23 * b23,
-            ]);
+            GeometryCoreTestIO.consoleLog("real b squared", [b12 * b12, b13 * b13, b23 * b23]);
             GeometryCoreTestIO.consoleLog("approx bSquared", bSquared);
           }
         }
@@ -848,11 +688,7 @@ describe("Geometry", () => {
   it("Curvature", () => {
     const ck = new Checker();
     const r = 2.123;
-    const arc = Arc3d.createXY(
-      Point3d.create(1, 2, 3),
-      2.123,
-      AngleSweep.create360()
-    );
+    const arc = Arc3d.createXY(Point3d.create(1, 2, 3), 2.123, AngleSweep.create360());
     for (const fraction of [0.0, 0.25]) {
       const derivatives = arc.fractionToPointAnd2Derivatives(fraction);
       const curvature = Geometry.curvatureMagnitude(
@@ -866,22 +702,11 @@ describe("Geometry", () => {
       ck.testCoordinate(1.0 / r, curvature, "circle curvature");
       ck.testExactNumber(
         0,
-        Geometry.curvatureMagnitude(
-          derivatives.vectorU.x,
-          derivatives.vectorU.y,
-          derivatives.vectorU.z,
-          0,
-          0,
-          0
-        ),
+        Geometry.curvatureMagnitude(derivatives.vectorU.x, derivatives.vectorU.y, derivatives.vectorU.z, 0, 0, 0),
         "line curvature"
       );
     }
-    ck.testExactNumber(
-      0,
-      Geometry.curvatureMagnitude(0, 0, 0, 1, 2, 3),
-      "curvature with no first derivative"
-    );
+    ck.testExactNumber(0, Geometry.curvatureMagnitude(0, 0, 0, 1, 2, 3), "curvature with no first derivative");
     expect(ck.getNumErrors()).equals(0);
   });
   it("Misc", () => {
@@ -908,18 +733,10 @@ describe("Geometry", () => {
     ck.testFalse(Geometry.isLargeCoordinateResult(-1.0e10));
     const e = Geometry.smallMetricDistance * 0.24;
     const point0 = Point3d.create(1, 43, 2);
-    const point1 = Point3d.create(
-      point0.x + 0.1 * e,
-      point0.y + e,
-      point0.z + 2
-    );
+    const point1 = Point3d.create(point0.x + 0.1 * e, point0.y + e, point0.z + 2);
     ck.testTrue(Geometry.isSamePoint3dXY(point0, point1));
-    ck.testFalse(
-      Geometry.isSamePoint3dXY(point0, point1.plus(Vector3d.create(1, 0)))
-    );
-    ck.testFalse(
-      Geometry.isSamePoint3dXY(point0, point1.plus(Vector3d.create(0, 1)))
-    );
+    ck.testFalse(Geometry.isSamePoint3dXY(point0, point1.plus(Vector3d.create(1, 0))));
+    ck.testFalse(Geometry.isSamePoint3dXY(point0, point1.plus(Vector3d.create(0, 1))));
 
     expect(ck.getNumErrors()).equals(0);
   });
@@ -936,15 +753,7 @@ it("NickelsA", () => {
           // Easy to confirm that the returned roots are in fact roots.
           // This does NOT confirm that all roots were found.
           for (let i = 0; i < roots.length; i++)
-            ck.testCoordinate(
-              0,
-              cubic.evaluate(roots.atUncheckedIndex(i)),
-              " abcd",
-              a,
-              b,
-              c,
-              d
-            );
+            ck.testCoordinate(0, cubic.evaluate(roots.atUncheckedIndex(i)), " abcd", a, b, c, d);
         }
       }
     }
@@ -952,11 +761,7 @@ it("NickelsA", () => {
 
   expect(ck.getNumErrors()).equals(0);
 });
-function findRoot(
-  r: number,
-  roots: GrowableFloat64Array,
-  tol: number = 1.0e-10
-): boolean {
+function findRoot(r: number, roots: GrowableFloat64Array, tol: number = 1.0e-10): boolean {
   for (let i = 0; i < roots.length; i++) {
     const q = roots.atUncheckedIndex(i);
     if (Math.abs(r - q) < tol) return true;

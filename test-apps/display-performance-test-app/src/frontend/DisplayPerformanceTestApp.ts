@@ -14,11 +14,7 @@ import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import { BrowserAuthorizationClient } from "@itwin/browser-authorization/lib/cjs/Client";
 import { IModelApp, IModelAppOptions } from "@itwin/core-frontend";
-import {
-  HyperModeling,
-  SectionMarker,
-  SectionMarkerHandler,
-} from "@itwin/hypermodeling-frontend";
+import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@itwin/hypermodeling-frontend";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
@@ -49,9 +45,7 @@ export class DisplayPerfTestApp {
       MapboxImagery: process.env.IMJS_MAPBOX_KEY
         ? { key: "access_token", value: process.env.IMJS_MAPBOX_KEY }
         : undefined,
-      BingMaps: process.env.IMJS_BING_MAPS_KEY
-        ? { key: "key", value: process.env.IMJS_BING_MAPS_KEY }
-        : undefined,
+      BingMaps: process.env.IMJS_BING_MAPS_KEY ? { key: "key", value: process.env.IMJS_BING_MAPS_KEY } : undefined,
     };
     /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -71,8 +65,7 @@ export class DisplayPerfTestApp {
       SnapshotIModelRpcInterface,
       IModelReadRpcInterface,
     ]; // eslint-disable-line deprecation/deprecation
-    if (ProcessDetector.isElectronAppFrontend)
-      await ElectronApp.startup({ iModelApp });
+    if (ProcessDetector.isElectronAppFrontend) await ElectronApp.startup({ iModelApp });
     else await IModelApp.startup(iModelApp);
 
     await HyperModeling.initialize({ markerHandler: new MarkerHandler() });
@@ -80,25 +73,19 @@ export class DisplayPerfTestApp {
     IModelApp.animationInterval = undefined;
   }
 
-  public static async logException(
-    ex: any,
-    logFile?: { dir: string; name: string }
-  ): Promise<void> {
-    const errMsg =
-      ex.stack ?? (ex.toString ? ex.toString() : "unknown error type");
+  public static async logException(ex: any, logFile?: { dir: string; name: string }): Promise<void> {
+    const errMsg = ex.stack ?? (ex.toString ? ex.toString() : "unknown error type");
     const msg = `DPTA_EXCEPTION\n${errMsg}\n`;
     const client = DisplayPerfRpcInterface.getClient();
     await client.consoleLog(msg);
-    if (logFile)
-      await client.writeExternalFile(logFile.dir, logFile.name, true, msg);
+    if (logFile) await client.writeExternalFile(logFile.dir, logFile.name, true, msg);
   }
 }
 
 async function signIn(): Promise<void> {
   if (process.env.IMJS_OIDC_HEADLESS) return;
   let authorizationClient;
-  if (ProcessDetector.isElectronAppFrontend)
-    authorizationClient = new ElectronRendererAuthorization();
+  if (ProcessDetector.isElectronAppFrontend) authorizationClient = new ElectronRendererAuthorization();
   else
     authorizationClient = new BrowserAuthorizationClient({
       clientId: process.env.IMJS_OIDC_CLIENT_ID!,
@@ -111,8 +98,7 @@ async function signIn(): Promise<void> {
 
 async function main() {
   try {
-    const configStr =
-      await DisplayPerfRpcInterface.getClient().getDefaultConfigs();
+    const configStr = await DisplayPerfRpcInterface.getClient().getDefaultConfigs();
     const props = JSON.parse(configStr) as TestSetsProps;
 
     if (props.signIn) await signIn();
@@ -133,22 +119,14 @@ window.onload = async () => {
   RpcConfiguration.developmentMode = true;
   RpcConfiguration.disableRoutingValidation = true;
 
-  if (
-    !ProcessDetector.isElectronAppFrontend &&
-    !ProcessDetector.isMobileAppFrontend
-  ) {
+  if (!ProcessDetector.isElectronAppFrontend && !ProcessDetector.isMobileAppFrontend) {
     const uriPrefix = "http://localhost:3001";
     BentleyCloudRpcManager.initializeClient(
       {
         info: { title: "DisplayPerformanceTestApp", version: "v1.0" },
         uriPrefix,
       },
-      [
-        DisplayPerfRpcInterface,
-        IModelTileRpcInterface,
-        SnapshotIModelRpcInterface,
-        IModelReadRpcInterface,
-      ]
+      [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]
     );
   }
 

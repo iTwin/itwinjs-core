@@ -70,19 +70,11 @@ export class Unit extends SchemaItem {
    * Returns true if a conversion can be calculated between the input units
    * @alpha
    */
-  public static async areCompatible(
-    unitA: Unit,
-    unitB: Unit
-  ): Promise<boolean> {
+  public static async areCompatible(unitA: Unit, unitB: Unit): Promise<boolean> {
     const unitAPhenomenon = await unitA.phenomenon;
     const unitBPhenomenon = await unitB.phenomenon;
 
-    if (
-      !unitAPhenomenon ||
-      !unitBPhenomenon ||
-      !unitAPhenomenon.key.matches(unitBPhenomenon.key)
-    )
-      return false;
+    if (!unitAPhenomenon || !unitBPhenomenon || !unitAPhenomenon.key.matches(unitBPhenomenon.key)) return false;
     return true;
   }
 
@@ -90,10 +82,7 @@ export class Unit extends SchemaItem {
    * @alpha
    */
   public static isUnit(object: any): object is Unit {
-    return (
-      SchemaItem.isSchemaItem(object) &&
-      object.schemaItemType === SchemaItemType.Unit
-    );
+    return SchemaItem.isSchemaItem(object) && object.schemaItemType === SchemaItemType.Unit;
   }
 
   /**
@@ -101,10 +90,7 @@ export class Unit extends SchemaItem {
    * @param standalone Serialization includes only this object (as opposed to the full schema).
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
    */
-  public override toJSON(
-    standalone: boolean = false,
-    includeSchemaVersion: boolean = false
-  ): SchemaItemUnitProps {
+  public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): SchemaItemUnitProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     schemaJson.phenomenon = this.phenomenon!.fullName;
     schemaJson.unitSystem = this.unitSystem!.fullName;
@@ -121,31 +107,20 @@ export class Unit extends SchemaItem {
 
     const phenomenon = await this.phenomenon;
     if (undefined !== phenomenon) {
-      const phenomenonName = XmlSerializationUtils.createXmlTypedName(
-        this.schema,
-        phenomenon.schema,
-        phenomenon.name
-      );
+      const phenomenonName = XmlSerializationUtils.createXmlTypedName(this.schema, phenomenon.schema, phenomenon.name);
       itemElement.setAttribute("phenomenon", phenomenonName);
     }
 
     const unitSystem = await this.unitSystem;
     if (undefined !== unitSystem) {
-      const unitSystemName = XmlSerializationUtils.createXmlTypedName(
-        this.schema,
-        unitSystem.schema,
-        unitSystem.name
-      );
+      const unitSystemName = XmlSerializationUtils.createXmlTypedName(this.schema, unitSystem.schema, unitSystem.name);
       itemElement.setAttribute("unitSystem", unitSystemName);
     }
 
     itemElement.setAttribute("definition", this.definition);
-    if (this.hasNumerator)
-      itemElement.setAttribute("numerator", this.numerator.toString());
-    if (this.hasDenominator)
-      itemElement.setAttribute("denominator", this.denominator.toString());
-    if (this.hasOffset)
-      itemElement.setAttribute("offset", this.offset.toString());
+    if (this.hasNumerator) itemElement.setAttribute("numerator", this.numerator.toString());
+    if (this.hasDenominator) itemElement.setAttribute("denominator", this.denominator.toString());
+    if (this.hasOffset) itemElement.setAttribute("offset", this.offset.toString());
 
     return itemElement;
   }
@@ -153,56 +128,39 @@ export class Unit extends SchemaItem {
   public override fromJSONSync(unitProps: SchemaItemUnitProps) {
     super.fromJSONSync(unitProps);
 
-    const phenomenonSchemaItemKey = this.schema.getSchemaItemKey(
-      unitProps.phenomenon
-    );
+    const phenomenonSchemaItemKey = this.schema.getSchemaItemKey(unitProps.phenomenon);
     if (!phenomenonSchemaItemKey)
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `Unable to locate the phenomenon ${unitProps.phenomenon}.`
       );
-    this._phenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(
-      phenomenonSchemaItemKey,
-      async () => {
-        const phenom = await this.schema.lookupItem<Phenomenon>(
-          phenomenonSchemaItemKey
+    this._phenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(phenomenonSchemaItemKey, async () => {
+      const phenom = await this.schema.lookupItem<Phenomenon>(phenomenonSchemaItemKey);
+      if (undefined === phenom)
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidECJson,
+          `Unable to locate the phenomenon ${unitProps.phenomenon}.`
         );
-        if (undefined === phenom)
-          throw new ECObjectsError(
-            ECObjectsStatus.InvalidECJson,
-            `Unable to locate the phenomenon ${unitProps.phenomenon}.`
-          );
-        return phenom;
-      }
-    );
+      return phenom;
+    });
 
-    const unitSystemSchemaItemKey = this.schema.getSchemaItemKey(
-      unitProps.unitSystem
-    );
+    const unitSystemSchemaItemKey = this.schema.getSchemaItemKey(unitProps.unitSystem);
     if (!unitSystemSchemaItemKey)
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `Unable to locate the unitSystem ${unitProps.unitSystem}.`
       );
-    this._unitSystem = new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(
-      unitSystemSchemaItemKey,
-      async () => {
-        const unitSystem = await this.schema.lookupItem<UnitSystem>(
-          unitSystemSchemaItemKey
+    this._unitSystem = new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemSchemaItemKey, async () => {
+      const unitSystem = await this.schema.lookupItem<UnitSystem>(unitSystemSchemaItemKey);
+      if (undefined === unitSystem)
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidECJson,
+          `Unable to locate the unitSystem ${unitProps.unitSystem}.`
         );
-        if (undefined === unitSystem)
-          throw new ECObjectsError(
-            ECObjectsStatus.InvalidECJson,
-            `Unable to locate the unitSystem ${unitProps.unitSystem}.`
-          );
-        return unitSystem;
-      }
-    );
+      return unitSystem;
+    });
 
-    if (
-      this._definition !== "" &&
-      unitProps.definition.toLowerCase() !== this._definition.toLowerCase()
-    )
+    if (this._definition !== "" && unitProps.definition.toLowerCase() !== this._definition.toLowerCase())
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `The Unit ${this.name} has an invalid 'definition' attribute.`
@@ -210,13 +168,11 @@ export class Unit extends SchemaItem {
     else if (this._definition === "") this._definition = unitProps.definition;
 
     if (undefined !== unitProps.numerator) {
-      if (unitProps.numerator !== this._numerator)
-        this._numerator = unitProps.numerator;
+      if (unitProps.numerator !== this._numerator) this._numerator = unitProps.numerator;
     }
 
     if (undefined !== unitProps.denominator) {
-      if (unitProps.denominator !== this._denominator)
-        this._denominator = unitProps.denominator;
+      if (unitProps.denominator !== this._denominator) this._denominator = unitProps.denominator;
     }
 
     if (undefined !== unitProps.offset) {
@@ -257,12 +213,8 @@ export class Unit extends SchemaItem {
  * An abstract class used for schema editing.
  */
 export abstract class MutableUnit extends Unit {
-  public abstract override setPhenomenon(
-    phenomenon: LazyLoadedPhenomenon
-  ): Promise<void>;
-  public abstract override setUnitSystem(
-    unitSystem: LazyLoadedUnitSystem
-  ): Promise<void>;
+  public abstract override setPhenomenon(phenomenon: LazyLoadedPhenomenon): Promise<void>;
+  public abstract override setUnitSystem(unitSystem: LazyLoadedUnitSystem): Promise<void>;
   public abstract override setDefinition(definition: string): Promise<void>;
   public abstract override setDisplayLabel(displayLabel: string): void;
 }

@@ -59,15 +59,9 @@ export type OnDownloadProgress = (progress: DownloadProgressInfo) => void;
  */
 export interface GenericAbortSignal {
   /** Add Listener for abort signal. */
-  addEventListener: (
-    type: "abort",
-    listener: (this: GenericAbortSignal, ev: any) => any
-  ) => void;
+  addEventListener: (type: "abort", listener: (this: GenericAbortSignal, ev: any) => any) => void;
   /** Remove Listener for abort signal. */
-  removeEventListener: (
-    type: "abort",
-    listener: (this: GenericAbortSignal, ev: any) => any
-  ) => void;
+  removeEventListener: (type: "abort", listener: (this: GenericAbortSignal, ev: any) => any) => void;
 }
 
 /**
@@ -131,19 +125,14 @@ class ModelChangeMonitor {
       if (this.editingScope) return;
 
       const modelIds = Array.from(this._modelIdToGuid.keys());
-      if (modelIds.length > 0)
-        await IModelApp.tileAdmin.purgeTileTrees(this._briefcase, modelIds);
+      if (modelIds.length > 0) await IModelApp.tileAdmin.purgeTileTrees(this._briefcase, modelIds);
 
       this.processBuffered();
     };
 
     this._removals.push(briefcase.txns.onCommitted.addListener(maybeProcess));
-    this._removals.push(
-      briefcase.txns.onAfterUndoRedo.addListener(maybeProcess)
-    );
-    this._removals.push(
-      briefcase.txns.onChangesPulled.addListener(maybeProcess)
-    );
+    this._removals.push(briefcase.txns.onAfterUndoRedo.addListener(maybeProcess));
+    this._removals.push(briefcase.txns.onChangesPulled.addListener(maybeProcess));
   }
 
   public async close(): Promise<void> {
@@ -162,21 +151,16 @@ class ModelChangeMonitor {
   }
 
   public async enterEditingScope(): Promise<GraphicalEditingScope> {
-    if (this._editingScope)
-      throw new Error(
-        "Cannot create an editing scope for an iModel that already has one"
-      );
+    if (this._editingScope) throw new Error("Cannot create an editing scope for an iModel that already has one");
 
     this._editingScope = await GraphicalEditingScope.enter(this._briefcase);
 
-    const removeGeomListener = this._editingScope.onGeometryChanges.addListener(
-      (changes) => {
-        const modelIds = [];
-        for (const change of changes) modelIds.push(change.id);
+    const removeGeomListener = this._editingScope.onGeometryChanges.addListener((changes) => {
+      const modelIds = [];
+      for (const change of changes) modelIds.push(change.id);
 
-        this.invalidateScenes(modelIds);
-      }
-    );
+      this.invalidateScenes(modelIds);
+    });
 
     this._editingScope.onExited.addOnce((scope) => {
       assert(scope === this._editingScope);
@@ -238,14 +222,10 @@ export class BriefcaseEditorToolSettings {
   private _model?: Id64String;
 
   /** An event raised just after the default [[category]] is changed. */
-  public readonly onCategoryChanged = new BeEvent<
-    (previousCategory: Id64String | undefined) => void
-  >();
+  public readonly onCategoryChanged = new BeEvent<(previousCategory: Id64String | undefined) => void>();
 
   /** An event raised just after the default [[model]] is changed. */
-  public readonly onModelChanged = new BeEvent<
-    (previousModel: Id64String | undefined) => void
-  >();
+  public readonly onModelChanged = new BeEvent<(previousModel: Id64String | undefined) => void>();
 
   /** The [Category]($backend) into which new elements should be inserted by default.
    * Specialized tools are free to ignore this setting and instead use their own logic to select an appropriate category.
@@ -318,12 +298,8 @@ export class BriefcaseConnection extends IModelConnection {
   }
 
   /** Open a BriefcaseConnection to a [BriefcaseDb]($backend). */
-  public static async openFile(
-    briefcaseProps: OpenBriefcaseProps
-  ): Promise<BriefcaseConnection> {
-    const iModelProps = await IpcApp.appFunctionIpc.openBriefcase(
-      briefcaseProps
-    );
+  public static async openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection> {
+    const iModelProps = await IpcApp.appFunctionIpc.openBriefcase(briefcaseProps);
     const connection = new this(
       { ...briefcaseProps, ...iModelProps },
       briefcaseProps.readonly ? OpenMode.Readonly : OpenMode.ReadWrite
@@ -340,11 +316,7 @@ export class BriefcaseConnection extends IModelConnection {
     openMode: OpenMode = OpenMode.ReadWrite,
     opts?: StandaloneOpenOptions
   ): Promise<BriefcaseConnection> {
-    const openResponse = await IpcApp.appFunctionIpc.openStandalone(
-      filePath,
-      openMode,
-      opts
-    );
+    const openResponse = await IpcApp.appFunctionIpc.openStandalone(filePath, openMode, opts);
     const connection = new this(openResponse, openMode);
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
@@ -372,8 +344,7 @@ export class BriefcaseConnection extends IModelConnection {
   }
 
   private requireTimeline() {
-    if (this.iTwinId === Guid.empty)
-      throw new IModelError(IModelStatus.WrongIModel, "iModel has no timeline");
+    if (this.iTwinId === Guid.empty) throw new IModelError(IModelStatus.WrongIModel, "iModel has no timeline");
   }
 
   /** Query if there are any pending Txns in this briefcase that are waiting to be pushed. */
@@ -394,39 +365,26 @@ export class BriefcaseConnection extends IModelConnection {
    * @param options Options for pulling changes.
    * @see [[BriefcaseTxns.onChangesPulled]] for the event dispatched after changes are pulled.
    */
-  public async pullChanges(
-    toIndex?: ChangesetIndex,
-    options?: PullChangesOptions
-  ): Promise<void> {
+  public async pullChanges(toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<void> {
     const removeListeners: VoidFunction[] = [];
     // eslint-disable-next-line deprecation/deprecation
-    const shouldReportProgress =
-      !!options?.progressCallback || !!options?.downloadProgressCallback;
+    const shouldReportProgress = !!options?.progressCallback || !!options?.downloadProgressCallback;
 
     if (shouldReportProgress) {
-      const handleProgress = (
-        _evt: Event,
-        data: { loaded: number; total: number }
-      ) => {
+      const handleProgress = (_evt: Event, data: { loaded: number; total: number }) => {
         // eslint-disable-next-line deprecation/deprecation
         options?.progressCallback?.(data);
         options?.downloadProgressCallback?.(data);
       };
 
-      const removeProgressListener = IpcApp.addListener(
-        getPullChangesIpcChannel(this.iModelId),
-        handleProgress
-      );
+      const removeProgressListener = IpcApp.addListener(getPullChangesIpcChannel(this.iModelId), handleProgress);
       removeListeners.push(removeProgressListener);
     }
 
     if (options?.abortSignal) {
-      const abort = () =>
-        void IpcApp.appFunctionIpc.cancelPullChangesRequest(this.key);
+      const abort = () => void IpcApp.appFunctionIpc.cancelPullChangesRequest(this.key);
       options?.abortSignal.addEventListener("abort", abort);
-      removeListeners.push(() =>
-        options?.abortSignal?.removeEventListener("abort", abort)
-      );
+      removeListeners.push(() => options?.abortSignal?.removeEventListener("abort", abort));
     }
 
     this.requireTimeline();
@@ -436,11 +394,7 @@ export class BriefcaseConnection extends IModelConnection {
       enableCancellation: !!options?.abortSignal,
     };
     try {
-      this.changeset = await IpcApp.appFunctionIpc.pullChanges(
-        this.key,
-        toIndex,
-        ipcAppOptions
-      );
+      this.changeset = await IpcApp.appFunctionIpc.pullChanges(this.key, toIndex, ipcAppOptions);
     } finally {
       removeListeners.forEach((remove) => remove());
     }
@@ -484,7 +438,5 @@ export class BriefcaseConnection extends IModelConnection {
   /** Strictly for tests - dispatched from ModelChangeMonitor.processBuffered.
    * @internal
    */
-  public readonly onBufferedModelChanges = new BeEvent<
-    (changedModelIds: Set<string>) => void
-  >();
+  public readonly onBufferedModelChanges = new BeEvent<(changedModelIds: Set<string>) => void>();
 }

@@ -82,13 +82,9 @@ export namespace PropertyTypeUtils {
 /** @beta */
 export function propertyTypeToString(type: PropertyType) {
   if (PropertyTypeUtils.isPrimitive(type))
-    return PropertyTypeUtils.isArray(type)
-      ? "PrimitiveArrayProperty"
-      : "PrimitiveProperty";
+    return PropertyTypeUtils.isArray(type) ? "PrimitiveArrayProperty" : "PrimitiveProperty";
   if (PropertyTypeUtils.isStruct(type))
-    return PropertyTypeUtils.isArray(type)
-      ? "StructArrayProperty"
-      : "StructProperty";
+    return PropertyTypeUtils.isArray(type) ? "StructArrayProperty" : "StructProperty";
   if (PropertyTypeUtils.isNavigation(type)) return "NavigationProperty";
   throw new ECObjectsError(ECObjectsStatus.InvalidType, "Invalid propertyType");
 }

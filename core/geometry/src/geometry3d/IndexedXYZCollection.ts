@@ -53,30 +53,21 @@ export abstract class IndexedXYZCollection {
    * @param result caller-allocated destination
    * @returns undefined if the index is out of bounds
    */
-  public abstract getPoint3dAtCheckedPointIndex(
-    index: number,
-    result?: Point3d
-  ): Point3d | undefined;
+  public abstract getPoint3dAtCheckedPointIndex(index: number, result?: Point3d): Point3d | undefined;
   /**
    * Return the point at `index` as a strongly typed Point3d, without checking the point index validity.
    * @param index index of point within the array
    * @param result caller-allocated destination
    * @returns undefined if the index is out of bounds
    */
-  public abstract getPoint3dAtUncheckedPointIndex(
-    index: number,
-    result?: Point3d
-  ): Point3d;
+  public abstract getPoint3dAtUncheckedPointIndex(index: number, result?: Point3d): Point3d;
   /**
    * Get from `index` as a strongly typed Vector3d.
    * @param index index of point within the array
    * @param result caller-allocated destination
    * @returns undefined if the index is out of bounds
    */
-  public abstract getVector3dAtCheckedVectorIndex(
-    index: number,
-    result?: Vector3d
-  ): Vector3d | undefined;
+  public abstract getVector3dAtCheckedVectorIndex(index: number, result?: Vector3d): Vector3d | undefined;
   /**
    * Return a vector from the point at `indexA` to the point at `indexB`
    * @param indexA index of point within the array
@@ -84,11 +75,7 @@ export abstract class IndexedXYZCollection {
    * @param result caller-allocated vector.
    * @returns undefined if either index is out of bounds
    */
-  public abstract vectorIndexIndex(
-    indexA: number,
-    indexB: number,
-    result?: Vector3d
-  ): Vector3d | undefined;
+  public abstract vectorIndexIndex(indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
   /**
    * Return a vector from `origin` to the point at `indexB`
    * @param origin origin for vector
@@ -96,11 +83,7 @@ export abstract class IndexedXYZCollection {
    * @param result caller-allocated vector.
    * @returns undefined if index is out of bounds
    */
-  public abstract vectorXYAndZIndex(
-    origin: XYAndZ,
-    indexB: number,
-    result?: Vector3d
-  ): Vector3d | undefined;
+  public abstract vectorXYAndZIndex(origin: XYAndZ, indexB: number, result?: Vector3d): Vector3d | undefined;
   /**
    * Return a vector from the point at `indexA` to `target`
    * @param indexA index of point within the array
@@ -108,11 +91,7 @@ export abstract class IndexedXYZCollection {
    * @param result caller-allocated vector.
    * @returns undefined if index is out of bounds
    */
-  public vectorIndexXYAndZ(
-    indexA: number,
-    target: XYAndZ,
-    result?: Vector3d
-  ): Vector3d | undefined {
+  public vectorIndexXYAndZ(indexA: number, target: XYAndZ, result?: Vector3d): Vector3d | undefined {
     const reversed = this.vectorXYAndZIndex(target, indexA, result);
     return reversed?.negate(reversed);
   }
@@ -123,11 +102,7 @@ export abstract class IndexedXYZCollection {
    * @param indexA index of point within the array; target of the second vector
    * @returns undefined if index is out of bounds
    */
-  public dotProductIndexIndexIndex(
-    origin: number,
-    indexA: number,
-    indexB: number
-  ): number | undefined {
+  public dotProductIndexIndexIndex(origin: number, indexA: number, indexB: number): number | undefined {
     if (
       origin < 0 ||
       origin >= this.length ||
@@ -141,12 +116,9 @@ export abstract class IndexedXYZCollection {
     const y0 = this.getYAtUncheckedPointIndex(origin);
     const z0 = this.getZAtUncheckedPointIndex(origin);
     return (
-      (this.getXAtUncheckedPointIndex(indexA) - x0) *
-        (this.getXAtUncheckedPointIndex(indexB) - x0) +
-      (this.getYAtUncheckedPointIndex(indexA) - y0) *
-        (this.getYAtUncheckedPointIndex(indexB) - y0) +
-      (this.getZAtUncheckedPointIndex(indexA) - z0) *
-        (this.getZAtUncheckedPointIndex(indexB) - z0)
+      (this.getXAtUncheckedPointIndex(indexA) - x0) * (this.getXAtUncheckedPointIndex(indexB) - x0) +
+      (this.getYAtUncheckedPointIndex(indexA) - y0) * (this.getYAtUncheckedPointIndex(indexB) - y0) +
+      (this.getZAtUncheckedPointIndex(indexA) - z0) * (this.getZAtUncheckedPointIndex(indexB) - z0)
     );
   }
   /**
@@ -156,18 +128,8 @@ export abstract class IndexedXYZCollection {
    * @param targetB target for second vector
    * @returns undefined if index is out of bounds
    */
-  public dotProductIndexIndexXYAndZ(
-    origin: number,
-    indexA: number,
-    targetB: XYAndZ
-  ): number | undefined {
-    if (
-      origin < 0 ||
-      origin >= this.length ||
-      indexA < 0 ||
-      indexA >= this.length
-    )
-      return undefined;
+  public dotProductIndexIndexXYAndZ(origin: number, indexA: number, targetB: XYAndZ): number | undefined {
+    if (origin < 0 || origin >= this.length || indexA < 0 || indexA >= this.length) return undefined;
     const x0 = this.getXAtUncheckedPointIndex(origin);
     const y0 = this.getYAtUncheckedPointIndex(origin);
     const z0 = this.getZAtUncheckedPointIndex(origin);
@@ -205,13 +167,7 @@ export abstract class IndexedXYZCollection {
     targetB: XYAndZ,
     result?: Vector3d
   ): Vector3d | undefined {
-    if (
-      origin < 0 ||
-      origin >= this.length ||
-      indexA < 0 ||
-      indexA >= this.length
-    )
-      return undefined;
+    if (origin < 0 || origin >= this.length || indexA < 0 || indexA >= this.length) return undefined;
     const x0 = this.getXAtUncheckedPointIndex(origin);
     const y0 = this.getYAtUncheckedPointIndex(origin);
     const z0 = this.getZAtUncheckedPointIndex(origin);
@@ -263,19 +219,13 @@ export abstract class IndexedXYZCollection {
    * @param index0 first point index
    * @param index1 second point index
    */
-  public abstract distanceSquaredIndexIndex(
-    index0: number,
-    index1: number
-  ): number | undefined;
+  public abstract distanceSquaredIndexIndex(index0: number, index1: number): number | undefined;
   /**
    * Return distance squared between the point at index0 and target.
    * @param index0 first point index
    * @param target second point
    */
-  public distanceSquaredIndexXYAndZ(
-    index0: number,
-    target: XYAndZ
-  ): number | undefined {
+  public distanceSquaredIndexXYAndZ(index0: number, target: XYAndZ): number | undefined {
     if (index0 < 0 || index0 >= this.length) return undefined;
     return Geometry.hypotenuseSquaredXYZ(
       target.x - this.getXAtUncheckedPointIndex(index0),
@@ -288,10 +238,7 @@ export abstract class IndexedXYZCollection {
    * @param index0 first point index
    * @param index1 second point index
    */
-  public abstract distanceIndexIndex(
-    index0: number,
-    index1: number
-  ): number | undefined;
+  public abstract distanceIndexIndex(index0: number, index1: number): number | undefined;
 
   /** Adjust index into range by modulo with the length. */
   public cyclicIndex(i: number): number {
@@ -313,9 +260,7 @@ export abstract class IndexedXYZCollection {
    * For each run of points with indices i+1 to i+n within distance tolerance of points[i], return the indices i+1, ..., i+n.
    * @return ordered array of 0-based indices of duplicate points
    */
-  public findOrderedDuplicates(
-    tolerance: number = Geometry.smallMetricDistance
-  ): number[] {
+  public findOrderedDuplicates(tolerance: number = Geometry.smallMetricDistance): number[] {
     const tol2 = tolerance * tolerance;
     const indices: number[] = [];
     if (this.length > 1) {
@@ -335,11 +280,7 @@ export abstract class IndexedXYZCollection {
   /** Accumulate scale times the x,y,z values at index.
    * * No action if index is out of bounds.
    */
-  public abstract accumulateScaledXYZ(
-    index: number,
-    scale: number,
-    sum: Point3d
-  ): void;
+  public abstract accumulateScaledXYZ(index: number, scale: number, sum: Point3d): void;
 
   /** Compute the linear combination s of the indexed p_i and given scales s_i.
    * @param scales array of scales. For best results, scales should have same length as the instance.
@@ -348,10 +289,7 @@ export abstract class IndexedXYZCollection {
    */
   public linearCombination(scales: number[], result?: Point3d | Vector3d): XYZ {
     const n = Math.min(this.length, scales.length);
-    const sum =
-      result instanceof Vector3d
-        ? Vector3d.createZero(result)
-        : Point3d.createZero(result);
+    const sum = result instanceof Vector3d ? Vector3d.createZero(result) : Point3d.createZero(result);
     for (let i = 0; i < n; ++i) {
       sum.x += scales[i] * this.getXAtUncheckedPointIndex(i);
       sum.y += scales[i] * this.getYAtUncheckedPointIndex(i);
@@ -374,29 +312,11 @@ export abstract class IndexedXYZCollection {
     index1: number,
     result?: Point3d
   ): Point3d | undefined {
-    if (
-      index0 < 0 ||
-      index0 >= this.length ||
-      index1 < 0 ||
-      index1 >= this.length
-    )
-      return undefined;
+    if (index0 < 0 || index0 >= this.length || index1 < 0 || index1 >= this.length) return undefined;
     return Point3d.create(
-      Geometry.interpolate(
-        this.getXAtUncheckedPointIndex(index0),
-        fraction,
-        this.getXAtUncheckedPointIndex(index1)
-      ),
-      Geometry.interpolate(
-        this.getYAtUncheckedPointIndex(index0),
-        fraction,
-        this.getYAtUncheckedPointIndex(index1)
-      ),
-      Geometry.interpolate(
-        this.getZAtUncheckedPointIndex(index0),
-        fraction,
-        this.getZAtUncheckedPointIndex(index1)
-      ),
+      Geometry.interpolate(this.getXAtUncheckedPointIndex(index0), fraction, this.getXAtUncheckedPointIndex(index1)),
+      Geometry.interpolate(this.getYAtUncheckedPointIndex(index0), fraction, this.getYAtUncheckedPointIndex(index1)),
+      Geometry.interpolate(this.getZAtUncheckedPointIndex(index0), fraction, this.getZAtUncheckedPointIndex(index1)),
       result
     );
   }

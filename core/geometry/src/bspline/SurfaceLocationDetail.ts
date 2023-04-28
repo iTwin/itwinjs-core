@@ -77,10 +77,7 @@ export class CurveAndSurfaceLocationDetail {
   /** detailed location on the surface */
   public surfaceDetail: UVSurfaceLocationDetail;
   /** CAPTURE both details . . */
-  public constructor(
-    curveDetail: CurveLocationDetail,
-    surfaceDetail: UVSurfaceLocationDetail
-  ) {
+  public constructor(curveDetail: CurveLocationDetail, surfaceDetail: UVSurfaceLocationDetail) {
     this.curveDetail = curveDetail;
     this.surfaceDetail = surfaceDetail;
   }

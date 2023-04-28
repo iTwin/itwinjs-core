@@ -44,18 +44,12 @@ export class FuzzySearch<T> {
    * @param pattern The pattern for which each searchedObject is searched.
    * @return FuzzySearchResults.
    */
-  public search(
-    searchedObjects: T[],
-    keys: Array<keyof T>,
-    pattern: string
-  ): FuzzySearchResults<T> {
-    if (!pattern || pattern.length < 2)
-      return new FuzzySearchResults<T>(undefined);
+  public search(searchedObjects: T[], keys: Array<keyof T>, pattern: string): FuzzySearchResults<T> {
+    if (!pattern || pattern.length < 2) return new FuzzySearchResults<T>(undefined);
 
     // it is a multi-word pattern if there's a space other than at the end of the pattern.
     const spaceIndex: number = pattern.indexOf(" ");
-    const multiWord: boolean =
-      -1 !== spaceIndex && spaceIndex !== pattern.length - 1;
+    const multiWord: boolean = -1 !== spaceIndex && spaceIndex !== pattern.length - 1;
     const options: Fuse.FuseOptions<T> = multiWord
       ? this.onGetMultiWordSearchOptions()
       : this.onGetSingleWordSearchOptions();
@@ -69,10 +63,7 @@ export class FuzzySearch<T> {
     let checkScoreDelta: boolean = false;
     let averageScoreDeltaThreshold = 1;
     if (results.length > 30) {
-      averageScoreDeltaThreshold =
-        ((results[results.length - 1].score - results[0].score) /
-          results.length) *
-        10;
+      averageScoreDeltaThreshold = ((results[results.length - 1].score - results[0].score) / results.length) * 10;
       if (averageScoreDeltaThreshold > 0.01) checkScoreDelta = true;
     }
 
@@ -98,10 +89,7 @@ export class FuzzySearch<T> {
       if (checkScoreDelta && resultIndex > 0) {
         const resultScore = results[resultIndex].score;
         if (resultScore < 0.101) continue;
-        if (
-          resultScore - results[resultIndex - 1].score >
-          averageScoreDeltaThreshold
-        ) {
+        if (resultScore - results[resultIndex - 1].score > averageScoreDeltaThreshold) {
           results = results.slice(0, resultIndex);
           break;
         }

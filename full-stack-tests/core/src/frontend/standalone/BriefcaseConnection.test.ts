@@ -5,12 +5,7 @@
 
 import { ProcessDetector } from "@itwin/core-bentley";
 import { BriefcaseIdValue, IModelVersion } from "@itwin/core-common";
-import {
-  BriefcaseConnection,
-  GenericAbortSignal,
-  NativeApp,
-  OnDownloadProgress,
-} from "@itwin/core-frontend";
+import { BriefcaseConnection, GenericAbortSignal, NativeApp, OnDownloadProgress } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { assert, expect } from "chai";
 import { TestUtility } from "../TestUtility";
@@ -46,10 +41,7 @@ if (ProcessDetector.isElectronAppFrontend) {
 
     it("should report progress when pulling changes", async () => {
       const iTwinId = await TestUtility.getTestITwinId();
-      const iModelId = await TestUtility.queryIModelIdByName(
-        iTwinId,
-        TestUtility.testIModelNames.stadium
-      );
+      const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.stadium);
 
       const downloader = await NativeApp.requestDownloadBriefcase(
         iTwinId,
@@ -90,10 +82,7 @@ if (ProcessDetector.isElectronAppFrontend) {
 
     it("should cancel pulling changes after abort signal", async () => {
       const iTwinId = await TestUtility.getTestITwinId();
-      const iModelId = await TestUtility.queryIModelIdByName(
-        iTwinId,
-        TestUtility.testIModelNames.stadium
-      );
+      const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.stadium);
 
       const downloader = await NativeApp.requestDownloadBriefcase(
         iTwinId,
@@ -127,9 +116,7 @@ if (ProcessDetector.isElectronAppFrontend) {
       });
 
       try {
-        await expect(pullPromise).to.eventually.be.rejectedWith(
-          /cancelled|aborted/i
-        );
+        await expect(pullPromise).to.eventually.be.rejectedWith(/cancelled|aborted/i);
         // Use following assert when BackendIModelsAccess returns IModelError with ChangeSetStatus.DownloadCancelled.
         // await expect(pullPromise).to.eventually.be.rejected.and.have.property("errorNumber", ChangeSetStatus.DownloadCancelled);
       } finally {

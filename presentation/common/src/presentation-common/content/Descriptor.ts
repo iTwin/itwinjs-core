@@ -76,37 +76,29 @@ export namespace SelectClassInfo {
       isSelectPolymorphic: json.isSelectPolymorphic,
       ...(json.navigationPropertyClasses
         ? {
-            navigationPropertyClasses: json.navigationPropertyClasses.map(
-              (item) => RelatedClassInfo.fromCompressedJSON(item, classesMap)
+            navigationPropertyClasses: json.navigationPropertyClasses.map((item) =>
+              RelatedClassInfo.fromCompressedJSON(item, classesMap)
             ),
           }
         : undefined),
       ...(json.relatedInstancePaths
         ? {
             relatedInstancePaths: json.relatedInstancePaths.map((rip) =>
-              rip.map((item) =>
-                RelatedClassInfo.fromCompressedJSON(item, classesMap)
-              )
+              rip.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap))
             ),
           }
         : undefined),
       ...(json.pathFromInputToSelectClass
         ? {
-            pathFromInputToSelectClass: json.pathFromInputToSelectClass.map(
-              (item) =>
-                RelatedClassInfoWithOptionalRelationship.fromCompressedJSON(
-                  item,
-                  classesMap
-                )
+            pathFromInputToSelectClass: json.pathFromInputToSelectClass.map((item) =>
+              RelatedClassInfoWithOptionalRelationship.fromCompressedJSON(item, classesMap)
             ),
           }
         : undefined),
       ...(json.relatedPropertyPaths
         ? {
             relatedPropertyPaths: json.relatedPropertyPaths.map((path) =>
-              path.map((item) =>
-                RelatedClassInfo.fromCompressedJSON(item, classesMap)
-              )
+              path.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap))
             ),
           }
         : undefined),
@@ -126,37 +118,28 @@ export namespace SelectClassInfo {
       ...(selectClass.relatedInstancePaths
         ? {
             relatedInstancePaths: selectClass.relatedInstancePaths.map((rip) =>
-              rip.map((item) =>
-                RelatedClassInfo.toCompressedJSON(item, classesMap)
-              )
+              rip.map((item) => RelatedClassInfo.toCompressedJSON(item, classesMap))
             ),
           }
         : undefined),
       ...(selectClass.navigationPropertyClasses
         ? {
-            navigationPropertyClasses:
-              selectClass.navigationPropertyClasses.map((propertyClass) =>
-                RelatedClassInfo.toCompressedJSON(propertyClass, classesMap)
-              ),
+            navigationPropertyClasses: selectClass.navigationPropertyClasses.map((propertyClass) =>
+              RelatedClassInfo.toCompressedJSON(propertyClass, classesMap)
+            ),
           }
         : undefined),
       ...(selectClass.pathFromInputToSelectClass
         ? {
-            pathFromInputToSelectClass:
-              selectClass.pathFromInputToSelectClass.map((item) =>
-                RelatedClassInfoWithOptionalRelationship.toCompressedJSON(
-                  item,
-                  classesMap
-                )
-              ),
+            pathFromInputToSelectClass: selectClass.pathFromInputToSelectClass.map((item) =>
+              RelatedClassInfoWithOptionalRelationship.toCompressedJSON(item, classesMap)
+            ),
           }
         : undefined),
       ...(selectClass.relatedPropertyPaths
         ? {
             relatedPropertyPaths: selectClass.relatedPropertyPaths.map((path) =>
-              path.map((relatedClass) =>
-                RelatedClassInfo.toCompressedJSON(relatedClass, classesMap)
-              )
+              path.map((relatedClass) => RelatedClassInfo.toCompressedJSON(relatedClass, classesMap))
             ),
           }
         : undefined),
@@ -456,22 +439,18 @@ export class Descriptor implements DescriptorSource {
     this.fields = [...source.fields];
     this.sortingField = source.sortingField;
     this.sortDirection = source.sortDirection;
-    this.filterExpression =
-      source.fieldsFilterExpression ?? source.filterExpression; // eslint-disable-line deprecation/deprecation
-    this.fieldsFilterExpression =
-      source.fieldsFilterExpression ?? source.filterExpression; // eslint-disable-line deprecation/deprecation
+    this.filterExpression = source.fieldsFilterExpression ?? source.filterExpression; // eslint-disable-line deprecation/deprecation
+    this.fieldsFilterExpression = source.fieldsFilterExpression ?? source.filterExpression; // eslint-disable-line deprecation/deprecation
     this.instanceFilter = source.instanceFilter;
   }
 
   /** Serialize [[Descriptor]] to JSON */
   public toJSON(): DescriptorJSON {
     const classesMap: { [id: string]: CompressedClassInfoJSON } = {};
-    const selectClasses: SelectClassInfoJSON<string>[] = this.selectClasses.map(
-      (selectClass) => SelectClassInfo.toCompressedJSON(selectClass, classesMap)
+    const selectClasses: SelectClassInfoJSON<string>[] = this.selectClasses.map((selectClass) =>
+      SelectClassInfo.toCompressedJSON(selectClass, classesMap)
     );
-    const fields: FieldJSON<string>[] = this.fields.map((field) =>
-      field.toCompressedJSON(classesMap)
-    );
+    const fields: FieldJSON<string>[] = this.fields.map((field) => field.toCompressedJSON(classesMap));
     return Object.assign(
       {
         displayType: this.displayType,
@@ -505,17 +484,12 @@ export class Descriptor implements DescriptorSource {
   }
 
   /** Deserialize [[Descriptor]] from JSON */
-  public static fromJSON(
-    json: DescriptorJSON | undefined
-  ): Descriptor | undefined {
+  public static fromJSON(json: DescriptorJSON | undefined): Descriptor | undefined {
     if (!json) return undefined;
 
     const { classesMap, ...leftOverJson } = json;
     const categories = CategoryDescription.listFromJSON(json.categories);
-    const selectClasses = SelectClassInfo.listFromCompressedJSON(
-      json.selectClasses,
-      classesMap
-    );
+    const selectClasses = SelectClassInfo.listFromCompressedJSON(json.selectClasses, classesMap);
     const fields = this.getFieldsFromJSON(json.fields, (fieldJson) =>
       Field.fromCompressedJSON(fieldJson, classesMap, categories)
     );
@@ -528,10 +502,7 @@ export class Descriptor implements DescriptorSource {
     });
   }
 
-  private static getFieldsFromJSON(
-    json: FieldJSON[],
-    factory: (json: FieldJSON) => Field | undefined
-  ): Field[] {
+  private static getFieldsFromJSON(json: FieldJSON[], factory: (json: FieldJSON) => Field | undefined): Field[] {
     return json
       .map((fieldJson: FieldJSON) => {
         const field = factory(fieldJson);
@@ -560,8 +531,7 @@ export class Descriptor implements DescriptorSource {
     if (this.contentFlags !== 0) overrides.contentFlags = this.contentFlags;
     if (this.filterExpression || this.fieldsFilterExpression)
       // eslint-disable-line deprecation/deprecation
-      overrides.fieldsFilterExpression =
-        this.fieldsFilterExpression ?? this.filterExpression; // eslint-disable-line deprecation/deprecation
+      overrides.fieldsFilterExpression = this.fieldsFilterExpression ?? this.filterExpression; // eslint-disable-line deprecation/deprecation
     if (this.instanceFilter) overrides.instanceFilter = this.instanceFilter;
     if (this.sortingField)
       overrides.sorting = {

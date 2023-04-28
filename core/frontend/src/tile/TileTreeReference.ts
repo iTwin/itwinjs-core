@@ -86,18 +86,14 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   }
 
   /** Optionally return a tooltip describing the hit. */
-  public async getToolTip(
-    _hit: HitDetail
-  ): Promise<HTMLElement | string | undefined> {
+  public async getToolTip(_hit: HitDetail): Promise<HTMLElement | string | undefined> {
     return undefined;
   }
 
   /** Optionally return a MapLayerFeatureInfo object describing the hit.].
    * @alpha
    */
-  public async getMapFeatureInfo(
-    _hit: HitDetail
-  ): Promise<MapLayerFeatureInfo[] | undefined> {
+  public async getMapFeatureInfo(_hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined> {
     return undefined;
   }
 
@@ -192,10 +188,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
     const range = new Range3d();
     const tree = this.treeOwner.tileTree;
     if (undefined !== tree && !tree.rootTile.contentRange.isNull)
-      this.computeTransform(tree).multiplyRange(
-        tree.rootTile.contentRange,
-        range
-      );
+      this.computeTransform(tree).multiplyRange(tree.rootTile.contentRange, range);
 
     return range;
   }
@@ -211,34 +204,24 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   }
 
   /** Return overrides that *replace* any defined for the view. */
-  protected getSymbologyOverrides(
-    _tree: TileTree
-  ): FeatureSymbology.Overrides | undefined {
+  protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined {
     return undefined;
   }
 
   /** Return a provider that can supplement the view's symbology overrides. */
-  protected getAppearanceProvider(
-    _tree: TileTree
-  ): FeatureAppearanceProvider | undefined {
+  protected getAppearanceProvider(_tree: TileTree): FeatureAppearanceProvider | undefined {
     return undefined;
   }
 
   /** Return hidden line settings to replace those defined for the view. */
-  protected getHiddenLineSettings(
-    _tree: TileTree
-  ): HiddenLine.Settings | undefined {
+  protected getHiddenLineSettings(_tree: TileTree): HiddenLine.Settings | undefined {
     return undefined;
   }
 
   /* Extend range to include transformed range of this tile tree.
    * @internal
    */
-  public accumulateTransformedRange(
-    range: Range3d,
-    matrix: Matrix4d,
-    frustumPlanes?: FrustumPlanes
-  ) {
+  public accumulateTransformedRange(range: Range3d, matrix: Matrix4d, frustumPlanes?: FrustumPlanes) {
     const tree = this.treeOwner.tileTree;
     if (undefined === tree) return;
 
@@ -275,9 +258,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
    * @see [[createGeometryTreeReference]].
    * @beta
    */
-  protected _createGeometryTreeReference():
-    | GeometryTileTreeReference
-    | undefined {
+  protected _createGeometryTreeReference(): GeometryTileTreeReference | undefined {
     return undefined;
   }
 

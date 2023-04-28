@@ -3,19 +3,12 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-  EmptyLocalization,
-  ImageMapLayerSettings,
-  ServerError,
-} from "@itwin/core-common";
+import { EmptyLocalization, ImageMapLayerSettings, ServerError } from "@itwin/core-common";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import sinon from "sinon";
 import { IModelApp } from "../../../IModelApp";
-import {
-  ArcGISMapLayerImageryProvider,
-  ArcGisUtilities,
-} from "../../../tile/internal";
+import { ArcGISMapLayerImageryProvider, ArcGisUtilities } from "../../../tile/internal";
 import { ArcGISMapLayerDataset } from "./ArcGISMapLayerDataset";
 
 chai.use(chaiAsPromised);
@@ -56,9 +49,7 @@ describe("ArcGISMapLayerImageryProvider", () => {
       });
 
     const provider = new ArcGISMapLayerImageryProvider(settings);
-    await chai
-      .expect(provider.initialize())
-      .to.be.rejectedWith(ServerError, "Invalid coordinate system");
+    await chai.expect(provider.initialize()).to.be.rejectedWith(ServerError, "Invalid coordinate system");
   });
 
   it("initialize() should turn ON use of tiles", async () => {
@@ -102,9 +93,7 @@ describe("ArcGISMapLayerImageryProvider", () => {
         _password?: string,
         _ignoreCache?: boolean
       ) {
-        const dataset = JSON.parse(
-          JSON.stringify(ArcGISMapLayerDataset.UsaTopoMaps)
-        );
+        const dataset = JSON.parse(JSON.stringify(ArcGISMapLayerDataset.UsaTopoMaps));
 
         // Fake an unknown CS
         dataset.tileInfo.spatialReference.latestWkid = 1234;

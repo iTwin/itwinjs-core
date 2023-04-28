@@ -113,12 +113,7 @@ export namespace EGFBAccessors {
      * @param number z
      * @returns flatbuffers.Offset
      */
-    static createDPoint3d(
-      builder: flatbuffers.Builder,
-      x: number,
-      y: number,
-      z: number
-    ): flatbuffers.Offset {
+    static createDPoint3d(builder: flatbuffers.Builder, x: number, y: number, z: number): flatbuffers.Offset {
       builder.prep(8, 24);
       builder.writeFloat64(z);
       builder.writeFloat64(y);
@@ -165,11 +160,7 @@ export namespace EGFBAccessors {
      * @param number y
      * @returns flatbuffers.Offset
      */
-    static createDPoint2d(
-      builder: flatbuffers.Builder,
-      x: number,
-      y: number
-    ): flatbuffers.Offset {
+    static createDPoint2d(builder: flatbuffers.Builder, x: number, y: number): flatbuffers.Offset {
       builder.prep(8, 16);
       builder.writeFloat64(y);
       builder.writeFloat64(x);
@@ -223,12 +214,7 @@ export namespace EGFBAccessors {
      * @param number z
      * @returns flatbuffers.Offset
      */
-    static createDVec3d(
-      builder: flatbuffers.Builder,
-      x: number,
-      y: number,
-      z: number
-    ): flatbuffers.Offset {
+    static createDVec3d(builder: flatbuffers.Builder, x: number, y: number, z: number): flatbuffers.Offset {
       builder.prep(8, 24);
       builder.writeFloat64(z);
       builder.writeFloat64(y);
@@ -782,11 +768,7 @@ export namespace EGFBAccessors {
      * @param number high
      * @returns flatbuffers.Offset
      */
-    static createDRange1d(
-      builder: flatbuffers.Builder,
-      low: number,
-      high: number
-    ): flatbuffers.Offset {
+    static createDRange1d(builder: flatbuffers.Builder, low: number, high: number): flatbuffers.Offset {
       builder.prep(8, 16);
       builder.writeFloat64(high);
       builder.writeFloat64(low);
@@ -817,14 +799,8 @@ export namespace EGFBAccessors {
      * @param PointPrimitive= obj
      * @returns PointPrimitive
      */
-    static getRootAsPointPrimitive(
-      bb: flatbuffers.ByteBuffer,
-      obj?: PointPrimitive
-    ): PointPrimitive {
-      return (obj || new PointPrimitive()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsPointPrimitive(bb: flatbuffers.ByteBuffer, obj?: PointPrimitive): PointPrimitive {
+      return (obj || new PointPrimitive()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -832,15 +808,9 @@ export namespace EGFBAccessors {
      * @param PointPrimitive= obj
      * @returns PointPrimitive
      */
-    static getSizePrefixedRootAsPointPrimitive(
-      bb: flatbuffers.ByteBuffer,
-      obj?: PointPrimitive
-    ): PointPrimitive {
+    static getSizePrefixedRootAsPointPrimitive(bb: flatbuffers.ByteBuffer, obj?: PointPrimitive): PointPrimitive {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new PointPrimitive()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new PointPrimitive()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -851,10 +821,7 @@ export namespace EGFBAccessors {
     coords(index: number, obj?: DPoint3d): DPoint3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 4);
       return offset
-        ? (obj || new DPoint3d()).__init(
-            this.bb!.__vector(this.bb_pos + offset) + index * 24,
-            this.bb!
-          )
+        ? (obj || new DPoint3d()).__init(this.bb!.__vector(this.bb_pos + offset) + index * 24, this.bb!)
         : null;
     }
 
@@ -871,9 +838,7 @@ export namespace EGFBAccessors {
      */
     boundary(): BoundaryType {
       var offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset
-        ? /**  */ this.bb!.readInt8(this.bb_pos + offset)
-        : BoundaryType.None;
+      return offset ? /**  */ this.bb!.readInt8(this.bb_pos + offset) : BoundaryType.None;
     }
 
     /**
@@ -887,10 +852,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset coordsOffset
      */
-    static addCoords(
-      builder: flatbuffers.Builder,
-      coordsOffset: flatbuffers.Offset
-    ) {
+    static addCoords(builder: flatbuffers.Builder, coordsOffset: flatbuffers.Offset) {
       builder.addFieldOffset(0, coordsOffset, 0);
     }
 
@@ -954,14 +916,8 @@ export namespace EGFBAccessors {
      * @param PointPrimitive2d= obj
      * @returns PointPrimitive2d
      */
-    static getRootAsPointPrimitive2d(
-      bb: flatbuffers.ByteBuffer,
-      obj?: PointPrimitive2d
-    ): PointPrimitive2d {
-      return (obj || new PointPrimitive2d()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsPointPrimitive2d(bb: flatbuffers.ByteBuffer, obj?: PointPrimitive2d): PointPrimitive2d {
+      return (obj || new PointPrimitive2d()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -969,15 +925,9 @@ export namespace EGFBAccessors {
      * @param PointPrimitive2d= obj
      * @returns PointPrimitive2d
      */
-    static getSizePrefixedRootAsPointPrimitive2d(
-      bb: flatbuffers.ByteBuffer,
-      obj?: PointPrimitive2d
-    ): PointPrimitive2d {
+    static getSizePrefixedRootAsPointPrimitive2d(bb: flatbuffers.ByteBuffer, obj?: PointPrimitive2d): PointPrimitive2d {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new PointPrimitive2d()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new PointPrimitive2d()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -988,10 +938,7 @@ export namespace EGFBAccessors {
     coords(index: number, obj?: DPoint2d): DPoint2d | null {
       var offset = this.bb!.__offset(this.bb_pos, 4);
       return offset
-        ? (obj || new DPoint2d()).__init(
-            this.bb!.__vector(this.bb_pos + offset) + index * 16,
-            this.bb!
-          )
+        ? (obj || new DPoint2d()).__init(this.bb!.__vector(this.bb_pos + offset) + index * 16, this.bb!)
         : null;
     }
 
@@ -1008,9 +955,7 @@ export namespace EGFBAccessors {
      */
     boundary(): BoundaryType {
       var offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset
-        ? /**  */ this.bb!.readInt8(this.bb_pos + offset)
-        : BoundaryType.None;
+      return offset ? /**  */ this.bb!.readInt8(this.bb_pos + offset) : BoundaryType.None;
     }
 
     /**
@@ -1024,10 +969,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset coordsOffset
      */
-    static addCoords(
-      builder: flatbuffers.Builder,
-      coordsOffset: flatbuffers.Offset
-    ) {
+    static addCoords(builder: flatbuffers.Builder, coordsOffset: flatbuffers.Offset) {
       builder.addFieldOffset(0, coordsOffset, 0);
     }
 
@@ -1051,9 +993,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @returns flatbuffers.Offset
      */
-    static endPointPrimitive2d(
-      builder: flatbuffers.Builder
-    ): flatbuffers.Offset {
+    static endPointPrimitive2d(builder: flatbuffers.Builder): flatbuffers.Offset {
       var offset = builder.endObject();
       return offset;
     }
@@ -1093,14 +1033,8 @@ export namespace EGFBAccessors {
      * @param ArcPrimitive= obj
      * @returns ArcPrimitive
      */
-    static getRootAsArcPrimitive(
-      bb: flatbuffers.ByteBuffer,
-      obj?: ArcPrimitive
-    ): ArcPrimitive {
-      return (obj || new ArcPrimitive()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsArcPrimitive(bb: flatbuffers.ByteBuffer, obj?: ArcPrimitive): ArcPrimitive {
+      return (obj || new ArcPrimitive()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -1108,15 +1042,9 @@ export namespace EGFBAccessors {
      * @param ArcPrimitive= obj
      * @returns ArcPrimitive
      */
-    static getSizePrefixedRootAsArcPrimitive(
-      bb: flatbuffers.ByteBuffer,
-      obj?: ArcPrimitive
-    ): ArcPrimitive {
+    static getSizePrefixedRootAsArcPrimitive(bb: flatbuffers.ByteBuffer, obj?: ArcPrimitive): ArcPrimitive {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new ArcPrimitive()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new ArcPrimitive()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -1125,9 +1053,7 @@ export namespace EGFBAccessors {
      */
     center(obj?: DPoint3d): DPoint3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset
-        ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -1136,9 +1062,7 @@ export namespace EGFBAccessors {
      */
     vector0(obj?: DVec3d): DVec3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset
-        ? (obj || new DVec3d()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DVec3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -1147,9 +1071,7 @@ export namespace EGFBAccessors {
      */
     vector90(obj?: DVec3d): DVec3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset
-        ? (obj || new DVec3d()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DVec3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -1173,9 +1095,7 @@ export namespace EGFBAccessors {
      */
     boundary(): BoundaryType {
       var offset = this.bb!.__offset(this.bb_pos, 14);
-      return offset
-        ? /**  */ this.bb!.readInt8(this.bb_pos + offset)
-        : BoundaryType.None;
+      return offset ? /**  */ this.bb!.readInt8(this.bb_pos + offset) : BoundaryType.None;
     }
 
     /**
@@ -1189,10 +1109,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset centerOffset
      */
-    static addCenter(
-      builder: flatbuffers.Builder,
-      centerOffset: flatbuffers.Offset
-    ) {
+    static addCenter(builder: flatbuffers.Builder, centerOffset: flatbuffers.Offset) {
       builder.addFieldStruct(0, centerOffset, 0);
     }
 
@@ -1200,10 +1117,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset vector0Offset
      */
-    static addVector0(
-      builder: flatbuffers.Builder,
-      vector0Offset: flatbuffers.Offset
-    ) {
+    static addVector0(builder: flatbuffers.Builder, vector0Offset: flatbuffers.Offset) {
       builder.addFieldStruct(1, vector0Offset, 0);
     }
 
@@ -1211,10 +1125,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset vector90Offset
      */
-    static addVector90(
-      builder: flatbuffers.Builder,
-      vector90Offset: flatbuffers.Offset
-    ) {
+    static addVector90(builder: flatbuffers.Builder, vector90Offset: flatbuffers.Offset) {
       builder.addFieldStruct(2, vector90Offset, 0);
     }
 
@@ -1294,14 +1205,8 @@ export namespace EGFBAccessors {
      * @param BRepData= obj
      * @returns BRepData
      */
-    static getRootAsBRepData(
-      bb: flatbuffers.ByteBuffer,
-      obj?: BRepData
-    ): BRepData {
-      return (obj || new BRepData()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsBRepData(bb: flatbuffers.ByteBuffer, obj?: BRepData): BRepData {
+      return (obj || new BRepData()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -1309,15 +1214,9 @@ export namespace EGFBAccessors {
      * @param BRepData= obj
      * @returns BRepData
      */
-    static getSizePrefixedRootAsBRepData(
-      bb: flatbuffers.ByteBuffer,
-      obj?: BRepData
-    ): BRepData {
+    static getSizePrefixedRootAsBRepData(bb: flatbuffers.ByteBuffer, obj?: BRepData): BRepData {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new BRepData()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new BRepData()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -1326,9 +1225,7 @@ export namespace EGFBAccessors {
      */
     entityTransform(obj?: Transform): Transform | null {
       var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset
-        ? (obj || new Transform()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new Transform()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -1336,9 +1233,7 @@ export namespace EGFBAccessors {
      */
     brepType(): BRepType {
       var offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset
-        ? /**  */ this.bb!.readInt8(this.bb_pos + offset)
-        : BRepType.Solid;
+      return offset ? /**  */ this.bb!.readInt8(this.bb_pos + offset) : BRepType.Solid;
     }
 
     /**
@@ -1347,9 +1242,7 @@ export namespace EGFBAccessors {
      */
     entityData(index: number): number | null {
       var offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset
-        ? this.bb!.readUint8(this.bb!.__vector(this.bb_pos + offset) + index)
-        : 0;
+      return offset ? this.bb!.readUint8(this.bb!.__vector(this.bb_pos + offset) + index) : 0;
     }
 
     /**
@@ -1368,8 +1261,7 @@ export namespace EGFBAccessors {
       return offset
         ? new Uint8Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -1383,10 +1275,7 @@ export namespace EGFBAccessors {
     symbology(index: number, obj?: FaceSymbology): FaceSymbology | null {
       var offset = this.bb!.__offset(this.bb_pos, 10);
       return offset
-        ? (obj || new FaceSymbology()).__init(
-            this.bb!.__vector(this.bb_pos + offset) + index * 40,
-            this.bb!
-          )
+        ? (obj || new FaceSymbology()).__init(this.bb!.__vector(this.bb_pos + offset) + index * 40, this.bb!)
         : null;
     }
 
@@ -1403,16 +1292,10 @@ export namespace EGFBAccessors {
      * @param FaceSymbologyIndex= obj
      * @returns FaceSymbologyIndex
      */
-    symbologyIndex(
-      index: number,
-      obj?: FaceSymbologyIndex
-    ): FaceSymbologyIndex | null {
+    symbologyIndex(index: number, obj?: FaceSymbologyIndex): FaceSymbologyIndex | null {
       var offset = this.bb!.__offset(this.bb_pos, 12);
       return offset
-        ? (obj || new FaceSymbologyIndex()).__init(
-            this.bb!.__vector(this.bb_pos + offset) + index * 8,
-            this.bb!
-          )
+        ? (obj || new FaceSymbologyIndex()).__init(this.bb!.__vector(this.bb_pos + offset) + index * 8, this.bb!)
         : null;
     }
 
@@ -1435,10 +1318,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset entityTransformOffset
      */
-    static addEntityTransform(
-      builder: flatbuffers.Builder,
-      entityTransformOffset: flatbuffers.Offset
-    ) {
+    static addEntityTransform(builder: flatbuffers.Builder, entityTransformOffset: flatbuffers.Offset) {
       builder.addFieldStruct(0, entityTransformOffset, 0);
     }
 
@@ -1454,10 +1334,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset entityDataOffset
      */
-    static addEntityData(
-      builder: flatbuffers.Builder,
-      entityDataOffset: flatbuffers.Offset
-    ) {
+    static addEntityData(builder: flatbuffers.Builder, entityDataOffset: flatbuffers.Offset) {
       builder.addFieldOffset(2, entityDataOffset, 0);
     }
 
@@ -1466,10 +1343,7 @@ export namespace EGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createEntityDataVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createEntityDataVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(1, data.length, 1);
       for (var i = data.length - 1; i >= 0; i--) {
         builder.addInt8(data[i]);
@@ -1481,10 +1355,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param number numElems
      */
-    static startEntityDataVector(
-      builder: flatbuffers.Builder,
-      numElems: number
-    ) {
+    static startEntityDataVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(1, numElems, 1);
     }
 
@@ -1492,10 +1363,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset symbologyOffset
      */
-    static addSymbology(
-      builder: flatbuffers.Builder,
-      symbologyOffset: flatbuffers.Offset
-    ) {
+    static addSymbology(builder: flatbuffers.Builder, symbologyOffset: flatbuffers.Offset) {
       builder.addFieldOffset(3, symbologyOffset, 0);
     }
 
@@ -1503,10 +1371,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param number numElems
      */
-    static startSymbologyVector(
-      builder: flatbuffers.Builder,
-      numElems: number
-    ) {
+    static startSymbologyVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(40, numElems, 8);
     }
 
@@ -1514,10 +1379,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset symbologyIndexOffset
      */
-    static addSymbologyIndex(
-      builder: flatbuffers.Builder,
-      symbologyIndexOffset: flatbuffers.Offset
-    ) {
+    static addSymbologyIndex(builder: flatbuffers.Builder, symbologyIndexOffset: flatbuffers.Offset) {
       builder.addFieldOffset(4, symbologyIndexOffset, 0);
     }
 
@@ -1525,10 +1387,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param number numElems
      */
-    static startSymbologyIndexVector(
-      builder: flatbuffers.Builder,
-      numElems: number
-    ) {
+    static startSymbologyIndexVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(8, numElems, 4);
     }
 
@@ -1583,10 +1442,7 @@ export namespace EGFBAccessors {
      * @returns Image
      */
     static getRootAsImage(bb: flatbuffers.ByteBuffer, obj?: Image): Image {
-      return (obj || new Image()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new Image()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -1594,15 +1450,9 @@ export namespace EGFBAccessors {
      * @param Image= obj
      * @returns Image
      */
-    static getSizePrefixedRootAsImage(
-      bb: flatbuffers.ByteBuffer,
-      obj?: Image
-    ): Image {
+    static getSizePrefixedRootAsImage(bb: flatbuffers.ByteBuffer, obj?: Image): Image {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new Image()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new Image()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -1627,9 +1477,7 @@ export namespace EGFBAccessors {
      */
     tileCorner0(obj?: DPoint3d): DPoint3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset
-        ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -1638,9 +1486,7 @@ export namespace EGFBAccessors {
      */
     tileCorner1(obj?: DPoint3d): DPoint3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset
-        ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -1649,9 +1495,7 @@ export namespace EGFBAccessors {
      */
     tileCorner2(obj?: DPoint3d): DPoint3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 12);
-      return offset
-        ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -1660,9 +1504,7 @@ export namespace EGFBAccessors {
      */
     tileCorner3(obj?: DPoint3d): DPoint3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 14);
-      return offset
-        ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -1695,9 +1537,7 @@ export namespace EGFBAccessors {
      */
     byteData(index: number): number | null {
       var offset = this.bb!.__offset(this.bb_pos, 22);
-      return offset
-        ? this.bb!.readUint8(this.bb!.__vector(this.bb_pos + offset) + index)
-        : 0;
+      return offset ? this.bb!.readUint8(this.bb!.__vector(this.bb_pos + offset) + index) : 0;
     }
 
     /**
@@ -1716,8 +1556,7 @@ export namespace EGFBAccessors {
       return offset
         ? new Uint8Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -1728,9 +1567,7 @@ export namespace EGFBAccessors {
      */
     textureId(): flatbuffers.Long {
       var offset = this.bb!.__offset(this.bb_pos, 24);
-      return offset
-        ? this.bb!.readInt64(this.bb_pos + offset)
-        : this.bb!.createLong(0, 0);
+      return offset ? this.bb!.readInt64(this.bb_pos + offset) : this.bb!.createLong(0, 0);
     }
 
     /**
@@ -1760,10 +1597,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset tileCorner0Offset
      */
-    static addTileCorner0(
-      builder: flatbuffers.Builder,
-      tileCorner0Offset: flatbuffers.Offset
-    ) {
+    static addTileCorner0(builder: flatbuffers.Builder, tileCorner0Offset: flatbuffers.Offset) {
       builder.addFieldStruct(2, tileCorner0Offset, 0);
     }
 
@@ -1771,10 +1605,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset tileCorner1Offset
      */
-    static addTileCorner1(
-      builder: flatbuffers.Builder,
-      tileCorner1Offset: flatbuffers.Offset
-    ) {
+    static addTileCorner1(builder: flatbuffers.Builder, tileCorner1Offset: flatbuffers.Offset) {
       builder.addFieldStruct(3, tileCorner1Offset, 0);
     }
 
@@ -1782,10 +1613,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset tileCorner2Offset
      */
-    static addTileCorner2(
-      builder: flatbuffers.Builder,
-      tileCorner2Offset: flatbuffers.Offset
-    ) {
+    static addTileCorner2(builder: flatbuffers.Builder, tileCorner2Offset: flatbuffers.Offset) {
       builder.addFieldStruct(4, tileCorner2Offset, 0);
     }
 
@@ -1793,10 +1621,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset tileCorner3Offset
      */
-    static addTileCorner3(
-      builder: flatbuffers.Builder,
-      tileCorner3Offset: flatbuffers.Offset
-    ) {
+    static addTileCorner3(builder: flatbuffers.Builder, tileCorner3Offset: flatbuffers.Offset) {
       builder.addFieldStruct(5, tileCorner3Offset, 0);
     }
 
@@ -1828,10 +1653,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset byteDataOffset
      */
-    static addByteData(
-      builder: flatbuffers.Builder,
-      byteDataOffset: flatbuffers.Offset
-    ) {
+    static addByteData(builder: flatbuffers.Builder, byteDataOffset: flatbuffers.Offset) {
       builder.addFieldOffset(9, byteDataOffset, 0);
     }
 
@@ -1840,10 +1662,7 @@ export namespace EGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createByteDataVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createByteDataVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(1, data.length, 1);
       for (var i = data.length - 1; i >= 0; i--) {
         builder.addInt8(data[i]);
@@ -1863,10 +1682,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Long textureId
      */
-    static addTextureId(
-      builder: flatbuffers.Builder,
-      textureId: flatbuffers.Long
-    ) {
+    static addTextureId(builder: flatbuffers.Builder, textureId: flatbuffers.Long) {
       builder.addFieldInt64(10, textureId, builder.createLong(0, 0));
     }
 
@@ -1932,14 +1748,8 @@ export namespace EGFBAccessors {
      * @param GeometryPart= obj
      * @returns GeometryPart
      */
-    static getRootAsGeometryPart(
-      bb: flatbuffers.ByteBuffer,
-      obj?: GeometryPart
-    ): GeometryPart {
-      return (obj || new GeometryPart()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsGeometryPart(bb: flatbuffers.ByteBuffer, obj?: GeometryPart): GeometryPart {
+      return (obj || new GeometryPart()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -1947,15 +1757,9 @@ export namespace EGFBAccessors {
      * @param GeometryPart= obj
      * @returns GeometryPart
      */
-    static getSizePrefixedRootAsGeometryPart(
-      bb: flatbuffers.ByteBuffer,
-      obj?: GeometryPart
-    ): GeometryPart {
+    static getSizePrefixedRootAsGeometryPart(bb: flatbuffers.ByteBuffer, obj?: GeometryPart): GeometryPart {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new GeometryPart()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new GeometryPart()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -1963,9 +1767,7 @@ export namespace EGFBAccessors {
      */
     geomPartId(): flatbuffers.Long {
       var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset
-        ? this.bb!.readInt64(this.bb_pos + offset)
-        : this.bb!.createLong(0, 0);
+      return offset ? this.bb!.readInt64(this.bb_pos + offset) : this.bb!.createLong(0, 0);
     }
 
     /**
@@ -1974,9 +1776,7 @@ export namespace EGFBAccessors {
      */
     origin(obj?: DPoint3d): DPoint3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset
-        ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -2022,10 +1822,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Long geomPartId
      */
-    static addGeomPartId(
-      builder: flatbuffers.Builder,
-      geomPartId: flatbuffers.Long
-    ) {
+    static addGeomPartId(builder: flatbuffers.Builder, geomPartId: flatbuffers.Long) {
       builder.addFieldInt64(0, geomPartId, builder.createLong(0, 0));
     }
 
@@ -2033,10 +1830,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset originOffset
      */
-    static addOrigin(
-      builder: flatbuffers.Builder,
-      originOffset: flatbuffers.Offset
-    ) {
+    static addOrigin(builder: flatbuffers.Builder, originOffset: flatbuffers.Offset) {
       builder.addFieldStruct(1, originOffset, 0);
     }
 
@@ -2124,14 +1918,8 @@ export namespace EGFBAccessors {
      * @param BasicSymbology= obj
      * @returns BasicSymbology
      */
-    static getRootAsBasicSymbology(
-      bb: flatbuffers.ByteBuffer,
-      obj?: BasicSymbology
-    ): BasicSymbology {
-      return (obj || new BasicSymbology()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsBasicSymbology(bb: flatbuffers.ByteBuffer, obj?: BasicSymbology): BasicSymbology {
+      return (obj || new BasicSymbology()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -2139,15 +1927,9 @@ export namespace EGFBAccessors {
      * @param BasicSymbology= obj
      * @returns BasicSymbology
      */
-    static getSizePrefixedRootAsBasicSymbology(
-      bb: flatbuffers.ByteBuffer,
-      obj?: BasicSymbology
-    ): BasicSymbology {
+    static getSizePrefixedRootAsBasicSymbology(bb: flatbuffers.ByteBuffer, obj?: BasicSymbology): BasicSymbology {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new BasicSymbology()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new BasicSymbology()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -2155,9 +1937,7 @@ export namespace EGFBAccessors {
      */
     subCategoryId(): flatbuffers.Long {
       var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset
-        ? this.bb!.readInt64(this.bb_pos + offset)
-        : this.bb!.createLong(0, 0);
+      return offset ? this.bb!.readInt64(this.bb_pos + offset) : this.bb!.createLong(0, 0);
     }
 
     /**
@@ -2181,9 +1961,7 @@ export namespace EGFBAccessors {
      */
     lineStyleId(): flatbuffers.Long {
       var offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset
-        ? this.bb!.readInt64(this.bb_pos + offset)
-        : this.bb!.createLong(0, 0);
+      return offset ? this.bb!.readInt64(this.bb_pos + offset) : this.bb!.createLong(0, 0);
     }
 
     /**
@@ -2207,9 +1985,7 @@ export namespace EGFBAccessors {
      */
     geomClass(): GeometryClass {
       var offset = this.bb!.__offset(this.bb_pos, 16);
-      return offset
-        ? /**  */ this.bb!.readInt8(this.bb_pos + offset)
-        : GeometryClass.Primary;
+      return offset ? /**  */ this.bb!.readInt8(this.bb_pos + offset) : GeometryClass.Primary;
     }
 
     /**
@@ -2247,10 +2023,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Long subCategoryId
      */
-    static addSubCategoryId(
-      builder: flatbuffers.Builder,
-      subCategoryId: flatbuffers.Long
-    ) {
+    static addSubCategoryId(builder: flatbuffers.Builder, subCategoryId: flatbuffers.Long) {
       builder.addFieldInt64(0, subCategoryId, builder.createLong(0, 0));
     }
 
@@ -2274,10 +2047,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Long lineStyleId
      */
-    static addLineStyleId(
-      builder: flatbuffers.Builder,
-      lineStyleId: flatbuffers.Long
-    ) {
+    static addLineStyleId(builder: flatbuffers.Builder, lineStyleId: flatbuffers.Long) {
       builder.addFieldInt64(3, lineStyleId, builder.createLong(0, 0));
     }
 
@@ -2293,10 +2063,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param number displayPriority
      */
-    static addDisplayPriority(
-      builder: flatbuffers.Builder,
-      displayPriority: number
-    ) {
+    static addDisplayPriority(builder: flatbuffers.Builder, displayPriority: number) {
       builder.addFieldInt32(5, displayPriority, 0);
     }
 
@@ -2304,10 +2071,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param GeometryClass geomClass
      */
-    static addGeomClass(
-      builder: flatbuffers.Builder,
-      geomClass: GeometryClass
-    ) {
+    static addGeomClass(builder: flatbuffers.Builder, geomClass: GeometryClass) {
       builder.addFieldInt8(6, geomClass, GeometryClass.Primary);
     }
 
@@ -2395,14 +2159,8 @@ export namespace EGFBAccessors {
      * @param LineStyleModifiers= obj
      * @returns LineStyleModifiers
      */
-    static getRootAsLineStyleModifiers(
-      bb: flatbuffers.ByteBuffer,
-      obj?: LineStyleModifiers
-    ): LineStyleModifiers {
-      return (obj || new LineStyleModifiers()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsLineStyleModifiers(bb: flatbuffers.ByteBuffer, obj?: LineStyleModifiers): LineStyleModifiers {
+      return (obj || new LineStyleModifiers()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -2415,10 +2173,7 @@ export namespace EGFBAccessors {
       obj?: LineStyleModifiers
     ): LineStyleModifiers {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new LineStyleModifiers()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new LineStyleModifiers()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -2491,9 +2246,7 @@ export namespace EGFBAccessors {
      */
     normal(obj?: DPoint3d): DPoint3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 20);
-      return offset
-        ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -2595,10 +2348,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset normalOffset
      */
-    static addNormal(
-      builder: flatbuffers.Builder,
-      normalOffset: flatbuffers.Offset
-    ) {
+    static addNormal(builder: flatbuffers.Builder, normalOffset: flatbuffers.Offset) {
       builder.addFieldStruct(8, normalOffset, 0);
     }
 
@@ -2630,9 +2380,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @returns flatbuffers.Offset
      */
-    static endLineStyleModifiers(
-      builder: flatbuffers.Builder
-    ): flatbuffers.Offset {
+    static endLineStyleModifiers(builder: flatbuffers.Builder): flatbuffers.Offset {
       var offset = builder.endObject();
       return offset;
     }
@@ -2692,14 +2440,8 @@ export namespace EGFBAccessors {
      * @param Material= obj
      * @returns Material
      */
-    static getRootAsMaterial(
-      bb: flatbuffers.ByteBuffer,
-      obj?: Material
-    ): Material {
-      return (obj || new Material()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsMaterial(bb: flatbuffers.ByteBuffer, obj?: Material): Material {
+      return (obj || new Material()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -2707,15 +2449,9 @@ export namespace EGFBAccessors {
      * @param Material= obj
      * @returns Material
      */
-    static getSizePrefixedRootAsMaterial(
-      bb: flatbuffers.ByteBuffer,
-      obj?: Material
-    ): Material {
+    static getSizePrefixedRootAsMaterial(bb: flatbuffers.ByteBuffer, obj?: Material): Material {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new Material()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new Material()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -2731,9 +2467,7 @@ export namespace EGFBAccessors {
      */
     materialId(): flatbuffers.Long {
       var offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset
-        ? this.bb!.readInt64(this.bb_pos + offset)
-        : this.bb!.createLong(0, 0);
+      return offset ? this.bb!.readInt64(this.bb_pos + offset) : this.bb!.createLong(0, 0);
     }
 
     /**
@@ -2742,9 +2476,7 @@ export namespace EGFBAccessors {
      */
     origin(obj?: DPoint3d): DPoint3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset
-        ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -2753,9 +2485,7 @@ export namespace EGFBAccessors {
      */
     size(obj?: DPoint3d): DPoint3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset
-        ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -2788,9 +2518,7 @@ export namespace EGFBAccessors {
      */
     trans2x3(obj?: Trans2x3): Trans2x3 | null {
       var offset = this.bb!.__offset(this.bb_pos, 18);
-      return offset
-        ? (obj || new Trans2x3()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new Trans2x3()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -2812,10 +2540,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Long materialId
      */
-    static addMaterialId(
-      builder: flatbuffers.Builder,
-      materialId: flatbuffers.Long
-    ) {
+    static addMaterialId(builder: flatbuffers.Builder, materialId: flatbuffers.Long) {
       builder.addFieldInt64(1, materialId, builder.createLong(0, 0));
     }
 
@@ -2823,10 +2548,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset originOffset
      */
-    static addOrigin(
-      builder: flatbuffers.Builder,
-      originOffset: flatbuffers.Offset
-    ) {
+    static addOrigin(builder: flatbuffers.Builder, originOffset: flatbuffers.Offset) {
       builder.addFieldStruct(2, originOffset, 0);
     }
 
@@ -2834,10 +2556,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset sizeOffset
      */
-    static addSize(
-      builder: flatbuffers.Builder,
-      sizeOffset: flatbuffers.Offset
-    ) {
+    static addSize(builder: flatbuffers.Builder, sizeOffset: flatbuffers.Offset) {
       builder.addFieldStruct(3, sizeOffset, 0);
     }
 
@@ -2869,10 +2588,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset trans2x3Offset
      */
-    static addTrans2x3(
-      builder: flatbuffers.Builder,
-      trans2x3Offset: flatbuffers.Offset
-    ) {
+    static addTrans2x3(builder: flatbuffers.Builder, trans2x3Offset: flatbuffers.Offset) {
       builder.addFieldStruct(7, trans2x3Offset, 0);
     }
 
@@ -2932,14 +2648,8 @@ export namespace EGFBAccessors {
      * @param ThematicSettings= obj
      * @returns ThematicSettings
      */
-    static getRootAsThematicSettings(
-      bb: flatbuffers.ByteBuffer,
-      obj?: ThematicSettings
-    ): ThematicSettings {
-      return (obj || new ThematicSettings()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsThematicSettings(bb: flatbuffers.ByteBuffer, obj?: ThematicSettings): ThematicSettings {
+      return (obj || new ThematicSettings()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -2947,15 +2657,9 @@ export namespace EGFBAccessors {
      * @param ThematicSettings= obj
      * @returns ThematicSettings
      */
-    static getSizePrefixedRootAsThematicSettings(
-      bb: flatbuffers.ByteBuffer,
-      obj?: ThematicSettings
-    ): ThematicSettings {
+    static getSizePrefixedRootAsThematicSettings(bb: flatbuffers.ByteBuffer, obj?: ThematicSettings): ThematicSettings {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new ThematicSettings()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new ThematicSettings()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -3004,9 +2708,7 @@ export namespace EGFBAccessors {
      */
     range(obj?: DRange1d): DRange1d | null {
       var offset = this.bb!.__offset(this.bb_pos, 14);
-      return offset
-        ? (obj || new DRange1d()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DRange1d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -3060,10 +2762,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset rangeOffset
      */
-    static addRange(
-      builder: flatbuffers.Builder,
-      rangeOffset: flatbuffers.Offset
-    ) {
+    static addRange(builder: flatbuffers.Builder, rangeOffset: flatbuffers.Offset) {
       builder.addFieldStruct(5, rangeOffset, 0);
     }
 
@@ -3071,9 +2770,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @returns flatbuffers.Offset
      */
-    static endThematicSettings(
-      builder: flatbuffers.Builder
-    ): flatbuffers.Offset {
+    static endThematicSettings(builder: flatbuffers.Builder): flatbuffers.Offset {
       var offset = builder.endObject();
       return offset;
     }
@@ -3121,14 +2818,8 @@ export namespace EGFBAccessors {
      * @param AreaFill= obj
      * @returns AreaFill
      */
-    static getRootAsAreaFill(
-      bb: flatbuffers.ByteBuffer,
-      obj?: AreaFill
-    ): AreaFill {
-      return (obj || new AreaFill()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsAreaFill(bb: flatbuffers.ByteBuffer, obj?: AreaFill): AreaFill {
+      return (obj || new AreaFill()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -3136,15 +2827,9 @@ export namespace EGFBAccessors {
      * @param AreaFill= obj
      * @returns AreaFill
      */
-    static getSizePrefixedRootAsAreaFill(
-      bb: flatbuffers.ByteBuffer,
-      obj?: AreaFill
-    ): AreaFill {
+    static getSizePrefixedRootAsAreaFill(bb: flatbuffers.ByteBuffer, obj?: AreaFill): AreaFill {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new AreaFill()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new AreaFill()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -3152,9 +2837,7 @@ export namespace EGFBAccessors {
      */
     fill(): FillDisplay {
       var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset
-        ? /**  */ this.bb!.readInt8(this.bb_pos + offset)
-        : FillDisplay.None;
+      return offset ? /**  */ this.bb!.readInt8(this.bb_pos + offset) : FillDisplay.None;
     }
 
     /**
@@ -3194,9 +2877,7 @@ export namespace EGFBAccessors {
      */
     mode(): GradientMode {
       var offset = this.bb!.__offset(this.bb_pos, 14);
-      return offset
-        ? /**  */ this.bb!.readInt8(this.bb_pos + offset)
-        : GradientMode.None;
+      return offset ? /**  */ this.bb!.readInt8(this.bb_pos + offset) : GradientMode.None;
     }
 
     /**
@@ -3237,11 +2918,7 @@ export namespace EGFBAccessors {
      */
     colors(index: number): number | null {
       var offset = this.bb!.__offset(this.bb_pos, 24);
-      return offset
-        ? this.bb!.readUint32(
-            this.bb!.__vector(this.bb_pos + offset) + index * 4
-          )
-        : 0;
+      return offset ? this.bb!.readUint32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
     }
 
     /**
@@ -3260,8 +2937,7 @@ export namespace EGFBAccessors {
       return offset
         ? new Uint32Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -3273,11 +2949,7 @@ export namespace EGFBAccessors {
      */
     values(index: number): number | null {
       var offset = this.bb!.__offset(this.bb_pos, 26);
-      return offset
-        ? this.bb!.readFloat64(
-            this.bb!.__vector(this.bb_pos + offset) + index * 8
-          )
-        : 0;
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
@@ -3296,8 +2968,7 @@ export namespace EGFBAccessors {
       return offset
         ? new Float64Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -3310,10 +2981,7 @@ export namespace EGFBAccessors {
     thematicSettings(obj?: ThematicSettings): ThematicSettings | null {
       var offset = this.bb!.__offset(this.bb_pos, 28);
       return offset
-        ? (obj || new ThematicSettings()).__init(
-            this.bb!.__indirect(this.bb_pos + offset),
-            this.bb!
-          )
+        ? (obj || new ThematicSettings()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!)
         : null;
     }
 
@@ -3352,10 +3020,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param number backgroundFill
      */
-    static addBackgroundFill(
-      builder: flatbuffers.Builder,
-      backgroundFill: number
-    ) {
+    static addBackgroundFill(builder: flatbuffers.Builder, backgroundFill: number) {
       builder.addFieldInt8(3, backgroundFill, 0);
     }
 
@@ -3411,10 +3076,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset colorsOffset
      */
-    static addColors(
-      builder: flatbuffers.Builder,
-      colorsOffset: flatbuffers.Offset
-    ) {
+    static addColors(builder: flatbuffers.Builder, colorsOffset: flatbuffers.Offset) {
       builder.addFieldOffset(10, colorsOffset, 0);
     }
 
@@ -3423,10 +3085,7 @@ export namespace EGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createColorsVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createColorsVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(4, data.length, 4);
       for (var i = data.length - 1; i >= 0; i--) {
         builder.addInt32(data[i]);
@@ -3446,10 +3105,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset valuesOffset
      */
-    static addValues(
-      builder: flatbuffers.Builder,
-      valuesOffset: flatbuffers.Offset
-    ) {
+    static addValues(builder: flatbuffers.Builder, valuesOffset: flatbuffers.Offset) {
       builder.addFieldOffset(11, valuesOffset, 0);
     }
 
@@ -3458,10 +3114,7 @@ export namespace EGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createValuesVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createValuesVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(8, data.length, 8);
       for (var i = data.length - 1; i >= 0; i--) {
         builder.addFloat64(data[i]);
@@ -3481,10 +3134,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset thematicSettingsOffset
      */
-    static addThematicSettings(
-      builder: flatbuffers.Builder,
-      thematicSettingsOffset: flatbuffers.Offset
-    ) {
+    static addThematicSettings(builder: flatbuffers.Builder, thematicSettingsOffset: flatbuffers.Offset) {
       builder.addFieldOffset(12, thematicSettingsOffset, 0);
     }
 
@@ -3554,14 +3204,8 @@ export namespace EGFBAccessors {
      * @param DwgHatchDefLine= obj
      * @returns DwgHatchDefLine
      */
-    static getRootAsDwgHatchDefLine(
-      bb: flatbuffers.ByteBuffer,
-      obj?: DwgHatchDefLine
-    ): DwgHatchDefLine {
-      return (obj || new DwgHatchDefLine()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsDwgHatchDefLine(bb: flatbuffers.ByteBuffer, obj?: DwgHatchDefLine): DwgHatchDefLine {
+      return (obj || new DwgHatchDefLine()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -3569,15 +3213,9 @@ export namespace EGFBAccessors {
      * @param DwgHatchDefLine= obj
      * @returns DwgHatchDefLine
      */
-    static getSizePrefixedRootAsDwgHatchDefLine(
-      bb: flatbuffers.ByteBuffer,
-      obj?: DwgHatchDefLine
-    ): DwgHatchDefLine {
+    static getSizePrefixedRootAsDwgHatchDefLine(bb: flatbuffers.ByteBuffer, obj?: DwgHatchDefLine): DwgHatchDefLine {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new DwgHatchDefLine()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new DwgHatchDefLine()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -3594,9 +3232,7 @@ export namespace EGFBAccessors {
      */
     through(obj?: DPoint2d): DPoint2d | null {
       var offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset
-        ? (obj || new DPoint2d()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DPoint2d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -3605,9 +3241,7 @@ export namespace EGFBAccessors {
      */
     offset(obj?: DPoint2d): DPoint2d | null {
       var offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset
-        ? (obj || new DPoint2d()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DPoint2d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -3616,11 +3250,7 @@ export namespace EGFBAccessors {
      */
     dashes(index: number): number | null {
       var offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset
-        ? this.bb!.readFloat64(
-            this.bb!.__vector(this.bb_pos + offset) + index * 8
-          )
-        : 0;
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
@@ -3639,8 +3269,7 @@ export namespace EGFBAccessors {
       return offset
         ? new Float64Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -3665,10 +3294,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset throughOffset
      */
-    static addThrough(
-      builder: flatbuffers.Builder,
-      throughOffset: flatbuffers.Offset
-    ) {
+    static addThrough(builder: flatbuffers.Builder, throughOffset: flatbuffers.Offset) {
       builder.addFieldStruct(1, throughOffset, 0);
     }
 
@@ -3676,10 +3302,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset offsetOffset
      */
-    static addOffset(
-      builder: flatbuffers.Builder,
-      offsetOffset: flatbuffers.Offset
-    ) {
+    static addOffset(builder: flatbuffers.Builder, offsetOffset: flatbuffers.Offset) {
       builder.addFieldStruct(2, offsetOffset, 0);
     }
 
@@ -3687,10 +3310,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset dashesOffset
      */
-    static addDashes(
-      builder: flatbuffers.Builder,
-      dashesOffset: flatbuffers.Offset
-    ) {
+    static addDashes(builder: flatbuffers.Builder, dashesOffset: flatbuffers.Offset) {
       builder.addFieldOffset(3, dashesOffset, 0);
     }
 
@@ -3699,10 +3319,7 @@ export namespace EGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createDashesVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createDashesVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(8, data.length, 8);
       for (var i = data.length - 1; i >= 0; i--) {
         builder.addFloat64(data[i]);
@@ -3722,9 +3339,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @returns flatbuffers.Offset
      */
-    static endDwgHatchDefLine(
-      builder: flatbuffers.Builder
-    ): flatbuffers.Offset {
+    static endDwgHatchDefLine(builder: flatbuffers.Builder): flatbuffers.Offset {
       var offset = builder.endObject();
       return offset;
     }
@@ -3768,14 +3383,8 @@ export namespace EGFBAccessors {
      * @param AreaPattern= obj
      * @returns AreaPattern
      */
-    static getRootAsAreaPattern(
-      bb: flatbuffers.ByteBuffer,
-      obj?: AreaPattern
-    ): AreaPattern {
-      return (obj || new AreaPattern()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsAreaPattern(bb: flatbuffers.ByteBuffer, obj?: AreaPattern): AreaPattern {
+      return (obj || new AreaPattern()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -3783,15 +3392,9 @@ export namespace EGFBAccessors {
      * @param AreaPattern= obj
      * @returns AreaPattern
      */
-    static getSizePrefixedRootAsAreaPattern(
-      bb: flatbuffers.ByteBuffer,
-      obj?: AreaPattern
-    ): AreaPattern {
+    static getSizePrefixedRootAsAreaPattern(bb: flatbuffers.ByteBuffer, obj?: AreaPattern): AreaPattern {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new AreaPattern()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new AreaPattern()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -3800,9 +3403,7 @@ export namespace EGFBAccessors {
      */
     origin(obj?: DPoint3d): DPoint3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset
-        ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -3811,9 +3412,7 @@ export namespace EGFBAccessors {
      */
     rotation(obj?: RotMatrix): RotMatrix | null {
       var offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset
-        ? (obj || new RotMatrix()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new RotMatrix()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -3909,9 +3508,7 @@ export namespace EGFBAccessors {
      */
     symbolId(): flatbuffers.Long {
       var offset = this.bb!.__offset(this.bb_pos, 30);
-      return offset
-        ? this.bb!.readInt64(this.bb_pos + offset)
-        : this.bb!.createLong(0, 0);
+      return offset ? this.bb!.readInt64(this.bb_pos + offset) : this.bb!.createLong(0, 0);
     }
 
     /**
@@ -3923,9 +3520,7 @@ export namespace EGFBAccessors {
       var offset = this.bb!.__offset(this.bb_pos, 32);
       return offset
         ? (obj || new DwgHatchDefLine()).__init(
-            this.bb!.__indirect(
-              this.bb!.__vector(this.bb_pos + offset) + index * 4
-            ),
+            this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4),
             this.bb!
           )
         : null;
@@ -3950,10 +3545,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset originOffset
      */
-    static addOrigin(
-      builder: flatbuffers.Builder,
-      originOffset: flatbuffers.Offset
-    ) {
+    static addOrigin(builder: flatbuffers.Builder, originOffset: flatbuffers.Offset) {
       builder.addFieldStruct(0, originOffset, 0);
     }
 
@@ -3961,10 +3553,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset rotationOffset
      */
-    static addRotation(
-      builder: flatbuffers.Builder,
-      rotationOffset: flatbuffers.Offset
-    ) {
+    static addRotation(builder: flatbuffers.Builder, rotationOffset: flatbuffers.Offset) {
       builder.addFieldStruct(1, rotationOffset, 0);
     }
 
@@ -4044,10 +3633,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param number invisibleBoundary
      */
-    static addInvisibleBoundary(
-      builder: flatbuffers.Builder,
-      invisibleBoundary: number
-    ) {
+    static addInvisibleBoundary(builder: flatbuffers.Builder, invisibleBoundary: number) {
       builder.addFieldInt8(11, invisibleBoundary, 0);
     }
 
@@ -4063,10 +3649,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Long symbolId
      */
-    static addSymbolId(
-      builder: flatbuffers.Builder,
-      symbolId: flatbuffers.Long
-    ) {
+    static addSymbolId(builder: flatbuffers.Builder, symbolId: flatbuffers.Long) {
       builder.addFieldInt64(13, symbolId, builder.createLong(0, 0));
     }
 
@@ -4074,10 +3657,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset defLineOffset
      */
-    static addDefLine(
-      builder: flatbuffers.Builder,
-      defLineOffset: flatbuffers.Offset
-    ) {
+    static addDefLine(builder: flatbuffers.Builder, defLineOffset: flatbuffers.Offset) {
       builder.addFieldOffset(14, defLineOffset, 0);
     }
 
@@ -4086,10 +3666,7 @@ export namespace EGFBAccessors {
      * @param Array.<flatbuffers.Offset> data
      * @returns flatbuffers.Offset
      */
-    static createDefLineVector(
-      builder: flatbuffers.Builder,
-      data: flatbuffers.Offset[]
-    ): flatbuffers.Offset {
+    static createDefLineVector(builder: flatbuffers.Builder, data: flatbuffers.Offset[]): flatbuffers.Offset {
       builder.startVector(4, data.length, 4);
       for (var i = data.length - 1; i >= 0; i--) {
         builder.addOffset(data[i]);
@@ -4410,11 +3987,7 @@ export namespace EGFBAccessors {
      * @param number y
      * @returns flatbuffers.Offset
      */
-    static createTextStringGlyphOrigin(
-      builder: flatbuffers.Builder,
-      x: number,
-      y: number
-    ): flatbuffers.Offset {
+    static createTextStringGlyphOrigin(builder: flatbuffers.Builder, x: number, y: number): flatbuffers.Offset {
       builder.prep(8, 16);
       builder.writeFloat64(y);
       builder.writeFloat64(x);
@@ -4445,14 +4018,8 @@ export namespace EGFBAccessors {
      * @param TextStringStyle= obj
      * @returns TextStringStyle
      */
-    static getRootAsTextStringStyle(
-      bb: flatbuffers.ByteBuffer,
-      obj?: TextStringStyle
-    ): TextStringStyle {
-      return (obj || new TextStringStyle()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsTextStringStyle(bb: flatbuffers.ByteBuffer, obj?: TextStringStyle): TextStringStyle {
+      return (obj || new TextStringStyle()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -4460,15 +4027,9 @@ export namespace EGFBAccessors {
      * @param TextStringStyle= obj
      * @returns TextStringStyle
      */
-    static getSizePrefixedRootAsTextStringStyle(
-      bb: flatbuffers.ByteBuffer,
-      obj?: TextStringStyle
-    ): TextStringStyle {
+    static getSizePrefixedRootAsTextStringStyle(bb: flatbuffers.ByteBuffer, obj?: TextStringStyle): TextStringStyle {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new TextStringStyle()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new TextStringStyle()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -4586,10 +4147,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param boolean isUnderlined
      */
-    static addIsUnderlined(
-      builder: flatbuffers.Builder,
-      isUnderlined: boolean
-    ) {
+    static addIsUnderlined(builder: flatbuffers.Builder, isUnderlined: boolean) {
       builder.addFieldInt8(5, +isUnderlined, +false);
     }
 
@@ -4613,9 +4171,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @returns flatbuffers.Offset
      */
-    static endTextStringStyle(
-      builder: flatbuffers.Builder
-    ): flatbuffers.Offset {
+    static endTextStringStyle(builder: flatbuffers.Builder): flatbuffers.Offset {
       var offset = builder.endObject();
       return offset;
     }
@@ -4667,14 +4223,8 @@ export namespace EGFBAccessors {
      * @param TextString= obj
      * @returns TextString
      */
-    static getRootAsTextString(
-      bb: flatbuffers.ByteBuffer,
-      obj?: TextString
-    ): TextString {
-      return (obj || new TextString()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+    static getRootAsTextString(bb: flatbuffers.ByteBuffer, obj?: TextString): TextString {
+      return (obj || new TextString()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -4682,15 +4232,9 @@ export namespace EGFBAccessors {
      * @param TextString= obj
      * @returns TextString
      */
-    static getSizePrefixedRootAsTextString(
-      bb: flatbuffers.ByteBuffer,
-      obj?: TextString
-    ): TextString {
+    static getSizePrefixedRootAsTextString(bb: flatbuffers.ByteBuffer, obj?: TextString): TextString {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-      return (obj || new TextString()).__init(
-        bb.readInt32(bb.position()) + bb.position(),
-        bb
-      );
+      return (obj || new TextString()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     }
 
     /**
@@ -4717,9 +4261,7 @@ export namespace EGFBAccessors {
     text(optionalEncoding: flatbuffers.Encoding): string | Uint8Array | null;
     text(optionalEncoding?: any): string | Uint8Array | null {
       var offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset
-        ? this.bb!.__string(this.bb_pos + offset, optionalEncoding)
-        : null;
+      return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
     }
 
     /**
@@ -4728,12 +4270,7 @@ export namespace EGFBAccessors {
      */
     style(obj?: TextStringStyle): TextStringStyle | null {
       var offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset
-        ? (obj || new TextStringStyle()).__init(
-            this.bb!.__indirect(this.bb_pos + offset),
-            this.bb!
-          )
-        : null;
+      return offset ? (obj || new TextStringStyle()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
     }
 
     /**
@@ -4742,12 +4279,7 @@ export namespace EGFBAccessors {
      */
     transform(obj?: TextStringTransform): TextStringTransform | null {
       var offset = this.bb!.__offset(this.bb_pos, 12);
-      return offset
-        ? (obj || new TextStringTransform()).__init(
-            this.bb_pos + offset,
-            this.bb!
-          )
-        : null;
+      return offset ? (obj || new TextStringTransform()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -4756,9 +4288,7 @@ export namespace EGFBAccessors {
      */
     range(obj?: TextStringRange): TextStringRange | null {
       var offset = this.bb!.__offset(this.bb_pos, 14);
-      return offset
-        ? (obj || new TextStringRange()).__init(this.bb_pos + offset, this.bb!)
-        : null;
+      return offset ? (obj || new TextStringRange()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -4767,11 +4297,7 @@ export namespace EGFBAccessors {
      */
     glyphIds(index: number): number | null {
       var offset = this.bb!.__offset(this.bb_pos, 16);
-      return offset
-        ? this.bb!.readUint32(
-            this.bb!.__vector(this.bb_pos + offset) + index * 4
-          )
-        : 0;
+      return offset ? this.bb!.readUint32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
     }
 
     /**
@@ -4790,8 +4316,7 @@ export namespace EGFBAccessors {
       return offset
         ? new Uint32Array(
             this.bb!.bytes().buffer,
-            this.bb!.bytes().byteOffset +
-              this.bb!.__vector(this.bb_pos + offset),
+            this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
             this.bb!.__vector_len(this.bb_pos + offset)
           )
         : null;
@@ -4802,16 +4327,10 @@ export namespace EGFBAccessors {
      * @param TextStringGlyphOrigin= obj
      * @returns TextStringGlyphOrigin
      */
-    glyphOrigins(
-      index: number,
-      obj?: TextStringGlyphOrigin
-    ): TextStringGlyphOrigin | null {
+    glyphOrigins(index: number, obj?: TextStringGlyphOrigin): TextStringGlyphOrigin | null {
       var offset = this.bb!.__offset(this.bb_pos, 18);
       return offset
-        ? (obj || new TextStringGlyphOrigin()).__init(
-            this.bb!.__vector(this.bb_pos + offset) + index * 16,
-            this.bb!
-          )
+        ? (obj || new TextStringGlyphOrigin()).__init(this.bb!.__vector(this.bb_pos + offset) + index * 16, this.bb!)
         : null;
     }
 
@@ -4850,10 +4369,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset textOffset
      */
-    static addText(
-      builder: flatbuffers.Builder,
-      textOffset: flatbuffers.Offset
-    ) {
+    static addText(builder: flatbuffers.Builder, textOffset: flatbuffers.Offset) {
       builder.addFieldOffset(2, textOffset, 0);
     }
 
@@ -4861,10 +4377,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset styleOffset
      */
-    static addStyle(
-      builder: flatbuffers.Builder,
-      styleOffset: flatbuffers.Offset
-    ) {
+    static addStyle(builder: flatbuffers.Builder, styleOffset: flatbuffers.Offset) {
       builder.addFieldOffset(3, styleOffset, 0);
     }
 
@@ -4872,10 +4385,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset transformOffset
      */
-    static addTransform(
-      builder: flatbuffers.Builder,
-      transformOffset: flatbuffers.Offset
-    ) {
+    static addTransform(builder: flatbuffers.Builder, transformOffset: flatbuffers.Offset) {
       builder.addFieldStruct(4, transformOffset, 0);
     }
 
@@ -4883,10 +4393,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset rangeOffset
      */
-    static addRange(
-      builder: flatbuffers.Builder,
-      rangeOffset: flatbuffers.Offset
-    ) {
+    static addRange(builder: flatbuffers.Builder, rangeOffset: flatbuffers.Offset) {
       builder.addFieldStruct(5, rangeOffset, 0);
     }
 
@@ -4894,10 +4401,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset glyphIdsOffset
      */
-    static addGlyphIds(
-      builder: flatbuffers.Builder,
-      glyphIdsOffset: flatbuffers.Offset
-    ) {
+    static addGlyphIds(builder: flatbuffers.Builder, glyphIdsOffset: flatbuffers.Offset) {
       builder.addFieldOffset(6, glyphIdsOffset, 0);
     }
 
@@ -4906,10 +4410,7 @@ export namespace EGFBAccessors {
      * @param Array.<number> data
      * @returns flatbuffers.Offset
      */
-    static createGlyphIdsVector(
-      builder: flatbuffers.Builder,
-      data: number[] | Uint8Array
-    ): flatbuffers.Offset {
+    static createGlyphIdsVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
       builder.startVector(4, data.length, 4);
       for (var i = data.length - 1; i >= 0; i--) {
         builder.addInt32(data[i]);
@@ -4929,10 +4430,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset glyphOriginsOffset
      */
-    static addGlyphOrigins(
-      builder: flatbuffers.Builder,
-      glyphOriginsOffset: flatbuffers.Offset
-    ) {
+    static addGlyphOrigins(builder: flatbuffers.Builder, glyphOriginsOffset: flatbuffers.Offset) {
       builder.addFieldOffset(7, glyphOriginsOffset, 0);
     }
 
@@ -4940,10 +4438,7 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Builder builder
      * @param number numElems
      */
-    static startGlyphOriginsVector(
-      builder: flatbuffers.Builder,
-      numElems: number
-    ) {
+    static startGlyphOriginsVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(16, numElems, 8);
     }
 

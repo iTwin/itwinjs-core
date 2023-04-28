@@ -12,12 +12,7 @@ import { AbstractToolbarProps } from "./items/AbstractToolbarProps";
 import { RelativePosition } from "./items/RelativePosition";
 import { PropertyDescription } from "./properties/Description";
 import { Primitives } from "./properties/PrimitiveTypes";
-import {
-  OnCancelFunc,
-  OnItemExecutedFunc,
-  OnNumberCommitFunc,
-  OnValueCommitFunc,
-} from "./utils/callbacks";
+import { OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc } from "./utils/callbacks";
 import { PropertyRecord } from "./properties/Record";
 import { UiDataProvider } from "./dialogs/UiDataProvider";
 import { DialogLayoutDataProvider } from "./dialogs/UiLayoutDataProvider";
@@ -77,11 +72,7 @@ export class UiAdmin {
 
   /** The MessagePresenter used to display messages. */
   public static get messagePresenter(): MessagePresenter {
-    if (!UiAdmin._messagePresenter)
-      throw new UiError(
-        loggerCategory(this),
-        "UiAdmin.messagePresenter not set"
-      );
+    if (!UiAdmin._messagePresenter) throw new UiError(loggerCategory(this), "UiAdmin.messagePresenter not set");
     return UiAdmin._messagePresenter;
   }
   public static set messagePresenter(mp: MessagePresenter) {

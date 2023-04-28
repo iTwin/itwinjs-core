@@ -132,22 +132,14 @@ export class ToolAssistance {
   /** Keyboard info for Arrow keys. */
   public static readonly arrowKeyboardInfo: ToolAssistanceKeyboardInfo = {
     keys: [ToolAssistance.upSymbol],
-    bottomKeys: [
-      ToolAssistance.leftSymbol,
-      ToolAssistance.downSymbol,
-      ToolAssistance.rightSymbol,
-    ],
+    bottomKeys: [ToolAssistance.leftSymbol, ToolAssistance.downSymbol, ToolAssistance.rightSymbol],
   };
 
   private static translateKey(key: string) {
-    return IModelApp.localization.getLocalizedString(
-      `${CoreTools.namespace}:toolAssistance.${key}`
-    );
+    return IModelApp.localization.getLocalizedString(`${CoreTools.namespace}:toolAssistance.${key}`);
   }
   private static translateTouch(cursor: string) {
-    return IModelApp.localization.getLocalizedString(
-      `${CoreTools.namespace}:touchCursor.${cursor}`
-    );
+    return IModelApp.localization.getLocalizedString(`${CoreTools.namespace}:touchCursor.${cursor}`);
   }
 
   /** Alt key text. */
@@ -245,8 +237,7 @@ export class ToolAssistance {
     isNew?: boolean,
     inputMethod?: ToolAssistanceInputMethod
   ): ToolAssistanceInstruction {
-    if (inputMethod === undefined)
-      inputMethod = ToolAssistanceInputMethod.Mouse;
+    if (inputMethod === undefined) inputMethod = ToolAssistanceInputMethod.Mouse;
 
     const instruction: ToolAssistanceInstruction = {
       image: ToolAssistanceImage.Keyboard,
@@ -284,10 +275,7 @@ export class ToolAssistance {
 
   /** Creates a [[ToolAssistanceKeyboardInfo]].
    */
-  public static createKeyboardInfo(
-    keys: string[],
-    bottomKeys?: string[]
-  ): ToolAssistanceKeyboardInfo {
+  public static createKeyboardInfo(keys: string[], bottomKeys?: string[]): ToolAssistanceKeyboardInfo {
     const keyboardInfo: ToolAssistanceKeyboardInfo = {
       keys,
       bottomKeys,
@@ -297,9 +285,7 @@ export class ToolAssistance {
 
   /** Creates instructions for interaction with the touch cursor that are appended to the supplied [[ToolAssistanceInstruction]] array.
    */
-  public static createTouchCursorInstructions(
-    instructions: ToolAssistanceInstruction[]
-  ): boolean {
+  public static createTouchCursorInstructions(instructions: ToolAssistanceInstruction[]): boolean {
     const accuSnap = IModelApp.accuSnap;
     if (undefined === accuSnap.touchCursor && accuSnap.wantVirtualCursor) {
       instructions.push(
@@ -335,10 +321,7 @@ export class ToolAssistance {
 
   /** Creates a [[ToolAssistanceSection]].
    */
-  public static createSection(
-    instructions: ToolAssistanceInstruction[],
-    label?: string
-  ): ToolAssistanceSection {
+  public static createSection(instructions: ToolAssistanceInstruction[], label?: string): ToolAssistanceSection {
     const section: ToolAssistanceSection = {
       instructions,
       label,

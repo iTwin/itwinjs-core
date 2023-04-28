@@ -41,10 +41,7 @@ export class Map4d implements BeJSONFunctions {
   /** Create a Map4d with given transform pair.
    * @returns undefined if the transforms are not inverses of each other.
    */
-  public static createTransform(
-    transform0: Transform,
-    transform1?: Transform
-  ): Map4d | undefined {
+  public static createTransform(transform0: Transform, transform1?: Transform): Map4d | undefined {
     if (transform1 === undefined) {
       transform1 = transform0.inverse();
       if (transform1 === undefined) return undefined;
@@ -52,10 +49,7 @@ export class Map4d implements BeJSONFunctions {
       const product = transform0.multiplyTransformTransform(transform1);
       if (!product.isIdentity) return undefined;
     }
-    return new Map4d(
-      Matrix4d.createTransform(transform0),
-      Matrix4d.createTransform(transform1)
-    );
+    return new Map4d(Matrix4d.createTransform(transform0), Matrix4d.createTransform(transform1));
   }
   /**
    * Create a mapping the scales and translates (no rotation) between boxes.
@@ -71,20 +65,8 @@ export class Map4d implements BeJSONFunctions {
     highB: Point3d,
     result?: Map4d
   ): Map4d | undefined {
-    const t0 = Matrix4d.createBoxToBox(
-      lowA,
-      highA,
-      lowB,
-      highB,
-      result ? result.transform0 : undefined
-    );
-    const t1 = Matrix4d.createBoxToBox(
-      lowB,
-      highB,
-      lowA,
-      highA,
-      result ? result.transform1 : undefined
-    );
+    const t0 = Matrix4d.createBoxToBox(lowA, highA, lowB, highB, result ? result.transform0 : undefined);
+    const t1 = Matrix4d.createBoxToBox(lowB, highB, lowA, highA, result ? result.transform1 : undefined);
     if (t0 && t1) {
       if (result) return result;
       return new Map4d(t0, t1);
@@ -93,8 +75,7 @@ export class Map4d implements BeJSONFunctions {
   }
   /** Copy contents from another Map4d */
   public setFrom(other: Map4d) {
-    this._matrix0.setFrom(other._matrix0),
-      this._matrix1.setFrom(other._matrix1);
+    this._matrix0.setFrom(other._matrix0), this._matrix1.setFrom(other._matrix1);
   }
   /** Return a clone of this Map4d */
   public clone(): Map4d {
@@ -114,10 +95,7 @@ export class Map4d implements BeJSONFunctions {
   }
   /** Create a map4d from a json object that the two Matrix4d values as properties named matrix0 and matrix1 */
   public static fromJSON(json?: any): Map4d {
-    const result = new Map4d(
-      Matrix4d.createIdentity(),
-      Matrix4d.createIdentity()
-    );
+    const result = new Map4d(Matrix4d.createIdentity(), Matrix4d.createIdentity());
     result.setFromJSON(json);
     return result;
   }
@@ -127,10 +105,7 @@ export class Map4d implements BeJSONFunctions {
   }
   /** Test if both matrices are almost equal to those */
   public isAlmostEqual(other: Map4d) {
-    return (
-      this._matrix0.isAlmostEqual(other._matrix0) &&
-      this._matrix1.isAlmostEqual(other._matrix1)
-    );
+    return this._matrix0.isAlmostEqual(other._matrix0) && this._matrix1.isAlmostEqual(other._matrix1);
   }
   /** Create a map between a frustum and world coordinates.
    * @param origin lower left of frustum
@@ -147,53 +122,13 @@ export class Map4d implements BeJSONFunctions {
     fraction: number
   ): Map4d | undefined {
     fraction = Math.max(fraction, 1.0e-8);
-    const slabToWorld = Transform.createOriginAndMatrix(
-      origin,
-      Matrix3d.createColumns(uVector, vVector, wVector)
-    );
+    const slabToWorld = Transform.createOriginAndMatrix(origin, Matrix3d.createColumns(uVector, vVector, wVector));
     const worldToSlab = slabToWorld.inverse();
     if (!worldToSlab) return undefined;
-    const worldToSlabMap = new Map4d(
-      Matrix4d.createTransform(worldToSlab),
-      Matrix4d.createTransform(slabToWorld)
-    );
+    const worldToSlabMap = new Map4d(Matrix4d.createTransform(worldToSlab), Matrix4d.createTransform(slabToWorld));
     const slabToNPCMap = new Map4d(
-      Matrix4d.createRowValues(
-        1,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        fraction,
-        0,
-        0,
-        0,
-        fraction - 1.0,
-        1
-      ),
-      Matrix4d.createRowValues(
-        1,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        1.0 / fraction,
-        0,
-        0,
-        0,
-        (1.0 - fraction) / fraction,
-        1
-      )
+      Matrix4d.createRowValues(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, fraction, 0, 0, 0, fraction - 1.0, 1),
+      Matrix4d.createRowValues(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1.0 / fraction, 0, 0, 0, (1.0 - fraction) / fraction, 1)
     );
     const result = slabToNPCMap.multiplyMapMap(worldToSlabMap);
     /*
@@ -233,12 +168,8 @@ export class Map4d implements BeJSONFunctions {
    */
   public sandwich0This1(other: Map4d): Map4d {
     return new Map4d(
-      other._matrix0.multiplyMatrixMatrix(
-        this._matrix0.multiplyMatrixMatrix(other._matrix1)
-      ),
-      other._matrix0.multiplyMatrixMatrix(
-        this._matrix1.multiplyMatrixMatrix(other._matrix1)
-      )
+      other._matrix0.multiplyMatrixMatrix(this._matrix0.multiplyMatrixMatrix(other._matrix1)),
+      other._matrix0.multiplyMatrixMatrix(this._matrix1.multiplyMatrixMatrix(other._matrix1))
     );
   }
   /** return a Map4d whose transform0 is
@@ -246,12 +177,8 @@ export class Map4d implements BeJSONFunctions {
    */
   public sandwich1This0(other: Map4d): Map4d {
     return new Map4d(
-      other._matrix1.multiplyMatrixMatrix(
-        this._matrix0.multiplyMatrixMatrix(other._matrix0)
-      ),
-      other._matrix1.multiplyMatrixMatrix(
-        this._matrix1.multiplyMatrixMatrix(other._matrix0)
-      )
+      other._matrix1.multiplyMatrixMatrix(this._matrix0.multiplyMatrixMatrix(other._matrix0)),
+      other._matrix1.multiplyMatrixMatrix(this._matrix1.multiplyMatrixMatrix(other._matrix0))
     );
   }
 } // Map4d

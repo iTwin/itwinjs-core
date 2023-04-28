@@ -7,13 +7,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import {
-  Transform,
-  Vector3d,
-  XYZProps,
-  YawPitchRollAngles,
-  YawPitchRollProps,
-} from "@itwin/core-geometry";
+import { Transform, Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
 
 /** @public */
 export namespace LineStyle {
@@ -77,9 +71,7 @@ export namespace LineStyle {
       this.segmentMode = props.segmentMode;
       this.physicalWidth = props.physicalWidth;
       this.normal = props.normal ? Vector3d.fromJSON(props.normal) : undefined;
-      this.rotation = props.rotation
-        ? YawPitchRollAngles.fromJSON(props.rotation)
-        : undefined;
+      this.rotation = props.rotation ? YawPitchRollAngles.fromJSON(props.rotation) : undefined;
     }
 
     /** Returns a deep copy of this object. */
@@ -107,15 +99,11 @@ export namespace LineStyle {
       )
         return false;
 
-      if ((this.normal === undefined) !== (other.normal === undefined))
-        return false;
-      if (this.normal && !this.normal.isAlmostEqual(other.normal!))
-        return false;
+      if ((this.normal === undefined) !== (other.normal === undefined)) return false;
+      if (this.normal && !this.normal.isAlmostEqual(other.normal!)) return false;
 
-      if ((this.rotation === undefined) !== (other.rotation === undefined))
-        return false;
-      if (this.rotation && !this.rotation.isAlmostEqual(other.rotation!))
-        return false;
+      if ((this.rotation === undefined) !== (other.rotation === undefined)) return false;
+      if (this.rotation && !this.rotation.isAlmostEqual(other.rotation!)) return false;
 
       return true;
     }
@@ -129,14 +117,10 @@ export namespace LineStyle {
         else return false;
       }
       if (this.rotation) {
-        const newTransform = this.rotation
-          .toMatrix3d()
-          .multiplyMatrixTransform(transform);
+        const newTransform = this.rotation.toMatrix3d().multiplyMatrixTransform(transform);
         const scales = new Vector3d();
         if (!newTransform.matrix.normalizeColumnsInPlace(scales)) return false;
-        const newRotation = YawPitchRollAngles.createFromMatrix3d(
-          newTransform.matrix
-        );
+        const newRotation = YawPitchRollAngles.createFromMatrix3d(newTransform.matrix);
         if (undefined === newRotation) return false;
         this.rotation.setFrom(newRotation);
       }
@@ -147,11 +131,7 @@ export namespace LineStyle {
       scaleMatrix.normalizeRowsInPlace(scaleVector);
 
       // Check for flatten transform, dividing scaleVector by 3 gives wrong scaleFactor
-      if (
-        scaleVector.x !== 0.0 &&
-        scaleVector.y !== 0.0 &&
-        scaleVector.z !== 0.0
-      )
+      if (scaleVector.x !== 0.0 && scaleVector.y !== 0.0 && scaleVector.z !== 0.0)
         scaleFactor = (scaleVector.x + scaleVector.y + scaleVector.z) / 3.0;
       else scaleFactor = (scaleVector.x + scaleVector.y + scaleVector.z) / 2.0;
 
@@ -182,17 +162,13 @@ export namespace LineStyle {
 
     /** Returns a deep copy of this object. */
     public clone(): Info {
-      return new Info(
-        this.styleId,
-        this.styleMod ? this.styleMod.clone() : undefined
-      );
+      return new Info(this.styleId, this.styleMod ? this.styleMod.clone() : undefined);
     }
 
     public equals(other: Info): boolean {
       if (this === other) return true;
       if (this.styleId !== other.styleId) return false;
-      if ((this.styleMod === undefined) !== (other.styleMod === undefined))
-        return false;
+      if ((this.styleMod === undefined) !== (other.styleMod === undefined)) return false;
       if (this.styleMod && !this.styleMod.equals(other.styleMod!)) return false;
       return true;
     }

@@ -10,11 +10,7 @@ import { InvertedUnit } from "../../Metadata/InvertedUnit";
 import { OverrideFormat } from "../../Metadata/OverrideFormat";
 import { Schema } from "../../Metadata/Schema";
 import { Unit } from "../../Metadata/Unit";
-import {
-  FormatTraits,
-  FractionalPrecision,
-  ShowSignOption,
-} from "@itwin/core-quantity";
+import { FormatTraits, FractionalPrecision, ShowSignOption } from "@itwin/core-quantity";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
 
@@ -84,11 +80,7 @@ describe("OverrideFormat", () => {
     expect(overrideFormat.decimalSeparator).eq(",");
     expect(overrideFormat.thousandSeparator).eq(".");
     expect(overrideFormat.uomSeparator).eq("-");
-    expect(
-      overrideFormat.hasFormatTrait(
-        FormatTraits.TrailZeroes | FormatTraits.PrependUnitLabel
-      )
-    );
+    expect(overrideFormat.hasFormatTrait(FormatTraits.TrailZeroes | FormatTraits.PrependUnitLabel));
     expect(overrideFormat.includeZero).false;
     expect(overrideFormat.spacer).eq("-");
 
@@ -112,9 +104,7 @@ describe("OverrideFormat", () => {
         units: [{ name: "Formats.YRD", label: "yard(s)" }],
       },
     };
-    expect(
-      JSON.parse(JSON.stringify(overrideFormat.getFormatProps()))
-    ).to.be.deep.equal(expectedJson);
+    expect(JSON.parse(JSON.stringify(overrideFormat.getFormatProps()))).to.be.deep.equal(expectedJson);
   });
 
   it("with only precision override", () => {
@@ -126,10 +116,7 @@ describe("OverrideFormat", () => {
     const format = schema.getItemSync<Format>("TestFormat");
     assert.isDefined(format);
 
-    const overrideFormat = new OverrideFormat(
-      format!,
-      FractionalPrecision.Eight
-    );
+    const overrideFormat = new OverrideFormat(format!, FractionalPrecision.Eight);
     expect(overrideFormat.precision).eq(FractionalPrecision.Eight);
     expect(overrideFormat.parent.precision).eq(FractionalPrecision.Two);
     assert.equal(overrideFormat.fullName, "TestSchema.TestFormat(8)");
@@ -142,9 +129,7 @@ describe("OverrideFormat", () => {
       type: "Fractional",
       precision: 8,
     };
-    expect(
-      JSON.parse(JSON.stringify(overrideFormat.getFormatProps()))
-    ).to.be.deep.equal(expectedJson);
+    expect(JSON.parse(JSON.stringify(overrideFormat.getFormatProps()))).to.be.deep.equal(expectedJson);
   });
 
   it("with only unit overrides", () => {
@@ -168,22 +153,12 @@ describe("OverrideFormat", () => {
     const unitListYrd = new Array<[Unit | InvertedUnit, string | undefined]>();
     unitListYrd.push([yrdU!, "yd"]);
 
-    const overrideFormatMile = new OverrideFormat(
-      format!,
-      undefined,
-      unitListMile
-    );
+    const overrideFormatMile = new OverrideFormat(format!, undefined, unitListMile);
     assert.isDefined(overrideFormatMile.units);
     expect(overrideFormatMile.units!.length).eq(1);
     expect(overrideFormatMile.units![0][0]).eq(mileU);
-    assert.equal(
-      overrideFormatMile.fullName,
-      "TestSchema.TestFormat[Formats.MILE]"
-    );
-    assert.equal(
-      overrideFormatMile.name,
-      "TestSchema.TestFormat[Formats.MILE]"
-    );
+    assert.equal(overrideFormatMile.fullName, "TestSchema.TestFormat[Formats.MILE]");
+    assert.equal(overrideFormatMile.name, "TestSchema.TestFormat[Formats.MILE]");
 
     const expectedJsonFormatMile = {
       name: "TestSchema.TestFormat[Formats.MILE]",
@@ -195,27 +170,15 @@ describe("OverrideFormat", () => {
         units: [{ name: "Formats.MILE" }],
       },
     };
-    expect(
-      JSON.parse(JSON.stringify(overrideFormatMile.getFormatProps()))
-    ).to.be.deep.equal(expectedJsonFormatMile);
+    expect(JSON.parse(JSON.stringify(overrideFormatMile.getFormatProps()))).to.be.deep.equal(expectedJsonFormatMile);
 
-    const overrideFormatYrd = new OverrideFormat(
-      format!,
-      undefined,
-      unitListYrd
-    );
+    const overrideFormatYrd = new OverrideFormat(format!, undefined, unitListYrd);
     assert.isDefined(overrideFormatYrd.units);
     expect(overrideFormatYrd.units!.length).eq(1);
     expect(overrideFormatYrd.units![0][0]).eq(yrdU);
     expect(overrideFormatYrd.units![0][1]).eq("yd");
-    assert.equal(
-      overrideFormatYrd.fullName,
-      "TestSchema.TestFormat[Formats.YRD|yd]"
-    );
-    assert.equal(
-      overrideFormatYrd.name,
-      "TestSchema.TestFormat[Formats.YRD|yd]"
-    );
+    assert.equal(overrideFormatYrd.fullName, "TestSchema.TestFormat[Formats.YRD|yd]");
+    assert.equal(overrideFormatYrd.name, "TestSchema.TestFormat[Formats.YRD|yd]");
 
     const expectedJsonFormatYard = {
       name: "TestSchema.TestFormat[Formats.YRD|yd]",
@@ -227,9 +190,7 @@ describe("OverrideFormat", () => {
         units: [{ name: "Formats.YRD", label: "yd" }],
       },
     };
-    expect(
-      JSON.parse(JSON.stringify(overrideFormatYrd.getFormatProps()))
-    ).to.be.deep.equal(expectedJsonFormatYard);
+    expect(JSON.parse(JSON.stringify(overrideFormatYrd.getFormatProps()))).to.be.deep.equal(expectedJsonFormatYard);
   });
 
   it("with precision and unit overrides", () => {
@@ -258,22 +219,12 @@ describe("OverrideFormat", () => {
     const unitListMile = new Array<[Unit | InvertedUnit, string | undefined]>();
     unitListMile.push([mileU!, "mi"]);
 
-    const overridePrecisionAndUnit = new OverrideFormat(
-      format!,
-      FractionalPrecision.Four,
-      unitListMile
-    );
+    const overridePrecisionAndUnit = new OverrideFormat(format!, FractionalPrecision.Four, unitListMile);
     assert.isDefined(overridePrecisionAndUnit.units);
     expect(overridePrecisionAndUnit.units!.length).eq(1);
     expect(overridePrecisionAndUnit.units![0][0]).eq(mileU);
-    assert.equal(
-      overridePrecisionAndUnit.fullName,
-      "TestSchema.TestFormat(4)[Formats.MILE|mi]"
-    );
-    assert.equal(
-      overridePrecisionAndUnit.name,
-      "TestSchema.TestFormat(4)[Formats.MILE|mi]"
-    );
+    assert.equal(overridePrecisionAndUnit.fullName, "TestSchema.TestFormat(4)[Formats.MILE|mi]");
+    assert.equal(overridePrecisionAndUnit.name, "TestSchema.TestFormat(4)[Formats.MILE|mi]");
 
     const expectedJson = {
       name: "TestSchema.TestFormat(4)[Formats.MILE|mi]",
@@ -287,8 +238,6 @@ describe("OverrideFormat", () => {
         units: [{ name: "Formats.MILE", label: "mi" }],
       },
     };
-    expect(
-      JSON.parse(JSON.stringify(overridePrecisionAndUnit.getFormatProps()))
-    ).to.be.deep.equal(expectedJson);
+    expect(JSON.parse(JSON.stringify(overridePrecisionAndUnit.getFormatProps()))).to.be.deep.equal(expectedJson);
   });
 });

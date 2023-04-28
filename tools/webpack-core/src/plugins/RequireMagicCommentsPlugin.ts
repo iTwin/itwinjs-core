@@ -52,35 +52,22 @@ export class RequireMagicCommentsPlugin {
   constructor(private _configs: MagicCommentHandlerConfig[]) {}
 
   public apply(compiler: Compiler) {
-    compiler.hooks.normalModuleFactory.tap(
-      "RequireMagicCommentsPlugin",
-      (nmf) => {
-        nmf.hooks.parser
-          .for("javascript/auto")
-          .tap("RequireMagicCommentsPlugin", (parser: any) => {
-            parser.hooks.call
-              .for("require")
-              .tap(
-                "RequireMagicCommentsPlugin",
-                this.handleCommonJs(
-                  parser,
-                  CommonJsRequireDependency,
-                  RequireHeaderDependency
-                )
-              );
-            parser.hooks.call
-              .for("require.resolve")
-              .tap(
-                "RequireMagicCommentsPlugin",
-                this.handleCommonJs(
-                  parser,
-                  RequireResolveDependency,
-                  RequireResolveHeaderDependency
-                )
-              );
-          });
-      }
-    );
+    compiler.hooks.normalModuleFactory.tap("RequireMagicCommentsPlugin", (nmf) => {
+      nmf.hooks.parser.for("javascript/auto").tap("RequireMagicCommentsPlugin", (parser: any) => {
+        parser.hooks.call
+          .for("require")
+          .tap(
+            "RequireMagicCommentsPlugin",
+            this.handleCommonJs(parser, CommonJsRequireDependency, RequireHeaderDependency)
+          );
+        parser.hooks.call
+          .for("require.resolve")
+          .tap(
+            "RequireMagicCommentsPlugin",
+            this.handleCommonJs(parser, RequireResolveDependency, RequireResolveHeaderDependency)
+          );
+      });
+    });
   }
 
   private testComment(comment: string, strOrRegex: string | RegExp) {
@@ -93,9 +80,7 @@ export class RequireMagicCommentsPlugin {
     return (expr: any): true | void => {
       if (expr.arguments.length !== 1 || !parser.state.compilation) return;
 
-      const logger = parser.state.compilation.getLogger(
-        "RequireMagicCommentsPlugin"
-      );
+      const logger = parser.state.compilation.getLogger("RequireMagicCommentsPlugin");
       let param: any;
       let request: any;
       for (const comment of parser.getComments(expr.range)) {
@@ -114,16 +99,15 @@ export class RequireMagicCommentsPlugin {
             depType = CommonJsRequireDependency;
             headerType = RequireHeaderDependency;
             logger.log(
-              `Converting require.resolve => require for "${
-                param.string
-              }" at ${getSourcePosition(parser.state.current, expr.loc)}`
+              `Converting require.resolve => require for "${param.string}" at ${getSourcePosition(
+                parser.state.current,
+                expr.loc
+              )}`
             );
           }
           request = handler(request, comment.value);
           logger.log(
-            `Handler for /*${comment.value}*/ - transformed "${
-              param.string
-            }" => "${request}" at ${getSourcePosition(
+            `Handler for /*${comment.value}*/ - transformed "${param.string}" => "${request}" at ${getSourcePosition(
               parser.state.current,
               expr.loc
             )}`
@@ -150,10 +134,7 @@ export class RequireMagicCommentsPlugin {
 export const externalPrefix = "BeWebpack-EXTERNAL:";
 export const addExternalPrefix = (req: string) => externalPrefix + req;
 
-export const handlePrefixedExternals = (
-  { request }: any,
-  cb: (err?: Error, result?: string) => void
-) => {
+export const handlePrefixedExternals = ({ request }: any, cb: (err?: Error, result?: string) => void) => {
   if (request.startsWith(externalPrefix)) {
     return cb(undefined, `commonjs ${request.replace(externalPrefix, "")}`);
   }
@@ -167,8 +148,7 @@ export const copyFilesRule = {
   loader: require.resolve("file-loader"),
   options: {
     name: "static/[name].[hash:6].[ext]",
-    postTransformPublicPath: (p: string) =>
-      `require("path").resolve(__dirname, ${p})`,
+    postTransformPublicPath: (p: string) => `require("path").resolve(__dirname, ${p})`,
     esModule: false,
   },
 };

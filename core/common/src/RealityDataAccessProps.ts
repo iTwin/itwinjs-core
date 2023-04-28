@@ -50,8 +50,5 @@ export interface RealityDataAccess {
     iTwinId: string | undefined,
     realityDataId: string
   ) => Promise<RealityData>;
-  getRealityDataUrl: (
-    iTwinId: string | undefined,
-    realityDataId: string
-  ) => Promise<string>;
+  getRealityDataUrl: (iTwinId: string | undefined, realityDataId: string) => Promise<string>;
 }

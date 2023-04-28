@@ -53,11 +53,7 @@ export class ViewTree {
    * @param levels the levels.
    * @param dataBounds the data bounds.
    */
-  public constructor(
-    dataManager: DataManager,
-    levels: Array<Level>,
-    dataBounds: Bounds
-  ) {
+  public constructor(dataManager: DataManager, levels: Array<Level>, dataBounds: Bounds) {
     /* Store the parameters */
     this._dataManager = dataManager;
     this._levels = levels;
@@ -76,10 +72,7 @@ export class ViewTree {
     if (startLevel < 0) startLevel = 0;
     Message.print(
       ViewTree.MODULE,
-      "Finding root blocks starting at level index " +
-        startLevel +
-        " of " +
-        this._levels.length
+      "Finding root blocks starting at level index " + startLevel + " of " + this._levels.length
     );
     /* Check the levels */
     let rootBlocks: AList<Block> = new AList<Block>();
@@ -93,27 +86,16 @@ export class ViewTree {
         if (i < this._levels.length - 2) {
           /* Do we have a parent block in the next level? */
           block.getBlockIndex().gridIndex.getNextLevelIndex(nextLevelIndex);
-          isRoot =
-            this._levels[i + 1].findBlockGridIndex(nextLevelIndex) == null;
+          isRoot = this._levels[i + 1].findBlockGridIndex(nextLevelIndex) == null;
           if (isRoot)
-            Message.print(
-              ViewTree.MODULE,
-              "Block L" +
-                i +
-                " " +
-                block.getBlockIndex().gridIndex +
-                " is non-top root"
-            );
+            Message.print(ViewTree.MODULE, "Block L" + i + " " + block.getBlockIndex().gridIndex + " is non-top root");
         }
         /* Add to the list? */
         if (isRoot) rootBlocks.add(block);
       }
     }
     /* Return the roots */
-    Message.print(
-      ViewTree.MODULE,
-      "Found " + rootBlocks.size() + " root blocks"
-    );
+    Message.print(ViewTree.MODULE, "Found " + rootBlocks.size() + " root blocks");
     return rootBlocks;
   }
 
@@ -150,13 +132,9 @@ export class ViewTree {
   public setLevelBlocks(level: Level, blockIndexes: Array<BlockIndex>): void {
     if (blockIndexes == null) return;
     let blockList: Array<Block> = new Array<Block>(blockIndexes.length);
-    for (let i: number = 0; i < blockIndexes.length; i++)
-      blockList[i] = new Block(blockIndexes[i]);
+    for (let i: number = 0; i < blockIndexes.length; i++) blockList[i] = new Block(blockIndexes[i]);
     level.setBlockList(blockList);
-    Message.print(
-      ViewTree.MODULE,
-      "Loaded " + blockIndexes.length + " blocks for level " + level.getIndex()
-    );
+    Message.print(ViewTree.MODULE, "Loaded " + blockIndexes.length + " blocks for level " + level.getIndex());
   }
 
   /**
@@ -164,10 +142,7 @@ export class ViewTree {
    * @param blockIndex the index of the block.
    * @param tileIndexes the indexes of the tiles in the block.
    */
-  public setBlockTiles(
-    blockIndex: BlockIndex,
-    tileIndexes: Array<TileIndex>
-  ): void {
+  public setBlockTiles(blockIndex: BlockIndex, tileIndexes: Array<TileIndex>): void {
     let level: Level = this._levels[blockIndex.level];
     let block: Block = level.findBlock(blockIndex);
     block.setTiles(tileIndexes);
@@ -205,8 +180,7 @@ export class ViewTree {
     /* Unloaded level? */
     if (childLevel.getBlockCount() == 0) {
       /* No need to continue, we need the level block list */
-      if (levelsToLoad.contains(childLevel) == false)
-        levelsToLoad.add(childLevel);
+      if (levelsToLoad.contains(childLevel) == false) levelsToLoad.add(childLevel);
       return false;
     }
     /* Check the 8 possible child tiles */
@@ -239,8 +213,7 @@ export class ViewTree {
           /* No tile info in the block? */
           if (block.hasTiles() == false) {
             /* Load the block data */
-            if (blocksToLoad.contains(block.getBlockIndex()) == false)
-              blocksToLoad.add(block.getBlockIndex());
+            if (blocksToLoad.contains(block.getBlockIndex()) == false) blocksToLoad.add(block.getBlockIndex());
             complete = false;
           } else {
             /* Find the child */
@@ -251,11 +224,8 @@ export class ViewTree {
     /* Store the result if complete */
     if (complete) {
       /* Store */
-      let tileChildren: Array<TileIndex> = new Array<TileIndex>(
-        children.size()
-      );
-      for (let i: number = 0; i < tileChildren.length; i++)
-        tileChildren[i] = children.get(i);
+      let tileChildren: Array<TileIndex> = new Array<TileIndex>(children.size());
+      for (let i: number = 0; i < tileChildren.length; i++) tileChildren[i] = children.get(i);
       tile.children = tileChildren;
     }
     /* Do we have all children? */
@@ -268,11 +238,7 @@ export class ViewTree {
    * @param tiles a list of tiles to check.
    * @param missingTiles the list of tiles whose data is missing.
    */
-  private checkDataAvailable(
-    viewRequest: AViewRequest,
-    tiles: AList<TileIndex>,
-    missingTiles: AList<TileIndex>
-  ): void {
+  private checkDataAvailable(viewRequest: AViewRequest, tiles: AList<TileIndex>, missingTiles: AList<TileIndex>): void {
     /* Check all tiles */
     missingTiles.clear();
     for (let i: number = 0; i < tiles.size(); i++) {
@@ -295,10 +261,7 @@ export class ViewTree {
    * @param tiles a list of tiles to check.
    * @return true if the tile data is available.
    */
-  private isDataAvailable(
-    viewRequest: AViewRequest,
-    tiles: Array<TileIndex>
-  ): boolean {
+  private isDataAvailable(viewRequest: AViewRequest, tiles: Array<TileIndex>): boolean {
     /* Check all tiles */
     for (let i: number = 0; i < tiles.length; i++) {
       /* Get the next tile */
@@ -349,27 +312,20 @@ export class ViewTree {
             ")"
         );
       /* Visible? */
-      let tileBounds: Bounds = level
-        .getTileGrid()
-        .getCellBounds(tile.gridIndex)
-        .getIntersection(this._dataBounds);
-      if (ViewTree.DEBUG)
-        Message.print(ViewTree.MODULE, "> level " + tile.level);
+      let tileBounds: Bounds = level.getTileGrid().getCellBounds(tile.gridIndex).getIntersection(this._dataBounds);
+      if (ViewTree.DEBUG) Message.print(ViewTree.MODULE, "> level " + tile.level);
       if (viewRequest.isVisibleBox(tileBounds)) {
         /* Has the tile been loaded? */
         let tileData: PointData = this._dataManager.isTileLoaded(tile);
         let tileAvailable: boolean = tileData != null;
         tile.accessTime = viewRequest.getFrameTime();
-        if (ViewTree.DEBUG)
-          Message.print(ViewTree.MODULE, " > available? " + tileAvailable);
+        if (ViewTree.DEBUG) Message.print(ViewTree.MODULE, " > available? " + tileAvailable);
         /* We load all intermediate tiles to avoid holes in the coverage */
         if (tileAvailable == false) tilesToLoad.add(tile);
         /* Split the tile? */
-        let shouldSplit: boolean =
-          level.getIndex() > 0 && viewRequest.shouldSplit(level, tile);
+        let shouldSplit: boolean = level.getIndex() > 0 && viewRequest.shouldSplit(level, tile);
         if (shouldSplit) {
-          if (ViewTree.DEBUG)
-            Message.print(ViewTree.MODULE, " > visible, but needs splitting");
+          if (ViewTree.DEBUG) Message.print(ViewTree.MODULE, " > visible, but needs splitting");
           /* Find the children at the lower level */
           let childLevel: Level = this._levels[level.getIndex() - 1];
           let completeChildList: boolean = this.splitTile(
@@ -381,22 +337,17 @@ export class ViewTree {
             blocksToLoad
           );
           if (completeChildList == false) {
-            if (ViewTree.DEBUG)
-              Message.print(ViewTree.MODULE, " > loading child indexes");
+            if (ViewTree.DEBUG) Message.print(ViewTree.MODULE, " > loading child indexes");
             /* Display the tile while we wait for the block-tiles to load */
             if (tileAvailable) tilesToRender.add(tileData);
           } else {
             /* Are all children available with their data? */
             this.checkDataAvailable(viewRequest, childTiles, missingChildTiles);
             if (missingChildTiles.size() == 0) {
-              if (ViewTree.DEBUG)
-                Message.print(ViewTree.MODULE, " > rendering children");
+              if (ViewTree.DEBUG) Message.print(ViewTree.MODULE, " > rendering children");
               /* Add the children */
-              let childTiles2: Array<TileIndex> = new Array<TileIndex>(
-                childTiles.size()
-              );
-              for (let j: number = 0; j < childTiles2.length; j++)
-                childTiles2[j] = childTiles.get(j);
+              let childTiles2: Array<TileIndex> = new Array<TileIndex>(childTiles.size());
+              for (let j: number = 0; j < childTiles2.length; j++) childTiles2[j] = childTiles.get(j);
               this.addTilesToView(
                 viewRequest,
                 childLevel,
@@ -407,11 +358,9 @@ export class ViewTree {
                 tilesToRender
               );
             } else {
-              if (ViewTree.DEBUG)
-                Message.print(ViewTree.MODULE, " > loading children");
+              if (ViewTree.DEBUG) Message.print(ViewTree.MODULE, " > loading children");
               /* Request for the missing children to be loaded */
-              for (let j: number = 0; j < missingChildTiles.size(); j++)
-                tilesToLoad.add(missingChildTiles.get(j));
+              for (let j: number = 0; j < missingChildTiles.size(); j++) tilesToLoad.add(missingChildTiles.get(j));
               /* Display the tile while we wait for the child tiles to load */
               if (tileAvailable) tilesToRender.add(tileData);
             }
@@ -443,20 +392,14 @@ export class ViewTree {
     tilesToRender: AList<PointData>
   ): void {
     /* Log? */
-    if (ViewTree.DEBUG)
-      Message.print(ViewTree.MODULE, "Finding pointcloud tiles to render");
-    if (ViewTree.DEBUG)
-      Message.print(ViewTree.MODULE, " > dataBounds: " + this._dataBounds);
+    if (ViewTree.DEBUG) Message.print(ViewTree.MODULE, "Finding pointcloud tiles to render");
+    if (ViewTree.DEBUG) Message.print(ViewTree.MODULE, " > dataBounds: " + this._dataBounds);
     //if (DEBUG) Message.print(MODULE," > view: "+viewRequest.getViewProjection());
     //if (DEBUG) Message.print(MODULE," > distance: "+viewRequest.getDistanceRange());
     //if (DEBUG) Message.print(MODULE," > model-transform: "+viewRequest.getModelTransform());
     /* Check all blocks */
     tilesToRender.clear();
-    if (ViewTree.DEBUG)
-      Message.print(
-        ViewTree.MODULE,
-        "Checking " + this._rootBlocks.size() + " root blocks"
-      );
+    if (ViewTree.DEBUG) Message.print(ViewTree.MODULE, "Checking " + this._rootBlocks.size() + " root blocks");
     for (
       let i: number = 0;
       i < this._rootBlocks.size();
@@ -480,11 +423,8 @@ export class ViewTree {
             blockIndex.gridIndex.z +
             ")"
         );
-      let blockBounds: Bounds = block
-        .getBlockBounds(level)
-        .getIntersection(this._dataBounds);
-      if (ViewTree.DEBUG)
-        Message.print(ViewTree.MODULE, " > blockBounds: " + blockBounds);
+      let blockBounds: Bounds = block.getBlockBounds(level).getIntersection(this._dataBounds);
+      if (ViewTree.DEBUG) Message.print(ViewTree.MODULE, " > blockBounds: " + blockBounds);
       if (viewRequest.isVisibleBox(blockBounds)) {
         /* Add the tiles */
         if (ViewTree.DEBUG) Message.print(ViewTree.MODULE, " > visible");

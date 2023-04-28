@@ -11,9 +11,7 @@
  * Used by various tools which take such arguments.
  * @beta
  */
-export function parseToggle(
-  arg: string | undefined
-): string | boolean | undefined {
+export function parseToggle(arg: string | undefined): string | boolean | undefined {
   if (undefined === arg) return undefined;
 
   switch (arg.toLowerCase()) {

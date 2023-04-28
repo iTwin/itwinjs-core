@@ -32,18 +32,11 @@ export class ExtensionSelectTool extends PrimitiveTool {
   }
 
   protected initTool(): void {
-    this.initLocateElements(
-      true,
-      false,
-      "default",
-      CoordinateLockOverrides.All
-    );
+    this.initLocateElements(true, false, "default", CoordinateLockOverrides.All);
     this.provideToolAssistance();
   }
 
-  public override async onDataButtonUp(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onDataButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     // Act as a selection tool, updating the currently selected elements
     if (undefined === ev.viewport) return EventHandled.No;
 

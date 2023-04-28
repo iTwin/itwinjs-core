@@ -6,10 +6,7 @@ import { ProcessDetector, PromiseReturnType } from "@itwin/core-bentley";
 import { IpcListener, IpcSocketFrontend } from "@itwin/core-common";
 import { IpcApp, NativeApp, NativeAppOpts } from "@itwin/core-frontend";
 import type { IpcRenderer } from "electron";
-import {
-  dialogChannel,
-  DialogModuleMethod,
-} from "../common/ElectronIpcInterface";
+import { dialogChannel, DialogModuleMethod } from "../common/ElectronIpcInterface";
 import { ElectronRpcManager } from "../common/ElectronRpcManager";
 import type { ITwinElectronApi } from "../common/ITwinElectronApi";
 
@@ -64,14 +61,10 @@ export class ElectronApp {
    * @note This method must only be called from the frontend of an Electron app (i.e. when [ProcessDetector.isElectronAppFrontend]($bentley) is `true`).
    */
   public static async startup(opts?: ElectronAppOpts) {
-    if (!ProcessDetector.isElectronAppFrontend)
-      throw new Error("Not running under Electron");
+    if (!ProcessDetector.isElectronAppFrontend) throw new Error("Not running under Electron");
     if (!this.isValid) {
       this._ipc = new ElectronIpc();
-      ElectronRpcManager.initializeFrontend(
-        this._ipc,
-        opts?.iModelApp?.rpcInterfaces
-      ); // eslint-disable-line deprecation/deprecation
+      ElectronRpcManager.initializeFrontend(this._ipc, opts?.iModelApp?.rpcInterfaces); // eslint-disable-line deprecation/deprecation
     }
     await NativeApp.startup(this._ipc!, opts);
   }
@@ -88,21 +81,12 @@ export class ElectronApp {
    * @param args arguments to method
    * @deprecated in 3.x. use [[dialogIpc]]
    */
-  public static async callDialog<T extends DialogModuleMethod>(
-    methodName: T,
-    ...args: Parameters<Electron.Dialog[T]>
-  ) {
-    return IpcApp.callIpcChannel(
-      dialogChannel,
-      "callDialog",
-      methodName,
-      ...args
-    ) as PromiseReturnType<Electron.Dialog[T]>;
+  public static async callDialog<T extends DialogModuleMethod>(methodName: T, ...args: Parameters<Electron.Dialog[T]>) {
+    return IpcApp.callIpcChannel(dialogChannel, "callDialog", methodName, ...args) as PromiseReturnType<
+      Electron.Dialog[T]
+    >;
   }
 
   /** Proxy object for calling methods of `Electron.Dialog` */
-  public static dialogIpc = IpcApp.makeIpcFunctionProxy<Electron.Dialog>(
-    dialogChannel,
-    "callDialog"
-  );
+  public static dialogIpc = IpcApp.makeIpcFunctionProxy<Electron.Dialog>(dialogChannel, "callDialog");
 }

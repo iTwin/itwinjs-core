@@ -6,11 +6,7 @@ import { expect } from "chai";
 import { EmptyLocalization, SectionType } from "@itwin/core-common";
 import { IModelApp, ParseAndRunResult } from "@itwin/core-frontend";
 import { HyperModeling } from "../HyperModeling";
-import {
-  HyperModelingConfig,
-  SectionGraphicsConfig,
-  SectionMarkerConfig,
-} from "../HyperModelingConfig";
+import { HyperModelingConfig, SectionGraphicsConfig, SectionMarkerConfig } from "../HyperModelingConfig";
 import { SectionMarkerHandler } from "../SectionMarkerHandler";
 
 // NB: Most of the package functionality requires an IModelConnection => a backend, so is tested in core-full-stack-tests.
@@ -34,12 +30,7 @@ describe("Package initialization", () => {
 
   it("loads marker images", async () => {
     await HyperModeling.initialize();
-    for (const type of [
-      SectionType.Section,
-      SectionType.Plan,
-      SectionType.Elevation,
-      SectionType.Detail,
-    ])
+    for (const type of [SectionType.Section, SectionType.Plan, SectionType.Elevation, SectionType.Detail])
       expect(HyperModeling.getMarkerData(type).image).not.to.be.undefined;
   });
 
@@ -62,49 +53,26 @@ describe("Package configuration", () => {
     expect(HyperModeling.resources).to.be.undefined;
   });
 
-  function expectMarkerConfig(
-    actual: SectionMarkerConfig,
-    expected: SectionMarkerConfig
-  ): void {
-    expect(true === actual.ignoreModelSelector).to.equal(
-      true === expected.ignoreModelSelector
-    );
-    expect(true === actual.ignoreCategorySelector).to.equal(
-      true === expected.ignoreCategorySelector
-    );
+  function expectMarkerConfig(actual: SectionMarkerConfig, expected: SectionMarkerConfig): void {
+    expect(true === actual.ignoreModelSelector).to.equal(true === expected.ignoreModelSelector);
+    expect(true === actual.ignoreCategorySelector).to.equal(true === expected.ignoreCategorySelector);
     if (undefined === expected.hiddenSectionTypes)
-      expect(
-        undefined === actual.hiddenSectionTypes ||
-          0 === actual.hiddenSectionTypes.length
-      ).to.be.true;
-    else
-      expect(actual.hiddenSectionTypes).to.deep.equal(
-        expected.hiddenSectionTypes
-      );
+      expect(undefined === actual.hiddenSectionTypes || 0 === actual.hiddenSectionTypes.length).to.be.true;
+    else expect(actual.hiddenSectionTypes).to.deep.equal(expected.hiddenSectionTypes);
   }
 
-  function expectGraphicsConfig(
-    actual: SectionGraphicsConfig,
-    expected: SectionGraphicsConfig
-  ): void {
+  function expectGraphicsConfig(actual: SectionGraphicsConfig, expected: SectionGraphicsConfig): void {
     expect(true === actual.ignoreClip).to.equal(true === expected.ignoreClip);
-    expect(true === actual.debugClipVolumes).to.equal(
-      true === expected.debugClipVolumes
-    );
-    expect(true === actual.hideSectionGraphics).to.equal(
-      true === expected.hideSectionGraphics
-    );
-    expect(true === actual.hideSheetAnnotations).to.equal(
-      true === expected.hideSheetAnnotations
-    );
+    expect(true === actual.debugClipVolumes).to.equal(true === expected.debugClipVolumes);
+    expect(true === actual.hideSectionGraphics).to.equal(true === expected.hideSectionGraphics);
+    expect(true === actual.hideSheetAnnotations).to.equal(true === expected.hideSheetAnnotations);
   }
 
   function expectConfig(config: HyperModelingConfig | undefined): void {
     expectMarkerConfig(HyperModeling.markerConfig, config?.markers ?? {});
     expectGraphicsConfig(HyperModeling.graphicsConfig, config?.graphics ?? {});
 
-    if (undefined !== config?.markerHandler)
-      expect(HyperModeling.markerHandler).to.equal(config.markerHandler);
+    if (undefined !== config?.markerHandler) expect(HyperModeling.markerHandler).to.equal(config.markerHandler);
     else expect(HyperModeling.markerHandler).not.to.be.undefined;
   }
 
@@ -133,10 +101,7 @@ describe("Package configuration", () => {
   });
 
   it("updates configuration", () => {
-    const test = (
-      config: HyperModelingConfig,
-      expected: HyperModelingConfig
-    ) => {
+    const test = (config: HyperModelingConfig, expected: HyperModelingConfig) => {
       HyperModeling.updateConfiguration({ ...config });
       expectConfig(expected);
       HyperModeling.updateConfiguration({});
@@ -217,9 +182,7 @@ describe("Package configuration", () => {
     await HyperModeling.initialize();
 
     const test = async (keyin: string, config: SectionMarkerConfig) => {
-      expect(await IModelApp.tools.parseAndRun(keyin)).to.equal(
-        ParseAndRunResult.Success
-      );
+      expect(await IModelApp.tools.parseAndRun(keyin)).to.equal(ParseAndRunResult.Success);
       expectMarkerConfig(HyperModeling.markerConfig, config);
     };
 
@@ -249,9 +212,7 @@ describe("Package configuration", () => {
 
   it("updates graphics configuration via key-in", async () => {
     const test = async (keyin: string, config: SectionGraphicsConfig) => {
-      expect(await IModelApp.tools.parseAndRun(keyin)).to.equal(
-        ParseAndRunResult.Success
-      );
+      expect(await IModelApp.tools.parseAndRun(keyin)).to.equal(ParseAndRunResult.Success);
       expectGraphicsConfig(HyperModeling.graphicsConfig, config);
     };
 

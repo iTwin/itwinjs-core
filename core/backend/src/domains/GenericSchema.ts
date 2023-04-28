@@ -18,12 +18,7 @@ export class GenericSchema extends Schema {
     return "Generic";
   }
   public static get schemaFilePath(): string {
-    return path.join(
-      KnownLocations.nativeAssetsDir,
-      "ECSchemas",
-      "Dgn",
-      `${GenericSchema.schemaName}.ecschema.xml`
-    );
+    return path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Dgn", `${GenericSchema.schemaName}.ecschema.xml`);
   }
   public static registerSchema() {
     if (this !== Schemas.getRegisteredSchema(this.schemaName)) {

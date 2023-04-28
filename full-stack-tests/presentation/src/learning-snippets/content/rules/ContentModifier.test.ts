@@ -4,18 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import {
-  KeySet,
-  NestedContentValue,
-  Ruleset,
-} from "@itwin/presentation-common";
+import { KeySet, NestedContentValue, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
-import {
-  getFieldByLabel,
-  getFieldsByLabel,
-  tryGetFieldByLabel,
-} from "../../../Utils";
+import { getFieldByLabel, getFieldsByLabel, tryGetFieldByLabel } from "../../../Utils";
 import { printRuleset } from "../../Utils";
 
 describe("Learning Snippets", () => {
@@ -23,9 +15,7 @@ describe("Learning Snippets", () => {
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile(
-      "assets/datasets/Properties_60InstancesWithUrl2.ibim"
-    );
+    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {
@@ -100,15 +90,9 @@ describe("Learning Snippets", () => {
             },
           ])
           .and.to.have.lengthOf(6);
-        const calculatedField = tryGetFieldByLabel(
-          content!.descriptor.fields,
-          "Calculated"
-        );
-        expect(content!.contentSet[0].displayValues[calculatedField!.name]).to
-          .be.undefined;
-        expect(
-          content!.contentSet[1].displayValues[calculatedField!.name]
-        ).to.eq("PREFIX_Uncategorized");
+        const calculatedField = tryGetFieldByLabel(content!.descriptor.fields, "Calculated");
+        expect(content!.contentSet[0].displayValues[calculatedField!.name]).to.be.undefined;
+        expect(content!.contentSet[1].displayValues[calculatedField!.name]).to.eq("PREFIX_Uncategorized");
       });
 
       it("uses `requiredSchemas` attribute", async () => {
@@ -309,9 +293,7 @@ describe("Learning Snippets", () => {
         const content = await Presentation.presentation.getContent({
           imodel,
           rulesetOrId: ruleset,
-          keys: new KeySet([
-            { className: "BisCore:ModelSelector", id: "0x35" },
-          ]),
+          keys: new KeySet([{ className: "BisCore:ModelSelector", id: "0x35" }]),
           descriptor: {},
         });
 
@@ -333,36 +315,24 @@ describe("Learning Snippets", () => {
               {
                 label: "Display Style",
                 category: { name: "SpatialViewDefinition-DisplayStyle" },
-                nestedFields: [
-                  { label: "Model" },
-                  { label: "Is Private" },
-                  { label: "Code" },
-                  { label: "User Label" },
-                ],
+                nestedFields: [{ label: "Model" }, { label: "Is Private" }, { label: "Code" }, { label: "User Label" }],
               },
             ],
           },
         ]);
         const spatialViewDefinition = content!.contentSet[0].values[
-          getFieldByLabel(content!.descriptor.fields, "Spatial View Definition")
-            .name
+          getFieldByLabel(content!.descriptor.fields, "Spatial View Definition").name
         ] as NestedContentValue[];
         expect(spatialViewDefinition.length).to.eq(1);
         expect(
           spatialViewDefinition[0].values[
-            getFieldByLabel(
-              content!.descriptor.fields,
-              "Calculated for SpatialViewDefinition"
-            ).name
+            getFieldByLabel(content!.descriptor.fields, "Calculated for SpatialViewDefinition").name
           ]
         ).to.not.be.empty;
-        const nestedDisplayStyle = getFieldsByLabel(
-          content!.descriptor.fields,
-          "Display Style"
-        ).find((field) => field.isNestedContentField());
-        const displayStyle = spatialViewDefinition[0].values[
-          nestedDisplayStyle!.name
-        ] as NestedContentValue[];
+        const nestedDisplayStyle = getFieldsByLabel(content!.descriptor.fields, "Display Style").find((field) =>
+          field.isNestedContentField()
+        );
+        const displayStyle = spatialViewDefinition[0].values[nestedDisplayStyle!.name] as NestedContentValue[];
         expect(displayStyle.length).to.eq(1);
         expect(displayStyle[0].values).to.not.be.empty;
       });
@@ -416,12 +386,7 @@ describe("Learning Snippets", () => {
         expect(content!.descriptor.fields).to.containSubset([
           {
             label: "Spatial Category",
-            nestedFields: [
-              { label: "Code" },
-              { label: "Is Private" },
-              { label: "Model" },
-              { label: "User Label" },
-            ],
+            nestedFields: [{ label: "Code" }, { label: "Is Private" }, { label: "Model" }, { label: "User Label" }],
           },
         ]);
       });
@@ -471,10 +436,7 @@ describe("Learning Snippets", () => {
         ]);
         expect(content!.contentSet.length).to.eq(1);
         expect(
-          content!.contentSet[0].displayValues[
-            getFieldByLabel(content!.descriptor.fields, "Yaw & Pitch & Roll")
-              .name
-          ]
+          content!.contentSet[0].displayValues[getFieldByLabel(content!.descriptor.fields, "Yaw & Pitch & Roll").name]
         ).to.eq("0.000000 & 0.000000 & 90.000000");
       });
 
@@ -593,13 +555,9 @@ describe("Learning Snippets", () => {
           descriptor: {},
         });
         expect(content!.descriptor.fields.length).to.eq(20);
-        expect(tryGetFieldByLabel(content!.descriptor.fields, "User Label")).to
-          .be.undefined;
-        expect(tryGetFieldByLabel(content!.descriptor.fields, "Parent")).to.not
-          .be.undefined;
-        expect(
-          tryGetFieldByLabel(content!.descriptor.fields, "Overriden Label")
-        ).to.not.be.undefined;
+        expect(tryGetFieldByLabel(content!.descriptor.fields, "User Label")).to.be.undefined;
+        expect(tryGetFieldByLabel(content!.descriptor.fields, "Parent")).to.not.be.undefined;
+        expect(tryGetFieldByLabel(content!.descriptor.fields, "Overriden Label")).to.not.be.undefined;
       });
     });
   });

@@ -161,10 +161,7 @@ export interface AnimationBranchState {
 }
 
 /** @internal */
-export function formatAnimationBranchId(
-  modelId: Id64String,
-  branchId: number
-): string {
+export function formatAnimationBranchId(modelId: Id64String, branchId: number): string {
   if (branchId < 0) return modelId;
 
   return `${modelId}_Node_${branchId.toString()}`;
@@ -178,9 +175,7 @@ function addAnimationBranch(
   time: number
 ): void {
   const clipVector = timeline.getClipVector(time);
-  const clip = clipVector
-    ? IModelApp.renderSystem.createClipVolume(clipVector)
-    : undefined;
+  const clip = clipVector ? IModelApp.renderSystem.createClipVolume(clipVector) : undefined;
   if (clip) branches.set(formatAnimationBranchId(modelId, branchId), { clip });
 }
 
@@ -196,12 +191,8 @@ export interface AnimationBranchStates {
 
 /** @internal */
 export namespace AnimationBranchStates {
-  export function fromScript(
-    script: RenderSchedule.Script,
-    time: number
-  ): AnimationBranchStates | undefined {
-    if (!script.containsModelClipping && !script.requiresBatching)
-      return undefined;
+  export function fromScript(script: RenderSchedule.Script, time: number): AnimationBranchStates | undefined {
+    if (!script.containsModelClipping && !script.requiresBatching) return undefined;
 
     const branches = new Map<string, AnimationBranchState>();
     for (const model of script.modelTimelines) {
@@ -211,8 +202,7 @@ export namespace AnimationBranchStates {
           branches.set(formatAnimationBranchId(model.modelId, elem.batchId), {
             omit: true,
           });
-        else
-          addAnimationBranch(model.modelId, elem, elem.batchId, branches, time);
+        else addAnimationBranch(model.modelId, elem, elem.batchId, branches, time);
       }
     }
 

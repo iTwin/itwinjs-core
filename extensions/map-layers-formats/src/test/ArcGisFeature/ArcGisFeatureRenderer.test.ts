@@ -18,10 +18,7 @@ describe("ArcGisFeatureRenderer", () => {
   let moveToSpy: sinon.SinonSpy<[x: number, y: number], void>;
   let lineToSpy: sinon.SinonSpy<[x: number, y: number], void>;
   let strokeSpy: sinon.SinonSpy<[path: Path2D], void>;
-  let fillSpy: sinon.SinonSpy<
-    [path: Path2D, fillRule?: CanvasFillRule | undefined],
-    void
-  >;
+  let fillSpy: sinon.SinonSpy<[path: Path2D, fillRule?: CanvasFillRule | undefined], void>;
   let closePathSpy: sinon.SinonSpy<[], void>;
 
   beforeEach(async () => {
@@ -208,10 +205,7 @@ describe("ArcGisFeatureRenderer", () => {
 
     const renderer = new ArcGisFeatureRenderer(fakeContext, symbolRenderer);
 
-    const drawPointStub = sandbox.stub(
-      ArcGisSymbologyRenderer.prototype,
-      "drawPoint"
-    );
+    const drawPointStub = sandbox.stub(ArcGisSymbologyRenderer.prototype, "drawPoint");
     const coords = [1, 2];
     renderer.renderPoint([], coords, 2, false);
 
@@ -233,20 +227,13 @@ describe("ArcGisFeatureRenderer", () => {
       Transform.createTranslation(Point3d.create(fakeOffset, fakeOffset))
     );
 
-    const drawPointStub = sandbox.stub(
-      ArcGisSymbologyRenderer.prototype,
-      "drawPoint"
-    );
+    const drawPointStub = sandbox.stub(ArcGisSymbologyRenderer.prototype, "drawPoint");
     const coords = [1, 2];
     renderer.renderPoint([], coords, 2, false);
 
     expect(drawPointStub.calledOnce).to.be.true;
-    expect(drawPointStub.getCalls()[0].args[1]).to.equals(
-      coords[0] + fakeOffset
-    );
-    expect(drawPointStub.getCalls()[0].args[2]).to.equals(
-      coords[1] + fakeOffset
-    );
+    expect(drawPointStub.getCalls()[0].args[1]).to.equals(coords[0] + fakeOffset);
+    expect(drawPointStub.getCalls()[0].args[2]).to.equals(coords[1] + fakeOffset);
   });
 
   it("should render multi Point, transform, relativeCoords OFF", async () => {
@@ -257,10 +244,7 @@ describe("ArcGisFeatureRenderer", () => {
 
     const renderer = new ArcGisFeatureRenderer(fakeContext, symbolRenderer);
 
-    const drawPointStub = sandbox.stub(
-      ArcGisSymbologyRenderer.prototype,
-      "drawPoint"
-    );
+    const drawPointStub = sandbox.stub(ArcGisSymbologyRenderer.prototype, "drawPoint");
     const coords = [1, 2, 3, 4];
     renderer.renderPoint([2], coords, 2, false);
 
@@ -284,26 +268,15 @@ describe("ArcGisFeatureRenderer", () => {
       Transform.createTranslation(Point3d.create(fakeOffset, fakeOffset))
     );
 
-    const drawPointStub = sandbox.stub(
-      ArcGisSymbologyRenderer.prototype,
-      "drawPoint"
-    );
+    const drawPointStub = sandbox.stub(ArcGisSymbologyRenderer.prototype, "drawPoint");
     const coords = [1, 2, 3, 4];
     renderer.renderPoint([2], coords, 2, false);
 
     expect(drawPointStub.getCalls().length).to.equals(2);
-    expect(drawPointStub.getCalls()[0].args[1]).to.equals(
-      coords[0] + fakeOffset
-    );
-    expect(drawPointStub.getCalls()[0].args[2]).to.equals(
-      coords[1] + fakeOffset
-    );
-    expect(drawPointStub.getCalls()[1].args[1]).to.equals(
-      coords[2] + fakeOffset
-    );
-    expect(drawPointStub.getCalls()[1].args[2]).to.equals(
-      coords[3] + fakeOffset
-    );
+    expect(drawPointStub.getCalls()[0].args[1]).to.equals(coords[0] + fakeOffset);
+    expect(drawPointStub.getCalls()[0].args[2]).to.equals(coords[1] + fakeOffset);
+    expect(drawPointStub.getCalls()[1].args[1]).to.equals(coords[2] + fakeOffset);
+    expect(drawPointStub.getCalls()[1].args[2]).to.equals(coords[3] + fakeOffset);
   });
 
   it("should render multi Point and apply transform, relativeCoords ON", async () => {
@@ -319,26 +292,15 @@ describe("ArcGisFeatureRenderer", () => {
       Transform.createTranslation(Point3d.create(fakeOffset, fakeOffset))
     );
 
-    const drawPointStub = sandbox.stub(
-      ArcGisSymbologyRenderer.prototype,
-      "drawPoint"
-    );
+    const drawPointStub = sandbox.stub(ArcGisSymbologyRenderer.prototype, "drawPoint");
     const coords = [1, 2, 3, 4];
     renderer.renderPoint([2], coords, 2, true);
 
     expect(drawPointStub.getCalls().length).to.equals(2);
-    expect(drawPointStub.getCalls()[0].args[1]).to.equals(
-      coords[0] + fakeOffset
-    );
-    expect(drawPointStub.getCalls()[0].args[2]).to.equals(
-      coords[1] + fakeOffset
-    );
-    expect(drawPointStub.getCalls()[1].args[1]).to.equals(
-      coords[0] + coords[2] + fakeOffset
-    );
-    expect(drawPointStub.getCalls()[1].args[2]).to.equals(
-      coords[1] + coords[3] + fakeOffset
-    );
+    expect(drawPointStub.getCalls()[0].args[1]).to.equals(coords[0] + fakeOffset);
+    expect(drawPointStub.getCalls()[0].args[2]).to.equals(coords[1] + fakeOffset);
+    expect(drawPointStub.getCalls()[1].args[1]).to.equals(coords[0] + coords[2] + fakeOffset);
+    expect(drawPointStub.getCalls()[1].args[2]).to.equals(coords[1] + coords[3] + fakeOffset);
   });
 
   it("should render and apply transform, relativeCoords ON", async () => {
@@ -365,11 +327,7 @@ describe("ArcGisFeatureRenderer", () => {
     expect(lineToSpy.calledOnce).to.be.true;
 
     // IMPORTANT: Only first coord is absolute, following coords are expressed relative to previous coord.
-    expect(lineToSpy.getCalls()[0].args[0]).to.equals(
-      coords[0] + coords[2] + fakeOffset
-    );
-    expect(lineToSpy.getCalls()[0].args[1]).to.equals(
-      coords[1] + coords[3] + fakeOffset
-    );
+    expect(lineToSpy.getCalls()[0].args[0]).to.equals(coords[0] + coords[2] + fakeOffset);
+    expect(lineToSpy.getCalls()[0].args[1]).to.equals(coords[1] + coords[3] + fakeOffset);
   });
 });

@@ -6,12 +6,7 @@
  * @module WebGL
  */
 
-import {
-  EDLCalcBasicGeometry,
-  EDLCalcFullGeometry,
-  EDLFilterGeometry,
-  EDLMixGeometry,
-} from "../CachedGeometry";
+import { EDLCalcBasicGeometry, EDLCalcFullGeometry, EDLFilterGeometry, EDLMixGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, VariableType } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
@@ -52,9 +47,7 @@ const calcBasicEDL = `
 `;
 
 /** @internal */
-export function createEDLCalcBasicProgram(
-  context: WebGL2RenderingContext
-): ShaderProgram {
+export function createEDLCalcBasicProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 
@@ -129,9 +122,7 @@ const calcFullEDL = `
 `;
 
 /** @internal */
-export function createEDLCalcFullProgram(
-  context: WebGL2RenderingContext
-): ShaderProgram {
+export function createEDLCalcFullProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 
@@ -211,9 +202,7 @@ const filterEDL = `
 `;
 
 /** @internal */
-export function createEDLFilterProgram(
-  context: WebGL2RenderingContext
-): ShaderProgram {
+export function createEDLFilterProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 
@@ -260,9 +249,7 @@ const mixEDL = `
 `;
 
 /** @internal */
-export function createEDLMixProgram(
-  context: WebGL2RenderingContext
-): ShaderProgram {
+export function createEDLMixProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 
@@ -272,11 +259,7 @@ export function createEDLMixProgram(
   frag.addUniform("u_colorTexture1", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_colorTexture1", (uniform, params) => {
       const geom = params.geometry as EDLMixGeometry;
-      Texture2DHandle.bindSampler(
-        uniform,
-        geom.colorTexture1,
-        TextureUnit.Zero
-      );
+      Texture2DHandle.bindSampler(uniform, geom.colorTexture1, TextureUnit.Zero);
     });
   });
 

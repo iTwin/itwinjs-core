@@ -6,10 +6,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { ChangesetIdWithIndex } from "@itwin/core-common";
-import {
-  CheckpointManager,
-  V2CheckpointManager,
-} from "../../CheckpointManager";
+import { CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { Logger } from "@itwin/core-bentley";
 import { IModelHost } from "../../IModelHost";
@@ -54,13 +51,9 @@ describe("SnapshotDb.refreshContainerSas", () => {
     sinon.stub(V2CheckpointManager, "attach").callsFake(async () => {
       return { dbName: "fakeDb", container: cloudContainer } as any;
     });
-    const queryStub = sinon
-      .stub(IModelHost.hubAccess, "queryV2Checkpoint")
-      .callsFake(async () => mockCheckpointV2);
+    const queryStub = sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
 
-    const openDgnDbStub = sinon
-      .stub(SnapshotDb, "openDgnDb")
-      .returns(fakeSnapshotDb);
+    const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
     sinon.stub(CheckpointManager, "validateCheckpointGuids").returns();
 
@@ -72,9 +65,7 @@ describe("SnapshotDb.refreshContainerSas", () => {
       changeset,
       reattachSafetySeconds: 60,
     });
-    expect(checkpoint.nativeDb.cloudContainer?.accessToken).equal(
-      mockCheckpointV2.sasToken
-    );
+    expect(checkpoint.nativeDb.cloudContainer?.accessToken).equal(mockCheckpointV2.sasToken);
     expect(openDgnDbStub.calledOnce).to.be.true;
     expect(openDgnDbStub.firstCall.firstArg.path).to.equal("fakeDb");
 
@@ -110,9 +101,7 @@ describe("SnapshotDb.refreshContainerSas", () => {
     mockCheckpointV2.sasToken = makeToken("2021-01-01T03:00:10Z"); // an expiry within safety interval should cause error log
     await checkpoint.refreshContainerSas("");
     expect(errorLogStub.callCount).equal(1);
-    expect(errorLogStub.args[0][1]).include(
-      "timestamp that expires before safety interval"
-    );
+    expect(errorLogStub.args[0][1]).include("timestamp that expires before safety interval");
 
     queryStub.resetHistory();
     errorLogStub.resetHistory();

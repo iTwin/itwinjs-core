@@ -5,12 +5,7 @@
 
 import { expect } from "chai";
 import { ColorDef } from "@itwin/core-common";
-import {
-  IModelApp,
-  Pixel,
-  SnapshotConnection,
-  VaryingType,
-} from "@itwin/core-frontend";
+import { IModelApp, Pixel, SnapshotConnection, VaryingType } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { Color, TestViewport, testViewports } from "../TestViewport";
 
@@ -48,8 +43,7 @@ describe("Screen-space effects", () => {
       name,
       textureCoordFromPosition: true,
       source: {
-        vertex:
-          "void effectMain(vec4 pos) { v_texCoord = textureCoordFromPosition(pos); }",
+        vertex: "void effectMain(vec4 pos) { v_texCoord = textureCoordFromPosition(pos); }",
         fragment,
       },
     })!;
@@ -70,24 +64,17 @@ describe("Screen-space effects", () => {
 
   function registerEffects(): void {
     // If red > 0, yellow; else blue.
-    registerEffect(
-      "RYB",
-      "color.rgb = color.r > 0.0 ? vec3(1, 1, 0) : vec3(0, 0, 1);"
-    );
+    registerEffect("RYB", "color.rgb = color.r > 0.0 ? vec3(1, 1, 0) : vec3(0, 0, 1);");
 
     // If blue > 0, green; else cyan.
-    registerEffect(
-      "BGC",
-      "color.rgb = color.b > 0.0 ? vec3(0, 1, 0) : vec3(0, 1, 1);"
-    );
+    registerEffect("BGC", "color.rgb = color.b > 0.0 ? vec3(0, 1, 0) : vec3(0, 1, 1);");
 
     // Shift pixels such that the left-hand side of the viewport is all background pixels and the right-hand side is all element pixels.
     const builder = IModelApp.renderSystem.createScreenSpaceEffectBuilder({
       name: "Split",
       textureCoordFromPosition: true,
       source: {
-        vertex:
-          "void effectMain(vec4 pos) { v_texCoord = textureCoordFromPosition(pos); }",
+        vertex: "void effectMain(vec4 pos) { v_texCoord = textureCoordFromPosition(pos); }",
         fragment: `
           vec4 effectMain() {
             return sampleSourcePixel();
@@ -102,15 +89,10 @@ describe("Screen-space effects", () => {
     builder.finish();
   }
 
-  async function test(
-    bgColor: ColorDef,
-    func: (vp: TestViewport) => Promise<void>
-  ) {
+  async function test(bgColor: ColorDef, func: (vp: TestViewport) => Promise<void>) {
     await testViewports("0x24", imodel, 50, 50, async (vp) => {
       // Turn off lighting so we get pure colors and edges so we get only surfaces.
-      vp.viewFlags = vp.viewFlags
-        .with("visibleEdges", false)
-        .with("lighting", false);
+      vp.viewFlags = vp.viewFlags.with("visibleEdges", false).with("lighting", false);
 
       vp.displayStyle.backgroundColor = bgColor;
 
@@ -118,12 +100,7 @@ describe("Screen-space effects", () => {
     });
   }
 
-  function expectColor(
-    vp: TestViewport,
-    x: number,
-    y: number,
-    expected: ColorDef
-  ): void {
+  function expectColor(vp: TestViewport, x: number, y: number, expected: ColorDef): void {
     const color = vp.readColor(x, y);
     expect(color.equalsColorDef(expected)).to.be.true;
   }
@@ -131,8 +108,7 @@ describe("Screen-space effects", () => {
   function expectColors(vp: TestViewport, expected: ColorDef[]): void {
     const actual = vp.readUniqueColors();
     expect(actual.length).to.equal(expected.length);
-    for (const color of expected)
-      expect(actual.contains(Color.fromColorDef(color))).to.be.true;
+    for (const color of expected) expect(actual.contains(Color.fromColorDef(color))).to.be.true;
   }
 
   function expectElement(vp: TestViewport, x: number, y: number): void {

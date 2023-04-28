@@ -6,19 +6,8 @@
  * @module Editing
  */
 
-import {
-  CompressedId64Set,
-  Id64String,
-  IModelStatus,
-} from "@itwin/core-bentley";
-import {
-  AngleProps,
-  Matrix3dProps,
-  Range1dProps,
-  Range3dProps,
-  TransformProps,
-  XYZProps,
-} from "@itwin/core-geometry";
+import { CompressedId64Set, Id64String, IModelStatus } from "@itwin/core-bentley";
+import { AngleProps, Matrix3dProps, Range1dProps, Range3dProps, TransformProps, XYZProps } from "@itwin/core-geometry";
 import {
   ColorDefProps,
   EcefLocationProps,
@@ -57,15 +46,8 @@ export interface FlatBufferGeometryFilter {
 /** @alpha */
 export interface BasicManipulationCommandIpc extends EditCommandIpc {
   deleteElements(ids: CompressedId64Set): Promise<IModelStatus>;
-  transformPlacement(
-    ids: CompressedId64Set,
-    transform: TransformProps
-  ): Promise<IModelStatus>;
-  rotatePlacement(
-    ids: CompressedId64Set,
-    matrix: Matrix3dProps,
-    aboutCenter: boolean
-  ): Promise<IModelStatus>;
+  transformPlacement(ids: CompressedId64Set, transform: TransformProps): Promise<IModelStatus>;
+  rotatePlacement(ids: CompressedId64Set, matrix: Matrix3dProps, aboutCenter: boolean): Promise<IModelStatus>;
 
   /** Create and insert a new geometric element.
    * @param props Properties for the new [GeometricElement]($backend)
@@ -73,10 +55,7 @@ export interface BasicManipulationCommandIpc extends EditCommandIpc {
    * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($backend)
    * @throws [[IModelError]] if unable to insert the element
    */
-  insertGeometricElement(
-    props: GeometricElementProps,
-    data?: ElementGeometryBuilderParams
-  ): Promise<Id64String>;
+  insertGeometricElement(props: GeometricElementProps, data?: ElementGeometryBuilderParams): Promise<Id64String>;
 
   /** Create and insert a new geometry part element.
    * @param props Properties for the new [GeometryPart]($backend)
@@ -84,10 +63,7 @@ export interface BasicManipulationCommandIpc extends EditCommandIpc {
    * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($backend)
    * @throws [[IModelError]] if unable to insert the element
    */
-  insertGeometryPart(
-    props: GeometryPartProps,
-    data?: ElementGeometryBuilderParamsForPart
-  ): Promise<Id64String>;
+  insertGeometryPart(props: GeometryPartProps, data?: ElementGeometryBuilderParamsForPart): Promise<Id64String>;
 
   /** Update an existing geometric element.
    * @param propsOrId Properties or element id to update for an existing [GeometricElement]($backend)
@@ -108,10 +84,7 @@ export interface BasicManipulationCommandIpc extends EditCommandIpc {
    * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($backend)
    * @throws [[IModelError]] if unable to query the element
    */
-  requestElementGeometry(
-    id: Id64String,
-    filter?: FlatBufferGeometryFilter
-  ): Promise<ElementGeometryInfo | undefined>;
+  requestElementGeometry(id: Id64String, filter?: FlatBufferGeometryFilter): Promise<ElementGeometryInfo | undefined>;
 
   /** Update the project extents for the iModel.
    * @param extents New project extents.
@@ -621,14 +594,9 @@ export interface SolidModelingCommandIpc extends EditCommandIpc {
   /** Clear geometry cache for all elements */
   clearElementGeometryCache(): Promise<void>;
   /** Create new geometry cache entries for the supplied geometric element, or check existing an cache against supplied filter. */
-  createElementGeometryCache(
-    id: Id64String,
-    filter?: ElementGeometryCacheFilter
-  ): Promise<boolean>;
+  createElementGeometryCache(id: Id64String, filter?: ElementGeometryCacheFilter): Promise<boolean>;
   /** Report the type of brep entity that would be created for each entry referenced by the supplied geometric element. */
-  summarizeElementGeometryCache(
-    id: Id64String
-  ): Promise<BRepEntityType[] | undefined>;
+  summarizeElementGeometryCache(id: Id64String): Promise<BRepEntityType[] | undefined>;
   /** Get the geometric representation of a sub-entity in flatbuffer format or graphic data. */
   getSubEntityGeometry(
     id: Id64String,
@@ -646,9 +614,7 @@ export interface SolidModelingCommandIpc extends EditCommandIpc {
     subEntity: SubEntityProps,
     uParam?: number,
     vParam?: number
-  ): Promise<
-    EvaluatedFaceProps | EvaluatedEdgeProps | EvaluatedVertexProps | undefined
-  >;
+  ): Promise<EvaluatedFaceProps | EvaluatedEdgeProps | EvaluatedVertexProps | undefined>;
   /** Return whether the supplied face has a planar surface */
   isPlanarFace(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
   /** Return whether the angle between the normals of the supplied edge's faces never exceeds the internal smooth angle tolerance along the length of the edge */
@@ -672,11 +638,7 @@ export interface SolidModelingCommandIpc extends EditCommandIpc {
   /** Return whether the supplied geometric primitive index is a body with any edge that is non-linear or any face that is non-planar */
   hasCurvedFaceOrEdge(id: Id64String, index: number): Promise<boolean>;
   /** Get sub-entities of the requested type for the supplied element */
-  getBodySubEntities(
-    id: Id64String,
-    type: SubEntityType,
-    firstOnly?: true
-  ): Promise<SubEntityProps[] | undefined>;
+  getBodySubEntities(id: Id64String, type: SubEntityType, firstOnly?: true): Promise<SubEntityProps[] | undefined>;
   /** Get related sub-entities for the supplied sub-entity. For example, get the array of faces containing a supplied edge. */
   getConnectedSubEntities(
     id: Id64String,
@@ -699,10 +661,7 @@ export interface SolidModelingCommandIpc extends EditCommandIpc {
     direction: XYZProps
   ): Promise<SubEntityLocationProps[] | undefined>;
   /** Find the closest sub-entity from the supplied element to a given point. */
-  getClosestSubEntity(
-    id: Id64String,
-    testPoint: XYZProps
-  ): Promise<SubEntityLocationProps | undefined>;
+  getClosestSubEntity(id: Id64String, testPoint: XYZProps): Promise<SubEntityLocationProps | undefined>;
   /** Find the closest face from the supplied element to a given point. */
   getClosestFace(
     id: Id64String,
@@ -716,10 +675,7 @@ export interface SolidModelingCommandIpc extends EditCommandIpc {
     point: XYZProps
   ): Promise<SubEntityLocationProps | undefined>;
   /** Test if a point is inside or on the boundary of any body from the supplied element */
-  isPointInside(
-    id: Id64String,
-    point: XYZProps
-  ): Promise<PointInsideResultProps[] | undefined>;
+  isPointInside(id: Id64String, point: XYZProps): Promise<PointInsideResultProps[] | undefined>;
   /** Perform the specified boolean operation between the target element and one or more tool elements. */
   booleanOperation(
     id: Id64String,

@@ -5,12 +5,7 @@
 
 import { ProcessDetector } from "@itwin/core-bentley";
 import { Point2d } from "@itwin/core-geometry";
-import {
-  imageBufferToPngDataUrl,
-  IModelApp,
-  openImageDataUrlInNewWindow,
-  Tool,
-} from "@itwin/core-frontend";
+import { imageBufferToPngDataUrl, IModelApp, openImageDataUrlInNewWindow, Tool } from "@itwin/core-frontend";
 import { parseArgs } from "@itwin/frontend-devtools";
 
 interface SaveImageOptions {
@@ -67,9 +62,7 @@ export class SaveImageTool extends Tool {
 
       // ClipboardItem currently unsupported in Firefox. Chrome expects a resolved promise; safari (and typescript type definitions) an unresolved promise.
       // Tested only in chrome+electron.
-      const blob = ProcessDetector.isChromium
-        ? ((await getBlob()) as unknown as Promise<string | Blob>)
-        : getBlob();
+      const blob = ProcessDetector.isChromium ? ((await getBlob()) as unknown as Promise<string | Blob>) : getBlob();
       await navigator.clipboard.write([
         new ClipboardItem({
           "image/png": blob,

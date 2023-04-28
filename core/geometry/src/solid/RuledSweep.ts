@@ -45,10 +45,7 @@ export class RuledSweep extends SolidPrimitive {
    * Create a ruled sweep from an array of contours.
    * * the contours are CAPTURED (not cloned)
    */
-  public static create(
-    contours: CurveCollection[],
-    capped: boolean
-  ): RuledSweep | undefined {
+  public static create(contours: CurveCollection[], capped: boolean): RuledSweep | undefined {
     const sweepContours = [];
     for (const contour of contours) {
       const sweepable = SweepContour.createForLinearSweep(contour);
@@ -145,15 +142,8 @@ export class RuledSweep extends SolidPrimitive {
     return RuledSweep.mutatePartners(
       this._contours[section0].curves,
       this._contours[section1].curves,
-      (
-        primitive0: CurvePrimitive,
-        primitive1: CurvePrimitive
-      ): CurvePrimitive | undefined => {
-        const newPrimitive = ConstructCurveBetweenCurves.interpolateBetween(
-          primitive0,
-          localFraction,
-          primitive1
-        );
+      (primitive0: CurvePrimitive, primitive1: CurvePrimitive): CurvePrimitive | undefined => {
+        const newPrimitive = ConstructCurveBetweenCurves.interpolateBetween(primitive0, localFraction, primitive1);
         if (newPrimitive instanceof CurvePrimitive) return newPrimitive;
         return undefined;
       }
@@ -161,8 +151,7 @@ export class RuledSweep extends SolidPrimitive {
   }
   /** Pass each contour to `extendRange` */
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
-    for (const contour of this._contours)
-      contour.curves.extendRange(rangeToExtend, transform);
+    for (const contour of this._contours) contour.curves.extendRange(rangeToExtend, transform);
   }
 
   /** Construct a CurveCollection with the same structure as collectionA and collectionB, with primitives constructed by the caller-supplied primitiveMutator function.
@@ -174,10 +163,7 @@ export class RuledSweep extends SolidPrimitive {
     primitiveMutator: CurvePrimitiveMutator
   ): CurveCollection | undefined {
     if (!collectionA.isSameGeometryClass(collectionB)) return undefined;
-    if (
-      collectionA instanceof CurveChain &&
-      collectionB instanceof CurveChain
-    ) {
+    if (collectionA instanceof CurveChain && collectionB instanceof CurveChain) {
       const chainA = collectionA;
       const chainB = collectionB;
       const chainC = chainA.cloneEmptyPeer() as CurveChain;
@@ -190,10 +176,7 @@ export class RuledSweep extends SolidPrimitive {
         chainC.children.push(newChild);
       }
       return chainC;
-    } else if (
-      collectionA instanceof CurveCollection &&
-      collectionB instanceof CurveCollection
-    ) {
+    } else if (collectionA instanceof CurveCollection && collectionB instanceof CurveCollection) {
       const collectionC = collectionA.cloneEmptyPeer();
       const childrenA = collectionA.children;
       const childrenB = collectionB.children;
@@ -208,22 +191,12 @@ export class RuledSweep extends SolidPrimitive {
       for (let i = 0; i < childrenA.length; i++) {
         const childA = childrenA[i];
         const childB = childrenB[i];
-        if (
-          childA instanceof CurvePrimitive &&
-          childB instanceof CurvePrimitive
-        ) {
+        if (childA instanceof CurvePrimitive && childB instanceof CurvePrimitive) {
           const newPrimitive = primitiveMutator(childA, childB);
           if (!newPrimitive) return undefined;
           childrenC.push(newPrimitive);
-        } else if (
-          childA instanceof CurveCollection &&
-          childB instanceof CurveCollection
-        ) {
-          const newChild = this.mutatePartners(
-            childA,
-            childB,
-            primitiveMutator
-          );
+        } else if (childA instanceof CurveCollection && childB instanceof CurveCollection) {
+          const newChild = this.mutatePartners(childA, childB, primitiveMutator);
           if (!newChild) return undefined;
           if (newChild instanceof CurveCollection) childrenC.push(newChild);
         }
@@ -239,9 +212,6 @@ export class RuledSweep extends SolidPrimitive {
    */
   public get isClosedVolume(): boolean {
     const n = this._contours.length;
-    return (
-      n > 1 &&
-      (this.capped || this._contours[0].isAlmostEqual(this._contours[n - 1]))
-    );
+    return n > 1 && (this.capped || this._contours[0].isAlmostEqual(this._contours[n - 1]));
   }
 }

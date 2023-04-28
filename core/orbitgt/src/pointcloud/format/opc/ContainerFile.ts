@@ -53,12 +53,7 @@ export class ContainerFile {
    * @param format the format.
    * @param parts the parts in the file.
    */
-  public constructor(
-    fileName: string,
-    fileLength: ALong,
-    format: string,
-    parts: AList<ContainerFilePart>
-  ) {
+  public constructor(fileName: string, fileLength: ALong, format: string, parts: AList<ContainerFilePart>) {
     this._fileName = fileName;
     this._fileLength = fileLength;
     this._format = format;
@@ -71,8 +66,7 @@ export class ContainerFile {
    */
   public close(closeFileAccess: boolean): void {
     if (closeFileAccess)
-      for (let i: number = 0; i < this._parts.size(); i++)
-        this._parts.get(i).getFileAccess().close();
+      for (let i: number = 0; i < this._parts.size(); i++) this._parts.get(i).getFileAccess().close();
     this._parts.clear();
   }
 
@@ -162,10 +156,7 @@ export class ContainerFile {
     format: string
   ): Promise<ContainerFile> {
     /* Existing file? */
-    Message.print(
-      ContainerFile.MODULE,
-      "Reading container file '" + containerFileName + "'"
-    );
+    Message.print(ContainerFile.MODULE, "Reading container file '" + containerFileName + "'");
     let fileLength: ALong = await fileStorage.getFileLength(containerFileName);
     if (fileLength.isNegative()) {
       /* Abort */
@@ -175,47 +166,25 @@ export class ContainerFile {
     /* Too short? */
     if (fileLength.subInt(16).isNegative()) {
       /* Fail */
-      ASystem.assert0(
-        false,
-        "Invalid container file '" + containerFileName + "' (too short)"
-      );
+      ASystem.assert0(false, "Invalid container file '" + containerFileName + "' (too short)");
     }
     /* Read the file header */
     let headerSize: int32 = 60 * 1024;
-    if (fileLength.subInt(headerSize).isNegative())
-      headerSize = fileLength.toInt();
-    let header: ABuffer = await fileStorage.readFilePart(
-      containerFileName,
-      ALong.ZERO,
-      headerSize
-    );
-    let headerInput: ABufferInStream = new ABufferInStream(
-      header,
-      0,
-      header.size()
-    );
+    if (fileLength.subInt(headerSize).isNegative()) headerSize = fileLength.toInt();
+    let header: ABuffer = await fileStorage.readFilePart(containerFileName, ALong.ZERO, headerSize);
+    let headerInput: ABufferInStream = new ABufferInStream(header, 0, header.size());
     /* Check the marker */
     if (ContainerFile.checkMarker(headerInput, format) == false) {
       /* Fail */
       headerInput.close();
-      ASystem.assert0(
-        false,
-        "Invalid container file '" + containerFileName + "' (header marker)"
-      );
+      ASystem.assert0(false, "Invalid container file '" + containerFileName + "' (header marker)");
     }
     /* Check the version */
     let version: int32 = LittleEndian.readStreamByte(headerInput);
     if (version != 2) {
       /* Fail */
       headerInput.close();
-      ASystem.assert0(
-        false,
-        "Invalid container file '" +
-          containerFileName +
-          "' (version " +
-          version +
-          ")"
-      );
+      ASystem.assert0(false, "Invalid container file '" + containerFileName + "' (version " + version + ")");
     }
     /* Reserved */
     let r1: int32 = LittleEndian.readStreamByte(headerInput);
@@ -228,20 +197,11 @@ export class ContainerFile {
       headerInput.close();
       ASystem.assert0(
         false,
-        ContainerFile.MODULE +
-          " : Invalid container file '" +
-          containerFileName +
-          "' (file count " +
-          fileCount +
-          ")"
+        ContainerFile.MODULE + " : Invalid container file '" + containerFileName + "' (file count " + fileCount + ")"
       );
     }
     /* Define the file access */
-    let fileAccess: FileAccess = new FileAccess(
-      fileStorage,
-      containerFileName,
-      fileLength
-    );
+    let fileAccess: FileAccess = new FileAccess(fileStorage, containerFileName, fileLength);
     /* Read the parts */
     let maxExtent: ALong = ALong.ZERO;
     let parts: AList<ContainerFilePart> = new AList<ContainerFilePart>();
@@ -251,17 +211,10 @@ export class ContainerFile {
       let partLength: ALong = LittleEndian.readStreamLong(headerInput);
       let partName: string = LittleEndian.readStreamString(headerInput);
       /* Add the part */
-      parts.add(
-        new ContainerFilePart(partName, fileAccess, partOffset, partLength)
-      );
+      parts.add(new ContainerFilePart(partName, fileAccess, partOffset, partLength));
       Message.print(
         ContainerFile.MODULE,
-        "Found part '" +
-          partName +
-          "' offset " +
-          partOffset.toDouble() +
-          " size " +
-          partLength.toDouble()
+        "Found part '" + partName + "' offset " + partOffset.toDouble() + " size " + partLength.toDouble()
       );
       /* Update the maximum extent */
       let partExtent: ALong = partOffset.add(partLength);
@@ -270,19 +223,10 @@ export class ContainerFile {
     /* Done */
     headerInput.close();
     /* Return the container */
+    Message.print(ContainerFile.MODULE, "Found " + parts.size() + " parts, header size " + headerInput.getPosition());
     Message.print(
       ContainerFile.MODULE,
-      "Found " +
-        parts.size() +
-        " parts, header size " +
-        headerInput.getPosition()
-    );
-    Message.print(
-      ContainerFile.MODULE,
-      "File size is " +
-        fileLength.toDouble() +
-        ", max part extent is " +
-        maxExtent.toDouble()
+      "File size is " + fileLength.toDouble() + ", max part extent is " + maxExtent.toDouble()
     );
     return new ContainerFile(containerFileName, fileLength, format, parts);
   }

@@ -6,13 +6,7 @@
  * @module WebGL
  */
 
-import {
-  InverseMatrixState,
-  Matrix4d,
-  Point3d,
-  Transform,
-  Vector3d,
-} from "@itwin/core-geometry";
+import { InverseMatrixState, Matrix4d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { Frustum, Npc } from "@itwin/core-common";
 import { UniformHandle } from "./UniformHandle";
 import { IModelFrameLifecycle } from "./IModelFrameLifecycle";
@@ -114,17 +108,8 @@ export class FrustumUniforms {
     return this._logZData;
   }
 
-  public changeFrustum(
-    newFrustum: Frustum,
-    newFraction: number,
-    is3d: boolean
-  ): void {
-    if (
-      newFraction === this._planFraction &&
-      is3d !== this.is2d &&
-      newFrustum.equals(this.planFrustum)
-    )
-      return;
+  public changeFrustum(newFrustum: Frustum, newFraction: number, is3d: boolean): void {
+    if (newFraction === this._planFraction && is3d !== this.is2d && newFrustum.equals(this.planFrustum)) return;
 
     desync(this);
 
@@ -139,102 +124,43 @@ export class FrustumUniforms {
     const nearUpperLeft = newFrustum.getCorner(Npc.LeftTopFront);
     const nearUpperRight = newFrustum.getCorner(Npc.RightTopFront);
 
-    const nearCenter = nearLowerLeft.interpolate(
-      0.5,
-      nearUpperRight,
-      this._scratch.point3d
-    );
+    const nearCenter = nearLowerLeft.interpolate(0.5, nearUpperRight, this._scratch.point3d);
 
-    const viewX = normalizedDifference(
-      nearLowerRight,
-      nearLowerLeft,
-      this._scratch.viewX
-    );
-    const viewY = normalizedDifference(
-      nearUpperLeft,
-      nearLowerLeft,
-      this._scratch.viewY
-    );
+    const viewX = normalizedDifference(nearLowerRight, nearLowerLeft, this._scratch.viewX);
+    const viewY = normalizedDifference(nearUpperLeft, nearLowerLeft, this._scratch.viewY);
     const viewZ = viewX.crossProduct(viewY, this._scratch.viewZ).normalize()!;
 
     this._planFraction = newFraction;
 
     if (!is3d || newFraction > 0.999) {
       // ortho or 2d
-      const halfWidth =
-        Vector3d.createStartEnd(
-          farLowerRight,
-          farLowerLeft,
-          this._scratch.vec3d
-        ).magnitude() * 0.5;
-      const halfHeight =
-        Vector3d.createStartEnd(farLowerRight, farUpperRight).magnitude() * 0.5;
-      const depth = Vector3d.createStartEnd(
-        farLowerLeft,
-        nearLowerLeft,
-        this._scratch.vec3d
-      ).magnitude();
+      const halfWidth = Vector3d.createStartEnd(farLowerRight, farLowerLeft, this._scratch.vec3d).magnitude() * 0.5;
+      const halfHeight = Vector3d.createStartEnd(farLowerRight, farUpperRight).magnitude() * 0.5;
+      const depth = Vector3d.createStartEnd(farLowerLeft, nearLowerLeft, this._scratch.vec3d).magnitude();
 
       lookIn(nearCenter, viewX, viewY, viewZ, this.viewMatrix);
-      ortho(
-        -halfWidth,
-        halfWidth,
-        -halfHeight,
-        halfHeight,
-        0,
-        depth,
-        this.projectionMatrix
-      );
+      ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, 0, depth, this.projectionMatrix);
 
       this._nearPlaneCenter.setFrom(nearLowerLeft);
-      this._nearPlaneCenter.interpolate(
-        0.5,
-        nearUpperRight,
-        this._nearPlaneCenter
-      );
+      this._nearPlaneCenter.interpolate(0.5, nearUpperRight, this._nearPlaneCenter);
 
       this.setPlanes(halfHeight, -halfHeight, -halfWidth, halfWidth);
-      this.setFrustum(
-        0,
-        depth,
-        is3d ? FrustumUniformType.Orthographic : FrustumUniformType.TwoDee
-      );
+      this.setFrustum(0, depth, is3d ? FrustumUniformType.Orthographic : FrustumUniformType.TwoDee);
     } else {
       // perspective
       const scale = 1.0 / (1.0 - newFraction);
-      const zVec = Vector3d.createStartEnd(
-        farLowerLeft,
-        nearLowerLeft,
-        this._scratch.vec3d
-      );
-      const cameraPosition = fromSumOf(
-        farLowerLeft,
-        zVec,
-        scale,
-        this._scratch.point3d
-      );
+      const zVec = Vector3d.createStartEnd(farLowerLeft, nearLowerLeft, this._scratch.vec3d);
+      const cameraPosition = fromSumOf(farLowerLeft, zVec, scale, this._scratch.point3d);
 
-      const frustumLeft =
-        dotDifference(farLowerLeft, cameraPosition, viewX) * newFraction;
-      const frustumRight =
-        dotDifference(farLowerRight, cameraPosition, viewX) * newFraction;
-      const frustumBottom =
-        dotDifference(farLowerLeft, cameraPosition, viewY) * newFraction;
-      const frustumTop =
-        dotDifference(farUpperLeft, cameraPosition, viewY) * newFraction;
+      const frustumLeft = dotDifference(farLowerLeft, cameraPosition, viewX) * newFraction;
+      const frustumRight = dotDifference(farLowerRight, cameraPosition, viewX) * newFraction;
+      const frustumBottom = dotDifference(farLowerLeft, cameraPosition, viewY) * newFraction;
+      const frustumTop = dotDifference(farUpperLeft, cameraPosition, viewY) * newFraction;
       const frustumFront = -dotDifference(nearLowerLeft, cameraPosition, viewZ);
       const frustumBack = -dotDifference(farLowerLeft, cameraPosition, viewZ);
 
       lookIn(cameraPosition, viewX, viewY, viewZ, this.viewMatrix);
-      frustum(
-        frustumLeft,
-        frustumRight,
-        frustumBottom,
-        frustumTop,
-        frustumFront,
-        frustumBack,
-        this.projectionMatrix
-      );
+      frustum(frustumLeft, frustumRight, frustumBottom, frustumTop, frustumFront, frustumBack, this.projectionMatrix);
 
       IModelFrameLifecycle.onChangeCameraView.raiseEvent({
         cameraPosition,
@@ -253,26 +179,15 @@ export class FrustumUniforms {
       });
 
       this._nearPlaneCenter.setFrom(nearLowerLeft);
-      this._nearPlaneCenter.interpolate(
-        0.5,
-        nearUpperRight,
-        this._nearPlaneCenter
-      );
+      this._nearPlaneCenter.interpolate(0.5, nearUpperRight, this._nearPlaneCenter);
 
       this.setPlanes(frustumTop, frustumBottom, frustumLeft, frustumRight);
-      this.setFrustum(
-        frustumFront,
-        frustumBack,
-        FrustumUniformType.Perspective
-      );
+      this.setFrustum(frustumFront, frustumBack, FrustumUniformType.Perspective);
     }
 
     this.viewMatrix.matrix.inverseState = InverseMatrixState.unknown;
 
-    this.viewMatrix.matrix.multiplyVector(
-      this._worldUpVector,
-      this._viewUpVector
-    );
+    this.viewMatrix.matrix.multiplyVector(this._worldUpVector, this._viewUpVector);
     this._viewUpVector.normalizeInPlace();
     this._viewUpVector32[0] = this._viewUpVector.x;
     this._viewUpVector32[1] = this._viewUpVector.y;
@@ -287,39 +202,25 @@ export class FrustumUniforms {
     this.projectionMatrix32.initFromMatrix4d(this.projectionMatrix);
   }
 
-  protected setPlanes(
-    top: number,
-    bottom: number,
-    left: number,
-    right: number
-  ): void {
+  protected setPlanes(top: number, bottom: number, left: number, right: number): void {
     this._planeData[Plane.kTop] = top;
     this._planeData[Plane.kBottom] = bottom;
     this._planeData[Plane.kLeft] = left;
     this._planeData[Plane.kRight] = right;
   }
 
-  protected setFrustum(
-    nearPlane: number,
-    farPlane: number,
-    type: FrustumUniformType
-  ): void {
+  protected setFrustum(nearPlane: number, farPlane: number, type: FrustumUniformType): void {
     this._frustumData[FrustumData.kNear] = nearPlane;
     this._frustumData[FrustumData.kFar] = farPlane;
     this._frustumData[FrustumData.kType] = type as number;
 
     // If nearPlane is zero, we don't have a camera (or got very unlucky); in that case shader will compute linear depth.
     this._logZData[0] = 0 !== nearPlane ? 1 / nearPlane : 0;
-    this._logZData[1] =
-      0 !== nearPlane ? Math.log(farPlane / nearPlane) : farPlane;
+    this._logZData[1] = 0 !== nearPlane ? Math.log(farPlane / nearPlane) : farPlane;
   }
 }
 
-function normalizedDifference(
-  p0: Point3d,
-  p1: Point3d,
-  out?: Vector3d
-): Vector3d {
+function normalizedDifference(p0: Point3d, p1: Point3d, out?: Vector3d): Vector3d {
   const result = undefined !== out ? out : new Vector3d();
   result.x = p0.x - p1.x;
   result.y = p0.y - p1.y;
@@ -329,12 +230,7 @@ function normalizedDifference(
 }
 
 /** @internal */
-export function fromSumOf(
-  p: Point3d,
-  v: Vector3d,
-  scale: number,
-  out?: Point3d
-) {
+export function fromSumOf(p: Point3d, v: Vector3d, scale: number, out?: Point3d) {
   const result = undefined !== out ? out : new Point3d();
   result.x = p.x + v.x * scale;
   result.y = p.y + v.y * scale;
@@ -343,20 +239,10 @@ export function fromSumOf(
 }
 
 function dotDifference(pt: Point3d, origin: Point3d, vec: Vector3d): number {
-  return (
-    (pt.x - origin.x) * vec.x +
-    (pt.y - origin.y) * vec.y +
-    (pt.z - origin.z) * vec.z
-  );
+  return (pt.x - origin.x) * vec.x + (pt.y - origin.y) * vec.y + (pt.z - origin.z) * vec.z;
 }
 
-function lookIn(
-  eye: Point3d,
-  viewX: Vector3d,
-  viewY: Vector3d,
-  viewZ: Vector3d,
-  result: Transform
-) {
+function lookIn(eye: Point3d, viewX: Vector3d, viewY: Vector3d, viewZ: Vector3d, result: Transform) {
   const rot = result.matrix.coffs;
   rot[0] = viewX.x;
   rot[1] = viewX.y;
@@ -373,15 +259,7 @@ function lookIn(
   result.origin.z = -viewZ.dotProduct(eye);
 }
 
-function ortho(
-  left: number,
-  right: number,
-  bottom: number,
-  top: number,
-  near: number,
-  far: number,
-  result: Matrix4d
-) {
+function ortho(left: number, right: number, bottom: number, top: number, near: number, far: number, result: Matrix4d) {
   Matrix4d.createRowValues(
     2.0 / (right - left),
     0.0,

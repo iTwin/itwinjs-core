@@ -6,11 +6,7 @@ import { expect } from "chai";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { createBlankConnection } from "./createBlankConnection";
-import {
-  Cartographic,
-  EcefLocation,
-  EmptyLocalization,
-} from "@itwin/core-common";
+import { Cartographic, EcefLocation, EmptyLocalization } from "@itwin/core-common";
 import { SpatialViewState } from "../SpatialViewState";
 import { Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { StandardViewId } from "../StandardView";
@@ -36,11 +32,7 @@ describe("Look At", () => {
 
   describe("lookAtGlobalLocation", () => {
     it("should change camera", async () => {
-      const view3d = SpatialViewState.createBlank(
-        imodel,
-        new Point3d(),
-        new Point3d()
-      );
+      const view3d = SpatialViewState.createBlank(imodel, new Point3d(), new Point3d());
 
       view3d.camera.focusDist = 0; // ortho views should not use camera values
       const stat = view3d.lookAt({
@@ -65,11 +57,7 @@ describe("Look At", () => {
 
   describe("lookAtViewAlignedVolume", () => {
     function createTopView(): SpatialViewState {
-      const view = SpatialViewState.createBlank(
-        imodel,
-        new Point3d(),
-        new Point3d()
-      );
+      const view = SpatialViewState.createBlank(imodel, new Point3d(), new Point3d());
       view.setStandardRotation(StandardViewId.Top);
       expect(view.isCameraOn).to.be.false;
       return view;
@@ -78,30 +66,13 @@ describe("Look At", () => {
     // [lowX, lowY, highX, highY]
     type Range = [number, number, number, number];
 
-    function expectExtents(
-      volume: Range,
-      expected: Range,
-      options?: MarginOptions,
-      aspect = 1.0
-    ): void {
+    function expectExtents(volume: Range, expected: Range, options?: MarginOptions, aspect = 1.0): void {
       const view = createTopView();
-      const range = new Range3d(
-        volume[0],
-        volume[1],
-        -1,
-        volume[2],
-        volume[3],
-        1
-      );
+      const range = new Range3d(volume[0], volume[1], -1, volume[2], volume[3], 1);
       view.lookAtViewAlignedVolume(range, aspect, options);
 
       const delta = view.getExtents();
-      const actual = [
-        Math.round(view.origin.x),
-        Math.round(view.origin.y),
-        Math.round(delta.x),
-        Math.round(delta.y),
-      ];
+      const actual = [Math.round(view.origin.x), Math.round(view.origin.y), Math.round(delta.x), Math.round(delta.y)];
       expect(actual).to.deep.equal(expected);
     }
 
@@ -112,9 +83,7 @@ describe("Look At", () => {
     });
 
     it("applies MarginPercent", () => {
-      function marginPercent(
-        percent: number | Partial<MarginPercent>
-      ): MarginOptions {
+      function marginPercent(percent: number | Partial<MarginPercent>): MarginOptions {
         if (typeof percent === "number")
           return {
             marginPercent: {
@@ -136,26 +105,10 @@ describe("Look At", () => {
       }
 
       // Note: MarginPercent "percentages" are not accurate. For example: a percentage of 0.25 per side actually adds 50% to each side.
-      expectExtents(
-        [0, 0, 100, 100],
-        [-50, -50, 200, 200],
-        marginPercent(0.25)
-      );
-      expectExtents(
-        [0, 0, 100, 100],
-        [-33, 0, 133, 133],
-        marginPercent({ left: 0.25, top: 0.25 })
-      );
-      expectExtents(
-        [0, 0, 100, 100],
-        [-33, -33, 133, 133],
-        marginPercent({ left: 0.25, bottom: 0.25 })
-      );
-      expectExtents(
-        [0, 0, 100, 100],
-        [0, 0, 133, 133],
-        marginPercent({ right: 0.25, top: 0.25 })
-      );
+      expectExtents([0, 0, 100, 100], [-50, -50, 200, 200], marginPercent(0.25));
+      expectExtents([0, 0, 100, 100], [-33, 0, 133, 133], marginPercent({ left: 0.25, top: 0.25 }));
+      expectExtents([0, 0, 100, 100], [-33, -33, 133, 133], marginPercent({ left: 0.25, bottom: 0.25 }));
+      expectExtents([0, 0, 100, 100], [0, 0, 133, 133], marginPercent({ right: 0.25, top: 0.25 }));
     });
 
     it("applies PaddingPercent", () => {
@@ -165,44 +118,15 @@ describe("Look At", () => {
 
       expectExtents([0, 0, 100, 100], [-50, -50, 200, 200], padding(0.5));
       expectExtents([0, 0, 100, 100], [-25, -25, 150, 150], padding(0.25));
-      expectExtents(
-        [0, 0, 100, 100],
-        [-25, -25, 125, 125],
-        padding({ left: 0.25, bottom: 0.25 })
-      );
-      expectExtents(
-        [0, 0, 100, 100],
-        [0, -25, 150, 150],
-        padding({ right: 0.5 })
-      );
-      expectExtents(
-        [0, 0, 100, 100],
-        [-100, -50, 200, 200],
-        padding({ left: 1 })
-      );
-      expectExtents(
-        [0, 0, 100, 100],
-        [-100, 0, 200, 100],
-        padding({ left: 1 }),
-        2
-      );
+      expectExtents([0, 0, 100, 100], [-25, -25, 125, 125], padding({ left: 0.25, bottom: 0.25 }));
+      expectExtents([0, 0, 100, 100], [0, -25, 150, 150], padding({ right: 0.5 }));
+      expectExtents([0, 0, 100, 100], [-100, -50, 200, 200], padding({ left: 1 }));
+      expectExtents([0, 0, 100, 100], [-100, 0, 200, 100], padding({ left: 1 }), 2);
 
       expectExtents([0, 0, 100, 100], [25, 25, 50, 50], padding(-0.25));
-      expectExtents(
-        [0, 0, 100, 100],
-        [25, 25, 75, 75],
-        padding({ left: -0.25, bottom: -0.25 })
-      );
-      expectExtents(
-        [0, 0, 100, 100],
-        [0, 0, 25, 25],
-        padding({ right: -0.75, top: -0.75 })
-      );
-      expectExtents(
-        [0, 0, 100, 100],
-        [100, 0, 100, 100],
-        padding({ left: -1, right: 1 })
-      );
+      expectExtents([0, 0, 100, 100], [25, 25, 75, 75], padding({ left: -0.25, bottom: -0.25 }));
+      expectExtents([0, 0, 100, 100], [0, 0, 25, 25], padding({ right: -0.75, top: -0.75 }));
+      expectExtents([0, 0, 100, 100], [100, 0, 100, 100], padding({ left: -1, right: 1 }));
     });
 
     it("prioritizes PaddingPercent over MarginPercent", () => {

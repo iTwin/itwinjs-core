@@ -26,9 +26,7 @@ import { PopupToolbarManager, PopupToolbarProvider } from "./PopupToolbar";
 import { HyperModeling } from "./HyperModeling";
 import { SectionMarkerConfig } from "./HyperModelingConfig";
 
-async function createMarkers(
-  vp: ScreenViewport
-): Promise<SectionMarkerSet | undefined> {
+async function createMarkers(vp: ScreenViewport): Promise<SectionMarkerSet | undefined> {
   if (!vp.view.isSpatialView()) return undefined;
 
   const states = await SectionDrawingLocationState.queryAll(vp.iModel);
@@ -47,12 +45,8 @@ class MarkerToolbarProvider implements PopupToolbarProvider {
   public constructor(marker: SectionMarker, decorator: HyperModelingDecorator) {
     this.marker = marker;
     this._viewport = decorator.viewport;
-    this.toolbarProps = HyperModeling.markerHandler.getToolbarProps(
-      marker,
-      decorator
-    );
-    this.onToolbarItemExecuted = (id) =>
-      HyperModeling.markerHandler.executeCommand(id, marker, decorator); // eslint-disable-line @typescript-eslint/promise-function-async
+    this.toolbarProps = HyperModeling.markerHandler.getToolbarProps(marker, decorator);
+    this.onToolbarItemExecuted = (id) => HyperModeling.markerHandler.executeCommand(id, marker, decorator); // eslint-disable-line @typescript-eslint/promise-function-async
   }
 
   public get overToolbarHotspot() {
@@ -60,10 +54,7 @@ class MarkerToolbarProvider implements PopupToolbarProvider {
   }
 
   public get toolbarLocation(): XAndY {
-    return IModelApp.uiAdmin.createXAndY(
-      this.marker.rect.right,
-      this.marker.rect.top
-    );
+    return IModelApp.uiAdmin.createXAndY(this.marker.rect.right, this.marker.rect.top);
   }
 
   public get htmlElement() {
@@ -98,21 +89,13 @@ export class HyperModelingDecorator implements Decorator {
     config: SectionMarkerConfig
   ): Promise<HyperModelingDecorator | undefined> {
     const markers = await createMarkers(vp);
-    return undefined !== markers
-      ? new HyperModelingDecorator(markers, config)
-      : undefined;
+    return undefined !== markers ? new HyperModelingDecorator(markers, config) : undefined;
   }
 
   /** Obtain the decorator associated with the specified viewport, if any. */
-  public static getForViewport(
-    vp: ScreenViewport
-  ): HyperModelingDecorator | undefined {
+  public static getForViewport(vp: ScreenViewport): HyperModelingDecorator | undefined {
     for (const decorator of IModelApp.viewManager.decorators)
-      if (
-        decorator instanceof HyperModelingDecorator &&
-        decorator.viewport === vp
-      )
-        return decorator;
+      if (decorator instanceof HyperModelingDecorator && decorator.viewport === vp) return decorator;
 
     return undefined;
   }
@@ -150,12 +133,9 @@ export class HyperModelingDecorator implements Decorator {
    */
   public updateConfiguration(config: SectionMarkerConfig): void {
     this._config = {
-      ignoreModelSelector:
-        config.ignoreModelSelector ?? this._config.ignoreModelSelector,
-      ignoreCategorySelector:
-        config.ignoreCategorySelector ?? this._config.ignoreCategorySelector,
-      hiddenSectionTypes:
-        config.hiddenSectionTypes ?? this._config.hiddenSectionTypes,
+      ignoreModelSelector: config.ignoreModelSelector ?? this._config.ignoreModelSelector,
+      ignoreCategorySelector: config.ignoreCategorySelector ?? this._config.ignoreCategorySelector,
+      hiddenSectionTypes: config.hiddenSectionTypes ?? this._config.hiddenSectionTypes,
     };
 
     this.requestSync();
@@ -168,17 +148,12 @@ export class HyperModelingDecorator implements Decorator {
    * @see [[SectionMarkerHandler.activateMarker]] to control what happens when a marker is activated.
    * @see [[SectionMarkerHandler.deactivateMarker]] to control what happens when a marker is deactivated.
    */
-  public async setActiveMarker(
-    marker: SectionMarker | undefined
-  ): Promise<boolean> {
+  public async setActiveMarker(marker: SectionMarker | undefined): Promise<boolean> {
     if (marker === this.activeMarker) return true;
 
     if (this.activeMarker) {
       this.activeMarker.setActive(false);
-      await HyperModeling.markerHandler.deactivateMarker(
-        this.activeMarker,
-        this
-      );
+      await HyperModeling.markerHandler.deactivateMarker(this.activeMarker, this);
       this._activeMarker = undefined;
     }
 
@@ -214,18 +189,12 @@ export class HyperModelingDecorator implements Decorator {
     });
 
     this._removeEventListeners.push(
-      this.viewport.onViewportChanged.addListener((_, changeFlags) =>
-        this.onViewportChanged(changeFlags)
-      )
+      this.viewport.onViewportChanged.addListener((_, changeFlags) => this.onViewportChanged(changeFlags))
     );
-    this._removeEventListeners.push(
-      this.viewport.onDisposed.addListener(() => this.dispose())
-    );
+    this._removeEventListeners.push(this.viewport.onDisposed.addListener(() => this.dispose()));
 
     for (const marker of markers.markers) {
-      marker.onMouseEnterEvent.addListener((mkr) =>
-        this.showToolbarAfterTimeout(mkr)
-      );
+      marker.onMouseEnterEvent.addListener((mkr) => this.showToolbarAfterTimeout(mkr));
       marker.onMouseButtonEvent.addListener((mkr) => this.toggleMarker(mkr)); // eslint-disable-line @typescript-eslint/promise-function-async
     }
 
@@ -239,26 +208,19 @@ export class HyperModelingDecorator implements Decorator {
       return;
     }
 
-    if (
-      changeFlags.viewedCategories ||
-      changeFlags.viewedModels ||
-      changeFlags.viewedCategoriesPerModel
-    )
+    if (changeFlags.viewedCategories || changeFlags.viewedModels || changeFlags.viewedCategoriesPerModel)
       this.requestSync();
 
     if (changeFlags.viewState) {
       // If we're looking at a different view now, and we did not initiate that, turn off the active marker.
-      if (this.viewport.view !== this._appliedSpatialView)
-        this.setActiveMarker(undefined);
+      if (this.viewport.view !== this._appliedSpatialView) this.setActiveMarker(undefined);
       // eslint-disable-line @typescript-eslint/no-floating-promises
       else this._appliedSpatialView = undefined;
     }
   }
 
   private async toggleMarker(marker: SectionMarker): Promise<void> {
-    await this.setActiveMarker(
-      marker === this.activeMarker ? undefined : marker
-    );
+    await this.setActiveMarker(marker === this.activeMarker ? undefined : marker);
   }
 
   private dropTiledGraphicsProvider(): void {
@@ -278,8 +240,7 @@ export class HyperModelingDecorator implements Decorator {
   }
 
   private showToolbarAfterTimeout(marker: SectionMarker): void {
-    if (this._toolbarProvider?.marker !== marker)
-      this._toolbarProvider = new MarkerToolbarProvider(marker, this);
+    if (this._toolbarProvider?.marker !== marker) this._toolbarProvider = new MarkerToolbarProvider(marker, this);
 
     PopupToolbarManager.showToolbarAfterTimeout(this._toolbarProvider);
   }
@@ -287,10 +248,7 @@ export class HyperModelingDecorator implements Decorator {
   /** Toggles whether the clip volume associated with the specified marker is applied to the view. */
   public toggleClipVolume(marker: SectionMarker, enable: boolean): void {
     ViewClipTool.enableClipVolume(this.viewport);
-    ViewClipTool.setViewClip(
-      this.viewport,
-      enable ? marker.state.clip : undefined
-    );
+    ViewClipTool.setViewClip(this.viewport, enable ? marker.state.clip : undefined);
   }
 
   /** Toggles the specified section marker.
@@ -299,10 +257,7 @@ export class HyperModelingDecorator implements Decorator {
    * @see [[toggleClipVolume]] to toggle only the clip volume.
    * @see [[toggleAttachment]] to toggle only the attachment graphics.
    */
-  public async toggleSection(
-    marker: SectionMarker,
-    enable: boolean
-  ): Promise<boolean> {
+  public async toggleSection(marker: SectionMarker, enable: boolean): Promise<boolean> {
     if (enable) {
       if (this.viewport.view.is3d()) {
         // Preserve the view settings; apply only the frustum and clip volume
@@ -327,15 +282,10 @@ export class HyperModelingDecorator implements Decorator {
   /** Toggles display of 2d section graphics and sheet annotations for the specified marker.
    * @see [[toggleSection]] to apply the spatial view and clip volume in addition to the attachment graphics.
    */
-  public async toggleAttachment(
-    marker: SectionMarker,
-    enable: boolean
-  ): Promise<boolean> {
+  public async toggleAttachment(marker: SectionMarker, enable: boolean): Promise<boolean> {
     this.dropTiledGraphicsProvider();
     if (enable) {
-      this._tiledGraphicsProvider = await createSectionGraphicsProvider(
-        marker.state
-      );
+      this._tiledGraphicsProvider = await createSectionGraphicsProvider(marker.state);
       this.viewport.addTiledGraphicsProvider(this._tiledGraphicsProvider);
     }
 
@@ -350,10 +300,7 @@ export class HyperModelingDecorator implements Decorator {
 
     const vp = this.viewport;
     const targetMatrix = matrix.multiplyMatrixMatrix(vp.rotation);
-    const rotateTransform = Transform.createFixedPointAndMatrix(
-      origin,
-      targetMatrix
-    );
+    const rotateTransform = Transform.createFixedPointAndMatrix(origin, targetMatrix);
 
     const startFrustum = vp.getFrustum();
     const newFrustum = startFrustum.clone();
@@ -437,11 +384,7 @@ export class HyperModelingDecorator implements Decorator {
 
   private sync(): void {
     this._needSync = false;
-    if (
-      HyperModeling.isInitialized &&
-      this.viewport.view.is3d() &&
-      this.updateMarkerVisibility()
-    ) {
+    if (HyperModeling.isInitialized && this.viewport.view.is3d() && this.updateMarkerVisibility()) {
       this.markers.markDirty();
       this.viewport.invalidateCachedDecorations(this);
     }
@@ -450,11 +393,7 @@ export class HyperModelingDecorator implements Decorator {
   private isMarkerVisible(marker: SectionMarker): boolean {
     if (undefined !== this.activeMarker) return marker === this.activeMarker;
 
-    return HyperModeling.markerHandler.isMarkerVisible(
-      marker,
-      this,
-      this._config
-    );
+    return HyperModeling.markerHandler.isMarkerVisible(marker, this, this._config);
   }
 
   private updateMarkerVisibility(): boolean {

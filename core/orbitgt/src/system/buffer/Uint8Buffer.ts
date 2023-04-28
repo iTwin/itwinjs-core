@@ -50,11 +50,7 @@ export class Uint8Buffer {
    * Return the content as a native buffer
    */
   public toNativeBuffer(): Uint8Array {
-    return new Uint8Array(
-      this._buffer.toNativeBuffer(),
-      this._offset,
-      this._count
-    );
+    return new Uint8Array(this._buffer.toNativeBuffer(), this._offset, this._count);
   }
 
   /**

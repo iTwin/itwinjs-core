@@ -18,13 +18,7 @@ import {
   Transform,
   Vector3d,
 } from "@itwin/core-geometry";
-import {
-  BoundingSphere,
-  ColorDef,
-  ElementAlignedBox3d,
-  Frustum,
-  FrustumPlanes,
-} from "@itwin/core-common";
+import { BoundingSphere, ColorDef, ElementAlignedBox3d, Frustum, FrustumPlanes } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GraphicBuilder } from "../render/GraphicBuilder";
@@ -49,19 +43,10 @@ import {
 
 // cSpell:ignore undisplayable bitfield
 
-const scratchRange2d = [
-  new Point2d(),
-  new Point2d(),
-  new Point2d(),
-  new Point2d(),
-];
+const scratchRange2d = [new Point2d(), new Point2d(), new Point2d(), new Point2d()];
 
 /** @internal */
-export function addRangeGraphic(
-  builder: GraphicBuilder,
-  range: Range3d,
-  is2d: boolean
-): void {
+export function addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void {
   if (!is2d) {
     builder.addRangeBox(range);
     return;
@@ -163,9 +148,7 @@ export abstract class Tile {
   public abstract get channel(): TileRequestChannel;
 
   /** Return a Promise that resolves to the raw data representing this tile's content. */
-  public abstract requestContent(
-    isCanceled: () => boolean
-  ): Promise<TileRequest.Response>;
+  public abstract requestContent(isCanceled: () => boolean): Promise<TileRequest.Response>;
 
   /** Return a Promise that deserializes this tile's content from raw format produced by [[requestContent]]. */
   public abstract readContent(
@@ -323,10 +306,7 @@ export abstract class Tile {
    * @returns The priority.
    * @see [[TileLoadPriority]] for suggested priority values.
    */
-  public computeLoadPriority(
-    _viewports: Iterable<Viewport>,
-    _users: Iterable<TileUser>
-  ): number {
+  public computeLoadPriority(_viewports: Iterable<Viewport>, _users: Iterable<TileUser>): number {
     return this.depth;
   }
 
@@ -341,8 +321,7 @@ export abstract class Tile {
   /** A volume no larger than this tile's `range`, and optionally more tightly encompassing its contents, used for more accurate culling. */
   public get contentRange(): ElementAlignedBox3d {
     if (undefined !== this._contentRange) return this._contentRange;
-    else if (undefined === this.parent && undefined !== this.tree.contentRange)
-      return this.tree.contentRange;
+    else if (undefined === this.parent && undefined !== this.tree.contentRange) return this.tree.contentRange;
     else return this.range;
   }
 
@@ -351,13 +330,9 @@ export abstract class Tile {
     switch (this._state) {
       case TileState.NotReady: {
         if (undefined === this.request) return TileLoadStatus.NotLoaded;
-        else if (TileRequest.State.Loading === this.request.state)
-          return TileLoadStatus.Loading;
+        else if (TileRequest.State.Loading === this.request.state) return TileLoadStatus.Loading;
 
-        assert(
-          TileRequest.State.Completed !== this.request.state &&
-            TileRequest.State.Failed !== this.request.state
-        ); // this.request should be undefined in these cases...
+        assert(TileRequest.State.Completed !== this.request.state && TileRequest.State.Failed !== this.request.state); // this.request should be undefined in these cases...
         return TileLoadStatus.Queued;
       }
       case TileState.Ready: {
@@ -410,18 +385,14 @@ export abstract class Tile {
    * @note Do not override this method! Override `_collectStatistics` instead.
    * @internal
    */
-  public collectStatistics(
-    stats: RenderMemory.Statistics,
-    includeChildren = true
-  ): void {
+  public collectStatistics(stats: RenderMemory.Statistics, includeChildren = true): void {
     if (undefined !== this._graphic) this._graphic.collectStatistics(stats);
 
     this._collectStatistics(stats);
     if (!includeChildren) return;
 
     const children = this.children;
-    if (undefined !== children)
-      for (const child of children) child.collectStatistics(stats);
+    if (undefined !== children) for (const child of children) child.collectStatistics(stats);
   }
 
   /** If this tile's child tiles have not yet been requested, enqueue an asynchronous request to load them.
@@ -429,8 +400,7 @@ export abstract class Tile {
    * @note Do not override this method - implement [[_loadChildren]].
    */
   protected loadChildren(): TileTreeLoadStatus {
-    if (this._childrenLoadStatus !== TileTreeLoadStatus.NotLoaded)
-      return this._childrenLoadStatus;
+    if (this._childrenLoadStatus !== TileTreeLoadStatus.NotLoaded) return this._childrenLoadStatus;
 
     this._childrenLoadStatus = TileTreeLoadStatus.Loading;
 
@@ -439,8 +409,7 @@ export abstract class Tile {
         this._children = children;
         this._childrenLoadStatus = TileTreeLoadStatus.Loaded;
 
-        if (undefined === children || 0 === children.length)
-          this._isLeaf = true;
+        if (undefined === children || 0 === children.length) this._isLeaf = true;
 
         IModelApp.tileAdmin.onTileChildrenLoad.raiseEvent(this);
       },
@@ -486,35 +455,25 @@ export abstract class Tile {
     return this.isFrustumCulled(box, args, testClipIntersection, sphere);
   }
 
-  protected isFrustumCulled(
-    box: Frustum,
-    args: TileDrawArgs,
-    testClipIntersection: boolean,
-    sphere?: BoundingSphere
-  ) {
+  protected isFrustumCulled(box: Frustum, args: TileDrawArgs, testClipIntersection: boolean, sphere?: BoundingSphere) {
     const worldBox = box.transformBy(args.location, scratchWorldFrustum);
     const worldSphere = sphere?.transformBy(args.location, scratchWorldSphere);
 
     // Test against frustum.
-    if (
-      FrustumPlanes.Containment.Outside ===
-      args.frustumPlanes.computeFrustumContainment(worldBox, worldSphere)
-    )
+    if (FrustumPlanes.Containment.Outside === args.frustumPlanes.computeFrustumContainment(worldBox, worldSphere))
       return true;
 
     // Test against TileTree's own clip volume, if any.
     if (
       undefined !== args.clip &&
-      ClipPlaneContainment.StronglyOutside ===
-        args.clip.classifyPointContainment(worldBox.points)
+      ClipPlaneContainment.StronglyOutside === args.clip.classifyPointContainment(worldBox.points)
     )
       return true;
 
     // Test against view clip, if any (will be undefined if TileTree does not want view clip applied to it).
     if (
       undefined !== args.viewClip &&
-      ClipPlaneContainment.StronglyOutside ===
-        args.viewClip.classifyPointContainment(worldBox.points)
+      ClipPlaneContainment.StronglyOutside === args.viewClip.classifyPointContainment(worldBox.points)
     )
       return true;
 
@@ -522,8 +481,7 @@ export abstract class Tile {
     if (
       testClipIntersection &&
       undefined !== args.intersectionClip &&
-      ClipPlaneContainment.Ambiguous !==
-        args.intersectionClip.classifyPointContainment(worldBox.points)
+      ClipPlaneContainment.Ambiguous !== args.intersectionClip.classifyPointContainment(worldBox.points)
     )
       return true;
 
@@ -534,8 +492,7 @@ export abstract class Tile {
   public computeVisibility(args: TileDrawArgs): TileVisibility {
     if (this.isEmpty) return TileVisibility.OutsideFrustum;
 
-    if (args.boundingRange && !args.boundingRange.intersectsRange(this.range))
-      return TileVisibility.OutsideFrustum;
+    if (args.boundingRange && !args.boundingRange.intersectsRange(this.range)) return TileVisibility.OutsideFrustum;
 
     // NB: We test for region culling before isDisplayable - otherwise we will never unload children of undisplayed tiles when
     // they are outside frustum
@@ -545,14 +502,11 @@ export abstract class Tile {
     if (!this.isDisplayable) return TileVisibility.TooCoarse;
 
     if (this.isLeaf) {
-      if (this.hasContentRange && this.isContentCulled(args))
-        return TileVisibility.OutsideFrustum;
+      if (this.hasContentRange && this.isContentCulled(args)) return TileVisibility.OutsideFrustum;
       else return TileVisibility.Visible;
     }
 
-    return this.meetsScreenSpaceError(args)
-      ? TileVisibility.Visible
-      : TileVisibility.TooCoarse;
+    return this.meetsScreenSpaceError(args) ? TileVisibility.Visible : TileVisibility.TooCoarse;
   }
 
   /** Returns true if this tile is of at least high enough resolution to be displayed, per the supplied [[TileDrawArgs]]; or false if
@@ -578,8 +532,7 @@ export abstract class Tile {
     box.transformBy(treeTransform, box);
     if (
       frustumPlanes !== undefined &&
-      FrustumPlanes.Containment.Outside ===
-        frustumPlanes.computeFrustumContainment(box)
+      FrustumPlanes.Containment.Outside === frustumPlanes.computeFrustumContainment(box)
     )
       return;
 
@@ -590,13 +543,7 @@ export abstract class Tile {
         else range.high.z = Math.max(1.0, range.high.z); // behind eye plane...
       }
     } else {
-      for (const child of this.children)
-        child.extendRangeForContent(
-          range,
-          matrix,
-          treeTransform,
-          frustumPlanes
-        );
+      for (const child of this.children) child.extendRangeForContent(range, matrix, treeTransform, frustumPlanes);
     }
   }
 
@@ -643,10 +590,7 @@ export abstract class Tile {
   }
 
   /** @internal */
-  protected addRangeGraphic(
-    builder: GraphicBuilder,
-    type: TileBoundingBoxes
-  ): void {
+  protected addRangeGraphic(builder: GraphicBuilder, type: TileBoundingBoxes): void {
     if (TileBoundingBoxes.Both === type) {
       builder.setSymbology(ColorDef.blue, ColorDef.blue, 1);
       addRangeGraphic(builder, this.range, this.tree.is2d);
@@ -676,8 +620,7 @@ export abstract class Tile {
     } else {
       const color = this.rangeGraphicColor;
       builder.setSymbology(color, color, 1);
-      const range =
-        TileBoundingBoxes.Content === type ? this.contentRange : this.range;
+      const range = TileBoundingBoxes.Content === type ? this.contentRange : this.range;
       addRangeGraphic(builder, range, this.tree.is2d);
     }
   }

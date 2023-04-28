@@ -59,30 +59,13 @@ import {
   SingleElementPropertiesRequestOptions,
   WithCancelEvent,
 } from "@itwin/presentation-common";
-import {
-  buildElementsProperties,
-  getElementsCount,
-  iterateElementIds,
-} from "./ElementPropertiesHelper";
-import {
-  NativePlatformDefinition,
-  NativePlatformRequestTypes,
-} from "./NativePlatform";
-import {
-  getRulesetIdObject,
-  PresentationManagerDetail,
-} from "./PresentationManagerDetail";
+import { buildElementsProperties, getElementsCount, iterateElementIds } from "./ElementPropertiesHelper";
+import { NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform";
+import { getRulesetIdObject, PresentationManagerDetail } from "./PresentationManagerDetail";
 import { RulesetManager } from "./RulesetManager";
-import {
-  RulesetVariablesManager,
-  RulesetVariablesManagerImpl,
-} from "./RulesetVariablesManager";
+import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { SelectionScopesHelper } from "./SelectionScopesHelper";
-import {
-  BackendDiagnosticsAttribute,
-  BackendDiagnosticsOptions,
-  getLocalizedStringEN,
-} from "./Utils";
+import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, getLocalizedStringEN } from "./Utils";
 
 /**
  * Presentation manager working mode.
@@ -130,10 +113,7 @@ export enum HierarchyCacheMode {
  * Configuration for hierarchy cache.
  * @public
  */
-export type HierarchyCacheConfig =
-  | MemoryHierarchyCacheConfig
-  | DiskHierarchyCacheConfig
-  | HybridCacheConfig;
+export type HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig;
 
 /**
  * Base interface for all [[HierarchyCacheConfig]] implementations.
@@ -519,11 +499,7 @@ export class PresentationManager {
    * @public
    */
   public async getNodes(
-    requestOptions: WithCancelEvent<
-      Prioritized<
-        Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>
-      >
-    > &
+    requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> &
       BackendDiagnosticsAttribute
   ): Promise<Node[]> {
     const serializedNodesJson = await this._detail.getNodes(requestOptions);
@@ -538,9 +514,7 @@ export class PresentationManager {
    * @public
    */
   public async getNodesCount(
-    requestOptions: WithCancelEvent<
-      Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>
-    > &
+    requestOptions: WithCancelEvent<Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> &
       BackendDiagnosticsAttribute
   ): Promise<number> {
     return this._detail.getNodesCount(requestOptions);
@@ -552,19 +526,12 @@ export class PresentationManager {
    */
   public async getNodesDescriptor(
     requestOptions: WithCancelEvent<
-      Prioritized<
-        HierarchyLevelDescriptorRequestOptions<
-          IModelDb,
-          NodeKey,
-          RulesetVariable
-        >
-      >
+      Prioritized<HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey, RulesetVariable>>
     > &
       BackendDiagnosticsAttribute
   ): Promise<Descriptor | undefined> {
     const response = await this._detail.getNodesDescriptor(requestOptions);
-    const reviver = (key: string, value: any) =>
-      key === "" ? Descriptor.fromJSON(value) : value;
+    const reviver = (key: string, value: any) => (key === "" ? Descriptor.fromJSON(value) : value);
     return JSON.parse(response, reviver);
   }
 
@@ -575,9 +542,7 @@ export class PresentationManager {
    */
   public async getNodePaths(
     requestOptions: WithCancelEvent<
-      Prioritized<
-        FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>
-      >
+      Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>>
     > &
       BackendDiagnosticsAttribute
   ): Promise<NodePathElement[]> {
@@ -590,11 +555,7 @@ export class PresentationManager {
    * @public
    */
   public async getFilteredNodePaths(
-    requestOptions: WithCancelEvent<
-      Prioritized<
-        FilterByTextHierarchyRequestOptions<IModelDb, RulesetVariable>
-      >
-    > &
+    requestOptions: WithCancelEvent<Prioritized<FilterByTextHierarchyRequestOptions<IModelDb, RulesetVariable>>> &
       BackendDiagnosticsAttribute
   ): Promise<NodePathElement[]> {
     return this._detail.getFilteredNodePaths(requestOptions);
@@ -606,10 +567,7 @@ export class PresentationManager {
    * @public
    */
   public async getContentSources(
-    requestOptions: WithCancelEvent<
-      Prioritized<ContentSourcesRequestOptions<IModelDb>>
-    > &
-      BackendDiagnosticsAttribute
+    requestOptions: WithCancelEvent<Prioritized<ContentSourcesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute
   ): Promise<SelectClassInfo[]> {
     return this._detail.getContentSources(requestOptions);
   }
@@ -619,16 +577,11 @@ export class PresentationManager {
    * @public
    */
   public async getContentDescriptor(
-    requestOptions: WithCancelEvent<
-      Prioritized<
-        ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>
-      >
-    > &
+    requestOptions: WithCancelEvent<Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>>> &
       BackendDiagnosticsAttribute
   ): Promise<Descriptor | undefined> {
     const response = await this._detail.getContentDescriptor(requestOptions);
-    const reviver = (key: string, value: any) =>
-      key === "" ? Descriptor.fromJSON(value) : value;
+    const reviver = (key: string, value: any) => (key === "" ? Descriptor.fromJSON(value) : value);
     return JSON.parse(response, reviver);
   }
 
@@ -638,14 +591,7 @@ export class PresentationManager {
    */
   public async getContentSetSize(
     requestOptions: WithCancelEvent<
-      Prioritized<
-        ContentRequestOptions<
-          IModelDb,
-          Descriptor | DescriptorOverrides,
-          KeySet,
-          RulesetVariable
-        >
-      >
+      Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>
     > &
       BackendDiagnosticsAttribute
   ): Promise<number> {
@@ -658,33 +604,20 @@ export class PresentationManager {
    */
   public async getContent(
     requestOptions: WithCancelEvent<
-      Prioritized<
-        Paged<
-          ContentRequestOptions<
-            IModelDb,
-            Descriptor | DescriptorOverrides,
-            KeySet,
-            RulesetVariable
-          >
-        >
-      >
+      Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>
     > &
       BackendDiagnosticsAttribute
   ): Promise<Content | undefined> {
     const content = await this._detail.getContent({
       ...requestOptions,
-      ...(!requestOptions.omitFormattedValues &&
-      this.props.schemaContextProvider !== undefined
+      ...(!requestOptions.omitFormattedValues && this.props.schemaContextProvider !== undefined
         ? { omitFormattedValues: true }
         : undefined),
     });
 
     if (!content) return undefined;
 
-    if (
-      !requestOptions.omitFormattedValues &&
-      this.props.schemaContextProvider !== undefined
-    ) {
+    if (!requestOptions.omitFormattedValues && this.props.schemaContextProvider !== undefined) {
       const koqPropertyFormatter = new KoqPropertyValueFormatter(
         this.props.schemaContextProvider(requestOptions.imodel)
       );
@@ -706,14 +639,7 @@ export class PresentationManager {
    */
   public async getPagedDistinctValues(
     requestOptions: WithCancelEvent<
-      Prioritized<
-        DistinctValuesRequestOptions<
-          IModelDb,
-          Descriptor | DescriptorOverrides,
-          KeySet,
-          RulesetVariable
-        >
-      >
+      Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>
     > &
       BackendDiagnosticsAttribute
   ): Promise<PagedResponse<DisplayValueGroup>> {
@@ -725,9 +651,7 @@ export class PresentationManager {
    * @public
    */
   public async getElementProperties(
-    requestOptions: WithCancelEvent<
-      Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>
-    > &
+    requestOptions: WithCancelEvent<Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>> &
       BackendDiagnosticsAttribute
   ): Promise<ElementProperties | undefined>;
   /**
@@ -736,42 +660,29 @@ export class PresentationManager {
    * @public
    */
   public async getElementProperties(
-    requestOptions: WithCancelEvent<
-      Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>
-    > &
+    requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>> &
       BackendDiagnosticsAttribute
   ): Promise<MultiElementPropertiesResponse>;
   public async getElementProperties(
-    requestOptions: WithCancelEvent<
-      Prioritized<ElementPropertiesRequestOptions<IModelDb>>
-    > &
+    requestOptions: WithCancelEvent<Prioritized<ElementPropertiesRequestOptions<IModelDb>>> &
       BackendDiagnosticsAttribute
   ): Promise<ElementProperties | undefined | MultiElementPropertiesResponse> {
     if (isSingleElementPropertiesRequestOptions(requestOptions)) {
-      const elementProperties = await this._detail.getElementProperties(
-        requestOptions
-      );
+      const elementProperties = await this._detail.getElementProperties(requestOptions);
       // istanbul ignore if
       if (!elementProperties) return undefined;
-      return this._localizationHelper.getLocalizedElementProperties(
-        elementProperties
-      );
+      return this._localizationHelper.getLocalizedElementProperties(elementProperties);
     }
 
     return this.getMultipleElementProperties(requestOptions);
   }
 
   private async getMultipleElementProperties(
-    requestOptions: WithCancelEvent<
-      Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>
-    > &
+    requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>> &
       BackendDiagnosticsAttribute
   ): Promise<MultiElementPropertiesResponse> {
     const { elementClasses, ...optionsNoElementClasses } = requestOptions;
-    const elementsCount = getElementsCount(
-      requestOptions.imodel,
-      requestOptions.elementClasses
-    );
+    const elementsCount = getElementsCount(requestOptions.imodel, requestOptions.elementClasses);
 
     const propertiesGetter = async (className: string, ids: string[]) =>
       buildElementsPropertiesInPages(className, ids, async (keys) => {
@@ -791,16 +702,10 @@ export class PresentationManager {
     return {
       total: elementsCount,
       async *iterator() {
-        for (const idsByClass of iterateElementIds(
-          requestOptions.imodel,
-          elementClasses,
-          ELEMENT_IDS_BATCH_SIZE
-        )) {
+        for (const idsByClass of iterateElementIds(requestOptions.imodel, elementClasses, ELEMENT_IDS_BATCH_SIZE)) {
           const propertiesPage: ElementProperties[] = [];
           for (const entry of idsByClass) {
-            propertiesPage.push(
-              ...(await propertiesGetter(entry[0], entry[1]))
-            );
+            propertiesPage.push(...(await propertiesGetter(entry[0], entry[1])));
           }
           yield propertiesPage;
         }
@@ -813,17 +718,11 @@ export class PresentationManager {
    * @public
    */
   public async getDisplayLabelDefinition(
-    requestOptions: WithCancelEvent<
-      Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>>
-    > &
+    requestOptions: WithCancelEvent<Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>>> &
       BackendDiagnosticsAttribute
   ): Promise<LabelDefinition> {
-    const labelDefinition = await this._detail.getDisplayLabelDefinition(
-      requestOptions
-    );
-    return this._localizationHelper.getLocalizedLabelDefinition(
-      labelDefinition
-    );
+    const labelDefinition = await this._detail.getDisplayLabelDefinition(requestOptions);
+    return this._localizationHelper.getLocalizedLabelDefinition(labelDefinition);
   }
 
   /**
@@ -831,17 +730,11 @@ export class PresentationManager {
    * @public
    */
   public async getDisplayLabelDefinitions(
-    requestOptions: WithCancelEvent<
-      Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>
-    > &
+    requestOptions: WithCancelEvent<Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>> &
       BackendDiagnosticsAttribute
   ): Promise<LabelDefinition[]> {
-    const labelDefinitions = await this._detail.getDisplayLabelDefinitions(
-      requestOptions
-    );
-    return this._localizationHelper.getLocalizedLabelDefinitions(
-      labelDefinitions
-    );
+    const labelDefinitions = await this._detail.getDisplayLabelDefinitions(requestOptions);
+    return this._localizationHelper.getLocalizedLabelDefinitions(labelDefinitions);
   }
 
   /**
@@ -849,8 +742,7 @@ export class PresentationManager {
    * @public
    */
   public async getSelectionScopes(
-    _requestOptions: SelectionScopeRequestOptions<IModelDb> &
-      BackendDiagnosticsAttribute
+    _requestOptions: SelectionScopeRequestOptions<IModelDb> & BackendDiagnosticsAttribute
   ): Promise<SelectionScope[]> {
     return SelectionScopesHelper.getSelectionScopes();
   }
@@ -872,8 +764,7 @@ export class PresentationManager {
    */
   // eslint-disable-next-line @typescript-eslint/unified-signatures
   public async computeSelection(
-    requestOptions: ComputeSelectionRequestOptions<IModelDb> &
-      BackendDiagnosticsAttribute
+    requestOptions: ComputeSelectionRequestOptions<IModelDb> & BackendDiagnosticsAttribute
   ): Promise<KeySet>;
   public async computeSelection(
     requestOptions: (
@@ -902,10 +793,7 @@ export class PresentationManager {
   public async compareHierarchies(
     requestOptions: HierarchyCompareOptions<IModelDb, NodeKey>
   ): Promise<HierarchyCompareInfo> {
-    if (
-      !requestOptions.prev.rulesetOrId &&
-      !requestOptions.prev.rulesetVariables
-    ) {
+    if (!requestOptions.prev.rulesetOrId && !requestOptions.prev.rulesetVariables) {
       return { changes: [] };
     }
 
@@ -913,14 +801,9 @@ export class PresentationManager {
     this._detail.registerRuleset(rulesetOrId);
 
     const currRulesetId = getRulesetIdObject(requestOptions.rulesetOrId);
-    const prevRulesetId = prev.rulesetOrId
-      ? getRulesetIdObject(prev.rulesetOrId)
-      : currRulesetId;
+    const prevRulesetId = prev.rulesetOrId ? getRulesetIdObject(prev.rulesetOrId) : currRulesetId;
     if (prevRulesetId.parts.id !== currRulesetId.parts.id)
-      throw new PresentationError(
-        PresentationStatus.InvalidArgument,
-        "Can't compare rulesets with different IDs"
-      );
+      throw new PresentationError(PresentationStatus.InvalidArgument, "Can't compare rulesets with different IDs");
 
     const currRulesetVariables = rulesetVariables ?? [];
     const prevRulesetVariables = prev.rulesetVariables ?? currRulesetVariables;
@@ -936,8 +819,7 @@ export class PresentationManager {
     };
 
     // eslint-disable-next-line deprecation/deprecation
-    const reviver = (key: string, value: any) =>
-      key === "" ? HierarchyCompareInfo.fromJSON(value) : value;
+    const reviver = (key: string, value: any) => (key === "" ? HierarchyCompareInfo.fromJSON(value) : value);
     return JSON.parse(await this._detail.request(params), reviver);
   }
 }

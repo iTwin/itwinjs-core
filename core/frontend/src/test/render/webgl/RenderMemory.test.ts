@@ -23,30 +23,19 @@ import { IModelConnection } from "../../../IModelConnection";
 import { RenderMemory } from "../../../render/RenderMemory";
 import { RenderGeometry } from "../../../render/RenderSystem";
 import { RenderGraphic } from "../../../render/RenderGraphic";
-import {
-  MeshArgs,
-  MeshArgsEdges,
-} from "../../../render/primitives/mesh/MeshPrimitives";
+import { MeshArgs, MeshArgsEdges } from "../../../render/primitives/mesh/MeshPrimitives";
 import { MeshParams } from "../../../render/primitives/VertexTable";
 import { Texture } from "../../../render/webgl/Texture";
 import { createBlankConnection } from "../../createBlankConnection";
 import { InstancedGraphicParams } from "../../../core-frontend";
 
-function expectMemory(
-  consumer: RenderMemory.Consumers,
-  total: number,
-  max: number,
-  count: number
-) {
+function expectMemory(consumer: RenderMemory.Consumers, total: number, max: number, count: number) {
   expect(consumer.totalBytes).to.equal(total);
   expect(consumer.maxBytes).to.equal(max);
   expect(consumer.count).to.equal(count);
 }
 
-function createMeshGeometry(opts?: {
-  texture?: RenderTexture;
-  includeEdges?: boolean;
-}): RenderGeometry {
+function createMeshGeometry(opts?: { texture?: RenderTexture; includeEdges?: boolean }): RenderGeometry {
   const colors = new ColorIndex();
   colors.initUniform(ColorDef.from(255, 0, 0));
 
@@ -54,24 +43,12 @@ function createMeshGeometry(opts?: {
   if (opts?.texture) {
     textureMapping = {
       texture: opts.texture,
-      uvParams: [
-        new Point2d(0, 1),
-        new Point2d(1, 1),
-        new Point2d(0, 0),
-        new Point2d(1, 0),
-      ],
+      uvParams: [new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0)],
     };
   }
 
-  const points = [
-    new Point3d(0, 0, 0),
-    new Point3d(1, 0, 0),
-    new Point3d(0, 1, 0),
-    new Point3d(1, 1, 0),
-  ];
-  const qpoints = new QPoint3dList(
-    QParams3d.fromRange(Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1))
-  );
+  const points = [new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(0, 1, 0), new Point3d(1, 1, 0)];
+  const qpoints = new QPoint3dList(QParams3d.fromRange(Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1)));
   for (const point of points) qpoints.add(point);
 
   let edges;
@@ -104,24 +81,14 @@ function createMeshGeometry(opts?: {
   return geom!;
 }
 
-function createGraphic(
-  geom: RenderGeometry,
-  instances?: InstancedGraphicParams
-): RenderGraphic {
+function createGraphic(geom: RenderGeometry, instances?: InstancedGraphicParams): RenderGraphic {
   const graphic = IModelApp.renderSystem.createRenderGraphic(geom, instances);
   expect(graphic).not.to.be.undefined;
   return graphic!;
 }
 
-function createTexture(
-  iModel: IModelConnection,
-  persistent: boolean
-): RenderTexture {
-  const source = ImageBuffer.create(
-    new Uint8Array([255, 255, 255, 255]),
-    ImageBufferFormat.Rgba,
-    1
-  );
+function createTexture(iModel: IModelConnection, persistent: boolean): RenderTexture {
+  const source = ImageBuffer.create(new Uint8Array([255, 255, 255, 255]), ImageBufferFormat.Rgba, 1);
   const key = persistent ? iModel.transientIds.getNext() : undefined;
   const tex = IModelApp.renderSystem.createTexture({
     ownership: key ? { iModel, key } : undefined,
@@ -157,10 +124,7 @@ function getBytesUsed(consumer: RenderMemory.Consumer | RenderTexture): number {
   return getStats(consumer).totalBytes;
 }
 
-function expectBytesUsed(
-  expected: number,
-  consumer: RenderMemory.Consumer | RenderTexture
-): void {
+function expectBytesUsed(expected: number, consumer: RenderMemory.Consumer | RenderTexture): void {
   expect(getBytesUsed(consumer)).to.equal(expected);
 }
 

@@ -34,16 +34,12 @@ describe("computeProjectExtents", () => {
         });
         expect(result.extents.isAlmostEqual(projectExtents)).to.be.true;
 
-        expect(undefined !== result.extentsWithOutliers).to.equal(
-          true === reportExtentsWithOutliers
-        );
+        expect(undefined !== result.extentsWithOutliers).to.equal(true === reportExtentsWithOutliers);
         if (undefined !== result.extentsWithOutliers)
-          expect(result.extentsWithOutliers.isAlmostEqual(projectExtents)).to.be
-            .true;
+          expect(result.extentsWithOutliers.isAlmostEqual(projectExtents)).to.be.true;
 
         expect(undefined !== result.outliers).to.equal(true === reportOutliers);
-        if (undefined !== result.outliers)
-          expect(result.outliers.length).to.equal(0);
+        if (undefined !== result.outliers) expect(result.outliers.length).to.equal(0);
       }
     }
   });
@@ -84,16 +80,8 @@ describe("computeProjectExtents", () => {
     expect(result.outliers!.length).to.equal(1);
     expect(result.outliers![0]).to.equal(newId);
     expect(result.extents.isAlmostEqual(originalExtents)).to.be.true;
-    expect(result.extentsWithOutliers!.isAlmostEqual(originalExtents)).to.be
-      .false;
-    expect(
-      result.extentsWithOutliers!.low.isAlmostEqual(extentsWithOutlier.low)
-    ).to.be.true;
-    expect(
-      result.extentsWithOutliers!.high.isAlmostEqual(
-        extentsWithOutlier.high,
-        20
-      )
-    ).to.be.true;
+    expect(result.extentsWithOutliers!.isAlmostEqual(originalExtents)).to.be.false;
+    expect(result.extentsWithOutliers!.low.isAlmostEqual(extentsWithOutlier.low)).to.be.true;
+    expect(result.extentsWithOutliers!.high.isAlmostEqual(extentsWithOutlier.high, 20)).to.be.true;
   });
 });

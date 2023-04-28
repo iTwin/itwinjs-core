@@ -20,8 +20,7 @@ export class StandardContentLayouts {
 
   public static readonly fourQuadrants: ContentLayoutProps = {
     id: "uia:fourQuadrants",
-    description:
-      "Four Views, two stacked on the left, two stacked on the right",
+    description: "Four Views, two stacked on the left, two stacked on the right",
     verticalSplit: {
       id: "uia:fourQuadrantVerticalSplit",
       percentage: 0.5,
@@ -77,8 +76,7 @@ export class StandardContentLayouts {
 
   public static readonly threeViewsTwoOnLeft: ContentLayoutProps = {
     id: "uia:threeViewsTwoOnLeft",
-    description:
-      "Three views, one on the right with the two on the left stacked one of top of the other",
+    description: "Three views, one on the right with the two on the left stacked one of top of the other",
     verticalSplit: {
       id: "uia:twoViewsOnLeftSplit",
       percentage: 0.5,
@@ -99,8 +97,7 @@ export class StandardContentLayouts {
 
   public static readonly threeViewsTwoOnRight: ContentLayoutProps = {
     id: "uia:threeViewsTwoOnRight",
-    description:
-      "Three views, one on the left with the two on the right stacked one of top of the other",
+    description: "Three views, one on the left with the two on the right stacked one of top of the other",
     verticalSplit: {
       id: "uia:twoViewsOnRightSplit",
       percentage: 0.5,

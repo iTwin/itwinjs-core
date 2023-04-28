@@ -25,9 +25,7 @@ export class SweepLineStringToFacetContext {
     spacePoints.setRange(this._spacePointsRange);
     this._numSpacePoints = this._spacePoints.length;
   }
-  public static create(
-    xyz: GrowableXYZArray
-  ): SweepLineStringToFacetContext | undefined {
+  public static create(xyz: GrowableXYZArray): SweepLineStringToFacetContext | undefined {
     if (xyz.length > 1) {
       return new SweepLineStringToFacetContext(xyz.clone());
     }
@@ -54,39 +52,21 @@ export class SweepLineStringToFacetContext {
   ): number {
     polygon.setRange(this._polygonRange);
     let workCounter = 0;
-    if (!this._polygonRange.intersectsRangeXY(this._spacePointsRange))
-      return workCounter;
+    if (!this._polygonRange.intersectsRangeXY(this._spacePointsRange)) return workCounter;
     // numTest++;
     // For each triangle within the facet ...
     // remark: this loop only runs once in triangle mesh, twice in quads ...
     for (let k1 = 1; k1 + 1 < polygon.length; k1++) {
       workCounter++;
-      const frame = polygon.fillLocalXYTriangleFrame(
-        0,
-        k1,
-        k1 + 1,
-        this._localFrame
-      );
+      const frame = polygon.fillLocalXYTriangleFrame(0, k1, k1 + 1, this._localFrame);
       if (frame) {
         // For each stroke of the linestring ...
         for (let i1 = 1; i1 < this._numSpacePoints; i1++) {
           workCounter++;
-          this._spacePoints.getPoint3dAtCheckedPointIndex(
-            i1 - 1,
-            this._segmentPoint0
-          );
-          this._spacePoints.getPoint3dAtCheckedPointIndex(
-            i1,
-            this._segmentPoint1
-          );
-          frame.multiplyInversePoint3d(
-            this._segmentPoint0,
-            this._localSegmentPoint0
-          );
-          frame.multiplyInversePoint3d(
-            this._segmentPoint1,
-            this._localSegmentPoint1
-          );
+          this._spacePoints.getPoint3dAtCheckedPointIndex(i1 - 1, this._segmentPoint0);
+          this._spacePoints.getPoint3dAtCheckedPointIndex(i1, this._segmentPoint1);
+          frame.multiplyInversePoint3d(this._segmentPoint0, this._localSegmentPoint0);
+          frame.multiplyInversePoint3d(this._segmentPoint1, this._localSegmentPoint1);
           this._clipFractions.set(0, 1);
           /** (x,y,1-x-y) are barycentric coordinates in the triangle !!! */
           if (
@@ -113,20 +93,10 @@ export class SweepLineStringToFacetContext {
               this._clipFractions.x1,
               this._localSegmentPoint1
             );
-            const worldClippedPointA =
-              this._localFrame.multiplyPoint3d(localClippedPointA)!;
-            const worldClippedPointB =
-              this._localFrame.multiplyPoint3d(localClippedPointB)!;
-            const planePointA = this._localFrame.multiplyXYZ(
-              localClippedPointA.x,
-              localClippedPointA.y,
-              0.0
-            )!;
-            const planePointB = this._localFrame.multiplyXYZ(
-              localClippedPointB.x,
-              localClippedPointB.y,
-              0.0
-            )!;
+            const worldClippedPointA = this._localFrame.multiplyPoint3d(localClippedPointA)!;
+            const worldClippedPointB = this._localFrame.multiplyPoint3d(localClippedPointB)!;
+            const planePointA = this._localFrame.multiplyXYZ(localClippedPointA.x, localClippedPointA.y, 0.0)!;
+            const planePointB = this._localFrame.multiplyXYZ(localClippedPointB.x, localClippedPointB.y, 0.0)!;
             const splitParameter = Geometry.inverseInterpolate01(
               this._localSegmentPoint0.z,
               this._localSegmentPoint1.z
@@ -138,10 +108,7 @@ export class SweepLineStringToFacetContext {
               splitParameter < this._clipFractions.x1
             ) {
               workCounter++;
-              const piercePointX = this._segmentPoint0.interpolate(
-                splitParameter,
-                this._segmentPoint1
-              );
+              const piercePointX = this._segmentPoint0.interpolate(splitParameter, this._segmentPoint1);
               const piercePointY = piercePointX.clone(); // so points are distinct for the two triangle announcements.
               announce(
                 this._spacePoints,
@@ -168,12 +135,7 @@ export class SweepLineStringToFacetContext {
                 i1 - 1,
                 polyface,
                 readIndex,
-                [
-                  worldClippedPointA,
-                  worldClippedPointB,
-                  planePointB,
-                  planePointA,
-                ],
+                [worldClippedPointA, worldClippedPointB, planePointB, planePointA],
                 3,
                 2
               );
@@ -184,12 +146,7 @@ export class SweepLineStringToFacetContext {
                 i1 - 1,
                 polyface,
                 readIndex,
-                [
-                  worldClippedPointB,
-                  worldClippedPointA,
-                  planePointA,
-                  planePointB,
-                ],
+                [worldClippedPointB, worldClippedPointA, planePointA, planePointB],
                 2,
                 3
               );

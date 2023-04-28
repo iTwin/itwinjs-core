@@ -13,10 +13,7 @@ import {
 } from "../Compare";
 
 class Thing {
-  public constructor(
-    public readonly first: number,
-    public readonly second: number
-  ) {}
+  public constructor(public readonly first: number, public readonly second: number) {}
 }
 
 function compareThings(lhs: Thing, rhs: Thing) {
@@ -63,9 +60,7 @@ describe("SortedArray", () => {
     expect(list.length).to.equal(1);
     let index = list.indexOf(thing);
     expect(index).to.equal(0);
-    expect(list.indexOfEquivalent((x) => compareThings(x, thing))).to.equal(
-      index
-    );
+    expect(list.indexOfEquivalent((x) => compareThings(x, thing))).to.equal(index);
 
     // not allowing duplicates
     index = list.insert(thing);
@@ -76,9 +71,7 @@ describe("SortedArray", () => {
     let found = list.findEqual(new Thing(1, 1));
     expect(found).not.to.be.undefined;
     expect(found).to.equal(thing);
-    expect(
-      list.findEquivalent((x) => compareThings(x, new Thing(1, 1)))
-    ).to.equal(thing);
+    expect(list.findEquivalent((x) => compareThings(x, new Thing(1, 1)))).to.equal(thing);
 
     found = list.get(0);
     expect(found).not.to.be.undefined;
@@ -91,9 +84,7 @@ describe("SortedArray", () => {
     expect(list.indexOf(thing)).to.equal(1);
     expect(list.indexOfEquivalent((x) => compareThings(x, thing))).to.equal(1);
     expect(list.indexOf(new Thing(2, 1))).to.equal(2);
-    expect(
-      list.indexOfEquivalent((x) => compareThings(x, new Thing(2, 1)))
-    ).to.equal(2);
+    expect(list.indexOfEquivalent((x) => compareThings(x, new Thing(2, 1)))).to.equal(2);
     expect(list.length).to.equal(3);
 
     const thing05 = new Thing(0, 5);
@@ -125,33 +116,10 @@ describe("SortedArray", () => {
     list.insert(id);
     expect(list.length).to.equal(2);
     const lengthA = list.length;
-    const ids = [
-      "x",
-      "w",
-      "z",
-      "a",
-      "a",
-      "z",
-      "w",
-      "p",
-      "a",
-      "x",
-      "y",
-      "e",
-      "r",
-      "w",
-      "q",
-    ];
+    const ids = ["x", "w", "z", "a", "a", "z", "w", "p", "a", "x", "y", "e", "r", "w", "q"];
     for (const toInsert of ids) list.insert(new Id(toInsert));
-    expect(list.length, "length of protected array").to.equal(
-      ids.length + lengthA
-    );
-    expectSorted(
-      list.extractArray(),
-      ids.length + 2,
-      true,
-      (lhs: Id, rhs: Id) => lhs.compare(rhs)
-    );
+    expect(list.length, "length of protected array").to.equal(ids.length + lengthA);
+    expectSorted(list.extractArray(), ids.length + 2, true, (lhs: Id, rhs: Id) => lhs.compare(rhs));
   });
 
   it("Number array", () => {
@@ -186,10 +154,7 @@ describe("SortedArray", () => {
       const removeA = listA.remove(a);
       expect(listA.contains(a)).to.be.false;
       const removeB = listB.remove(a);
-      expect(
-        removeB,
-        "listB should have all original entries with duplicates"
-      ).is.gte(0);
+      expect(removeB, "listB should have all original entries with duplicates").is.gte(0);
       if (removeA === -1)
         // this must be removal of a dup.
         numDuplicatesDuringRemoval++;
@@ -267,9 +232,7 @@ describe("SortFunctions", () => {
       const number0 = b0 ? 1 : 0;
       for (const b1 of [false, true]) {
         const number1 = b1 ? 1 : 0;
-        expect(compareBooleans(b0, b1)).to.equal(
-          compareNumbers(number0, number1)
-        );
+        expect(compareBooleans(b0, b1)).to.equal(compareNumbers(number0, number1));
       }
     }
   });

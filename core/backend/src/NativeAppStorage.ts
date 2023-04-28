@@ -31,10 +31,8 @@ export class NativeAppStorage {
     const rc = this._ecdb.withPreparedSqliteStatement(
       "INSERT INTO app_setting(key,type,val)VALUES(?,?,?) ON CONFLICT(key) DO UPDATE SET type=excluded.type,val=excluded.val",
       (stmt) => {
-        let valType =
-          value === undefined || value === null ? "null" : typeof value;
-        if (valType === "object" && value instanceof Uint8Array)
-          valType = "Uint8Array";
+        let valType = value === undefined || value === null ? "null" : typeof value;
+        if (valType === "object" && value instanceof Uint8Array) valType = "Uint8Array";
 
         switch (valType) {
           case "null":
@@ -44,10 +42,7 @@ export class NativeAppStorage {
           case "Uint8Array":
             break;
           default:
-            throw new IModelError(
-              DbResult.BE_SQLITE_ERROR,
-              `Unsupported type ${valType} for value for key='${key}`
-            );
+            throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unsupported type ${valType} for value for key='${key}`);
         }
 
         stmt.bindValue(1, key);
@@ -56,53 +51,39 @@ export class NativeAppStorage {
         return stmt.step();
       }
     );
-    if (rc !== DbResult.BE_SQLITE_DONE)
-      throw new IModelError(rc, "SQLite error");
+    if (rc !== DbResult.BE_SQLITE_DONE) throw new IModelError(rc, "SQLite error");
 
     this._ecdb.saveChanges();
   }
 
   /** Get the value for a key from this Storage. If key is not present or is null, return undefined. */
   public getData(key: string): StorageValue {
-    return this._ecdb.withPreparedSqliteStatement(
-      "SELECT type,val FROM app_setting WHERE key=?",
-      (stmt) => {
-        stmt.bindValue(1, key);
-        if (DbResult.BE_SQLITE_ROW !== stmt.step()) return undefined;
-        const valType = stmt.getValueString(0);
-        switch (valType) {
-          case "number":
-            return stmt.getValueDouble(1);
-          case "string":
-            return stmt.getValueString(1);
-          case "boolean":
-            return Boolean(stmt.getValueInteger(1));
-          case "Uint8Array":
-            return stmt.getValueBlob(1);
-          case "null":
-            return undefined;
-        }
-        throw new IModelError(
-          DbResult.BE_SQLITE_ERROR,
-          `Unsupported type in cache ${valType}`
-        );
+    return this._ecdb.withPreparedSqliteStatement("SELECT type,val FROM app_setting WHERE key=?", (stmt) => {
+      stmt.bindValue(1, key);
+      if (DbResult.BE_SQLITE_ROW !== stmt.step()) return undefined;
+      const valType = stmt.getValueString(0);
+      switch (valType) {
+        case "number":
+          return stmt.getValueDouble(1);
+        case "string":
+          return stmt.getValueString(1);
+        case "boolean":
+          return Boolean(stmt.getValueInteger(1));
+        case "Uint8Array":
+          return stmt.getValueBlob(1);
+        case "null":
+          return undefined;
       }
-    );
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unsupported type in cache ${valType}`);
+    });
   }
 
   /** return the type of the value for a key, or undefined if not present. */
-  public getValueType(
-    key: string
-  ): "number" | "string" | "boolean" | "Uint8Array" | "null" | undefined {
-    return this._ecdb.withSqliteStatement(
-      "SELECT type FROM app_setting WHERE key=?",
-      (stmt) => {
-        stmt.bindValue(1, key);
-        return stmt.step() === DbResult.BE_SQLITE_ROW
-          ? (stmt.getValueString(0) as any)
-          : undefined;
-      }
-    );
+  public getValueType(key: string): "number" | "string" | "boolean" | "Uint8Array" | "null" | undefined {
+    return this._ecdb.withSqliteStatement("SELECT type FROM app_setting WHERE key=?", (stmt) => {
+      stmt.bindValue(1, key);
+      return stmt.step() === DbResult.BE_SQLITE_ROW ? (stmt.getValueString(0) as any) : undefined;
+    });
   }
 
   /** return `true` if the key is present, but has a null value. */
@@ -137,26 +118,20 @@ export class NativeAppStorage {
   /** Get all key names in this Storage */
   public getKeys(): string[] {
     const keys = new Array<string>();
-    this._ecdb.withPreparedSqliteStatement(
-      "SELECT key FROM app_setting",
-      (stmt) => {
-        while (DbResult.BE_SQLITE_ROW === stmt.step()) {
-          keys.push(stmt.getValueString(0));
-        }
+    this._ecdb.withPreparedSqliteStatement("SELECT key FROM app_setting", (stmt) => {
+      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        keys.push(stmt.getValueString(0));
       }
-    );
+    });
     return keys;
   }
 
   /** Remove a key/value pair from this Storage */
   public removeData(key: string) {
-    const rc = this._ecdb.withPreparedSqliteStatement(
-      "DELETE FROM app_setting WHERE key=?",
-      (stmt) => {
-        stmt.bindValue(1, key);
-        return stmt.step();
-      }
-    );
+    const rc = this._ecdb.withPreparedSqliteStatement("DELETE FROM app_setting WHERE key=?", (stmt) => {
+      stmt.bindValue(1, key);
+      return stmt.step();
+    });
     if (rc !== DbResult.BE_SQLITE_DONE) {
       throw new IModelError(rc, "SQLite error");
     }
@@ -164,12 +139,9 @@ export class NativeAppStorage {
 
   /** Remove all key/value pairs */
   public removeAll() {
-    const rc = this._ecdb.withPreparedSqliteStatement(
-      "DELETE FROM app_setting",
-      (stmt) => {
-        return stmt.step();
-      }
-    );
+    const rc = this._ecdb.withPreparedSqliteStatement("DELETE FROM app_setting", (stmt) => {
+      return stmt.step();
+    });
     if (rc !== DbResult.BE_SQLITE_DONE) {
       throw new IModelError(rc, "SQLite error");
     }
@@ -186,22 +158,15 @@ export class NativeAppStorage {
   }
 
   private static init(ecdb: ECDb): DbResult {
-    return ecdb.withPreparedSqliteStatement(
-      "CREATE TABLE app_setting(key PRIMARY KEY,type,val);",
-      (stmt) => {
-        return stmt.step();
-      }
-    );
+    return ecdb.withPreparedSqliteStatement("CREATE TABLE app_setting(key PRIMARY KEY,type,val);", (stmt) => {
+      return stmt.step();
+    });
   }
 
   /** find and open storage by its name. */
   public static find(name: string): NativeAppStorage {
     const storage = this._storages.get(name);
-    if (undefined === storage)
-      throw new IModelError(
-        IModelStatus.FileNotFound,
-        `Storage ${name} not open`
-      );
+    if (undefined === storage) throw new IModelError(IModelStatus.FileNotFound, `Storage ${name} not open`);
     return storage;
   }
 
@@ -215,9 +180,7 @@ export class NativeAppStorage {
 
   /** @internal */
   public static getStorageNames(): string[] {
-    return IModelJsFs.readdirSync(NativeHost.appSettingsCacheDir).filter(
-      (name) => name.endsWith(this._ext)
-    );
+    return IModelJsFs.readdirSync(NativeHost.appSettingsCacheDir).filter((name) => name.endsWith(this._ext));
   }
 
   /** Open or find a Storage by name. */
@@ -240,8 +203,7 @@ export class NativeAppStorage {
       } else {
         ecdb.createDb(storageFile);
         const rc = this.init(ecdb);
-        if (rc !== DbResult.BE_SQLITE_DONE)
-          throw new IModelError(rc, "SQLite error");
+        if (rc !== DbResult.BE_SQLITE_DONE) throw new IModelError(rc, "SQLite error");
         ecdb.saveChanges();
       }
       const storage = new NativeAppStorage(ecdb, fileName);

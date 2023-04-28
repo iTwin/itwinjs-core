@@ -10,20 +10,13 @@ import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { Arc3d } from "../../curve/Arc3d";
 import { ChainCollectorContext } from "../../curve/ChainCollectorContext";
 import { AnyCurve, AnyRegion } from "../../curve/CurveChain";
-import {
-  BagOfCurves,
-  CurveChain,
-  CurveCollection,
-} from "../../curve/CurveCollection";
+import { BagOfCurves, CurveChain, CurveCollection } from "../../curve/CurveCollection";
 import { CurveFactory } from "../../curve/CurveFactory";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { RecursiveCurveProcessor } from "../../curve/CurveProcessor";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import {
-  OffsetOptions,
-  PolygonWireOffsetContext,
-} from "../../curve/internalContexts/PolygonOffsetContext";
+import { OffsetOptions, PolygonWireOffsetContext } from "../../curve/internalContexts/PolygonOffsetContext";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
@@ -144,12 +137,7 @@ class PolygonBooleanTests {
   }
 
   public captureAnnotatedGraph(graph: HalfEdgeGraph, dx: number, dy: number) {
-    GraphChecker.captureAnnotatedGraph(
-      this.allGeometry,
-      graph,
-      this.x0 + dx,
-      this.y0 + dy
-    );
+    GraphChecker.captureAnnotatedGraph(this.allGeometry, graph, this.x0 + dx, this.y0 + dy);
   }
   public testBooleans(boundary0: Point3d[], boundary1: Point3d[]) {
     const range = Range3d.createArray(boundary0);
@@ -159,56 +147,26 @@ class PolygonBooleanTests {
     let boolOp = "";
     const noisy = this.getNoisy();
     if (noisy !== 0)
-      RegionOps.setCheckPointFunction(
-        (
-          name: string,
-          graph: HalfEdgeGraph,
-          properties: string,
-          _extraData?: any
-        ) => {
-          if (name === "After clusterAndMergeXYTheta" || noisy > 5) {
-            this.captureAnnotatedGraph(graph, dx1, 0);
-            dx1 += noisyDeltaX;
-          }
-          if (properties.indexOf("R") >= 0 && properties.indexOf("M") >= 0) {
-            const euler =
-              graph.countVertexLoops() -
-              graph.countNodes() / 2.0 +
-              graph.countFaceLoops();
+      RegionOps.setCheckPointFunction((name: string, graph: HalfEdgeGraph, properties: string, _extraData?: any) => {
+        if (name === "After clusterAndMergeXYTheta" || noisy > 5) {
+          this.captureAnnotatedGraph(graph, dx1, 0);
+          dx1 += noisyDeltaX;
+        }
+        if (properties.indexOf("R") >= 0 && properties.indexOf("M") >= 0) {
+          const euler = graph.countVertexLoops() - graph.countNodes() / 2.0 + graph.countFaceLoops();
 
-            if (
-              !this.ck.testExactNumber(
-                2,
-                euler,
-                `${boolOp} Expected euler characteristic ${name}`
-              )
-            ) {
-              GeometryCoreTestIO.consoleLog(
-                `outerRectangle  ${prettyPrint(boundary0)}`
-              );
-              GeometryCoreTestIO.consoleLog(
-                `innerRectangle  ${prettyPrint(boundary1)}`
-              );
-              GraphChecker.dumpGraph(graph);
-            }
+          if (!this.ck.testExactNumber(2, euler, `${boolOp} Expected euler characteristic ${name}`)) {
+            GeometryCoreTestIO.consoleLog(`outerRectangle  ${prettyPrint(boundary0)}`);
+            GeometryCoreTestIO.consoleLog(`innerRectangle  ${prettyPrint(boundary1)}`);
+            GraphChecker.dumpGraph(graph);
           }
         }
-      );
+      });
     range.extendArray(boundary1);
     const yStep = 2.0 * range.yLength();
     this.y0 = 0.0;
-    GeometryCoreTestIO.captureGeometry(
-      this.allGeometry,
-      LineString3d.create(boundary0),
-      this.x0,
-      this.y0
-    );
-    GeometryCoreTestIO.captureGeometry(
-      this.allGeometry,
-      LineString3d.create(boundary1),
-      this.x0,
-      this.y0
-    );
+    GeometryCoreTestIO.captureGeometry(this.allGeometry, LineString3d.create(boundary0), this.x0, this.y0);
+    GeometryCoreTestIO.captureGeometry(this.allGeometry, LineString3d.create(boundary1), this.x0, this.y0);
     this.y0 += yStep;
     dx1 = dx1Start;
     boolOp = "Union";
@@ -216,65 +174,37 @@ class PolygonBooleanTests {
     let differenceAreaBOnly;
     let differenceAreaAOnly;
     let intersectionArea;
-    const unionRegion = RegionOps.polygonXYAreaUnionLoopsToPolyface(
-      boundary0,
-      boundary1
-    );
+    const unionRegion = RegionOps.polygonXYAreaUnionLoopsToPolyface(boundary0, boundary1);
     if (this.ck.testPointer(unionRegion)) {
       unionArea = PolyfaceQuery.sumFacetAreas(unionRegion);
-      GeometryCoreTestIO.captureGeometry(
-        this.allGeometry,
-        unionRegion,
-        this.x0,
-        this.y0
-      );
+      GeometryCoreTestIO.captureGeometry(this.allGeometry, unionRegion, this.x0, this.y0);
     }
     this.y0 += yStep;
     dx1 = dx1Start;
 
     boolOp = "Intersection";
-    const intersectionRegion = RegionOps.polygonXYAreaIntersectLoopsToPolyface(
-      boundary0,
-      boundary1
-    );
+    const intersectionRegion = RegionOps.polygonXYAreaIntersectLoopsToPolyface(boundary0, boundary1);
     if (this.ck.testPointer(intersectionRegion)) {
       intersectionArea = PolyfaceQuery.sumFacetAreas(intersectionRegion);
-      GeometryCoreTestIO.captureGeometry(
-        this.allGeometry,
-        intersectionRegion,
-        this.x0,
-        this.y0
-      );
+      GeometryCoreTestIO.captureGeometry(this.allGeometry, intersectionRegion, this.x0, this.y0);
     }
     this.y0 += yStep;
     dx1 = dx1Start;
 
     boolOp = "Difference";
-    const differenceRegionAOnly =
-      RegionOps.polygonXYAreaDifferenceLoopsToPolyface(boundary0, boundary1);
+    const differenceRegionAOnly = RegionOps.polygonXYAreaDifferenceLoopsToPolyface(boundary0, boundary1);
     if (this.ck.testPointer(differenceRegionAOnly)) {
       differenceAreaAOnly = PolyfaceQuery.sumFacetAreas(differenceRegionAOnly);
-      GeometryCoreTestIO.captureGeometry(
-        this.allGeometry,
-        differenceRegionAOnly,
-        this.x0,
-        this.y0
-      );
+      GeometryCoreTestIO.captureGeometry(this.allGeometry, differenceRegionAOnly, this.x0, this.y0);
     }
     this.y0 += yStep;
     dx1 = dx1Start;
 
     boolOp = "Difference";
-    const differenceRegionBOnly =
-      RegionOps.polygonXYAreaDifferenceLoopsToPolyface(boundary1, boundary0);
+    const differenceRegionBOnly = RegionOps.polygonXYAreaDifferenceLoopsToPolyface(boundary1, boundary0);
     if (this.ck.testPointer(differenceRegionBOnly)) {
       differenceAreaBOnly = PolyfaceQuery.sumFacetAreas(differenceRegionBOnly);
-      GeometryCoreTestIO.captureGeometry(
-        this.allGeometry,
-        differenceRegionBOnly,
-        this.x0,
-        this.y0
-      );
+      GeometryCoreTestIO.captureGeometry(this.allGeometry, differenceRegionBOnly, this.x0, this.y0);
     }
 
     if (
@@ -305,10 +235,7 @@ describe("RegionOps", () => {
   it("BooleanRectangles", () => {
     const context = new PolygonBooleanTests();
     context.setDebugControls(10, 1);
-    context.testBooleans(
-      Sample.createRectangleXY(0, 0, 5, 2),
-      Sample.createRectangleXY(1, 1, 2, 3)
-    );
+    context.testBooleans(Sample.createRectangleXY(0, 0, 5, 2), Sample.createRectangleXY(1, 1, 2, 3));
     context.saveAndReset("RegionOps", "BooleanRectangles");
     expect(context.getNumErrors()).equals(0);
   });
@@ -316,10 +243,7 @@ describe("RegionOps", () => {
   it("BooleanDisjointRectangles", () => {
     const context = new PolygonBooleanTests();
     context.setDebugControls(10, 1);
-    context.testBooleans(
-      Sample.createRectangleXY(0, 0, 5, 2),
-      Sample.createRectangleXY(1, 4, 2, 3)
-    );
+    context.testBooleans(Sample.createRectangleXY(0, 0, 5, 2), Sample.createRectangleXY(1, 4, 2, 3));
     context.saveAndReset("RegionOps", "BooleanDisjointRectangles");
     expect(context.getNumErrors()).equals(0);
   });
@@ -340,10 +264,7 @@ describe("RegionOps", () => {
     const fractalB = Sample.createFractalHatReversingPattern(1, 0.7);
     const transform = Transform.createFixedPointAndMatrix(
       Point3d.create(0, 0, 0),
-      Matrix3d.createRotationAroundAxisIndex(
-        2,
-        Angle.createDegrees(0.1232132132189379)
-      )
+      Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(0.1232132132189379))
     );
     const fractalA1 = transform.multiplyInversePoint3dArray(fractalA)!;
     const fractalB1 = transform.multiplyInversePoint3dArray(fractalB)!;
@@ -391,19 +312,12 @@ describe("RegionOps", () => {
     // and create more stuff as Growable array . . .
     const diamond = new GrowableXYZArray();
     for (let i = 0; i < rectangle.length; i++) {
-      diamond.push(
-        Point3d.createFrom(
-          rectangle[i].interpolate(0.5, rectangle[(i + 1) % rectangle.length])
-        )
-      );
+      diamond.push(Point3d.createFrom(rectangle[i].interpolate(0.5, rectangle[(i + 1) % rectangle.length])));
     }
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0.0;
     let y0 = 0.0;
-    for (const splat of [
-      Sample.appendSawTooth([], 1, 0.5, 3, 1, 5),
-      Sample.appendSawTooth([], 1, 0.5, 1, 1, 3),
-    ]) {
+    for (const splat of [Sample.appendSawTooth([], 1, 0.5, 3, 1, 5), Sample.appendSawTooth([], 1, 0.5, 1, 1, 3)]) {
       const growableSplat = GrowableXYZArray.create(splat);
       const data = [growableSplat, rectangle];
       const range = Range3d.createFromVariantData(data);
@@ -417,11 +331,7 @@ describe("RegionOps", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0);
       x0 += dx;
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "RegionOps",
-      "CleanupSawTooth"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "CleanupSawTooth");
     expect(context.getNumErrors()).equals(0);
   });
 
@@ -449,12 +359,7 @@ describe("RegionOps", () => {
  * @param distances offset distances
  * @param distanceFactor factor to apply to distances.
  */
-function testPolygonOffset(
-  polygons: Point3d[][],
-  caseName: string,
-  distances: number[],
-  distanceFactor: number
-) {
+function testPolygonOffset(polygons: Point3d[][], caseName: string, distances: number[], distanceFactor: number) {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
   let x0 = 0;
@@ -464,30 +369,13 @@ function testPolygonOffset(
     const range = Range3d.createArray(points);
     const yStep = 2.0 * range.yLength() + 10;
     y0 = 0.0;
-    GeometryCoreTestIO.captureGeometry(
-      allGeometry,
-      LineString3d.create(points),
-      x0,
-      y0,
-      0
-    );
+    GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0, 0);
     y0 += yStep;
     for (const closed of [false, true]) {
-      if (closed && !points[0].isAlmostEqualMetric(points[points.length - 1]))
-        continue;
-      GeometryCoreTestIO.captureGeometry(
-        allGeometry,
-        LineString3d.create(points),
-        x0,
-        y0,
-        0
-      );
+      if (closed && !points[0].isAlmostEqualMetric(points[points.length - 1])) continue;
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0, 0);
       for (const offsetDistance of distances) {
-        const stickA = RegionOps.constructPolygonWireXYOffset(
-          points,
-          closed,
-          offsetDistance * distanceFactor
-        );
+        const stickA = RegionOps.constructPolygonWireXYOffset(points, closed, offsetDistance * distanceFactor);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, stickA, x0, y0, 0);
       }
       y0 += yStep;
@@ -524,77 +412,27 @@ function testFilteredPolygonOffset(
     const xStep = 2.0 * range.xLength();
     y0 = 0.0;
     const closed = points[0].isAlmostEqual(points[points.length - 1]);
-    GeometryCoreTestIO.captureGeometry(
-      allGeometry,
-      LineString3d.create(points),
-      x0,
-      y0,
-      0
-    );
+    GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0, 0);
 
     x0 += xStep;
     for (const offsetDistance of distances) {
       y0 = 0.0;
       // unfiltered offset
-      GeometryCoreTestIO.captureGeometry(
-        allGeometry,
-        LineString3d.create(points),
-        x0,
-        y0,
-        0
-      );
-      const stickA0 = context.constructPolygonWireXYOffset(
-        points,
-        closed,
-        offsetDistance
-      );
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0, 0);
+      const stickA0 = context.constructPolygonWireXYOffset(points, closed, offsetDistance);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, stickA0, x0, y0, 0);
-      const stickB0 = context.constructPolygonWireXYOffset(
-        points,
-        closed,
-        -offsetDistance
-      );
+      const stickB0 = context.constructPolygonWireXYOffset(points, closed, -offsetDistance);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, stickB0, x0, y0, 0);
       y0 += yStep;
       for (const factor of filterFactor) {
-        const pointsA = PolylineOps.compressByChordError(
-          points,
-          factor * offsetDistance
-        );
-        GeometryCoreTestIO.createAndCaptureXYCircle(
-          allGeometry,
-          points[0],
-          factor * offsetDistance,
-          x0,
-          y0,
-          0.0
-        );
+        const pointsA = PolylineOps.compressByChordError(points, factor * offsetDistance);
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, points[0], factor * offsetDistance, x0, y0, 0.0);
         // overlay original, filter, and offset ...
-        GeometryCoreTestIO.captureCloneGeometry(
-          allGeometry,
-          LineString3d.create(points),
-          x0,
-          y0,
-          0
-        );
-        GeometryCoreTestIO.captureCloneGeometry(
-          allGeometry,
-          LineString3d.create(pointsA),
-          x0,
-          y0,
-          0
-        );
-        const stickA = context.constructPolygonWireXYOffset(
-          pointsA,
-          closed,
-          offsetDistance
-        );
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineString3d.create(points), x0, y0, 0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineString3d.create(pointsA), x0, y0, 0);
+        const stickA = context.constructPolygonWireXYOffset(pointsA, closed, offsetDistance);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, stickA, x0, y0, 0);
-        const stickB = context.constructPolygonWireXYOffset(
-          pointsA,
-          closed,
-          -offsetDistance
-        );
+        const stickB = context.constructPolygonWireXYOffset(pointsA, closed, -offsetDistance);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, stickB, x0, y0, 0);
         y0 += yStep;
       }
@@ -622,12 +460,7 @@ describe("PolygonOffset", () => {
     ];
     const star1 = Sample.createStar(1, 1, 0, 4, 3, 3, true);
     const star2 = Sample.createStar(1, 1, 0, 5, 2, 5, true);
-    testPolygonOffset(
-      [rectangle0, star1, star2, wPoints],
-      "TestA",
-      [-0.5, 0.5, 1.0, -1.0, -2.0],
-      1.0
-    );
+    testPolygonOffset([rectangle0, star1, star2, wPoints], "TestA", [-0.5, 0.5, 1.0, -1.0, -2.0], 1.0);
   });
 
   it("TestSplitLine", () => {
@@ -643,12 +476,7 @@ describe("PolygonOffset", () => {
       );
       allPoints.push(points);
     }
-    testPolygonOffset(
-      allPoints,
-      "TestSplitLine",
-      [-0.5, 0.5, 1.0, -1.0, -2.0],
-      1.0
-    );
+    testPolygonOffset(allPoints, "TestSplitLine", [-0.5, 0.5, 1.0, -1.0, -2.0], 1.0);
   });
 
   it("TestColinear", () => {
@@ -666,12 +494,7 @@ describe("PolygonOffset", () => {
       Sample.createInterpolatedPoints(corners[3], corners[0], 3, points, 0, 3);
       allPoints.push(points);
     }
-    testPolygonOffset(
-      allPoints,
-      "TestColinear",
-      [-0.5, 0.5, 1.0, -1.0, -2.0],
-      1.0
-    );
+    testPolygonOffset(allPoints, "TestColinear", [-0.5, 0.5, 1.0, -1.0, -2.0], 1.0);
   });
 
   it("TestSpikes", () => {
@@ -701,9 +524,7 @@ describe("PolygonOffset", () => {
       p.scaleInPlace(0.001);
     }
 
-    const offsetDistances = [
-      0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.25, 1.5, 2.0, 2.5,
-    ];
+    const offsetDistances = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.25, 1.5, 2.0, 2.5];
     //     const offsetDistances = [0.7];
     testPolygonOffset([pointsA, points], "SpikeRight", offsetDistances, -1);
     testPolygonOffset([pointsA, points], "SpikeLeft", offsetDistances, 1);
@@ -735,12 +556,7 @@ describe("PolygonOffset", () => {
     testPolygonOffset([pointsB], "FractalHatReverse", offsetDistances, 1);
 
     const filterFactors = [0.5, 1.0, 1.5, 2.0];
-    testFilteredPolygonOffset(
-      [pointsA, pointsB],
-      "filteredFractals",
-      offsetDistances,
-      filterFactors
-    );
+    testFilteredPolygonOffset([pointsA, pointsB], "filteredFractals", offsetDistances, filterFactors);
   });
 });
 
@@ -770,11 +586,11 @@ describe("RegionInOut", () => {
         for (const qe of [-0.4, 0.0, 0.3, 1.0, 1.6]) {
           for (const uv of [Point2d.create(q01, qe), Point2d.create(qe, q01)]) {
             const xy = range.fractionToPoint(uv.x, uv.y);
-            ck.testExactNumber(
-              Geometry.isIn01(qe) ? 0 : -1,
-              RegionOps.testPointInOnOutRegionXY(geometry, xy.x, xy.y),
-              { case: "InOutEdge", uu: uv.x, vv: uv.y }
-            );
+            ck.testExactNumber(Geometry.isIn01(qe) ? 0 : -1, RegionOps.testPointInOnOutRegionXY(geometry, xy.x, xy.y), {
+              case: "InOutEdge",
+              uu: uv.x,
+              vv: uv.y,
+            });
           }
         }
       }
@@ -790,22 +606,10 @@ describe("RegionInOut", () => {
     for (const arc of [arc0, arc1]) {
       for (const fraction of [0.0, 0.25, 0.4, 0.5, 0.88, 1.0]) {
         for (const radialFraction of [0.4, 1.0, 1.2]) {
-          const xy = arc.fractionAndRadialFractionToPoint(
-            fraction,
-            radialFraction
-          );
+          const xy = arc.fractionAndRadialFractionToPoint(fraction, radialFraction);
           const region = Loop.create(arc);
-          const classify = RegionOps.testPointInOnOutRegionXY(
-            region,
-            xy.x,
-            xy.y
-          );
-          const expectedClassify = Geometry.split3WaySign(
-            radialFraction - 1.0,
-            1.0,
-            0.0,
-            -1.0
-          );
+          const classify = RegionOps.testPointInOnOutRegionXY(region, xy.x, xy.y);
+          const expectedClassify = Geometry.split3WaySign(radialFraction - 1.0, 1.0, 0.0, -1.0);
           if (
             !ck.testExactNumber(expectedClassify, classify, {
               arcInOut: arc,
@@ -839,28 +643,13 @@ describe("RegionInOut", () => {
       // arbitrarily test various points on a line.
       const bigMarkerSize = 0.1;
       for (const fy of [0.4, 0.5, 0.6]) {
-        for (const fx of [
-          -0.05, 0.0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95,
-          1.0, 1.05,
-        ]) {
+        for (const fx of [-0.05, 0.0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 1.0, 1.05]) {
           range.fractionToPoint(fx, fy, 0, testPoint);
-          const classify = RegionOps.testPointInOnOutRegionXY(
-            loop,
-            testPoint.x,
-            testPoint.y
-          );
+          const classify = RegionOps.testPointInOnOutRegionXY(loop, testPoint.x, testPoint.y);
           let marker = 0;
           if (classify < 0) marker = -4;
           if (classify > 0) marker = 4;
-          GeometryCoreTestIO.createAndCaptureXYMarker(
-            allGeometry,
-            marker,
-            testPoint,
-            bigMarkerSize,
-            x0,
-            y0,
-            z1
-          );
+          GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, marker, testPoint, bigMarkerSize, x0, y0, z1);
         }
       }
       // We trust
@@ -875,11 +664,7 @@ describe("RegionInOut", () => {
             const perp = unitZ.crossProduct(basis.vectorU); // This should be an inward perpendicular !
             for (const q of [1, 0, -1]) {
               basis.origin.plusScaled(perp, q * smallDistance, testPoint);
-              const classify = RegionOps.testPointInOnOutRegionXY(
-                loop,
-                testPoint.x,
-                testPoint.y
-              );
+              const classify = RegionOps.testPointInOnOutRegionXY(loop, testPoint.x, testPoint.y);
               ck.testExactNumber(q, classify, "InOut", {
                 primitive: cp,
                 f: fraction,
@@ -888,21 +673,9 @@ describe("RegionInOut", () => {
               let marker = 0;
               if (q < 0) marker = -4;
               if (q > 0) marker = 4;
-              GeometryCoreTestIO.createAndCaptureXYMarker(
-                allGeometry,
-                marker,
-                testPoint,
-                smallDistance,
-                x0,
-                y0,
-                z1
-              );
+              GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, marker, testPoint, smallDistance, x0, y0, z1);
               if (q !== classify) {
-                RegionOps.testPointInOnOutRegionXY(
-                  loop,
-                  testPoint.x,
-                  testPoint.y
-                );
+                RegionOps.testPointInOnOutRegionXY(loop, testPoint.x, testPoint.y);
                 GeometryCoreTestIO.captureGeometry(
                   allGeometry,
                   LineSegment3d.create(testPoint, testPoint.plus(errorVector)),
@@ -934,12 +707,8 @@ class HasEllipticalArcProcessor extends RecursiveCurveProcessor {
     super();
     this._hasEllipticalArc = false;
   }
-  public override announceCurvePrimitive(
-    data: CurvePrimitive,
-    _indexInParent = -1
-  ): void {
-    if (data instanceof Arc3d && !data.isCircular)
-      this._hasEllipticalArc = true;
+  public override announceCurvePrimitive(data: CurvePrimitive, _indexInParent = -1): void {
+    if (data instanceof Arc3d && !data.isCircular) this._hasEllipticalArc = true;
   }
   public claimResult(): boolean {
     return this._hasEllipticalArc;
@@ -954,15 +723,11 @@ class HasStrokablePrimitiveProcessor extends RecursiveCurveProcessor {
     this._hasStrokablePrimitive = false;
     this._preserveEllipticalArcs = preserveEllipticalArcs;
   }
-  public override announceCurvePrimitive(
-    data: CurvePrimitive,
-    _indexInParent = -1
-  ): void {
+  public override announceCurvePrimitive(data: CurvePrimitive, _indexInParent = -1): void {
     if (
       data instanceof LineSegment3d ||
       data instanceof LineString3d ||
-      (data instanceof Arc3d &&
-        (data.isCircular || this._preserveEllipticalArcs))
+      (data instanceof Arc3d && (data.isCircular || this._preserveEllipticalArcs))
     )
       return; // not strokable
     this._hasStrokablePrimitive = true;
@@ -984,37 +749,18 @@ function testOffsetSingle(
   if (ck.testDefined(offsetCurve, "Offset computed")) {
     // spot-check some curve-curve distances from baseCurve to offsetCurve
     if (!options.preserveEllipticalArcs) {
-      const tolFactor =
-        1000 *
-        (options.strokeOptions.hasAngleTol
-          ? options.strokeOptions.angleTol!.degrees
-          : 1);
+      const tolFactor = 1000 * (options.strokeOptions.hasAngleTol ? options.strokeOptions.angleTol!.degrees : 1);
       for (const cp of baseCurve.children) {
         for (let u = 0.0738; u < 1.0; u += 0.0467) {
           const basePt = cp.fractionToPoint(u);
           const offsetDetail = offsetCurve!.closestPoint(basePt);
-          if (
-            ck.testDefined(offsetDetail, "Closest point to offset computed") &&
-            offsetDetail !== undefined
-          ) {
-            let projectsToVertex =
-              offsetDetail.fraction === 0 || offsetDetail.fraction === 1;
-            if (
-              !projectsToVertex &&
-              offsetDetail.curve instanceof LineString3d
-            ) {
-              const scaledParam =
-                offsetDetail.fraction * (offsetDetail.curve.numPoints() - 1);
-              projectsToVertex = Geometry.isAlmostEqualNumber(
-                scaledParam,
-                Math.trunc(scaledParam)
-              );
+          if (ck.testDefined(offsetDetail, "Closest point to offset computed") && offsetDetail !== undefined) {
+            let projectsToVertex = offsetDetail.fraction === 0 || offsetDetail.fraction === 1;
+            if (!projectsToVertex && offsetDetail.curve instanceof LineString3d) {
+              const scaledParam = offsetDetail.fraction * (offsetDetail.curve.numPoints() - 1);
+              projectsToVertex = Geometry.isAlmostEqualNumber(scaledParam, Math.trunc(scaledParam));
               projectsToVertex =
-                projectsToVertex ||
-                Geometry.isAlmostEqualNumber(
-                  scaledParam,
-                  1 + Math.trunc(scaledParam)
-                ); // e.g., true for scaledParam === 4.9999999
+                projectsToVertex || Geometry.isAlmostEqualNumber(scaledParam, 1 + Math.trunc(scaledParam)); // e.g., true for scaledParam === 4.9999999
             }
             if (!projectsToVertex) {
               // avoid measuring projections to linestring vertices as they usually exceed offset distance
@@ -1025,32 +771,15 @@ function testOffsetSingle(
                   tolFactor
                 )
               ) {
-                GeometryCoreTestIO.createAndCaptureXYCircle(
-                  allGeometry,
-                  basePt,
-                  0.05,
-                  delta.x,
-                  delta.y
-                );
-                GeometryCoreTestIO.createAndCaptureXYCircle(
-                  allGeometry,
-                  offsetDetail.point,
-                  0.05,
-                  delta.x,
-                  delta.y
-                );
+                GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, basePt, 0.05, delta.x, delta.y);
+                GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, offsetDetail.point, 0.05, delta.x, delta.y);
               }
             }
           }
         }
       }
     }
-    GeometryCoreTestIO.captureCloneGeometry(
-      allGeometry,
-      offsetCurve,
-      delta.x,
-      delta.y
-    );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsetCurve, delta.x, delta.y);
   }
 }
 
@@ -1063,12 +792,7 @@ function testOffsetBothSides(
 ): void {
   const rangeY = baseCurve.range().yLength();
   delta.y += rangeY;
-  GeometryCoreTestIO.captureCloneGeometry(
-    allGeometry,
-    baseCurve,
-    delta.x,
-    delta.y
-  );
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, baseCurve, delta.x, delta.y);
 
   testOffsetSingle(ck, allGeometry, delta, baseCurve, options); // offset on given offset
   options.leftOffsetDistance *= -1;
@@ -1102,27 +826,21 @@ function testOffset(
     options.strokeOptions.hasChordTol ||
     options.strokeOptions.hasMaxEdgeLength
   ) {
-    const processor = new HasStrokablePrimitiveProcessor(
-      options.preserveEllipticalArcs
-    );
+    const processor = new HasStrokablePrimitiveProcessor(options.preserveEllipticalArcs);
     baseCurve.announceToCurveProcessor(processor);
     if (processor.claimResult()) {
       const opts = options.clone();
       opts.preserveEllipticalArcs = false;
-      opts.strokeOptions.angleTol?.setDegrees(
-        opts.strokeOptions.angleTol?.degrees / 2
-      );
+      opts.strokeOptions.angleTol?.setDegrees(opts.strokeOptions.angleTol?.degrees / 2);
       if (opts.strokeOptions.hasChordTol) opts.strokeOptions.chordTol! /= 2;
-      if (opts.strokeOptions.hasMaxEdgeLength)
-        opts.strokeOptions.maxEdgeLength! /= 2;
+      if (opts.strokeOptions.hasMaxEdgeLength) opts.strokeOptions.maxEdgeLength! /= 2;
       testOffsetBothSides(ck, allGeometry, delta, baseCurve, opts);
     }
   }
   // test arc joins
   if (true) {
     const opts = options.clone();
-    opts.jointOptions.minArcDegrees =
-      opts.jointOptions.minArcDegrees > 0 ? 0 : 180;
+    opts.jointOptions.minArcDegrees = opts.jointOptions.minArcDegrees > 0 ? 0 : 180;
     testOffsetBothSides(ck, allGeometry, delta, baseCurve, opts);
   }
 }
@@ -1150,10 +868,7 @@ describe("CloneSplitCurves", () => {
     const yStep = 5.0;
     const y1 = 0.1;
     const y2 = 0.5;
-    const line010 = LineSegment3d.createCapture(
-      Point3d.create(0, 0, 0),
-      Point3d.create(10, 0, 0)
-    );
+    const line010 = LineSegment3d.createCapture(Point3d.create(0, 0, 0), Point3d.create(10, 0, 0));
     const arc010 = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(0, 0),
       Point3d.create(5, -y1),
@@ -1170,64 +885,25 @@ describe("CloneSplitCurves", () => {
       line010, // just a line
       arc010, // just an arc
       LineString3d.create([0, 0], [10, 0], [10, y2], [0, y2]), // just a linestring
-      Path.create(
-        LineSegment3d.create(Point3d.create(0, y2), Point3d.create(0, 0)),
-        line010.clone()
-      ), // two lines that will rejoin in output
-      Path.create(
-        line010.clone(),
-        LineSegment3d.create(line010.endPoint(), Point3d.create(0, y2))
-      ), // two lines that will rejoin in output
+      Path.create(LineSegment3d.create(Point3d.create(0, y2), Point3d.create(0, 0)), line010.clone()), // two lines that will rejoin in output
+      Path.create(line010.clone(), LineSegment3d.create(line010.endPoint(), Point3d.create(0, y2))), // two lines that will rejoin in output
       Path.create(
         line010.clone(),
         linestring10,
-        Arc3d.createCircularStartMiddleEnd(
-          linestring10.endPoint(),
-          Point3d.create(5, y1),
-          Point3d.create(0, 2 * y1)
-        )!
+        Arc3d.createCircularStartMiddleEnd(linestring10.endPoint(), Point3d.create(5, y1), Point3d.create(0, 2 * y1))!
       ),
     ];
     for (const source of pathsToCut) {
-      const cut = RegionOps.cloneCurvesWithXYSplits(
-        source,
-        cutters
-      ) as CurveCollection;
-      ck.testCoordinate(
-        cut.sumLengths(),
-        curveLength(source),
-        "split curve markup preserves length"
-      );
+      const cut = RegionOps.cloneCurvesWithXYSplits(source, cutters) as CurveCollection;
+      ck.testCoordinate(cut.sumLengths(), curveLength(source), "split curve markup preserves length");
 
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        [source, cutters],
-        x0,
-        y0
-      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [source, cutters], x0, y0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, cut, x0, y0 + yStep);
       const splits = RegionOps.splitToPathsBetweenBreaks(cut, true);
-      if (splits)
-        GeometryCoreTestIO.captureCloneGeometry(
-          allGeometry,
-          cutters,
-          x0,
-          y0 + 2 * yStep
-        );
+      if (splits) GeometryCoreTestIO.captureCloneGeometry(allGeometry, cutters, x0, y0 + 2 * yStep);
       if (splits instanceof BagOfCurves)
-        GeometryCoreTestIO.captureCloneGeometry(
-          allGeometry,
-          splits.children,
-          x0,
-          y0 + 2 * yStep
-        );
-      else
-        GeometryCoreTestIO.captureCloneGeometry(
-          allGeometry,
-          splits,
-          x0,
-          y0 + 2 * yStep
-        );
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, splits.children, x0, y0 + 2 * yStep);
+      else GeometryCoreTestIO.captureCloneGeometry(allGeometry, splits, x0, y0 + 2 * yStep);
       x0 += 20;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "PathSplits");
@@ -1240,11 +916,7 @@ describe("CloneSplitCurves", () => {
     const chainCollector = new ChainCollectorContext(true);
     const segment1 = LineSegment3d.createXYZXYZ(1, 2, 3, 4, 2, 1);
     const segment2 = LineSegment3d.createXYZXYZ(4, 2, 1, 5, 2, 6);
-    segment2.startCut = CurveLocationDetail.createCurveFractionPoint(
-      segment1,
-      1,
-      segment1.endPoint()
-    );
+    segment2.startCut = CurveLocationDetail.createCurveFractionPoint(segment1, 1, segment1.endPoint());
     ck.testUndefined(chainCollector.grabResult());
     chainCollector.announceCurvePrimitive(segment1);
     const singleton = chainCollector.grabResult();
@@ -1264,36 +936,11 @@ describe("CloneSplitCurves", () => {
     const segmentA0B0 = LineSegment3d.create(pointA0, pointB0);
     const segmentB0C1 = LineSegment3d.create(pointB0, pointC1);
     const segmentB1C1 = LineSegment3d.create(pointB1, pointC1);
-    ck.testFalse(
-      ChainCollectorContext.needBreakBetweenPrimitives(
-        segmentA0B0,
-        segmentB0C1
-      ),
-      "A0B0..B0C1"
-    );
-    ck.testTrue(
-      ChainCollectorContext.needBreakBetweenPrimitives(undefined, segmentB0C1),
-      "undefined..B0C1"
-    );
-    ck.testTrue(
-      ChainCollectorContext.needBreakBetweenPrimitives(segmentA0B0, undefined),
-      "A0B0..undefined"
-    );
-    ck.testTrue(
-      ChainCollectorContext.needBreakBetweenPrimitives(
-        segmentA0B0,
-        segmentB1C1
-      ),
-      "A0B0..B1C1"
-    );
-    ck.testFalse(
-      ChainCollectorContext.needBreakBetweenPrimitives(
-        segmentA0B0,
-        segmentB1C1,
-        true
-      ),
-      "A0B0..B0C1XY"
-    );
+    ck.testFalse(ChainCollectorContext.needBreakBetweenPrimitives(segmentA0B0, segmentB0C1), "A0B0..B0C1");
+    ck.testTrue(ChainCollectorContext.needBreakBetweenPrimitives(undefined, segmentB0C1), "undefined..B0C1");
+    ck.testTrue(ChainCollectorContext.needBreakBetweenPrimitives(segmentA0B0, undefined), "A0B0..undefined");
+    ck.testTrue(ChainCollectorContext.needBreakBetweenPrimitives(segmentA0B0, segmentB1C1), "A0B0..B1C1");
+    ck.testFalse(ChainCollectorContext.needBreakBetweenPrimitives(segmentA0B0, segmentB1C1, true), "A0B0..B0C1XY");
     expect(ck.getNumErrors()).equals(0);
   });
   it("GeneralChainA", () => {
@@ -1477,10 +1124,7 @@ describe("CloneSplitCurves", () => {
     const allGeometry: GeometryQuery[] = [];
     const ck = new Checker();
     const pathA = IModelJson.Reader.parse(diegoPathA);
-    if (
-      ck.testDefined(pathA, "Parsed geometry") &&
-      (pathA instanceof CurveChain || Array.isArray(pathA))
-    ) {
+    if (ck.testDefined(pathA, "Parsed geometry") && (pathA instanceof CurveChain || Array.isArray(pathA))) {
       const collector = new ChainCollectorContext(false);
       if (Array.isArray(pathA)) {
         for (const s of pathA) {
@@ -1497,13 +1141,7 @@ describe("CloneSplitCurves", () => {
       if (loopA instanceof Loop) {
         const loopAOffset = RegionOps.constructCurveXYOffset(loopA, 0.2);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, loopA, 0, 40);
-        GeometryCoreTestIO.captureCloneGeometry(
-          allGeometry,
-          loopAOffset,
-          0,
-          40,
-          -0.1
-        );
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, loopAOffset, 0, 40, -0.1);
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "ChainAndOffset");
@@ -1519,13 +1157,10 @@ describe("CloneSplitCurves", () => {
 
     // sample chains
     const inputs = IModelJson.Reader.parse(
-      JSON.parse(
-        fs.readFileSync("./src/test/testInputs/curve/offsetCurve.imjs", "utf8")
-      )
+      JSON.parse(fs.readFileSync("./src/test/testInputs/curve/offsetCurve.imjs", "utf8"))
     ) as CurveChain[];
     for (const chain of inputs)
-      if (chain instanceof Path || chain instanceof Loop)
-        testOffsetWrapper(ck, allGeometry, delta, chain, options);
+      if (chain instanceof Path || chain instanceof Loop) testOffsetWrapper(ck, allGeometry, delta, chain, options);
 
     // Bezier splines
     const poles: Point3d[] = [
@@ -1549,20 +1184,14 @@ describe("CloneSplitCurves", () => {
       ck,
       allGeometry,
       delta,
-      Path.create(
-        BezierCurve3d.create(mirrorPoles)!,
-        BezierCurve3d.create(poles)!
-      ),
+      Path.create(BezierCurve3d.create(mirrorPoles)!, BezierCurve3d.create(poles)!),
       options
     );
     testOffsetWrapper(
       ck,
       allGeometry,
       delta,
-      Path.create(
-        BezierCurve3d.create(rotatedPoles)!,
-        BezierCurve3d.create(poles)!
-      ),
+      Path.create(BezierCurve3d.create(rotatedPoles)!, BezierCurve3d.create(poles)!),
       options
     );
 
@@ -1579,22 +1208,14 @@ describe("CloneSplitCurves", () => {
       ck,
       allGeometry,
       delta,
-      Path.create(
-        mirrorCurve,
-        LineSegment3d.create(mirrorCurve.endPoint(), curve.startPoint()),
-        curve
-      ),
+      Path.create(mirrorCurve, LineSegment3d.create(mirrorCurve.endPoint(), curve.startPoint()), curve),
       options
     );
     testOffsetWrapper(
       ck,
       allGeometry,
       delta,
-      Path.create(
-        rotatedCurve,
-        LineSegment3d.create(rotatedCurve.endPoint(), curve.startPoint()),
-        curve
-      ),
+      Path.create(rotatedCurve, LineSegment3d.create(rotatedCurve.endPoint(), curve.startPoint()), curve),
       options
     );
     // save unclamped, clamped, control polygon, start point, end point
@@ -1661,19 +1282,11 @@ describe("CloneSplitCurves", () => {
 
       const splitParts = RegionOps.splitPathsByRegionInOnOutXY(path, loop);
       let yOut = y0;
-      for (const outputArray of [
-        splitParts.insideParts,
-        splitParts.outsideParts,
-      ]) {
+      for (const outputArray of [splitParts.insideParts, splitParts.outsideParts]) {
         yOut += yStep;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, x0, yOut);
         for (const fragment of outputArray) {
-          GeometryCoreTestIO.captureCloneGeometry(
-            allGeometry,
-            fragment,
-            x0,
-            yOut
-          );
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, fragment, x0, yOut);
         }
       }
       x0 += xStep;
@@ -1696,15 +1309,7 @@ describe("RectangleRecognizer", () => {
       [0, 0],
     ];
     for (const degrees of [0, 25.6]) {
-      const points = Sample.createRegularPolygon(
-        0,
-        0,
-        0,
-        Angle.createDegrees(degrees),
-        2,
-        4,
-        true
-      );
+      const points = Sample.createRegularPolygon(0, 0, 0, Angle.createDegrees(degrees), 2, 4, true);
       for (const requireClosure of [true, false]) {
         for (const data of [
           points,
@@ -1714,66 +1319,33 @@ describe("RectangleRecognizer", () => {
           Loop.createPolygon(points),
           makeSticks(points),
         ]) {
-          const transform = RegionOps.rectangleEdgeTransform(
-            data,
-            requireClosure
-          );
+          const transform = RegionOps.rectangleEdgeTransform(data, requireClosure);
           ck.testDefined(transform);
           if (transform) {
             for (let i = 0; i < points.length; i++) {
-              ck.testPoint3d(
-                points[i],
-                transform.multiplyXYZ(uv[i][0], uv[i][1]),
-                `rectangle transform point ${i}`
-              );
+              ck.testPoint3d(points[i], transform.multiplyXYZ(uv[i][0], uv[i][1]), `rectangle transform point ${i}`);
             }
           }
         }
       }
-      ck.testUndefined(
-        RegionOps.rectangleEdgeTransform(points.slice(0, 3), false),
-        "short array should fail"
-      );
-      const transform4 = RegionOps.rectangleEdgeTransform(
-        points.slice(0, 4),
-        false
-      );
+      ck.testUndefined(RegionOps.rectangleEdgeTransform(points.slice(0, 3), false), "short array should fail");
+      const transform4 = RegionOps.rectangleEdgeTransform(points.slice(0, 4), false);
       const transform5 = RegionOps.rectangleEdgeTransform(points, true);
-      if (
-        ck.testDefined(transform4) &&
-        transform4 &&
-        ck.testDefined(transform5) &&
-        transform5
-      )
+      if (ck.testDefined(transform4) && transform4 && ck.testDefined(transform5) && transform5)
         ck.testTransform(transform4, transform5);
-      ck.testUndefined(
-        RegionOps.rectangleEdgeTransform(points.slice(0, 3), false),
-        "short array should fail"
-      );
+      ck.testUndefined(RegionOps.rectangleEdgeTransform(points.slice(0, 3), false), "short array should fail");
 
       for (let i = 0; i < 4; i++) {
         const points1 = Point3dArray.clonePoint3dArray(points);
         points1[i].z += 0.01;
-        ck.testUndefined(
-          RegionOps.rectangleEdgeTransform(points1),
-          `non planar should fail ${i}`
-        );
+        ck.testUndefined(RegionOps.rectangleEdgeTransform(points1), `non planar should fail ${i}`);
         const points2 = Point3dArray.clonePoint3dArray(points);
         points2[i].x += 0.01;
-        ck.testUndefined(
-          RegionOps.rectangleEdgeTransform(points2),
-          `skew should fail ${i}`
-        );
+        ck.testUndefined(RegionOps.rectangleEdgeTransform(points2), `skew should fail ${i}`);
       }
     }
-    ck.testUndefined(
-      RegionOps.rectangleEdgeTransform(
-        LineSegment3d.createXYZXYZ(1, 2, 3, 4, 5, 2)
-      )
-    );
-    ck.testUndefined(
-      RegionOps.rectangleEdgeTransform(Path.create(Arc3d.createUnitCircle()))
-    );
+    ck.testUndefined(RegionOps.rectangleEdgeTransform(LineSegment3d.createXYZXYZ(1, 2, 3, 4, 5, 2)));
+    ck.testUndefined(RegionOps.rectangleEdgeTransform(Path.create(Arc3d.createUnitCircle())));
     ck.testUndefined(RegionOps.rectangleEdgeTransform(BagOfCurves.create()));
     expect(ck.getNumErrors()).equals(0);
   });
@@ -1781,28 +1353,15 @@ describe("RectangleRecognizer", () => {
     // const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const road = IModelJson.Reader.parse(
-      JSON.parse(
-        fs.readFileSync(
-          "./src/test/testInputs/intersections/WilsonShapes/roadShape.imjs",
-          "utf8"
-        )
-      )
+      JSON.parse(fs.readFileSync("./src/test/testInputs/intersections/WilsonShapes/roadShape.imjs", "utf8"))
     );
     const badShape = IModelJson.Reader.parse(
       JSON.parse(
-        fs.readFileSync(
-          "./src/test/testInputs/intersections/WilsonShapes/3pointTurnShape_overlaps.imjs",
-          "utf8"
-        )
+        fs.readFileSync("./src/test/testInputs/intersections/WilsonShapes/3pointTurnShape_overlaps.imjs", "utf8")
       )
     );
     const goodShape = IModelJson.Reader.parse(
-      JSON.parse(
-        fs.readFileSync(
-          "./src/test/testInputs/intersections/WilsonShapes/3pointTurnShape_fits.imjs",
-          "utf8"
-        )
-      )
+      JSON.parse(fs.readFileSync("./src/test/testInputs/intersections/WilsonShapes/3pointTurnShape_fits.imjs", "utf8"))
     );
 
     if (road instanceof Loop) {
@@ -1819,31 +1378,18 @@ describe("RectangleRecognizer", () => {
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, road, x0, y0);
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, shape, x0, y0);
           const dz = 0.1;
-          for (const outputArray of [
-            splitParts.insideParts,
-            splitParts.outsideParts,
-          ]) {
+          for (const outputArray of [splitParts.insideParts, splitParts.outsideParts]) {
             y0 += yStep;
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, road, x0, y0);
             for (const fragment of outputArray) {
-              GeometryCoreTestIO.captureCloneGeometry(
-                allGeometry,
-                fragment,
-                x0,
-                y0,
-                dz
-              );
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, fragment, x0, y0, dz);
             }
           }
         }
         x0 += xStep;
       }
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "RegionOps",
-      "3PointTurnChecks"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "3PointTurnChecks");
   });
 });
 
@@ -1868,19 +1414,12 @@ describe("RegionOps2", () => {
       "./src/test/testInputs/curve/michelLoops2.imjs", // 339 loops
     ];
     for (const testCase of testCases) {
-      const inputs = IModelJson.Reader.parse(
-        JSON.parse(fs.readFileSync(testCase, "utf8"))
-      ) as Loop[];
+      const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase, "utf8"))) as Loop[];
       if (ck.testDefined(inputs, "inputs successfully parsed") && inputs) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs, x, y);
         // generate a region from loops
         const region = RegionOps.sortOuterAndHoleLoopsXY(inputs);
-        if (
-          ck.testTrue(
-            region.isClosedPath || region.children.length > 0,
-            "region created"
-          )
-        ) {
+        if (ck.testTrue(region.isClosedPath || region.children.length > 0, "region created")) {
           const range = region.range();
           const xDelta = 1.5 * range.xLength();
           const yDelta = 1.5 * range.yLength();
@@ -1896,23 +1435,13 @@ describe("RegionOps2", () => {
             // verify no degenerate triangles
             const visitor = mesh.createVisitor() as IndexedPolyfaceVisitor;
             for (; visitor.moveToNextFacet(); ) {
-              ck.testExactNumber(
-                3,
-                visitor.numEdgesThisFacet,
-                "facet is triangular"
-              );
-              ck.testFalse(
-                visitor.pointIndex[0] === visitor.pointIndex[1],
-                "first two point indices are different"
-              );
+              ck.testExactNumber(3, visitor.numEdgesThisFacet, "facet is triangular");
+              ck.testFalse(visitor.pointIndex[0] === visitor.pointIndex[1], "first two point indices are different");
               ck.testFalse(
                 visitor.pointIndex[0] === visitor.pointIndex[2],
                 "first and last point indices are different"
               );
-              ck.testFalse(
-                visitor.pointIndex[1] === visitor.pointIndex[2],
-                "last two point indices are different"
-              );
+              ck.testFalse(visitor.pointIndex[1] === visitor.pointIndex[2], "last two point indices are different");
             }
           }
           x = 0;
@@ -1920,11 +1449,7 @@ describe("RegionOps2", () => {
         }
       }
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "RegionOps2",
-      "TriangulateSortedLoops"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps2", "TriangulateSortedLoops");
     expect(ck.getNumErrors()).equals(0);
   });
 });

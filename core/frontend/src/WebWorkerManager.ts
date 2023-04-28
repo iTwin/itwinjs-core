@@ -54,13 +54,8 @@ export class WebWorkerManager {
     }
 
     // if we have no proxys yet, or if none of them have an empty queue, start a new WebWorker proxy.
-    if (
-      !selectedProxy ||
-      (selectedLength > 0 && this._workerProxys.length < this._maxWebWorkers)
-    ) {
-      const length: number = this._workerProxys.push(
-        new WebWorkerProxy(this._workerJsFile)
-      );
+    if (!selectedProxy || (selectedLength > 0 && this._workerProxys.length < this._maxWebWorkers)) {
+      const length: number = this._workerProxys.push(new WebWorkerProxy(this._workerJsFile));
       selectedProxy = this._workerProxys[length - 1];
     }
     return selectedProxy;
@@ -69,11 +64,7 @@ export class WebWorkerManager {
 
 // the message sent to the webWorker.
 class RequestMessage {
-  constructor(
-    public msgId: number,
-    public operation: string,
-    public operands: any
-  ) {}
+  constructor(public msgId: number, public operation: string, public operands: any) {}
 }
 
 /** Abstract base class for requests handled by a Web Worker.
@@ -89,11 +80,7 @@ export abstract class WorkerOperation {
   private _proxy: WebWorkerProxy | undefined = undefined;
   public msgId: number = 0;
 
-  constructor(
-    public operation: string,
-    public operands: any[],
-    public transferable?: any[]
-  ) {}
+  constructor(public operation: string, public operands: any[], public transferable?: any[]) {}
 
   // This is the executor method that is called immediately when you instantiate a Promise.
   // Here, we store the resolve and reject functions for use when we handle the message from the worker (see handleMessage).
@@ -159,10 +146,7 @@ class WebWorkerProxy {
   private handleError(error: ErrorEvent) {
     let errorMsgId = 0;
     let rejectError = error;
-    if (
-      error.hasOwnProperty("msgId") &&
-      error.hasOwnProperty("originalError")
-    ) {
+    if (error.hasOwnProperty("msgId") && error.hasOwnProperty("originalError")) {
       errorMsgId = (error as any).msgId;
       rejectError = (error as any).originalError;
     } else {

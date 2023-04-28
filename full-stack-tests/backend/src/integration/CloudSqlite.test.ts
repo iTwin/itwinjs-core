@@ -41,18 +41,12 @@ export namespace CloudSqliteTest {
 
   export async function createAzureContainer(container: TestContainer) {
     const pipeline = azureBlob.newPipeline(credential);
-    const blobService = new azureBlob.BlobServiceClient(
-      `http://${httpAddr}/${storage.accessName}`,
-      pipeline
-    );
+    const blobService = new azureBlob.BlobServiceClient(`http://${httpAddr}/${storage.accessName}`, pipeline);
     setSasToken(container, "racwdl");
     try {
       await blobService.deleteContainer(container.containerId);
     } catch (e) {}
-    await blobService.createContainer(
-      container.containerId,
-      container.isPublic ? { access: "blob" } : undefined
-    );
+    await blobService.createContainer(container.containerId, container.isPublic ? { access: "blob" } : undefined);
   }
   export async function initializeContainers(containers: TestContainer[]) {
     for await (const container of containers) {
@@ -65,10 +59,7 @@ export namespace CloudSqliteTest {
     emptyDirSync(name);
   }
 
-  export function makeCloudSqliteContainer(
-    containerId: string,
-    isPublic: boolean
-  ): TestContainer {
+  export function makeCloudSqliteContainer(containerId: string, isPublic: boolean): TestContainer {
     const cont = CloudSqlite.createCloudContainer({
       ...storage,
       containerId,
@@ -79,12 +70,9 @@ export namespace CloudSqliteTest {
     return cont;
   }
 
-  export function makeCloudSqliteContainers(
-    props: [string, boolean][]
-  ): TestContainer[] {
+  export function makeCloudSqliteContainers(props: [string, boolean][]): TestContainer[] {
     const containers = [];
-    for (const entry of props)
-      containers.push(makeCloudSqliteContainer(entry[0], entry[1]));
+    for (const entry of props) containers.push(makeCloudSqliteContainer(entry[0], entry[1]));
 
     return containers;
   }
@@ -113,14 +101,8 @@ export namespace CloudSqliteTest {
       )
       .toString();
   }
-  export function setSasToken(
-    container: CloudSqlite.CloudContainer,
-    permissionFlags: string
-  ) {
-    container.accessToken = makeSasToken(
-      container.containerId,
-      permissionFlags
-    );
+  export function setSasToken(container: CloudSqlite.CloudContainer, permissionFlags: string) {
+    container.accessToken = makeSasToken(container.containerId, permissionFlags);
   }
   export async function uploadFile(
     container: CloudSqlite.CloudContainer,
@@ -164,44 +146,15 @@ describe("CloudSqlite", () => {
     testBimGuid = imodel.iModelId;
     imodel.close();
 
-    const tempDbFile = join(
-      KnownLocations.tmpdir,
-      "TestWorkspaces",
-      "testws.db"
-    );
+    const tempDbFile = join(KnownLocations.tmpdir, "TestWorkspaces", "testws.db");
     if (existsSync(tempDbFile)) removeSync(tempDbFile);
     EditableWorkspaceDb.createEmpty(tempDbFile); // just to create a db with a few tables
 
-    await CloudSqliteTest.uploadFile(
-      testContainers[0],
-      caches[0],
-      "c0-db1:0",
-      tempDbFile
-    );
-    await CloudSqliteTest.uploadFile(
-      testContainers[0],
-      caches[0],
-      "testBim",
-      testBimFileName
-    );
-    await CloudSqliteTest.uploadFile(
-      testContainers[1],
-      caches[0],
-      "c1-db1:2.1",
-      tempDbFile
-    );
-    await CloudSqliteTest.uploadFile(
-      testContainers[2],
-      caches[0],
-      "c2-db1",
-      tempDbFile
-    );
-    await CloudSqliteTest.uploadFile(
-      testContainers[2],
-      caches[0],
-      "testBim",
-      testBimFileName
-    );
+    await CloudSqliteTest.uploadFile(testContainers[0], caches[0], "c0-db1:0", tempDbFile);
+    await CloudSqliteTest.uploadFile(testContainers[0], caches[0], "testBim", testBimFileName);
+    await CloudSqliteTest.uploadFile(testContainers[1], caches[0], "c1-db1:2.1", tempDbFile);
+    await CloudSqliteTest.uploadFile(testContainers[2], caches[0], "c2-db1", tempDbFile);
+    await CloudSqliteTest.uploadFile(testContainers[2], caches[0], "testBim", testBimFileName);
   });
 
   it("cloud containers", async () => {
@@ -240,17 +193,13 @@ describe("CloudSqlite", () => {
     imodel.close();
 
     await CloudSqlite.withWriteLock(user, contain1, async () => {
-      await expect(
-        contain1.copyDatabase("badName", "bad2")
-      ).eventually.rejectedWith("no such database");
+      await expect(contain1.copyDatabase("badName", "bad2")).eventually.rejectedWith("no such database");
       await contain1.copyDatabase("testBim", "testBim2");
     });
 
     expect(contain1.queryDatabases().length).equals(3);
 
-    await expect(
-      BriefcaseDb.open({ fileName: "testBim2", container: contain1 })
-    ).rejectedWith("write lock not held");
+    await expect(BriefcaseDb.open({ fileName: "testBim2", container: contain1 })).rejectedWith("write lock not held");
     await CloudSqlite.withWriteLock(user, contain1, async () => {
       expect(contain1.hasWriteLock);
       const briefcase = await BriefcaseDb.open({
@@ -263,20 +212,17 @@ describe("CloudSqlite", () => {
       briefcase.close();
     });
 
-    await db.withLockedContainer(
-      { user, container: contain1, dbName: "testBim2" },
-      async () => {
-        db.vacuum();
-        db.closeDb();
+    await db.withLockedContainer({ user, container: contain1, dbName: "testBim2" }, async () => {
+      db.vacuum();
+      db.closeDb();
 
-        expect(contain1.hasLocalChanges).true;
-        dbProps = contain1.queryDatabase("testBim2");
-        assert(dbProps !== undefined);
-        expect(dbProps.dirtyBlocks).greaterThan(0);
-        expect(dbProps.localBlocks).greaterThan(0);
-        expect(dbProps.localBlocks).equals(dbProps.totalBlocks);
-      }
-    );
+      expect(contain1.hasLocalChanges).true;
+      dbProps = contain1.queryDatabase("testBim2");
+      assert(dbProps !== undefined);
+      expect(dbProps.dirtyBlocks).greaterThan(0);
+      expect(dbProps.localBlocks).greaterThan(0);
+      expect(dbProps.localBlocks).equals(dbProps.totalBlocks);
+    });
     expect(db.isOpen).false;
     expect(contain1.queryDatabase("testBim2")?.dirtyBlocks).equals(0);
 
@@ -292,9 +238,7 @@ describe("CloudSqlite", () => {
     expect(contain1.queryDatabase("testBim2")).not.undefined;
 
     await CloudSqlite.withWriteLock(user, contain1, async () => {
-      await expect(contain1.deleteDatabase("badName")).eventually.rejectedWith(
-        "no such database"
-      );
+      await expect(contain1.deleteDatabase("badName")).eventually.rejectedWith("no such database");
       await contain1.deleteDatabase("testBim2");
     });
 
@@ -314,25 +258,18 @@ describe("CloudSqlite", () => {
     CloudSqliteTest.setSasToken(contain1, "rwdl"); // now ask for delete permission
     contain1.connect(caches[1]);
 
-    await CloudSqlite.withWriteLock(user, contain1, async () =>
-      contain1.cleanDeletedBlocks()
-    );
+    await CloudSqlite.withWriteLock(user, contain1, async () => contain1.cleanDeletedBlocks());
     expect(contain1.garbageBlocks).equals(0); // should successfully purge
 
     // should be connected
     expect(contain1.isConnected);
 
     // can't connect two containers with same name
-    const cont2 = CloudSqliteTest.makeCloudSqliteContainer(
-      contain1.containerId,
-      false
-    );
+    const cont2 = CloudSqliteTest.makeCloudSqliteContainer(contain1.containerId, false);
 
     CloudSqliteTest.setSasToken(cont2, "racwdl");
 
-    expect(() => cont2.connect(caches[1])).throws(
-      "container with that name already attached"
-    );
+    expect(() => cont2.connect(caches[1])).throws("container with that name already attached");
     expect(cont2.isConnected).false;
     cont2.connect(caches[0]); // connect it to a different cache
     expect(cont2.isConnected);

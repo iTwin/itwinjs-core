@@ -7,17 +7,8 @@
  * @module Tools
  */
 
-import {
-  CompressedId64Set,
-  Id64Arg,
-  OrderedId64Iterable,
-} from "@itwin/core-bentley";
-import {
-  IModelApp,
-  NotifyMessageDetails,
-  OutputMessagePriority,
-  Tool,
-} from "@itwin/core-frontend";
+import { CompressedId64Set, Id64Arg, OrderedId64Iterable } from "@itwin/core-bentley";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 
@@ -36,8 +27,7 @@ export class SelectElementsByIdTool extends Tool {
 
   public override async run(ids?: Id64Arg): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp && undefined !== ids)
-      vp.iModel.selectionSet.replace(ids);
+    if (undefined !== vp && undefined !== ids) vp.iModel.selectionSet.replace(ids);
 
     return true;
   }
@@ -85,11 +75,7 @@ export class DumpSelectionSetTool extends Tool {
     if (this._copy) copyStringToClipboard(output);
 
     const brief = `Selection set dumped${this._copy ? " to clipboard" : ""}.`;
-    const details = new NotifyMessageDetails(
-      OutputMessagePriority.Info,
-      brief,
-      output
-    );
+    const details = new NotifyMessageDetails(OutputMessagePriority.Info, brief, output);
     IModelApp.notifications.outputMessage(details);
     return true;
   }

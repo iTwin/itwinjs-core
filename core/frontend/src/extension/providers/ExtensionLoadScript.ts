@@ -28,7 +28,5 @@ function execute(m: any) {
   if (typeof m === "function") return m();
   if (m.main && typeof m.main === "function") return m.main();
   if (m.default && typeof m.default === "function") return m.default();
-  throw new Error(
-    `Failed to execute extension. No default function was found to execute.`
-  );
+  throw new Error(`Failed to execute extension. No default function was found to execute.`);
 }

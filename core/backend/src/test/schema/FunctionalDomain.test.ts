@@ -7,18 +7,9 @@ import { assert, expect } from "chai";
 import { join } from "path";
 import { restore as sinonRestore, spy as sinonSpy } from "sinon";
 import { Guid, Id64, OpenMode } from "@itwin/core-bentley";
-import {
-  CodeScopeSpec,
-  CodeSpec,
-  ElementProps,
-  IModel,
-} from "@itwin/core-common";
+import { CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@itwin/core-common";
 import { ClassRegistry } from "../../ClassRegistry";
-import {
-  ElementUniqueAspect,
-  OnAspectIdArg,
-  OnAspectPropsArg,
-} from "../../ElementAspect";
+import { ElementUniqueAspect, OnAspectIdArg, OnAspectPropsArg } from "../../ElementAspect";
 import {
   FunctionalBreakdownElement,
   FunctionalComponentElement,
@@ -119,8 +110,7 @@ class TestFuncModel extends FunctionalModel {
   public static override onInsertElement(arg: OnElementInModelPropsArg): void {
     super.onInsertElement(arg);
     assert.equal(arg.iModel, iModelDb);
-    if (arg.elementProps.code.value === "badval")
-      throw new Error("bad element");
+    if (arg.elementProps.code.value === "badval") throw new Error("bad element");
   }
   public static override onInsertedElement(arg: OnElementInModelIdArg): void {
     super.onInsertedElement(arg);
@@ -137,8 +127,7 @@ class TestFuncModel extends FunctionalModel {
   public static override onDeleteElement(arg: OnElementInModelIdArg): void {
     super.onDeleteElement(arg);
     assert.equal(arg.iModel, iModelDb);
-    if (arg.elementId === this.dontDelete)
-      throw new Error("dont delete my element");
+    if (arg.elementId === this.dontDelete) throw new Error("dont delete my element");
   }
   public static override onDeletedElement(arg: OnElementInModelIdArg): void {
     super.onDeletedElement(arg);
@@ -184,8 +173,7 @@ class Breakdown extends FunctionalBreakdownElement {
   public static override onChildDelete(arg: OnChildElementIdArg): void {
     super.onChildDelete(arg);
     assert.equal(arg.iModel, iModelDb);
-    if (arg.childId === this.dontDeleteChild)
-      throw new Error("dont delete my child");
+    if (arg.childId === this.dontDeleteChild) throw new Error("dont delete my child");
   }
   public static override onChildDeleted(arg: OnChildElementIdArg): void {
     super.onChildDeleted(arg);
@@ -274,25 +262,19 @@ describe("Functional Domain", () => {
   });
 
   it("should populate FunctionalModel and test Element, Model, and ElementAspect callbacks", async () => {
-    iModelDb = StandaloneDb.createEmpty(
-      IModelTestUtils.prepareOutputFile(
-        "FunctionalDomain",
-        "FunctionalTest.bim"
-      ),
-      {
-        rootSubject: {
-          name: "FunctionalTest",
-          description: "Test of the Functional domain schema.",
-        },
-        client: "Functional",
-        globalOrigin: { x: 0, y: 0 },
-        projectExtents: {
-          low: { x: -500, y: -500, z: -50 },
-          high: { x: 500, y: 500, z: 50 },
-        },
-        guid: Guid.createValue(),
-      }
-    );
+    iModelDb = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("FunctionalDomain", "FunctionalTest.bim"), {
+      rootSubject: {
+        name: "FunctionalTest",
+        description: "Test of the Functional domain schema.",
+      },
+      client: "Functional",
+      globalOrigin: { x: 0, y: 0 },
+      projectExtents: {
+        low: { x: -500, y: -500, z: -50 },
+        high: { x: 500, y: 500, z: 50 },
+      },
+      guid: Guid.createValue(),
+    });
 
     iModelDb.nativeDb.resetBriefcaseId(100);
 
@@ -318,9 +300,7 @@ describe("Functional Domain", () => {
     let committed = 0;
     const elements = iModelDb.elements;
     const dropCommit = iModelDb.txns.onCommit.addListener(() => commits++);
-    const dropCommitted = iModelDb.txns.onCommitted.addListener(
-      () => committed++
-    );
+    const dropCommitted = iModelDb.txns.onCommitted.addListener(() => committed++);
     iModelDb.saveChanges("Import Functional schema");
 
     assert.equal(commits, 1);
@@ -330,9 +310,7 @@ describe("Functional Domain", () => {
 
     IModelTestUtils.flushTxns(iModelDb); // importSchema below will fail if this is not called to flush local changes
 
-    await iModelDb.importSchemas([
-      join(KnownTestLocations.assetsDir, "TestFunctional.ecschema.xml"),
-    ]);
+    await iModelDb.importSchemas([join(KnownTestLocations.assetsDir, "TestFunctional.ecschema.xml")]);
 
     iModelDb.saveChanges("Import TestFunctional schema");
     assert.equal(commits, 1);
@@ -396,11 +374,7 @@ describe("Functional Domain", () => {
       },
     };
 
-    const codeSpec = CodeSpec.create(
-      iModelDb,
-      "Test Functional Elements",
-      CodeScopeSpec.Type.Model
-    );
+    const codeSpec = CodeSpec.create(iModelDb, "Test Functional Elements", CodeScopeSpec.Type.Model);
     iModelDb.codeSpecs.insert(codeSpec);
     assert.isTrue(Id64.isValidId64(codeSpec.id));
 
@@ -413,11 +387,7 @@ describe("Functional Domain", () => {
     });
     iModelDb.channels.addAllowedChannel(testChannelKey);
 
-    const partitionCode = FunctionalPartition.createCode(
-      iModelDb,
-      channel1,
-      "Test Functional Model"
-    );
+    const partitionCode = FunctionalPartition.createCode(iModelDb, channel1, "Test Functional Model");
     const partitionProps = {
       classFullName: TestFuncPartition.classFullName,
       model: IModel.repositoryModelId,
@@ -439,14 +409,8 @@ describe("Functional Domain", () => {
     assert.isTrue(spy.model.onInsert.calledOnce);
     assert.isTrue(spy.model.onInserted.calledOnce);
     assert.equal(spy.model.onInserted.getCall(0).args[0].id, modelId);
-    assert.isFalse(
-      spy.model.onUpdate.called,
-      "model insert should not call onUpdate"
-    );
-    assert.isFalse(
-      spy.model.onUpdated.called,
-      "model insert should not call onUpdated"
-    );
+    assert.isFalse(spy.model.onUpdate.called, "model insert should not call onUpdate");
+    assert.isFalse(spy.model.onUpdated.called, "model insert should not call onUpdated");
 
     assert.isTrue(spy.partition.onSubModelInsert.calledOnce);
     assert.isTrue(spy.partition.onSubModelInserted.calledOnce);
@@ -463,11 +427,7 @@ describe("Functional Domain", () => {
       modeledElement: { id: partitionId },
     });
     assert.isTrue(Id64.isValidId64(modelId2));
-    assert.equal(
-      spy.model.onInserted.getCall(1).args[0].id,
-      modelId2,
-      "second insert should set new id"
-    );
+    assert.equal(spy.model.onInserted.getCall(1).args[0].id, modelId2, "second insert should set new id");
     assert.equal(spy.model.onInsert.callCount, 2);
     assert.equal(spy.model.onInserted.callCount, 2);
     assert.equal(
@@ -482,19 +442,13 @@ describe("Functional Domain", () => {
     assert.equal(spy.model.onUpdate.callCount, 2);
     assert.equal(spy.model.onUpdated.callCount, 1);
 
-    testChannel(
-      () => model2.delete(),
-      [spy.model.onDelete, spy.partition.onSubModelDelete]
-    );
+    testChannel(() => model2.delete(), [spy.model.onDelete, spy.partition.onSubModelDelete]);
     assert.isTrue(spy.model.onDelete.calledOnce);
     assert.isTrue(spy.model.onDeleted.calledOnce);
     assert.equal(spy.model.onDeleted.getCall(0).args[0].id, modelId2);
     assert.isTrue(spy.partition.onSubModelDelete.calledOnce);
     assert.isTrue(spy.partition.onSubModelDeleted.calledOnce);
-    assert.equal(
-      spy.partition.onSubModelDeleted.getCall(0).args[0].subModelId,
-      modelId2
-    );
+    assert.equal(spy.partition.onSubModelDeleted.getCall(0).args[0].subModelId, modelId2);
 
     const breakdownProps = {
       classFullName: Breakdown.classFullName,
@@ -508,18 +462,12 @@ describe("Functional Domain", () => {
     assert.isTrue(Id64.isValidId64(breakdownId));
     assert.isTrue(spy.model.onInsertElement.calledOnce);
     assert.isTrue(spy.model.onInsertedElement.calledOnce);
-    assert.equal(
-      spy.model.onInsertedElement.getCall(0).args[0].elementId,
-      breakdownId
-    );
+    assert.equal(spy.model.onInsertedElement.getCall(0).args[0].elementId, breakdownId);
 
     assert.isTrue(spy.breakdown.onInsert.calledOnce);
     assert.isTrue(spy.breakdown.onInserted.calledOnce);
     assert.equal(spy.breakdown.onInserted.getCall(0).args[0].id, breakdownId);
-    assert.equal(
-      spy.breakdown.onInsert.getCall(0).args[0].props,
-      breakdownProps
-    );
+    assert.equal(spy.breakdown.onInsert.getCall(0).args[0].props, breakdownProps);
 
     const breakdown2Props: ElementProps = {
       classFullName: Breakdown.classFullName,
@@ -527,9 +475,7 @@ describe("Functional Domain", () => {
       code: { spec: codeSpec.id, scope: modelId, value: "badval" },
     };
     // TestFuncModel.onInsertElement throws for this code.value
-    expect(() => elements.insertElement(breakdown2Props)).to.throw(
-      "bad element"
-    );
+    expect(() => elements.insertElement(breakdown2Props)).to.throw("bad element");
 
     breakdown2Props.code.value = "Breakdown2";
     breakdown2Props.userLabel = "start label"; // gets overwritten in `onInsert`
@@ -557,59 +503,27 @@ describe("Functional Domain", () => {
     aspect.strProp = "prop 2";
     TestFuncAspect.expectedVal = aspect.strProp;
     testChannel(() => elements.updateAspect(aspect), [spy.aspect.onUpdate]);
-    assert.equal(
-      spy.aspect.onInsert.callCount,
-      1,
-      "ElementAspect.onInsert should not be called on update"
-    );
-    assert.equal(
-      spy.aspect.onInserted.callCount,
-      1,
-      "ElementAspect.onInserted should should not be called on update"
-    );
+    assert.equal(spy.aspect.onInsert.callCount, 1, "ElementAspect.onInsert should not be called on update");
+    assert.equal(spy.aspect.onInserted.callCount, 1, "ElementAspect.onInserted should should not be called on update");
     assert.equal(spy.aspect.onUpdate.callCount, 1);
     assert.equal(spy.aspect.onUpdated.callCount, 1);
-    assert.equal(
-      spy.aspect.onUpdated.getCall(0).args[0].props.element.id,
-      bd2,
-      "from ElementAspect.onUpdated"
-    );
+    assert.equal(spy.aspect.onUpdated.getCall(0).args[0].props.element.id, bd2, "from ElementAspect.onUpdated");
     const aspects = elements.getAspects(bd2, TestFuncAspect.classFullName);
     assert.equal(aspects.length, 1);
-    testChannel(
-      () => elements.deleteAspect(aspects[0].id),
-      [spy.aspect.onDelete]
-    );
+    testChannel(() => elements.deleteAspect(aspects[0].id), [spy.aspect.onDelete]);
     assert.equal(spy.aspect.onDelete.callCount, 1);
     assert.equal(spy.aspect.onDeleted.callCount, 1);
-    assert.equal(
-      spy.aspect.onDelete.getCall(0).args[0].aspectId,
-      aspects[0].id
-    );
-    assert.equal(
-      spy.aspect.onDeleted.getCall(0).args[0].aspectId,
-      aspects[0].id
-    );
+    assert.equal(spy.aspect.onDelete.getCall(0).args[0].aspectId, aspects[0].id);
+    assert.equal(spy.aspect.onDeleted.getCall(0).args[0].aspectId, aspects[0].id);
 
     let bd2el = elements.getElement(bd2);
-    assert.equal(
-      bd2el.userLabel,
-      insertedLabel,
-      "label was modified by onInsert"
-    );
+    assert.equal(bd2el.userLabel, insertedLabel, "label was modified by onInsert");
     expect(iModelDb.channels.getChannelKey(bd2)).equals(testChannelKey);
 
     bd2el.userLabel = "nothing";
-    testChannel(
-      () => bd2el.update(),
-      [spy.breakdown.onUpdate, spy.breakdown.onUpdated]
-    );
+    testChannel(() => bd2el.update(), [spy.breakdown.onUpdate, spy.breakdown.onUpdated]);
     bd2el = elements.getElement(bd2);
-    assert.equal(
-      bd2el.userLabel,
-      updatedLabel,
-      "label was modified in onUpdate"
-    );
+    assert.equal(bd2el.userLabel, updatedLabel, "label was modified in onUpdate");
     assert.equal(spy.breakdown.onUpdate.callCount, 1);
     assert.equal(spy.breakdown.onUpdated.callCount, 1);
     assert.equal(spy.breakdown.onUpdate.getCall(0).args[0].props.id, bd2);
@@ -640,47 +554,26 @@ describe("Functional Domain", () => {
       },
       code: { spec: codeSpec.id, scope: modelId, value: "Component1" },
     };
-    const componentId = testChannel(
-      () => elements.insertElement(componentProps),
-      []
-    );
+    const componentId = testChannel(() => elements.insertElement(componentProps), []);
     assert.isTrue(Id64.isValidId64(componentId));
     assert.equal(spy.breakdown.onChildInserted.callCount, 1);
-    assert.equal(
-      spy.breakdown.onChildInserted.getCall(0).args[0].childId,
-      componentId
-    );
+    assert.equal(spy.breakdown.onChildInserted.getCall(0).args[0].childId, componentId);
 
     // test model and element callbacks for updateElement
     const component1 = elements.getElement(componentId);
-    testChannel(
-      () => component1.update(),
-      [spy.model.onUpdateElement, spy.model.onUpdatedElement]
-    );
+    testChannel(() => component1.update(), [spy.model.onUpdateElement, spy.model.onUpdatedElement]);
     assert.equal(spy.model.onUpdateElement.callCount, 1);
     assert.equal(spy.model.onUpdatedElement.callCount, 1);
-    assert.equal(
-      spy.model.onUpdatedElement.getCall(0).args[0].elementId,
-      componentId
-    );
+    assert.equal(spy.model.onUpdatedElement.getCall(0).args[0].elementId, componentId);
     assert.equal(spy.breakdown.onChildUpdate.callCount, 1);
     assert.equal(spy.breakdown.onChildUpdated.callCount, 1);
-    assert.equal(
-      spy.breakdown.onChildUpdate.getCall(0).args[0].parentId,
-      breakdownId
-    );
-    assert.equal(
-      spy.breakdown.onChildUpdated.getCall(0).args[0].childId,
-      componentId
-    );
+    assert.equal(spy.breakdown.onChildUpdate.getCall(0).args[0].parentId, breakdownId);
+    assert.equal(spy.breakdown.onChildUpdated.getCall(0).args[0].childId, componentId);
 
     componentProps.code.value = "comp2";
     const comp2 = elements.insertElement(componentProps);
     assert.equal(spy.breakdown.onChildInserted.callCount, 2);
-    assert.equal(
-      spy.breakdown.onChildInserted.getCall(1).args[0].childId,
-      comp2
-    );
+    assert.equal(spy.breakdown.onChildInserted.getCall(1).args[0].childId, comp2);
     const el2 = elements.getElement(comp2);
 
     spy.model.onDeleteElement.resetHistory();
@@ -695,28 +588,14 @@ describe("Functional Domain", () => {
       2,
       "Model.onElementDelete gets called even though element is not really deleted"
     );
-    assert.equal(
-      spy.model.onDeletedElement.callCount,
-      0,
-      "make sure Model.onElementDeleted did not get called"
-    );
+    assert.equal(spy.model.onDeletedElement.callCount, 0, "make sure Model.onElementDeleted did not get called");
     Breakdown.dontDeleteChild = ""; // now fully allow delete
     el2.delete();
-    assert.equal(
-      spy.model.onDeleteElement.callCount,
-      3,
-      "Model.onElementDelete should be called again"
-    );
+    assert.equal(spy.model.onDeleteElement.callCount, 3, "Model.onElementDelete should be called again");
     assert.equal(spy.model.onDeletedElement.callCount, 1);
-    assert.equal(
-      spy.model.onDeletedElement.getCall(0).args[0].elementId,
-      comp2
-    );
+    assert.equal(spy.model.onDeletedElement.getCall(0).args[0].elementId, comp2);
     assert.equal(spy.breakdown.onChildDeleted.callCount, 1);
-    assert.equal(
-      spy.breakdown.onChildDeleted.getCall(0).args[0].childId,
-      comp2
-    );
+    assert.equal(spy.breakdown.onChildDeleted.getCall(0).args[0].childId, comp2);
 
     // next we make sure that changing the parent of an element calls the "onChildAdd/Drop/Added/Dropped" callbacks.
     // To do this we switch a component's parent from "breakDownId" to "bc3"
@@ -728,41 +607,25 @@ describe("Functional Domain", () => {
     testChannel(() => elements.updateElement(compEl3), []);
 
     assert.equal(spy.breakdown.onChildAdd.callCount, 1);
-    assert.equal(
-      spy.breakdown.onChildAdd.getCall(0).args[0].parentId,
-      breakdownId
-    );
-    assert.equal(
-      spy.breakdown.onChildAdd.getCall(0).args[0].childProps.id,
-      comp3
-    );
+    assert.equal(spy.breakdown.onChildAdd.getCall(0).args[0].parentId, breakdownId);
+    assert.equal(spy.breakdown.onChildAdd.getCall(0).args[0].childProps.id, comp3);
     assert.equal(spy.breakdown.onChildDrop.callCount, 1);
     assert.equal(spy.breakdown.onChildDrop.getCall(0).args[0].parentId, bd3);
     assert.equal(spy.breakdown.onChildDrop.getCall(0).args[0].childId, comp3);
     assert.equal(spy.breakdown.onChildAdded.callCount, 1);
-    assert.equal(
-      spy.breakdown.onChildAdded.getCall(0).args[0].parentId,
-      breakdownId
-    );
+    assert.equal(spy.breakdown.onChildAdded.getCall(0).args[0].parentId, breakdownId);
     assert.equal(spy.breakdown.onChildAdded.getCall(0).args[0].childId, comp3);
     assert.equal(spy.breakdown.onChildDropped.callCount, 1);
     assert.equal(spy.breakdown.onChildDropped.getCall(0).args[0].parentId, bd3);
-    assert.equal(
-      spy.breakdown.onChildDropped.getCall(0).args[0].childId,
-      comp3
-    );
+    assert.equal(spy.breakdown.onChildDropped.getCall(0).args[0].childId, comp3);
 
     iModelDb.saveChanges("Insert Functional elements");
 
     // unregister test schema to make sure it will throw exceptions if it is not present (since it has the "SchemaHasBehavior" custom attribute)
     Schemas.unregisterSchema(TestSchema.schemaName);
-    const errMsg =
-      "Schema [TestFunctional] not registered, but is marked with SchemaHasBehavior";
+    const errMsg = "Schema [TestFunctional] not registered, but is marked with SchemaHasBehavior";
     expect(() => elements.deleteElement(breakdownId)).to.throw(errMsg);
-    assert.isDefined(
-      elements.getElement(breakdownId),
-      "should not have been deleted"
-    );
+    assert.isDefined(elements.getElement(breakdownId), "should not have been deleted");
     expect(() => elements.updateElement(breakdownProps)).to.throw(errMsg);
     breakdownProps.code.value = "Breakdown 2";
     expect(() => elements.insertElement(breakdownProps)).to.throw(errMsg);

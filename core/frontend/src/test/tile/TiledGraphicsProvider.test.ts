@@ -35,9 +35,7 @@ class TestTile extends Tile {
     );
   }
 
-  protected _loadChildren(
-    resolve: (children: Tile[] | undefined) => void
-  ): void {
+  protected _loadChildren(resolve: (children: Tile[] | undefined) => void): void {
     resolve(undefined);
   }
 
@@ -137,10 +135,7 @@ class TestProvider implements TiledGraphicsProvider {
     if (ref) this.refs.push(ref);
   }
 
-  public forEachTileTreeRef(
-    _viewport: Viewport,
-    func: (ref: TileTreeReference) => void
-  ) {
+  public forEachTileTreeRef(_viewport: Viewport, func: (ref: TileTreeReference) => void) {
     for (const ref of this.refs) func(ref);
   }
 
@@ -165,11 +160,7 @@ describe("TiledGraphicsProvider", () => {
   });
 
   beforeEach(() => {
-    const view = SpatialViewState.createBlank(
-      imodel,
-      new Point3d(0, 0, 0),
-      new Point3d(1, 1, 1)
-    );
+    const view = SpatialViewState.createBlank(imodel, new Point3d(0, 0, 0), new Point3d(1, 1, 1));
     viewport = ScreenViewport.create(viewDiv, view);
   });
 

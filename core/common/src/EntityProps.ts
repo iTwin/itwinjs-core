@@ -153,14 +153,10 @@ export class PropertyMetaData implements PropertyMetaDataProps {
     this.extendedType = jsonObj.extendedType;
     this.description = jsonObj.description;
     this.displayLabel = jsonObj.displayLabel;
-    if (undefined !== jsonObj.minimumValue)
-      this.minimumValue = jsonObj.minimumValue;
-    if (undefined !== jsonObj.maximumValue)
-      this.maximumValue = jsonObj.maximumValue;
-    if (undefined !== jsonObj.minimumLength)
-      this.minimumLength = jsonObj.minimumLength;
-    if (undefined !== jsonObj.maximumLength)
-      this.maximumLength = jsonObj.maximumLength;
+    if (undefined !== jsonObj.minimumValue) this.minimumValue = jsonObj.minimumValue;
+    if (undefined !== jsonObj.maximumValue) this.maximumValue = jsonObj.maximumValue;
+    if (undefined !== jsonObj.minimumLength) this.minimumLength = jsonObj.minimumLength;
+    if (undefined !== jsonObj.maximumLength) this.maximumLength = jsonObj.maximumLength;
     this.readOnly = jsonObj.readOnly;
     this.kindOfQuantity = jsonObj.kindOfQuantity;
     this.isCustomHandled = jsonObj.isCustomHandled;
@@ -199,10 +195,7 @@ export class PropertyMetaData implements PropertyMetaDataProps {
           return this.createValueOrArray(Point3d.fromJSON, jsonObj);
       }
     }
-    if (this.isNavigation)
-      return jsonObj.id !== undefined
-        ? new RelatedElement(jsonObj)
-        : Id64.fromJSON(jsonObj);
+    if (this.isNavigation) return jsonObj.id !== undefined ? new RelatedElement(jsonObj) : Id64.fromJSON(jsonObj);
 
     return jsonObj;
   }
@@ -254,9 +247,7 @@ export class EntityMetaData implements EntityMetaDataProps {
 
     for (const propName in jsonObj.properties) {
       // eslint-disable-line guard-for-in
-      this.properties[propName] = new PropertyMetaData(
-        jsonObj.properties[propName]
-      );
+      this.properties[propName] = new PropertyMetaData(jsonObj.properties[propName]);
     }
   }
 }

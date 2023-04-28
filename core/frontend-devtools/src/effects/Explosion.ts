@@ -20,12 +20,7 @@ import {
   ParticleProps,
   Tool,
 } from "@itwin/core-frontend";
-import {
-  randomFloat,
-  randomFloatInRange,
-  randomIntegerInRange,
-  randomPositionInRange,
-} from "./Random";
+import { randomFloat, randomFloatInRange, randomIntegerInRange, randomPositionInRange } from "./Random";
 
 /** Represents one particle in the system. */
 class Particle implements ParticleProps {
@@ -52,12 +47,7 @@ class Particle implements ParticleProps {
     return this.position.z;
   }
 
-  public constructor(
-    position: Point3d,
-    velocity: Vector3d,
-    lifetime: number,
-    size: number
-  ) {
+  public constructor(position: Point3d, velocity: Vector3d, lifetime: number, size: number) {
     this.position = position;
     this.velocity = velocity;
     this.lifetime = lifetime;
@@ -87,19 +77,13 @@ class ParticleEmitter {
     const particles = [];
     const numParticles = randomIntegerInRange(this.numParticlesRange);
     for (let i = 0; i < numParticles; i++) {
-      const velocity = new Vector3d(
-        randomFloat(-1.0, 1.0),
-        randomFloat(-1.0, 1.0),
-        randomFloat(-1.0, 1.0)
-      );
+      const velocity = new Vector3d(randomFloat(-1.0, 1.0), randomFloat(-1.0, 1.0), randomFloat(-1.0, 1.0));
       velocity.normalizeInPlace();
       velocity.scaleInPlace(randomFloatInRange(this.speedRange));
 
       const lifetime = randomFloatInRange(this.lifetimeRange);
       const size = randomFloatInRange(this.sizeRange);
-      particles.push(
-        new Particle(new Point3d(0, 0, 0), velocity, lifetime, size)
-      );
+      particles.push(new Particle(new Point3d(0, 0, 0), velocity, lifetime, size));
     }
 
     return particles;
@@ -121,11 +105,7 @@ class ParticleSystem {
 
   public static numEmissionsRange = Range1d.createXX(1, 5);
 
-  public constructor(
-    texture: RenderTexture,
-    iModel: IModelConnection,
-    numEmissions: number
-  ) {
+  public constructor(texture: RenderTexture, iModel: IModelConnection, numEmissions: number) {
     this._texture = texture;
     this._pickableId = iModel.transientIds.getNext();
     this._numEmissions = numEmissions;
@@ -212,28 +192,20 @@ class ParticleSystem {
     return id === this._pickableId;
   }
 
-  public async getDecorationToolTip(
-    _hit: HitDetail
-  ): Promise<HTMLElement | string> {
+  public async getDecorationToolTip(_hit: HitDetail): Promise<HTMLElement | string> {
     return "Explosion effect";
   }
 
   public static async addDecorator(iModel: IModelConnection): Promise<void> {
     // Note: The decorator takes ownership of the texture, and disposes of it when the decorator is disposed.
-    const image = await imageElementFromUrl(
-      `${IModelApp.publicPath}sprites/particle_explosion.png`
-    );
+    const image = await imageElementFromUrl(`${IModelApp.publicPath}sprites/particle_explosion.png`);
     const texture = IModelApp.renderSystem.createTexture({
       ownership: "external",
       image: { source: image, transparency: TextureTransparency.Mixed },
     });
     if (texture)
       IModelApp.viewManager.addDecorator(
-        new ParticleSystem(
-          texture,
-          iModel,
-          randomIntegerInRange(this.numEmissionsRange)
-        )
+        new ParticleSystem(texture, iModel, randomIntegerInRange(this.numEmissionsRange))
       );
   }
 }

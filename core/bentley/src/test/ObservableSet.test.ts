@@ -20,12 +20,7 @@ class Listener {
     this._added = this._deleted = this._cleared;
   }
 
-  public expect(
-    added: boolean,
-    deleted: boolean,
-    cleared: boolean,
-    func: () => void
-  ): void {
+  public expect(added: boolean, deleted: boolean, cleared: boolean, func: () => void): void {
     this.clear();
     func();
     expect(this._added).to.equal(added);

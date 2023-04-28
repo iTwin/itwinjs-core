@@ -8,11 +8,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import {
-  PlanarClipMaskMode,
-  PlanarClipMaskPriority,
-  PlanarClipMaskSettings,
-} from "@itwin/core-common";
+import { PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskSettings } from "@itwin/core-common";
 import {
   BeButtonEvent,
   ContextRealityModelState,
@@ -39,10 +35,7 @@ export class SetMapHigherPriorityMasking extends Tool {
     return 2;
   }
 
-  public override async run(
-    transparency: number,
-    invert: boolean
-  ): Promise<boolean> {
+  public override async run(transparency: number, invert: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp) return false;
 
@@ -62,10 +55,7 @@ export class SetMapHigherPriorityMasking extends Tool {
     const transparency = parseFloat(args[0]);
     let invert;
     if (args.length > 1) invert = parseBoolean(args[1]);
-    return this.run(
-      transparency !== undefined && transparency < 1.0 ? transparency : 0,
-      invert === true
-    );
+    return this.run(transparency !== undefined && transparency < 1.0 ? transparency : 0, invert === true);
   }
 }
 
@@ -121,12 +111,8 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
     this.showPrompt();
   }
   private setupAndPromptForNextAction(): void {
-    this._useSelection =
-      undefined !== this.targetView && this.iModel.selectionSet.isActive;
-    this.initLocateElements(
-      !this._useSelection ||
-        (this.targetModelRequired() && !this._targetMaskModel)
-    );
+    this._useSelection = undefined !== this.targetView && this.iModel.selectionSet.isActive;
+    this.initLocateElements(!this._useSelection || (this.targetModelRequired() && !this._targetMaskModel));
     IModelApp.locateManager.options.allowDecorations = true; // So we can select "contextual" reality models.
     this.showPrompt();
   }
@@ -160,49 +146,33 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     const transparency = parseFloat(args[0]);
-    this._transparency =
-      transparency !== undefined && transparency < 1.0 ? transparency : 0;
+    this._transparency = transparency !== undefined && transparency < 1.0 ? transparency : 0;
     if (args.length > 1) this._invert = parseBoolean(args[1]) === true;
 
     return this.run();
   }
 
   public override async onCleanup() {
-    if (0 !== this._acceptedElementIds.size)
-      this.iModel.hilited.setHilite(this._acceptedElementIds, false);
+    if (0 !== this._acceptedElementIds.size) this.iModel.hilited.setHilite(this._acceptedElementIds, false);
     this.clearIds();
   }
 
-  public override async filterHit(
-    hit: HitDetail,
-    _out?: LocateResponse
-  ): Promise<LocateFilterStatus> {
+  public override async filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus> {
     if (!hit.modelId) return LocateFilterStatus.Reject;
 
     if (undefined === this._targetMaskModel && this.targetModelRequired()) {
-      if (
-        undefined !==
-        hit.viewport.displayStyle.contextRealityModelStates.find(
-          (x) => x.modelId === hit.modelId
-        )
-      )
+      if (undefined !== hit.viewport.displayStyle.contextRealityModelStates.find((x) => x.modelId === hit.modelId))
         return LocateFilterStatus.Accept;
 
       const model = this.iModel.models.getLoaded(hit.modelId)?.asSpatialModel;
-      return model?.isRealityModel
-        ? LocateFilterStatus.Accept
-        : LocateFilterStatus.Reject;
+      return model?.isRealityModel ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
     } else
-      return hit.isElementHit &&
-        !hit.isModelHit &&
-        !this._acceptedElementIds.has(hit.sourceId)
+      return hit.isElementHit && !hit.isModelHit && !this._acceptedElementIds.has(hit.sourceId)
         ? LocateFilterStatus.Accept
         : LocateFilterStatus.Reject;
   }
 
-  public override async onDataButtonDown(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     const hit = await IModelApp.locateManager.doLocate(
       new LocateResponse(),
       true,
@@ -213,25 +183,17 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp) return EventHandled.No;
 
-    if (
-      undefined !== hit &&
-      undefined === this._targetMaskModel &&
-      this.targetModelRequired()
-    ) {
+    if (undefined !== hit && undefined === this._targetMaskModel && this.targetModelRequired()) {
       if (hit.modelId) {
         this._targetMaskModel =
-          hit.viewport.displayStyle.contextRealityModelStates.find(
-            (x) => x.modelId === hit.modelId
-          ) ?? hit.modelId;
+          hit.viewport.displayStyle.contextRealityModelStates.find((x) => x.modelId === hit.modelId) ?? hit.modelId;
         if (!this.elementRequired()) {
           this.applyMask(vp);
           await this.onRestartTool();
         }
       }
     } else if (this._useSelection && this.iModel.selectionSet.isActive) {
-      const elements = await this.iModel.elements.getProps(
-        this.iModel.selectionSet.elements
-      );
+      const elements = await this.iModel.elements.getProps(this.iModel.selectionSet.elements);
       for (const element of elements) {
         if (element.id && element.model) {
           this._acceptedElementIds.add(element.id);
@@ -246,8 +208,7 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
       if (!this._acceptedElementIds.has(sourceId)) {
         this._acceptedElementIds.add(sourceId);
         this._acceptedModelIds.add(hit.modelId!);
-        if (hit.subCategoryId)
-          this._acceptedSubCategoryIds.add(hit.subCategoryId);
+        if (hit.subCategoryId) this._acceptedSubCategoryIds.add(hit.subCategoryId);
         this.applyMask(vp);
       }
     }
@@ -282,14 +243,10 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
     });
   }
 
-  protected setRealityModelMask(
-    vp: ScreenViewport,
-    mask: PlanarClipMaskSettings
-  ): void {
+  protected setRealityModelMask(vp: ScreenViewport, mask: PlanarClipMaskSettings): void {
     if (typeof this._targetMaskModel === "string")
       vp.displayStyle.settings.planarClipMasks.set(this._targetMaskModel, mask);
-    else if (undefined !== this._targetMaskModel)
-      this._targetMaskModel.planarClipMaskSettings = mask;
+    else if (undefined !== this._targetMaskModel) this._targetMaskModel.planarClipMaskSettings = mask;
   }
 }
 /** Tool to mask background map by elements
@@ -537,9 +494,7 @@ export class MaskRealityModelBySubCategoryTool extends PlanarMaskBaseTool {
 
   protected showPrompt(): void {
     const key = `FrontendDevTools:tools.MaskRealityModelByModel.Prompts.${
-      this._targetMaskModel === undefined
-        ? "IdentifyRealityModel"
-        : "IdentifyMaskSubCategory"
+      this._targetMaskModel === undefined ? "IdentifyRealityModel" : "IdentifyMaskSubCategory"
     }`;
     IModelApp.notifications.outputPromptByKey(key);
   }
@@ -617,9 +572,7 @@ export class UnmaskRealityModelTool extends PlanarMaskBaseTool {
   }
 
   protected showPrompt(): void {
-    IModelApp.notifications.outputPromptByKey(
-      "FrontendDevTools:tools.UnmaskRealityModel.Prompts.IdentifyRealityModel"
-    );
+    IModelApp.notifications.outputPromptByKey("FrontendDevTools:tools.UnmaskRealityModel.Prompts.IdentifyRealityModel");
   }
   protected createToolInstance(): PlanarMaskBaseTool {
     return new UnmaskRealityModelTool();
@@ -631,9 +584,7 @@ export class UnmaskRealityModelTool extends PlanarMaskBaseTool {
     });
     this.setRealityModelMask(vp, settings);
   }
-  public override async onDataButtonDown(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     const hit = await IModelApp.locateManager.doLocate(
       new LocateResponse(),
       true,
@@ -642,12 +593,9 @@ export class UnmaskRealityModelTool extends PlanarMaskBaseTool {
       ev.inputSource
     );
     if (hit?.modelId) {
-      const model = hit.viewport.displayStyle.contextRealityModelStates.find(
-        (x) => x.modelId === hit.modelId
-      );
+      const model = hit.viewport.displayStyle.contextRealityModelStates.find((x) => x.modelId === hit.modelId);
       if (model) model.planarClipMaskSettings = undefined;
-      else
-        hit.viewport.displayStyle.settings.planarClipMasks.delete(hit.modelId);
+      else hit.viewport.displayStyle.settings.planarClipMasks.delete(hit.modelId);
 
       await this.onRestartTool();
     }

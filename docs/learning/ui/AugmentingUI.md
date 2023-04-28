@@ -140,9 +140,7 @@ const contentToolsToShow: DefaultContentTools = {
     clearSelection: true,
   },
 };
-const redlineToolSetProvider = new StandardContentToolsUiItemsProvider(
-  contentToolsToShow
-);
+const redlineToolSetProvider = new StandardContentToolsUiItemsProvider(contentToolsToShow);
 UiItemsManager.register(redlineToolSetProvider, {
   providerId: "redline-content-tools",
   stageUsages: [StageUsage.Redline],
@@ -166,9 +164,7 @@ const contentToolsToShow: DefaultContentTools = {
     clearSelection: true,
   },
 };
-const redlineToolSetProvider = new StandardContentToolsUiItemsProvider(
-  contentToolsToShow
-);
+const redlineToolSetProvider = new StandardContentToolsUiItemsProvider(contentToolsToShow);
 UiItemsManager.register(redlineToolSetProvider, {
   providerId: "redline-content-tools",
   stageIds: ["Markup"],
@@ -194,9 +190,7 @@ The follow example shows how to define a new stage and register it with the `Con
 
 ```ts
 export class MyStageContentGroupProvider extends ContentGroupProvider {
-  public async provideContentGroup(
-    props: FrontstageProps
-  ): Promise<ContentGroup> {
+  public async provideContentGroup(props: FrontstageProps): Promise<ContentGroup> {
     return new ContentGroup({
       id: "myPackage:my-stage-content",
       layout: StandardContentLayouts.singleView,
@@ -231,9 +225,7 @@ export class MyFrontstage {
       applicationData: undefined,
     };
 
-    ConfigurableUiManager.addFrontstageProvider(
-      new StandardFrontstageProvider(myStageProps)
-    );
+    ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(myStageProps));
     MyFrontstage.registerToolProviders();
   }
 
@@ -249,10 +241,9 @@ export class MyFrontstage {
       },
     };
 
-    UiItemsManager.register(
-      new StandardContentToolsUiItemsProvider(contentToolOptions),
-      { stageIds: ["myPackage:MyStageId", "MainStage", "IssueResolution"] }
-    );
+    UiItemsManager.register(new StandardContentToolsUiItemsProvider(contentToolOptions), {
+      stageIds: ["myPackage:MyStageId", "MainStage", "IssueResolution"],
+    });
     UiItemsManager.register(new StandardNavigationToolsUiItemsProvider(), {
       stageIds: ["myPackage:MyStageId", "MainStage", "IssueResolution"],
     });
@@ -268,10 +259,7 @@ export class MyFrontstage {
 The example below shows the call that adds a Reducer to the store managed by the StateManager. This registration should be made by the package when it loads or by a package when it is initialized.
 
 ```ts
-ReducerRegistryInstance.registerReducer(
-  PackageStateManager._reducerName,
-  PackageStateManager.reducer
-);
+ReducerRegistryInstance.registerReducer(PackageStateManager._reducerName, PackageStateManager.reducer);
 ```
 
 See complete [example](./appui-react/State.md#example-of-defining-dynamic-reducer-needed-by-a-package).

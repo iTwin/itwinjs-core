@@ -14,22 +14,16 @@ import * as React from "react";
 import { ExpandableBlock, ExpandableBlockProps } from "@itwin/itwinui-react";
 
 /** Sample component using ExpandableBlock with an expanded state  */
-export const SampleExpandableBlock: React.FC<ExpandableBlockProps> = (
-  props: ExpandableBlockProps
-) => {
+export const SampleExpandableBlock: React.FC<ExpandableBlockProps> = (props: ExpandableBlockProps) => {
   const [expanded, setExpanded] = React.useState(true);
 
-  const _handleClick = (
-    event: React.MouseEvent<HTMLDivElement, MouseEvent>
-  ): void => {
+  const _handleClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
     setExpanded(!expanded);
 
     props.onClick && props.onClick(event);
   };
 
-  return (
-    <ExpandableBlock {...props} isExpanded={expanded} onClick={_handleClick} />
-  );
+  return <ExpandableBlock {...props} isExpanded={expanded} onClick={_handleClick} />;
 };
 ```
 

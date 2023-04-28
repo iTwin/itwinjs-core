@@ -6,11 +6,7 @@ import * as path from "path";
 import { assert } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
-import {
-  getRpcInterfaces,
-  initializeDtaBackend,
-  loadBackendConfig,
-} from "./Backend";
+import { getRpcInterfaces, initializeDtaBackend, loadBackendConfig } from "./Backend";
 import { IpcHandler } from "@itwin/core-backend";
 import { getConfig } from "../common/DtaConfiguration";
 
@@ -64,9 +60,7 @@ const dtaElectronMain = async () => {
 
   // Restore previous window size, position and maximized state
   const sizeAndPosition = getWindowSize(configuration.windowSize);
-  const maximizeWindow =
-    undefined === sizeAndPosition ||
-    ElectronHost.getWindowMaximizedSetting(mainWindowName);
+  const maximizeWindow = undefined === sizeAndPosition || ElectronHost.getWindowMaximizedSetting(mainWindowName);
 
   // after backend is initialized, start display-test-app frontend process and open the window
   await ElectronHost.openMainWindow({
@@ -82,22 +76,14 @@ const dtaElectronMain = async () => {
     ElectronHost.mainWindow.show();
   }
 
-  if (configuration.devTools)
-    ElectronHost.mainWindow.webContents.toggleDevTools();
+  if (configuration.devTools) ElectronHost.mainWindow.webContents.toggleDevTools();
 
   // Handle custom keyboard shortcuts
   ElectronHost.app.on("web-contents-created", (_e, wc) => {
     wc.on("before-input-event", (event, input) => {
       // CTRL + SHIFT + I  ==> Toggle DevTools
-      if (
-        input.key === "I" &&
-        input.control &&
-        !input.alt &&
-        !input.meta &&
-        input.shift
-      ) {
-        if (ElectronHost.mainWindow)
-          ElectronHost.mainWindow.webContents.toggleDevTools();
+      if (input.key === "I" && input.control && !input.alt && !input.meta && input.shift) {
+        if (ElectronHost.mainWindow) ElectronHost.mainWindow.webContents.toggleDevTools();
 
         event.preventDefault();
       }
@@ -106,14 +92,11 @@ const dtaElectronMain = async () => {
 
   // Custom orchestrator URL is used to define the iModelBank URL.
   if (configuration.customOrchestratorUri) {
-    ElectronHost.app.on(
-      "certificate-error",
-      (event, _webContents, _url, _error, _certificate, callback) => {
-        // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
-        event.preventDefault();
-        callback(true);
-      }
-    );
+    ElectronHost.app.on("certificate-error", (event, _webContents, _url, _error, _certificate, callback) => {
+      // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
+      event.preventDefault();
+      callback(true);
+    });
   }
 };
 

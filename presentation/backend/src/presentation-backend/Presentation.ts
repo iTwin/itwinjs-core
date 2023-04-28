@@ -9,17 +9,10 @@
 import { BriefcaseDb, IModelHost, IpcHost } from "@itwin/core-backend";
 import { DisposeFunc, Logger } from "@itwin/core-bentley";
 import { RpcManager } from "@itwin/core-common";
-import {
-  PresentationError,
-  PresentationRpcInterface,
-  PresentationStatus,
-} from "@itwin/presentation-common";
+import { PresentationError, PresentationRpcInterface, PresentationStatus } from "@itwin/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { PresentationIpcHandler } from "./PresentationIpcHandler";
-import {
-  PresentationManager,
-  PresentationManagerProps,
-} from "./PresentationManager";
+import { PresentationManager, PresentationManagerProps } from "./PresentationManager";
 import { PresentationRpcImpl } from "./PresentationRpcImpl";
 import { FactoryBasedTemporaryStorage } from "./TemporaryStorage";
 
@@ -52,10 +45,7 @@ export interface MultiManagerPresentationProps extends PresentationPropsBase {
    * Factory method for creating separate managers for each client
    * @internal
    */
-  clientManagerFactory?: (
-    clientId: string,
-    props: PresentationManagerProps
-  ) => PresentationManager;
+  clientManagerFactory?: (clientId: string, props: PresentationManagerProps) => PresentationManager;
 
   /**
    * How much time should an unused client manager be stored in memory
@@ -82,9 +72,7 @@ export interface SingleManagerPresentationProps extends PresentationPropsBase {
  * Properties that can be used to configure [[Presentation]] API
  * @public
  */
-export type PresentationProps =
-  | MultiManagerPresentationProps
-  | SingleManagerPresentationProps;
+export type PresentationProps = MultiManagerPresentationProps | SingleManagerPresentationProps;
 
 interface ClientStoreItem {
   manager: PresentationManager;
@@ -102,9 +90,7 @@ interface ClientStoreItem {
  */
 export class Presentation {
   private static _initProps: PresentationProps | undefined;
-  private static _clientsStorage:
-    | FactoryBasedTemporaryStorage<ClientStoreItem>
-    | undefined;
+  private static _clientsStorage: FactoryBasedTemporaryStorage<ClientStoreItem> | undefined;
   private static _disposeIpcHandler: DisposeFunc | undefined;
   private static _shutdownListener: DisposeFunc | undefined;
   private static _disposeIModelOpenedListener: DisposeFunc | undefined;
@@ -130,9 +116,7 @@ export class Presentation {
    */
   public static initialize(props?: PresentationProps): void {
     this._initProps = props || {};
-    this._shutdownListener = IModelHost.onBeforeShutdown.addListener(() =>
-      Presentation.terminate()
-    );
+    this._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => Presentation.terminate());
 
     this._rpcImpl = new PresentationRpcImpl({
       requestTimeout: this._initProps.requestTimeout,
@@ -153,8 +137,7 @@ export class Presentation {
         // cleanup unused managers every minute
         cleanupInterval: 60 * 1000,
         // by default, manager is disposed after 1 hour of being unused
-        unusedValueLifetime:
-          this._initProps.unusedClientLifetime ?? 60 * 60 * 1000,
+        unusedValueLifetime: this._initProps.unusedClientLifetime ?? 60 * 60 * 1000,
         // add some logging
         onDisposedSingle: /* istanbul ignore next */ (id: string) =>
           Logger.logInfo(
@@ -172,9 +155,7 @@ export class Presentation {
     }
 
     if (this._initProps.enableSchemasPreload)
-      this._disposeIModelOpenedListener = BriefcaseDb.onOpened.addListener(
-        this.onIModelOpened
-      );
+      this._disposeIModelOpenedListener = BriefcaseDb.onOpened.addListener(this.onIModelOpened);
   }
 
   /**
@@ -209,18 +190,12 @@ export class Presentation {
     this._initProps = undefined;
   }
 
-  private static createClientManager(
-    clientId: string,
-    onManagerUsed: () => void
-  ): ClientStoreItem {
+  private static createClientManager(clientId: string, onManagerUsed: () => void): ClientStoreItem {
     const manager =
       Presentation._initProps &&
       !isSingleManagerProps(Presentation._initProps) &&
       Presentation._initProps.clientManagerFactory
-        ? Presentation._initProps.clientManagerFactory(
-            clientId,
-            Presentation._initProps
-          )
+        ? Presentation._initProps.clientManagerFactory(clientId, Presentation._initProps)
         : new PresentationManager({ ...Presentation._initProps, id: clientId });
     manager.setOnManagerUsedHandler(onManagerUsed);
     Logger.logInfo(
@@ -242,14 +217,8 @@ export class Presentation {
    *        ID is provided, the default [[PresentationManager]] is returned.
    */
   public static getManager(clientId?: string): PresentationManager {
-    if (
-      this._initProps &&
-      isSingleManagerProps(this._initProps) &&
-      this._manager
-    )
-      return this._manager;
-    if (this._clientsStorage)
-      return this._clientsStorage.getValue(clientId || "").manager;
+    if (this._initProps && isSingleManagerProps(this._initProps) && this._manager) return this._manager;
+    if (this._clientsStorage) return this._clientsStorage.getValue(clientId || "").manager;
 
     throw new PresentationError(
       PresentationStatus.NotInitialized,
@@ -277,8 +246,6 @@ export class Presentation {
   };
 }
 
-function isSingleManagerProps(
-  props: PresentationProps
-): props is SingleManagerPresentationProps {
+function isSingleManagerProps(props: PresentationProps): props is SingleManagerPresentationProps {
   return !!(props as SingleManagerPresentationProps).useSingleManager;
 }

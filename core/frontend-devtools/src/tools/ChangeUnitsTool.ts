@@ -30,8 +30,7 @@ export class ChangeUnitsTool extends Tool {
     const fmtr = IModelApp.quantityFormatter;
 
     // if no arg then toggle to metric from any non-metric unit system
-    const useImperial =
-      undefined !== useMetric ? !useMetric : fmtr.activeUnitSystem === "metric";
+    const useImperial = undefined !== useMetric ? !useMetric : fmtr.activeUnitSystem === "metric";
     const unitSystem = useImperial ? "imperial" : "metric";
 
     if (unitSystem !== fmtr.activeUnitSystem) {

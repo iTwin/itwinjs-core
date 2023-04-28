@@ -75,25 +75,16 @@ export interface NativePlatformDefinition extends IDisposable {
   getImodelAddon(imodel: IModelDb): any;
 
   setupRulesetDirectories(directories: string[]): NativePlatformResponse<void>;
-  setupSupplementalRulesetDirectories(
-    directories: string[]
-  ): NativePlatformResponse<void>;
+  setupSupplementalRulesetDirectories(directories: string[]): NativePlatformResponse<void>;
 
   forceLoadSchemas(db: any): Promise<NativePlatformResponse<void>>;
 
   getRulesets(rulesetId: string): NativePlatformResponse<string>;
   addRuleset(serializedRulesetJson: string): NativePlatformResponse<string>;
-  removeRuleset(
-    rulesetId: string,
-    hash: string
-  ): NativePlatformResponse<boolean>;
+  removeRuleset(rulesetId: string, hash: string): NativePlatformResponse<boolean>;
   clearRulesets(): NativePlatformResponse<void>;
 
-  handleRequest(
-    db: any,
-    options: string,
-    cancelEvent?: BeEvent<() => void>
-  ): Promise<NativePlatformResponse<string>>;
+  handleRequest(db: any, options: string, cancelEvent?: BeEvent<() => void>): Promise<NativePlatformResponse<string>>;
 
   getRulesetVariableValue(
     rulesetId: string,
@@ -106,10 +97,7 @@ export interface NativePlatformDefinition extends IDisposable {
     type: VariableValueTypes,
     value: VariableValue
   ): NativePlatformResponse<void>;
-  unsetRulesetVariableValue(
-    rulesetId: string,
-    variableId: string
-  ): NativePlatformResponse<void>;
+  unsetRulesetVariableValue(rulesetId: string, variableId: string): NativePlatformResponse<void>;
 
   getUpdateInfo(): NativePlatformResponse<UpdateInfo | undefined>;
 }
@@ -129,14 +117,9 @@ export interface DefaultNativePlatformProps {
 /** @internal */
 export class PresentationNativePlatformResponseError extends PresentationError {
   public readonly diagnostics?: DiagnosticsScopeLogs;
-  public constructor(
-    errorResponse: IModelJsNative.ECPresentationManagerResponse<unknown>
-  ) {
+  public constructor(errorResponse: IModelJsNative.ECPresentationManagerResponse<unknown>) {
     assert(!!errorResponse.error);
-    super(
-      getPresentationStatusFromNativeResponseStatus(errorResponse.error.status),
-      errorResponse.error.message
-    );
+    super(getPresentationStatusFromNativeResponseStatus(errorResponse.error.status), errorResponse.error.message);
     this.diagnostics = errorResponse.diagnostics;
   }
 }
@@ -156,9 +139,7 @@ function getPresentationStatusFromNativeResponseStatus(
 }
 
 /** @internal */
-export const createDefaultNativePlatform = (
-  props: DefaultNativePlatformProps
-): new () => NativePlatformDefinition => {
+export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): new () => NativePlatformDefinition => {
   // note the implementation is constructed here to make PresentationManager
   // usable without loading the actual addon (if addon is set to something other)
   return class implements NativePlatformDefinition {
@@ -168,18 +149,14 @@ export const createDefaultNativePlatform = (
         mode: HierarchyCacheMode.Disk,
         directory: "",
       };
-      const defaultFormats = props.defaultFormats
-        ? this.getSerializedDefaultFormatsMap(props.defaultFormats)
-        : {};
+      const defaultFormats = props.defaultFormats ? this.getSerializedDefaultFormatsMap(props.defaultFormats) : {};
       this._nativeAddon = new IModelHost.platform.ECPresentationManager({
         ...props,
         cacheConfig,
         defaultFormats,
       });
     }
-    private getSerializedDefaultFormatsMap(
-      defaultMap: NativePresentationDefaultUnitFormats
-    ) {
+    private getSerializedDefaultFormatsMap(defaultMap: NativePresentationDefaultUnitFormats) {
       const res: {
         [phenomenon: string]: {
           unitSystems: string[];
@@ -203,88 +180,54 @@ export const createDefaultNativePlatform = (
       if (response.diagnostics) retValue.diagnostics = response.diagnostics;
       return retValue;
     }
-    private handleResult<T>(
-      response: IModelJsNative.ECPresentationManagerResponse<T>
-    ): NativePlatformResponse<T> {
-      if (response.error)
-        throw new PresentationNativePlatformResponseError(response);
+    private handleResult<T>(response: IModelJsNative.ECPresentationManagerResponse<T>): NativePlatformResponse<T> {
+      if (response.error) throw new PresentationNativePlatformResponseError(response);
       return this.createSuccessResponse(response);
     }
     private handleVoidResult(
       response: IModelJsNative.ECPresentationManagerResponse<void>
     ): NativePlatformResponse<void> {
-      if (response.error)
-        throw new PresentationNativePlatformResponseError(response);
+      if (response.error) throw new PresentationNativePlatformResponseError(response);
       return this.createSuccessResponse(response);
     }
     public dispose() {
       this._nativeAddon.dispose();
     }
-    public async forceLoadSchemas(
-      db: any
-    ): Promise<NativePlatformResponse<void>> {
+    public async forceLoadSchemas(db: any): Promise<NativePlatformResponse<void>> {
       const response = await this._nativeAddon.forceLoadSchemas(db);
-      if (response.error)
-        throw new PresentationError(
-          PresentationStatus.Error,
-          response.error.message
-        );
+      if (response.error) throw new PresentationError(PresentationStatus.Error, response.error.message);
       return this.createSuccessResponse(response);
     }
     public setupRulesetDirectories(directories: string[]) {
-      return this.handleVoidResult(
-        this._nativeAddon.setupRulesetDirectories(directories)
-      );
+      return this.handleVoidResult(this._nativeAddon.setupRulesetDirectories(directories));
     }
     public setupSupplementalRulesetDirectories(directories: string[]) {
-      return this.handleVoidResult(
-        this._nativeAddon.setupSupplementalRulesetDirectories(directories)
-      );
+      return this.handleVoidResult(this._nativeAddon.setupSupplementalRulesetDirectories(directories));
     }
     public getImodelAddon(imodel: IModelDb): any {
-      if (!imodel.nativeDb)
-        throw new PresentationError(
-          PresentationStatus.InvalidArgument,
-          "imodel"
-        );
+      if (!imodel.nativeDb) throw new PresentationError(PresentationStatus.InvalidArgument, "imodel");
       return imodel.nativeDb;
     }
     public getRulesets(rulesetId: string) {
-      return this.handleResult<string>(
-        this._nativeAddon.getRulesets(rulesetId)
-      );
+      return this.handleResult<string>(this._nativeAddon.getRulesets(rulesetId));
     }
     public addRuleset(serializedRulesetJson: string) {
-      return this.handleResult<string>(
-        this._nativeAddon.addRuleset(serializedRulesetJson)
-      );
+      return this.handleResult<string>(this._nativeAddon.addRuleset(serializedRulesetJson));
     }
     public removeRuleset(rulesetId: string, hash: string) {
-      return this.handleResult<boolean>(
-        this._nativeAddon.removeRuleset(rulesetId, hash)
-      );
+      return this.handleResult<boolean>(this._nativeAddon.removeRuleset(rulesetId, hash));
     }
     public clearRulesets() {
       return this.handleVoidResult(this._nativeAddon.clearRulesets());
     }
-    public async handleRequest(
-      db: any,
-      options: string,
-      cancelEvent?: BeEvent<() => void>
-    ) {
+    public async handleRequest(db: any, options: string, cancelEvent?: BeEvent<() => void>) {
       const response = this._nativeAddon.handleRequest(db, options);
       cancelEvent?.addOnce(() => response.cancel());
       const result = await response.result;
       return this.handleResult<string>(result);
     }
-    public getRulesetVariableValue(
-      rulesetId: string,
-      variableId: string,
-      type: VariableValueTypes
-    ) {
-      return this.handleResult<VariableValue>(
-        this._nativeAddon.getRulesetVariableValue(rulesetId, variableId, type)
-      );
+    public getRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes) {
+      return this.handleResult<VariableValue>(this._nativeAddon.getRulesetVariableValue(rulesetId, variableId, type));
     }
     public setRulesetVariableValue(
       rulesetId: string,
@@ -292,24 +235,13 @@ export const createDefaultNativePlatform = (
       type: VariableValueTypes,
       value: VariableValueJSON
     ) {
-      return this.handleVoidResult(
-        this._nativeAddon.setRulesetVariableValue(
-          rulesetId,
-          variableId,
-          type,
-          value
-        )
-      );
+      return this.handleVoidResult(this._nativeAddon.setRulesetVariableValue(rulesetId, variableId, type, value));
     }
     public unsetRulesetVariableValue(rulesetId: string, variableId: string) {
-      return this.handleVoidResult(
-        this._nativeAddon.unsetRulesetVariableValue(rulesetId, variableId)
-      );
+      return this.handleVoidResult(this._nativeAddon.unsetRulesetVariableValue(rulesetId, variableId));
     }
     public getUpdateInfo() {
-      return this.handleResult<UpdateInfo | undefined>(
-        this._nativeAddon.getUpdateInfo()
-      );
+      return this.handleResult<UpdateInfo | undefined>(this._nativeAddon.getUpdateInfo());
     }
   };
 };

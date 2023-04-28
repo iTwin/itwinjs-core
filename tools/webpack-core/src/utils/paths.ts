@@ -7,8 +7,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 const appDirectory = fs.realpathSync(process.cwd());
-export const resolveApp = (relativePath: string) =>
-  path.resolve(appDirectory, relativePath);
+export const resolveApp = (relativePath: string) => path.resolve(appDirectory, relativePath);
 
 const _paths = {
   appPackageJson: resolveApp("package.json"),
@@ -30,9 +29,7 @@ export function getAppRelativePath(p: string) {
 }
 
 export function getSourcePosition(module: any, loc: any) {
-  return `${getAppRelativePath(module.resource)}:${loc.start.line}:${
-    loc.start.column
-  }`;
+  return `${getAppRelativePath(module.resource)}:${loc.start.line}:${loc.start.column}`;
 }
 
 export function resetPaths() {

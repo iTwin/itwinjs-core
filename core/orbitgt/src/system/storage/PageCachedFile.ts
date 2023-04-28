@@ -60,11 +60,7 @@ export class PageCachedFile extends FileStorage {
     this._fileName = fileName;
     this._fileSize = fileSize;
     this._pageSize = pageSize;
-    this._pageCount = fileSize
-      .subInt(1)
-      .divInt(this._pageSize)
-      .addInt(1)
-      .toInt();
+    this._pageCount = fileSize.subInt(1).divInt(this._pageSize).addInt(1).toInt();
     this._contentCache = new CacheList<ABuffer>(maxPageCount);
     this._requestCount = 0;
     this._requestSize = 0;
@@ -87,10 +83,7 @@ export class PageCachedFile extends FileStorage {
   /**
    * FileStorage method.
    */
-  public override async readFileParts(
-    fileName: string,
-    ranges: AList<FileRange>
-  ): Promise<AList<FileContent>> {
+  public override async readFileParts(fileName: string, ranges: AList<FileRange>): Promise<AList<FileContent>> {
     /* Define the set of pages we need to fulfill the request */
     const pageMap: StringMap<ABuffer> = new StringMap<ABuffer>();
     /* Create a list of missing pages */
@@ -114,10 +107,7 @@ export class PageCachedFile extends FileStorage {
           if (missingKeys.contains(pageKey) == false) {
             /* Add a request to read the missing page */
             const pageOffset0: ALong = ALong.fromInt(this._pageSize).mulInt(i);
-            const pageOffset1: ALong = ALong.min(
-              pageOffset0.addInt(this._pageSize),
-              this._fileSize
-            );
+            const pageOffset1: ALong = ALong.min(pageOffset0.addInt(this._pageSize), this._fileSize);
             const pageSize: int32 = pageOffset1.sub(pageOffset0).toInt();
             missingPages.add(new FileRange(pageOffset0, pageSize));
             missingKeys.add(pageKey);
@@ -131,13 +121,8 @@ export class PageCachedFile extends FileStorage {
     /* Do we have to load missing pages? */
     if (missingPages.size() > 0) {
       /* Load all missing pages with one call to the storage */
-      Message.log(
-        `Requesting ${missingPages.size()} missing cache pages for '${
-          this._fileName
-        }'`
-      );
-      const loadedPages: AList<FileContent> =
-        await this._fileStorage.readFileParts(fileName, missingPages);
+      Message.log(`Requesting ${missingPages.size()} missing cache pages for '${this._fileName}'`);
+      const loadedPages: AList<FileContent> = await this._fileStorage.readFileParts(fileName, missingPages);
       /* Add to the cache for reuse */
       for (let i: number = 0; i < loadedPages.size(); i++) {
         const pageKey: string = missingKeys.get(i);
@@ -170,24 +155,16 @@ export class PageCachedFile extends FileStorage {
         ASystem.assertNot(page == null, `Missing cache page ${pageKey}`);
         /* Get the extent of the page */
         const pageOffset0: ALong = ALong.fromInt(this._pageSize).mulInt(i);
-        const pageOffset1: ALong = ALong.min(
-          pageOffset0.addInt(this._pageSize),
-          this._fileSize
-        );
+        const pageOffset1: ALong = ALong.min(pageOffset0.addInt(this._pageSize), this._fileSize);
         /* Copy the overlapping part of the page to the response */
         const currentOffset: ALong = range.offset.addInt(responseOffset);
         const copyOffset: int32 = currentOffset.sub(pageOffset0).toInt();
-        const copySize: int32 = ALong.min(pageOffset1, rangeExtent)
-          .sub(currentOffset)
-          .toInt();
+        const copySize: int32 = ALong.min(pageOffset1, rangeExtent).sub(currentOffset).toInt();
         ABuffer.arrayCopy(page, copyOffset, response, responseOffset, copySize);
         responseOffset += copySize;
       }
       /* Add the response to the list */
-      ASystem.assertNot(
-        responseOffset != range.size,
-        `Expected ${range.size} response size, not ${responseOffset}`
-      );
+      ASystem.assertNot(responseOffset != range.size, `Expected ${range.size} response size, not ${responseOffset}`);
       responseList.add(new FileContent(range.offset, response));
     }
     return responseList;
@@ -196,17 +173,10 @@ export class PageCachedFile extends FileStorage {
   /**
    * FileStorage method.
    */
-  public override async readFilePart(
-    fileName: string,
-    offset: ALong,
-    size: int32
-  ): Promise<ABuffer> {
+  public override async readFilePart(fileName: string, offset: ALong, size: int32): Promise<ABuffer> {
     const ranges: AList<FileRange> = new AList<FileRange>();
     ranges.add(new FileRange(offset, size));
-    const reponses: AList<FileContent> = await this.readFileParts(
-      fileName,
-      ranges
-    );
+    const reponses: AList<FileContent> = await this.readFileParts(fileName, ranges);
     const reponse: FileContent = reponses.get(0);
     return reponse.content;
   }

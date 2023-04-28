@@ -47,10 +47,7 @@ describe("Snippets", () => {
     const myVector = geometry.Vector3d.create(3, 1, 0);
     emit(" Here is a point ", myPoint);
     emit(" Here is a vector ", myVector);
-    emit(
-      " Here is the point reached by moving 3 times the vector ",
-      myPoint.plusScaled(myVector, 3)
-    );
+    emit(" Here is the point reached by moving 3 times the vector ", myPoint.plusScaled(myVector, 3));
   });
 
   it("LineSegment3d", () => {
@@ -84,48 +81,27 @@ describe("Snippets", () => {
     const angleA = geometry.Angle.createDegrees(10);
     const angleB = geometry.Angle.createRadians(0.3);
     // subsequent accesses specify degrees or radians :
-    emit(
-      `AngleA in degree is ${angleA.degrees} and in radians is ${angleA.radians}`
-    );
-    emit(
-      `AngleB in degree is ${angleB.degrees} and in radians is ${angleB.radians}`
-    );
+    emit(`AngleA in degree is ${angleA.degrees} and in radians is ${angleA.radians}`);
+    emit(`AngleB in degree is ${angleB.degrees} and in radians is ${angleB.radians}`);
   });
 
   it("YawPitchRollAngles", () => {
     emit("This is how YawPitchRollAngles are defined:");
     emit("  X axis is FORWARD.");
     emit("  Z axis is UP.");
-    emit(
-      "  Given those X and Z axes, the right hand rule says that Y must be to the left."
-    );
-    emit(
-      " Rotations around each single axis are then named as in a plane or ship by"
-    );
-    emit(
-      "  positive ROLL is the head tipping to the right, Y rotates towards Z, i.e. positive rotation around X"
-    );
-    emit(
-      " positive YAW is rotation turns the head to the left, i.e. X towards Y, i.e. positive rotation of Z"
-    );
-    emit(
-      "  PITCH is a rotation that tips the nose up, i.e. X rotates towards Z, i.e. _negative_ rotation around Y"
-    );
+    emit("  Given those X and Z axes, the right hand rule says that Y must be to the left.");
+    emit(" Rotations around each single axis are then named as in a plane or ship by");
+    emit("  positive ROLL is the head tipping to the right, Y rotates towards Z, i.e. positive rotation around X");
+    emit(" positive YAW is rotation turns the head to the left, i.e. X towards Y, i.e. positive rotation of Z");
+    emit("  PITCH is a rotation that tips the nose up, i.e. X rotates towards Z, i.e. _negative_ rotation around Y");
     const yawDegrees = 15.0;
     const pitchDegrees = 5.0;
     const rollDegrees = 10.0;
     // build rotation matrices via the YawPitchRollAngles class and then via direct multiplication of matrices with the fussy sign and direction rules
-    const ypr = YawPitchRollAngles.createDegrees(
-      yawDegrees,
-      pitchDegrees,
-      rollDegrees
-    );
+    const ypr = YawPitchRollAngles.createDegrees(yawDegrees, pitchDegrees, rollDegrees);
     const yprMatrix = ypr.toMatrix3d();
 
-    const yawMatrix = Matrix3d.createRotationAroundVector(
-      Vector3d.unitZ(),
-      geometry.Angle.createDegrees(yawDegrees)
-    )!;
+    const yawMatrix = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), geometry.Angle.createDegrees(yawDegrees))!;
     const pitchMatrix = Matrix3d.createRotationAroundVector(
       Vector3d.unitY(),
       geometry.Angle.createDegrees(-pitchDegrees)
@@ -135,39 +111,23 @@ describe("Snippets", () => {
       geometry.Angle.createDegrees(rollDegrees)
     )!;
 
-    const directMatrix = yawMatrix.multiplyMatrixMatrix(
-      pitchMatrix.multiplyMatrixMatrix(rollMatrix)
-    );
+    const directMatrix = yawMatrix.multiplyMatrixMatrix(pitchMatrix.multiplyMatrixMatrix(rollMatrix));
 
     emit(" ypr object (this reports degrees)", ypr);
     emit(" matrix constructed by YawPitchRollAngles object ", yprMatrix);
     emit(" matrix constructed from matrix products ", directMatrix);
-    emit(
-      ` Largest difference between matrices is ${yprMatrix.maxDiff(
-        directMatrix
-      )}`
-    );
+    emit(` Largest difference between matrices is ${yprMatrix.maxDiff(directMatrix)}`);
   });
 
   it("Ray3d", () => {
-    emit(
-      " A Ray3d is an (infinite) line in space, defined by origin and direction vector"
-    );
+    emit(" A Ray3d is an (infinite) line in space, defined by origin and direction vector");
     emit("    Any point on the ray can be its origin.");
     emit("    Any vector in the ray direction can be its direction vector.");
     emit("    The direction vector is NOT assumed normalized.");
-    const myRay = Ray3d.create(
-      Point3d.create(2, 1, 0),
-      Vector3d.create(3, 2, 5)
-    );
-    emit(
-      " Each point on the ray is reachable by multiplying the direction vector by a number"
-    );
+    const myRay = Ray3d.create(Point3d.create(2, 1, 0), Vector3d.create(3, 2, 5));
+    emit(" Each point on the ray is reachable by multiplying the direction vector by a number");
     emit("   Fraction 0 is at the origin.", myRay.fractionToPoint(0));
-    emit(
-      "   Fraction 1 is at the end of the direction vector placed at the origin.",
-      myRay.fractionToPoint(1.0)
-    );
+    emit("   Fraction 1 is at the end of the direction vector placed at the origin.", myRay.fractionToPoint(1.0));
     emit("   This point is beyond the end", myRay.fractionToPoint(1.25));
     emit("  This point is before the origin", myRay.fractionToPoint(-0.5));
     const pointA = Point3d.create(5, 2, -3);
@@ -181,30 +141,18 @@ describe("Snippets", () => {
       " Since it is the closest ray point to pointA, ray.direction and vectorBtoA are perpendicular",
       vectorBtoA.angleTo(myRay.direction).degrees
     );
-    emit(
-      " and the distance from pointA to the ray is ",
-      pointA.distance(pointB)
-    );
+    emit(" and the distance from pointA to the ray is ", pointA.distance(pointB));
   });
 
   it("Plane3dByOriginAndUnitNormal", () => {
-    emit(
-      " A Plane3dByOriginAndUnitNormal is an (infinite) plane, defined by an origin and a unit normal vector."
-    );
+    emit(" A Plane3dByOriginAndUnitNormal is an (infinite) plane, defined by an origin and a unit normal vector.");
     emit("    Any point on the plane can be its origin.");
-    emit(
-      "    The normal vector is forced to be length 1 (normalized, unit vector) when the plane is created."
-    );
+    emit("    The normal vector is forced to be length 1 (normalized, unit vector) when the plane is created.");
     emit(
       "    Having a unit normal means that the dot product of the unit normal with the vector from origin to any space point"
     );
-    emit(
-      "        is a true (and signed) physical distance (i.e. altitude) from the plane to the space point."
-    );
-    const myPlane = Plane3dByOriginAndUnitNormal.create(
-      Point3d.create(2, 1, 0),
-      Vector3d.create(3, 2, 5)
-    )!;
+    emit("        is a true (and signed) physical distance (i.e. altitude) from the plane to the space point.");
+    const myPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(2, 1, 0), Vector3d.create(3, 2, 5))!;
     emit("  myPlane is ", myPlane);
     const pointA = Point3d.create(5, 2, -3);
     emit(" Here's a point in space", pointA);
@@ -219,19 +167,10 @@ describe("Snippets", () => {
   });
 
   it("Intersecting a plane and ray", () => {
-    const myRay = Ray3d.create(
-      Point3d.create(5, 2, 1),
-      Vector3d.create(-2, 4, -1)
-    );
-    const myPlane = Plane3dByOriginAndUnitNormal.create(
-      Point3d.create(4, 5, -4),
-      Vector3d.create(4, 0, 1)
-    )!;
+    const myRay = Ray3d.create(Point3d.create(5, 2, 1), Vector3d.create(-2, 4, -1));
+    const myPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(4, 5, -4), Vector3d.create(4, 0, 1))!;
     const intersectionPoint = Point3d.create();
-    const fractionOnRayForIntersection = myRay.intersectionWithPlane(
-      myPlane,
-      intersectionPoint
-    );
+    const fractionOnRayForIntersection = myRay.intersectionWithPlane(myPlane, intersectionPoint);
     if (fractionOnRayForIntersection === undefined) {
       emit(" oops -- myRay is parallel to myPlane");
     } else {
@@ -246,10 +185,7 @@ describe("Snippets", () => {
         fractionOnRayForIntersection,
         "along the ray"
       );
-      emit(
-        "The altitude of the intersection point from the plane is 0: ",
-        myPlane.altitude(intersectionPoint)
-      );
+      emit("The altitude of the intersection point from the plane is 0: ", myPlane.altitude(intersectionPoint));
       emit(
         "  And the intersection point matches the ray at that fraction ",
         myRay.fractionToPoint(fractionOnRayForIntersection)

@@ -29,9 +29,7 @@ describe("Dictionary", () => {
   });
 
   it("should support iteration", () => {
-    const dict = new Dictionary<string, number>((lhs, rhs) =>
-      compareStrings(lhs, rhs)
-    );
+    const dict = new Dictionary<string, number>((lhs, rhs) => compareStrings(lhs, rhs));
 
     const countEntries = () => {
       let numEntries = 0;
@@ -78,27 +76,18 @@ describe("Dictionary", () => {
   });
 
   it("iterates over keys and values", () => {
-    const dict = new Dictionary<string, number>((lhs, rhs) =>
-      compareStrings(lhs, rhs)
-    );
+    const dict = new Dictionary<string, number>((lhs, rhs) => compareStrings(lhs, rhs));
     dict.set("one", 1);
     dict.set("two", 2);
     dict.set("three", 3);
     dict.set("four", 4);
 
-    expect(Array.from(dict.keys())).to.deep.equal([
-      "four",
-      "one",
-      "three",
-      "two",
-    ]);
+    expect(Array.from(dict.keys())).to.deep.equal(["four", "one", "three", "two"]);
     expect(Array.from(dict.values())).to.deep.equal([4, 1, 3, 2]);
   });
 
   it("finds or inserts", () => {
-    const dict = new Dictionary<string, number>((lhs, rhs) =>
-      compareStrings(lhs, rhs)
-    );
+    const dict = new Dictionary<string, number>((lhs, rhs) => compareStrings(lhs, rhs));
     dict.set("three", 3);
     dict.set("four", 4);
     expect(dict.findOrInsert("one", 1)).to.deep.equal({

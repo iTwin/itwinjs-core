@@ -7,11 +7,7 @@
  */
 
 import { MapSubLayerProps } from "@itwin/core-common";
-import {
-  request,
-  RequestBasicCredentials,
-  RequestOptions,
-} from "../../request/Request";
+import { request, RequestBasicCredentials, RequestOptions } from "../../request/Request";
 import WMS from "wms-capabilities";
 import { MapCartoRectangle, WmsUtilities } from "../internal";
 
@@ -20,10 +16,7 @@ import { MapCartoRectangle, WmsUtilities } from "../internal";
  * @param url server URL to address the request
  * @internal
  */
-async function getXml(
-  url: string,
-  credentials?: RequestBasicCredentials
-): Promise<string> {
+async function getXml(url: string, credentials?: RequestBasicCredentials): Promise<string> {
   const options: RequestOptions = {
     timeout: 20000,
     retryCount: 2,
@@ -38,8 +31,7 @@ function rangeFromJSONArray(json: any): MapCartoRectangle | undefined {
 }
 
 function rangeFromJSON(json: any): MapCartoRectangle | undefined {
-  if (undefined !== json.LatLonBoundingBox)
-    return rangeFromJSONArray(json.LatLonBoundingBox);
+  if (undefined !== json.LatLonBoundingBox) return rangeFromJSONArray(json.LatLonBoundingBox);
   else if (Array.isArray(json.EX_GeographicBoundingBox)) {
     return rangeFromJSONArray(json.EX_GeographicBoundingBox);
   } else {
@@ -90,9 +82,7 @@ export namespace WmsCapability {
     constructor(json: any, capabilities: WmsCapabilities) {
       this.queryable = json.queryable;
       this.title = json.title;
-      this.srs = initArray<string>(
-        capabilities.isVersion13 ? json.CRS : json.SRS
-      );
+      this.srs = initArray<string>(capabilities.isVersion13 ? json.CRS : json.SRS);
       this.cartoRange = rangeFromJSON(json);
       this.subLayers.push(new SubLayer(json, capabilities));
     }
@@ -125,14 +115,8 @@ export namespace WmsCapability {
       if (!childrenFound) {
         const prefixed = new Map<string, MapSubLayerProps[]>();
         subLayers.forEach((subLayer) => {
-          if (
-            subLayer.name &&
-            subLayer.name.indexOf(Layer.PREFIX_SEPARATOR) > 0
-          ) {
-            const prefix = subLayer.name.slice(
-              0,
-              subLayer.name.indexOf(Layer.PREFIX_SEPARATOR)
-            );
+          if (subLayer.name && subLayer.name.indexOf(Layer.PREFIX_SEPARATOR) > 0) {
+            const prefix = subLayer.name.slice(0, subLayer.name.indexOf(Layer.PREFIX_SEPARATOR));
             const found = prefixed.get(prefix);
             if (found) found.push(subLayer);
             else prefixed.set(prefix, [subLayer]);
@@ -141,24 +125,15 @@ export namespace WmsCapability {
         if (prefixed.size > 1) {
           // Preserve the root node if any.
           const rootNode =
-            this.subLayers.length === 1 &&
-            this.subLayers[0].children &&
-            this.subLayers[0].children.length > 1
-              ? subLayers.find(
-                  (curSubLayer) => this.subLayers[0].name === curSubLayer.name
-                )?.id
+            this.subLayers.length === 1 && this.subLayers[0].children && this.subLayers[0].children.length > 1
+              ? subLayers.find((curSubLayer) => this.subLayers[0].name === curSubLayer.name)?.id
               : undefined;
           prefixed.forEach((children, parent) => {
             children.forEach((child) => {
               child.parent = index;
               // Remove the prefix from the title if present.
-              if (
-                child.title &&
-                child.title.indexOf(parent + Layer.PREFIX_SEPARATOR) === 0
-              )
-                child.title = child.title.slice(
-                  parent.length + Layer.PREFIX_SEPARATOR.length
-                );
+              if (child.title && child.title.indexOf(parent + Layer.PREFIX_SEPARATOR) === 0)
+                child.title = child.title.slice(parent.length + Layer.PREFIX_SEPARATOR.length);
             });
             subLayers.push({
               name: "",
@@ -203,11 +178,7 @@ export namespace WmsCapability {
     public readonly cartoRange?: MapCartoRectangle;
     public readonly children?: SubLayer[];
     public readonly queryable: boolean;
-    public constructor(
-      _json: any,
-      capabilities: WmsCapabilities,
-      public readonly parent?: SubLayer
-    ) {
+    public constructor(_json: any, capabilities: WmsCapabilities, public readonly parent?: SubLayer) {
       const getParentCrs = (parentLayer: SubLayer, crsSet: Set<string>) => {
         parentLayer.crs.forEach((parentCrs) => crsSet.add(parentCrs));
         if (parentLayer.parent) {
@@ -238,10 +209,7 @@ export namespace WmsCapability {
 
 /** @internal */
 export class WmsCapabilities {
-  private static _capabilitiesCache = new Map<
-    string,
-    WmsCapabilities | undefined
-  >();
+  private static _capabilitiesCache = new Map<string, WmsCapabilities | undefined>();
   public readonly service: WmsCapability.Service;
   public readonly version?: string;
   public readonly isVersion13: boolean;
@@ -265,11 +233,9 @@ export class WmsCapabilities {
   }
   constructor(private _json: any) {
     this.version = _json.version;
-    this.isVersion13 =
-      _json.version !== undefined && 0 === _json.version.indexOf("1.3");
+    this.isVersion13 = _json.version !== undefined && 0 === _json.version.indexOf("1.3");
     this.service = new WmsCapability.Service(_json.Service);
-    if (_json.Capability)
-      this.layer = new WmsCapability.Layer(_json.Capability.Layer, this);
+    if (_json.Capability) this.layer = new WmsCapability.Layer(_json.Capability.Layer, this);
   }
 
   public static async create(
@@ -301,9 +267,7 @@ export class WmsCapabilities {
     return this.layer ? this.layer.getSubLayers(visible) : undefined;
   }
 
-  public getSubLayersCrs(
-    subLayerNames: string[]
-  ): Map<string, string[]> | undefined {
+  public getSubLayersCrs(subLayerNames: string[]): Map<string, string[]> | undefined {
     return this.layer ? this.layer.getSubLayersCrs(subLayerNames) : undefined;
   }
 }

@@ -70,34 +70,16 @@ Below is an example of setting up a [GroupButton]($appui-abstract) definition th
 
 ```tsx
 const childItems: ActionButton[] = [
-  ToolbarItemUtilities.createActionButton(
-    "Child1",
-    10,
-    "icon-app-1",
-    "Child1 Tool",
-    (): void => {
-      /* start tool or open a dialog */
-    }
-  ),
-  ToolbarItemUtilities.createActionButton(
-    "Child2",
-    20,
-    "icon-app-2",
-    "Child2 Tool",
-    (): void => {
-      /* start tool or open a dialog */
-    }
-  ),
+  ToolbarItemUtilities.createActionButton("Child1", 10, "icon-app-1", "Child1 Tool", (): void => {
+    /* start tool or open a dialog */
+  }),
+  ToolbarItemUtilities.createActionButton("Child2", 20, "icon-app-2", "Child2 Tool", (): void => {
+    /* start tool or open a dialog */
+  }),
 ];
 
 const toolbarItemsWithGroup: CommonToolbarItem[] = [
-  ToolbarItemUtilities.createGroupButton(
-    "GroupButton",
-    10,
-    "icon-developer",
-    "Tool Group",
-    childItems
-  ),
+  ToolbarItemUtilities.createGroupButton("GroupButton", 10, "icon-developer", "Tool Group", childItems),
 ];
 ```
 

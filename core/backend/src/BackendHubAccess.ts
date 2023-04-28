@@ -6,12 +6,7 @@
  * @module HubAccess
  */
 
-import {
-  AccessToken,
-  GuidString,
-  Id64String,
-  IModelHubStatus,
-} from "@itwin/core-bentley";
+import { AccessToken, GuidString, Id64String, IModelHubStatus } from "@itwin/core-bentley";
 import {
   BriefcaseId,
   ChangesetFileProps,
@@ -26,11 +21,7 @@ import {
   LocalDirName,
   LocalFileName,
 } from "@itwin/core-common";
-import {
-  CheckpointProps,
-  DownloadRequest,
-  ProgressFunction,
-} from "./CheckpointManager";
+import { CheckpointProps, DownloadRequest, ProgressFunction } from "./CheckpointManager";
 import { TokenArg } from "./IModelDb";
 
 /** The state of a lock.
@@ -158,9 +149,7 @@ export interface ChangesetArg extends IModelIdArg {
 /** Argument for downloading a changeset.
  * @beta
  */
-export interface DownloadChangesetArg
-  extends ChangesetArg,
-    DownloadProgressArg {
+export interface DownloadChangesetArg extends ChangesetArg, DownloadProgressArg {
   /** Directory where the changeset should be downloaded. */
   targetDir: LocalDirName;
 }
@@ -181,9 +170,7 @@ export interface ChangesetRangeArg extends IModelIdArg {
 /** Argument for downloading a changeset range.
  * @beta
  */
-export interface DownloadChangesetRangeArg
-  extends ChangesetRangeArg,
-    DownloadProgressArg {
+export interface DownloadChangesetRangeArg extends ChangesetRangeArg, DownloadProgressArg {
   /** Directory where the changesets should be downloaded. */
   targetDir: LocalDirName;
 }
@@ -213,9 +200,7 @@ export interface CreateNewIModelProps extends IModelNameArg {
  */
 export interface BackendHubAccess {
   /** Download all the changesets in the specified range. */
-  downloadChangesets: (
-    arg: DownloadChangesetRangeArg
-  ) => Promise<ChangesetFileProps[]>;
+  downloadChangesets: (arg: DownloadChangesetRangeArg) => Promise<ChangesetFileProps[]>;
   /** Download a single changeset. */
   downloadChangeset: (arg: DownloadChangesetArg) => Promise<ChangesetFileProps>;
   /** Query the changeset properties given a ChangesetIndex  */
@@ -223,26 +208,18 @@ export interface BackendHubAccess {
   /** Query an array of changeset properties given a range of ChangesetIndexes  */
   queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
   /** Push a changeset to iModelHub. Returns the newly pushed changeset's index */
-  pushChangeset: (
-    arg: IModelIdArg & { changesetProps: ChangesetFileProps }
-  ) => Promise<ChangesetIndex>;
+  pushChangeset: (arg: IModelIdArg & { changesetProps: ChangesetFileProps }) => Promise<ChangesetIndex>;
   /** Get the ChangesetProps of the most recent changeset */
   getLatestChangeset: (arg: IModelIdArg) => Promise<ChangesetProps>;
   /** Get the ChangesetProps for an IModelVersion */
-  getChangesetFromVersion: (
-    arg: IModelIdArg & { version: IModelVersion }
-  ) => Promise<ChangesetProps>;
+  getChangesetFromVersion: (arg: IModelIdArg & { version: IModelVersion }) => Promise<ChangesetProps>;
   /** Get the ChangesetProps for a named version */
-  getChangesetFromNamedVersion: (
-    arg: IModelIdArg & { versionName: string }
-  ) => Promise<ChangesetProps>;
+  getChangesetFromNamedVersion: (arg: IModelIdArg & { versionName: string }) => Promise<ChangesetProps>;
 
   /** Acquire a new briefcaseId for the supplied iModelId
    * @note usually there should only be one briefcase per iModel per user.
    */
-  acquireNewBriefcaseId: (
-    arg: AcquireNewBriefcaseIdArg
-  ) => Promise<BriefcaseId>;
+  acquireNewBriefcaseId: (arg: AcquireNewBriefcaseIdArg) => Promise<BriefcaseId>;
   /** Release a briefcaseId. After this call it is illegal to generate changesets for the released briefcaseId. */
   releaseBriefcase: (arg: BriefcaseIdArg) => Promise<void>;
 
@@ -260,9 +237,7 @@ export interface BackendHubAccess {
    * Get the access props for a V2 checkpoint. Returns undefined if no V2 checkpoint exists.
    * @internal
    */
-  queryV2Checkpoint: (
-    arg: CheckpointProps
-  ) => Promise<V2CheckpointAccessProps | undefined>;
+  queryV2Checkpoint: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
 
   /**
    * acquire one or more locks. Throws if unsuccessful. If *any* lock cannot be obtained, no locks are acquired

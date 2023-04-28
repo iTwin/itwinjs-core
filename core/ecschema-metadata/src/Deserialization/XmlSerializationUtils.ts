@@ -43,24 +43,15 @@ export namespace XmlSerializationUtils {
         `The class '${fullName}' could not be found in the current schema context.`
       );
 
-    const nameAndNamespace = await resolveCustomAttributeNamespace(
-      fullName,
-      schema
-    );
+    const nameAndNamespace = await resolveCustomAttributeNamespace(fullName, schema);
     const caElement = schemaDoc.createElement(nameAndNamespace[0]);
 
-    if (nameAndNamespace[1])
-      caElement.setAttribute("xmlns", nameAndNamespace[1]);
+    if (nameAndNamespace[1]) caElement.setAttribute("xmlns", nameAndNamespace[1]);
 
     if (!caClass.properties) return caElement;
 
     for (const property of caClass.properties)
-      await writeInstanceProperty(
-        property,
-        customAttribute,
-        caElement,
-        schemaDoc
-      );
+      await writeInstanceProperty(property, customAttribute, caElement, schemaDoc);
 
     return caElement;
   }
@@ -86,25 +77,11 @@ export namespace XmlSerializationUtils {
     instanceElement.appendChild(propertyElement);
 
     if (propertyClass.isArray()) {
-      await writeArrayProperty(
-        propertyClass,
-        propertyValue,
-        propertyElement,
-        schemaDoc
-      );
+      await writeArrayProperty(propertyClass, propertyValue, propertyElement, schemaDoc);
     } else if (propertyClass.isPrimitive()) {
-      await writePrimitiveProperty(
-        propertyClass,
-        propertyValue,
-        propertyElement
-      );
+      await writePrimitiveProperty(propertyClass, propertyValue, propertyElement);
     } else if (propertyClass.isStruct()) {
-      await writeStructProperty(
-        propertyClass,
-        propertyValue,
-        propertyElement,
-        schemaDoc
-      );
+      await writeStructProperty(propertyClass, propertyValue, propertyElement, schemaDoc);
     }
   }
 
@@ -133,16 +110,9 @@ export namespace XmlSerializationUtils {
 
     if (propertyClass.isStruct()) {
       for (const value of propertyValue) {
-        const structElement = schemaDoc.createElement(
-          propertyClass.structClass.name
-        );
+        const structElement = schemaDoc.createElement(propertyClass.structClass.name);
         arrayElement.appendChild(structElement);
-        await writeStructProperty(
-          propertyClass,
-          value,
-          structElement,
-          schemaDoc
-        );
+        await writeStructProperty(propertyClass, value, structElement, schemaDoc);
       }
     }
   }
@@ -165,12 +135,7 @@ export namespace XmlSerializationUtils {
     if (!structClass.properties) return;
 
     for (const propertyMetadata of structClass.properties)
-      await writeInstanceProperty(
-        propertyMetadata,
-        propertyValue,
-        structElement,
-        schemaDoc
-      );
+      await writeInstanceProperty(propertyMetadata, propertyValue, structElement, schemaDoc);
   }
 
   /**
@@ -187,8 +152,7 @@ export namespace XmlSerializationUtils {
   ): Promise<void> {
     let primitiveType: PrimitiveType;
     if (propertyClass.isEnumeration()) {
-      const enumeration = await (propertyClass as EnumerationProperty)
-        .enumeration;
+      const enumeration = await (propertyClass as EnumerationProperty).enumeration;
       if (!enumeration)
         throw new ECObjectsError(
           ECObjectsStatus.ClassNotFound,
@@ -209,9 +173,7 @@ export namespace XmlSerializationUtils {
         propertyElement.textContent = propertyValue;
         return;
       case PrimitiveType.Boolean:
-        propertyElement.textContent = (propertyValue as boolean)
-          ? "True"
-          : "False";
+        propertyElement.textContent = (propertyValue as boolean) ? "True" : "False";
         return;
       case PrimitiveType.Integer:
       case PrimitiveType.Double:
@@ -219,9 +181,7 @@ export namespace XmlSerializationUtils {
         propertyElement.textContent = propertyValue.toString();
         return;
       case PrimitiveType.DateTime:
-        propertyElement.textContent = (propertyValue as Date)
-          .getTime()
-          .toString();
+        propertyElement.textContent = (propertyValue as Date).getTime().toString();
         return;
       case PrimitiveType.Point2d:
         propertyElement.textContent = `${propertyValue.x},${propertyValue.y}`;
@@ -241,11 +201,7 @@ export namespace XmlSerializationUtils {
     }
   }
 
-  export function createXmlTypedName(
-    currentSchema: Schema,
-    typeSchema: Schema,
-    typeName: string
-  ) {
+  export function createXmlTypedName(currentSchema: Schema, typeSchema: Schema, typeName: string) {
     if (currentSchema.schemaKey.matches(typeSchema.schemaKey)) return typeName;
 
     // Alias is required in Spec. It could be undefined (technically), so
@@ -267,18 +223,13 @@ export namespace XmlSerializationUtils {
     if (nameParts.length === 1) return [caName, undefined];
 
     const attributeSchema =
-      nameParts[0].toUpperCase() === schema.name.toUpperCase()
-        ? schema
-        : await schema.getReference(nameParts[0]);
+      nameParts[0].toUpperCase() === schema.name.toUpperCase() ? schema : await schema.getReference(nameParts[0]);
     if (!attributeSchema)
       throw new ECObjectsError(
         ECObjectsStatus.UnableToLocateSchema,
         `Unable to resolve the namespace for CustomAttribute '${caName}' because the referenced schema '${nameParts[0]}' could not be located.`
       );
 
-    return [
-      nameParts[1],
-      `${nameParts[0]}.${attributeSchema.schemaKey.version.toString()}`,
-    ];
+    return [nameParts[1], `${nameParts[0]}.${attributeSchema.schemaKey.version.toString()}`];
   }
 }

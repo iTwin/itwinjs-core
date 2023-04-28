@@ -4,10 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import {
-  GeographicCRSInterpretRequestProps,
-  GeographicCRSProps,
-} from "@itwin/core-common";
+import { GeographicCRSInterpretRequestProps, GeographicCRSProps } from "@itwin/core-common";
 import { IModelHost } from "../../IModelHost";
 import { Geometry } from "@itwin/core-geometry";
 import { GeoCoordConfig } from "../../GeoCoordConfig";
@@ -19,44 +16,28 @@ describe("GeoServices", () => {
     GeoCoordConfig.loadDefaultDatabases();
   });
 
-  const completionTest = async (
-    incompleteGCS: GeographicCRSProps,
-    completeCRS: GeographicCRSProps
-  ) => {
+  const completionTest = async (incompleteGCS: GeographicCRSProps, completeCRS: GeographicCRSProps) => {
     const requestProps: GeographicCRSInterpretRequestProps = {
       format: "JSON",
       geographicCRSDef: JSON.stringify(incompleteGCS),
     };
-    const response =
-      IModelHost.platform.GeoServices.getGeographicCRSInterpretation(
-        requestProps
-      );
+    const response = IModelHost.platform.GeoServices.getGeographicCRSInterpretation(requestProps);
 
     assert.isTrue(response.status === 0);
 
     assert.isTrue(response.geographicCRS !== undefined);
     if (response.geographicCRS !== undefined) {
-      assert.isTrue(
-        response.geographicCRS.horizontalCRS !== undefined &&
-          completeCRS.horizontalCRS !== undefined
-      );
-      assert.isTrue(
-        response.geographicCRS.horizontalCRS!.id ===
-          completeCRS.horizontalCRS!.id
-      );
+      assert.isTrue(response.geographicCRS.horizontalCRS !== undefined && completeCRS.horizontalCRS !== undefined);
+      assert.isTrue(response.geographicCRS.horizontalCRS!.id === completeCRS.horizontalCRS!.id);
       assert.isTrue(
         response.geographicCRS.horizontalCRS!.projection !== undefined &&
           completeCRS.horizontalCRS!.projection !== undefined
       );
       assert.isTrue(
-        response.geographicCRS.horizontalCRS!.projection!.method ===
-          completeCRS.horizontalCRS!.projection!.method
+        response.geographicCRS.horizontalCRS!.projection!.method === completeCRS.horizontalCRS!.projection!.method
       );
       if (completeCRS.horizontalCRS!.projection!.falseEasting !== undefined) {
-        assert.isTrue(
-          response.geographicCRS.horizontalCRS!.projection!.falseEasting !==
-            undefined
-        );
+        assert.isTrue(response.geographicCRS.horizontalCRS!.projection!.falseEasting !== undefined);
         assert.isTrue(
           Math.abs(
             response.geographicCRS.horizontalCRS!.projection!.falseEasting! -
@@ -65,10 +46,7 @@ describe("GeoServices", () => {
         );
       }
       if (completeCRS.horizontalCRS!.projection!.falseNorthing !== undefined) {
-        assert.isTrue(
-          response.geographicCRS.horizontalCRS!.projection!.falseNorthing !==
-            undefined
-        );
+        assert.isTrue(response.geographicCRS.horizontalCRS!.projection!.falseNorthing !== undefined);
         assert.isTrue(
           Math.abs(
             response.geographicCRS.horizontalCRS!.projection!.falseNorthing! -
@@ -78,80 +56,57 @@ describe("GeoServices", () => {
       }
 
       assert.isTrue(
-        response.geographicCRS.horizontalCRS!.datum !== undefined &&
-          completeCRS.horizontalCRS!.datum !== undefined
+        response.geographicCRS.horizontalCRS!.datum !== undefined && completeCRS.horizontalCRS!.datum !== undefined
       );
-      assert.isTrue(
-        response.geographicCRS.horizontalCRS!.datum!.id ===
-          completeCRS.horizontalCRS!.datum!.id
-      );
+      assert.isTrue(response.geographicCRS.horizontalCRS!.datum!.id === completeCRS.horizontalCRS!.datum!.id);
 
       assert.isTrue(
         response.geographicCRS.horizontalCRS!.datum!.ellipsoid !== undefined &&
           completeCRS.horizontalCRS!.datum!.ellipsoid !== undefined
       );
       assert.isTrue(
-        response.geographicCRS.horizontalCRS!.datum!.ellipsoid!.id ===
-          completeCRS.horizontalCRS!.datum!.ellipsoid!.id
+        response.geographicCRS.horizontalCRS!.datum!.ellipsoid!.id === completeCRS.horizontalCRS!.datum!.ellipsoid!.id
       );
 
       if (response.geographicCRS.additionalTransform !== undefined) {
         assert.isTrue(completeCRS.additionalTransform !== undefined);
-        assert.isTrue(
-          response.geographicCRS.additionalTransform.helmert2DWithZOffset !==
-            undefined
-        );
-        assert.isTrue(
-          completeCRS.additionalTransform!.helmert2DWithZOffset !== undefined
-        );
+        assert.isTrue(response.geographicCRS.additionalTransform.helmert2DWithZOffset !== undefined);
+        assert.isTrue(completeCRS.additionalTransform!.helmert2DWithZOffset !== undefined);
 
         assert.isTrue(
           Math.abs(
-            response.geographicCRS.additionalTransform.helmert2DWithZOffset!
-              .rotDeg -
+            response.geographicCRS.additionalTransform.helmert2DWithZOffset!.rotDeg -
               completeCRS.additionalTransform!.helmert2DWithZOffset!.rotDeg
           ) < Geometry.smallAngleDegrees
         );
         assert.isTrue(
           Math.abs(
-            response.geographicCRS.additionalTransform.helmert2DWithZOffset!
-              .translationX -
-              completeCRS.additionalTransform!.helmert2DWithZOffset!
-                .translationX
+            response.geographicCRS.additionalTransform.helmert2DWithZOffset!.translationX -
+              completeCRS.additionalTransform!.helmert2DWithZOffset!.translationX
           ) < Geometry.smallMetricDistance
         );
         assert.isTrue(
           Math.abs(
-            response.geographicCRS.additionalTransform.helmert2DWithZOffset!
-              .translationY -
-              completeCRS.additionalTransform!.helmert2DWithZOffset!
-                .translationY
+            response.geographicCRS.additionalTransform.helmert2DWithZOffset!.translationY -
+              completeCRS.additionalTransform!.helmert2DWithZOffset!.translationY
           ) < Geometry.smallMetricDistance
         );
         assert.isTrue(
           Math.abs(
-            response.geographicCRS.additionalTransform.helmert2DWithZOffset!
-              .translationZ -
-              completeCRS.additionalTransform!.helmert2DWithZOffset!
-                .translationZ
+            response.geographicCRS.additionalTransform.helmert2DWithZOffset!.translationZ -
+              completeCRS.additionalTransform!.helmert2DWithZOffset!.translationZ
           ) < Geometry.smallMetricDistance
         );
         assert.isTrue(
           Math.abs(
-            response.geographicCRS.additionalTransform.helmert2DWithZOffset!
-              .scale -
+            response.geographicCRS.additionalTransform.helmert2DWithZOffset!.scale -
               completeCRS.additionalTransform!.helmert2DWithZOffset!.scale
           ) < Geometry.smallFraction
         );
       }
 
-      assert.isTrue(
-        response.geographicCRS.verticalCRS !== undefined &&
-          completeCRS.verticalCRS !== undefined
-      );
-      assert.isTrue(
-        response.geographicCRS.verticalCRS!.id === completeCRS.verticalCRS!.id
-      );
+      assert.isTrue(response.geographicCRS.verticalCRS !== undefined && completeCRS.verticalCRS !== undefined);
+      assert.isTrue(response.geographicCRS.verticalCRS!.id === completeCRS.verticalCRS!.id);
     }
   };
 
@@ -245,8 +200,7 @@ describe("GeoServices", () => {
         horizontalCRS: {
           id: "EPSG:27700",
           description: "OSGB 1936 / British National Grid",
-          source:
-            "EPSG V6 [Large and medium scale topographic mapping and engin]",
+          source: "EPSG V6 [Large and medium scale topographic mapping and engin]",
           datumId: "EPSG:6277",
           datum: {
             id: "EPSG:6277",
@@ -346,8 +300,7 @@ describe("GeoServices", () => {
       const UTM27Z10: GeographicCRSProps = {
         horizontalCRS: {
           datum: {
-            description:
-              "North American Datum of 1927 (US48, AK, HI, and Canada)",
+            description: "North American Datum of 1927 (US48, AK, HI, and Canada)",
             ellipsoid: {
               description: "Clarke 1866, Benoit Ratio",
               epsg: 7008,
@@ -416,8 +369,7 @@ describe("GeoServices", () => {
             ],
           },
           datumId: "NAD27",
-          description:
-            "UTM with NAD27 datum, Zone 10, Meter; Central Meridian 123d W",
+          description: "UTM with NAD27 datum, Zone 10, Meter; Central Meridian 123d W",
           epsg: 26710,
           extent: {
             northEast: {
@@ -443,18 +395,14 @@ describe("GeoServices", () => {
         },
       };
 
-      await completionTest(
-        { horizontalCRS: { id: "UTM27-10" }, verticalCRS: { id: "NGVD29" } },
-        UTM27Z10
-      );
+      await completionTest({ horizontalCRS: { id: "UTM27-10" }, verticalCRS: { id: "NGVD29" } }, UTM27Z10);
     });
 
     it("should be able to interpret to completion UTM27Z10B", async () => {
       const UTM27Z10B: GeographicCRSProps = {
         horizontalCRS: {
           datum: {
-            description:
-              "North American Datum of 1927 (US48, AK, HI, and Canada)",
+            description: "North American Datum of 1927 (US48, AK, HI, and Canada)",
             ellipsoid: {
               description: "Clarke 1866, Benoit Ratio",
               epsg: 7008,
@@ -544,8 +492,7 @@ describe("GeoServices", () => {
             method: "TransverseMercator",
             scaleFactor: 0.9996,
           },
-          source:
-            "EPSG V6 [Large and medium scale topographic mapping and engin]",
+          source: "EPSG V6 [Large and medium scale topographic mapping and engin]",
           unit: "Meter",
         },
         verticalCRS: {
@@ -553,52 +500,33 @@ describe("GeoServices", () => {
         },
       };
 
-      await completionTest(
-        { horizontalCRS: { epsg: 26710 }, verticalCRS: { id: "NGVD29" } },
-        UTM27Z10B
-      );
+      await completionTest({ horizontalCRS: { epsg: 26710 }, verticalCRS: { id: "NGVD29" } }, UTM27Z10B);
     });
   });
 
   describe("Interpretation of WKT GeographicCRS", async () => {
-    const interpretWKTTest = async (
-      testWKT: string,
-      completeCRS: GeographicCRSProps
-    ) => {
+    const interpretWKTTest = async (testWKT: string, completeCRS: GeographicCRSProps) => {
       const requestProps: GeographicCRSInterpretRequestProps = {
         format: "WKT",
         geographicCRSDef: testWKT,
       };
-      const response =
-        IModelHost.platform.GeoServices.getGeographicCRSInterpretation(
-          requestProps
-        );
+      const response = IModelHost.platform.GeoServices.getGeographicCRSInterpretation(requestProps);
 
       assert.isTrue(response.status === 0);
 
       assert.isTrue(response.geographicCRS !== undefined);
       if (response.geographicCRS !== undefined) {
-        assert.isTrue(
-          response.geographicCRS.horizontalCRS !== undefined &&
-            completeCRS.horizontalCRS !== undefined
-        );
-        assert.isTrue(
-          response.geographicCRS.horizontalCRS!.id ===
-            completeCRS.horizontalCRS!.id
-        );
+        assert.isTrue(response.geographicCRS.horizontalCRS !== undefined && completeCRS.horizontalCRS !== undefined);
+        assert.isTrue(response.geographicCRS.horizontalCRS!.id === completeCRS.horizontalCRS!.id);
         assert.isTrue(
           response.geographicCRS.horizontalCRS!.projection !== undefined &&
             completeCRS.horizontalCRS!.projection !== undefined
         );
         assert.isTrue(
-          response.geographicCRS.horizontalCRS!.projection!.method ===
-            completeCRS.horizontalCRS!.projection!.method
+          response.geographicCRS.horizontalCRS!.projection!.method === completeCRS.horizontalCRS!.projection!.method
         );
         if (completeCRS.horizontalCRS!.projection!.falseEasting !== undefined) {
-          assert.isTrue(
-            response.geographicCRS.horizontalCRS!.projection!.falseEasting !==
-              undefined
-          );
+          assert.isTrue(response.geographicCRS.horizontalCRS!.projection!.falseEasting !== undefined);
           assert.isTrue(
             Math.abs(
               response.geographicCRS.horizontalCRS!.projection!.falseEasting! -
@@ -606,13 +534,8 @@ describe("GeoServices", () => {
             ) < Geometry.smallMetricDistance
           );
         }
-        if (
-          completeCRS.horizontalCRS!.projection!.falseNorthing !== undefined
-        ) {
-          assert.isTrue(
-            response.geographicCRS.horizontalCRS!.projection!.falseNorthing !==
-              undefined
-          );
+        if (completeCRS.horizontalCRS!.projection!.falseNorthing !== undefined) {
+          assert.isTrue(response.geographicCRS.horizontalCRS!.projection!.falseNorthing !== undefined);
           assert.isTrue(
             Math.abs(
               response.geographicCRS.horizontalCRS!.projection!.falseNorthing! -
@@ -622,31 +545,20 @@ describe("GeoServices", () => {
         }
 
         assert.isTrue(
-          response.geographicCRS.horizontalCRS!.datum !== undefined &&
-            completeCRS.horizontalCRS!.datum !== undefined
+          response.geographicCRS.horizontalCRS!.datum !== undefined && completeCRS.horizontalCRS!.datum !== undefined
         );
-        assert.isTrue(
-          response.geographicCRS.horizontalCRS!.datum!.id ===
-            completeCRS.horizontalCRS!.datum!.id
-        );
+        assert.isTrue(response.geographicCRS.horizontalCRS!.datum!.id === completeCRS.horizontalCRS!.datum!.id);
 
         assert.isTrue(
-          response.geographicCRS.horizontalCRS!.datum!.ellipsoid !==
-            undefined &&
+          response.geographicCRS.horizontalCRS!.datum!.ellipsoid !== undefined &&
             completeCRS.horizontalCRS!.datum!.ellipsoid !== undefined
         );
         assert.isTrue(
-          response.geographicCRS.horizontalCRS!.datum!.ellipsoid!.id ===
-            completeCRS.horizontalCRS!.datum!.ellipsoid!.id
+          response.geographicCRS.horizontalCRS!.datum!.ellipsoid!.id === completeCRS.horizontalCRS!.datum!.ellipsoid!.id
         );
 
-        assert.isTrue(
-          response.geographicCRS.verticalCRS !== undefined &&
-            completeCRS.verticalCRS !== undefined
-        );
-        assert.isTrue(
-          response.geographicCRS.verticalCRS!.id === completeCRS.verticalCRS!.id
-        );
+        assert.isTrue(response.geographicCRS.verticalCRS !== undefined && completeCRS.verticalCRS !== undefined);
+        assert.isTrue(response.geographicCRS.verticalCRS!.id === completeCRS.verticalCRS!.id);
 
         // WKTs cannot define an additional transform
         assert.isTrue(response.geographicCRS.additionalTransform === undefined);
@@ -729,8 +641,7 @@ describe("GeoServices", () => {
           datum: {
             description: "European 1950, Denmark, for System 34",
             ellipsoid: {
-              description:
-                "Hayford, 1924 (aka 1909); same as International 1924",
+              description: "Hayford, 1924 (aka 1909); same as International 1924",
               epsg: 7022,
               equatorialRadius: 6378388,
               id: "HAYFORD",
@@ -785,8 +696,7 @@ describe("GeoServices", () => {
           projection: {
             method: "None",
           },
-          source:
-            "Extracted from WKT string; description field carries WKT name.",
+          source: "Extracted from WKT string; description field carries WKT name.",
           unit: "Degree",
         },
         verticalCRS: {
@@ -811,8 +721,7 @@ describe("GeoServices", () => {
               equatorialRadius: 6378137,
               id: "GRS1980",
               polarRadius: 6356752.314140348,
-              source:
-                "Stem, L.E., Jan 1989, State Plane Coordinate System of 1983",
+              source: "Stem, L.E., Jan 1989, State Plane Coordinate System of 1983",
             },
             ellipsoidId: "GRS1980",
             epsg: 6269,
@@ -992,18 +901,12 @@ describe("GeoServices", () => {
   });
 
   it("should not be able to interpret an invalid GeographicCRS", async () => {
-    const interpretInvalidTest = async (
-      formatCRS: "WKT" | "JSON",
-      testInvalid: string
-    ) => {
+    const interpretInvalidTest = async (formatCRS: "WKT" | "JSON", testInvalid: string) => {
       const requestProps: GeographicCRSInterpretRequestProps = {
         format: formatCRS,
         geographicCRSDef: testInvalid,
       };
-      const response =
-        IModelHost.platform.GeoServices.getGeographicCRSInterpretation(
-          requestProps
-        );
+      const response = IModelHost.platform.GeoServices.getGeographicCRSInterpretation(requestProps);
 
       // At the moment return codes are not really error specific (we mostly return 32768) so we do not validate
       // actual error code for now.
@@ -1026,18 +929,12 @@ describe("GeoServices", () => {
     );
 
     // Vertical datum invalid for horizontal definition
-    await interpretInvalidTest(
-      "JSON",
-      '{ horizontalCRS: { id: "EPSG:27700" }, verticalCRS: { id: "NAVD29" } }'
-    );
+    await interpretInvalidTest("JSON", '{ horizontalCRS: { id: "EPSG:27700" }, verticalCRS: { id: "NAVD29" } }');
 
     // No horizontal CRS
     await interpretInvalidTest("JSON", '{ verticalCRS: { id: "NAVD29" } }');
 
     // Unknown identifier
-    await interpretInvalidTest(
-      "JSON",
-      '{ horizontalCRS: { id: "UNKNOWN" }, verticalCRS: { id: "NAVD29" } }'
-    );
+    await interpretInvalidTest("JSON", '{ horizontalCRS: { id: "UNKNOWN" }, verticalCRS: { id: "NAVD29" } }');
   });
 });

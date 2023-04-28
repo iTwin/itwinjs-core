@@ -10,10 +10,7 @@ import { Geometry } from "../Geometry";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { CurveCollection } from "./CurveCollection";
 import { CurveCurveCloseApproachXY } from "./CurveCurveCloseApproachXY";
-import {
-  CurveCurveIntersectXY,
-  CurveLocationDetailArrayPair,
-} from "./CurveCurveIntersectXY";
+import { CurveCurveIntersectXY, CurveLocationDetailArrayPair } from "./CurveCurveIntersectXY";
 import { CurveCurveIntersectXYZ } from "./CurveCurveIntersectXYZ";
 import { CurveLocationDetailPair } from "./CurveLocationDetail";
 import { CurvePrimitive } from "./CurvePrimitive";
@@ -39,14 +36,7 @@ export class CurveCurve {
     extendB: boolean,
     tolerance: number = Geometry.smallMetricDistance
   ): CurveLocationDetailPair[] {
-    const handler = new CurveCurveIntersectXY(
-      undefined,
-      geometryA,
-      extendA,
-      geometryB,
-      extendB,
-      tolerance
-    );
+    const handler = new CurveCurveIntersectXY(undefined, geometryA, extendA, geometryB, extendB, tolerance);
     if (geometryB instanceof CurvePrimitive) {
       geometryA.dispatchToGeometryHandler(handler);
     } else if (geometryB instanceof CurveCollection) {
@@ -74,14 +64,7 @@ export class CurveCurve {
     extendB: boolean,
     tolerance: number = Geometry.smallMetricDistance
   ): CurveLocationDetailPair[] {
-    const handler = new CurveCurveIntersectXY(
-      worldToLocal,
-      geometryA,
-      extendA,
-      geometryB,
-      extendB,
-      tolerance
-    );
+    const handler = new CurveCurveIntersectXY(worldToLocal, geometryA, extendA, geometryB, extendB, tolerance);
     geometryA.dispatchToGeometryHandler(handler);
     return handler.grabPairedResults();
   }
@@ -101,12 +84,7 @@ export class CurveCurve {
     geometryB: GeometryQuery,
     extendB: boolean
   ): CurveLocationDetailArrayPair {
-    const handler = new CurveCurveIntersectXYZ(
-      geometryA,
-      extendA,
-      geometryB,
-      extendB
-    );
+    const handler = new CurveCurveIntersectXYZ(geometryA, extendA, geometryB, extendB);
     geometryA.dispatchToGeometryHandler(handler);
     return handler.grabResults();
   }
@@ -119,14 +97,7 @@ export class CurveCurve {
     primitives: CurvePrimitive[],
     tolerance: number = Geometry.smallMetricDistance
   ): CurveLocationDetailPair[] {
-    const handler = new CurveCurveIntersectXY(
-      undefined,
-      undefined,
-      false,
-      undefined,
-      false,
-      tolerance
-    );
+    const handler = new CurveCurveIntersectXY(undefined, undefined, false, undefined, false, tolerance);
     for (let i = 0; i < primitives.length; i++) {
       const geometryA = primitives[i];
       for (let j = i + 1; j < primitives.length; j++) {

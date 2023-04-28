@@ -44,11 +44,7 @@ export class DeepCompare {
     } else {
       this.errorTracker.unshift(b);
       this.errorTracker.unshift(a);
-      this.errorTracker.unshift(
-        `In ${
-          this.errorTracker[this.errorTracker.length - 1]
-        } property: Mismatched values`
-      );
+      this.errorTracker.unshift(`In ${this.errorTracker[this.errorTracker.length - 1]} property: Mismatched values`);
       return this.announce(false);
     }
   }
@@ -59,11 +55,7 @@ export class DeepCompare {
       const bCounter: { [key: string]: any } = {};
       // Append object to tracker that counts the properties of each array element (which is an object) in b, ONLY AT THIS LEVEL
       for (const i of b) {
-        if (
-          typeof i === "object" &&
-          typeof i !== "function" &&
-          !Array.isArray(i)
-        ) {
+        if (typeof i === "object" && typeof i !== "function" && !Array.isArray(i)) {
           for (const property in i) {
             if (i.hasOwnProperty(property)) {
               // Add property to counter if not already there
@@ -76,11 +68,7 @@ export class DeepCompare {
       this.errorTracker.unshift(bCounter);
       // Append object to tracker that counts the properties of each array element (which is an object) in a, ONLY AT THIS LEVEL
       for (const i of a) {
-        if (
-          typeof i === "object" &&
-          typeof i !== "function" &&
-          !Array.isArray(i)
-        ) {
+        if (typeof i === "object" && typeof i !== "function" && !Array.isArray(i)) {
           for (const property in i) {
             if (i.hasOwnProperty(property)) {
               // Add property to counter if not already there
@@ -92,9 +80,7 @@ export class DeepCompare {
       }
       this.errorTracker.unshift(aCounter);
 
-      this.errorTracker.unshift(
-        `Mismatched array lengths a: [${a.length}] b: [${b.length}]`
-      );
+      this.errorTracker.unshift(`Mismatched array lengths a: [${a.length}] b: [${b.length}]`);
       return this.announce(false);
     }
     // Keep track of result for each element of array
@@ -113,9 +99,7 @@ export class DeepCompare {
     // Check that both objects contain the same amount of properties
     if (a == null && b == null) return this.announce(true);
     if (Object.keys(a).length !== Object.keys(b).length) {
-      this.errorTracker.unshift(
-        `Mismatched property lists [${Object.keys(a)}][${Object.keys(b)}`
-      );
+      this.errorTracker.unshift(`Mismatched property lists [${Object.keys(a)}][${Object.keys(b)}`);
       return this.announce(false);
     }
     // Keep track of result for each property of object

@@ -13,10 +13,7 @@ describe("PromiseMemoizer", () => {
     return `key ${param}:${waitTime}`;
   };
 
-  const testFunction = async (
-    param: string,
-    waitTime: number
-  ): Promise<string> => {
+  const testFunction = async (param: string, waitTime: number): Promise<string> => {
     await BeDuration.wait(waitTime);
     if (param === "TestError") throw new Error("TestError");
     return testFunctionResult(param, waitTime);
@@ -28,12 +25,7 @@ describe("PromiseMemoizer", () => {
 
   const maxCacheSize = 25;
   const cacheTimeout = 1500;
-  const testMemoizer = new PromiseMemoizer<string>(
-    testFunction,
-    generateTestFunctionKey,
-    maxCacheSize,
-    cacheTimeout
-  );
+  const testMemoizer = new PromiseMemoizer<string>(testFunction, generateTestFunctionKey, maxCacheSize, cacheTimeout);
 
   afterEach(() => {
     if (clock !== undefined) {

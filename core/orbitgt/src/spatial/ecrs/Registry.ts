@@ -45,8 +45,7 @@ export class Registry {
   private static readonly _COL_UNIT_ABBREVIATION: int32 = 6;
 
   /** The map for preferred transformation between CRSs */
-  private static _PREFERRED_TRANSFORMATIONS: StringMap<Operation> =
-    new StringMap<Operation>();
+  private static _PREFERRED_TRANSFORMATIONS: StringMap<Operation> = new StringMap<Operation>();
   /** Define the list of all units */
   private static _UNIT_LIST: AList<Unit> = null;
   /** Define the map of CRS instances that have been read */
@@ -89,10 +88,7 @@ export class Registry {
    * @param crs the crs.
    * @param transformation the preferred transformation (can be null).
    */
-  public static setPreferredTransformation(
-    crs: string,
-    transformation: Operation
-  ): void {
+  public static setPreferredTransformation(crs: string, transformation: Operation): void {
     Registry._PREFERRED_TRANSFORMATIONS.put(crs, transformation);
   }
 
@@ -102,8 +98,7 @@ export class Registry {
    * @return the table.
    */
   private static openTable(tableName: string): AList<string> {
-    if (Strings.equals(tableName, Registry._TABLE_UNIT))
-      return DataFileUnit.getDataLines();
+    if (Strings.equals(tableName, Registry._TABLE_UNIT)) return DataFileUnit.getDataLines();
     return new AList<string>();
   }
 
@@ -125,35 +120,15 @@ export class Registry {
       let parts: AList<string> = Strings.splitAsList(line, Strings.TAB);
       if (parts.size() != Registry._COL_COUNT_UNIT) continue;
       /* Get the parameters */
-      let code: int32 = Numbers.getInteger(
-        parts.get(Registry._COL_UNIT_CODE),
-        0
-      );
+      let code: int32 = Numbers.getInteger(parts.get(Registry._COL_UNIT_CODE), 0);
       let name: string = parts.get(Registry._COL_UNIT_NAME);
       let type: string = parts.get(Registry._COL_UNIT_TYPE);
-      let targetUnitCode: int32 = Numbers.getInteger(
-        parts.get(Registry._COL_UNIT_TARGET_CODE),
-        0
-      );
-      let b: float64 = Numbers.getDouble(
-        parts.get(Registry._COL_UNIT_FACTOR_B),
-        0.0
-      );
-      let c: float64 = Numbers.getDouble(
-        parts.get(Registry._COL_UNIT_FACTOR_C),
-        0.0
-      );
+      let targetUnitCode: int32 = Numbers.getInteger(parts.get(Registry._COL_UNIT_TARGET_CODE), 0);
+      let b: float64 = Numbers.getDouble(parts.get(Registry._COL_UNIT_FACTOR_B), 0.0);
+      let c: float64 = Numbers.getDouble(parts.get(Registry._COL_UNIT_FACTOR_C), 0.0);
       let abbreviation: string = parts.get(Registry._COL_UNIT_ABBREVIATION);
       /* Add a new unit */
-      let unit: Unit = new Unit(
-        code,
-        name,
-        abbreviation,
-        type,
-        targetUnitCode,
-        b,
-        c
-      );
+      let unit: Unit = new Unit(code, name, abbreviation, type, targetUnitCode, b, c);
       units.add(unit);
     }
     /* Return the units */
@@ -165,8 +140,7 @@ export class Registry {
    * @return all units.
    */
   public static listUnits(): AList<Unit> {
-    if (Registry._UNIT_LIST == null)
-      Registry._UNIT_LIST = Registry.readAllUnits();
+    if (Registry._UNIT_LIST == null) Registry._UNIT_LIST = Registry.readAllUnits();
     return Registry._UNIT_LIST;
   }
 
@@ -200,13 +174,9 @@ export class Registry {
   public static findUnitName(unitName: string): Unit {
     if (unitName == null) return null;
     let unitList: AList<Unit> = Registry.listUnits();
-    for (let unit of unitList)
-      if (Strings.equalsIgnoreCase(unitName, unit.getName())) return unit;
-    for (let unit of unitList)
-      if (Strings.equalsIgnoreCase(unitName, unit.getAbbreviation()))
-        return unit;
-    for (let unit of unitList)
-      if (Strings.equals(unitName, "" + unit.getCode())) return unit;
+    for (let unit of unitList) if (Strings.equalsIgnoreCase(unitName, unit.getName())) return unit;
+    for (let unit of unitList) if (Strings.equalsIgnoreCase(unitName, unit.getAbbreviation())) return unit;
+    for (let unit of unitList) if (Strings.equals(unitName, "" + unit.getCode())) return unit;
     return null;
   }
 

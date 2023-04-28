@@ -19,10 +19,7 @@ import { Decorations } from "./Decorations";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { FrameStatsCollector } from "./FrameStats";
 import { AnimationBranchStates } from "./GraphicBranch";
-import {
-  CustomGraphicBuilderOptions,
-  ViewportGraphicBuilderOptions,
-} from "./GraphicBuilder";
+import { CustomGraphicBuilderOptions, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { Pixel } from "./Pixel";
 import { GraphicList } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
@@ -30,10 +27,7 @@ import { RenderPlan } from "./RenderPlan";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderSystem, RenderTextureDrape } from "./RenderSystem";
 import { Scene } from "./Scene";
-import {
-  QueryTileFeaturesOptions,
-  QueryVisibleFeaturesCallback,
-} from "./VisibleFeature";
+import { QueryTileFeaturesOptions, QueryVisibleFeaturesCallback } from "./VisibleFeature";
 
 /** Used for debugging purposes, to toggle display of instanced or batched primitives.
  * @see [[RenderTargetDebugControl]].
@@ -78,9 +72,7 @@ export interface RenderTargetDebugControl {
  * of the RenderTarget.
  * @internal
  */
-export abstract class RenderTarget
-  implements IDisposable, RenderMemory.Consumer
-{
+export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer {
   public pickOverlayDecoration(_pt: XAndY): CanvasDecoration | undefined {
     return undefined;
   }
@@ -102,9 +94,7 @@ export abstract class RenderTarget
    * Used when computing LOD for graphics.
    */
   public adjustPixelSizeForLOD(cssPixelSize: number): number {
-    return this.renderSystem.dpiAwareLOD
-      ? this.cssPixelsToDevicePixels(cssPixelSize, false)
-      : cssPixelSize;
+    return this.renderSystem.dpiAwareLOD ? this.cssPixelsToDevicePixels(cssPixelSize, false) : cssPixelSize;
   }
 
   public abstract get wantInvertBlackBackground(): boolean;
@@ -115,9 +105,7 @@ export abstract class RenderTarget
   public get animationBranches(): AnimationBranchStates | undefined {
     return undefined;
   }
-  public set animationBranches(
-    _transforms: AnimationBranchStates | undefined
-  ) {}
+  public set animationBranches(_transforms: AnimationBranchStates | undefined) {}
 
   public get antialiasSamples(): number {
     return 1;
@@ -131,18 +119,14 @@ export abstract class RenderTarget
   public getPlanarClassifier(_id: string): RenderPlanarClassifier | undefined {
     return undefined;
   }
-  public createPlanarClassifier(
-    _properties?: SpatialClassifier
-  ): RenderPlanarClassifier | undefined {
+  public createPlanarClassifier(_properties?: SpatialClassifier): RenderPlanarClassifier | undefined {
     return undefined;
   }
   public getTextureDrape(_id: Id64String): RenderTextureDrape | undefined {
     return undefined;
   }
 
-  public createGraphicBuilder(
-    options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions
-  ) {
+  public createGraphicBuilder(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions) {
     return this.renderSystem.createGraphic(options);
   }
 
@@ -156,10 +140,7 @@ export abstract class RenderTarget
   public overrideFeatureSymbology(_ovr: FeatureSymbology.Overrides): void {}
   public setHiliteSet(_hilited: HiliteSet): void {}
   public setFlashed(_elementId: Id64String, _intensity: number): void {}
-  public onBeforeRender(
-    _viewport: Viewport,
-    _setSceneNeedRedraw: (redraw: boolean) => void
-  ): void {}
+  public onBeforeRender(_viewport: Viewport, _setSceneNeedRedraw: (redraw: boolean) => void): void {}
   public abstract setViewRect(_rect: ViewRect, _temporary: boolean): void;
   public onResized(): void {}
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
@@ -171,11 +152,7 @@ export abstract class RenderTarget
     excludeNonLocatable: boolean
   ): void;
   /** @deprecated in 3.x. use readImageBuffer */
-  public readImage(
-    _rect: ViewRect,
-    _targetSize: Point2d,
-    _flipVertically: boolean
-  ): ImageBuffer | undefined {
+  public readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined {
     return undefined;
   }
   public readImageBuffer(_args?: ReadImageBufferArgs): ImageBuffer | undefined {

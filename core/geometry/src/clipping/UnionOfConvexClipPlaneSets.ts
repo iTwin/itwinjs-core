@@ -19,16 +19,8 @@ import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix4d } from "../geometry4d/Matrix4d";
-import {
-  Clipper,
-  ClipPlaneContainment,
-  ClipUtilities,
-  PolygonClipper,
-} from "./ClipUtils";
-import {
-  ConvexClipPlaneSet,
-  ConvexClipPlaneSetProps,
-} from "./ConvexClipPlaneSet";
+import { Clipper, ClipPlaneContainment, ClipUtilities, PolygonClipper } from "./ClipUtils";
+import { ConvexClipPlaneSet, ConvexClipPlaneSetProps } from "./ConvexClipPlaneSet";
 
 /** Wire format describing a [[UnionOfConvexClipPlaneSets]].
  * @public
@@ -68,16 +60,13 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     result._convexSets.length = 0;
     if (!Array.isArray(json)) return result;
 
-    for (const thisJson of json)
-      result._convexSets.push(ConvexClipPlaneSet.fromJSON(thisJson));
+    for (const thisJson of json) result._convexSets.push(ConvexClipPlaneSet.fromJSON(thisJson));
 
     return result;
   }
 
   /** Create a `UnionOfConvexClipPlaneSets` with no members. */
-  public static createEmpty(
-    result?: UnionOfConvexClipPlaneSets
-  ): UnionOfConvexClipPlaneSets {
+  public static createEmpty(result?: UnionOfConvexClipPlaneSets): UnionOfConvexClipPlaneSets {
     if (result) {
       result._convexSets.length = 0;
       return result;
@@ -91,8 +80,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
   public isAlmostEqual(other: UnionOfConvexClipPlaneSets): boolean {
     if (this._convexSets.length !== other._convexSets.length) return false;
     for (let i = 0; i < this._convexSets.length; i++)
-      if (!this._convexSets[i].isAlmostEqual(other._convexSets[i]))
-        return false;
+      if (!this._convexSets[i].isAlmostEqual(other._convexSets[i])) return false;
     return true;
   }
   /** Create a `UnionOfConvexClipPlaneSets` with given `ConvexClipPlaneSet` members */
@@ -105,13 +93,10 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     return result;
   }
   /** return a deep copy. */
-  public clone(
-    result?: UnionOfConvexClipPlaneSets
-  ): UnionOfConvexClipPlaneSets {
+  public clone(result?: UnionOfConvexClipPlaneSets): UnionOfConvexClipPlaneSets {
     result = result ? result : new UnionOfConvexClipPlaneSets();
     result._convexSets.length = 0;
-    for (const convexSet of this._convexSets)
-      result._convexSets.push(convexSet.clone());
+    for (const convexSet of this._convexSets) result._convexSets.push(convexSet.clone());
     return result;
   }
   /** Append `toAdd` to the array of `ConvexClipPlaneSet`.
@@ -139,8 +124,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     maximalRange.setNull();
     const rangeA = Range1d.createNull();
     for (const planeSet of this._convexSets) {
-      if (planeSet.hasIntersectionWithRay(ray, rangeA))
-        maximalRange.extendRange(rangeA);
+      if (planeSet.hasIntersectionWithRay(ray, rangeA)) maximalRange.extendRange(rangeA);
     }
     return !maximalRange.isNull;
   }
@@ -155,10 +139,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     return false;
   }
   /** Return true if true is returned for any contained convex set returns true for `convexSet.isPointOnOrInside (point, tolerance)`  */
-  public isPointOnOrInside(
-    point: Point3d,
-    tolerance: number = Geometry.smallMetricDistance
-  ): boolean {
+  public isPointOnOrInside(point: Point3d, tolerance: number = Geometry.smallMetricDistance): boolean {
     for (const convexSet of this._convexSets) {
       if (convexSet.isPointOnOrInside(point, tolerance)) return true;
     }
@@ -176,15 +157,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
   /** test if any part of a line segment is within the volume */
   public isAnyPointInOrOnFromSegment(segment: LineSegment3d): boolean {
     for (const convexSet of this._convexSets) {
-      if (
-        convexSet.announceClippedSegmentIntervals(
-          0.0,
-          1.0,
-          segment.point0Ref,
-          segment.point1Ref
-        )
-      )
-        return true;
+      if (convexSet.announceClippedSegmentIntervals(0.0, 1.0, segment.point0Ref, segment.point1Ref)) return true;
     }
     return false;
   }
@@ -192,18 +165,14 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
   // Intervals must be Segment1d array, as there may be multiple intervals along segment that pass through set regions,
   // and so splitting the intervals into segments aids in better organization
   /** Returns the fractions of the segment that pass through the set region, as 1 dimensional pieces */
-  public appendIntervalsFromSegment(
-    segment: LineSegment3d,
-    intervals: Segment1d[]
-  ) {
+  public appendIntervalsFromSegment(segment: LineSegment3d, intervals: Segment1d[]) {
     for (const convexSet of this._convexSets) {
       convexSet.announceClippedSegmentIntervals(
         0.0,
         1.0,
         segment.point0Ref,
         segment.point1Ref,
-        (fraction0: number, fraction1: number) =>
-          intervals.push(Segment1d.create(fraction0, fraction1))
+        (fraction0: number, fraction1: number) => intervals.push(Segment1d.create(fraction0, fraction1))
       );
     }
   }
@@ -215,26 +184,16 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
   }
 
   /** Returns 1, 2, or 3 based on whether point is strongly inside, ambiguous, or strongly outside respectively */
-  public classifyPointContainment(
-    points: Point3d[],
-    onIsOutside: boolean
-  ): number {
+  public classifyPointContainment(points: Point3d[], onIsOutside: boolean): number {
     for (const convexSet of this._convexSets) {
-      const thisStatus = convexSet.classifyPointContainment(
-        points,
-        onIsOutside
-      );
-      if (thisStatus !== ClipPlaneContainment.StronglyOutside)
-        return thisStatus;
+      const thisStatus = convexSet.classifyPointContainment(points, onIsOutside);
+      if (thisStatus !== ClipPlaneContainment.StronglyOutside) return thisStatus;
     }
     return ClipPlaneContainment.StronglyOutside;
   }
 
   /** Clip a polygon using this ClipPlaneSet, returning new polygon boundaries. Note that each polygon may lie next to the previous, or be disconnected. */
-  public polygonClip(
-    input: GrowableXYZArray | Point3d[],
-    output: GrowableXYZArray[]
-  ) {
+  public polygonClip(input: GrowableXYZArray | Point3d[], output: GrowableXYZArray[]) {
     output.length = 0;
     if (Array.isArray(input)) input = GrowableXYZArray.create(input);
     const work = new GrowableXYZArray();
@@ -265,16 +224,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
   ): boolean {
     let numAnnounce = 0;
     for (const convexSet of this._convexSets) {
-      if (
-        convexSet.announceClippedSegmentIntervals(
-          f0,
-          f1,
-          pointA,
-          pointB,
-          announce
-        )
-      )
-        numAnnounce++;
+      if (convexSet.announceClippedSegmentIntervals(f0, f1, pointA, pointB, announce)) numAnnounce++;
     }
     return numAnnounce > 0;
   }
@@ -283,10 +233,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
   /** Find parts of an arc that are inside any member clipper.
    * Announce each with `announce(startFraction, endFraction, this)`
    */
-  public announceClippedArcIntervals(
-    arc: Arc3d,
-    announce?: AnnounceNumberNumberCurvePrimitive
-  ): boolean {
+  public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     const breaks = UnionOfConvexClipPlaneSets._clipArcFractionArray;
     breaks.clear();
     for (const convexSet of this._convexSets) {
@@ -316,12 +263,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
   ): number {
     let n = 0;
     for (const convexSet of this._convexSets) {
-      n += convexSet.computePlanePlanePlaneIntersections(
-        points,
-        rangeToExtend,
-        transform,
-        testContainment
-      );
+      n += convexSet.computePlanePlanePlaneIntersections(points, rangeToExtend, transform, testContainment);
     }
     return n;
   }
@@ -335,11 +277,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
    * * Both params default to true to get the full effect of transforming space.
    * @param matrix matrix to apply
    */
-  public multiplyPlanesByMatrix4d(
-    matrix: Matrix4d,
-    invert: boolean = true,
-    transpose: boolean = true
-  ): boolean {
+  public multiplyPlanesByMatrix4d(matrix: Matrix4d, invert: boolean = true, transpose: boolean = true): boolean {
     if (invert) {
       // form inverse once here, reuse for all planes
       const inverse = matrix.createInverse();
@@ -359,11 +297,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     }
   }
   /** add convex sets that accept points below `zLow` and above `zHigh` */
-  public addOutsideZClipSets(
-    invisible: boolean,
-    zLow?: number,
-    zHigh?: number
-  ) {
+  public addOutsideZClipSets(invisible: boolean, zLow?: number, zHigh?: number) {
     if (zLow) {
       const convexSet = ConvexClipPlaneSet.createEmpty();
       convexSet.addZClipPlanes(invisible, zLow);
@@ -417,19 +351,9 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
       outsideFragments.push(shard);
     }
     if (outsideFragments.length === oldOutsideCount)
-      ClipUtilities.restoreSingletonInPlaceOfMultipleShards(
-        insideFragments,
-        oldInsideCount,
-        xyz,
-        arrayCache
-      );
+      ClipUtilities.restoreSingletonInPlaceOfMultipleShards(insideFragments, oldInsideCount, xyz, arrayCache);
     else if (insideFragments.length === oldInsideCount)
-      ClipUtilities.restoreSingletonInPlaceOfMultipleShards(
-        outsideFragments,
-        oldOutsideCount,
-        xyz,
-        arrayCache
-      );
+      ClipUtilities.restoreSingletonInPlaceOfMultipleShards(outsideFragments, oldOutsideCount, xyz, arrayCache);
   }
 }
 

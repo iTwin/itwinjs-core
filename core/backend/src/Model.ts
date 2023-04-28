@@ -218,8 +218,7 @@ export class Model extends Entity {
   protected static onDeletedElement(_arg: OnElementInModelIdArg): void {}
 
   private getAllUserProperties(): any {
-    if (!this.jsonProperties.UserProps)
-      this.jsonProperties.UserProps = new Object();
+    if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object();
 
     return this.jsonProperties.UserProps;
   }
@@ -261,9 +260,7 @@ export class Model extends Entity {
 
   // NOTE: non-element entities do not yet have a concept of required references
   /** @internal */
-  protected override collectReferenceConcreteIds(
-    referenceIds: EntityReferenceSet
-  ): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     if (this.parentModel) referenceIds.addModel(this.parentModel);
     referenceIds.addElement(this.modeledElement.id);
@@ -356,8 +353,7 @@ export abstract class GeometricModel2d extends GeometricModel {
   /** @internal */
   public override toJSON(): GeometricModel2dProps {
     const val = super.toJSON() as GeometricModel2dProps;
-    if (undefined !== this.globalOrigin)
-      val.globalOrigin = Point2d.fromJSON(this.globalOrigin);
+    if (undefined !== this.globalOrigin) val.globalOrigin = Point2d.fromJSON(this.globalOrigin);
 
     return val;
   }
@@ -461,11 +457,7 @@ export class SpatialLocationModel extends SpatialModel {
       classFullName: SpatialLocationPartition.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
-      code: SpatialLocationPartition.createCode(
-        iModelDb,
-        parentSubjectId,
-        name
-      ),
+      code: SpatialLocationPartition.createCode(iModelDb, parentSubjectId, name),
     };
     const partitionId = iModelDb.elements.insertElement(partitionProps);
     const modelProps: GeometricModel3dProps = {
@@ -557,20 +549,12 @@ export class InformationRecordModel extends InformationModel {
    * @returns The Id of the newly inserted InformationRecordModel.
    * @throws [[IModelError]] if there is an insert problem.
    */
-  public static insert(
-    iModelDb: IModelDb,
-    parentSubjectId: Id64String,
-    name: string
-  ): Id64String {
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
     const partitionProps: InformationPartitionElementProps = {
       classFullName: InformationRecordPartition.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
-      code: InformationRecordPartition.createCode(
-        iModelDb,
-        parentSubjectId,
-        name
-      ),
+      code: InformationRecordPartition.createCode(iModelDb, parentSubjectId, name),
     };
     const partitionId = iModelDb.elements.insertElement(partitionProps);
     return iModelDb.models.insertModel({
@@ -597,11 +581,7 @@ export class DefinitionModel extends InformationModel {
    * @returns The Id of the newly inserted DefinitionModel.
    * @throws [[IModelError]] if there is an insert problem.
    */
-  public static insert(
-    iModelDb: IModelDb,
-    parentSubjectId: Id64String,
-    name: string
-  ): Id64String {
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
     const partitionProps: InformationPartitionElementProps = {
       classFullName: DefinitionPartition.classFullName,
       model: IModel.repositoryModelId,
@@ -642,19 +622,14 @@ export class DocumentListModel extends InformationModel {
    * @returns The Id of the newly inserted DocumentPartition and DocumentListModel (same value)
    * @throws [[IModelError]] if there is an insert problem.
    */
-  public static insert(
-    iModelDb: IModelDb,
-    parentSubjectId: Id64String,
-    name: string
-  ): Id64String {
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
     const partitionProps: InformationPartitionElementProps = {
       classFullName: DocumentPartition.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
       code: DocumentPartition.createCode(iModelDb, parentSubjectId, name),
     };
-    const partitionId: Id64String =
-      iModelDb.elements.insertElement(partitionProps);
+    const partitionId: Id64String = iModelDb.elements.insertElement(partitionProps);
     return iModelDb.models.insertModel({
       classFullName: this.classFullName,
       modeledElement: { id: partitionId },

@@ -8,12 +8,7 @@
 
 import { dispose } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
-import {
-  FeatureIndexType,
-  PolylineTypeFlags,
-  QParams3d,
-  RenderMode,
-} from "@itwin/core-common";
+import { FeatureIndexType, PolylineTypeFlags, QParams3d, RenderMode } from "@itwin/core-common";
 import { PolylineParams } from "../primitives/PolylineParams";
 import { RenderMemory } from "../RenderMemory";
 import { LUTGeometry, PolylineBuffers } from "./CachedGeometry";
@@ -44,16 +39,10 @@ export class PolylineGeometry extends LUTGeometry {
     return this._buffers.buffers;
   }
 
-  private constructor(
-    lut: VertexLUT,
-    buffers: PolylineBuffers,
-    params: PolylineParams,
-    viOrigin: Point3d | undefined
-  ) {
+  private constructor(lut: VertexLUT, buffers: PolylineBuffers, params: PolylineParams, viOrigin: Point3d | undefined) {
     super(viOrigin);
     this.vertexParams = params.vertices.qparams;
-    this._hasFeatures =
-      FeatureIndexType.Empty !== params.vertices.featureIndexType;
+    this._hasFeatures = FeatureIndexType.Empty !== params.vertices.featureIndexType;
     this.lineWeight = params.weight;
     this.lineCode = LineCode.valueFromLinePixels(params.linePixels);
     this.type = params.type;
@@ -88,8 +77,7 @@ export class PolylineGeometry extends LUTGeometry {
   }
 
   public get renderOrder(): RenderOrder {
-    if (this.isAnyEdge)
-      return this.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge;
+    if (this.isAnyEdge) return this.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge;
     else return this.isPlanar ? RenderOrder.PlanarLinear : RenderOrder.Linear;
   }
 
@@ -103,14 +91,11 @@ export class PolylineGeometry extends LUTGeometry {
 
   private _computeEdgePass(target: Target, colorInfo: ColorInfo): Pass {
     const vf = target.currentViewFlags;
-    if (RenderMode.SmoothShade === vf.renderMode && !vf.visibleEdges)
-      return "none";
+    if (RenderMode.SmoothShade === vf.renderMode && !vf.visibleEdges) return "none";
 
     // Only want to return Translucent for edges if rendering in Wireframe mode ###TODO: what about overrides?
     const isTranslucent: boolean =
-      RenderMode.Wireframe === vf.renderMode &&
-      vf.transparency &&
-      colorInfo.hasTranslucency;
+      RenderMode.Wireframe === vf.renderMode && vf.transparency && colorInfo.hasTranslucency;
     return isTranslucent ? "translucent" : "opaque-linear";
   }
 
@@ -119,19 +104,12 @@ export class PolylineGeometry extends LUTGeometry {
     if (this.isEdge) {
       let pass = this._computeEdgePass(target, this.lut.colorInfo);
       // Only display the outline in wireframe if Fill is off...
-      if (
-        "none" !== pass &&
-        this.isOutlineEdge &&
-        RenderMode.Wireframe === vf.renderMode &&
-        vf.fill
-      )
-        pass = "none";
+      if ("none" !== pass && this.isOutlineEdge && RenderMode.Wireframe === vf.renderMode && vf.fill) pass = "none";
 
       return pass;
     }
 
-    const isTranslucent: boolean =
-      vf.transparency && this.lut.colorInfo.hasTranslucency;
+    const isTranslucent: boolean = vf.transparency && this.lut.colorInfo.hasTranslucency;
     return isTranslucent ? "translucent" : "opaque-linear";
   }
 
@@ -158,30 +136,18 @@ export class PolylineGeometry extends LUTGeometry {
   }
 
   protected override _getLineWeight(params: ShaderProgramParams): number {
-    return this.isEdge
-      ? params.target.computeEdgeWeight(params.renderPass, this.lineWeight)
-      : this.lineWeight;
+    return this.isEdge ? params.target.computeEdgeWeight(params.renderPass, this.lineWeight) : this.lineWeight;
   }
   protected override _getLineCode(params: ShaderProgramParams): number {
-    return this.isEdge
-      ? params.target.computeEdgeLineCode(params.renderPass, this.lineCode)
-      : this.lineCode;
+    return this.isEdge ? params.target.computeEdgeLineCode(params.renderPass, this.lineCode) : this.lineCode;
   }
   public override getColor(target: Target): ColorInfo {
-    return this.isEdge
-      ? target.computeEdgeColor(this.lut.colorInfo)
-      : this.lut.colorInfo;
+    return this.isEdge ? target.computeEdgeColor(this.lut.colorInfo) : this.lut.colorInfo;
   }
 
-  protected _draw(
-    numInstances: number,
-    instanceBuffersContainer?: BuffersContainer
-  ): void {
+  protected _draw(numInstances: number, instanceBuffersContainer?: BuffersContainer): void {
     const gl = System.instance;
-    const bufs =
-      instanceBuffersContainer !== undefined
-        ? instanceBuffersContainer
-        : this._buffers.buffers;
+    const bufs = instanceBuffersContainer !== undefined ? instanceBuffersContainer : this._buffers.buffers;
 
     bufs.bind();
     gl.drawArrays(GL.PrimitiveType.Triangles, 0, this.numIndices, numInstances);

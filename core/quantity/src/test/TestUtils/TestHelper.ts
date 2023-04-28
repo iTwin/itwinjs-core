@@ -2,12 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import {
-  AlternateUnitLabelsProvider,
-  UnitConversionProps,
-  UnitProps,
-  UnitsProvider,
-} from "../../Interfaces";
+import { AlternateUnitLabelsProvider, UnitConversionProps, UnitProps, UnitsProvider } from "../../Interfaces";
 import { BadUnit, BasicUnit } from "../../Unit";
 
 interface ConversionDef {
@@ -364,15 +359,9 @@ export class ConversionData implements UnitConversionProps {
   public error: boolean = false;
 }
 
-export class TestUnitsProvider
-  implements UnitsProvider, AlternateUnitLabelsProvider
-{
+export class TestUnitsProvider implements UnitsProvider, AlternateUnitLabelsProvider {
   /** Find a unit given the unitLabel. */
-  public async findUnit(
-    unitLabel: string,
-    phenomenon?: string,
-    unitSystem?: string
-  ): Promise<UnitProps> {
+  public async findUnit(unitLabel: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
     const labelToFind = unitLabel.toLowerCase();
     const phenomenonToFind = phenomenon ? phenomenon.toLowerCase() : undefined;
     const unitSystemToFind = unitSystem ? unitSystem.toLowerCase() : undefined;
@@ -385,31 +374,14 @@ export class TestUnitsProvider
         if (entry.system.toLowerCase() !== unitSystemToFind) continue;
       }
 
-      if (
-        entry.displayLabel.toLowerCase() === labelToFind ||
-        entry.name.toLowerCase() === labelToFind
-      ) {
-        const unitProps = new BasicUnit(
-          entry.name,
-          entry.displayLabel,
-          entry.phenomenon,
-          entry.system
-        );
+      if (entry.displayLabel.toLowerCase() === labelToFind || entry.name.toLowerCase() === labelToFind) {
+        const unitProps = new BasicUnit(entry.name, entry.displayLabel, entry.phenomenon, entry.system);
         return unitProps;
       }
 
       if (entry.altDisplayLabels && entry.altDisplayLabels.length > 0) {
-        if (
-          entry.altDisplayLabels.findIndex(
-            (ref) => ref.toLowerCase() === labelToFind
-          ) !== -1
-        ) {
-          const unitProps = new BasicUnit(
-            entry.name,
-            entry.displayLabel,
-            entry.phenomenon,
-            entry.system
-          );
+        if (entry.altDisplayLabels.findIndex((ref) => ref.toLowerCase() === labelToFind) !== -1) {
+          const unitProps = new BasicUnit(entry.name, entry.displayLabel, entry.phenomenon, entry.system);
           return unitProps;
         }
       }
@@ -423,14 +395,7 @@ export class TestUnitsProvider
     const units: UnitProps[] = [];
     for (const entry of unitData) {
       if (entry.phenomenon !== phenomenon) continue;
-      units.push(
-        new BasicUnit(
-          entry.name,
-          entry.displayLabel,
-          entry.phenomenon,
-          entry.system
-        )
-      );
+      units.push(new BasicUnit(entry.name, entry.displayLabel, entry.phenomenon, entry.system));
     }
     return units;
   }
@@ -458,20 +423,14 @@ export class TestUnitsProvider
   }
 
   /** Return the information needed to convert a value between two different units.  The units should be from the same phenomenon. */
-  public async getConversion(
-    fromUnit: UnitProps,
-    toUnit: UnitProps
-  ): Promise<UnitConversionProps> {
+  public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps> {
     const fromUnitData = this.findUnitDefinition(fromUnit.name);
     const toUnitData = this.findUnitDefinition(toUnit.name);
 
     if (fromUnitData && toUnitData) {
-      const deltaOffset =
-        toUnitData.conversion.offset - fromUnitData.conversion.offset;
-      const deltaNumerator =
-        toUnitData.conversion.numerator * fromUnitData.conversion.denominator;
-      const deltaDenominator =
-        toUnitData.conversion.denominator * fromUnitData.conversion.numerator;
+      const deltaOffset = toUnitData.conversion.offset - fromUnitData.conversion.offset;
+      const deltaNumerator = toUnitData.conversion.numerator * fromUnitData.conversion.denominator;
+      const deltaDenominator = toUnitData.conversion.denominator * fromUnitData.conversion.numerator;
 
       const conversionData = new ConversionData();
       conversionData.factor = deltaNumerator / deltaDenominator;

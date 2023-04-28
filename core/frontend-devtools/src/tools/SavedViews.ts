@@ -31,14 +31,10 @@ export function serializeViewState(view: ViewState): ViewStateProps {
 /** Instantiate a ViewState serialized by [serializeViewState].
  * @beta
  */
-export async function deserializeViewState(
-  props: ViewStateProps,
-  iModel: IModelConnection
-): Promise<ViewState> {
-  const ctor = (await iModel.findClassFor<typeof EntityState>(
-    props.viewDefinitionProps.classFullName,
-    undefined
-  )) as typeof ViewState | undefined;
+export async function deserializeViewState(props: ViewStateProps, iModel: IModelConnection): Promise<ViewState> {
+  const ctor = (await iModel.findClassFor<typeof EntityState>(props.viewDefinitionProps.classFullName, undefined)) as
+    | typeof ViewState
+    | undefined;
   if (undefined === ctor) throw new Error("Class not found");
 
   const view = ctor.createFromProps(props, iModel);
@@ -82,9 +78,7 @@ export class SaveViewTool extends Tool {
   public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp) {
-      IModelApp.notifications.outputMessage(
-        new NotifyMessageDetails(OutputMessagePriority.Error, "No viewport")
-      );
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "No viewport"));
       return true;
     }
 
@@ -93,10 +87,7 @@ export class SaveViewTool extends Tool {
       if (this._quote) json = `"${json.replace(/"/g, '""')}"`;
       copyStringToClipboard(json);
       IModelApp.notifications.outputMessage(
-        new NotifyMessageDetails(
-          OutputMessagePriority.Info,
-          "JSON copied to clipboard"
-        )
+        new NotifyMessageDetails(OutputMessagePriority.Info, "JSON copied to clipboard")
       );
     } catch (err) {
       IModelApp.notifications.outputMessage(

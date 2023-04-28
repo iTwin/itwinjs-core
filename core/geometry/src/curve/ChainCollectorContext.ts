@@ -52,21 +52,13 @@ export class ChainCollectorContext {
     return this._chains[this._chains.length - 1];
   }
   private _xyzWork0?: Point3d;
-  private findAnyChainToConnect(
-    xyz: Point3d
-  ): { chainIndex: number; atEnd: boolean } | undefined {
-    for (
-      let chainIndexA = 0;
-      chainIndexA < this._chains.length;
-      chainIndexA++
-    ) {
+  private findAnyChainToConnect(xyz: Point3d): { chainIndex: number; atEnd: boolean } | undefined {
+    for (let chainIndexA = 0; chainIndexA < this._chains.length; chainIndexA++) {
       const path = this._chains[chainIndexA];
       this._xyzWork1 = path[path.length - 1].endPoint(this._xyzWork1);
-      if (this._xyzWork1.isAlmostEqual(xyz))
-        return { chainIndex: chainIndexA, atEnd: true };
+      if (this._xyzWork1.isAlmostEqual(xyz)) return { chainIndex: chainIndexA, atEnd: true };
       this._xyzWork1 = path[0].startPoint(this._xyzWork1);
-      if (this._xyzWork1.isAlmostEqual(xyz))
-        return { chainIndex: chainIndexA, atEnd: false };
+      if (this._xyzWork1.isAlmostEqual(xyz)) return { chainIndex: chainIndexA, atEnd: false };
     }
     return undefined;
   }
@@ -87,10 +79,7 @@ export class ChainCollectorContext {
    *   * true ==> search for any connection, reversing direction as needed.
    * * Otherwise start a new chain.
    */
-  public announceCurvePrimitive(
-    candidate: CurvePrimitive,
-    searchAllChains: boolean = false
-  ) {
+  public announceCurvePrimitive(candidate: CurvePrimitive, searchAllChains: boolean = false) {
     if (candidate) {
       if (this._makeClones) {
         const candidate1 = candidate.clone();
@@ -102,10 +91,7 @@ export class ChainCollectorContext {
         const activeChain = this.findOrCreateTailChain();
         if (
           activeChain.length === 0 ||
-          !ChainCollectorContext.needBreakBetweenPrimitives(
-            activeChain[activeChain.length - 1],
-            candidate
-          )
+          !ChainCollectorContext.needBreakBetweenPrimitives(activeChain[activeChain.length - 1], candidate)
         )
           activeChain.push(candidate);
         else this.pushNewChain(candidate);
@@ -154,30 +140,19 @@ export class ChainCollectorContext {
   ): CurvePrimitive | Path | Loop | undefined {
     if (curves.length === 0) return undefined;
     if (makeLoopIfClosed) {
-      ChainCollectorContext._staticPointA = curves[0].startPoint(
-        ChainCollectorContext._staticPointA
-      );
-      ChainCollectorContext._staticPointB = curves[curves.length - 1].endPoint(
-        ChainCollectorContext._staticPointB
-      );
-      if (
-        ChainCollectorContext._staticPointA.isAlmostEqual(
-          ChainCollectorContext._staticPointB
-        )
-      )
+      ChainCollectorContext._staticPointA = curves[0].startPoint(ChainCollectorContext._staticPointA);
+      ChainCollectorContext._staticPointB = curves[curves.length - 1].endPoint(ChainCollectorContext._staticPointB);
+      if (ChainCollectorContext._staticPointA.isAlmostEqual(ChainCollectorContext._staticPointB))
         return Loop.createArray(curves);
     }
     if (curves.length === 1) return curves[0];
     return Path.createArray(curves);
   }
   /** Return the collected results, structured as the simplest possible type. */
-  public grabResult(
-    makeLoopIfClosed: boolean = false
-  ): CurvePrimitive | Path | BagOfCurves | Loop | undefined {
+  public grabResult(makeLoopIfClosed: boolean = false): CurvePrimitive | Path | BagOfCurves | Loop | undefined {
     const chains = this._chains;
     if (chains.length === 0) return undefined;
-    if (chains.length === 1)
-      return this.promoteArrayToCurves(chains[0], makeLoopIfClosed);
+    if (chains.length === 1) return this.promoteArrayToCurves(chains[0], makeLoopIfClosed);
     const bag = BagOfCurves.create();
     for (const chain of chains) {
       const q = this.promoteArrayToCurves(chain, makeLoopIfClosed);
@@ -199,18 +174,10 @@ export class ChainCollectorContext {
     if (primitiveB === undefined) return true;
     if (primitiveA.endCut !== undefined) return true;
     if (primitiveB.startCut !== undefined) return true;
-    ChainCollectorContext._staticPointA = primitiveA.endPoint(
-      ChainCollectorContext._staticPointA
-    );
-    ChainCollectorContext._staticPointB = primitiveB.startPoint(
-      ChainCollectorContext._staticPointB
-    );
+    ChainCollectorContext._staticPointA = primitiveA.endPoint(ChainCollectorContext._staticPointA);
+    ChainCollectorContext._staticPointB = primitiveB.startPoint(ChainCollectorContext._staticPointB);
     return isXYOnly
-      ? !ChainCollectorContext._staticPointA.isAlmostEqualXY(
-          ChainCollectorContext._staticPointB
-        )
-      : !ChainCollectorContext._staticPointA.isAlmostEqual(
-          ChainCollectorContext._staticPointB
-        );
+      ? !ChainCollectorContext._staticPointA.isAlmostEqualXY(ChainCollectorContext._staticPointB)
+      : !ChainCollectorContext._staticPointA.isAlmostEqual(ChainCollectorContext._staticPointB);
   }
 }

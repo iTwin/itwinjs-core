@@ -9,26 +9,13 @@
 
 import { GeodeticDatum, GeodeticDatumProps } from "./GeodeticDatum";
 import { GeodeticEllipsoid, GeodeticEllipsoidProps } from "./GeodeticEllipsoid";
-import {
-  Carto2DDegrees,
-  Carto2DDegreesProps,
-  Projection,
-  ProjectionProps,
-} from "./Projection";
-import {
-  AdditionalTransform,
-  AdditionalTransformProps,
-} from "./AdditionalTransform";
+import { Carto2DDegrees, Carto2DDegreesProps, Projection, ProjectionProps } from "./Projection";
+import { AdditionalTransform, AdditionalTransformProps } from "./AdditionalTransform";
 /** This type indicates possible linear and angular units supported.
  *  @public
  *  @extensions
  */
-export type UnitType =
-  | "Meter"
-  | "InternationalFoot"
-  | "USSurveyFoot"
-  | "Degree"
-  | "Unsupported";
+export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported";
 
 /** The extent in latitude, longitude bounds where a horizontal CRS is applicable
  *  @public
@@ -62,8 +49,7 @@ export class HorizontalCRSExtent implements HorizontalCRSExtentProps {
     if (data) {
       this.southWest = Carto2DDegrees.fromJSON(data.southWest);
       this.northEast = Carto2DDegrees.fromJSON(data.northEast);
-      if (this.northEast.latitude < this.southWest.latitude)
-        this.northEast.latitude = this.southWest.latitude;
+      if (this.northEast.latitude < this.southWest.latitude) this.northEast.latitude = this.southWest.latitude;
     } else {
       this.southWest = new Carto2DDegrees();
       this.northEast = new Carto2DDegrees();
@@ -88,10 +74,7 @@ export class HorizontalCRSExtent implements HorizontalCRSExtentProps {
   /** Compares two Extents. It applies a minuscule tolerance to comparing numbers.
    *  @public */
   public equals(other: HorizontalCRSExtent): boolean {
-    return (
-      this.southWest.equals(other.southWest) &&
-      this.northEast.equals(other.northEast)
-    );
+    return this.southWest.equals(other.southWest) && this.northEast.equals(other.northEast);
   }
 }
 
@@ -213,22 +196,14 @@ export class HorizontalCRS implements HorizontalCRSProps {
       this.deprecated = _data.deprecated ?? false;
       this.epsg = _data.epsg;
       this.datumId = _data.datumId;
-      this.datum = _data.datum
-        ? GeodeticDatum.fromJSON(_data.datum)
-        : undefined;
+      this.datum = _data.datum ? GeodeticDatum.fromJSON(_data.datum) : undefined;
       if (!this.datumId && !this.datum) {
         this.ellipsoidId = _data.ellipsoidId;
-        this.ellipsoid = _data.ellipsoid
-          ? GeodeticEllipsoid.fromJSON(_data.ellipsoid)
-          : undefined;
+        this.ellipsoid = _data.ellipsoid ? GeodeticEllipsoid.fromJSON(_data.ellipsoid) : undefined;
       }
       this.unit = _data.unit;
-      this.projection = _data.projection
-        ? Projection.fromJSON(_data.projection)
-        : undefined;
-      this.extent = _data.extent
-        ? HorizontalCRSExtent.fromJSON(_data.extent)
-        : undefined;
+      this.projection = _data.projection ? Projection.fromJSON(_data.projection) : undefined;
+      this.extent = _data.extent ? HorizontalCRSExtent.fromJSON(_data.extent) : undefined;
     }
   }
 
@@ -279,25 +254,19 @@ export class HorizontalCRS implements HorizontalCRSProps {
     )
       return false;
 
-    if ((this.datum === undefined) !== (other.datum === undefined))
-      return false;
+    if ((this.datum === undefined) !== (other.datum === undefined)) return false;
 
     if (this.datum && !this.datum.equals(other.datum!)) return false;
 
-    if ((this.ellipsoid === undefined) !== (other.ellipsoid === undefined))
-      return false;
+    if ((this.ellipsoid === undefined) !== (other.ellipsoid === undefined)) return false;
 
-    if (this.ellipsoid && !this.ellipsoid.equals(other.ellipsoid!))
-      return false;
+    if (this.ellipsoid && !this.ellipsoid.equals(other.ellipsoid!)) return false;
 
-    if ((this.projection === undefined) !== (other.projection === undefined))
-      return false;
+    if ((this.projection === undefined) !== (other.projection === undefined)) return false;
 
-    if (this.projection && !this.projection.equals(other.projection!))
-      return false;
+    if (this.projection && !this.projection.equals(other.projection!)) return false;
 
-    if ((this.extent === undefined) !== (other.extent === undefined))
-      return false;
+    if ((this.extent === undefined) !== (other.extent === undefined)) return false;
 
     if (this.extent && !this.extent.equals(other.extent!)) return false;
 
@@ -334,12 +303,7 @@ export class VerticalCRS implements VerticalCRSProps {
    *  LOCAL_ELLIPSOID indicates that elevations are relative to the surface of the local ellipsoid used by the horizontal CRS. It can only
    *         be used for datums that are not considered coincident vertically with WGS84. Use of this vertical datum is strongly discouraged.
    */
-  public readonly id:
-    | "GEOID"
-    | "ELLIPSOID"
-    | "NGVD29"
-    | "NAVD88"
-    | "LOCAL_ELLIPSOID";
+  public readonly id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
 
   public constructor(data?: VerticalCRSProps) {
     this.id = "GEOID";
@@ -417,12 +381,8 @@ export class GeographicCRS implements GeographicCRSProps {
 
   public constructor(data?: GeographicCRSProps) {
     if (data) {
-      this.horizontalCRS = data.horizontalCRS
-        ? HorizontalCRS.fromJSON(data.horizontalCRS)
-        : undefined;
-      this.verticalCRS = data.verticalCRS
-        ? VerticalCRS.fromJSON(data.verticalCRS)
-        : undefined;
+      this.horizontalCRS = data.horizontalCRS ? HorizontalCRS.fromJSON(data.horizontalCRS) : undefined;
+      this.verticalCRS = data.verticalCRS ? VerticalCRS.fromJSON(data.verticalCRS) : undefined;
       this.additionalTransform = data.additionalTransform
         ? AdditionalTransform.fromJSON(data.additionalTransform)
         : undefined;
@@ -443,8 +403,7 @@ export class GeographicCRS implements GeographicCRSProps {
 
     if (this.verticalCRS) data.verticalCRS = this.verticalCRS.toJSON();
 
-    if (this.additionalTransform)
-      data.additionalTransform = this.additionalTransform.toJSON();
+    if (this.additionalTransform) data.additionalTransform = this.additionalTransform.toJSON();
 
     return data;
   }
@@ -455,32 +414,17 @@ export class GeographicCRS implements GeographicCRSProps {
    * @public
    */
   public equals(other: GeographicCRS): boolean {
-    if (
-      (this.horizontalCRS === undefined) !==
-      (other.horizontalCRS === undefined)
-    )
-      return false;
+    if ((this.horizontalCRS === undefined) !== (other.horizontalCRS === undefined)) return false;
 
-    if (this.horizontalCRS && !this.horizontalCRS.equals(other.horizontalCRS!))
-      return false;
+    if (this.horizontalCRS && !this.horizontalCRS.equals(other.horizontalCRS!)) return false;
 
-    if ((this.verticalCRS === undefined) !== (other.verticalCRS === undefined))
-      return false;
+    if ((this.verticalCRS === undefined) !== (other.verticalCRS === undefined)) return false;
 
-    if (this.verticalCRS && !this.verticalCRS.equals(other.verticalCRS!))
-      return false;
+    if (this.verticalCRS && !this.verticalCRS.equals(other.verticalCRS!)) return false;
 
-    if (
-      (this.additionalTransform === undefined) !==
-      (other.additionalTransform === undefined)
-    )
-      return false;
+    if ((this.additionalTransform === undefined) !== (other.additionalTransform === undefined)) return false;
 
-    if (
-      this.additionalTransform &&
-      !this.additionalTransform.equals(other.additionalTransform!)
-    )
-      return false;
+    if (this.additionalTransform && !this.additionalTransform.equals(other.additionalTransform!)) return false;
 
     return true;
   }

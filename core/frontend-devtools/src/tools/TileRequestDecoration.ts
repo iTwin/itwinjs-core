@@ -47,23 +47,18 @@ class TileRequestDecoration {
     for (const tile of tiles) {
       let builder = map.get(tile.tree);
       if (undefined === builder) {
-        builder = context.createGraphicBuilder(
-          GraphicType.WorldDecoration,
-          tile.tree.iModelTransform
-        );
+        builder = context.createGraphicBuilder(GraphicType.WorldDecoration, tile.tree.iModelTransform);
         map.set(tile.tree, builder);
       }
 
       let color = ColorDef.white;
-      if (undefined !== tile.request)
-        color = tile.request.isQueued ? ColorDef.green : ColorDef.red;
+      if (undefined !== tile.request) color = tile.request.isQueued ? ColorDef.green : ColorDef.red;
 
       builder.setSymbology(color, color, 1, LinePixels.Solid);
       builder.addRangeBox(tile.range);
     }
 
-    for (const builder of map.values())
-      context.addDecorationFromBuilder(builder);
+    for (const builder of map.values()) context.addDecorationFromBuilder(builder);
   }
 
   public static toggle(vp: Viewport, enabled?: boolean): void {

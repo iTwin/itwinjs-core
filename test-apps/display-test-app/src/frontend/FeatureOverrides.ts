@@ -15,17 +15,8 @@ import {
   createComboBox,
   createNumericInput,
 } from "@itwin/frontend-devtools";
-import {
-  FeatureAppearance,
-  FeatureAppearanceProps,
-  LinePixels,
-  RgbColor,
-} from "@itwin/core-common";
-import {
-  FeatureOverrideProvider,
-  FeatureSymbology,
-  Viewport,
-} from "@itwin/core-frontend";
+import { FeatureAppearance, FeatureAppearanceProps, LinePixels, RgbColor } from "@itwin/core-common";
+import { FeatureOverrideProvider, FeatureSymbology, Viewport } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 
 export class Provider implements FeatureOverrideProvider {
@@ -37,29 +28,20 @@ export class Provider implements FeatureOverrideProvider {
     this._vp = vp;
   }
 
-  public addFeatureOverrides(
-    ovrs: FeatureSymbology.Overrides,
-    _vp: Viewport
-  ): void {
-    this._elementOvrs.forEach((appearance, elementId) =>
-      ovrs.override({ elementId, appearance })
-    );
-    if (undefined !== this._defaultOvrs)
-      ovrs.setDefaultOverrides(this._defaultOvrs);
+  public addFeatureOverrides(ovrs: FeatureSymbology.Overrides, _vp: Viewport): void {
+    this._elementOvrs.forEach((appearance, elementId) => ovrs.override({ elementId, appearance }));
+    if (undefined !== this._defaultOvrs) ovrs.setDefaultOverrides(this._defaultOvrs);
   }
 
   public overrideElements(app: FeatureAppearance): void {
-    for (const id of this._vp.iModel.selectionSet.elements)
-      this._elementOvrs.set(id, app);
+    for (const id of this._vp.iModel.selectionSet.elements) this._elementOvrs.set(id, app);
 
     this.sync();
   }
 
   public overrideElementsByArray(elementOvrs: any[]): void {
     elementOvrs.forEach((eo) => {
-      const fsa = FeatureAppearance.fromJSON(
-        JSON.parse(eo.fsa) as FeatureAppearanceProps
-      );
+      const fsa = FeatureAppearance.fromJSON(JSON.parse(eo.fsa) as FeatureAppearanceProps);
       if (eo.id === "-default-") this.defaults = fsa;
       else this._elementOvrs.set(eo.id, fsa);
     });
@@ -68,8 +50,7 @@ export class Provider implements FeatureOverrideProvider {
   }
 
   public toJSON(): any[] | undefined {
-    if (0 === this._elementOvrs.size && undefined === this._defaultOvrs)
-      return undefined;
+    if (0 === this._elementOvrs.size && undefined === this._defaultOvrs) return undefined;
 
     const elementOvrs: any[] = [];
     this._elementOvrs.forEach((value, key) => {
@@ -105,9 +86,7 @@ export class Provider implements FeatureOverrideProvider {
   }
 
   public static get(vp: Viewport): Provider | undefined {
-    return vp.findFeatureOverrideProvider((x) => x instanceof Provider) as
-      | Provider
-      | undefined;
+    return vp.findFeatureOverrideProvider((x) => x instanceof Provider) as Provider | undefined;
   }
 
   public static remove(vp: Viewport): void {
@@ -144,11 +123,8 @@ export class Settings implements IDisposable {
     this.addColor(this._element);
     this.addTransparency(this._element);
     this.addWeight(this._element);
-    Settings.addStyle(
-      this._element,
-      LinePixels.Invalid,
-      (select: HTMLSelectElement) =>
-        this.updateStyle(parseInt(select.value, 10))
+    Settings.addStyle(this._element, LinePixels.Invalid, (select: HTMLSelectElement) =>
+      this.updateStyle(parseInt(select.value, 10))
     );
 
     createCheckBox({
@@ -169,19 +145,14 @@ export class Settings implements IDisposable {
       parent: this._element,
       name: "Emphasized",
       id: "ovr_emphasized",
-      handler: (cb) =>
-        this.updateAppearance("emphasized", cb.checked ? true : undefined),
+      handler: (cb) => this.updateAppearance("emphasized", cb.checked ? true : undefined),
     });
 
     createCheckBox({
       parent: this._element,
       name: "View-dependent transparency",
       id: "ovr_viewDep",
-      handler: (cb) =>
-        this.updateAppearance(
-          "viewDependentTransparency",
-          cb.checked ? true : undefined
-        ),
+      handler: (cb) => this.updateAppearance("viewDependentTransparency", cb.checked ? true : undefined),
     });
 
     const buttonDiv = document.createElement("div");
@@ -287,9 +258,7 @@ export class Settings implements IDisposable {
 
     cb.addEventListener("click", () => {
       num.disabled = !cb.checked;
-      this.updateTransparency(
-        cb.checked ? parseInt(num.value, 10) / 255 : undefined
-      );
+      this.updateTransparency(cb.checked ? parseInt(num.value, 10) / 255 : undefined);
     });
 
     parent.appendChild(div);
@@ -327,11 +296,7 @@ export class Settings implements IDisposable {
     parent.appendChild(div);
   }
 
-  public static addStyle(
-    parent: HTMLElement,
-    value: LinePixels,
-    handler: ComboBoxHandler
-  ): ComboBox {
+  public static addStyle(parent: HTMLElement, value: LinePixels, handler: ComboBoxHandler): ComboBox {
     const entries = [
       { name: "Not overridden", value: LinePixels.Invalid },
       { name: "Solid", value: LinePixels.Solid },

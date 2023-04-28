@@ -13,8 +13,7 @@ const dptaElectronMain = async () => {
 
   let debug = true;
   process.argv.forEach((arg) => {
-    if (arg.split(".").pop() === "json")
-      DisplayPerfRpcInterface.jsonFilePath = arg;
+    if (arg.split(".").pop() === "json") DisplayPerfRpcInterface.jsonFilePath = arg;
     else if (arg === "no_debug") debug = false;
   });
 
@@ -38,15 +37,8 @@ const dptaElectronMain = async () => {
   ElectronHost.app.on("web-contents-created", (_e, wc) => {
     wc.on("before-input-event", (event, input) => {
       // CTRL + SHIFT + I  ==> Toggle DevTools
-      if (
-        input.key === "I" &&
-        input.control &&
-        !input.alt &&
-        !input.meta &&
-        input.shift
-      ) {
-        if (ElectronHost.mainWindow)
-          ElectronHost.mainWindow.webContents.toggleDevTools();
+      if (input.key === "I" && input.control && !input.alt && !input.meta && input.shift) {
+        if (ElectronHost.mainWindow) ElectronHost.mainWindow.webContents.toggleDevTools();
 
         event.preventDefault();
       }

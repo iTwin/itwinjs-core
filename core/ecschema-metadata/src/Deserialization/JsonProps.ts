@@ -20,11 +20,7 @@ export type AnyPropertyProps =
 /**
  * @beta
  */
-export type AnyClassProps =
-  | EntityClassProps
-  | MixinProps
-  | CustomAttributeClassProps
-  | RelationshipClassProps;
+export type AnyClassProps = EntityClassProps | MixinProps | CustomAttributeClassProps | RelationshipClassProps;
 /**
  * @beta
  */
@@ -214,8 +210,7 @@ export interface PrimitiveOrEnumPropertyBaseProps extends PropertyProps {
 /**
  * @beta
  */
-export interface PrimitivePropertyProps
-  extends PrimitiveOrEnumPropertyBaseProps {
+export interface PrimitivePropertyProps extends PrimitiveOrEnumPropertyBaseProps {
   readonly typeName: string;
 }
 
@@ -229,8 +224,7 @@ export interface StructPropertyProps extends PropertyProps {
 /**
  * @beta
  */
-export interface EnumerationPropertyProps
-  extends PrimitiveOrEnumPropertyBaseProps {
+export interface EnumerationPropertyProps extends PrimitiveOrEnumPropertyBaseProps {
   readonly typeName: string;
 }
 

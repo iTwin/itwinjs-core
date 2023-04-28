@@ -197,9 +197,7 @@ export namespace NavigationPropertyInfo {
    * @deprecated in 3.x. Use [[toCompressedJSON]].
    */
   // istanbul ignore next
-  export function toJSON(
-    info: NavigationPropertyInfo
-  ): NavigationPropertyInfoJSON {
+  export function toJSON(info: NavigationPropertyInfo): NavigationPropertyInfoJSON {
     return { ...info };
   }
 
@@ -208,10 +206,8 @@ export namespace NavigationPropertyInfo {
     navigationPropertyInfo: NavigationPropertyInfo,
     classesMap: { [id: string]: CompressedClassInfoJSON }
   ): NavigationPropertyInfoJSON<string> {
-    const { id: relationshipId, ...relationshipLeftOverInfo } =
-      navigationPropertyInfo.classInfo;
-    const { id: targetId, ...targetLeftOverInfo } =
-      navigationPropertyInfo.targetClassInfo;
+    const { id: relationshipId, ...relationshipLeftOverInfo } = navigationPropertyInfo.classInfo;
+    const { id: targetId, ...targetLeftOverInfo } = navigationPropertyInfo.targetClassInfo;
     classesMap[relationshipId] = relationshipLeftOverInfo;
     classesMap[targetId] = targetLeftOverInfo;
 
@@ -227,9 +223,7 @@ export namespace NavigationPropertyInfo {
    * @deprecated in 3.x. Use [[fromCompressedJSON]].
    */
   // istanbul ignore next
-  export function fromJSON(
-    json: NavigationPropertyInfoJSON
-  ): NavigationPropertyInfo {
+  export function fromJSON(json: NavigationPropertyInfoJSON): NavigationPropertyInfo {
     return { ...json };
   }
 
@@ -313,10 +307,7 @@ export namespace PropertyInfo {
       classInfo: propertyInfo.classInfo.id,
       ...(navigationPropertyInfo
         ? {
-            navigationPropertyInfo: NavigationPropertyInfo.toCompressedJSON(
-              navigationPropertyInfo,
-              classesMap
-            ),
+            navigationPropertyInfo: NavigationPropertyInfo.toCompressedJSON(navigationPropertyInfo, classesMap),
           }
         : undefined),
     };
@@ -388,8 +379,7 @@ export namespace RelatedClassInfo {
   ): RelatedClassInfoJSON<string> {
     const { id: sourceId, ...sourceLeftOverInfo } = classInfo.sourceClassInfo;
     const { id: targetId, ...targetLeftOverInfo } = classInfo.targetClassInfo;
-    const { id: relationshipId, ...relationshipLeftOverInfo } =
-      classInfo.relationshipInfo;
+    const { id: relationshipId, ...relationshipLeftOverInfo } = classInfo.relationshipInfo;
 
     classesMap[sourceId] = sourceLeftOverInfo;
     classesMap[targetId] = targetLeftOverInfo;
@@ -449,15 +439,9 @@ export namespace RelatedClassInfo {
     );
   }
 
-  function isStripped(
-    info: RelatedClassInfo | StrippedRelatedClassInfo
-  ): info is StrippedRelatedClassInfo {
+  function isStripped(info: RelatedClassInfo | StrippedRelatedClassInfo): info is StrippedRelatedClassInfo {
     const maybeStripped = info as StrippedRelatedClassInfo;
-    return (
-      !!maybeStripped.relationshipName &&
-      !!maybeStripped.sourceClassName &&
-      !!maybeStripped.targetClassName
-    );
+    return !!maybeStripped.relationshipName && !!maybeStripped.sourceClassName && !!maybeStripped.targetClassName;
   }
 
   function getClassName(
@@ -466,17 +450,11 @@ export namespace RelatedClassInfo {
   ): string {
     switch (whichClass) {
       case "source":
-        return isStripped(info)
-          ? info.sourceClassName
-          : info.sourceClassInfo.name;
+        return isStripped(info) ? info.sourceClassName : info.sourceClassInfo.name;
       case "target":
-        return isStripped(info)
-          ? info.targetClassName
-          : info.targetClassInfo.name;
+        return isStripped(info) ? info.targetClassName : info.targetClassInfo.name;
       case "relationship":
-        return isStripped(info)
-          ? info.relationshipName
-          : info.relationshipInfo.name;
+        return isStripped(info) ? info.relationshipName : info.relationshipInfo.name;
     }
   }
 
@@ -517,9 +495,7 @@ export type RelatedClassInfoWithOptionalRelationship = PartialBy<
 
 /** @public */
 // eslint-disable-next-line deprecation/deprecation
-export type RelatedClassInfoWithOptionalRelationshipJSON<
-  TClassInfoJSON = ClassInfoJSON
-> = PartialBy<
+export type RelatedClassInfoWithOptionalRelationshipJSON<TClassInfoJSON = ClassInfoJSON> = PartialBy<
   RelatedClassInfoJSON<TClassInfoJSON>,
   "relationshipInfo" | "isForwardRelationship" | "isPolymorphicRelationship"
 >;
@@ -532,12 +508,7 @@ export namespace RelatedClassInfoWithOptionalRelationship {
     classInfo: RelatedClassInfoWithOptionalRelationship,
     classesMap: { [id: string]: CompressedClassInfoJSON }
   ): RelatedClassInfoWithOptionalRelationshipJSON<string> {
-    const {
-      sourceClassInfo,
-      targetClassInfo,
-      relationshipInfo,
-      ...otherProps
-    } = classInfo;
+    const { sourceClassInfo, targetClassInfo, relationshipInfo, ...otherProps } = classInfo;
     const { id: sourceId, ...sourceLeftOverInfo } = sourceClassInfo;
     const { id: targetId, ...targetLeftOverInfo } = targetClassInfo;
 
@@ -545,8 +516,7 @@ export namespace RelatedClassInfoWithOptionalRelationship {
     classesMap[targetId] = targetLeftOverInfo;
 
     if (relationshipInfo) {
-      const { id: relationshipId, ...relationshipLeftOverInfo } =
-        relationshipInfo;
+      const { id: relationshipId, ...relationshipLeftOverInfo } = relationshipInfo;
       classesMap[relationshipId] = relationshipLeftOverInfo;
     }
 
@@ -554,9 +524,7 @@ export namespace RelatedClassInfoWithOptionalRelationship {
       ...otherProps,
       sourceClassInfo: sourceId,
       targetClassInfo: targetId,
-      ...(relationshipInfo
-        ? { relationshipInfo: relationshipInfo.id }
-        : undefined),
+      ...(relationshipInfo ? { relationshipInfo: relationshipInfo.id } : undefined),
     };
   }
 
@@ -565,12 +533,7 @@ export namespace RelatedClassInfoWithOptionalRelationship {
     json: RelatedClassInfoWithOptionalRelationshipJSON<string>,
     classesMap: { [id: string]: CompressedClassInfoJSON }
   ): RelatedClassInfoWithOptionalRelationship {
-    const {
-      sourceClassInfo,
-      targetClassInfo,
-      relationshipInfo,
-      ...otherProps
-    } = json;
+    const { sourceClassInfo, targetClassInfo, relationshipInfo, ...otherProps } = json;
     assert(classesMap.hasOwnProperty(sourceClassInfo));
     assert(classesMap.hasOwnProperty(targetClassInfo));
     if (relationshipInfo) assert(classesMap.hasOwnProperty(relationshipInfo));
@@ -601,8 +564,7 @@ export type RelationshipPath = RelatedClassInfo[];
  * @public
  */
 // eslint-disable-next-line deprecation/deprecation
-export type RelationshipPathJSON<TClassInfoJSON = ClassInfoJSON> =
-  RelatedClassInfoJSON<TClassInfoJSON>[];
+export type RelationshipPathJSON<TClassInfoJSON = ClassInfoJSON> = RelatedClassInfoJSON<TClassInfoJSON>[];
 
 /** @public */
 export namespace RelationshipPath {
@@ -622,10 +584,7 @@ export namespace RelationshipPath {
     lhs: Array<RelatedClassInfo | StrippedRelatedClassInfo>,
     rhs: Array<RelatedClassInfo | StrippedRelatedClassInfo>
   ): boolean {
-    return (
-      lhs.length === rhs.length &&
-      lhs.every((lhsPart, i) => RelatedClassInfo.equals(lhsPart, rhs[i]))
-    );
+    return lhs.length === rhs.length && lhs.every((lhsPart, i) => RelatedClassInfo.equals(lhsPart, rhs[i]));
   }
 
   /** Strip given [[RelationshipPath]] to [[StrippedRelationshipPath]] */

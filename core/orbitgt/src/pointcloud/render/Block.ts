@@ -68,12 +68,8 @@ export class Block {
    * @param blocksToLoad the list of blocks to load.
    * @param block the block to add.
    */
-  private static addToLoadList(
-    blocksToLoad: AList<BlockIndex>,
-    block: BlockIndex
-  ): void {
-    for (let i: number = 0; i < blocksToLoad.size(); i++)
-      if (blocksToLoad.get(i).same(block)) return;
+  private static addToLoadList(blocksToLoad: AList<BlockIndex>, block: BlockIndex): void {
+    for (let i: number = 0; i < blocksToLoad.size(); i++) if (blocksToLoad.get(i).same(block)) return;
     blocksToLoad.add(block);
   }
 

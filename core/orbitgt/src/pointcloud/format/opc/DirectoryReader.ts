@@ -63,13 +63,9 @@ export class DirectoryReader {
     this._fileReader = fileReader;
     this._level = level;
     /* Get the tile directory */
-    this._tileDirPart = fileReader
-      .getContainer()
-      .getPart("" + level + ".tile.directory");
+    this._tileDirPart = fileReader.getContainer().getPart("" + level + ".tile.directory");
     /* Get the block directory */
-    this._blockDirPart = fileReader
-      .getContainer()
-      .getPart("" + level + ".block.directory");
+    this._blockDirPart = fileReader.getContainer().getPart("" + level + ".block.directory");
     /* Clear */
     this._directoryRecord = null;
     this._blocks = new Array<BlockIndex>(0);
@@ -97,22 +93,12 @@ export class DirectoryReader {
    * @param fileContents the file content read helper.
    * @return the reader.
    */
-  public loadData(
-    readBlockList: boolean,
-    fileContents: ContentLoader
-  ): DirectoryReader {
+  public loadData(readBlockList: boolean, fileContents: ContentLoader): DirectoryReader {
     /* Read the record */
-    let directoryPart: ContainerFilePart = this._fileReader
-      .getContainer()
-      .getPart("" + this._level + ".directory");
-    this._directoryRecord = DirectoryRecord.readNew(
-      directoryPart.getOffset(),
-      directoryPart.getSize(),
-      fileContents
-    );
+    let directoryPart: ContainerFilePart = this._fileReader.getContainer().getPart("" + this._level + ".directory");
+    this._directoryRecord = DirectoryRecord.readNew(directoryPart.getOffset(), directoryPart.getSize(), fileContents);
     /* Read the blocks? */
-    if (readBlockList)
-      this.readBlocks(this._fileReader.getFileRecord(), fileContents);
+    if (readBlockList) this.readBlocks(this._fileReader.getFileRecord(), fileContents);
     /* Return the reader */
     return this;
   }
@@ -123,25 +109,16 @@ export class DirectoryReader {
    * @param fileContents the file content read helper.
    * @return the blocks.
    */
-  public readBlocks(
-    fileRecord: FileRecord,
-    fileContents: ContentLoader
-  ): Array<BlockIndex> {
+  public readBlocks(fileRecord: FileRecord, fileContents: ContentLoader): Array<BlockIndex> {
     /* Request the data? */
     let fileAccess: FileAccess = this._blockDirPart.getFileAccess();
     if (fileContents.isAvailable() == false) {
       /* Add the range */
-      fileContents.requestFilePart(
-        this._blockDirPart.getOffset(),
-        this._blockDirPart.getSize().toInt()
-      );
+      fileContents.requestFilePart(this._blockDirPart.getOffset(), this._blockDirPart.getSize().toInt());
       return null;
     }
     /* Get the data */
-    let data: ABuffer = fileContents.getFilePart(
-      this._blockDirPart.getOffset(),
-      this._blockDirPart.getSize().toInt()
-    );
+    let data: ABuffer = fileContents.getFilePart(this._blockDirPart.getOffset(), this._blockDirPart.getSize().toInt());
     /* Allocate the blocks */
     this._blocks = new Array<BlockIndex>(this._directoryRecord.getBlockCount());
     /* Read all blocks */
@@ -150,13 +127,7 @@ export class DirectoryReader {
     let tileIndex: int32 = 0;
     for (let i: number = 0; i < this._blocks.length; i++) {
       /* Read the next block */
-      let blockIndex: BlockIndex = BlockRecord.readNew(
-        this._level,
-        input,
-        i,
-        tileIndex,
-        pointIndex
-      );
+      let blockIndex: BlockIndex = BlockRecord.readNew(this._level, input, i, tileIndex, pointIndex);
       this._blocks[i] = blockIndex;
       /* Advance */
       tileIndex += blockIndex.tileCount;
@@ -166,17 +137,11 @@ export class DirectoryReader {
     /* We have to match the counts */
     ASystem.assert0(
       this._directoryRecord.getTileCount() == tileIndex,
-      "Expected " +
-        this._directoryRecord.getTileCount() +
-        " tiles, not " +
-        tileIndex
+      "Expected " + this._directoryRecord.getTileCount() + " tiles, not " + tileIndex
     );
     ASystem.assert0(
       pointIndex.same(this._directoryRecord.getPointCount()),
-      "Expected " +
-        this._directoryRecord.getPointCount().toDouble() +
-        " points, not " +
-        pointIndex.toDouble()
+      "Expected " + this._directoryRecord.getPointCount().toDouble() + " points, not " + pointIndex.toDouble()
     );
     /* Return the blocks */
     return this._blocks;
@@ -187,19 +152,14 @@ export class DirectoryReader {
    * @param block the block record.
    * @return the tile records.
    */
-  public readTiles2(
-    block: BlockIndex,
-    fileContents: ContentLoader
-  ): Array<TileIndex> {
+  public readTiles2(block: BlockIndex, fileContents: ContentLoader): Array<TileIndex> {
     /* Get the tile range */
     let tileIndex: int32 = block.tileIndex;
     let tileCount: int32 = block.tileCount;
     /* Get the file extent */
     let fileName: string = this._tileDirPart.getFileAccess().getFileName();
     let fileSize: ALong = this._fileReader.getContainer().getFileLength();
-    let dataOffset: ALong = ALong.fromInt(TileRecord.RECORD_SIZE)
-      .mulInt(tileIndex)
-      .add(this._tileDirPart.getOffset());
+    let dataOffset: ALong = ALong.fromInt(TileRecord.RECORD_SIZE).mulInt(tileIndex).add(this._tileDirPart.getOffset());
     let dataSize: int32 = tileCount * TileRecord.RECORD_SIZE;
     /* Request the data? */
     if (fileContents.isAvailable() == false) {
@@ -215,21 +175,8 @@ export class DirectoryReader {
     let pointIndex: ALong = block.pointIndex;
     for (let i: number = 0; i < tileCount; i++) {
       /* Read the next tile */
-      let tile: TileIndex = new TileIndex(
-        this._level,
-        tileIndex,
-        new GridIndex(0, 0, 0),
-        ALong.ZERO,
-        0
-      );
-      TileRecord.read(
-        tile,
-        this._level,
-        block.index,
-        input,
-        tileIndex,
-        pointIndex
-      );
+      let tile: TileIndex = new TileIndex(this._level, tileIndex, new GridIndex(0, 0, 0), ALong.ZERO, 0);
+      TileRecord.read(tile, this._level, block.index, input, tileIndex, pointIndex);
       tiles[i] = tile;
       tileIndex += 1;
       pointIndex = pointIndex.addInt(tile.pointCount);

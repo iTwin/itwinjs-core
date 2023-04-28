@@ -10,9 +10,7 @@ import { Range2d, Range3d } from "../../geometry3d/Range";
 import { LowAndHighXY } from "../../geometry3d/XYZProps";
 import { LinearSearchRange2dArray } from "./LinearSearchRange2dArray";
 
-export type OptionalLinearSearchRange2dArray<T> =
-  | LinearSearchRange2dArray<T>
-  | undefined;
+export type OptionalLinearSearchRange2dArray<T> = LinearSearchRange2dArray<T> | undefined;
 /**
  * A GriddedRaggedRange2dSet is
  * * A doubly dimensioned array of LinearSearchRange2dArray
@@ -49,32 +47,21 @@ export class GriddedRaggedRange2dSet<T> {
    * @param numXEdge
    * @param numYEdge
    */
-  public static create<T>(
-    range: Range2d,
-    numXEdge: number,
-    numYEdge: number
-  ): GriddedRaggedRange2dSet<T> | undefined {
-    if (numXEdge < 1 || numYEdge < 1 || range.isNull || range.isSinglePoint)
-      return undefined;
+  public static create<T>(range: Range2d, numXEdge: number, numYEdge: number): GriddedRaggedRange2dSet<T> | undefined {
+    if (numXEdge < 1 || numYEdge < 1 || range.isNull || range.isSinglePoint) return undefined;
     return new GriddedRaggedRange2dSet(range.clone(), numXEdge, numYEdge);
   }
   private xIndex(x: number): number {
-    const fraction =
-      (x - this._range.low.x) / (this._range.high.x - this._range.low.x);
+    const fraction = (x - this._range.low.x) / (this._range.high.x - this._range.low.x);
     return Math.floor(fraction * this._numXEdge);
   }
   private yIndex(y: number): number {
-    const fraction =
-      (y - this._range.low.y) / (this._range.high.y - this._range.low.y);
+    const fraction = (y - this._range.low.y) / (this._range.high.y - this._range.low.y);
     return Math.floor(fraction * this._numXEdge);
   }
-  private getBlock(
-    i: number,
-    j: number
-  ): LinearSearchRange2dArray<T> | undefined {
+  private getBlock(i: number, j: number): LinearSearchRange2dArray<T> | undefined {
     if (i >= 0 && i < this._numXEdge && j >= 0 && j < this._numYEdge) {
-      if (!this._rangesInBlock[j][i])
-        this._rangesInBlock[j][i] = new LinearSearchRange2dArray();
+      if (!this._rangesInBlock[j][i]) this._rangesInBlock[j][i] = new LinearSearchRange2dArray();
       return this._rangesInBlock[j][i];
     }
     return undefined;
@@ -146,11 +133,7 @@ export class GriddedRaggedRange2dSet<T> {
    * @param handler function to receive range and tag hits.
    * @return false if search terminated by handler.  Return true if no handler returned false.
    */
-  public searchXY(
-    x: number,
-    y: number,
-    handler: (range: Range2d, tag: T) => boolean
-  ): boolean {
+  public searchXY(x: number, y: number, handler: (range: Range2d, tag: T) => boolean): boolean {
     const i = this.xIndex(x);
     const j = this.yIndex(y);
     return (
@@ -168,26 +151,19 @@ export class GriddedRaggedRange2dSet<T> {
    * @param handler function to receive range and tag hits.
    * @return false if search terminated by handler.  Return true if no handler returned false.
    */
-  public searchRange2d(
-    testRange: LowAndHighXY,
-    handler: (range: Range2d, tag: T) => boolean
-  ): boolean {
+  public searchRange2d(testRange: LowAndHighXY, handler: (range: Range2d, tag: T) => boolean): boolean {
     const xIndex0 = this.xIndex(testRange.low.x) - 1;
     const xIndex1 = this.xIndex(testRange.high.x);
     const yIndex0 = this.yIndex(testRange.low.y) - 1;
     const yIndex1 = this.yIndex(testRange.high.y);
     for (let i = xIndex0; i <= xIndex1; i++) {
       for (let j = yIndex0; j <= yIndex1; j++) {
-        if (!this.searchRange2dInIndexedBlock(i, j, testRange, handler))
-          return false;
+        if (!this.searchRange2dInIndexedBlock(i, j, testRange, handler)) return false;
       }
     }
     return true;
   }
-  public visitChildren(
-    initialDepth: number,
-    handler: (depth: number, child: LinearSearchRange2dArray<T>) => void
-  ) {
+  public visitChildren(initialDepth: number, handler: (depth: number, child: LinearSearchRange2dArray<T>) => void) {
     for (const row of this._rangesInBlock) {
       for (const block of row) {
         if (block) handler(initialDepth, block);

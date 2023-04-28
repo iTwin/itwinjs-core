@@ -14,9 +14,7 @@ describe("Learning Snippets", () => {
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile(
-      "assets/datasets/Properties_60InstancesWithUrl2.ibim"
-    );
+    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {
@@ -137,8 +135,7 @@ describe("Learning Snippets", () => {
                     {
                       id: "custom-category",
                       label: "Custom Category",
-                      description:
-                        "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+                      description: "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
                     },
                   ],
                   propertyOverrides: [
@@ -166,8 +163,7 @@ describe("Learning Snippets", () => {
         expect(content.descriptor.categories).to.containSubset([
           {
             label: "Custom Category",
-            description:
-              "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+            description: "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
           },
         ]);
         // __PUBLISH_EXTRACT_END__

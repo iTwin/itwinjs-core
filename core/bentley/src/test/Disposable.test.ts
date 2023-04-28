@@ -114,14 +114,11 @@ describe("Disposable", () => {
       const disposable2 = new CallbackDisposable(() => {
         disposed2 = true;
       });
-      const result = using(
-        [disposable1, disposable2],
-        (resource1, resource2) => {
-          assert.equal(resource1, disposable1);
-          assert.equal(resource2, disposable2);
-          return 123;
-        }
-      );
+      const result = using([disposable1, disposable2], (resource1, resource2) => {
+        assert.equal(resource1, disposable1);
+        assert.equal(resource2, disposable2);
+        return 123;
+      });
       assert.equal(result, 123);
       assert.isTrue(disposed1);
       assert.isTrue(disposed2);

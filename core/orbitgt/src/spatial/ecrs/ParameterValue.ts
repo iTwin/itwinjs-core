@@ -36,11 +36,7 @@ export class ParameterValue {
    * @param parameterValue the value of the parameter.
    * @param unit the unit of measure.
    */
-  public constructor(
-    parameterCode: int32,
-    parameterValue: float64,
-    unit: Unit
-  ) {
+  public constructor(parameterCode: int32, parameterValue: float64, unit: Unit) {
     this._parameterCode = parameterCode;
     this._parameterValue = parameterValue;
     this._unit = unit;

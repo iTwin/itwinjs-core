@@ -109,38 +109,24 @@ export class ToolWithSettings extends PrimitiveTool {
 
   /** Used to supply DefaultToolSettingProvider with a list of properties used to generate ToolSettings.  If undefined then no ToolSettings will be displayed */
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
-    this.initializeToolSettingPropertyValues([
-      this.useLengthProperty,
-      this.lengthProperty,
-    ]);
+    this.initializeToolSettingPropertyValues([this.useLengthProperty, this.lengthProperty]);
 
     const toolSettings = new Array<DialogItem>();
     const lengthLock = this.useLengthProperty.toDialogItem({
       rowPriority: 1,
       columnIndex: 0,
     });
-    toolSettings.push(
-      this.lengthProperty.toDialogItem(
-        { rowPriority: 2, columnIndex: 2 },
-        lengthLock
-      )
-    );
+    toolSettings.push(this.lengthProperty.toDialogItem({ rowPriority: 2, columnIndex: 2 }, lengthLock));
     return toolSettings;
   }
 
   /** Override to return the property that is disabled/enabled if the supplied property is a lock property. */
-  protected override getToolSettingPropertyLocked(
-    property: DialogProperty<any>
-  ): DialogProperty<any> | undefined {
-    return property === this.useLengthProperty
-      ? this.lengthProperty
-      : undefined;
+  protected override getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined {
+    return property === this.useLengthProperty ? this.lengthProperty : undefined;
   }
 
   /** Used to allow Tool to react to ToolSettings changes in UI */
-  public override async applyToolSettingPropertyChange(
-    updatedValue: DialogPropertySyncItem
-  ): Promise<boolean> {
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     return this.changeToolSettingPropertyValue(updatedValue);
   }
 }

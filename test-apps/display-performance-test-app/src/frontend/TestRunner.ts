@@ -3,10 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-  RealityDataAccessClient,
-  RealityDataClientOptions,
-} from "@itwin/reality-data-client";
+import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import {
   assert,
   Dictionary,
@@ -134,23 +131,15 @@ class Timings {
 
       const label = result.label;
       const timings = this.gpu.get(label);
-      this.gpu.set(
-        label,
-        timings
-          ? timings.concat(result.nanoseconds / 1e6)
-          : [result.nanoseconds / 1e6]
-      ); // save as milliseconds
-      if (result.children)
-        for (const child of result.children) this.callback(child);
+      this.gpu.set(label, timings ? timings.concat(result.nanoseconds / 1e6) : [result.nanoseconds / 1e6]); // save as milliseconds
+      if (result.children) for (const child of result.children) this.callback(child);
 
       if ("Total" === label) ++this.gpuFramesCollected;
     };
   }
 
   public set callbackEnabled(enabled: boolean) {
-    IModelApp.renderSystem.debugControl!.resultsCallback = enabled
-      ? this.callback
-      : undefined;
+    IModelApp.renderSystem.debugControl!.resultsCallback = enabled ? this.callback : undefined;
   }
 }
 
@@ -167,10 +156,7 @@ class OverrideProvider {
     }
   }
 
-  public static override(
-    vp: ScreenViewport,
-    ovrs: ElementOverrideProps[]
-  ): void {
+  public static override(vp: ScreenViewport, ovrs: ElementOverrideProps[]): void {
     const provider = new OverrideProvider(ovrs);
     vp.addFeatureOverrideProvider(provider);
   }
@@ -178,8 +164,7 @@ class OverrideProvider {
   public addFeatureOverrides(ovrs: FeatureSymbology.Overrides): void {
     if (this._defaultOvrs) ovrs.setDefaultOverrides(this._defaultOvrs);
 
-    for (const [elementId, appearance] of this._elementOvrs)
-      ovrs.override({ elementId, appearance });
+    for (const [elementId, appearance] of this._elementOvrs) ovrs.override({ elementId, appearance });
   }
 }
 
@@ -197,17 +182,12 @@ export class TestRunner {
     return this._config.top;
   }
 
-  public constructor(
-    props: TestSetsProps,
-    savedViewsFetcher: SavedViewsFetcher = new SavedViewsFetcher()
-  ) {
+  public constructor(props: TestSetsProps, savedViewsFetcher: SavedViewsFetcher = new SavedViewsFetcher()) {
     // NB: The default minimum spatial chord tolerance was changed from "no minimum" to 1mm. To preserve prior behavior,
     // override it to zero.
     // Subsequently pushed configs can override this if desired.
     const defaultTileProps: TileAdmin.Props = { minimumSpatialTolerance: 0 };
-    props.tileProps = props.tileProps
-      ? { ...defaultTileProps, ...props.tileProps }
-      : defaultTileProps;
+    props.tileProps = props.tileProps ? { ...defaultTileProps, ...props.tileProps } : defaultTileProps;
 
     this._config = new TestConfigStack(new TestConfig(props));
     this._testSets = props.testSet;
@@ -225,15 +205,11 @@ export class TestRunner {
     await this.logToFile(msg, { noAppend: true });
 
     let needRestart = this.curConfig.requiresRestart(new TestConfig({})); // If current config differs from default, restart
-    const renderOptions: RenderSystem.Options =
-      this.curConfig.renderOptions ?? {};
+    const renderOptions: RenderSystem.Options = this.curConfig.renderOptions ?? {};
     if (!this.curConfig.useDisjointTimer) {
       const ext = this.curConfig.renderOptions?.disabledExtensions;
       renderOptions.disabledExtensions = Array.isArray(ext)
-        ? ext.concat([
-            "EXT_disjoint_timer_query",
-            "EXT_disjoint_timer_query_webgl2",
-          ])
+        ? ext.concat(["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"])
         : ["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"];
       needRestart = true;
     }
@@ -248,9 +224,7 @@ export class TestRunner {
       await DisplayPerfTestApp.startup({
         renderSys: renderOptions,
         tileAdmin: this.curConfig.tileProps,
-        realityDataAccess: new RealityDataAccessClient(
-          realityDataClientOptions
-        ),
+        realityDataAccess: new RealityDataAccessClient(realityDataClientOptions),
       });
     }
 
@@ -284,23 +258,17 @@ export class TestRunner {
       if (IModelApp.initialized && needRestart) await IModelApp.shutdown();
 
       if (!IModelApp.initialized) {
-        const renderOptions: RenderSystem.Options =
-          this.curConfig.renderOptions ?? {};
+        const renderOptions: RenderSystem.Options = this.curConfig.renderOptions ?? {};
         if (!this.curConfig.useDisjointTimer) {
           const ext = this.curConfig.renderOptions?.disabledExtensions;
           renderOptions.disabledExtensions = Array.isArray(ext)
-            ? ext.concat([
-                "EXT_disjoint_timer_query",
-                "EXT_disjoint_timer_query_webgl2",
-              ])
+            ? ext.concat(["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"])
             : ["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"];
         }
         await DisplayPerfTestApp.startup({
           renderSys: renderOptions,
           tileAdmin: this.curConfig.tileProps,
-          realityDataAccess: new RealityDataAccessClient(
-            realityDataClientOptions
-          ),
+          realityDataAccess: new RealityDataAccessClient(realityDataClientOptions),
         });
       }
 
@@ -315,9 +283,7 @@ export class TestRunner {
         try {
           context = await this.openIModel();
         } catch (e: any) {
-          await this.logError(
-            `Failed to open iModel ${iModelName}: ${(e as Error).message}`
-          );
+          await this.logError(`Failed to open iModel ${iModelName}: ${(e as Error).message}`);
           continue;
         }
 
@@ -344,8 +310,7 @@ export class TestRunner {
 
       try {
         const result = await this.runTest(context);
-        if (result)
-          await this.logToFile(result.selectedTileIds, { noNewLine: true });
+        if (result) await this.logToFile(result.selectedTileIds, { noNewLine: true });
       } catch (ex) {
         await this.onException(ex);
       }
@@ -385,9 +350,7 @@ export class TestRunner {
     }
 
     this.updateTestNames(test);
-    await (testConfig.testType === "readPixels"
-      ? this.recordReadPixels(test)
-      : this.recordRender(test));
+    await (testConfig.testType === "readPixels" ? this.recordReadPixels(test) : this.recordRender(test));
 
     vp.dispose();
     return test;
@@ -395,18 +358,10 @@ export class TestRunner {
 
   private async recordReadPixels(test: TestCase): Promise<void> {
     const vp = test.viewport;
-    const viewRect = new ViewRect(
-      0,
-      0,
-      this.curConfig.view.width,
-      this.curConfig.view.height
-    );
+    const viewRect = new ViewRect(0, 0, this.curConfig.view.width, this.curConfig.view.height);
     const timings = new Timings(this.curConfig.numRendersToTime);
 
-    const testReadPix = async (
-      pixSelect: Pixel.Selector,
-      pixSelectStr: string
-    ) => {
+    const testReadPix = async (pixSelect: Pixel.Selector, pixSelectStr: string) => {
       // Collect CPU timings.
       setPerformanceMetrics(vp, new PerformanceMetrics(true, false, undefined));
       for (let i = 0; i < this.curConfig.numRendersToTime; ++i) {
@@ -418,10 +373,7 @@ export class TestRunner {
       // Collect GPU timings.
       timings.gpuFramesCollected = 0;
       timings.callbackEnabled = true;
-      setPerformanceMetrics(
-        vp,
-        new PerformanceMetrics(true, false, timings.callback)
-      );
+      setPerformanceMetrics(vp, new PerformanceMetrics(true, false, timings.callback));
       await this.renderAsync(vp, this.curConfig.numRendersToTime, timings);
       timings.callbackEnabled = false;
 
@@ -441,25 +393,14 @@ export class TestRunner {
 
   private async recordRender(test: TestCase): Promise<void> {
     const timings = new Timings(this.curConfig.numRendersToTime);
-    setPerformanceMetrics(
-      test.viewport,
-      new PerformanceMetrics(true, false, timings.callback)
-    );
-    await this.renderAsync(
-      test.viewport,
-      this.curConfig.numRendersToTime,
-      timings
-    );
+    setPerformanceMetrics(test.viewport, new PerformanceMetrics(true, false, timings.callback));
+    await this.renderAsync(test.viewport, this.curConfig.numRendersToTime, timings);
 
     const row = this.getRowData(timings, test);
     await this.saveCsv(row);
   }
 
-  private async renderAsync(
-    vp: ScreenViewport,
-    numFrames: number,
-    timings: Timings
-  ): Promise<void> {
+  private async renderAsync(vp: ScreenViewport, numFrames: number, timings: Timings): Promise<void> {
     IModelApp.viewManager.addViewport(vp);
 
     const target = vp.target as Target;
@@ -490,17 +431,13 @@ export class TestRunner {
 
         timer.stop();
         timings.actualFps[frameCount] = metrics.frameTimings;
-        timings.actualFps[frameCount].set(
-          "Total Time",
-          timer.current.milliseconds
-        );
+        timings.actualFps[frameCount].set("Total Time", timer.current.milliseconds);
 
         if (++frameCount === numFrames) target.performanceMetrics = undefined;
 
         if (
           timings.gpuFramesCollected >= numFrames ||
-          (frameCount >= numFrames &&
-            !(IModelApp.renderSystem as System).isGLTimerSupported)
+          (frameCount >= numFrames && !(IModelApp.renderSystem as System).isGLTimerSupported)
         ) {
           removeListener();
           IModelApp.viewManager.dropViewport(vp, false);
@@ -528,15 +465,11 @@ export class TestRunner {
     if (hyperModeling) {
       try {
         const decorator = await HyperModeling.start(viewport);
-        const marker = decorator?.markers.findMarkerById(
-          hyperModeling.sectionDrawingLocationId
-        );
+        const marker = decorator?.markers.findMarkerById(hyperModeling.sectionDrawingLocationId);
         if (!decorator) {
           await this.logError("Failed to start hypermodeling.");
         } else if (!marker) {
-          await this.logError(
-            `SectionDrawingLocation ${hyperModeling.sectionDrawingLocationId} not found.`
-          );
+          await this.logError(`SectionDrawingLocation ${hyperModeling.sectionDrawingLocationId} not found.`);
         } else {
           if (hyperModeling.applySpatialView) {
             await decorator.toggleSection(marker, true);
@@ -566,10 +499,7 @@ export class TestRunner {
         where: `CodeValue='${config.displayStyle}'`,
       });
       if (styleProps.length >= 1) {
-        const style = new DisplayStyle3dState(
-          styleProps[0] as DisplayStyleProps,
-          imodel
-        );
+        const style = new DisplayStyle3dState(styleProps[0] as DisplayStyleProps, imodel);
         await style.load();
         viewport.view.setDisplayStyle(style);
       }
@@ -608,14 +538,11 @@ export class TestRunner {
 
     if (config.backgroundMap)
       viewport.changeBackgroundMapProps(
-        viewport.displayStyle.settings.backgroundMap
-          .clone(config.backgroundMap)
-          .toJSON()
+        viewport.displayStyle.settings.backgroundMap.clone(config.backgroundMap).toJSON()
       );
 
     // Apply symbology overrides
-    if (view.elementOverrides)
-      OverrideProvider.override(viewport, view.elementOverrides);
+    if (view.elementOverrides) OverrideProvider.override(viewport, view.elementOverrides);
 
     // Ensure all tiles required for the view are loaded.
     const result = await this.waitForTilesToLoad(viewport);
@@ -630,9 +557,7 @@ export class TestRunner {
     return { ...result, viewport, view };
   }
 
-  private async waitForTilesToLoad(
-    viewport: ScreenViewport
-  ): Promise<TestResult> {
+  private async waitForTilesToLoad(viewport: ScreenViewport): Promise<TestResult> {
     const timer = new StopWatch(undefined, true);
     await viewport.waitForSceneCompletion();
     timer.stop();
@@ -643,15 +568,11 @@ export class TestRunner {
       selectedTileIds: selectedTiles.ids,
       numSelectedTiles: selectedTiles.count,
       selectedTileGpuBytes: selectedTiles.gpuBytes,
-      viewedTileTreeGpuBytes: calcGpuBytes((stats) =>
-        viewport.collectStatistics(stats)
-      ),
+      viewedTileTreeGpuBytes: calcGpuBytes((stats) => viewport.collectStatistics(stats)),
       totalGpuBytes: calcGpuBytes((stats) => {
         viewport.target.renderSystem.collectStatistics(stats);
         viewport.target.collectStatistics(stats);
-        viewport.iModel.tiles.forEachTreeOwner((owner) =>
-          owner.tileTree?.collectStatistics(stats)
-        );
+        viewport.iModel.tiles.forEachTreeOwner((owner) => owner.tileTree?.collectStatistics(stats));
       }),
     };
   }
@@ -659,10 +580,7 @@ export class TestRunner {
   private openViewport(view: ViewState): ScreenViewport {
     // Ensure the exact same number of pixels regardless of device pixel ratio.
     const div = document.getElementById("imodel-viewport") as HTMLDivElement;
-    const ratio =
-      false === IModelApp.renderSystem.options.dpiAwareViewports
-        ? 1
-        : window.devicePixelRatio || 1;
+    const ratio = false === IModelApp.renderSystem.options.dpiAwareViewports ? 1 : window.devicePixelRatio || 1;
     const width = `${String(this.curConfig.view.width / ratio)}px`;
     const height = `${String(this.curConfig.view.height / ratio)}px`;
 
@@ -678,15 +596,11 @@ export class TestRunner {
     return vp;
   }
 
-  private async loadViewFromSpec(
-    spec: ViewStateSpec,
-    context: TestContext
-  ): Promise<TestViewState | undefined> {
+  private async loadViewFromSpec(spec: ViewStateSpec, context: TestContext): Promise<TestViewState | undefined> {
     const className = spec.viewProps.viewDefinitionProps.classFullName;
-    const ctor = (await context.iModel.findClassFor<typeof EntityState>(
-      className,
-      undefined
-    )) as typeof ViewState | undefined;
+    const ctor = (await context.iModel.findClassFor<typeof EntityState>(className, undefined)) as
+      | typeof ViewState
+      | undefined;
     const view = ctor?.createFromProps(spec.viewProps, context.iModel);
     if (!view) {
       await this.logError("Failed to create view from spec");
@@ -701,24 +615,17 @@ export class TestRunner {
     };
   }
 
-  private async loadView(
-    context: TestContext
-  ): Promise<TestViewState | undefined> {
+  private async loadView(context: TestContext): Promise<TestViewState | undefined> {
     // If viewStateSpec is defined, use it. If we fail to instantiate it, fail.
     const config = this.curConfig;
-    if (config.viewStateSpec)
-      return this.loadViewFromSpec(config.viewStateSpec, context);
+    if (config.viewStateSpec) return this.loadViewFromSpec(config.viewStateSpec, context);
 
     // If extViewName defined, find the matching external view. If none found, fail.
     if (config.extViewName) {
-      const spec = context.externalSavedViews.find(
-        (x) => x.name === config.extViewName
-      );
+      const spec = context.externalSavedViews.find((x) => x.name === config.extViewName);
       if (spec) return this.loadViewFromSpec(spec, context);
 
-      await this.logError(
-        `Failed to find external saved view ${config.extViewName}`
-      );
+      await this.logError(`Failed to find external saved view ${config.extViewName}`);
       return undefined;
     }
 
@@ -730,20 +637,14 @@ export class TestRunner {
     for (const id of ids) return { view: await context.iModel.views.load(id) };
 
     // Try to find an external view matching viewName.
-    const extSpec = context.externalSavedViews.find(
-      (x) => x.name === config.viewName
-    );
+    const extSpec = context.externalSavedViews.find((x) => x.name === config.viewName);
     if (extSpec) return this.loadViewFromSpec(extSpec, context);
 
     await this.logError(`Failed to find persistent view ${config.viewName}`);
     return undefined;
   }
 
-  private updateTestNames(
-    test: TestCase,
-    prefix?: string,
-    isImage = false
-  ): void {
+  private updateTestNames(test: TestCase, prefix?: string, isImage = false): void {
     const testNames = isImage ? this._testNamesImages : this._testNamesTimings;
     const testName = this.getTestName(test, prefix, false, true);
     const testNameDupes = testNames.get(testName) ?? 0;
@@ -768,16 +669,12 @@ export class TestRunner {
   private async openIModel(): Promise<TestContext> {
     if (this.curConfig.iModelId) {
       if (process.env.IMJS_OIDC_HEADLESS) {
-        const token =
-          await DisplayPerfRpcInterface.getClient().getAccessToken();
-        IModelApp.authorizationClient = new TestFrontendAuthorizationClient(
-          token
-        );
+        const token = await DisplayPerfRpcInterface.getClient().getAccessToken();
+        IModelApp.authorizationClient = new TestFrontendAuthorizationClient(token);
       }
       // Download remote iModel and its saved views
       const { iModelId, iTwinId } = this.curConfig;
-      if (iTwinId === undefined)
-        throw new Error("Missing iTwinId for remote iModel");
+      if (iTwinId === undefined) throw new Error("Missing iTwinId for remote iModel");
       const iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
       const externalSavedViews = await this._savedViewsFetcher.getSavedViews(
         iTwinId,
@@ -790,10 +687,7 @@ export class TestRunner {
       const filepath = `${this.curConfig.iModelLocation}${separator}${this.curConfig.iModelName}`;
       const iModel = await SnapshotConnection.openFile(filepath);
 
-      const esv =
-        await DisplayPerfRpcInterface.getClient().readExternalSavedViews(
-          filepath
-        );
+      const esv = await DisplayPerfRpcInterface.getClient().readExternalSavedViews(filepath);
       let externalSavedViews: ViewStateSpec[] = [];
       if (esv) {
         const json = JSON.parse(esv) as ViewStateSpecProps[];
@@ -818,10 +712,7 @@ export class TestRunner {
     const config = this.curConfig;
     if (!config.iModelName.includes("*")) return [config.iModelName];
 
-    const json = await DisplayPerfRpcInterface.getClient().getMatchingFiles(
-      config.iModelLocation,
-      config.iModelName
-    );
+    const json = await DisplayPerfRpcInterface.getClient().getMatchingFiles(config.iModelLocation, config.iModelName);
     const files = JSON.parse(json);
     const iModels = [];
     for (const file of files) {
@@ -836,8 +727,7 @@ export class TestRunner {
   }
 
   private async getViewNames(context: TestContext): Promise<string[]> {
-    if (!this.curConfig.viewName.includes("*"))
-      return [this.curConfig.viewName];
+    if (!this.curConfig.viewName.includes("*")) return [this.curConfig.viewName];
 
     let viewNames: string[] = [];
     if (this.curConfig.savedViewType !== "external") {
@@ -847,17 +737,10 @@ export class TestRunner {
       viewNames = specs.map((spec) => spec.name);
     }
 
-    if (
-      this.curConfig.savedViewType !== "internal" &&
-      this.curConfig.savedViewType !== "local"
-    )
-      viewNames = viewNames.concat(
-        context.externalSavedViews.map((x) => x.name)
-      );
+    if (this.curConfig.savedViewType !== "internal" && this.curConfig.savedViewType !== "local")
+      viewNames = viewNames.concat(context.externalSavedViews.map((x) => x.name));
 
-    return viewNames
-      .filter((view) => matchRule(view, this.curConfig.viewName ?? "*"))
-      .sort();
+    return viewNames.filter((view) => matchRule(view, this.curConfig.viewName ?? "*")).sort();
   }
 
   private async finish(): Promise<void> {
@@ -867,11 +750,9 @@ export class TestRunner {
       renderData += `Browser: ${getBrowserName(renderComp.userAgent)}\r\n`;
       renderData += `User Agent: ${renderComp.userAgent}\r\n`;
     }
-    if (renderComp.unmaskedRenderer)
-      renderData += `Unmasked Renderer: ${renderComp.unmaskedRenderer}\r\n`;
+    if (renderComp.unmaskedRenderer) renderData += `Unmasked Renderer: ${renderComp.unmaskedRenderer}\r\n`;
 
-    if (renderComp.unmaskedVendor)
-      renderData += `Unmasked Vendor: ${renderComp.unmaskedVendor}\r\n`;
+    if (renderComp.unmaskedVendor) renderData += `Unmasked Vendor: ${renderComp.unmaskedVendor}\r\n`;
 
     if (renderComp.missingRequiredFeatures)
       renderData += `Missing Required Features: ${renderComp.missingRequiredFeatures}\r\n`;
@@ -892,18 +773,10 @@ export class TestRunner {
     const outputPath = this.curConfig.outputPath;
     const outputName = this.curConfig.outputName;
     const msg = JSON.stringify([...row]);
-    return DisplayPerfRpcInterface.getClient().saveCsv(
-      outputPath,
-      outputName,
-      msg,
-      this.curConfig.csvFormat
-    );
+    return DisplayPerfRpcInterface.getClient().saveCsv(outputPath, outputName, msg, this.curConfig.csvFormat);
   }
 
-  private async logToFile(
-    message: string,
-    opts?: { noAppend?: boolean; noNewLine?: boolean }
-  ): Promise<void> {
+  private async logToFile(message: string, opts?: { noAppend?: boolean; noNewLine?: boolean }): Promise<void> {
     if (!opts?.noNewLine) message = `${message}\n`;
 
     const append = !opts?.noAppend;
@@ -925,12 +798,7 @@ export class TestRunner {
     return this.logToFile(msg);
   }
 
-  private getTestName(
-    test: TestCase,
-    prefix?: string,
-    isImage = false,
-    ignoreDupes = false
-  ): string {
+  private getTestName(test: TestCase, prefix?: string, isImage = false, ignoreDupes = false): string {
     let testName = prefix ?? "";
     const configs = this.curConfig;
 
@@ -948,9 +816,7 @@ export class TestRunner {
     const renderOpts = getRenderOpts(configs.renderOptions);
     if (renderOpts) testName += `_${renderOpts}`;
 
-    const tileProps = configs.tileProps
-      ? getTileProps(configs.tileProps)
-      : undefined;
+    const tileProps = configs.tileProps ? getTileProps(configs.tileProps) : undefined;
     if (tileProps) testName += `_${tileProps}`;
 
     const map = getBackgroundMapProps(test.viewport);
@@ -964,9 +830,7 @@ export class TestRunner {
 
     testName = removeOptsFromString(testName, configs.filenameOptsToIgnore);
     if (!ignoreDupes) {
-      let testNum = isImage
-        ? this._testNamesImages.get(testName)
-        : this._testNamesTimings.get(testName);
+      let testNum = isImage ? this._testNamesImages.get(testName) : this._testNamesTimings.get(testName);
       if (testNum === undefined) testNum = 0;
 
       testName += testNum > 1 ? `---${testNum}` : "";
@@ -981,11 +845,7 @@ export class TestRunner {
     return `${this.curConfig.outputPath}${separator}${filename}`;
   }
 
-  private getRowData(
-    timings: Timings,
-    test: TestCase,
-    pixSelectStr?: string
-  ): Map<string, number | string> {
+  private getRowData(timings: Timings, test: TestCase, pixSelectStr?: string): Map<string, number | string> {
     const fixed = 4;
     const configs = this.curConfig;
     const rowData = new Map<string, number | string>();
@@ -997,35 +857,22 @@ export class TestRunner {
     const h = test.viewport.cssPixelsToDevicePixels(configs.view.height);
     rowData.set("Screen Size", `${w}X${h}`);
 
-    rowData.set(
-      "Skip & Time Renders",
-      `${configs.numRendersToSkip} & ${configs.numRendersToTime}`
-    );
+    rowData.set("Skip & Time Renders", `${configs.numRendersToSkip} & ${configs.numRendersToTime}`);
     rowData.set("Display Style", test.viewport.displayStyle.name);
     rowData.set("Render Mode", getRenderMode(test.viewport));
-    rowData.set(
-      "View Flags",
-      getViewFlagsString(test) !== "" ? ` ${getViewFlagsString(test)}` : ""
-    );
+    rowData.set("View Flags", getViewFlagsString(test) !== "" ? ` ${getViewFlagsString(test)}` : "");
     rowData.set(
       "Render Options",
-      getRenderOpts(configs.renderOptions) !== ""
-        ? ` ${getRenderOpts(configs.renderOptions)}`
-        : ""
+      getRenderOpts(configs.renderOptions) !== "" ? ` ${getRenderOpts(configs.renderOptions)}` : ""
     );
 
     const tileProps = configs.tileProps ? getTileProps(configs.tileProps) : "";
     rowData.set("Tile Props", "" !== tileProps ? ` ${tileProps}` : "");
     rowData.set(
       "Bkg Map Props",
-      getBackgroundMapProps(test.viewport) !== ""
-        ? ` ${getBackgroundMapProps(test.viewport)}`
-        : ""
+      getBackgroundMapProps(test.viewport) !== "" ? ` ${getBackgroundMapProps(test.viewport)}` : ""
     );
-    rowData.set(
-      "HyperModeling",
-      getHyperModelingProps(configs.hyperModeling) ?? ""
-    );
+    rowData.set("HyperModeling", getHyperModelingProps(configs.hyperModeling) ?? "");
 
     const other = getOtherProps(test.viewport);
     if ("" !== other) rowData.set("Other Props", ` ${other}`);
@@ -1033,21 +880,12 @@ export class TestRunner {
     if (pixSelectStr) rowData.set("ReadPixels Selector", ` ${pixSelectStr}`);
 
     rowData.set("Test Name", this.getTestName(test));
-    rowData.set(
-      "Browser",
-      getBrowserName(IModelApp.queryRenderCompatibility().userAgent)
-    );
+    rowData.set("Browser", getBrowserName(IModelApp.queryRenderCompatibility().userAgent));
     if (!this._minimizeOutput) {
       rowData.set("Tile Loading Time", test.tileLoadingTime);
       rowData.set("Num Selected Tiles", test.numSelectedTiles);
-      rowData.set(
-        "Selected Tile GPU MB",
-        test.selectedTileGpuBytes / (1024 * 1024)
-      );
-      rowData.set(
-        "Tile Tree GPU MB",
-        test.viewedTileTreeGpuBytes / (1024 * 1024)
-      );
+      rowData.set("Selected Tile GPU MB", test.selectedTileGpuBytes / (1024 * 1024));
+      rowData.set("Tile Tree GPU MB", test.viewedTileTreeGpuBytes / (1024 * 1024));
       rowData.set("Total GPU MB", test.totalGpuBytes / (1024 * 1024));
     }
 
@@ -1061,9 +899,7 @@ export class TestRunner {
 
         rowData.set(
           `GPU-${name}`,
-          gpuDataArray.length
-            ? (gpuSum / gpuDataArray.length).toFixed(fixed)
-            : gpuSum.toFixed(fixed)
+          gpuDataArray.length ? (gpuSum / gpuDataArray.length).toFixed(fixed) : gpuSum.toFixed(fixed)
         );
       }
     };
@@ -1102,9 +938,7 @@ export class TestRunner {
     let totalTime: number;
     if (rowData.get("Finish GPU Queue")) {
       // If we can't collect GPU data, get non-interactive total time with 'Finish GPU Queue' time
-      totalTime =
-        Number(rowData.get("CPU Total Time")) +
-        Number(rowData.get("Finish GPU Queue"));
+      totalTime = Number(rowData.get("CPU Total Time")) + Number(rowData.get("Finish GPU Queue"));
       rowData.set("GPU Total Time", totalTime);
     }
 
@@ -1122,11 +956,7 @@ export class TestRunner {
     totalRenderTime /= timings.actualFps.length; // ie the CPU Total Time
     totalTime /= timings.actualFps.length;
     const disjointTimerUsed = rowData.get("GPU-Total") !== undefined;
-    const totalGpuTime = Number(
-      disjointTimerUsed
-        ? rowData.get("GPU-Total")
-        : rowData.get("GPU Total Time")
-    );
+    const totalGpuTime = Number(disjointTimerUsed ? rowData.get("GPU-Total") : rowData.get("GPU Total Time"));
     const gpuTolerance = disjointTimerUsed ? 2 : 3;
     const gpuBound = totalGpuTime - totalRenderTime > gpuTolerance;
     const cpuBound = disjointTimerUsed
@@ -1149,52 +979,29 @@ export class TestRunner {
       rowData.delete("GPU-Total");
     }
     rowData.set("Bound By", boundBy);
-    rowData.set(
-      "Effective Total Time",
-      gpuBound ? totalGpuTime.toFixed(fixed) : totalCpuTime.toFixed(fixed)
-    ); // This is the total gpu time if gpu bound or the total cpu time if cpu bound; times gather with running continuously
+    rowData.set("Effective Total Time", gpuBound ? totalGpuTime.toFixed(fixed) : totalCpuTime.toFixed(fixed)); // This is the total gpu time if gpu bound or the total cpu time if cpu bound; times gather with running continuously
     rowData.set("Effective FPS", effectiveFps.toFixed(fixed));
     rowData.set("Actual Total Time", totalTime.toFixed(fixed));
-    rowData.set(
-      "Actual FPS",
-      totalTime > 0.0 ? (1000.0 / totalTime).toFixed(fixed) : "0"
-    );
+    rowData.set("Actual FPS", totalTime > 0.0 ? (1000.0 / totalTime).toFixed(fixed) : "0");
 
     return rowData;
   }
 
-  private async createReadPixelsImages(
-    test: TestCase,
-    pix: Pixel.Selector,
-    pixStr: string
-  ): Promise<void> {
+  private async createReadPixelsImages(test: TestCase, pix: Pixel.Selector, pixStr: string): Promise<void> {
     const vp = test.viewport;
     const canvas = vp.readImageToCanvas();
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const cssRect = new ViewRect(
-      0,
-      0,
-      this.curConfig.view.width,
-      this.curConfig.view.height
-    );
+    const cssRect = new ViewRect(0, 0, this.curConfig.view.width, this.curConfig.view.height);
     const imgWidth = vp.cssPixelsToDevicePixels(cssRect.width);
     const imgHeight = vp.cssPixelsToDevicePixels(cssRect.height);
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const elemIdImgData =
-      pix & Pixel.Selector.Feature
-        ? ctx.createImageData(imgWidth, imgHeight)
-        : undefined;
+    const elemIdImgData = pix & Pixel.Selector.Feature ? ctx.createImageData(imgWidth, imgHeight) : undefined;
     const depthImgData =
-      pix & Pixel.Selector.GeometryAndDistance
-        ? ctx.createImageData(imgWidth, imgHeight)
-        : undefined;
-    const typeImgData =
-      pix & Pixel.Selector.GeometryAndDistance
-        ? ctx.createImageData(imgWidth, imgHeight)
-        : undefined;
+      pix & Pixel.Selector.GeometryAndDistance ? ctx.createImageData(imgWidth, imgHeight) : undefined;
+    const typeImgData = pix & Pixel.Selector.GeometryAndDistance ? ctx.createImageData(imgWidth, imgHeight) : undefined;
 
     vp.readPixels(cssRect, pix, (pixels) => {
       if (!pixels) return;
@@ -1206,23 +1013,17 @@ export class TestRunner {
 
           // RGB for element ID
           if (elemIdImgData !== undefined) {
-            const elemId = Id64.getLowerUint32(
-              pixel.elementId ? pixel.elementId : ""
-            );
+            const elemId = Id64.getLowerUint32(pixel.elementId ? pixel.elementId : "");
             elemIdImgData.data[index + 0] = elemId % 256;
             elemIdImgData.data[index + 1] = Math.floor(elemId / 256) % 256;
-            elemIdImgData.data[index + 2] =
-              Math.floor(elemId / (256 ^ 2)) % 256;
+            elemIdImgData.data[index + 2] = Math.floor(elemId / (256 ^ 2)) % 256;
             elemIdImgData.data[index + 3] = 255; // Set alpha to 100% opaque
           }
 
           // RGB for Depth
           if (depthImgData !== undefined) {
             const distColor = pixels.getPixel(x, y).distanceFraction * 255;
-            depthImgData.data[index + 0] =
-              depthImgData.data[index + 1] =
-              depthImgData.data[index + 2] =
-                distColor;
+            depthImgData.data[index + 0] = depthImgData.data[index + 1] = depthImgData.data[index + 2] = distColor;
             depthImgData.data[index + 3] = 255; // Set alpha to 100% opaque
           }
 
@@ -1291,15 +1092,11 @@ export class TestRunner {
       dir: this.curConfig.outputPath,
       name: this._logFileName,
     });
-    if ("terminate" === this.curConfig.onException)
-      await DisplayPerfRpcInterface.getClient().terminate();
+    if ("terminate" === this.curConfig.onException) await DisplayPerfRpcInterface.getClient().terminate();
   }
 }
 
-function removeOptsFromString(
-  input: string,
-  ignore: string[] | string | undefined
-): string {
+function removeOptsFromString(input: string, ignore: string[] | string | undefined): string {
   if (!ignore) return input;
 
   let output = input;
@@ -1310,8 +1107,7 @@ function removeOptsFromString(
   });
 
   output = output.replace(/__+/, "_");
-  if (output[output.length - 1] === "_")
-    output = output.slice(0, output.length - 1);
+  if (output[output.length - 1] === "_") output = output.slice(0, output.length - 1);
 
   return output;
 }
@@ -1452,18 +1248,13 @@ function getBackgroundMapProps(vp: ScreenViewport): string {
 
   if (bmProps.useDepthBuffer) bmPropsStr += "+depth";
 
-  if (typeof bmProps.transparency === "number")
-    bmPropsStr += `+trans${bmProps.transparency}`;
+  if (typeof bmProps.transparency === "number") bmPropsStr += `+trans${bmProps.transparency}`;
 
   return bmPropsStr;
 }
 
 function hiliteSettingsStr(settings: Hilite.Settings): string {
-  let hsStr = (
-    settings.color.colors.r * 256 * 256 +
-    settings.color.colors.g * 256 +
-    settings.color.colors.b
-  )
+  let hsStr = (settings.color.colors.r * 256 * 256 + settings.color.colors.g * 256 + settings.color.colors.b)
     .toString(36)
     .padStart(5, "0");
   hsStr += (
@@ -1476,9 +1267,7 @@ function hiliteSettingsStr(settings: Hilite.Settings): string {
   return hsStr.toUpperCase();
 }
 
-function getHyperModelingProps(
-  props: HyperModelingProps | undefined
-): string | undefined {
+function getHyperModelingProps(props: HyperModelingProps | undefined): string | undefined {
   if (!props) return undefined;
 
   const hm = `+hm${props.sectionDrawingLocationId}`;
@@ -1487,8 +1276,7 @@ function getHyperModelingProps(
 
 function getOtherProps(vp: ScreenViewport): string {
   let propsStr = "";
-  if (!Hilite.equalSettings(vp.hilite, defaultHilite))
-    propsStr += `+h${hiliteSettingsStr(vp.hilite)}`;
+  if (!Hilite.equalSettings(vp.hilite, defaultHilite)) propsStr += `+h${hiliteSettingsStr(vp.hilite)}`;
 
   if (!Hilite.equalSettings(vp.emphasisSettings, defaultEmphasis))
     propsStr += `+e${hiliteSettingsStr(vp.emphasisSettings)}`;
@@ -1526,8 +1314,7 @@ function getViewFlagsString(test: TestCase): string {
 
   // Lighting flag always comes first.
   const vf = test.viewport.viewFlags;
-  if (vf.lighting && RenderMode.SmoothShade === vf.renderMode)
-    vfString = "+lit";
+  if (vf.lighting && RenderMode.SmoothShade === vf.renderMode) vfString = "+lit";
 
   for (const propName of Object.keys(vf)) {
     const key = propName as keyof typeof viewFlagsPropsStrings;
@@ -1551,13 +1338,8 @@ function getBrowserName(userAgent: string): string {
   if (lowUserAgent.includes("electron")) return "Electron";
   if (lowUserAgent.includes("firefox")) return "FireFox";
   if (lowUserAgent.includes("edge")) return "Edge";
-  if (lowUserAgent.includes("chrome") && !userAgent.includes("chromium"))
-    return "Chrome";
-  if (
-    lowUserAgent.includes("safari") &&
-    !userAgent.includes("chrome") &&
-    !userAgent.includes("chromium")
-  )
+  if (lowUserAgent.includes("chrome") && !userAgent.includes("chromium")) return "Chrome";
+  if (lowUserAgent.includes("safari") && !userAgent.includes("chrome") && !userAgent.includes("chromium"))
     return "Safari";
   return "Unknown";
 }
@@ -1569,11 +1351,8 @@ function getBrowserName(userAgent: string): string {
 function matchRule(strToTest: string, rule: string) {
   strToTest = strToTest.toLowerCase();
   rule = rule.toLowerCase();
-  const escapeRegex = (str: string) =>
-    str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
-  return new RegExp(`^${rule.split("*").map(escapeRegex).join(".*")}$`).test(
-    strToTest
-  );
+  const escapeRegex = (str: string) => str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+  return new RegExp(`^${rule.split("*").map(escapeRegex).join(".*")}$`).test(strToTest);
 }
 
 interface SelectedTileStats {
@@ -1595,9 +1374,7 @@ function getSelectedTileStats(vp: ScreenViewport): SelectedTileStats {
   let formattedSelectedTileIds = "Selected tiles:\n";
   let count = 0;
   const mem = new RenderMemory.Statistics();
-  const dict = new Dictionary<string, SortedArray<string>>((lhs, rhs) =>
-    lhs.localeCompare(rhs)
-  );
+  const dict = new Dictionary<string, SortedArray<string>>((lhs, rhs) => lhs.localeCompare(rhs));
   for (const viewport of [vp, ...vp.view.secondaryViewports]) {
     const selected = IModelApp.tileAdmin.getTilesForUser(viewport)?.selected;
     if (!selected) continue;
@@ -1606,13 +1383,7 @@ function getSelectedTileStats(vp: ScreenViewport): SelectedTileStats {
     for (const tile of selected) {
       const treeId = tile.tree.id;
       let tileIds = dict.get(treeId);
-      if (!tileIds)
-        dict.set(
-          treeId,
-          (tileIds = new SortedArray<string>((lhs, rhs) =>
-            lhs.localeCompare(rhs)
-          ))
-        );
+      if (!tileIds) dict.set(treeId, (tileIds = new SortedArray<string>((lhs, rhs) => lhs.localeCompare(rhs))));
 
       tileIds.insert(tile.contentId);
       tile.collectStatistics(mem);
@@ -1638,18 +1409,12 @@ function calcGpuBytes(func: (stats: RenderMemory.Statistics) => void): number {
   return stats.totalBytes;
 }
 
-async function savePng(
-  fileName: string,
-  canvas: HTMLCanvasElement
-): Promise<void> {
+async function savePng(fileName: string, canvas: HTMLCanvasElement): Promise<void> {
   const img = canvas.toDataURL("image/png");
   const data = img.replace(/^data:image\/\w+;base64,/, ""); // strip off the data: url prefix to get just the base64-encoded bytes
   return DisplayPerfRpcInterface.getClient().savePng(fileName, data);
 }
 
-function setPerformanceMetrics(
-  vp: ScreenViewport,
-  metrics: PerformanceMetrics | undefined
-): void {
+function setPerformanceMetrics(vp: ScreenViewport, metrics: PerformanceMetrics | undefined): void {
   (vp.target as Target).performanceMetrics = metrics;
 }

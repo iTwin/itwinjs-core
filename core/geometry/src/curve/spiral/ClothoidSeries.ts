@@ -23,12 +23,7 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
   public numYTerms: number;
   public constantDiv2LR: number;
   public nominalLength1: number;
-  public constructor(
-    nominalLength1: number,
-    constantDiv2LR: number,
-    numXTerms: number = 4,
-    numYTerms: number = 4
-  ) {
+  public constructor(nominalLength1: number, constantDiv2LR: number, numXTerms: number = 4, numYTerms: number = 4) {
     super();
     this.nominalLength1 = nominalLength1;
     this.constantDiv2LR = constantDiv2LR;
@@ -37,12 +32,7 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
   }
   /** Return a deep clone. */
   public clone(): ClothoidSeriesRLEvaluator {
-    return new ClothoidSeriesRLEvaluator(
-      this.nominalLength1,
-      this.constantDiv2LR,
-      this.numXTerms,
-      this.numYTerms
-    );
+    return new ClothoidSeriesRLEvaluator(this.nominalLength1, this.constantDiv2LR, this.numXTerms, this.numYTerms);
   }
   public scaleInPlace(scaleFactor: number) {
     this.nominalLength1 *= scaleFactor;
@@ -54,10 +44,7 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
       return (
         this.numXTerms === other.numXTerms &&
         this.numYTerms === other.numYTerms &&
-        Geometry.isAlmostEqualNumber(
-          this.constantDiv2LR,
-          other.constantDiv2LR
-        ) &&
+        Geometry.isAlmostEqualNumber(this.constantDiv2LR, other.constantDiv2LR) &&
         Geometry.isSameCoordinate(this.nominalLength1, other.nominalLength1)
       );
     }
@@ -227,11 +214,7 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
     const d2Theta = 2.0 * this.constantDiv2LR;
     const sine = this.fractionToDYGo(fraction, this.numXTerms - 1);
     const cosine = this.fractionToDXGo(fraction, this.numXTerms - 1);
-    return (
-      (-cosine * dTheta * dTheta - sine * d2Theta) *
-      this.nominalLength1 *
-      this.nominalLength1
-    );
+    return (-cosine * dTheta * dTheta - sine * d2Theta) * this.nominalLength1 * this.nominalLength1;
   }
   public fractionToD3Y(fraction: number): number {
     // DY is "sine"
@@ -244,11 +227,7 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
     // d3Y is sine series. Derivative of preceding cosine killed first term.
     const cosine = this.fractionToDXGo(fraction, this.numYTerms);
     const sine = this.fractionToDYGo(fraction, this.numYTerms - 1);
-    return (
-      (-sine * dTheta * dTheta + cosine * d2Theta) *
-      this.nominalLength1 *
-      this.nominalLength1
-    );
+    return (-sine * dTheta * dTheta + cosine * d2Theta) * this.nominalLength1 * this.nominalLength1;
   }
 
   public xToFraction(x: number): number | undefined {

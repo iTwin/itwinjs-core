@@ -51,9 +51,7 @@ export class LightingEditor {
       display: "block",
       name: "Num Cels",
       id: this._nextId,
-      value: vp.view.displayStyle.is3d()
-        ? vp.view.displayStyle.lights.numCels
-        : 0,
+      value: vp.view.displayStyle.is3d() ? vp.view.displayStyle.lights.numCels : 0,
       handler: (value) => this.updateSettings({ numCels: value }),
     });
 
@@ -70,8 +68,7 @@ export class LightingEditor {
     this._updates.push((view: ViewState) => {
       const visible = view.is3d() && view.viewFlags.lighting;
       content.style.display = visible ? "" : "none";
-      if (view.displayStyle.is3d())
-        celInput.input.value = view.displayStyle.lights.numCels.toString();
+      if (view.displayStyle.is3d()) celInput.input.value = view.displayStyle.lights.numCels.toString();
     });
   }
 
@@ -93,10 +90,7 @@ export class LightingEditor {
     ).checkbox;
 
     let color;
-    if (this._vp.view.is3d())
-      color = this._vp.view
-        .getDisplayStyle3d()
-        .settings.solarShadows.color.toColorDef();
+    if (this._vp.view.is3d()) color = this._vp.view.getDisplayStyle3d().settings.solarShadows.color.toColorDef();
 
     const input = createColorInput({
       id: this._nextId,
@@ -166,17 +160,11 @@ export class LightingEditor {
     parent.appendChild(span);
 
     const lights = this._vp.lightSettings;
-    const portrait = this.addIntensityInput(
-      span,
-      "Portrait",
-      lights?.portraitIntensity ?? 0,
-      (intensity) => this.updateSettings({ portrait: { intensity } })
+    const portrait = this.addIntensityInput(span, "Portrait", lights?.portraitIntensity ?? 0, (intensity) =>
+      this.updateSettings({ portrait: { intensity } })
     );
-    const specular = this.addIntensityInput(
-      span,
-      "Specular",
-      lights?.specularIntensity ?? 0,
-      (specularIntensity) => this.updateSettings({ specularIntensity })
+    const specular = this.addIntensityInput(span, "Specular", lights?.specularIntensity ?? 0, (specularIntensity) =>
+      this.updateSettings({ specularIntensity })
     );
     portrait.style.marginRight = "0.67em";
 
@@ -202,11 +190,7 @@ export class LightingEditor {
     );
     intensityInput.style.marginRight = "0.67em";
 
-    const cb = this.addCheckBox(
-      "Invert",
-      (invert: boolean) => this.updateSettings({ fresnel: { invert } }),
-      span
-    );
+    const cb = this.addCheckBox("Invert", (invert: boolean) => this.updateSettings({ fresnel: { invert } }), span);
     this._updates.push(() => {
       const lights = this._vp.lightSettings;
       if (lights) {
@@ -222,11 +206,8 @@ export class LightingEditor {
     parent.appendChild(span);
 
     const amb = this._vp.lightSettings?.ambient;
-    const intensityInput = this.addIntensityInput(
-      span,
-      "Ambient",
-      amb?.intensity ?? 0,
-      (intensity) => this.updateSettings({ ambient: { intensity } })
+    const intensityInput = this.addIntensityInput(span, "Ambient", amb?.intensity ?? 0, (intensity) =>
+      this.updateSettings({ ambient: { intensity } })
     );
     const colorInput = createColorInput({
       parent: span,
@@ -254,11 +235,8 @@ export class LightingEditor {
     parent.appendChild(span);
 
     const hemi = this._vp.lightSettings?.hemisphere;
-    const intensityInput = this.addIntensityInput(
-      span,
-      "Hemisphere",
-      hemi?.intensity ?? 0,
-      (intensity) => this.updateSettings({ hemisphere: { intensity } })
+    const intensityInput = this.addIntensityInput(span, "Hemisphere", hemi?.intensity ?? 0, (intensity) =>
+      this.updateSettings({ hemisphere: { intensity } })
     );
     intensityInput.style.marginRight = "0.67em";
 
@@ -345,11 +323,7 @@ export class LightingEditor {
     });
   }
 
-  private addCheckBox(
-    name: string,
-    handler: (enabled: boolean) => void,
-    parent: HTMLElement
-  ): CheckBox {
+  private addCheckBox(name: string, handler: (enabled: boolean) => void, parent: HTMLElement): CheckBox {
     return createCheckBox({
       parent,
       name,

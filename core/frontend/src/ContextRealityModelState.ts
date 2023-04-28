@@ -41,27 +41,20 @@ export class ContextRealityModelState extends ContextRealityModel {
   public override readonly rdSourceKey: RealityDataSourceKey;
 
   /** @internal */
-  public constructor(
-    props: ContextRealityModelProps,
-    iModel: IModelConnection,
-    displayStyle: DisplayStyleState
-  ) {
+  public constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState) {
     super(props);
     this.iModel = iModel;
     this._appearanceOverrides = props.appearanceOverrides
       ? FeatureAppearance.fromJSON(props.appearanceOverrides)
       : undefined;
     if (undefined === props.orbitGtBlob) {
-      this.rdSourceKey = props.rdSourceKey
-        ? props.rdSourceKey
-        : RealityDataSource.createKeyFromUrl(props.tilesetUrl);
+      this.rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createKeyFromUrl(props.tilesetUrl);
     } else {
       this.rdSourceKey = props.rdSourceKey
         ? props.rdSourceKey
         : RealityDataSource.createKeyFromOrbitGtBlobProps(props.orbitGtBlob);
     }
-    const useOrbitGtTileTreeReference =
-      this.rdSourceKey.format === RealityDataFormat.OPC;
+    const useOrbitGtTileTreeReference = this.rdSourceKey.format === RealityDataFormat.OPC;
     this._treeRef = !useOrbitGtTileTreeReference
       ? createRealityTileTreeReference({
           iModel,
@@ -84,9 +77,7 @@ export class ContextRealityModelState extends ContextRealityModel {
         });
 
     this.onPlanarClipMaskChanged.addListener((newSettings) => {
-      this._treeRef.planarClipMask = newSettings
-        ? PlanarClipMaskState.create(newSettings)
-        : undefined;
+      this._treeRef.planarClipMask = newSettings ? PlanarClipMaskState.create(newSettings) : undefined;
     });
   }
 
@@ -97,9 +88,7 @@ export class ContextRealityModelState extends ContextRealityModel {
 
   /** The transient Id assigned to this reality model at run-time. */
   public get modelId(): Id64String | undefined {
-    return this._treeRef instanceof RealityModelTileTree.Reference
-      ? this._treeRef.modelId
-      : undefined;
+    return this._treeRef instanceof RealityModelTileTree.Reference ? this._treeRef.modelId : undefined;
   }
 
   /** Whether the reality model spans the entire globe ellipsoid. */

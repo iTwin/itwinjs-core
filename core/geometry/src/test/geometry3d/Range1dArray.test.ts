@@ -6,10 +6,7 @@ import { expect } from "chai";
 import { Geometry } from "../../Geometry";
 import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
 import { Range1d } from "../../geometry3d/Range";
-import {
-  compareRange1dLexicalLowHigh,
-  Range1dArray,
-} from "../../numerics/Range1dArray";
+import { compareRange1dLexicalLowHigh, Range1dArray } from "../../numerics/Range1dArray";
 import { Checker } from "../Checker";
 
 // import { prettyPrint } from "./testFunctions";
@@ -137,12 +134,9 @@ function getOverlapData(dataA: Range1d[], dataB: Range1d[]): number[] {
 function getSingleArrayData(dataA: Range1d[], dataB: Range1d[]): number[] {
   const result: number[] = [];
   for (const rangeA of dataA) {
-    let toCheck0: number | undefined =
-      rangeA.low + Math.abs(rangeA.high - rangeA.low) * 0.25;
-    let toCheck1: number | undefined =
-      rangeA.low + Math.abs(rangeA.high - rangeA.low) * 0.5;
-    let toCheck2: number | undefined =
-      rangeA.low + Math.abs(rangeA.high - rangeA.low) * 0.75;
+    let toCheck0: number | undefined = rangeA.low + Math.abs(rangeA.high - rangeA.low) * 0.25;
+    let toCheck1: number | undefined = rangeA.low + Math.abs(rangeA.high - rangeA.low) * 0.5;
+    let toCheck2: number | undefined = rangeA.low + Math.abs(rangeA.high - rangeA.low) * 0.75;
 
     for (const rangeB of dataB) {
       if (rangeB.containsX(toCheck0!)) toCheck0 = undefined;
@@ -171,12 +165,9 @@ function getParityArrayData(dataA: Range1d[], dataB: Range1d[]): any {
     let counter0 = 1;
     let counter1 = 1;
     let counter2 = 1;
-    const toCheck0: number | undefined =
-      rangeA.low + Math.abs(rangeA.high - rangeA.low) * 0.25;
-    const toCheck1: number | undefined =
-      rangeA.low + Math.abs(rangeA.high - rangeA.low) * 0.5;
-    const toCheck2: number | undefined =
-      rangeA.low + Math.abs(rangeA.high - rangeA.low) * 0.75;
+    const toCheck0: number | undefined = rangeA.low + Math.abs(rangeA.high - rangeA.low) * 0.25;
+    const toCheck1: number | undefined = rangeA.low + Math.abs(rangeA.high - rangeA.low) * 0.5;
+    const toCheck2: number | undefined = rangeA.low + Math.abs(rangeA.high - rangeA.low) * 0.75;
 
     for (const rangeB of dataB) {
       if (rangeB.containsX(toCheck0)) counter0++;
@@ -199,11 +190,7 @@ function getParityArrayData(dataA: Range1d[], dataB: Range1d[]): any {
 
 // return an array of ranges with each range
 // {low: cos (omega * i), high: cos (omega * i * i + alpha)}
-function range1dSamples(
-  numRange: number,
-  omega: number = 3.0,
-  alpha: number = 0.2
-): Range1d[] {
+function range1dSamples(numRange: number, omega: number = 3.0, alpha: number = 0.2): Range1d[] {
   const result = [];
   for (let i = 0; i < numRange; i++) {
     const a = Math.cos(omega * i);
@@ -216,42 +203,12 @@ function range1dSamples(
 describe("Range1dArray", () => {
   it("compareRange1dLexicalLowHigh", () => {
     const ck = new Checker();
-    ck.testExactNumber(
-      -1,
-      compareRange1dLexicalLowHigh(
-        Range1d.createXX(0, 1),
-        Range1d.createXX(0, 2)
-      )
-    );
-    ck.testExactNumber(
-      1,
-      compareRange1dLexicalLowHigh(
-        Range1d.createXX(0, 3),
-        Range1d.createXX(0, 2)
-      )
-    );
+    ck.testExactNumber(-1, compareRange1dLexicalLowHigh(Range1d.createXX(0, 1), Range1d.createXX(0, 2)));
+    ck.testExactNumber(1, compareRange1dLexicalLowHigh(Range1d.createXX(0, 3), Range1d.createXX(0, 2)));
 
-    ck.testExactNumber(
-      -1,
-      compareRange1dLexicalLowHigh(
-        Range1d.createXX(-1, 1),
-        Range1d.createXX(0, 1)
-      )
-    );
-    ck.testExactNumber(
-      1,
-      compareRange1dLexicalLowHigh(
-        Range1d.createXX(2, 3),
-        Range1d.createXX(0, 2)
-      )
-    );
-    ck.testExactNumber(
-      0,
-      compareRange1dLexicalLowHigh(
-        Range1d.createXX(2, 3),
-        Range1d.createXX(2, 3)
-      )
-    );
+    ck.testExactNumber(-1, compareRange1dLexicalLowHigh(Range1d.createXX(-1, 1), Range1d.createXX(0, 1)));
+    ck.testExactNumber(1, compareRange1dLexicalLowHigh(Range1d.createXX(2, 3), Range1d.createXX(0, 2)));
+    ck.testExactNumber(0, compareRange1dLexicalLowHigh(Range1d.createXX(2, 3), Range1d.createXX(2, 3)));
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -271,19 +228,9 @@ describe("Range1dArray", () => {
       Range1d.createXX(8, 10),
       Range1d.createXX(9, 10),
     ];
-    const range2 = [
-      Range1d.createXX(0, 5),
-      Range1d.createXX(3, 6),
-      Range1d.createXX(7, 20),
-      Range1d.createXX(8, 21),
-    ];
+    const range2 = [Range1d.createXX(0, 5), Range1d.createXX(3, 6), Range1d.createXX(7, 20), Range1d.createXX(8, 21)];
     const range3 = range1dSamples(10, 3.0, 0.2);
-    const range4 = [
-      Range1d.createXX(0, 4),
-      Range1d.createXX(0, 3),
-      Range1d.createXX(2, 7),
-      Range1d.createXX(2, 10),
-    ];
+    const range4 = [Range1d.createXX(0, 4), Range1d.createXX(0, 3), Range1d.createXX(2, 7), Range1d.createXX(2, 10)];
 
     for (const ranges of [range0, range1, range2, range3, range4]) {
       ck.testFalse(Range1dArray.isSorted(ranges), "Expect messy input", ranges);
@@ -336,24 +283,15 @@ describe("Range1dArray", () => {
 
     // Test parity results a little more harshly in terms of multiple overlaps
     const parityExpectations = getParityArrayData(range0, range1);
-    for (const i of parityExpectations.insideParity)
-      ck.testTrue(Range1dArray.testUnion(parityResult, i));
-    for (const i of parityExpectations.outsideParity)
-      ck.testFalse(Range1dArray.testUnion(parityResult, i));
+    for (const i of parityExpectations.insideParity) ck.testTrue(Range1dArray.testUnion(parityResult, i));
+    for (const i of parityExpectations.outsideParity) ck.testFalse(Range1dArray.testUnion(parityResult, i));
 
     ck.testFalse(Range1dArray.testUnion([Range1d.createXX(-1.02, -1.01)], 0));
     ck.testFalse(Range1dArray.testUnion([Range1d.createXX(1.01, 1.02)], 0));
 
     // Test the length and breaks of a given range array
-    ck.testCoordinate(
-      0.95,
-      Range1dArray.sumLengths(range1),
-      "Hard coded range array has length of expected value"
-    );
-    ck.testTrue(
-      Range1dArray.isSorted(range0, false),
-      "Generated range array is reported as sorted."
-    );
+    ck.testCoordinate(0.95, Range1dArray.sumLengths(range1), "Hard coded range array has length of expected value");
+    ck.testTrue(Range1dArray.isSorted(range0, false), "Generated range array is reported as sorted.");
 
     ck.checkpoint("Range1dArray.IntersectDifferenceUnionParity");
     expect(ck.getNumErrors()).equals(0);
@@ -361,10 +299,7 @@ describe("Range1dArray", () => {
 
   it("UnionParitySimplificationA", () => {
     const ck = new Checker();
-    for (const allRanges of [
-      range1dSamples(3, 2.0, 0.5),
-      range1dSamples(20, 2.94, 0.34234),
-    ]) {
+    for (const allRanges of [range1dSamples(3, 2.0, 0.5), range1dSamples(20, 2.94, 0.34234)]) {
       testUnionSimplify(ck, allRanges);
       testParitySimplify(ck, allRanges);
     }
@@ -434,9 +369,7 @@ describe("Range1dArray", () => {
         for (const r of union) {
           const x = r.fractionToPoint(0.5);
           ck.testTrue(
-            Range1dArray.countContainingRanges(arrayA, x) +
-              Range1dArray.countContainingRanges(arrayB, x) >
-              0
+            Range1dArray.countContainingRanges(arrayA, x) + Range1dArray.countContainingRanges(arrayB, x) > 0
           );
         }
       }
@@ -491,14 +424,10 @@ describe("Range1dArray", () => {
         []
       ) as number[];
 
-      const forwardRange = Range1dArray.firstLowToLastHigh(
-        forwardRangesForUnion
-      );
+      const forwardRange = Range1dArray.firstLowToLastHigh(forwardRangesForUnion);
       Range1dArray.simplifySortUnion(forwardRangesForUnion, true);
 
-      const forwardUnionRange = Range1dArray.firstLowToLastHigh(
-        forwardRangesForUnion
-      );
+      const forwardUnionRange = Range1dArray.firstLowToLastHigh(forwardRangesForUnion);
       ck.testExactNumber(1, forwardRangesForUnion.length);
       ck.testTrue(forwardRange.isAlmostEqual(forwardUnionRange));
 
@@ -509,9 +438,7 @@ describe("Range1dArray", () => {
         (_i: number) => -1
       );
       Range1dArray.simplifySortUnion(reverseRangesForUnion);
-      const reverseUnionRange = Range1dArray.firstLowToLastHigh(
-        forwardRangesForUnion
-      );
+      const reverseUnionRange = Range1dArray.firstLowToLastHigh(forwardRangesForUnion);
       ck.testExactNumber(1, reverseRangesForUnion.length);
       ck.testTrue(forwardRange.isAlmostEqual(reverseUnionRange));
 
@@ -525,36 +452,18 @@ describe("Range1dArray", () => {
       ck.testExactNumber(n, forwardRangesForParity.length);
 
       for (const x of originalMidpoints) {
-        ck.testExactNumber(
-          1,
-          Range1dArray.countContainingRanges(forwardRangesForUnion, x)
-        );
-        ck.testExactNumber(
-          1,
-          Range1dArray.countContainingRanges(forwardRangesForParity, x)
-        );
+        ck.testExactNumber(1, Range1dArray.countContainingRanges(forwardRangesForUnion, x));
+        ck.testExactNumber(1, Range1dArray.countContainingRanges(forwardRangesForParity, x));
       }
 
       for (const x of originalOutsidePoints) {
-        ck.testExactNumber(
-          0,
-          Range1dArray.countContainingRanges(forwardRangesForUnion, x)
-        );
-        ck.testExactNumber(
-          0,
-          Range1dArray.countContainingRanges(forwardRangesForParity, x)
-        );
+        ck.testExactNumber(0, Range1dArray.countContainingRanges(forwardRangesForUnion, x));
+        ck.testExactNumber(0, Range1dArray.countContainingRanges(forwardRangesForParity, x));
       }
       // due to the overlap construction, "gap" points are inside the union, NOT in parity
       for (const x of originalGapPoints) {
-        ck.testExactNumber(
-          1,
-          Range1dArray.countContainingRanges(forwardRangesForUnion, x)
-        );
-        ck.testExactNumber(
-          0,
-          Range1dArray.countContainingRanges(forwardRangesForParity, x)
-        );
+        ck.testExactNumber(1, Range1dArray.countContainingRanges(forwardRangesForUnion, x));
+        ck.testExactNumber(0, Range1dArray.countContainingRanges(forwardRangesForParity, x));
       }
     }
     expect(ck.getNumErrors()).equals(0);
@@ -570,8 +479,7 @@ describe("Range1dArray", () => {
       );
       const forwardRange = Range1dArray.firstLowToLastHigh(forwardOverlaps);
       Range1dArray.simplifySortUnion(forwardOverlaps, true);
-      const forwardUnionRange =
-        Range1dArray.firstLowToLastHigh(forwardOverlaps);
+      const forwardUnionRange = Range1dArray.firstLowToLastHigh(forwardOverlaps);
       ck.testExactNumber(1, forwardOverlaps.length);
       ck.testTrue(forwardRange.isAlmostEqual(forwardUnionRange));
 

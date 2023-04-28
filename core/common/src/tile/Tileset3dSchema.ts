@@ -23,12 +23,7 @@ export namespace Tileset3dSchema {
     extras?: any;
   }
 
-  export type BoundingSphere = [
-    centerX: number,
-    centerY: number,
-    centerZ: number,
-    radius: number
-  ];
+  export type BoundingSphere = [centerX: number, centerY: number, centerZ: number, radius: number];
 
   export type BoundingRegion = [
     west: number,

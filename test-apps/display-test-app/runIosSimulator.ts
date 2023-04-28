@@ -15,44 +15,29 @@ const assetsPath = "../../core/backend/src/test/assets";
 const bimFile = "mirukuru.ibim";
 
 // Sort function that compares strings numerically from high to low
-const numericCompareDescending = (a: string, b: string) =>
-  b.localeCompare(a, undefined, { numeric: true });
+const numericCompareDescending = (a: string, b: string) => b.localeCompare(a, undefined, { numeric: true });
 
 // Similar to the launchApp function but doesn't retry, adds the --console option, and allows for args.
-Simctl.prototype.launchAppWithConsole = async function (
-  bundleId: string,
-  ...args: [string]
-) {
+Simctl.prototype.launchAppWithConsole = async function (bundleId: string, ...args: [string]) {
   const { stdout } = await this.exec("launch", {
     args: ["--console", this.requireUdid("launch"), bundleId, ...args],
   });
   return stdout.trim();
 };
 
-Simctl.prototype.getLatestRuntimeVersion = async function (
-  majorVersion: string,
-  platform = "iOS"
-) {
+Simctl.prototype.getLatestRuntimeVersion = async function (majorVersion: string, platform = "iOS") {
   const { stdout } = await this.exec("list", { args: ["runtimes", "--json"] });
-  const runtimes: [{ version: string; identifier: string; name: string }] =
-    JSON.parse(stdout).runtimes;
+  const runtimes: [{ version: string; identifier: string; name: string }] = JSON.parse(stdout).runtimes;
   runtimes.sort((a, b) => numericCompareDescending(a.version, b.version));
   for (const { version, name } of runtimes) {
-    if (
-      version.startsWith(`${majorVersion}.`) &&
-      name.toLowerCase().startsWith(platform.toLowerCase())
-    ) {
+    if (version.startsWith(`${majorVersion}.`) && name.toLowerCase().startsWith(platform.toLowerCase())) {
       return version;
     }
   }
   return undefined;
 };
 
-function runProgram(
-  program: string,
-  args: string[] = [],
-  cwd: string | undefined = undefined
-) {
+function runProgram(program: string, args: string[] = [], cwd: string | undefined = undefined) {
   return execFileSync(program, args, {
     stdio: ["ignore", "pipe", "ignore"],
     cwd,
@@ -79,10 +64,7 @@ async function main() {
   const deviceBaseName = "iPad Pro (11-inch)";
   var desiredDevice: string;
   var desiredRuntime: string;
-  const isAppleCpu = runProgram("sysctl", [
-    "-n",
-    "machdep.cpu.brand_string",
-  ]).startsWith("Apple");
+  const isAppleCpu = runProgram("sysctl", ["-n", "machdep.cpu.brand_string"]).startsWith("Apple");
   if (isAppleCpu) {
     desiredDevice = `${deviceBaseName} (1st generation)`;
     desiredRuntime = "13"; // so that it runs on M1 without requiring the iOS arm64 simulator binaries
@@ -92,23 +74,18 @@ async function main() {
   }
 
   keys = keys.filter((key) => key.startsWith(desiredRuntime));
-  var device:
-    | { name: string; sdk: string; udid: string; state: string }
-    | undefined;
+  var device: { name: string; sdk: string; udid: string; state: string } | undefined;
   if (keys.length) {
     // Look for a booted simulator
     for (const key of keys) {
-      device = results[key].find(
-        (curr: { state: string }) => curr.state === "Booted"
-      );
+      device = results[key].find((curr: { state: string }) => curr.state === "Booted");
       if (device) break;
     }
     // If none are booted, use the deviceBaseName or fall back to the first one
     if (!device) {
       device =
-        results[keys[0]].find((device: { name: string }) =>
-          device.name.startsWith(deviceBaseName)
-        ) ?? results[keys[0]][0];
+        results[keys[0]].find((device: { name: string }) => device.name.startsWith(deviceBaseName)) ??
+        results[keys[0]][0];
     }
   } else {
     // try to create a simulator
@@ -116,9 +93,7 @@ async function main() {
     if (!sdk) {
       log(`ERROR: No runtimes for iOS ${desiredRuntime} found.`);
       if (isAppleCpu) {
-        log(
-          "Note: Ignoring this error on Apple Silicon until a better solution is found."
-        );
+        log("Note: Ignoring this error on Apple Silicon until a better solution is found.");
         process.exitCode = 0;
       }
       return;
@@ -153,10 +128,7 @@ async function main() {
   // Copy the model to the simulator's Documents dir
   const container = await simctl.getAppContainer(bundleId, "data");
   log(`Copying ${bimFile} model into the app's Documents.`);
-  await copyFile(
-    `${__dirname}/${assetsPath}/${bimFile}`,
-    `${container}/Documents/${bimFile}`
-  );
+  await copyFile(`${__dirname}/${assetsPath}/${bimFile}`, `${container}/Documents/${bimFile}`);
 
   // Launch the app instructing it to open the model and exit
   log("Launching app");

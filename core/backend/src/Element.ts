@@ -368,10 +368,7 @@ export class Element extends Entity {
    * @see [[ElementDrivesElement]] for more on element dependency graphs.
    * @beta
    */
-  protected static onBeforeOutputsHandled(
-    _id: Id64String,
-    _iModel: IModelDb
-  ): void {}
+  protected static onBeforeOutputsHandled(_id: Id64String, _iModel: IModelDb): void {}
 
   /** Called on an element in a graph after all of its inputs have been processed and before its outputs are processed.
    * This callback is made when:
@@ -383,10 +380,7 @@ export class Element extends Entity {
    * @see [[ElementDrivesElement]] for more on element dependency graphs.
    * @beta
    */
-  protected static onAllInputsHandled(
-    _id: Id64String,
-    _iModel: IModelDb
-  ): void {}
+  protected static onAllInputsHandled(_id: Id64String, _iModel: IModelDb): void {}
 
   /** Save this Element's properties to an object for serializing to JSON.
    * @internal
@@ -403,8 +397,7 @@ export class Element extends Entity {
     if (this.federationGuid) val.federationGuid = this.federationGuid;
     if (this.parent) val.parent = this.parent;
 
-    if (Object.keys(this.jsonProperties).length > 0)
-      val.jsonProperties = this.jsonProperties;
+    if (Object.keys(this.jsonProperties).length > 0) val.jsonProperties = this.jsonProperties;
 
     return val;
   }
@@ -418,13 +411,10 @@ export class Element extends Entity {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(
-    referenceIds: EntityReferenceSet
-  ): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     referenceIds.addModel(this.model); // The modeledElement is a reference
-    if (this.code.scope && Id64.isValidId64(this.code.scope))
-      referenceIds.addElement(this.code.scope); // The element that scopes the code is a reference
+    if (this.code.scope && Id64.isValidId64(this.code.scope)) referenceIds.addElement(this.code.scope); // The element that scopes the code is a reference
     if (this.parent) referenceIds.addElement(this.parent.id); // A parent element is a reference
   }
 
@@ -443,19 +433,13 @@ export class Element extends Entity {
    * @note any property listed here must be added to the reference ids in [[collectReferenceIds]]
    * @beta
    */
-  public static readonly requiredReferenceKeys: ReadonlyArray<string> = [
-    "parent",
-    "model",
-  ];
+  public static readonly requiredReferenceKeys: ReadonlyArray<string> = ["parent", "model"];
 
   /** A map of every [[requiredReferenceKeys]] on this class to their entity type.
    * @note This should be overridden (with `super` called) at each level of the class hierarchy that introduces required references.
    * @alpha
    */
-  public static readonly requiredReferenceKeyTypeMap: Record<
-    string,
-    ConcreteEntityTypes
-  > = {
+  public static readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes> = {
     parent: ConcreteEntityTypes.Element,
     model: ConcreteEntityTypes.Model,
   };
@@ -466,8 +450,7 @@ export class Element extends Entity {
   }
 
   private getAllUserProperties(): any {
-    if (!this.jsonProperties.UserProps)
-      this.jsonProperties.UserProps = new Object();
+    if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object();
 
     return this.jsonProperties.UserProps;
   }
@@ -507,22 +490,12 @@ export class Element extends Entity {
     const addKey = (key: string) => `<b>%{iModelJs:Element.${key}}:</b> `; // %{iModelJs:Element.xxx} is replaced with localized value of xxx in frontend.
     const msg: string[] = [];
     const display = this.getDisplayLabel();
-    msg.push(
-      display
-        ? display
-        : `${addKey("Id") + this.id}, ${addKey("Type")}${this.className}`
-    );
+    msg.push(display ? display : `${addKey("Id") + this.id}, ${addKey("Type")}${this.className}`);
 
     if (this instanceof GeometricElement)
-      msg.push(
-        addKey("Category") +
-          this.iModel.elements.getElement(this.category).getDisplayLabel()
-      );
+      msg.push(addKey("Category") + this.iModel.elements.getElement(this.category).getDisplayLabel());
 
-    msg.push(
-      addKey("Model") +
-        this.iModel.elements.getElement(this.model).getDisplayLabel()
-    );
+    msg.push(addKey("Model") + this.iModel.elements.getElement(this.model).getDisplayLabel());
     return msg;
   }
 
@@ -598,22 +571,19 @@ export abstract class GeometricElement extends Element {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(
-    referenceIds: EntityReferenceSet
-  ): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     referenceIds.addElement(this.category);
     // TODO: GeometryPartIds?
   }
 
   /** @beta */
-  public static override readonly requiredReferenceKeys: ReadonlyArray<string> =
-    [...super.requiredReferenceKeys, "category"];
+  public static override readonly requiredReferenceKeys: ReadonlyArray<string> = [
+    ...super.requiredReferenceKeys,
+    "category",
+  ];
   /** @alpha */
-  public static override readonly requiredReferenceKeyTypeMap: Record<
-    string,
-    ConcreteEntityTypes
-  > = {
+  public static override readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes> = {
     ...super.requiredReferenceKeyTypeMap,
     category: ConcreteEntityTypes.Element,
   };
@@ -635,27 +605,22 @@ export abstract class GeometricElement3d extends GeometricElement {
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) {
     super(props, iModel);
     this.placement = Placement3d.fromJSON(props.placement);
-    if (props.typeDefinition)
-      this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
+    if (props.typeDefinition) this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
   }
 
   /** @internal */
   public override toJSON(): GeometricElement3dProps {
     const val = super.toJSON() as GeometricElement3dProps;
     val.placement = this.placement;
-    if (undefined !== this.typeDefinition)
-      val.typeDefinition = this.typeDefinition;
+    if (undefined !== this.typeDefinition) val.typeDefinition = this.typeDefinition;
 
     return val;
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(
-    referenceIds: EntityReferenceSet
-  ): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    if (undefined !== this.typeDefinition)
-      referenceIds.addElement(this.typeDefinition.id);
+    if (undefined !== this.typeDefinition) referenceIds.addElement(this.typeDefinition.id);
   }
 }
 
@@ -688,27 +653,22 @@ export abstract class GeometricElement2d extends GeometricElement {
   public constructor(props: GeometricElement2dProps, iModel: IModelDb) {
     super(props, iModel);
     this.placement = Placement2d.fromJSON(props.placement);
-    if (props.typeDefinition)
-      this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
+    if (props.typeDefinition) this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
   }
 
   /** @internal */
   public override toJSON(): GeometricElement2dProps {
     const val = super.toJSON() as GeometricElement2dProps;
     val.placement = this.placement;
-    if (undefined !== this.typeDefinition)
-      val.typeDefinition = this.typeDefinition;
+    if (undefined !== this.typeDefinition) val.typeDefinition = this.typeDefinition;
 
     return val;
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(
-    referenceIds: EntityReferenceSet
-  ): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    if (undefined !== this.typeDefinition)
-      referenceIds.addElement(this.typeDefinition.id);
+    if (undefined !== this.typeDefinition) referenceIds.addElement(this.typeDefinition.id);
   }
 }
 
@@ -863,8 +823,7 @@ export class SectionDrawingLocation extends SpatialLocationElement {
 
   public constructor(props: SectionDrawingLocationProps, iModel: IModelDb) {
     super(props, iModel);
-    this.sectionView =
-      RelatedElement.fromJSON(props.sectionView) ?? RelatedElement.none;
+    this.sectionView = RelatedElement.fromJSON(props.sectionView) ?? RelatedElement.none;
   }
 
   /** @internal */
@@ -945,14 +904,8 @@ export class Subject extends InformationReferenceElement {
    * @param parentSubjectId The Id of the parent Subject that provides the scope for names of its child Subjects.
    * @param codeValue The child Subject name
    */
-  public static createCode(
-    iModelDb: IModelDb,
-    parentSubjectId: CodeScopeProps,
-    codeValue: string
-  ): Code {
-    const codeSpec: CodeSpec = iModelDb.codeSpecs.getByName(
-      BisCodeSpec.subject
-    );
+  public static createCode(iModelDb: IModelDb, parentSubjectId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.subject);
     return new Code({
       spec: codeSpec.id,
       scope: parentSubjectId,
@@ -967,12 +920,7 @@ export class Subject extends InformationReferenceElement {
    * @returns The newly constructed Subject
    * @throws [[IModelError]] if there is a problem creating the Subject
    */
-  public static create(
-    iModelDb: IModelDb,
-    parentSubjectId: Id64String,
-    name: string,
-    description?: string
-  ): Subject {
+  public static create(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, description?: string): Subject {
     const subjectProps: SubjectProps = {
       classFullName: this.classFullName,
       model: IModel.repositoryModelId,
@@ -1038,11 +986,7 @@ export class Drawing extends Document {
    * @param scopeModelId The Id of the DocumentListModel that contains the Drawing and provides the scope for its name.
    * @param codeValue The Drawing name
    */
-  public static createCode(
-    iModel: IModelDb,
-    scopeModelId: CodeScopeProps,
-    codeValue: string
-  ): Code {
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.drawing);
     return new Code({
       spec: codeSpec.id,
@@ -1058,11 +1002,7 @@ export class Drawing extends Document {
    * @returns The Id of the newly inserted Drawing element and the DrawingModel that breaks it down (same value).
    * @throws [[IModelError]] if unable to insert the element.
    */
-  public static insert(
-    iModelDb: IModelDb,
-    documentListModelId: Id64String,
-    name: string
-  ): Id64String {
+  public static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string): Id64String {
     const drawingProps: ElementProps = {
       classFullName: this.classFullName,
       model: documentListModelId,
@@ -1108,27 +1048,18 @@ export class SectionDrawing extends Drawing {
   constructor(props: SectionDrawingProps, iModel: IModelDb) {
     super(props, iModel);
     this.sectionType = JsonUtils.asInt(props.sectionType, SectionType.Section);
-    this.spatialView =
-      RelatedElement.fromJSON(props.spatialView) ?? RelatedElement.none;
-    this.displaySpatialView = JsonUtils.asBool(
-      props.jsonProperties?.displaySpatialView
-    );
+    this.spatialView = RelatedElement.fromJSON(props.spatialView) ?? RelatedElement.none;
+    this.displaySpatialView = JsonUtils.asBool(props.jsonProperties?.displaySpatialView);
 
     const json = props.jsonProperties;
     if (!json) return;
 
     if (json.drawingToSpatialTransform)
-      this.drawingToSpatialTransform = Transform.fromJSON(
-        json.drawingToSpatialTransform
-      );
+      this.drawingToSpatialTransform = Transform.fromJSON(json.drawingToSpatialTransform);
 
-    if (json.sheetToSpatialTransform)
-      this.sheetToSpatialTransform = Transform.fromJSON(
-        json.sheetToSpatialTransform
-      );
+    if (json.sheetToSpatialTransform) this.sheetToSpatialTransform = Transform.fromJSON(json.sheetToSpatialTransform);
 
-    if (json.drawingBoundaryClip)
-      this.drawingBoundaryClip = ClipVector.fromJSON(json.drawingBoundaryClip);
+    if (json.drawingBoundaryClip) this.drawingBoundaryClip = ClipVector.fromJSON(json.drawingBoundaryClip);
   }
 
   /** Convert to JSON representation. */
@@ -1141,15 +1072,10 @@ export class SectionDrawing extends Drawing {
 
     if (!props.jsonProperties) props.jsonProperties = {};
 
-    props.jsonProperties.displaySpatialView = this.displaySpatialView
-      ? true
-      : undefined;
-    props.jsonProperties.drawingToSpatialTransform =
-      this.drawingToSpatialTransform?.toJSON();
-    props.jsonProperties.sheetToSpatialTransform =
-      this.sheetToSpatialTransform?.toJSON();
-    props.jsonProperties.drawingBoundaryClip =
-      this.drawingBoundaryClip?.toJSON();
+    props.jsonProperties.displaySpatialView = this.displaySpatialView ? true : undefined;
+    props.jsonProperties.drawingToSpatialTransform = this.drawingToSpatialTransform?.toJSON();
+    props.jsonProperties.sheetToSpatialTransform = this.sheetToSpatialTransform?.toJSON();
+    props.jsonProperties.drawingBoundaryClip = this.drawingBoundaryClip?.toJSON();
 
     return props;
   }
@@ -1187,9 +1113,7 @@ export class SheetTemplate extends Document {
     super(props, iModel);
   }
   /** @internal */
-  protected override collectReferenceConcreteIds(
-    referenceIds: EntityReferenceSet
-  ): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     if (undefined !== this.border) referenceIds.addElement(this.border);
   }
@@ -1214,18 +1138,13 @@ export class Sheet extends Document {
     this.height = JsonUtils.asDouble(props.height);
     this.width = JsonUtils.asDouble(props.width);
     this.scale = props.scale;
-    this.sheetTemplate = props.sheetTemplate
-      ? Id64.fromJSON(props.sheetTemplate)
-      : undefined;
+    this.sheetTemplate = props.sheetTemplate ? Id64.fromJSON(props.sheetTemplate) : undefined;
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(
-    referenceIds: EntityReferenceSet
-  ): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    if (undefined !== this.sheetTemplate)
-      referenceIds.addElement(this.sheetTemplate);
+    if (undefined !== this.sheetTemplate) referenceIds.addElement(this.sheetTemplate);
   }
 
   /** Create a Code for a Sheet given a name that is meant to be unique within the scope of the specified DocumentListModel.
@@ -1233,11 +1152,7 @@ export class Sheet extends Document {
    * @param scopeModelId The Id of the DocumentListModel that contains the Sheet and provides the scope for its name.
    * @param codeValue The Sheet name
    */
-  public static createCode(
-    iModel: IModelDb,
-    scopeModelId: CodeScopeProps,
-    codeValue: string
-  ): Code {
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.sheet);
     return new Code({
       spec: codeSpec.id,
@@ -1339,21 +1254,9 @@ export class DefinitionContainer extends DefinitionSet {
    * @note There is not a predefined CodeSpec for DefinitionContainer elements, so it is the responsibility of the domain or application to create one.
    * @throws [[IModelError]] if there is a problem inserting the DefinitionContainer
    */
-  public static insert(
-    iModelDb: IModelDb,
-    definitionModelId: Id64String,
-    code: Code,
-    isPrivate?: boolean
-  ): Id64String {
-    const containerElement = this.create(
-      iModelDb,
-      definitionModelId,
-      code,
-      isPrivate
-    );
-    const containerElementId = iModelDb.elements.insertElement(
-      containerElement.toJSON()
-    );
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String {
+    const containerElement = this.create(iModelDb, definitionModelId, code, isPrivate);
+    const containerElementId = iModelDb.elements.insertElement(containerElement.toJSON());
     const containerSubModelProps: ModelProps = {
       classFullName: DefinitionModel.classFullName,
       modeledElement: { id: containerElementId },
@@ -1414,9 +1317,7 @@ export abstract class TypeDefinitionElement extends DefinitionElement {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(
-    referenceIds: EntityReferenceSet
-  ): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     if (undefined !== this.recipe) referenceIds.addElement(this.recipe.id);
   }
@@ -1464,14 +1365,8 @@ export abstract class PhysicalType extends TypeDefinitionElement {
    * @param scopeModelId The Id of the DefinitionModel that contains the PhysicalType element and provides the scope for its name.
    * @param codeValue The PhysicalType name
    */
-  public static createCode(
-    iModel: IModelDb,
-    scopeModelId: CodeScopeProps,
-    codeValue: string
-  ): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(
-      BisCodeSpec.physicalType
-    );
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.physicalType);
     return new Code({
       spec: codeSpec.id,
       scope: scopeModelId,
@@ -1498,14 +1393,8 @@ export abstract class SpatialLocationType extends TypeDefinitionElement {
    * @param scopeModelId The Id of the DefinitionModel that contains the SpatialLocationType element and provides the scope for its name.
    * @param codeValue The SpatialLocationType name
    */
-  public static createCode(
-    iModel: IModelDb,
-    scopeModelId: CodeScopeProps,
-    codeValue: string
-  ): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(
-      BisCodeSpec.spatialLocationType
-    );
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.spatialLocationType);
     return new Code({
       spec: codeSpec.id,
       scope: scopeModelId,
@@ -1531,14 +1420,8 @@ export class TemplateRecipe3d extends RecipeDefinitionElement {
    * @param definitionModelId The Id of the [DefinitionModel]($backend) that contains this TemplateRecipe3d element.
    * @param codeValue The name of the TemplateRecipe3d element.
    */
-  public static createCode(
-    iModelDb: IModelDb,
-    definitionModelId: CodeScopeProps,
-    codeValue: string
-  ): Code {
-    const codeSpec: CodeSpec = iModelDb.codeSpecs.getByName(
-      BisCodeSpec.templateRecipe3d
-    );
+  public static createCode(iModelDb: IModelDb, definitionModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.templateRecipe3d);
     return new Code({
       spec: codeSpec.id,
       scope: definitionModelId,
@@ -1580,9 +1463,7 @@ export class TemplateRecipe3d extends RecipeDefinitionElement {
     isPrivate?: boolean
   ): Id64String {
     const element = this.create(iModelDb, definitionModelId, name, isPrivate);
-    const modeledElementId: Id64String = iModelDb.elements.insertElement(
-      element.toJSON()
-    );
+    const modeledElementId: Id64String = iModelDb.elements.insertElement(element.toJSON());
     const modelProps: GeometricModel3dProps = {
       classFullName: PhysicalModel.classFullName,
       modeledElement: { id: modeledElementId },
@@ -1610,14 +1491,8 @@ export abstract class GraphicalType2d extends TypeDefinitionElement {
    * @param scopeModelId The Id of the DefinitionModel that contains the GraphicalType2d element and provides the scope for its name.
    * @param codeValue The GraphicalType2d name
    */
-  public static createCode(
-    iModel: IModelDb,
-    scopeModelId: CodeScopeProps,
-    codeValue: string
-  ): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(
-      BisCodeSpec.graphicalType2d
-    );
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.graphicalType2d);
     return new Code({
       spec: codeSpec.id,
       scope: scopeModelId,
@@ -1643,14 +1518,8 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
    * @param definitionModelId The Id of the [DefinitionModel]($backend) that contains this TemplateRecipe2d element.
    * @param codeValue The name of the TemplateRecipe2d element.
    */
-  public static createCode(
-    iModelDb: IModelDb,
-    definitionModelId: CodeScopeProps,
-    codeValue: string
-  ): Code {
-    const codeSpec: CodeSpec = iModelDb.codeSpecs.getByName(
-      BisCodeSpec.templateRecipe2d
-    );
+  public static createCode(iModelDb: IModelDb, definitionModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.templateRecipe2d);
     return new Code({
       spec: codeSpec.id,
       scope: definitionModelId,
@@ -1692,9 +1561,7 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
     isPrivate?: boolean
   ): Id64String {
     const element = this.create(iModelDb, definitionModelId, name, isPrivate);
-    const modeledElementId: Id64String = iModelDb.elements.insertElement(
-      element.toJSON()
-    );
+    const modeledElementId: Id64String = iModelDb.elements.insertElement(element.toJSON());
     const modelProps: GeometricModel2dProps = {
       classFullName: DrawingModel.classFullName,
       modeledElement: { id: modeledElementId },
@@ -1717,10 +1584,7 @@ export abstract class InformationPartitionElement extends InformationContentElem
   /** A human-readable string describing the intent of the partition. */
   public description?: string;
   /** @internal */
-  public constructor(
-    props: InformationPartitionElementProps,
-    iModel: IModelDb
-  ) {
+  public constructor(props: InformationPartitionElementProps, iModel: IModelDb) {
     super(props, iModel);
   }
   /** @internal */
@@ -1733,14 +1597,8 @@ export abstract class InformationPartitionElement extends InformationContentElem
    * @param parentSubjectId The Id of the parent Subject that provides the scope for names of its child InformationPartitionElements.
    * @param codeValue The InformationPartitionElement name
    */
-  public static createCode(
-    iModel: IModelDb,
-    parentSubjectId: CodeScopeProps,
-    codeValue: string
-  ): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(
-      BisCodeSpec.informationPartitionElement
-    );
+  public static createCode(iModel: IModelDb, parentSubjectId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.informationPartitionElement);
     return new Code({
       spec: codeSpec.id,
       scope: parentSubjectId,
@@ -1867,14 +1725,8 @@ export abstract class LinkElement extends InformationReferenceElement {
    * @param scopeModelId The Id of the Model that contains the LinkElement and provides the scope for its name.
    * @param codeValue The LinkElement name
    */
-  public static createCode(
-    iModel: IModelDb,
-    scopeModelId: CodeScopeProps,
-    codeValue: string
-  ): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(
-      BisCodeSpec.linkElement
-    );
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.linkElement);
     return new Code({
       spec: codeSpec.id,
       scope: scopeModelId,
@@ -2007,14 +1859,8 @@ export class GeometryPart extends DefinitionElement {
    * @param codeValue The GeometryPart name
    * @note GeometryPart elements are not required to be named (have a non-empty Code).
    */
-  public static createCode(
-    iModel: IModelDb,
-    scopeModelId: CodeScopeProps,
-    codeValue: string
-  ): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(
-      BisCodeSpec.geometryPart
-    );
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.geometryPart);
     return new Code({
       spec: codeSpec.id,
       scope: scopeModelId,
@@ -2044,11 +1890,7 @@ export class LineStyle extends DefinitionElement {
    * @param codeValue The name of the LineStyle
    * @returns A LineStyle Code
    */
-  public static createCode(
-    iModel: IModelDb,
-    scopeModelId: CodeScopeProps,
-    codeValue: string
-  ): Code {
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
     return new Code({
       spec: iModel.codeSpecs.getByName(BisCodeSpec.lineStyle).id,
       scope: scopeModelId,
@@ -2080,10 +1922,7 @@ export class RenderTimeline extends InformationRecordElement {
     this.scriptProps = RenderTimeline.parseScriptProps(props.script);
   }
 
-  public static fromJSON(
-    props: RenderTimelineProps,
-    iModel: IModelDb
-  ): RenderTimeline {
+  public static fromJSON(props: RenderTimelineProps, iModel: IModelDb): RenderTimeline {
     return new RenderTimeline(props, iModel);
   }
 
@@ -2104,9 +1943,7 @@ export class RenderTimeline extends InformationRecordElement {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(
-    ids: EntityReferenceSet
-  ): void {
+  protected override collectReferenceConcreteIds(ids: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(ids);
     const script = RenderSchedule.Script.fromJSON(this.scriptProps);
     script?.discloseIds(ids); // eslint-disable-line deprecation/deprecation
@@ -2120,9 +1957,7 @@ export class RenderTimeline extends InformationRecordElement {
   ): void {
     super.onCloned(context, sourceProps, targetProps);
     if (context.isBetweenIModels)
-      targetProps.script = JSON.stringify(
-        this.remapScript(context, this.parseScriptProps(targetProps.script))
-      );
+      targetProps.script = JSON.stringify(this.remapScript(context, this.parseScriptProps(targetProps.script)));
   }
 
   /** Remap Ids when cloning a RenderSchedule.Script between iModels on a DisplayStyle or RenderTimeline.
@@ -2144,9 +1979,7 @@ export class RenderTimeline extends InformationRecordElement {
       scriptProps.push(model);
       for (const element of model.elementTimelines) {
         elementIds.clear();
-        for (const sourceId of RenderSchedule.ElementTimeline.getElementIds(
-          element.elementIds
-        )) {
+        for (const sourceId of RenderSchedule.ElementTimeline.getElementIds(element.elementIds)) {
           const targetId = context.findTargetElementId(sourceId);
           if (Id64.isValid(targetId)) elementIds.insert(targetId);
         }

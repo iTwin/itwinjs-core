@@ -14,9 +14,7 @@ describe("Learning Snippets", () => {
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile(
-      "assets/datasets/Properties_60InstancesWithUrl2.ibim"
-    );
+    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {
@@ -70,16 +68,12 @@ describe("Learning Snippets", () => {
       expect(physicalModelContent!.contentSet.length).to.eq(62);
 
       // Ensure that non-physical model elements are not selected
-      const definitionModelContent = await Presentation.presentation.getContent(
-        {
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet([
-            { className: "BisCore:DefinitionModel", id: "0x16" },
-          ]),
-          descriptor: {},
-        }
-      );
+      const definitionModelContent = await Presentation.presentation.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        keys: new KeySet([{ className: "BisCore:DefinitionModel", id: "0x16" }]),
+        descriptor: {},
+      });
       expect(definitionModelContent).to.be.undefined;
     });
 

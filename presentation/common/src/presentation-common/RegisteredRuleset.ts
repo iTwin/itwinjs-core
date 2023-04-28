@@ -21,11 +21,7 @@ export class RegisteredRuleset implements IDisposable, Ruleset {
   private _disposeFunc: (ruleset: RegisteredRuleset) => void;
 
   /** Create a registered ruleset */
-  public constructor(
-    ruleset: Ruleset,
-    uniqueIdentifier: string,
-    disposeFunc: (ruleset: RegisteredRuleset) => void
-  ) {
+  public constructor(ruleset: Ruleset, uniqueIdentifier: string, disposeFunc: (ruleset: RegisteredRuleset) => void) {
     this._disposeFunc = disposeFunc;
     this._ruleset = ruleset;
     this._uniqueIdentifier = uniqueIdentifier;

@@ -10,11 +10,7 @@ The [ConditionalBooleanValue]($appui-abstract) class is used to specify a boolea
 const isHidden = new ConditionalBooleanValue(() => {
   const activeContentControl = ContentViewManager.getActiveContentControl();
   return !!activeContentControl?.viewport?.view.is2d();
-}, [
-  SyncUiEventId.ActiveContentChanged,
-  SyncUiEventId.ActiveViewportChanged,
-  SyncUiEventId.ViewStateChanged,
-]);
+}, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]);
 ```
 
 ## ConditionalStringValue
@@ -26,11 +22,7 @@ const iconSpec = new ConditionalStringValue(() => {
   const activeContentControl = ContentViewManager.getActiveContentControl();
   if (activeContentControl?.viewport?.view.is2d()) return "icon-rotate-left";
   return "icon-gyroscope";
-}, [
-  SyncUiEventId.ActiveContentChanged,
-  SyncUiEventId.ActiveViewportChanged,
-  SyncUiEventId.ViewStateChanged,
-]);
+}, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]);
 ```
 
 ## API Reference

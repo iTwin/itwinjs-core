@@ -19,11 +19,7 @@ import { Point2d } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { request, RequestBasicCredentials } from "../../request/Request";
-import {
-  ArcGisUtilities,
-  MapCartoRectangle,
-  MapLayerSourceValidation,
-} from "../internal";
+import { ArcGisUtilities, MapCartoRectangle, MapLayerSourceValidation } from "../internal";
 
 /** Values for return codes from [[MapLayerSource.validateSource]]
  * @public
@@ -74,13 +70,7 @@ export class MapLayerSource {
   public userName?: string;
   public password?: string;
 
-  private constructor(
-    formatId = "WMS",
-    name: string,
-    url: string,
-    baseMap = false,
-    transparentBackground = true
-  ) {
+  private constructor(formatId = "WMS", name: string, url: string, baseMap = false, transparentBackground = true) {
     this.formatId = formatId;
     this.name = name;
     this.url = url;
@@ -88,23 +78,13 @@ export class MapLayerSource {
     this.transparentBackground = transparentBackground;
   }
 
-  public static fromJSON(
-    json: MapLayerSourceProps
-  ): MapLayerSource | undefined {
+  public static fromJSON(json: MapLayerSourceProps): MapLayerSource | undefined {
     if (json === undefined) return undefined;
 
-    return new MapLayerSource(
-      json.formatId,
-      json.name,
-      json.url,
-      json.baseMap,
-      json.transparentBackground
-    );
+    return new MapLayerSource(json.formatId, json.name, json.url, json.baseMap, json.transparentBackground);
   }
 
-  public async validateSource(
-    ignoreCache?: boolean
-  ): Promise<MapLayerSourceValidation> {
+  public async validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
     return IModelApp.mapLayerFormatRegistry.validateSource(
       this.formatId,
       this.url,
@@ -137,9 +117,7 @@ export class MapLayerSource {
     };
   }
 
-  public toLayerSettings(
-    subLayers?: MapSubLayerProps[]
-  ): ImageMapLayerSettings | undefined {
+  public toLayerSettings(subLayers?: MapSubLayerProps[]): ImageMapLayerSettings | undefined {
     // When MapLayerSetting is created from a MapLayerSource, sub-layers and credentials need to be set separately.
     const layerSettings = ImageMapLayerSettings.fromJSON({
       ...this,
@@ -153,9 +131,7 @@ export class MapLayerSource {
   }
 
   private getCredentials(): RequestBasicCredentials | undefined {
-    return this.userName && this.password
-      ? { user: this.userName, password: this.password }
-      : undefined;
+    return this.userName && this.password ? { user: this.userName, password: this.password } : undefined;
   }
 }
 
@@ -170,17 +146,10 @@ export class MapLayerSources {
     return MapLayerSources._instance;
   }
 
-  public findByName(
-    name: string,
-    baseMap: boolean = false
-  ): MapLayerSource | undefined {
+  public findByName(name: string, baseMap: boolean = false): MapLayerSource | undefined {
     const nameTest = name.toLowerCase();
     for (const source of this._sources)
-      if (
-        source.baseMap === baseMap &&
-        source.name.toLowerCase().indexOf(nameTest) !== -1
-      )
-        return source;
+      if (source.baseMap === baseMap && source.name.toLowerCase().indexOf(nameTest) !== -1) return source;
 
     return undefined;
   }
@@ -255,27 +224,16 @@ export class MapLayerSources {
     queryForPublicSources = false,
     addMapBoxSources = false
   ): Promise<MapLayerSources> {
-    if (!queryForPublicSources && MapLayerSources._instance)
-      return MapLayerSources._instance;
+    if (!queryForPublicSources && MapLayerSources._instance) return MapLayerSources._instance;
 
-    if (!iModel)
-      iModel = IModelApp.viewManager.selectedView
-        ? IModelApp.viewManager.selectedView.iModel
-        : undefined;
+    if (!iModel) iModel = IModelApp.viewManager.selectedView ? IModelApp.viewManager.selectedView.iModel : undefined;
 
     let sourceRange = MapCartoRectangle.createMaximum();
     if (iModel) {
-      const projectCenter = iModel.projectExtents.localXYZToWorld(
-        0.5,
-        0.5,
-        0.5
-      )!;
+      const projectCenter = iModel.projectExtents.localXYZToWorld(0.5, 0.5, 0.5)!;
       const cartoCenter = iModel.spatialToCartographicFromEcef(projectCenter);
       const globeRange = MapCartoRectangle.createMaximum();
-      const nearDelta = Point2d.create(
-        globeRange.xLength() / 100,
-        globeRange.yLength() / 100
-      );
+      const nearDelta = Point2d.create(globeRange.xLength() / 100, globeRange.yLength() / 100);
       sourceRange = MapCartoRectangle.fromRadians(
         cartoCenter.longitude - nearDelta.x,
         cartoCenter.latitude - nearDelta.y,
@@ -304,24 +262,17 @@ export class MapLayerSources {
     }
 
     if (queryForPublicSources) {
-      const sourcesJson = await request(
-        `${IModelApp.publicPath}assets/MapLayerSources.json`,
-        "json"
-      );
+      const sourcesJson = await request(`${IModelApp.publicPath}assets/MapLayerSources.json`, "json");
 
       for (const sourceJson of sourcesJson) {
         const source = MapLayerSource.fromJSON(sourceJson);
         if (source) addSource(source);
       }
 
-      (await ArcGisUtilities.getSourcesFromQuery(sourceRange)).forEach(
-        (queriedSource) => addSource(queriedSource)
-      );
+      (await ArcGisUtilities.getSourcesFromQuery(sourceRange)).forEach((queriedSource) => addSource(queriedSource));
     }
 
-    sources.sort((a: MapLayerSource, b: MapLayerSource) =>
-      compareStrings(a.name.toLowerCase(), b.name.toLowerCase())
-    );
+    sources.sort((a: MapLayerSource, b: MapLayerSource) => compareStrings(a.name.toLowerCase(), b.name.toLowerCase()));
 
     const mapLayerSources = new MapLayerSources(sources);
     MapLayerSources._instance = mapLayerSources;
@@ -334,18 +285,13 @@ export class MapLayerSources {
     if (!MapLayerSources._instance || !mapLayerSource) {
       return undefined;
     }
-    MapLayerSources._instance._sources =
-      MapLayerSources._instance._sources.filter((source) => {
-        return !(
-          source.name === mapLayerSource.name ||
-          source.url === mapLayerSource.url
-        );
-      });
+    MapLayerSources._instance._sources = MapLayerSources._instance._sources.filter((source) => {
+      return !(source.name === mapLayerSource.name || source.url === mapLayerSource.url);
+    });
 
     MapLayerSources._instance._sources.push(mapLayerSource);
-    MapLayerSources._instance._sources.sort(
-      (a: MapLayerSource, b: MapLayerSource) =>
-        compareStrings(a.name.toLowerCase(), b.name.toLowerCase())
+    MapLayerSources._instance._sources.sort((a: MapLayerSource, b: MapLayerSource) =>
+      compareStrings(a.name.toLowerCase(), b.name.toLowerCase())
     );
     return MapLayerSources._instance;
   }
@@ -357,10 +303,9 @@ export class MapLayerSources {
 
     // For now we only rely on the name
     const lengthBeforeRemove = MapLayerSources._instance._sources.length;
-    MapLayerSources._instance._sources =
-      MapLayerSources._instance._sources.filter((source) => {
-        return source.name !== name;
-      });
+    MapLayerSources._instance._sources = MapLayerSources._instance._sources.filter((source) => {
+      return source.name !== name;
+    });
     return lengthBeforeRemove !== MapLayerSources._instance._sources.length;
   }
 }

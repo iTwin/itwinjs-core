@@ -43,10 +43,7 @@ export class UniformHandle {
   public static create(program: ShaderProgram, name: string): UniformHandle {
     let location = null;
     if (undefined !== program.glProgram) {
-      location = System.instance.context.getUniformLocation(
-        program.glProgram,
-        name
-      );
+      location = System.instance.context.getUniformLocation(program.glProgram, name);
     }
     if (null === location) {
       const errMsg = `uniform ${name} not found in ${program.description}.`;
@@ -59,16 +56,8 @@ export class UniformHandle {
     return new UniformHandle(location);
   }
 
-  private updateData(
-    type: DataType,
-    data: Float32Array | Int32Array | number[]
-  ): boolean {
-    assert(
-      DataType.Undefined !== type &&
-        DataType.Int !== type &&
-        DataType.Float !== type &&
-        DataType.Uint !== type
-    );
+  private updateData(type: DataType, data: Float32Array | Int32Array | number[]): boolean {
+    assert(DataType.Undefined !== type && DataType.Int !== type && DataType.Float !== type && DataType.Uint !== type);
 
     let updated = this._type !== type;
     if (updated) {
@@ -86,9 +75,7 @@ export class UniformHandle {
   }
 
   private updateDatum(type: DataType, datum: number): boolean {
-    assert(
-      DataType.Int === type || DataType.Uint === type || DataType.Float === type
-    );
+    assert(DataType.Int === type || DataType.Uint === type || DataType.Float === type);
 
     // NB: Yes, calling data.length without actually changing the length shows up as a significant performance bottleneck...
     if (this._data.length !== 1) this._data.length = 1;
@@ -111,43 +98,35 @@ export class UniformHandle {
   }
 
   public setUniform1iv(data: Int32Array | number[]) {
-    if (this.updateData(DataType.IntArray, data))
-      System.instance.context.uniform1iv(this._location, data);
+    if (this.updateData(DataType.IntArray, data)) System.instance.context.uniform1iv(this._location, data);
   }
 
   public setUniform1fv(data: Float32Array | number[]) {
-    if (this.updateData(DataType.FloatArray, data))
-      System.instance.context.uniform1fv(this._location, data);
+    if (this.updateData(DataType.FloatArray, data)) System.instance.context.uniform1fv(this._location, data);
   }
 
   public setUniform2fv(data: Float32Array | number[]) {
-    if (this.updateData(DataType.Vec2, data))
-      System.instance.context.uniform2fv(this._location, data);
+    if (this.updateData(DataType.Vec2, data)) System.instance.context.uniform2fv(this._location, data);
   }
 
   public setUniform3fv(data: Float32Array | number[]) {
-    if (this.updateData(DataType.Vec3, data))
-      System.instance.context.uniform3fv(this._location, data);
+    if (this.updateData(DataType.Vec3, data)) System.instance.context.uniform3fv(this._location, data);
   }
 
   public setUniform4fv(data: Float32Array | number[]) {
-    if (this.updateData(DataType.Vec4, data))
-      System.instance.context.uniform4fv(this._location, data);
+    if (this.updateData(DataType.Vec4, data)) System.instance.context.uniform4fv(this._location, data);
   }
 
   public setUniform1i(data: number) {
-    if (this.updateDatum(DataType.Int, data))
-      System.instance.context.uniform1i(this._location, data);
+    if (this.updateDatum(DataType.Int, data)) System.instance.context.uniform1i(this._location, data);
   }
 
   public setUniform1f(data: number) {
-    if (this.updateDatum(DataType.Float, data))
-      System.instance.context.uniform1f(this._location, data);
+    if (this.updateDatum(DataType.Float, data)) System.instance.context.uniform1f(this._location, data);
   }
 
   public setUniform1ui(data: number) {
-    if (this.updateDatum(DataType.Uint, data))
-      System.instance.context.uniform1ui(this._location, data);
+    if (this.updateDatum(DataType.Uint, data)) System.instance.context.uniform1ui(this._location, data);
   }
 
   public setUniformBitflags(data: number) {

@@ -6,12 +6,7 @@
  * @module Content
  */
 
-import {
-  ClassInfoJSON,
-  CompressedClassInfoJSON,
-  PropertyInfo,
-  PropertyInfoJSON,
-} from "../EC";
+import { ClassInfoJSON, CompressedClassInfoJSON, PropertyInfo, PropertyInfoJSON } from "../EC";
 
 /**
  * Data structure that describes one step of property

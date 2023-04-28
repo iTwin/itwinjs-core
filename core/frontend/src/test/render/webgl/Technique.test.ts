@@ -6,14 +6,8 @@ import { assert, expect } from "chai";
 import { IModelApp } from "../../../IModelApp";
 import { AttributeMap } from "../../../render/webgl/AttributeMap";
 import { CompileStatus } from "../../../render/webgl/ShaderProgram";
-import {
-  DrawParams,
-  ShaderProgramParams,
-} from "../../../render/webgl/DrawCommand";
-import {
-  FeatureMode,
-  TechniqueFlags,
-} from "../../../render/webgl/TechniqueFlags";
+import { DrawParams, ShaderProgramParams } from "../../../render/webgl/DrawCommand";
+import { FeatureMode, TechniqueFlags } from "../../../render/webgl/TechniqueFlags";
 import {
   FragmentShaderComponent,
   ProgramBuilder,
@@ -29,18 +23,10 @@ import { Logger, LogLevel } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
 
 function createPurpleQuadBuilder(): ProgramBuilder {
-  const builder = new ProgramBuilder(
-    AttributeMap.findAttributeMap(undefined, false)
-  );
+  const builder = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
   builder.vert.set(VertexShaderComponent.ComputePosition, "return rawPos;");
-  builder.frag.set(
-    FragmentShaderComponent.ComputeBaseColor,
-    "return vec4(1.0, 0.0, 0.5, 1.0);"
-  );
-  builder.frag.set(
-    FragmentShaderComponent.AssignFragData,
-    "FragColor = baseColor;"
-  );
+  builder.frag.set(FragmentShaderComponent.ComputeBaseColor, "return vec4(1.0, 0.0, 0.5, 1.0);");
+  builder.frag.set(FragmentShaderComponent.AssignFragData, "FragColor = baseColor;");
   return builder;
 }
 
@@ -48,10 +34,7 @@ function createPurpleQuadTechnique(): TechniqueId {
   const builder = createPurpleQuadBuilder();
   const prog = builder.buildProgram(System.instance.context);
   const technique = new SingularTechnique(prog);
-  return System.instance.techniques.addDynamicTechnique(
-    technique,
-    "PurpleQuad"
-  );
+  return System.instance.techniques.addDynamicTechnique(technique, "PurpleQuad");
 }
 
 function createTarget(): Target | undefined {
@@ -134,10 +117,7 @@ describe("Techniques", () => {
   it("should produce exception on syntax error", () => {
     const builder = createPurpleQuadBuilder();
     builder.vert.headerComment = "// My Naughty Program";
-    builder.frag.set(
-      FragmentShaderComponent.ComputeBaseColor,
-      "blah blah blah"
-    );
+    builder.frag.set(FragmentShaderComponent.ComputeBaseColor, "blah blah blah");
     const prog = builder.buildProgram(System.instance.context);
     let compiled = false;
     let ex: Error | undefined;
@@ -152,8 +132,7 @@ describe("Techniques", () => {
     const msg = ex!.toString();
     expect(msg.includes("blah")).to.be.true;
     expect(msg.includes("Fragment shader failed to compile")).to.be.true;
-    expect(msg.includes("Program description: // My Naughty Program")).to.be
-      .true;
+    expect(msg.includes("Program description: // My Naughty Program")).to.be.true;
   });
 
   // NB: We may run across some extremely poor webgl implementation that fails to remove clearly-unused uniforms, which would cause this test to fail.
@@ -194,9 +173,7 @@ describe("Techniques", () => {
       let maxNumVaryings = 0;
       ProgramBuilder.prototype.buildProgram = function (gl) {
         ++numBuilt;
-        const numVaryings = this.vert.computeNumVaryingVectors(
-          this.frag.buildSource()
-        );
+        const numVaryings = this.vert.computeNumVaryingVectors(this.frag.buildSource());
         expect(numVaryings).most(minGuaranteed);
         maxNumVaryings = Math.max(numVaryings, maxNumVaryings);
         return buildProgram.apply(this, [gl]);

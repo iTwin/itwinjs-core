@@ -4,11 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import {
-  CheckpointConnection,
-  IModelApp,
-  IModelConnection,
-} from "@itwin/core-frontend";
+import { CheckpointConnection, IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import {
   ChildNodeSpecificationTypes,
@@ -33,9 +29,7 @@ describe("PresentationRpcInterface tests", () => {
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     const iTwinId = testContext.iModelWithChangesets!.iTwinId;
     const accessToken = testContext.adminUserAccessToken;
-    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(
-      accessToken
-    );
+    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
     imodel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
 
@@ -71,9 +65,7 @@ describe("PresentationRpcInterface tests", () => {
     const result = await Presentation.presentation.getNodePaths({
       imodel,
       rulesetOrId: createNodesRuleset(),
-      instancePaths: [
-        [{ id: Id64.fromString("0x1"), className: "BisCore:RepositoryModel" }],
-      ],
+      instancePaths: [[{ id: Id64.fromString("0x1"), className: "BisCore:RepositoryModel" }]],
       markedIndex: 0,
     });
     expect(result).to.not.be.undefined;
@@ -181,11 +173,10 @@ describe("PresentationRpcInterface tests", () => {
   });
 
   it("getDisplayLabelDefinition works as expected", async () => {
-    const displayLabel =
-      await Presentation.presentation.getDisplayLabelDefinition({
-        imodel,
-        key: { id: Id64.fromString("0x1"), className: "BisCore:Subject" },
-      });
+    const displayLabel = await Presentation.presentation.getDisplayLabelDefinition({
+      imodel,
+      key: { id: Id64.fromString("0x1"), className: "BisCore:Subject" },
+    });
     expect(displayLabel).to.not.be.undefined;
   });
 
@@ -198,28 +189,20 @@ describe("PresentationRpcInterface tests", () => {
       id: Id64.fromString("0x17"),
       className: "BisCore:SpatialCategory",
     };
-    const displayLabels =
-      await Presentation.presentation.getDisplayLabelDefinitions({
-        imodel,
-        keys: [key1, key2],
-      });
+    const displayLabels = await Presentation.presentation.getDisplayLabelDefinitions({
+      imodel,
+      keys: [key1, key2],
+    });
     expect(displayLabels).to.not.be.undefined;
   });
 
   it("getSelectionScopes works as expected", async () => {
-    const scopeIds = await Presentation.selection.scopes.getSelectionScopes(
-      imodel
-    );
+    const scopeIds = await Presentation.selection.scopes.getSelectionScopes(imodel);
     expect(scopeIds).to.not.be.undefined;
   });
 
   it("computeSelection works as expected", async () => {
-    const computedSelections =
-      await Presentation.selection.scopes.computeSelection(
-        imodel,
-        ["0x1"],
-        "element"
-      );
+    const computedSelections = await Presentation.selection.scopes.computeSelection(imodel, ["0x1"], "element");
     expect(computedSelections).to.not.be.undefined;
   });
 });

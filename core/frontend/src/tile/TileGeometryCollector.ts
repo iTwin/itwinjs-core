@@ -89,9 +89,7 @@ export class TileGeometryCollector {
    * it returns "accept" or "continue", apply their own criteria to the tile.
    */
   public collectTile(tile: Tile): CollectTileStatus {
-    const range = this._options.transform
-      ? this._options.transform.multiplyRange(tile.range)
-      : tile.range;
+    const range = this._options.transform ? this._options.transform.multiplyRange(tile.range) : tile.range;
     if (!range.intersectsRange(this._options.range)) return "reject";
 
     if (tile.maximumSize === 0 || !tile.isDisplayable) return "continue";

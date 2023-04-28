@@ -199,11 +199,7 @@ export class Tween {
     this._isPaused = false;
     this._onStartCallbackFired = false;
     this._startTime =
-      time !== undefined
-        ? typeof time === "string"
-          ? Date.now() + parseFloat(time)
-          : time
-        : Date.now();
+      time !== undefined ? (typeof time === "string" ? Date.now() + parseFloat(time) : time) : Date.now();
     this._startTime += this._delayTime;
 
     for (const property in this._valuesEnd) {
@@ -212,9 +208,7 @@ export class Tween {
         if (this._valuesEnd[property].length === 0) continue;
 
         // Create a local copy of the Array with the start value at the front
-        this._valuesEnd[property] = [this._object[property]].concat(
-          this._valuesEnd[property]
-        );
+        this._valuesEnd[property] = [this._object[property]].concat(this._valuesEnd[property]);
       }
 
       // If `to()` specifies a property that doesn't exist in the source object,
@@ -222,11 +216,9 @@ export class Tween {
       if (this._object[property] === undefined) continue;
 
       // Save the starting value, but only once.
-      if (typeof this._valuesStart[property] === "undefined")
-        this._valuesStart[property] = this._object[property];
+      if (typeof this._valuesStart[property] === "undefined") this._valuesStart[property] = this._object[property];
 
-      if (this._valuesStart[property] instanceof Array === false)
-        this._valuesStart[property] *= 1.0; // Ensures we're using numbers, not strings
+      if (this._valuesStart[property] instanceof Array === false) this._valuesStart[property] *= 1.0; // Ensures we're using numbers, not strings
 
       this._valuesStartRepeat[property] = this._valuesStart[property] || 0;
     }
@@ -265,19 +257,14 @@ export class Tween {
     if (!this._isPaused || !this._isPlaying) return this;
 
     this._isPaused = false;
-    this._startTime! +=
-      (time === undefined ? Date.now() : time) - this._pauseStart!;
+    this._startTime! += (time === undefined ? Date.now() : time) - this._pauseStart!;
     this._pauseStart = 0;
     this._group.add(this);
     return this;
   }
 
   public stopChainedTweens() {
-    for (
-      let i = 0, numChainedTweens = this._chainedTweens.length;
-      i < numChainedTweens;
-      i++
-    ) {
+    for (let i = 0, numChainedTweens = this._chainedTweens.length; i < numChainedTweens; i++) {
       this._chainedTweens[i].stop();
     }
   }
@@ -313,8 +300,7 @@ export class Tween {
   }
 
   public interpolation(interpolationFunction?: InterpolationFunction) {
-    if (interpolationFunction)
-      this._interpolationFunction = interpolationFunction;
+    if (interpolationFunction) this._interpolationFunction = interpolationFunction;
     return this;
   }
 
@@ -378,19 +364,16 @@ export class Tween {
       } else {
         // Parses relative end values with start as base (e.g.: +10, -3)
         if (typeof end === "string") {
-          if (end.charAt(0) === "+" || end.charAt(0) === "-")
-            end = start + parseFloat(end);
+          if (end.charAt(0) === "+" || end.charAt(0) === "-") end = start + parseFloat(end);
           else end = parseFloat(end);
         }
 
         // Protect against non numeric properties.
-        if (typeof end === "number")
-          this._object[property] = start + (end - start) * value;
+        if (typeof end === "number") this._object[property] = start + (end - start) * value;
       }
     }
 
-    if (this._onUpdateCallback !== undefined)
-      this._onUpdateCallback(this._object, elapsed);
+    if (this._onUpdateCallback !== undefined) this._onUpdateCallback(this._object, elapsed);
 
     if (elapsed === 1) {
       if (this._repeat > 0) {
@@ -400,8 +383,7 @@ export class Tween {
         for (property in this._valuesStartRepeat) {
           if (typeof this._valuesEnd[property] === "string") {
             this._valuesStartRepeat[property] =
-              this._valuesStartRepeat[property] +
-              parseFloat(this._valuesEnd[property]);
+              this._valuesStartRepeat[property] + parseFloat(this._valuesEnd[property]);
           }
 
           if (this._yoyo) {
@@ -416,23 +398,16 @@ export class Tween {
 
         if (this._yoyo) this._reversed = !this._reversed;
 
-        if (this._repeatDelayTime !== undefined)
-          this._startTime = time + this._repeatDelayTime;
+        if (this._repeatDelayTime !== undefined) this._startTime = time + this._repeatDelayTime;
         else this._startTime = time + this._delayTime;
 
-        if (this._onRepeatCallback !== undefined)
-          this._onRepeatCallback(this._object);
+        if (this._onRepeatCallback !== undefined) this._onRepeatCallback(this._object);
 
         return true;
       } else {
-        if (this._onCompleteCallback !== undefined)
-          this._onCompleteCallback(this._object);
+        if (this._onCompleteCallback !== undefined) this._onCompleteCallback(this._object);
 
-        for (
-          let i = 0, numChainedTweens = this._chainedTweens.length;
-          i < numChainedTweens;
-          i++
-        ) {
+        for (let i = 0, numChainedTweens = this._chainedTweens.length; i < numChainedTweens; i++) {
           // Make the chained tweens start exactly at the time they should,
           // even if the `update()` method was called way past the duration of the tween
           this._chainedTweens[i].start(this._startTime + this._duration);
@@ -599,14 +574,9 @@ export const Easing = {
 
       k *= 2;
 
-      if (k < 1)
-        return (
-          -0.5 * Math.pow(2, 10 * (k - 1)) * Math.sin((k - 1.1) * 5 * Math.PI)
-        );
+      if (k < 1) return -0.5 * Math.pow(2, 10 * (k - 1)) * Math.sin((k - 1.1) * 5 * Math.PI);
 
-      return (
-        0.5 * Math.pow(2, -10 * (k - 1)) * Math.sin((k - 1.1) * 5 * Math.PI) + 1
-      );
+      return 0.5 * Math.pow(2, -10 * (k - 1)) * Math.sin((k - 1.1) * 5 * Math.PI) + 1;
     },
   },
 
@@ -672,8 +642,7 @@ export const Interpolation = {
     const pw = Math.pow;
     const bn = Interpolation.Utils.Bernstein;
 
-    for (let i = 0; i <= n; i++)
-      b += pw(1 - k, n - i) * pw(k, i) * v[i] * bn(n, i);
+    for (let i = 0; i <= n; i++) b += pw(1 - k, n - i) * pw(k, i) * v[i] * bn(n, i);
 
     return b;
   },
@@ -688,26 +657,13 @@ export const Interpolation = {
       if (k < 0) {
         i = Math.floor((f = m * (1 + k)));
       }
-      return fn(
-        v[(i - 1 + m) % m],
-        v[i],
-        v[(i + 1) % m],
-        v[(i + 2) % m],
-        f - i
-      );
+      return fn(v[(i - 1 + m) % m], v[i], v[(i + 1) % m], v[(i + 2) % m], f - i);
     } else {
       if (k < 0) return v[0] - (fn(v[0], v[0], v[1], v[1], -f) - v[0]);
 
-      if (k > 1)
-        return v[m] - (fn(v[m], v[m], v[m - 1], v[m - 1], f - m) - v[m]);
+      if (k > 1) return v[m] - (fn(v[m], v[m], v[m - 1], v[m - 1], f - m) - v[m]);
 
-      return fn(
-        v[i ? i - 1 : 0],
-        v[i],
-        v[m < i + 1 ? m : i + 1],
-        v[m < i + 2 ? m : i + 2],
-        f - i
-      );
+      return fn(v[i ? i - 1 : 0], v[i], v[m < i + 1 ? m : i + 1], v[m < i + 2 ? m : i + 2], f - i);
     }
   },
 
@@ -740,12 +696,7 @@ export const Interpolation = {
       const v1 = (p3 - p1) * 0.5;
       const t2 = t * t;
       const t3 = t * t2;
-      return (
-        (2 * p1 - 2 * p2 + v0 + v1) * t3 +
-        (-3 * p1 + 3 * p2 - 2 * v0 - v1) * t2 +
-        v0 * t +
-        p1
-      );
+      return (2 * p1 - 2 * p2 + v0 + v1) * t3 + (-3 * p1 + 3 * p2 - 2 * v0 - v1) * t2 + v0 * t + p1;
     },
   },
 };

@@ -14,10 +14,7 @@ import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { HalfEdgeGraph } from "../../topology/Graph";
-import {
-  HalfEdgePositionDetail,
-  HalfEdgeTopo,
-} from "../../topology/HalfEdgePositionDetail";
+import { HalfEdgePositionDetail, HalfEdgeTopo } from "../../topology/HalfEdgePositionDetail";
 import { InsertAndRetriangulateContext } from "../../topology/InsertAndRetriangulateContext";
 import { HalfEdgeGraphMerge } from "../../topology/Merging";
 import { Triangulator } from "../../topology/Triangulation";
@@ -48,23 +45,10 @@ function showPosition(
     const point0 = oldDetail.clonePoint();
     const point1 = newDetail.clonePoint();
     if (!point0.isAlmostEqualMetric(point1))
-      GeometryCoreTestIO.captureGeometry(
-        allGeometry,
-        LineSegment3d.createCapture(point0, point1),
-        x0,
-        y0,
-        z0
-      );
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createCapture(point0, point1), x0, y0, z0);
   }
   if (newDetail.getTopo() === HalfEdgeTopo.Face) {
-    GeometryCoreTestIO.createAndCaptureXYCircle(
-      allGeometry,
-      newDetail.clonePoint(),
-      markerSize,
-      x0,
-      y0,
-      z0
-    );
+    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, newDetail.clonePoint(), markerSize, x0, y0, z0);
   } else if (newDetail.getTopo() === HalfEdgeTopo.Vertex) {
     const nodeB = newDetail.node!;
     const nodeC = nodeB.faceSuccessor;
@@ -73,9 +57,7 @@ function showPosition(
     const vectorBC = Vector3d.createStartEnd(nodeB, nodeC);
     const vectorBA = Vector3d.createStartEnd(nodeB, nodeA);
     const theta = vectorBC.angleToXY(vectorBA);
-    const bisector = vectorBC.rotateXY(
-      Angle.createRadians(0.5 * theta.radians)
-    );
+    const bisector = vectorBC.rotateXY(Angle.createRadians(0.5 * theta.radians));
     GeometryCoreTestIO.captureGeometry(
       allGeometry,
       LineSegment3d.create(pointB, pointB.plusScaled(bisector, markerSize)),
@@ -92,13 +74,7 @@ function showPosition(
     vector01.normalizeInPlace();
     vector01.rotate90CCWXY(vector01);
     const pointC = pointB.plusScaled(vector01, markerSize);
-    GeometryCoreTestIO.captureGeometry(
-      allGeometry,
-      LineSegment3d.create(pointB, pointC),
-      x0,
-      y0,
-      z0
-    );
+    GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(pointB, pointC), x0, y0, z0);
   } else {
     GeometryCoreTestIO.consoleLog(" unknown topo type", newDetail.getTopo());
   }
@@ -158,51 +134,23 @@ describe("InsertAndRetriangulateContext", () => {
       y0 += yStep;
       const polyface = PolyfaceBuilder.graphToPolyface(graph);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0);
-      context.moveToPoint(
-        position,
-        point,
-        (positionA: HalfEdgePositionDetail) => {
-          showPosition(
-            allGeometry,
-            oldPosition,
-            positionA,
-            aa * 0.5,
-            x0,
-            y0,
-            z1
-          );
-          return true;
-        }
-      );
+      context.moveToPoint(position, point, (positionA: HalfEdgePositionDetail) => {
+        showPosition(allGeometry, oldPosition, positionA, aa * 0.5, x0, y0, z1);
+        return true;
+      });
       // GraphChecker.captureAnnotatedGraph(allGeometry, graph, x0, y0);
       showPosition(allGeometry, oldPosition, position, aa, x0, y0, z1);
     }
     oldPosition.resetAsUnknown();
     context.resetSearch(Point3d.create(1.5, 0.5), 0);
-    ck.testExactNumber(
-      HalfEdgeTopo.Vertex,
-      context.currentPosition.getTopo(),
-      "Reset to vertex"
-    );
+    ck.testExactNumber(HalfEdgeTopo.Vertex, context.currentPosition.getTopo(), "Reset to vertex");
     context.resetSearch(Point3d.create(1.5, 0.5), 1);
-    ck.testExactNumber(
-      HalfEdgeTopo.Edge,
-      context.currentPosition.getTopo(),
-      "Reset to edge search"
-    );
+    ck.testExactNumber(HalfEdgeTopo.Edge, context.currentPosition.getTopo(), "Reset to edge search");
     // hit the "vertex sector" case. ..
     context.resetSearch(Point3d.create(-0.5, -0.5), 1);
-    ck.testExactNumber(
-      HalfEdgeTopo.Vertex,
-      context.currentPosition.getTopo(),
-      "Reset to edge search"
-    );
+    ck.testExactNumber(HalfEdgeTopo.Vertex, context.currentPosition.getTopo(), "Reset to edge search");
 
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "InsertAndRetriangulateContext",
-      "moveTo"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "InsertAndRetriangulateContext", "moveTo");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -277,60 +225,26 @@ describe("InsertAndRetriangulateContext", () => {
         numPointsInserted++;
         if (numPointsInserted < 4) {
           y0 += yStep;
-          GeometryCoreTestIO.createAndCaptureXYCircle(
-            allGeometry,
-            point,
-            0.03,
-            x0,
-            y0
-          );
-          GraphChecker.captureAnnotatedGraph(
-            allGeometry,
-            context.graph,
-            x0,
-            y0
-          );
+          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, point, 0.03, x0, y0);
+          GraphChecker.captureAnnotatedGraph(allGeometry, context.graph, x0, y0);
           const polyfaceA = PolyfaceBuilder.graphToPolyface(context.graph);
-          GeometryCoreTestIO.captureGeometry(
-            allGeometry,
-            polyfaceA,
-            x0 + xStep,
-            y0
-          );
+          GeometryCoreTestIO.captureGeometry(allGeometry, polyfaceA, x0 + xStep, y0);
         }
         // GraphChecker.dumpGraph (graph);
       }
       y0 += 2 * yStep;
       const polyfaceC = PolyfaceBuilder.graphToPolyface(context.graph);
-      GeometryCoreTestIO.captureGeometry(
-        allGeometry,
-        polyfaceC,
-        x0 + xStep,
-        y0
-      );
+      GeometryCoreTestIO.captureGeometry(allGeometry, polyfaceC, x0 + xStep, y0);
       for (let flip = 0; flip < 1; flip++) {
         const numFlip = Triangulator.flipTriangles(context.graph);
-        ck.testExactNumber(
-          0,
-          numFlip,
-          "Expect no flips from global sweep after incremental flips during insert."
-        );
+        ck.testExactNumber(0, numFlip, "Expect no flips from global sweep after incremental flips during insert.");
         // GeometryCoreTestIO.consoleLog("numFlip " + numFlip);
         const polyfaceB = PolyfaceBuilder.graphToPolyface(context.graph);
-        GeometryCoreTestIO.captureGeometry(
-          allGeometry,
-          polyfaceB,
-          x0 + (2 + flip) * xStep,
-          y0
-        );
+        GeometryCoreTestIO.captureGeometry(allGeometry, polyfaceB, x0 + (2 + flip) * xStep, y0);
       }
       x0 += 10 * xStep;
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "InsertAndRetriangulateContext",
-      "insertAndRetriangulate"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "InsertAndRetriangulateContext", "insertAndRetriangulate");
     expect(ck.getNumErrors()).equals(0);
   });
   // cspell:word lisajoue
@@ -349,11 +263,7 @@ describe("InsertAndRetriangulateContext", () => {
         // GeometryCoreTestIO.consoleLog("Triangulate", numPoints);
         const points: Point3d[] = [];
         let yShift = 0.0;
-        for (
-          let theta = 0.01 * (numPoints - 8);
-          points.length < numPoints;
-          theta += dTheta
-        ) {
+        for (let theta = 0.01 * (numPoints - 8); points.length < numPoints; theta += dTheta) {
           const point = lisajouePoint3d(theta * theta, a, 0);
           point.y += yShift;
           yShift += yShiftStep;
@@ -397,42 +307,15 @@ describe("InsertAndRetriangulateContext", () => {
         // y0 += yShiftDisplay;
         if (numPoints < 100) {
           const r = 0.002;
-          GeometryCoreTestIO.createAndCaptureXYCircle(
-            allGeometry,
-            points,
-            r,
-            x0,
-            y0
-          );
+          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, points, r, x0, y0);
           y0 += yShiftDisplay;
-          GeometryCoreTestIO.captureGeometry(
-            allGeometry,
-            LineString3d.create(hull),
-            x0,
-            y0
-          );
-          GeometryCoreTestIO.createAndCaptureXYCircle(
-            allGeometry,
-            interior,
-            r,
-            x0,
-            y0
-          );
+          GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(hull), x0, y0);
+          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, interior, r, x0, y0);
           y0 += yShiftDisplay;
         }
 
-        GeometryCoreTestIO.captureGeometry(
-          allGeometry,
-          LineString3d.create(hull),
-          x0,
-          y0
-        );
-        GeometryCoreTestIO.captureGeometry(
-          allGeometry,
-          LineString3d.create(interior),
-          x0,
-          y0
-        );
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(hull), x0, y0);
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(interior), x0, y0);
         // GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(interior), x0, y0);
         const timerName = `before pointsToTriangulatedPolyface ${numPoints}`;
         GeometryCoreTestIO.consoleTime(timerName);
@@ -443,21 +326,13 @@ describe("InsertAndRetriangulateContext", () => {
         if (ck.testDefined(polyface, "polyface triangulation") && polyface) {
           const polyfaceArea = PolyfaceQuery.sumFacetAreas(polyface);
           const hullArea = PolygonOps.areaXY(hull);
-          ck.testCoordinate(
-            polyfaceArea,
-            hullArea,
-            `mesh, hull area match for ${numPoints}point triangulation`
-          );
+          ck.testCoordinate(polyfaceArea, hullArea, `mesh, hull area match for ${numPoints}point triangulation`);
         }
         x0 += 5;
       }
     }
     // GeometryCoreTestIO.consoleLog("write file");
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "InsertAndRetriangulateContext",
-      "TriangulateInHull"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "InsertAndRetriangulateContext", "TriangulateInHull");
     expect(ck.getNumErrors()).equals(0);
   });
 });

@@ -3,12 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  SchemaContext,
-  SchemaItemType,
-  SchemaKey,
-  UnitSystem,
-} from "@itwin/ecschema-metadata";
+import { SchemaContext, SchemaItemType, SchemaKey, UnitSystem } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
 describe("UnitSystems tests", () => {
@@ -29,13 +24,8 @@ describe("UnitSystems tests", () => {
       description: "test description",
       label: "testDec",
     };
-    const result = await testEditor.unitSystems.createFromProps(
-      testKey,
-      unitSystemProps
-    );
-    const testUnitSystem = (await testEditor.schemaContext.getSchemaItem(
-      result.itemKey!
-    )) as UnitSystem;
+    const result = await testEditor.unitSystems.createFromProps(testKey, unitSystemProps);
+    const testUnitSystem = (await testEditor.schemaContext.getSchemaItem(result.itemKey!)) as UnitSystem;
     expect(testUnitSystem.schemaItemType).to.eql(SchemaItemType.UnitSystem);
     expect(testUnitSystem.fullName).to.eql("testSchema.testUnitSystem");
     expect(testUnitSystem.label).to.eql("testDec");

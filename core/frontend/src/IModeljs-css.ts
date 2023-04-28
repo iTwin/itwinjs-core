@@ -151,8 +151,7 @@ let iModelJsCss: string | undefined = `
   style.appendChild(document.createTextNode(iModelJsCss.replace(/\s+/gm, " "))); // strips multiple spaces and space+\r
   const openSans = document.createElement("link");
   openSans.rel = "stylesheet";
-  openSans.href =
-    "https://fonts.googleapis.com/css?family=Open+Sans&display=swap";
+  openSans.href = "https://fonts.googleapis.com/css?family=Open+Sans&display=swap";
   document.head.prepend(style); // put our styles at the beginning so any application-supplied styles will override them
   document.head.prepend(openSans);
   iModelJsCss = undefined; // can only be called once

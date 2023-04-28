@@ -2,11 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import type {
-  ExtensionManifest,
-  ExtensionProvider,
-  ResolveFunc,
-} from "../Extension";
+import type { ExtensionManifest, ExtensionProvider, ResolveFunc } from "../Extension";
 
 /**
  * Required props for a local extension provider

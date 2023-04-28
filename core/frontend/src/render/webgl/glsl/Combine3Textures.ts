@@ -8,11 +8,7 @@
 
 import { Combine3TexturesGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
-import {
-  FragmentShaderComponent,
-  VariablePrecision,
-  VariableType,
-} from "../ShaderBuilder";
+import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { Texture2DHandle } from "../Texture";
 import { createViewportQuadBuilder } from "./ViewportQuad";
@@ -29,9 +25,7 @@ const assignFragData = `
 `;
 
 /** @internal */
-export function createCombine3TexturesProgram(
-  context: WebGL2RenderingContext
-): ShaderProgram {
+export function createCombine3TexturesProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 
@@ -42,11 +36,7 @@ export function createCombine3TexturesProgram(
     VariableType.Sampler2D,
     (prog) => {
       prog.addGraphicUniform("u_texture0", (uniform, params) => {
-        Texture2DHandle.bindSampler(
-          uniform,
-          (params.geometry as Combine3TexturesGeometry).texture0,
-          TextureUnit.Zero
-        );
+        Texture2DHandle.bindSampler(uniform, (params.geometry as Combine3TexturesGeometry).texture0, TextureUnit.Zero);
       });
     },
     VariablePrecision.High
@@ -57,11 +47,7 @@ export function createCombine3TexturesProgram(
     VariableType.Sampler2D,
     (prog) => {
       prog.addGraphicUniform("u_texture1", (uniform, params) => {
-        Texture2DHandle.bindSampler(
-          uniform,
-          (params.geometry as Combine3TexturesGeometry).texture1,
-          TextureUnit.One
-        );
+        Texture2DHandle.bindSampler(uniform, (params.geometry as Combine3TexturesGeometry).texture1, TextureUnit.One);
       });
     },
     VariablePrecision.High
@@ -72,11 +58,7 @@ export function createCombine3TexturesProgram(
     VariableType.Sampler2D,
     (prog) => {
       prog.addGraphicUniform("u_texture2", (uniform, params) => {
-        Texture2DHandle.bindSampler(
-          uniform,
-          (params.geometry as Combine3TexturesGeometry).texture2,
-          TextureUnit.Two
-        );
+        Texture2DHandle.bindSampler(uniform, (params.geometry as Combine3TexturesGeometry).texture2, TextureUnit.Two);
       });
     },
     VariablePrecision.High

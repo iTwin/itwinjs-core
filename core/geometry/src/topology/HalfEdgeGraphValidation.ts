@@ -65,8 +65,7 @@ export class HalfEdgePointerInspector {
    */
   public get isValidHalfEdgeGraphAllowRaggedBoundary(): boolean {
     return (
-      this.numWithMatchedEdgeMate + this.numUndefinedEdgeMate ===
-        this.numTested &&
+      this.numWithMatchedEdgeMate + this.numUndefinedEdgeMate === this.numTested &&
       this.numUndefinedFS === 0 &&
       this.numUndefinedFP === 0 &&
       this.numFSFPError === 0 &&
@@ -84,10 +83,7 @@ export class HalfEdgePointerInspector {
    * @param expectAllMates [in] true for "complete" graph with
    * @returns true if all pointers are valid
    */
-  public static inspectGraph(
-    graph: HalfEdgeGraph,
-    expectAllMates: boolean
-  ): boolean {
+  public static inspectGraph(graph: HalfEdgeGraph, expectAllMates: boolean): boolean {
     const inspector = new HalfEdgePointerInspector();
     inspector.inspectHalfEdges(graph);
     if (expectAllMates) return inspector.isValidClosedHalfEdgeGraph;
@@ -102,10 +98,7 @@ export class HalfEdgeMaskValidation {
    * @returns Return true if mask is "all or nothing around all faces"
    *
    */
-  public static isMaskConsistentAroundAllFaces(
-    graph: HalfEdgeGraph,
-    mask: HalfEdgeMask
-  ): boolean {
+  public static isMaskConsistentAroundAllFaces(graph: HalfEdgeGraph, mask: HalfEdgeMask): boolean {
     for (const he of graph.allHalfEdges) {
       if (he.faceSuccessor.getMask(mask) !== he.getMask(mask)) return false;
     }

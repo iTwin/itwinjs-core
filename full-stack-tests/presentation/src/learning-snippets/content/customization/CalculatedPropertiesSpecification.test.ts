@@ -15,9 +15,7 @@ describe("Learning Snippets", () => {
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile(
-      "assets/datasets/Properties_60InstancesWithUrl2.ibim"
-    );
+    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {
@@ -99,15 +97,10 @@ describe("Learning Snippets", () => {
         const content = (await Presentation.presentation.getContent({
           imodel,
           rulesetOrId: ruleset,
-          keys: new KeySet([
-            { className: "generic.PhysicalObject", id: "0x74" },
-          ]),
+          keys: new KeySet([{ className: "generic.PhysicalObject", id: "0x74" }]),
           descriptor: {},
         }))!;
-        const field = getFieldByLabel(
-          content.descriptor.fields,
-          "Element Volume"
-        );
+        const field = getFieldByLabel(content.descriptor.fields, "Element Volume");
         expect(content.contentSet)
           .to.have.lengthOf(1)
           .and.to.containSubset([

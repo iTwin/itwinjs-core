@@ -55,14 +55,8 @@ export class DelayedPromise<T> implements Promise<T> {
    * @return A Promise for the completion of which ever callback is executed.
    */
   public async then<TResult1 = T, TResult2 = never>(
-    onfulfilled?:
-      | ((value: T) => TResult1 | PromiseLike<TResult1>)
-      | undefined
-      | null,
-    onrejected?:
-      | ((reason: any) => TResult2 | PromiseLike<TResult2>)
-      | undefined
-      | null
+    onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
+    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null
   ): Promise<TResult1 | TResult2> {
     return this.start().then(onfulfilled, onrejected);
   }
@@ -73,10 +67,7 @@ export class DelayedPromise<T> implements Promise<T> {
    * @return A Promise for the completion of the callback.
    */
   public async catch<TResult = never>(
-    onrejected?:
-      | ((reason: any) => TResult | PromiseLike<TResult>)
-      | undefined
-      | null
+    onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null
   ): Promise<T | TResult> {
     return this.start().catch(onrejected);
   }
@@ -86,9 +77,7 @@ export class DelayedPromise<T> implements Promise<T> {
    * @param onrejected The callback to execute when the Promise is finalized.
    * @return A Promise for the completion of the callback.
    */
-  public async finally(
-    onFinally?: (() => void) | undefined | null
-  ): Promise<T> {
+  public async finally(onFinally?: (() => void) | undefined | null): Promise<T> {
     return this.start().finally(onFinally);
   }
 }
@@ -140,14 +129,11 @@ export const DelayedPromiseWithProps = class<
 
     const handler = {
       get: (target: TProps, name: string) => {
-        return name in this
-          ? this[name as keyof this]
-          : target[name as keyof TProps];
+        return name in this ? this[name as keyof this] : target[name as keyof TProps];
       },
     };
 
-    return new Proxy(props, handler) as Readonly<TProps> &
-      DelayedPromise<TPayload>;
+    return new Proxy(props, handler) as Readonly<TProps> & DelayedPromise<TPayload>;
   }
 } as DelayedPromiseWithPropsConstructor;
 
@@ -156,5 +142,4 @@ export const DelayedPromiseWithProps = class<
 /** Define the type of a DelayedPromiseWithProps instance
  * @beta
  */
-export type DelayedPromiseWithProps<TProps, TPayload> = Readonly<TProps> &
-  DelayedPromise<TPayload>;
+export type DelayedPromiseWithProps<TProps, TPayload> = Readonly<TProps> & DelayedPromise<TPayload>;

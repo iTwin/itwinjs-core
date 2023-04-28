@@ -27,29 +27,19 @@ import { MutableKindOfQuantity } from "./Mutable/MutableKindOfQuantity";
  */
 export class KindOfQuantities {
   public constructor(protected _schemaEditor: SchemaContextEditor) {}
-  public async createFromProps(
-    schemaKey: SchemaKey,
-    koqProps: KindOfQuantityProps
-  ): Promise<SchemaItemEditResults> {
+  public async createFromProps(schemaKey: SchemaKey, koqProps: KindOfQuantityProps): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       return {
-        errorMessage: `Schema Key ${schemaKey.toString(
-          true
-        )} not found in context`,
+        errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context`,
       };
 
-    if (koqProps.name === undefined)
-      return { errorMessage: `No name was supplied within props.` };
+    if (koqProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
 
-    const newKoQ = (await schema.createKindOfQuantity(
-      koqProps.name
-    )) as MutableKindOfQuantity;
+    const newKoQ = (await schema.createKindOfQuantity(koqProps.name)) as MutableKindOfQuantity;
     if (newKoQ === undefined)
       return {
-        errorMessage: `Failed to create class ${
-          koqProps.name
-        } in schema ${schemaKey.toString(true)}.`,
+        errorMessage: `Failed to create class ${koqProps.name} in schema ${schemaKey.toString(true)}.`,
       };
 
     await newKoQ.fromJSON(koqProps);
@@ -67,10 +57,7 @@ export class KindOfQuantities {
     format: SchemaItemKey,
     isDefault: boolean = false
   ): Promise<void> {
-    const kindOfQuantity =
-      await this._schemaEditor.schemaContext.getSchemaItem<MutableKindOfQuantity>(
-        koqKey
-      );
+    const kindOfQuantity = await this._schemaEditor.schemaContext.getSchemaItem<MutableKindOfQuantity>(koqKey);
 
     if (kindOfQuantity === undefined)
       throw new ECObjectsError(
@@ -84,8 +71,7 @@ export class KindOfQuantities {
         `Expected ${koqKey.fullName} to be of type Kind Of Quantity.`
       );
 
-    const presentationFormat =
-      await this._schemaEditor.schemaContext.getSchemaItem<Format>(format);
+    const presentationFormat = await this._schemaEditor.schemaContext.getSchemaItem<Format>(format);
     if (undefined === presentationFormat)
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
@@ -106,10 +92,7 @@ export class KindOfQuantities {
     overrideFormat: OverrideFormat,
     isDefault: boolean = false
   ): Promise<void> {
-    const kindOfQuantity =
-      await this._schemaEditor.schemaContext.getSchemaItem<MutableKindOfQuantity>(
-        koqKey
-      );
+    const kindOfQuantity = await this._schemaEditor.schemaContext.getSchemaItem<MutableKindOfQuantity>(koqKey);
 
     if (kindOfQuantity === undefined)
       throw new ECObjectsError(
@@ -137,10 +120,7 @@ export class KindOfQuantities {
     precision?: number,
     unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>
   ): Promise<OverrideFormat> {
-    const kindOfQuantity =
-      await this._schemaEditor.schemaContext.getSchemaItem<MutableKindOfQuantity>(
-        koqKey
-      );
+    const kindOfQuantity = await this._schemaEditor.schemaContext.getSchemaItem<MutableKindOfQuantity>(koqKey);
 
     if (kindOfQuantity === undefined)
       throw new ECObjectsError(
@@ -154,8 +134,7 @@ export class KindOfQuantities {
         `Expected ${koqKey.fullName} to be of type Kind Of Quantity.`
       );
 
-    const parentFormat =
-      await this._schemaEditor.schemaContext.getSchemaItem<Format>(parent);
+    const parentFormat = await this._schemaEditor.schemaContext.getSchemaItem<Format>(parent);
     if (undefined === parentFormat)
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,

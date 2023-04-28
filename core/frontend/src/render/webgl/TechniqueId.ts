@@ -74,9 +74,7 @@ const compositeTechniqueIds = [
 ];
 
 /** @internal */
-export function computeCompositeTechniqueId(
-  flags: CompositeFlags
-): TechniqueId {
+export function computeCompositeTechniqueId(flags: CompositeFlags): TechniqueId {
   assert(flags >= 0 && flags <= 7);
   return compositeTechniqueIds[flags];
 }

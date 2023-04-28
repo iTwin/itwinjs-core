@@ -10,11 +10,7 @@ import { Geometry } from "../Geometry";
  */
 export class BandedSystem {
   /** apply LU decomposition to a banded system */
-  public static decomposeLU(
-    numRow: number,
-    bw: number /* band width */,
-    data: Float64Array
-  ): boolean {
+  public static decomposeLU(numRow: number, bw: number /* band width */, data: Float64Array): boolean {
     const n = numRow - 1;
     const sbw = Math.floor(bw / 2); // ASSUMES bw is odd?
     let sum;
@@ -34,23 +30,20 @@ export class BandedSystem {
       for (let j = i; j <= jh; j++) {
         const kl = Math.max(0, j - sbw);
         sum = 0.0;
-        for (let k = kl; k < i; k++)
-          sum += data[i * bw + k - i + sbw] * data[k * bw + j - k + sbw];
+        for (let k = kl; k < i; k++) sum += data[i * bw + k - i + sbw] * data[k * bw + j - k + sbw];
         data[i * bw + j - i + sbw] -= sum;
       }
 
       for (let j = i + 1; j <= jh; j++) {
         const kl = Math.max(0, j - sbw);
         sum = 0.0;
-        for (let k = kl; k < i; k++)
-          sum += data[j * bw + k - j + sbw] * data[k * bw + i - k + sbw];
+        for (let k = kl; k < i; k++) sum += data[j * bw + k - j + sbw] * data[k * bw + i - k + sbw];
 
         if (Math.abs(data[i * bw + sbw]) < 1e-9)
           // TODO -- tolerance !!!
           return false;
 
-        data[j * bw + i - j + sbw] =
-          (data[j * bw + i - j + sbw] - sum) / data[i * bw + sbw];
+        data[j * bw + i - j + sbw] = (data[j * bw + i - j + sbw] - sum) / data[i * bw + sbw];
       }
     }
     return true;
@@ -63,12 +56,7 @@ export class BandedSystem {
    * @param sourceRow row in source.  Plain offset is sourceRow * sum.length
    * @param scale scale factor to apply.
    */
-  private static arrayAddScaledBlock(
-    sum: Float64Array,
-    source: Float64Array,
-    sourceRow: number,
-    scale: number
-  ) {
+  private static arrayAddScaledBlock(sum: Float64Array, source: Float64Array, sourceRow: number, scale: number) {
     const n = sum.length;
     let k = n * sourceRow;
     for (let i = 0; i < n; i++, k++) {
@@ -143,21 +131,13 @@ export class BandedSystem {
 
       const jl = Math.max(0, i - sbw);
       for (let j = jl; j < i; j++) {
-        this.arrayAddScaledBlock(
-          rhsRowS,
-          reducedRHS,
-          j,
-          matrix[i * bw + j - i + sbw]
-        );
+        this.arrayAddScaledBlock(rhsRowS, reducedRHS, j, matrix[i * bw + j - i + sbw]);
         // S.SumOf(S, Z[j], data[i * bw + j - i + sbw]);
       }
       this.blockAssignBlockMinusArray(reducedRHS, i, rhs, i, rhsRowS);
     }
     for (let i = n; i >= 0; i--) {
-      const fact = Geometry.conditionalDivideCoordinate(
-        1.0,
-        matrix[i * bw + sbw]
-      );
+      const fact = Geometry.conditionalDivideCoordinate(1.0, matrix[i * bw + sbw]);
       if (fact === undefined) return undefined;
 
       rhsRowS.fill(0);
@@ -165,22 +145,9 @@ export class BandedSystem {
       const jh = Math.min(n, i + sbw);
       for (let j = i + 1; j <= jh; j++) {
         // S.SumOf(S, Q[j], data[i * bw + j - i + sbw]);
-        this.arrayAddScaledBlock(
-          rhsRowS,
-          result,
-          j,
-          matrix[i * bw + j - i + sbw]
-        );
+        this.arrayAddScaledBlock(rhsRowS, result, j, matrix[i * bw + j - i + sbw]);
       }
-      this.blockSumOfScaledBlockScaledArray(
-        result,
-        i,
-        reducedRHS,
-        i,
-        fact,
-        rhsRowS,
-        -fact
-      );
+      this.blockSumOfScaledBlockScaledArray(result, i, reducedRHS, i, fact, rhsRowS, -fact);
       // Q[i].SumOf(O, Z[i], fact, S, -fact);
     }
 

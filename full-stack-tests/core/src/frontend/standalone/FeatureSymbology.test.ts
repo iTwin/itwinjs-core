@@ -85,15 +85,9 @@ describe("FeatureSymbology.Overrides", () => {
     // init overrides from ViewState
     const overrides = new Overrides(viewState);
 
-    expect(overrides.isClassVisible(GeometryClass.Construction)).to.equal(
-      viewState.viewFlags.constructions
-    );
-    expect(overrides.isClassVisible(GeometryClass.Dimension)).to.equal(
-      viewState.viewFlags.dimensions
-    );
-    expect(overrides.isClassVisible(GeometryClass.Pattern)).to.equal(
-      viewState.viewFlags.patterns
-    );
+    expect(overrides.isClassVisible(GeometryClass.Construction)).to.equal(viewState.viewFlags.constructions);
+    expect(overrides.isClassVisible(GeometryClass.Dimension)).to.equal(viewState.viewFlags.dimensions);
+    expect(overrides.isClassVisible(GeometryClass.Pattern)).to.equal(viewState.viewFlags.patterns);
     expect(overrides.lineWeights).to.equal(viewState.viewFlags.weights);
   });
 
@@ -105,51 +99,24 @@ describe("FeatureSymbology.Overrides", () => {
       patterns: false,
     });
 
-    assert.isFalse(
-      overrides.isClassVisible(GeometryClass.Construction),
-      "constructions 1"
-    );
-    assert.isFalse(
-      overrides.isClassVisible(GeometryClass.Dimension),
-      "dimensions 1"
-    );
-    assert.isFalse(
-      overrides.isClassVisible(GeometryClass.Pattern),
-      "patterns 1"
-    );
+    assert.isFalse(overrides.isClassVisible(GeometryClass.Construction), "constructions 1");
+    assert.isFalse(overrides.isClassVisible(GeometryClass.Dimension), "dimensions 1");
+    assert.isFalse(overrides.isClassVisible(GeometryClass.Pattern), "patterns 1");
 
-    viewState.displayStyle.viewFlags = viewState.displayStyle.viewFlags.with(
-      "constructions",
-      true
-    );
+    viewState.displayStyle.viewFlags = viewState.displayStyle.viewFlags.with("constructions", true);
     overrides = new Overrides(viewState);
 
-    assert.isTrue(
-      overrides.isClassVisible(GeometryClass.Construction),
-      "constructions 2"
-    );
+    assert.isTrue(overrides.isClassVisible(GeometryClass.Construction), "constructions 2");
 
-    viewState.displayStyle.viewFlags = viewState.displayStyle.viewFlags.with(
-      "dimensions",
-      true
-    );
+    viewState.displayStyle.viewFlags = viewState.displayStyle.viewFlags.with("dimensions", true);
     overrides = new Overrides(viewState);
 
-    assert.isTrue(
-      overrides.isClassVisible(GeometryClass.Dimension),
-      "dimensions 2"
-    );
+    assert.isTrue(overrides.isClassVisible(GeometryClass.Dimension), "dimensions 2");
 
-    viewState.displayStyle.viewFlags = viewState.displayStyle.viewFlags.with(
-      "patterns",
-      true
-    );
+    viewState.displayStyle.viewFlags = viewState.displayStyle.viewFlags.with("patterns", true);
     overrides = new Overrides(viewState);
 
-    assert.isTrue(
-      overrides.isClassVisible(GeometryClass.Pattern),
-      "patterns 2"
-    );
+    assert.isTrue(overrides.isClassVisible(GeometryClass.Pattern), "patterns 2");
 
     assert.isTrue(overrides.isClassVisible(GeometryClass.Primary), "default");
   });
@@ -168,18 +135,12 @@ describe("FeatureSymbology.Overrides", () => {
     );
 
     overrides.setNeverDrawn(elementId);
-    assert.isFalse(
-      overrides.isFeatureVisible(feature),
-      "if elementId is in never drawn set, feature isn't visible"
-    );
+    assert.isFalse(overrides.isFeatureVisible(feature), "if elementId is in never drawn set, feature isn't visible");
 
     overrides = new Overrides();
     overrides.setAlwaysDrawn(elementId);
 
-    assert.isTrue(
-      overrides.isFeatureVisible(feature),
-      "if elementId is in always drawn set, feature is visible"
-    );
+    assert.isTrue(overrides.isFeatureVisible(feature), "if elementId is in always drawn set, feature is visible");
 
     overrides = new Overrides();
     overrides.isAlwaysDrawnExclusive = true;
@@ -192,10 +153,7 @@ describe("FeatureSymbology.Overrides", () => {
 
     overrides = new Overrides();
     overrides.setVisibleSubCategory(subCategoryId);
-    assert.isFalse(
-      overrides.isFeatureVisible(feature),
-      "if geometryClass isn't visible, feature isn't visible"
-    );
+    assert.isFalse(overrides.isFeatureVisible(feature), "if geometryClass isn't visible, feature isn't visible");
 
     viewState.displayStyle.viewFlags = new ViewFlags({ constructions: true });
     overrides = new Overrides(viewState);
@@ -244,10 +202,7 @@ describe("FeatureSymbology.Overrides", () => {
     overrides.setNeverDrawn(elementId);
 
     appearance = overrides.getFeatureAppearance(feature, id);
-    assert.isUndefined(
-      appearance,
-      "returns undefined if feature id is in the never drawn set"
-    );
+    assert.isUndefined(appearance, "returns undefined if feature id is in the never drawn set");
 
     overrides = new Overrides();
     overrides.isAlwaysDrawnExclusive = true;
@@ -268,10 +223,7 @@ describe("FeatureSymbology.Overrides", () => {
     overrides = new Overrides();
     overrides.setAlwaysDrawn(elementId);
     appearance = overrides.getFeatureAppearance(feature, id);
-    assert.isDefined(
-      appearance,
-      "return true if elementId is in always drawn set"
-    );
+    assert.isDefined(appearance, "return true if elementId is in always drawn set");
 
     viewState.displayStyle.viewFlags = new ViewFlags({ constructions: true });
     overrides = new Overrides(viewState);
@@ -370,9 +322,7 @@ describe("FeatureSymbology.Overrides", () => {
   });
 
   it("excludedElements works as expected", () => {
-    viewState.displayStyle.settings.addExcludedElements(
-      Id64.fromString("0x123")
-    );
+    viewState.displayStyle.settings.addExcludedElements(Id64.fromString("0x123"));
 
     const elementId = Id64.fromString("0x123");
     const elementId2 = Id64.fromString("0x128");
@@ -439,29 +389,16 @@ describe("FeatureSymbology.Overrides", () => {
     const displayStyle = viewState.displayStyle;
     displayStyle.settings.overrideModelAppearance(modelId1, modelOverride1);
     assert(displayStyle.settings.hasModelAppearanceOverride);
-    assert(
-      displayStyle.settings
-        .getModelAppearanceOverride(modelId1)!
-        .equals(modelOverride1)
-    );
+    assert(displayStyle.settings.getModelAppearanceOverride(modelId1)!.equals(modelOverride1));
 
     displayStyle.settings.dropModelAppearanceOverride(modelId1);
     assert(!displayStyle.settings.hasModelAppearanceOverride);
 
     displayStyle.settings.overrideModelAppearance(modelId1, modelOverride1);
     displayStyle.settings.overrideModelAppearance(modelId2, modelOverride2);
-    assert(
-      displayStyle.settings
-        .getModelAppearanceOverride(modelId1)!
-        .equals(modelOverride1)
-    );
-    assert(
-      displayStyle.settings
-        .getModelAppearanceOverride(modelId2)!
-        .equals(modelOverride2)
-    );
-    expect(displayStyle.settings.getModelAppearanceOverride(modelId3)).to.be
-      .undefined;
+    assert(displayStyle.settings.getModelAppearanceOverride(modelId1)!.equals(modelOverride1));
+    assert(displayStyle.settings.getModelAppearanceOverride(modelId2)!.equals(modelOverride2));
+    expect(displayStyle.settings.getModelAppearanceOverride(modelId3)).to.be.undefined;
 
     const overrides = new Overrides(viewState);
     overrides.setAlwaysDrawn(elementId);
@@ -479,8 +416,7 @@ describe("FeatureSymbology.Overrides", () => {
     // Each has one subcategory, except 31 which has 2 (32 and 33).
     // Subcategory 33 is overridden to be invisible.
     let ovrs = new Overrides(viewState);
-    for (const id of ["0x18", "0x2e", "0x30", "0x32"])
-      ovrs.expectSubCategory(id, true);
+    for (const id of ["0x18", "0x2e", "0x30", "0x32"]) ovrs.expectSubCategory(id, true);
 
     ovrs.expectSubCategory("0x33", false);
 
@@ -491,23 +427,14 @@ describe("FeatureSymbology.Overrides", () => {
     for (const id of ["0x2e", "0x30", "0x32"]) ovrs.expectSubCategory(id, true);
 
     viewState.displayStyle.dropSubCategoryOverride("0x33");
-    viewState.displayStyle.overrideSubCategory(
-      "0x2e",
-      SubCategoryOverride.fromJSON({ invisible: true })
-    );
-    viewState.displayStyle.overrideSubCategory(
-      "ox32",
-      SubCategoryOverride.fromJSON({ invisible: false })
-    );
+    viewState.displayStyle.overrideSubCategory("0x2e", SubCategoryOverride.fromJSON({ invisible: true }));
+    viewState.displayStyle.overrideSubCategory("ox32", SubCategoryOverride.fromJSON({ invisible: false }));
     ovrs = new Overrides(viewState);
     for (const id of ["0x18", "0x2e"]) ovrs.expectSubCategory(id, false);
 
     for (const id of ["0x30", "0x32", "0x33"]) ovrs.expectSubCategory(id, true);
 
-    viewState.displayStyle.overrideSubCategory(
-      "0x30",
-      SubCategoryOverride.fromJSON({ color: ColorDef.green.tbgr })
-    );
+    viewState.displayStyle.overrideSubCategory("0x30", SubCategoryOverride.fromJSON({ color: ColorDef.green.tbgr }));
     ovrs = new Overrides(viewState);
     ovrs.expectSubCategory("0x30", true);
 

@@ -9,11 +9,7 @@ import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-function inverseCalculationLoop(
-  numTest: number,
-  usingCache: boolean,
-  usingResult: boolean
-) {
+function inverseCalculationLoop(numTest: number, usingCache: boolean, usingResult: boolean) {
   const savedFlag = Matrix3d.useCachedInverse;
   const matrix = Matrix3dOps.createRowValues(5, 1, 2, 3, 8, 2, 1, -2, 8);
   // Give result storage a temporary value
@@ -21,9 +17,7 @@ function inverseCalculationLoop(
 
   if (usingCache) Matrix3d.useCachedInverse = true;
   else Matrix3d.useCachedInverse = false;
-  const name: string = `Matrix3d inverse ${usingCache ? "Cache" : "NoCache"} ${
-    usingResult ? "preallocate" : "new "
-  }`;
+  const name: string = `Matrix3d inverse ${usingCache ? "Cache" : "NoCache"} ${usingResult ? "preallocate" : "new "}`;
 
   if (usingResult) {
     GeometryCoreTestIO.consoleTime(name);
@@ -142,17 +136,12 @@ function hypotenuseCalculationLoop(numTest: number, funcIdentifier: number) {
       GeometryCoreTestIO.consoleTimeEnd(name);
       break;
     default:
-      GeometryCoreTestIO.consoleLog(
-        "ERROR - Incorrect function identifier in hypotenuse performance test"
-      );
+      GeometryCoreTestIO.consoleLog("ERROR - Incorrect function identifier in hypotenuse performance test");
       return;
   }
 }
 
-function hypotenuseSquaredCalculationLoop(
-  numTest: number,
-  funcIdentifier: number
-) {
+function hypotenuseSquaredCalculationLoop(numTest: number, funcIdentifier: number) {
   let name: string;
 
   // funcIdentifiers 0, 1, 2 are geometry lib functions for XY, XYZ, and XYZW
@@ -185,9 +174,7 @@ function hypotenuseSquaredCalculationLoop(
       break;
 
     default:
-      GeometryCoreTestIO.consoleLog(
-        "ERROR - Incorrect function identifier in hypotenuse performance test"
-      );
+      GeometryCoreTestIO.consoleLog("ERROR - Incorrect function identifier in hypotenuse performance test");
       return;
   }
 }
@@ -262,11 +249,7 @@ function arrayCheck(numTest: number, type: number) {
 
     case 3: // Javascript array (point)
       name = "Javascript_Point_Array";
-      arr = [
-        Point3d.create(0, 0, 0),
-        Point3d.create(1, 1, 1),
-        Point3d.create(2, 2, 2),
-      ];
+      arr = [Point3d.create(0, 0, 0), Point3d.create(1, 1, 1), Point3d.create(2, 2, 2)];
       GeometryCoreTestIO.consoleTime(name);
       for (let i = 0; i < numTest; i++) {
         // Fetch items
@@ -338,41 +321,23 @@ export class Matrix3dOps extends Matrix3d {
     // WARNING -- matrixA does not allow result to be the same as one of the inputs . . .
     result = result ? result : new Matrix3d();
     result.coffs[0] =
-      matrixA.coffs[0] * matrixB.coffs[0] +
-      matrixA.coffs[1] * matrixB.coffs[3] +
-      matrixA.coffs[2] * matrixB.coffs[6];
+      matrixA.coffs[0] * matrixB.coffs[0] + matrixA.coffs[1] * matrixB.coffs[3] + matrixA.coffs[2] * matrixB.coffs[6];
     result.coffs[1] =
-      matrixA.coffs[0] * matrixB.coffs[1] +
-      matrixA.coffs[1] * matrixB.coffs[4] +
-      matrixA.coffs[2] * matrixB.coffs[7];
+      matrixA.coffs[0] * matrixB.coffs[1] + matrixA.coffs[1] * matrixB.coffs[4] + matrixA.coffs[2] * matrixB.coffs[7];
     result.coffs[2] =
-      matrixA.coffs[0] * matrixB.coffs[2] +
-      matrixA.coffs[1] * matrixB.coffs[5] +
-      matrixA.coffs[2] * matrixB.coffs[8];
+      matrixA.coffs[0] * matrixB.coffs[2] + matrixA.coffs[1] * matrixB.coffs[5] + matrixA.coffs[2] * matrixB.coffs[8];
     result.coffs[3] =
-      matrixA.coffs[3] * matrixB.coffs[0] +
-      matrixA.coffs[4] * matrixB.coffs[3] +
-      matrixA.coffs[5] * matrixB.coffs[6];
+      matrixA.coffs[3] * matrixB.coffs[0] + matrixA.coffs[4] * matrixB.coffs[3] + matrixA.coffs[5] * matrixB.coffs[6];
     result.coffs[4] =
-      matrixA.coffs[3] * matrixB.coffs[1] +
-      matrixA.coffs[4] * matrixB.coffs[4] +
-      matrixA.coffs[5] * matrixB.coffs[7];
+      matrixA.coffs[3] * matrixB.coffs[1] + matrixA.coffs[4] * matrixB.coffs[4] + matrixA.coffs[5] * matrixB.coffs[7];
     result.coffs[5] =
-      matrixA.coffs[3] * matrixB.coffs[2] +
-      matrixA.coffs[4] * matrixB.coffs[5] +
-      matrixA.coffs[5] * matrixB.coffs[8];
+      matrixA.coffs[3] * matrixB.coffs[2] + matrixA.coffs[4] * matrixB.coffs[5] + matrixA.coffs[5] * matrixB.coffs[8];
     result.coffs[6] =
-      matrixA.coffs[6] * matrixB.coffs[0] +
-      matrixA.coffs[7] * matrixB.coffs[3] +
-      matrixA.coffs[8] * matrixB.coffs[6];
+      matrixA.coffs[6] * matrixB.coffs[0] + matrixA.coffs[7] * matrixB.coffs[3] + matrixA.coffs[8] * matrixB.coffs[6];
     result.coffs[7] =
-      matrixA.coffs[6] * matrixB.coffs[1] +
-      matrixA.coffs[7] * matrixB.coffs[4] +
-      matrixA.coffs[8] * matrixB.coffs[7];
+      matrixA.coffs[6] * matrixB.coffs[1] + matrixA.coffs[7] * matrixB.coffs[4] + matrixA.coffs[8] * matrixB.coffs[7];
     result.coffs[8] =
-      matrixA.coffs[6] * matrixB.coffs[2] +
-      matrixA.coffs[7] * matrixB.coffs[5] +
-      matrixA.coffs[8] * matrixB.coffs[8];
+      matrixA.coffs[6] * matrixB.coffs[2] + matrixA.coffs[7] * matrixB.coffs[5] + matrixA.coffs[8] * matrixB.coffs[8];
     return result;
   }
   public static multiplyMatrixMatrixdirectAssignmentN(
@@ -385,80 +350,40 @@ export class Matrix3dOps extends Matrix3d {
     result = result ? result : new Matrix3d();
     for (let i = 0; i < numReps; i++) {
       result.coffs[0] =
-        matrixA.coffs[0] * matrixB.coffs[0] +
-        matrixA.coffs[1] * matrixB.coffs[3] +
-        matrixA.coffs[2] * matrixB.coffs[6];
+        matrixA.coffs[0] * matrixB.coffs[0] + matrixA.coffs[1] * matrixB.coffs[3] + matrixA.coffs[2] * matrixB.coffs[6];
       result.coffs[1] =
-        matrixA.coffs[0] * matrixB.coffs[1] +
-        matrixA.coffs[1] * matrixB.coffs[4] +
-        matrixA.coffs[2] * matrixB.coffs[7];
+        matrixA.coffs[0] * matrixB.coffs[1] + matrixA.coffs[1] * matrixB.coffs[4] + matrixA.coffs[2] * matrixB.coffs[7];
       result.coffs[2] =
-        matrixA.coffs[0] * matrixB.coffs[2] +
-        matrixA.coffs[1] * matrixB.coffs[5] +
-        matrixA.coffs[2] * matrixB.coffs[8];
+        matrixA.coffs[0] * matrixB.coffs[2] + matrixA.coffs[1] * matrixB.coffs[5] + matrixA.coffs[2] * matrixB.coffs[8];
       result.coffs[3] =
-        matrixA.coffs[3] * matrixB.coffs[0] +
-        matrixA.coffs[4] * matrixB.coffs[3] +
-        matrixA.coffs[5] * matrixB.coffs[6];
+        matrixA.coffs[3] * matrixB.coffs[0] + matrixA.coffs[4] * matrixB.coffs[3] + matrixA.coffs[5] * matrixB.coffs[6];
       result.coffs[4] =
-        matrixA.coffs[3] * matrixB.coffs[1] +
-        matrixA.coffs[4] * matrixB.coffs[4] +
-        matrixA.coffs[5] * matrixB.coffs[7];
+        matrixA.coffs[3] * matrixB.coffs[1] + matrixA.coffs[4] * matrixB.coffs[4] + matrixA.coffs[5] * matrixB.coffs[7];
       result.coffs[5] =
-        matrixA.coffs[3] * matrixB.coffs[2] +
-        matrixA.coffs[4] * matrixB.coffs[5] +
-        matrixA.coffs[5] * matrixB.coffs[8];
+        matrixA.coffs[3] * matrixB.coffs[2] + matrixA.coffs[4] * matrixB.coffs[5] + matrixA.coffs[5] * matrixB.coffs[8];
       result.coffs[6] =
-        matrixA.coffs[6] * matrixB.coffs[0] +
-        matrixA.coffs[7] * matrixB.coffs[3] +
-        matrixA.coffs[8] * matrixB.coffs[6];
+        matrixA.coffs[6] * matrixB.coffs[0] + matrixA.coffs[7] * matrixB.coffs[3] + matrixA.coffs[8] * matrixB.coffs[6];
       result.coffs[7] =
-        matrixA.coffs[6] * matrixB.coffs[1] +
-        matrixA.coffs[7] * matrixB.coffs[4] +
-        matrixA.coffs[8] * matrixB.coffs[7];
+        matrixA.coffs[6] * matrixB.coffs[1] + matrixA.coffs[7] * matrixB.coffs[4] + matrixA.coffs[8] * matrixB.coffs[7];
       result.coffs[8] =
-        matrixA.coffs[6] * matrixB.coffs[2] +
-        matrixA.coffs[7] * matrixB.coffs[5] +
-        matrixA.coffs[8] * matrixB.coffs[8];
+        matrixA.coffs[6] * matrixB.coffs[2] + matrixA.coffs[7] * matrixB.coffs[5] + matrixA.coffs[8] * matrixB.coffs[8];
     }
 
     return result;
   }
 
   /** Multiply two matrices */
-  public static multiplyMatrixMatrix(
-    matrixA: Matrix3d,
-    matrixB: Matrix3d,
-    result?: Matrix3d
-  ): Matrix3d {
+  public static multiplyMatrixMatrix(matrixA: Matrix3d, matrixB: Matrix3d, result?: Matrix3d): Matrix3d {
     return Matrix3d.createRowValues(
-      matrixA.coffs[0] * matrixB.coffs[0] +
-        matrixA.coffs[1] * matrixB.coffs[3] +
-        matrixA.coffs[2] * matrixB.coffs[6],
-      matrixA.coffs[0] * matrixB.coffs[1] +
-        matrixA.coffs[1] * matrixB.coffs[4] +
-        matrixA.coffs[2] * matrixB.coffs[7],
-      matrixA.coffs[0] * matrixB.coffs[2] +
-        matrixA.coffs[1] * matrixB.coffs[5] +
-        matrixA.coffs[2] * matrixB.coffs[8],
-      matrixA.coffs[3] * matrixB.coffs[0] +
-        matrixA.coffs[4] * matrixB.coffs[3] +
-        matrixA.coffs[5] * matrixB.coffs[6],
-      matrixA.coffs[3] * matrixB.coffs[1] +
-        matrixA.coffs[4] * matrixB.coffs[4] +
-        matrixA.coffs[5] * matrixB.coffs[7],
-      matrixA.coffs[3] * matrixB.coffs[2] +
-        matrixA.coffs[4] * matrixB.coffs[5] +
-        matrixA.coffs[5] * matrixB.coffs[8],
-      matrixA.coffs[6] * matrixB.coffs[0] +
-        matrixA.coffs[7] * matrixB.coffs[3] +
-        matrixA.coffs[8] * matrixB.coffs[6],
-      matrixA.coffs[6] * matrixB.coffs[1] +
-        matrixA.coffs[7] * matrixB.coffs[4] +
-        matrixA.coffs[8] * matrixB.coffs[7],
-      matrixA.coffs[6] * matrixB.coffs[2] +
-        matrixA.coffs[7] * matrixB.coffs[5] +
-        matrixA.coffs[8] * matrixB.coffs[8],
+      matrixA.coffs[0] * matrixB.coffs[0] + matrixA.coffs[1] * matrixB.coffs[3] + matrixA.coffs[2] * matrixB.coffs[6],
+      matrixA.coffs[0] * matrixB.coffs[1] + matrixA.coffs[1] * matrixB.coffs[4] + matrixA.coffs[2] * matrixB.coffs[7],
+      matrixA.coffs[0] * matrixB.coffs[2] + matrixA.coffs[1] * matrixB.coffs[5] + matrixA.coffs[2] * matrixB.coffs[8],
+      matrixA.coffs[3] * matrixB.coffs[0] + matrixA.coffs[4] * matrixB.coffs[3] + matrixA.coffs[5] * matrixB.coffs[6],
+      matrixA.coffs[3] * matrixB.coffs[1] + matrixA.coffs[4] * matrixB.coffs[4] + matrixA.coffs[5] * matrixB.coffs[7],
+      matrixA.coffs[3] * matrixB.coffs[2] + matrixA.coffs[4] * matrixB.coffs[5] + matrixA.coffs[5] * matrixB.coffs[8],
+      matrixA.coffs[6] * matrixB.coffs[0] + matrixA.coffs[7] * matrixB.coffs[3] + matrixA.coffs[8] * matrixB.coffs[6],
+      matrixA.coffs[6] * matrixB.coffs[1] + matrixA.coffs[7] * matrixB.coffs[4] + matrixA.coffs[8] * matrixB.coffs[7],
+      matrixA.coffs[6] * matrixB.coffs[2] + matrixA.coffs[7] * matrixB.coffs[5] + matrixA.coffs[8] * matrixB.coffs[8],
       result
     );
   }
@@ -477,8 +402,7 @@ class TimingTests {
     // Non direct assignment with pre-allocated result. let defined inside loop
     let matrixD = Matrix3d.createIdentity();
     GeometryCoreTestIO.consoleTime("multiplyMatrixMatrix(result)");
-    for (let k = 0; k < numTest; k++)
-      matrixD = matrixA.multiplyMatrixMatrix(matrixB, matrixD);
+    for (let k = 0; k < numTest; k++) matrixD = matrixA.multiplyMatrixMatrix(matrixB, matrixD);
     GeometryCoreTestIO.consoleTimeEnd("multiplyMatrixMatrix(result)");
   }
   public static runTestB(numTest: number) {
@@ -490,40 +414,23 @@ class TimingTests {
     // Non direct assignment with no pre-allocated result
     GeometryCoreTestIO.consoleLog("\n performance reps ", numTest);
     GeometryCoreTestIO.consoleTime("Test_1_static_Outside");
-    for (let k = 0; k < numTest; k++)
-      matrixD = matrixA.multiplyMatrixMatrix(matrixB);
+    for (let k = 0; k < numTest; k++) matrixD = matrixA.multiplyMatrixMatrix(matrixB);
     GeometryCoreTestIO.consoleTimeEnd("Test_1_static_Outside");
 
     GeometryCoreTestIO.consoleTime("Test_pre-allocated_result_static_Outside");
-    for (let k = 0; k < numTest; k++)
-      matrixD = matrixA.multiplyMatrixMatrix(matrixB, matrixD);
-    GeometryCoreTestIO.consoleTimeEnd(
-      "Test_pre-allocated_result_static_Outside"
-    );
+    for (let k = 0; k < numTest; k++) matrixD = matrixA.multiplyMatrixMatrix(matrixB, matrixD);
+    GeometryCoreTestIO.consoleTimeEnd("Test_pre-allocated_result_static_Outside");
 
-    GeometryCoreTestIO.consoleTime(
-      "Matrix3dOps.multiplyMatrixMatrixdirectAssignment"
-    );
+    GeometryCoreTestIO.consoleTime("Matrix3dOps.multiplyMatrixMatrixdirectAssignment");
     for (let k = 0; k < numTest; k++)
-      matrixD = Matrix3dOps.multiplyMatrixMatrixdirectAssignment(
-        matrixA,
-        matrixB,
-        matrixD
-      );
-    GeometryCoreTestIO.consoleTimeEnd(
-      "Matrix3dOps.multiplyMatrixMatrixdirectAssignment"
-    );
+      matrixD = Matrix3dOps.multiplyMatrixMatrixdirectAssignment(matrixA, matrixB, matrixD);
+    GeometryCoreTestIO.consoleTimeEnd("Matrix3dOps.multiplyMatrixMatrixdirectAssignment");
 
     for (let numReps = 0; numReps < 20; numReps = 3 * numReps + 1) {
       const name = `Matrix3dOps.multiplyMatrixMatrixdirectAssignment (numReps ${numReps}`;
       GeometryCoreTestIO.consoleTime(name);
       for (let k = 0; k < numTest; k++)
-        matrixD = Matrix3dOps.multiplyMatrixMatrixdirectAssignmentN(
-          numReps,
-          matrixA,
-          matrixB,
-          matrixD
-        );
+        matrixD = Matrix3dOps.multiplyMatrixMatrixdirectAssignmentN(numReps, matrixA, matrixB, matrixD);
       GeometryCoreTestIO.consoleTimeEnd(name);
     }
   }

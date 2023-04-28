@@ -160,8 +160,7 @@ export class CRS {
     this._projection = projection;
     this._transformationsToWGS = transformationsToWGS;
     /* Get the default transform */
-    this._transformationToWGS =
-      Operation.getLatestTransformation(transformationsToWGS);
+    this._transformationToWGS = Operation.getLatestTransformation(transformationsToWGS);
     /* Clear */
     this._horizontalComponent = null;
     this._verticalComponent = null;
@@ -179,24 +178,12 @@ export class CRS {
    * @param verticalCRS the vertical CRS.
    * @return the compound CRS.
    */
-  public static createCompound(
-    code: int32,
-    name: string,
-    area: int32,
-    horizontalCRS: CRS,
-    verticalCRS: CRS
-  ): CRS {
+  public static createCompound(code: int32, name: string, area: int32, horizontalCRS: CRS, verticalCRS: CRS): CRS {
     /* Check the parameters */
     ASystem.assertNot(horizontalCRS == null, "No horizontal CRS");
     ASystem.assertNot(verticalCRS == null, "No vertical CRS");
-    ASystem.assertNot(
-      horizontalCRS.isVertical(),
-      "CRS is not horizontal: " + horizontalCRS
-    );
-    ASystem.assertNot(
-      verticalCRS.isVertical() == false,
-      "CRS is not vertical: " + verticalCRS
-    );
+    ASystem.assertNot(horizontalCRS.isVertical(), "CRS is not horizontal: " + horizontalCRS);
+    ASystem.assertNot(verticalCRS.isVertical() == false, "CRS is not vertical: " + verticalCRS);
     /* Make the CRS */
     let crs: CRS = new CRS(
       code,
@@ -317,8 +304,7 @@ export class CRS {
    * @return true for a projected CRS.
    */
   public isProjected(): boolean {
-    if (this._type == CRS.COMPOUND)
-      return this._horizontalComponent.isProjected();
+    if (this._type == CRS.COMPOUND) return this._horizontalComponent.isProjected();
     return this._type == CRS.PROJECTED;
   }
 
@@ -421,11 +407,7 @@ export class CRS {
     /* Store the parameters */
     this._axes = axes;
     /* Update the coordinate system */
-    this._coordinateSystem = CoordinateSystem.create(
-      this._type,
-      this._csCode,
-      this._axes
-    );
+    this._coordinateSystem = CoordinateSystem.create(this._type, this._csCode, this._axes);
   }
 
   /**
@@ -433,8 +415,7 @@ export class CRS {
    * @return the unit code (defaults to METER).
    */
   public getFirstAxisUnitCode(): int32 {
-    if (this._type == CRS.COMPOUND)
-      return this._horizontalComponent.getFirstAxisUnitCode();
+    if (this._type == CRS.COMPOUND) return this._horizontalComponent.getFirstAxisUnitCode();
     if (this._axes == null) return Unit.METER;
     if (this._axes.size() == 0) return Unit.METER;
     return this._axes.get(0).getUnitCode();
@@ -471,10 +452,7 @@ export class CRS {
    */
   public getHorizontalComponent(): CRS {
     /* Check the type */
-    ASystem.assertNot(
-      this._type != CRS.COMPOUND,
-      "CRS " + this._code + " is not compound"
-    );
+    ASystem.assertNot(this._type != CRS.COMPOUND, "CRS " + this._code + " is not compound");
     /* Return the component */
     return this._horizontalComponent;
   }
@@ -496,10 +474,7 @@ export class CRS {
    */
   public getVerticalComponent(): CRS {
     /* Check the type */
-    ASystem.assertNot(
-      this._type != CRS.COMPOUND,
-      "CRS " + this._code + " is not compound"
-    );
+    ASystem.assertNot(this._type != CRS.COMPOUND, "CRS " + this._code + " is not compound");
     /* Return the component */
     return this._verticalComponent;
   }
@@ -533,11 +508,7 @@ export class CRS {
    * @return the transformations.
    */
   public getTransformationsToWGS(): AList<Operation> {
-    if (
-      this._transformationsToWGS != null &&
-      this._transformationsToWGS.size() > 0
-    )
-      return this._transformationsToWGS;
+    if (this._transformationsToWGS != null && this._transformationsToWGS.size() > 0) return this._transformationsToWGS;
     if (this._baseCRS != null) return this._baseCRS.getTransformationsToWGS();
     return new AList<Operation>();
   }
@@ -589,8 +560,7 @@ export class CRS {
       );
       /* Convert to standard units */
       let projected: Coordinate = local.copy();
-      if (this._coordinateSystem != null)
-        this._coordinateSystem.localToStandard(projected, projected);
+      if (this._coordinateSystem != null) this._coordinateSystem.localToStandard(projected, projected);
       /* Inverse the projection to get geographic (lon,lat) coordinates (radians) */
       let geographic: Coordinate = new Coordinate(0.0, 0.0, 0.0);
       this._projection.reverse(geographic, projected);
@@ -650,8 +620,7 @@ export class CRS {
       let projected: Coordinate = new Coordinate(0.0, 0.0, 0.0);
       this._projection.forward(geographic, projected);
       /* Convert to local units */
-      if (this._coordinateSystem != null)
-        this._coordinateSystem.standardToLocal(projected, projected);
+      if (this._coordinateSystem != null) this._coordinateSystem.standardToLocal(projected, projected);
       /* Return the projected coordinate */
       return projected;
     }
@@ -687,11 +656,7 @@ export class CRS {
     if (this._projection == null) return false;
     if (this._baseCRS == null) return false;
     /* We need a geographic system */
-    if (
-      geographic._type != CRS.GEOGRAPHIC_2D &&
-      geographic._type != CRS.GEOGRAPHIC_3D
-    )
-      return false;
+    if (geographic._type != CRS.GEOGRAPHIC_2D && geographic._type != CRS.GEOGRAPHIC_3D) return false;
     /* Is this our base CRS? */
     return this._baseCRS.isCompatible(geographic);
   }
@@ -702,10 +667,7 @@ export class CRS {
    * @param projected the target projected coordinate (use null to create a new coordinate).
    * @return the projected coordinate.
    */
-  public toProjected(
-    geographic: Coordinate,
-    projected: Coordinate
-  ): Coordinate {
+  public toProjected(geographic: Coordinate, projected: Coordinate): Coordinate {
     /* Create target? */
     if (projected == null) projected = new Coordinate(0.0, 0.0, 0.0);
     /* The geographic coordinates are kept in degrees */
@@ -715,8 +677,7 @@ export class CRS {
     /* Make the projection */
     this._projection.forward(projected, projected);
     /* Convert to local units */
-    if (this._coordinateSystem != null)
-      this._coordinateSystem.standardToLocal(projected, projected);
+    if (this._coordinateSystem != null) this._coordinateSystem.standardToLocal(projected, projected);
     /* Return the result */
     return projected;
   }
@@ -727,16 +688,12 @@ export class CRS {
    * @param geographic the target geographic coordinate (in degrees) (use null to create a new coordinate).
    * @return the geographic coordinate.
    */
-  public fromProjected(
-    projected: Coordinate,
-    geographic: Coordinate
-  ): Coordinate {
+  public fromProjected(projected: Coordinate, geographic: Coordinate): Coordinate {
     /* Create target? */
     if (geographic == null) geographic = new Coordinate(0.0, 0.0, 0.0);
     /* Convert to standard units */
     let projected2: Coordinate = projected.copy();
-    if (this._coordinateSystem != null)
-      this._coordinateSystem.localToStandard(projected2, projected2);
+    if (this._coordinateSystem != null) this._coordinateSystem.localToStandard(projected2, projected2);
     /* Inverse the projection to get the geographic (lon,lat) coordinates (radians) */
     this._projection.reverse(geographic, projected2);
     /* The geographic coordinates are kept in degrees */
@@ -751,8 +708,7 @@ export class CRS {
    * @return the WGS 84 2D geocentric reference system.
    */
   private static getWGS84_GeoCentric(): CRS {
-    if (CRS._CACHE_WGS84_GEOCENTRIC == null)
-      CRS._CACHE_WGS84_GEOCENTRIC = Registry.getCRS2(CRS.CRS_WGS84_GEOCENTRIC);
+    if (CRS._CACHE_WGS84_GEOCENTRIC == null) CRS._CACHE_WGS84_GEOCENTRIC = Registry.getCRS2(CRS.CRS_WGS84_GEOCENTRIC);
     return CRS._CACHE_WGS84_GEOCENTRIC;
   }
 
@@ -761,8 +717,7 @@ export class CRS {
    * @return the WGS 84 2D geographic reference system.
    */
   private static getWGS84_3D(): CRS {
-    if (CRS._CACHE_WGS84_3D == null)
-      CRS._CACHE_WGS84_3D = Registry.getCRS2(CRS.CRS_WGS84_3D);
+    if (CRS._CACHE_WGS84_3D == null) CRS._CACHE_WGS84_3D = Registry.getCRS2(CRS.CRS_WGS84_3D);
     return CRS._CACHE_WGS84_3D;
   }
 
@@ -771,8 +726,7 @@ export class CRS {
    * @return the WGS 84 2D coordinate reference system.
    */
   private static getWGS84_2D(): CRS {
-    if (CRS._CACHE_WGS84_2D == null)
-      CRS._CACHE_WGS84_2D = Registry.getCRS2(CRS.CRS_WGS84_2D);
+    if (CRS._CACHE_WGS84_2D == null) CRS._CACHE_WGS84_2D = Registry.getCRS2(CRS.CRS_WGS84_2D);
     return CRS._CACHE_WGS84_2D;
   }
 
@@ -803,9 +757,7 @@ export class CRS {
       if (this._type == CRS.GEOCENTRIC) {
         /* Convert from geocentric to geographic coordinates */
         let ageographic: Coordinate = new Coordinate(0.0, 0.0, 0.0);
-        this._datum
-          .getEllipsoid()
-          .toGeoGraphic(source /*geocentric*/, ageographic);
+        this._datum.getEllipsoid().toGeoGraphic(source /*geocentric*/, ageographic);
         /* The WGS coordinates need to be in degrees */
         ageographic.setX((ageographic.getX() / Math.PI) * 180.0);
         ageographic.setY((ageographic.getY() / Math.PI) * 180.0);
@@ -816,8 +768,7 @@ export class CRS {
       if (this._projection != null) {
         /* Convert to standard units */
         let projected: Coordinate = source.copy();
-        if (this._coordinateSystem != null)
-          this._coordinateSystem.localToStandard(projected, projected);
+        if (this._coordinateSystem != null) this._coordinateSystem.localToStandard(projected, projected);
         /* Inverse the projection to go from projected to geographic (lon,lat) coordinates */
         let ageographic: Coordinate = new Coordinate(0.0, 0.0, 0.0);
         this._projection.reverse(ageographic, projected);
@@ -847,9 +798,7 @@ export class CRS {
       geocentric = new Coordinate(source.getX(), source.getY(), source.getZ());
     } else {
       /* Calculate the geocentric coordinate */
-      geocentric = this.toGeoCentric(
-        new Coordinate(source.getX(), source.getY(), source.getZ())
-      );
+      geocentric = this.toGeoCentric(new Coordinate(source.getX(), source.getY(), source.getZ()));
     }
     /* Apply the transform to the WGS datum */
     if (localToWGS != null) localToWGS.forward(geocentric, geocentric);
@@ -881,10 +830,7 @@ export class CRS {
    * @param wgsTransformationIndex the index of the WGS transformation to use (negative for the default transformation).
    * @return the coordinates in this CRS (the z height is the same as the WGS height).
    */
-  public fromWGSi(
-    source: Coordinate,
-    wgsTransformationIndex: int32
-  ): Coordinate {
+  public fromWGSi(source: Coordinate, wgsTransformationIndex: int32): Coordinate {
     /* Already in the WGS datum ? */
     if (this.getDatum().getCode() == CRS.WGS84_DATUM_CODE) {
       /* Geocentric ? */
@@ -909,8 +855,7 @@ export class CRS {
         let projected: Coordinate = new Coordinate(0.0, 0.0, 0.0);
         this._projection.forward(geographic, projected);
         /* Convert to local units */
-        if (this._coordinateSystem != null)
-          this._coordinateSystem.standardToLocal(projected, projected);
+        if (this._coordinateSystem != null) this._coordinateSystem.standardToLocal(projected, projected);
         /* Return the projected coordinates */
         return projected;
       }
@@ -928,11 +873,8 @@ export class CRS {
     //            ASystem.assert(false,"No datum transformation from "+this+" to WGS");
     //        }
     /* Transform from the WGS datum to the local datum */
-    let localGeocentric: Coordinate = CRS.getWGS84_2D().toGeoCentric(
-      source /*geographic*/
-    );
-    if (localToWGS != null)
-      localToWGS.reverse(localGeocentric, localGeocentric);
+    let localGeocentric: Coordinate = CRS.getWGS84_2D().toGeoCentric(source /*geographic*/);
+    if (localToWGS != null) localToWGS.reverse(localGeocentric, localGeocentric);
     /* Does the transform work on the projected coordinates (like the OSTN02 grid correction)? */
     if (localToWGS != null && localToWGS.getSourceCRS().isProjected()) {
       /* We already have the result */
@@ -969,25 +911,15 @@ export class CRS {
     /* Geographic? */
     if (this.isGeoCentric() || this.isGeoGraphic()) {
       /* Same datum? */
-      if (Datum.areCompatible(other.getDatum(), this.getDatum()) == false)
-        return false;
+      if (Datum.areCompatible(other.getDatum(), this.getDatum()) == false) return false;
       /* We need the same transformation to WGS (check CRS 2039 for example: wgs compatible datum, but with geocentric translation to wgs) */
-      if (
-        Operation.isCompatibleOperation(
-          other.getTransformationToWGS(),
-          this.getTransformationToWGS()
-        ) == false
-      )
+      if (Operation.isCompatibleOperation(other.getTransformationToWGS(), this.getTransformationToWGS()) == false)
         return false;
       return true;
     } else if (this.isProjected()) {
       /* Projected? */
       /* Same projection? */
-      if (
-        Operation.isCompatibleOperation(other._projection, this._projection) ==
-        false
-      )
-        return false;
+      if (Operation.isCompatibleOperation(other._projection, this._projection) == false) return false;
       /* Has base CRS? */
       if (other._baseCRS == null || this._baseCRS == null) return false;
       /* Same base? */
@@ -995,24 +927,13 @@ export class CRS {
     } else if (this.isVertical()) {
       /* Vertical? */
       /* Same datum? */
-      if (Datum.areCompatible(other.getDatum(), this.getDatum()) == false)
-        return false;
+      if (Datum.areCompatible(other.getDatum(), this.getDatum()) == false) return false;
       return true;
     } else if (this.isCompound()) {
       /* Compound? */
       /* Same components? */
-      if (
-        CRS.areCompatible(
-          other._horizontalComponent,
-          this._horizontalComponent
-        ) == false
-      )
-        return false;
-      if (
-        CRS.areCompatible(other._verticalComponent, this._verticalComponent) ==
-        false
-      )
-        return false;
+      if (CRS.areCompatible(other._horizontalComponent, this._horizontalComponent) == false) return false;
+      if (CRS.areCompatible(other._verticalComponent, this._verticalComponent) == false) return false;
       return true;
     } else {
       /* Other */
@@ -1095,13 +1016,10 @@ export class CRS {
    */
   public static parseCRSType(crsKind: string): int32 {
     if (Strings.equalsIgnoreCase(crsKind, "compound")) return CRS.COMPOUND;
-    if (Strings.equalsIgnoreCase(crsKind, "engineering"))
-      return CRS.ENGINEERING;
+    if (Strings.equalsIgnoreCase(crsKind, "engineering")) return CRS.ENGINEERING;
     if (Strings.equalsIgnoreCase(crsKind, "geocentric")) return CRS.GEOCENTRIC;
-    if (Strings.equalsIgnoreCase(crsKind, "geographic 2D"))
-      return CRS.GEOGRAPHIC_2D;
-    if (Strings.equalsIgnoreCase(crsKind, "geographic 3D"))
-      return CRS.GEOGRAPHIC_3D;
+    if (Strings.equalsIgnoreCase(crsKind, "geographic 2D")) return CRS.GEOGRAPHIC_2D;
+    if (Strings.equalsIgnoreCase(crsKind, "geographic 3D")) return CRS.GEOGRAPHIC_3D;
     if (Strings.equalsIgnoreCase(crsKind, "projected")) return CRS.PROJECTED;
     if (Strings.equalsIgnoreCase(crsKind, "vertical")) return CRS.VERTICAL;
     ASystem.assert0(false, "CRS kind '" + crsKind + "' not found");

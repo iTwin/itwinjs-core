@@ -75,9 +75,7 @@ export abstract class ToolBarDropDown {
   }
 }
 
-export type CreateToolBarDropDown = (
-  parent: HTMLElement
-) => Promise<ToolBarDropDown>;
+export type CreateToolBarDropDown = (parent: HTMLElement) => Promise<ToolBarDropDown>;
 
 export interface ToolBarDropDownProps {
   iconUnicode: string;
@@ -92,11 +90,7 @@ class DropDown {
   public dropDown?: ToolBarDropDown;
   public readonly only3d: boolean;
 
-  public constructor(
-    toolBar: ToolBar,
-    index: number,
-    props: ToolBarDropDownProps
-  ) {
+  public constructor(toolBar: ToolBar, index: number, props: ToolBarDropDownProps) {
     this.element = IModelApp.makeHTMLElement("div", {
       parent: toolBar.element,
       className: "simpleicon",
@@ -166,8 +160,7 @@ export class ToolBar {
 
     this.close();
     const item = this._dropDowns[index];
-    if (undefined === item.dropDown)
-      item.dropDown = await item.createDropDown();
+    if (undefined === item.dropDown) item.dropDown = await item.createDropDown();
     else item.dropDown.open();
 
     this._currentlyOpen.add(index);
@@ -183,8 +176,7 @@ export class ToolBar {
 
     const promises: Array<Promise<void>> = [];
     for (const item of this._dropDowns) {
-      if (item.only3d)
-        item.element.style.display = vp.view.is3d() ? "block" : "none";
+      if (item.only3d) item.element.style.display = vp.view.is3d() ? "block" : "none";
 
       if (undefined !== item.dropDown) {
         const promise = item.dropDown.onViewChanged;

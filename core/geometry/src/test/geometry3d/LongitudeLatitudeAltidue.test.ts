@@ -21,14 +21,8 @@ describe("LongitudeLatitudeNumber", () => {
       createAsDegrees.latitudeRef,
       createAsDegrees.altitude
     );
-    ck.testTrue(
-      createAsDegrees.isAlmostEqual(createAsRadians),
-      "asDegrees vs asRadians"
-    );
-    ck.testTrue(
-      createAsDegrees.isAlmostEqual(createAsAngles),
-      "asDegrees vs asAngles"
-    );
+    ck.testTrue(createAsDegrees.isAlmostEqual(createAsRadians), "asDegrees vs asRadians");
+    ck.testTrue(createAsDegrees.isAlmostEqual(createAsAngles), "asDegrees vs asAngles");
 
     const cloneA = createAsDegrees.clone();
     ck.testTrue(cloneA.isAlmostEqual(createAsDegrees), "clone match");
@@ -44,30 +38,16 @@ describe("LongitudeLatitudeNumber", () => {
     a.setFromJSON({});
     ck.testTrue(a.isAlmostEqual(trueZero), "setFromJSON defaults to zeros");
 
-    const b = LongitudeLatitudeNumber.create(
-      a.longitude,
-      a.latitude,
-      a.altitude
-    );
+    const b = LongitudeLatitudeNumber.create(a.longitude, a.latitude, a.altitude);
 
     ck.testTrue(b.isAlmostEqual(a), "create with angle clones from donee");
     ck.testTrue(fromJSON.isAlmostEqual(createAsDegrees), "json round trip");
 
     ck.testFalse(createAsDegrees.isAlmostEqual(b));
-    LongitudeLatitudeNumber.createRadians(
-      a.longitudeRadians,
-      a.latitudeRadians,
-      a.altitude,
-      b
-    );
+    LongitudeLatitudeNumber.createRadians(a.longitudeRadians, a.latitudeRadians, a.altitude, b);
     ck.testTrue(b.isAlmostEqual(a));
     const c = LongitudeLatitudeNumber.createZero();
-    LongitudeLatitudeNumber.createDegrees(
-      a.longitudeDegrees,
-      a.latitudeDegrees,
-      a.altitude,
-      c
-    );
+    LongitudeLatitudeNumber.createDegrees(a.longitudeDegrees, a.latitudeDegrees, a.altitude, c);
     ck.testTrue(b.isAlmostEqual(c));
 
     const d = LongitudeLatitudeNumber.createZero();

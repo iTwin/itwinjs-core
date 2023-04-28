@@ -71,31 +71,19 @@ export class PointDataRaw extends PointData {
   public getX(pointIndex: int32): float64 {
     let range: float64 = this.points16 == null ? 256.0 : 65536.0;
     let bias: float64 = this.points16 == null ? 0.5 : 0.0;
-    return (
-      this.bounds.min.x +
-      ((this.getRawX(pointIndex) + bias) / range) *
-        (this.bounds.max.x - this.bounds.min.x)
-    );
+    return this.bounds.min.x + ((this.getRawX(pointIndex) + bias) / range) * (this.bounds.max.x - this.bounds.min.x);
   }
 
   public getY(pointIndex: int32): float64 {
     let range: float64 = this.points16 == null ? 256.0 : 65536.0;
     let bias: float64 = this.points16 == null ? 0.5 : 0.0;
-    return (
-      this.bounds.min.y +
-      ((this.getRawY(pointIndex) + bias) / range) *
-        (this.bounds.max.y - this.bounds.min.y)
-    );
+    return this.bounds.min.y + ((this.getRawY(pointIndex) + bias) / range) * (this.bounds.max.y - this.bounds.min.y);
   }
 
   public getZ(pointIndex: int32): float64 {
     let range: float64 = this.points16 == null ? 256.0 : 65536.0;
     let bias: float64 = this.points16 == null ? 0.5 : 0.0;
-    return (
-      this.bounds.min.z +
-      ((this.getRawZ(pointIndex) + bias) / range) *
-        (this.bounds.max.z - this.bounds.min.z)
-    );
+    return this.bounds.min.z + ((this.getRawZ(pointIndex) + bias) / range) * (this.bounds.max.z - this.bounds.min.z);
   }
 
   public getRed(pointIndex: int32): int32 {

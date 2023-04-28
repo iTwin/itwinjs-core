@@ -6,20 +6,9 @@
 import { expect } from "chai";
 import { IModelDb } from "@itwin/core-backend";
 import { assert, Id64String } from "@itwin/core-bentley";
-import {
-  BisCodeSpec,
-  Code,
-  ElementAspectProps,
-  ElementProps,
-  IModel,
-} from "@itwin/core-common";
+import { BisCodeSpec, Code, ElementAspectProps, ElementProps, IModel } from "@itwin/core-common";
 import { Presentation } from "@itwin/presentation-backend";
-import {
-  DefaultContentDisplayTypes,
-  InstanceKey,
-  KeySet,
-  Ruleset,
-} from "@itwin/presentation-common";
+import { DefaultContentDisplayTypes, InstanceKey, KeySet, Ruleset } from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";
 import { buildTestIModelDb, getFieldByLabel } from "../Utils";
 
@@ -36,21 +25,18 @@ describe("Default supplemental rules", async () => {
     describe("Content modifiers", () => {
       it("removes 'Source Element ID' property", async function () {
         let elementKey: InstanceKey | undefined;
-        const { db: imodel } = buildTestIModelDb(
-          this.test!.fullTitle(),
-          (db) => {
-            elementKey = insertPhysicalElement(db);
-            db.elements.insertAspect({
-              classFullName: "BisCore:ExternalSourceAspect",
-              element: {
-                relClassName: "BisCore:ElementOwnsExternalSourceAspects",
-                id: elementKey.id,
-              },
-              kind: "",
-              identifier: "test identifier",
-            } as ElementAspectProps);
-          }
-        );
+        const { db: imodel } = buildTestIModelDb(this.test!.fullTitle(), (db) => {
+          elementKey = insertPhysicalElement(db);
+          db.elements.insertAspect({
+            classFullName: "BisCore:ExternalSourceAspect",
+            element: {
+              relClassName: "BisCore:ElementOwnsExternalSourceAspects",
+              id: elementKey.id,
+            },
+            kind: "",
+            identifier: "test identifier",
+          } as ElementAspectProps);
+        });
         const rules: Ruleset = {
           id: "test",
           rules: [
@@ -86,64 +72,55 @@ describe("Default supplemental rules", async () => {
             },
           ],
         };
-        const descriptor = await Presentation.getManager().getContentDescriptor(
-          {
-            imodel,
-            rulesetOrId: rules,
-            displayType: DefaultContentDisplayTypes.PropertyPane,
-            keys: new KeySet([elementKey!]),
-          }
-        );
+        const descriptor = await Presentation.getManager().getContentDescriptor({
+          imodel,
+          rulesetOrId: rules,
+          displayType: DefaultContentDisplayTypes.PropertyPane,
+          keys: new KeySet([elementKey!]),
+        });
         assert(!!descriptor);
         expect(descriptor.categories).to.not.containSubset([
           {
             label: "Source Information",
           },
         ]);
-        expect(() =>
-          getFieldByLabel(descriptor.fields, "Source Element ID")
-        ).to.throw();
+        expect(() => getFieldByLabel(descriptor.fields, "Source Element ID")).to.throw();
       });
 
       it("removes 'Source Information -> Model Source' properties", async function () {
         let elementKey: InstanceKey | undefined;
-        const { db: imodel } = buildTestIModelDb(
-          this.test!.fullTitle(),
-          (db) => {
-            const partitionId = db.elements.insertElement({
-              classFullName: "BisCore:PhysicalPartition",
-              model: IModel.repositoryModelId,
-              parent: {
-                relClassName: "BisCore:SubjectOwnsPartitionElements",
-                id: IModel.rootSubjectId,
-              },
-              code: new Code({
-                spec: db.codeSpecs.getByName(
-                  BisCodeSpec.informationPartitionElement
-                ).id,
-                scope: IModel.rootSubjectId,
-                value: "physical model",
-              }),
-            });
-            const repositoryLinkId = db.elements.insertElement({
-              classFullName: "BisCore:RepositoryLink",
-              model: IModel.repositoryModelId,
-              code: Code.createEmpty(),
-              userLabel: "test user label",
-              url: "test url",
-            } as ElementProps);
-            db.relationships.insertInstance({
-              classFullName: "BisCore:ElementHasLinks",
-              sourceId: partitionId,
-              targetId: repositoryLinkId,
-            });
-            const modelId = db.models.insertModel({
-              classFullName: "BisCore:PhysicalModel",
-              modeledElement: { id: partitionId },
-            });
-            elementKey = insertPhysicalElement(db, modelId);
-          }
-        );
+        const { db: imodel } = buildTestIModelDb(this.test!.fullTitle(), (db) => {
+          const partitionId = db.elements.insertElement({
+            classFullName: "BisCore:PhysicalPartition",
+            model: IModel.repositoryModelId,
+            parent: {
+              relClassName: "BisCore:SubjectOwnsPartitionElements",
+              id: IModel.rootSubjectId,
+            },
+            code: new Code({
+              spec: db.codeSpecs.getByName(BisCodeSpec.informationPartitionElement).id,
+              scope: IModel.rootSubjectId,
+              value: "physical model",
+            }),
+          });
+          const repositoryLinkId = db.elements.insertElement({
+            classFullName: "BisCore:RepositoryLink",
+            model: IModel.repositoryModelId,
+            code: Code.createEmpty(),
+            userLabel: "test user label",
+            url: "test url",
+          } as ElementProps);
+          db.relationships.insertInstance({
+            classFullName: "BisCore:ElementHasLinks",
+            sourceId: partitionId,
+            targetId: repositoryLinkId,
+          });
+          const modelId = db.models.insertModel({
+            classFullName: "BisCore:PhysicalModel",
+            modeledElement: { id: partitionId },
+          });
+          elementKey = insertPhysicalElement(db, modelId);
+        });
         const rules: Ruleset = {
           id: "test",
           rules: [
@@ -193,14 +170,12 @@ describe("Default supplemental rules", async () => {
             },
           ],
         };
-        const descriptor = await Presentation.getManager().getContentDescriptor(
-          {
-            imodel,
-            rulesetOrId: rules,
-            displayType: DefaultContentDisplayTypes.PropertyPane,
-            keys: new KeySet([elementKey!]),
-          }
-        );
+        const descriptor = await Presentation.getManager().getContentDescriptor({
+          imodel,
+          rulesetOrId: rules,
+          displayType: DefaultContentDisplayTypes.PropertyPane,
+          keys: new KeySet([elementKey!]),
+        });
         assert(!!descriptor);
         expect(descriptor.categories).to.not.containSubset([
           {
@@ -218,41 +193,38 @@ describe("Default supplemental rules", async () => {
 
       it("removes 'Source Information' ExternalSource properties", async function () {
         let elementKey: InstanceKey | undefined;
-        const { db: imodel } = buildTestIModelDb(
-          this.test!.fullTitle(),
-          (db) => {
-            elementKey = insertPhysicalElement(db);
-            const repositoryLinkId = db.elements.insertElement({
-              classFullName: "BisCore:RepositoryLink",
-              model: IModel.repositoryModelId,
-              code: Code.createEmpty(),
-              userLabel: "test user label",
-              url: "test url",
-            } as ElementProps);
-            const externalSourceId = db.elements.insertElement({
-              classFullName: "BisCore:ExternalSource",
-              model: IModel.dictionaryId,
-              code: Code.createEmpty(),
-              repository: {
-                relClassName: "BisCore:ExternalSourceIsInRepository",
-                id: repositoryLinkId,
-              },
-            } as ElementProps);
-            db.elements.insertAspect({
-              classFullName: "BisCore:ExternalSourceAspect",
-              element: {
-                relClassName: "BisCore:ElementOwnsExternalSourceAspects",
-                id: elementKey.id,
-              },
-              source: {
-                relClassName: "BisCore:ElementIsFromSource",
-                id: externalSourceId,
-              },
-              kind: "",
-              identifier: "test identifier",
-            } as ElementAspectProps);
-          }
-        );
+        const { db: imodel } = buildTestIModelDb(this.test!.fullTitle(), (db) => {
+          elementKey = insertPhysicalElement(db);
+          const repositoryLinkId = db.elements.insertElement({
+            classFullName: "BisCore:RepositoryLink",
+            model: IModel.repositoryModelId,
+            code: Code.createEmpty(),
+            userLabel: "test user label",
+            url: "test url",
+          } as ElementProps);
+          const externalSourceId = db.elements.insertElement({
+            classFullName: "BisCore:ExternalSource",
+            model: IModel.dictionaryId,
+            code: Code.createEmpty(),
+            repository: {
+              relClassName: "BisCore:ExternalSourceIsInRepository",
+              id: repositoryLinkId,
+            },
+          } as ElementProps);
+          db.elements.insertAspect({
+            classFullName: "BisCore:ExternalSourceAspect",
+            element: {
+              relClassName: "BisCore:ElementOwnsExternalSourceAspects",
+              id: elementKey.id,
+            },
+            source: {
+              relClassName: "BisCore:ElementIsFromSource",
+              id: externalSourceId,
+            },
+            kind: "",
+            identifier: "test identifier",
+          } as ElementAspectProps);
+        });
         const rules: Ruleset = {
           id: "test",
           rules: [
@@ -309,14 +281,12 @@ describe("Default supplemental rules", async () => {
             },
           ],
         };
-        const descriptor = await Presentation.getManager().getContentDescriptor(
-          {
-            imodel,
-            rulesetOrId: rules,
-            displayType: DefaultContentDisplayTypes.PropertyPane,
-            keys: new KeySet([elementKey!]),
-          }
-        );
+        const descriptor = await Presentation.getManager().getContentDescriptor({
+          imodel,
+          rulesetOrId: rules,
+          displayType: DefaultContentDisplayTypes.PropertyPane,
+          keys: new KeySet([elementKey!]),
+        });
         assert(!!descriptor);
         expect(descriptor.categories).to.not.containSubset([
           {
@@ -329,51 +299,48 @@ describe("Default supplemental rules", async () => {
 
       it("removes 'Source Information -> Secondary Sources' properties", async function () {
         let elementKey: InstanceKey | undefined;
-        const { db: imodel } = buildTestIModelDb(
-          this.test!.fullTitle(),
-          (db) => {
-            elementKey = insertPhysicalElement(db);
-            const repositoryLinkId = db.elements.insertElement({
-              classFullName: "BisCore:RepositoryLink",
-              model: IModel.repositoryModelId,
-              code: Code.createEmpty(),
-              userLabel: "test user label",
-              url: "test url",
-            } as ElementProps);
-            const externalSourceId = db.elements.insertElement({
-              classFullName: "BisCore:ExternalSource",
-              model: IModel.dictionaryId,
-              code: Code.createEmpty(),
-              repository: {
-                relClassName: "BisCore:ExternalSourceIsInRepository",
-                id: repositoryLinkId,
-              },
-            } as ElementProps);
-            const externalSourceGroupId = db.elements.insertElement({
-              classFullName: "BisCore:ExternalSourceGroup",
-              model: IModel.dictionaryId,
-              code: Code.createEmpty(),
-            } as ElementProps);
-            db.relationships.insertInstance({
-              classFullName: "BisCore:ExternalSourceGroupGroupsSources",
-              sourceId: externalSourceGroupId,
-              targetId: externalSourceId,
-            });
-            db.elements.insertAspect({
-              classFullName: "BisCore:ExternalSourceAspect",
-              element: {
-                relClassName: "BisCore:ElementOwnsExternalSourceAspects",
-                id: elementKey.id,
-              },
-              source: {
-                relClassName: "BisCore:ElementIsFromSource",
-                id: externalSourceGroupId,
-              },
-              kind: "",
-              identifier: "test identifier",
-            } as ElementAspectProps);
-          }
-        );
+        const { db: imodel } = buildTestIModelDb(this.test!.fullTitle(), (db) => {
+          elementKey = insertPhysicalElement(db);
+          const repositoryLinkId = db.elements.insertElement({
+            classFullName: "BisCore:RepositoryLink",
+            model: IModel.repositoryModelId,
+            code: Code.createEmpty(),
+            userLabel: "test user label",
+            url: "test url",
+          } as ElementProps);
+          const externalSourceId = db.elements.insertElement({
+            classFullName: "BisCore:ExternalSource",
+            model: IModel.dictionaryId,
+            code: Code.createEmpty(),
+            repository: {
+              relClassName: "BisCore:ExternalSourceIsInRepository",
+              id: repositoryLinkId,
+            },
+          } as ElementProps);
+          const externalSourceGroupId = db.elements.insertElement({
+            classFullName: "BisCore:ExternalSourceGroup",
+            model: IModel.dictionaryId,
+            code: Code.createEmpty(),
+          } as ElementProps);
+          db.relationships.insertInstance({
+            classFullName: "BisCore:ExternalSourceGroupGroupsSources",
+            sourceId: externalSourceGroupId,
+            targetId: externalSourceId,
+          });
+          db.elements.insertAspect({
+            classFullName: "BisCore:ExternalSourceAspect",
+            element: {
+              relClassName: "BisCore:ElementOwnsExternalSourceAspects",
+              id: elementKey.id,
+            },
+            source: {
+              relClassName: "BisCore:ElementIsFromSource",
+              id: externalSourceGroupId,
+            },
+            kind: "",
+            identifier: "test identifier",
+          } as ElementAspectProps);
+        });
         const rules: Ruleset = {
           id: "test",
           rules: [
@@ -441,14 +408,12 @@ describe("Default supplemental rules", async () => {
             },
           ],
         };
-        const descriptor = await Presentation.getManager().getContentDescriptor(
-          {
-            imodel,
-            rulesetOrId: rules,
-            displayType: DefaultContentDisplayTypes.PropertyPane,
-            keys: new KeySet([elementKey!]),
-          }
-        );
+        const descriptor = await Presentation.getManager().getContentDescriptor({
+          imodel,
+          rulesetOrId: rules,
+          displayType: DefaultContentDisplayTypes.PropertyPane,
+          keys: new KeySet([elementKey!]),
+        });
         assert(!!descriptor);
         expect(descriptor.categories).to.not.containSubset([
           {
@@ -467,11 +432,7 @@ describe("Default supplemental rules", async () => {
   });
 });
 
-function insertPhysicalElement(
-  db: IModelDb,
-  modelId?: Id64String,
-  categoryId?: Id64String
-): InstanceKey {
+function insertPhysicalElement(db: IModelDb, modelId?: Id64String, categoryId?: Id64String): InstanceKey {
   if (!modelId) {
     const partitionId = db.elements.insertElement({
       classFullName: "BisCore:PhysicalPartition",
@@ -481,8 +442,7 @@ function insertPhysicalElement(
         id: IModel.rootSubjectId,
       },
       code: new Code({
-        spec: db.codeSpecs.getByName(BisCodeSpec.informationPartitionElement)
-          .id,
+        spec: db.codeSpecs.getByName(BisCodeSpec.informationPartitionElement).id,
         scope: IModel.rootSubjectId,
         value: "physical model",
       }),

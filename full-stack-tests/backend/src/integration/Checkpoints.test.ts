@@ -67,9 +67,7 @@ describe("Checkpoints", () => {
 
   const shutdownDaemon = async () => {
     if (daemon) {
-      const onDaemonExit = new Promise((resolve) =>
-        daemon.once("exit", resolve)
-      );
+      const onDaemonExit = new Promise((resolve) => daemon.once("exit", resolve));
       daemon.kill();
       await onDaemonExit;
     }
@@ -103,25 +101,18 @@ describe("Checkpoints", () => {
 
     accessToken = await TestUtility.getAccessToken(TestUsers.regular);
     testITwinId = await HubUtility.getTestITwinId(accessToken);
-    testIModelId = await HubUtility.getTestIModelId(
-      accessToken,
-      HubUtility.testIModelNames.stadium
-    );
+    testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);
     testChangeSet = await IModelHost.hubAccess.getLatestChangeset({
       accessToken,
       iModelId: testIModelId,
     });
-    testChangeSetFirstVersion =
-      await IModelHost.hubAccess.getChangesetFromVersion({
-        accessToken,
-        iModelId: testIModelId,
-        version: IModelVersion.first(),
-      });
-    testITwinId2 = await HubUtility.getTestITwinId(accessToken);
-    testIModelId2 = await HubUtility.getTestIModelId(
+    testChangeSetFirstVersion = await IModelHost.hubAccess.getChangesetFromVersion({
       accessToken,
-      HubUtility.testIModelNames.readOnly
-    );
+      iModelId: testIModelId,
+      version: IModelVersion.first(),
+    });
+    testITwinId2 = await HubUtility.getTestITwinId(accessToken);
+    testIModelId2 = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.readOnly);
     testChangeSet2 = await IModelHost.hubAccess.getLatestChangeset({
       accessToken,
       iModelId: testIModelId2,
@@ -138,10 +129,7 @@ describe("Checkpoints", () => {
     });
     assert.isDefined(checkpoint, "checkpoint missing");
 
-    assert.isDefined(
-      checkpoint?.accountName,
-      "checkpoint storage account is invalid"
-    );
+    assert.isDefined(checkpoint?.accountName, "checkpoint storage account is invalid");
     assert.isDefined(checkpoint?.sasToken, "checkpoint accessToken is invalid");
   });
 
@@ -179,9 +167,7 @@ describe("Checkpoints", () => {
           iModelId: testIModelId,
           changeset: testChangeSet,
         })
-      ).eventually.rejectedWith(
-        /Cannot create CloudCache: invalid cache directory or directory does not exist/
-      );
+      ).eventually.rejectedWith(/Cannot create CloudCache: invalid cache directory or directory does not exist/);
     } finally {
       IModelJsFs.removeSync(portfile);
     }

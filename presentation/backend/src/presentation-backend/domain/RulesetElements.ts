@@ -28,11 +28,7 @@ export class Ruleset extends DefinitionElement {
    * @param modelId ID of a the model this ruleset should be created in
    * @param ruleset The ruleset code is being created for
    */
-  public static createRulesetCode(
-    iModelDb: IModelDb,
-    modelId: Id64String,
-    ruleset: PresentationRuleset
-  ) {
+  public static createRulesetCode(iModelDb: IModelDb, modelId: Id64String, ruleset: PresentationRuleset) {
     let codeValue = ruleset.id;
     if (ruleset.version) codeValue += `@${normalizeVersion(ruleset.version)}`;
 

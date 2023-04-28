@@ -5,13 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import {
-  InstanceKey,
-  Key,
-  KeySet,
-  KeySetJSON,
-  PresentationError,
-} from "../presentation-common";
+import { InstanceKey, Key, KeySet, KeySetJSON, PresentationError } from "../presentation-common";
 import { createTestECInstanceKey } from "./_helpers/EC";
 import {
   createRandomECInstanceId,
@@ -29,10 +23,7 @@ describe("KeySet", () => {
     });
 
     it("initializes from node keys", () => {
-      const keys = [
-        createRandomECInstancesNodeKey(),
-        createRandomECInstancesNodeKey(),
-      ];
+      const keys = [createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()];
       const set = new KeySet(keys);
       expect(set.size).to.eq(2);
       expect(set.has(keys[0])).to.be.true;
@@ -163,10 +154,7 @@ describe("KeySet", () => {
     });
 
     it("returns set with node keys", () => {
-      const set = new KeySet([
-        createRandomECInstancesNodeKey(),
-        createRandomECInstancesNodeKey(),
-      ]);
+      const set = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()]);
       const keys = set.nodeKeys;
       expect(keys).to.matchSnapshot();
     });
@@ -179,20 +167,14 @@ describe("KeySet", () => {
     });
 
     it("returns count of node keys", () => {
-      const set = new KeySet([
-        createRandomECInstancesNodeKey(),
-        createRandomECInstancesNodeKey(),
-      ]);
+      const set = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()]);
       expect(set.nodeKeysCount).to.eq(2);
     });
   });
 
   describe("clear", () => {
     it("clears node keys", () => {
-      const keys = [
-        createRandomECInstancesNodeKey(),
-        createRandomECInstancesNodeKey(),
-      ];
+      const keys = [createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()];
       const set = new KeySet(keys);
       expect(set.size).to.eq(2);
       const guidBefore = set.guid;
@@ -256,10 +238,7 @@ describe("KeySet", () => {
       const set = new KeySet([createRandomECInstancesNodeKey()]);
       expect(set.size).to.eq(1);
       const guidBefore = set.guid;
-      const keys = [
-        createRandomECInstancesNodeKey(),
-        createRandomECInstancesNodeKey(),
-      ];
+      const keys = [createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()];
       set.add(keys);
       expect(set.size).to.eq(3);
       expect(set.nodeKeysCount).to.eq(3);
@@ -280,10 +259,7 @@ describe("KeySet", () => {
     });
 
     it("doesn't add the same node keys", () => {
-      const keys = [
-        createRandomECInstancesNodeKey(),
-        createRandomECInstancesNodeKey(),
-      ];
+      const keys = [createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()];
       const set = new KeySet(keys);
       expect(set.size).to.eq(2);
       const guidBefore = set.guid;
@@ -531,11 +507,7 @@ describe("KeySet", () => {
     });
 
     it("deletes an instance key", () => {
-      const keys = [
-        createRandomECInstanceKey(),
-        createRandomECInstanceKey(),
-        createRandomECInstanceKey(),
-      ];
+      const keys = [createRandomECInstanceKey(), createRandomECInstanceKey(), createRandomECInstanceKey()];
       const set = new KeySet(keys);
       expect(set.size).to.eq(3);
       const guidBefore = set.guid;
@@ -555,11 +527,7 @@ describe("KeySet", () => {
         className: "BISCORE",
         id: Id64.invalid,
       };
-      const keys = [
-        createRandomECInstanceKey(),
-        instanceKey1,
-        createRandomECInstanceKey(),
-      ];
+      const keys = [createRandomECInstanceKey(), instanceKey1, createRandomECInstanceKey()];
       const set = new KeySet(keys);
       expect(set.size).to.eq(3);
       const guidBefore = set.guid;
@@ -571,11 +539,7 @@ describe("KeySet", () => {
     });
 
     it("deletes an array of instance keys", () => {
-      const keys = [
-        createRandomECInstanceKey(),
-        createRandomECInstanceKey(),
-        createRandomECInstanceKey(),
-      ];
+      const keys = [createRandomECInstanceKey(), createRandomECInstanceKey(), createRandomECInstanceKey()];
       const set = new KeySet(keys);
       expect(set.size).to.eq(3);
       const guidBefore = set.guid;
@@ -588,11 +552,7 @@ describe("KeySet", () => {
     });
 
     it("deletes an entity prop", () => {
-      const props = [
-        createRandomEntityProps(),
-        createRandomEntityProps(),
-        createRandomEntityProps(),
-      ];
+      const props = [createRandomEntityProps(), createRandomEntityProps(), createRandomEntityProps()];
       const set = new KeySet(props);
       expect(set.size).to.eq(3);
       const guidBefore = set.guid;
@@ -604,11 +564,7 @@ describe("KeySet", () => {
     });
 
     it("deletes an array of entity props", () => {
-      const props = [
-        createRandomEntityProps(),
-        createRandomEntityProps(),
-        createRandomEntityProps(),
-      ];
+      const props = [createRandomEntityProps(), createRandomEntityProps(), createRandomEntityProps()];
       const set = new KeySet(props);
       expect(set.size).to.eq(3);
       const guidBefore = set.guid;
@@ -621,14 +577,8 @@ describe("KeySet", () => {
     });
 
     it("deletes keys from a keyset", () => {
-      const instanceKeys = [
-        createRandomECInstanceKey(),
-        createRandomECInstanceKey(),
-      ];
-      const nodeKeys = [
-        createRandomECInstancesNodeKey(),
-        createRandomECInstancesNodeKey(),
-      ];
+      const instanceKeys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+      const nodeKeys = [createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()];
       const set = new KeySet();
       set.add(instanceKeys).add(nodeKeys);
       expect(set.size).to.eq(4);
@@ -736,12 +686,7 @@ describe("KeySet", () => {
           const instanceKey2 = createRandomECInstanceKey();
           const nodeKey1 = createRandomECInstancesNodeKey();
           const nodeKey2 = createRandomECInstancesNodeKey();
-          const set = new KeySet([
-            instanceKey1,
-            instanceKey2,
-            nodeKey1,
-            nodeKey2,
-          ]);
+          const set = new KeySet([instanceKey1, instanceKey2, nodeKey1, nodeKey2]);
           expect(set.hasAll(createKeys([instanceKey1, nodeKey1]))).to.be.true;
         });
 
@@ -781,8 +726,7 @@ describe("KeySet", () => {
           const instanceKey1 = createRandomECInstanceKey();
           const instanceKey2 = createRandomECInstanceKey();
           const set = new KeySet([instanceKey1]);
-          expect(set.hasAll(createKeys([instanceKey1, instanceKey2]))).to.be
-            .false;
+          expect(set.hasAll(createKeys([instanceKey1, instanceKey2]))).to.be.false;
         });
 
         it("returns false when instance key classes are different", () => {
@@ -832,8 +776,7 @@ describe("KeySet", () => {
           const instanceKey2 = createRandomECInstanceKey();
           const instanceKey3 = createRandomECInstanceKey();
           const set = new KeySet([instanceKey1, instanceKey2]);
-          expect(set.hasAny(createKeys([instanceKey2, instanceKey3]))).to.be
-            .true;
+          expect(set.hasAny(createKeys([instanceKey2, instanceKey3]))).to.be.true;
         });
 
         it("returns true when KeySet has any instance key with different capitalization", () => {
@@ -859,18 +802,8 @@ describe("KeySet", () => {
         });
 
         it("returns false when KeySet doesn't have any key", () => {
-          const set = new KeySet([
-            createRandomECInstanceKey(),
-            createRandomECInstancesNodeKey(),
-          ]);
-          expect(
-            set.hasAny(
-              createKeys([
-                createRandomECInstanceKey(),
-                createRandomECInstancesNodeKey(),
-              ])
-            )
-          ).to.be.false;
+          const set = new KeySet([createRandomECInstanceKey(), createRandomECInstancesNodeKey()]);
+          expect(set.hasAny(createKeys([createRandomECInstanceKey(), createRandomECInstancesNodeKey()]))).to.be.false;
         });
       });
     });
@@ -922,14 +855,8 @@ describe("KeySet", () => {
     });
 
     it("returns false if callback returns false", () => {
-      const instanceKeys = [
-        createRandomECInstanceKey(),
-        createRandomECInstanceKey(),
-      ];
-      const nodeKeys = [
-        createRandomECInstancesNodeKey(),
-        createRandomECInstancesNodeKey(),
-      ];
+      const instanceKeys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+      const nodeKeys = [createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()];
       const set = new KeySet([...instanceKeys, ...nodeKeys]);
       const callback = sinon.stub();
       callback.returns(false);
@@ -944,14 +871,8 @@ describe("KeySet", () => {
 
   describe("forEach", () => {
     it("calls callback for every key in set", () => {
-      const instanceKeys = [
-        createRandomECInstanceKey(),
-        createRandomECInstanceKey(),
-      ];
-      const nodeKeys = [
-        createRandomECInstancesNodeKey(),
-        createRandomECInstancesNodeKey(),
-      ];
+      const instanceKeys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+      const nodeKeys = [createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()];
       const set = new KeySet([...instanceKeys, ...nodeKeys]);
       const callback = sinon.spy();
       set.forEach(callback);
@@ -982,14 +903,8 @@ describe("KeySet", () => {
 
   describe("forEachBatch", () => {
     it("calls callback with itself when batch size smaller than set size", () => {
-      const instanceKeys = [
-        createRandomECInstanceKey(),
-        createRandomECInstanceKey(),
-      ];
-      const nodeKeys = [
-        createRandomECInstancesNodeKey(),
-        createRandomECInstancesNodeKey(),
-      ];
+      const instanceKeys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+      const nodeKeys = [createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()];
       const set = new KeySet([...instanceKeys, ...nodeKeys]);
       const callback = sinon.spy();
       set.forEachBatch(5, callback);
@@ -998,14 +913,8 @@ describe("KeySet", () => {
     });
 
     it("calls callback in batches", () => {
-      const instanceKeys = [
-        createRandomECInstanceKey(),
-        createRandomECInstanceKey(),
-      ];
-      const nodeKeys = [
-        createRandomECInstancesNodeKey(),
-        createRandomECInstancesNodeKey(),
-      ];
+      const instanceKeys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+      const nodeKeys = [createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()];
       const set = new KeySet([...instanceKeys, ...nodeKeys]);
       const callback = sinon.spy();
       set.forEachBatch(3, callback);
@@ -1060,10 +969,8 @@ describe("KeySet", () => {
       };
       const deserialized = KeySet.fromJSON(json);
       expect(deserialized.size).to.eq(2);
-      expect(deserialized.has({ className: "class name", id: ids[0] })).to.be
-        .true;
-      expect(deserialized.has({ className: "class name", id: ids[1] })).to.be
-        .true;
+      expect(deserialized.has({ className: "class name", id: ids[0] })).to.be.true;
+      expect(deserialized.has({ className: "class name", id: ids[1] })).to.be.true;
     });
 
     it("doesn't serialize instance classes without ids", () => {

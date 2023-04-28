@@ -16,12 +16,7 @@ import {
   PrimitiveTool,
   Viewport,
 } from "@itwin/core-frontend";
-import {
-  G,
-  LinkedHTMLElement,
-  Element as MarkupElement,
-  Text as MarkupText,
-} from "@svgdotjs/svg.js";
+import { G, LinkedHTMLElement, Element as MarkupElement, Text as MarkupText } from "@svgdotjs/svg.js";
 import { Markup, MarkupApp } from "./Markup";
 
 /** Base class for all tools that operate on Markup elements.
@@ -33,14 +28,9 @@ export abstract class MarkupTool extends PrimitiveTool {
   public override requireWriteableTarget(): boolean {
     return false;
   }
-  public override isCompatibleViewport(
-    vp: Viewport | undefined,
-    isSelectedViewChange: boolean
-  ): boolean {
+  public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean {
     return (
-      super.isCompatibleViewport(vp, isSelectedViewChange) &&
-      undefined !== vp &&
-      vp === IModelApp.toolAdmin.markupView
+      super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp === IModelApp.toolAdmin.markupView
     );
   }
   public override async onInstall(): Promise<boolean> {
@@ -70,15 +60,8 @@ export abstract class MarkupTool extends PrimitiveTool {
     IModelApp.notifications.outputPromptByKey(MarkupTool.toolKey + msg);
   }
 
-  public override async onTouchMoveStart(
-    ev: BeTouchEvent,
-    startEv: BeTouchEvent
-  ): Promise<EventHandled> {
-    if (startEv.isSingleTouch)
-      await IModelApp.toolAdmin.convertTouchMoveStartToButtonDownAndMotion(
-        startEv,
-        ev
-      );
+  public override async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> {
+    if (startEv.isSingleTouch) await IModelApp.toolAdmin.convertTouchMoveStartToButtonDownAndMotion(startEv, ev);
     return EventHandled.Yes; // View tools are not allowed during redlining; use touch events to create markup and don't pass event to IdleTool...
   }
 
@@ -113,18 +96,12 @@ export abstract class MarkupTool extends PrimitiveTool {
   public pickElement(pt: XAndY): MarkupElement | undefined {
     const markup = this.markup;
     const rect = markup.markupDiv.getBoundingClientRect();
-    const node = document.elementFromPoint(
-      pt.x + rect.left,
-      pt.y + rect.top
-    ) as LinkedHTMLElement | null;
+    const node = document.elementFromPoint(pt.x + rect.left, pt.y + rect.top) as LinkedHTMLElement | null;
     if (!node || !node.instance) return undefined;
     const el = node.instance;
     return el.getChildOrGroupOf(markup.svgMarkup!);
   }
-  protected setCurrentStyle(
-    element: MarkupElement,
-    canBeFilled: boolean
-  ): void {
+  protected setCurrentStyle(element: MarkupElement, canBeFilled: boolean): void {
     element.css(MarkupApp.props.active.element);
     if (!canBeFilled) element.css({ fill: "none" });
   }

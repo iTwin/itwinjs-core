@@ -64,27 +64,14 @@ export class Ellipsoid {
    * @param invF the inverse flattening (value like 300, not like 1/300).
    * @param b the semi-minor axis.
    */
-  public constructor(
-    code: int32,
-    name: string,
-    unitCode: int32,
-    a: float64,
-    invF: float64,
-    b: float64
-  ) {
+  public constructor(code: int32, name: string, unitCode: int32, a: float64, invF: float64, b: float64) {
     /* Store parameters */
     this._code = code;
     this._name = name;
     this._unitCode = unitCode;
-    this._a =
-      unitCode == Unit.METER
-        ? a
-        : Registry.getUnit(this._unitCode).toStandard(a);
+    this._a = unitCode == Unit.METER ? a : Registry.getUnit(this._unitCode).toStandard(a);
     this._invF = invF;
-    this._b =
-      unitCode == Unit.METER
-        ? b
-        : Registry.getUnit(this._unitCode).toStandard(b);
+    this._b = unitCode == Unit.METER ? b : Registry.getUnit(this._unitCode).toStandard(b);
     /* Derive parameters */
     if (this._invF == 0.0) this._invF = a / (a - b);
     this._f = 1.0 / this._invF;

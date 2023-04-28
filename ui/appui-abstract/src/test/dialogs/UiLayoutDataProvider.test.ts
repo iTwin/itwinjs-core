@@ -111,9 +111,7 @@ const dialogItems: DialogItem[] = [item1, item2, buttonGroupItem];
 
 class TestDynamicUiDataProvider extends UiLayoutDataProvider {
   /** Applies change of a single property - this is the default method used when property editors are dynamically generated. */
-  public override applyUiPropertyChange = (
-    _updatedValue: DialogPropertySyncItem
-  ): void => {};
+  public override applyUiPropertyChange = (_updatedValue: DialogPropertySyncItem): void => {};
 
   /** Called by UI to request available properties that can be bound to user supplied UI components (See Tool1UiProvider for example). */
   public override supplyDialogItems(): DialogItem[] | undefined {
@@ -135,28 +133,23 @@ describe("UiLayoutDataProvider", () => {
       expect(wantsLabel).to.be.true;
     });
     it("should not want label", () => {
-      const wantsLabel =
-        TestDynamicUiDataProvider.editorWantsLabel(buttonGroupItem);
+      const wantsLabel = TestDynamicUiDataProvider.editorWantsLabel(buttonGroupItem);
       expect(wantsLabel).to.be.false;
     });
     it("has lock property", () => {
-      const hasLockProperty =
-        TestDynamicUiDataProvider.hasAssociatedLockProperty(item1);
+      const hasLockProperty = TestDynamicUiDataProvider.hasAssociatedLockProperty(item1);
       expect(hasLockProperty).to.be.true;
     });
     it("item is not disabled", () => {
-      const item1Disabled =
-        TestDynamicUiDataProvider.getItemDisabledState(item1);
+      const item1Disabled = TestDynamicUiDataProvider.getItemDisabledState(item1);
       expect(item1Disabled).to.be.false;
     });
     it("has no lock property", () => {
-      const hasLockProperty =
-        TestDynamicUiDataProvider.hasAssociatedLockProperty(item2);
+      const hasLockProperty = TestDynamicUiDataProvider.hasAssociatedLockProperty(item2);
       expect(hasLockProperty).to.be.false;
     });
     it("should reflect value", () => {
-      const record =
-        TestDynamicUiDataProvider.getPropertyRecord(buttonGroupItem);
+      const record = TestDynamicUiDataProvider.getPropertyRecord(buttonGroupItem);
       record.should.not.be.undefined;
       const primitiveValue = record.value as PrimitiveValue;
       primitiveValue.should.not.be.undefined;
@@ -168,16 +161,14 @@ describe("UiLayoutDataProvider", () => {
     it("has only button groups", () => {
       const sut = new TestDynamicUiDataProvider();
       const row: DialogRow = sut.rows[1];
-      const hasOnlyButtonGroups =
-        TestDynamicUiDataProvider.onlyContainButtonGroupEditors(row);
+      const hasOnlyButtonGroups = TestDynamicUiDataProvider.onlyContainButtonGroupEditors(row);
       expect(hasOnlyButtonGroups).to.be.true;
     });
 
     it("does not have only button groups", () => {
       const sut = new TestDynamicUiDataProvider();
       const row: DialogRow = sut.rows[0];
-      const hasOnlyButtonGroups =
-        TestDynamicUiDataProvider.onlyContainButtonGroupEditors(row);
+      const hasOnlyButtonGroups = TestDynamicUiDataProvider.onlyContainButtonGroupEditors(row);
 
       expect(hasOnlyButtonGroups).to.be.false;
     });
@@ -186,9 +177,7 @@ describe("UiLayoutDataProvider", () => {
 
 class TestDialogDynamicUiDataProvider extends DialogLayoutDataProvider {
   /** Applies change of a single property - this is the default method used when property editors are dynamically generated. */
-  public override applyUiPropertyChange = (
-    _updatedValue: DialogPropertySyncItem
-  ): void => {};
+  public override applyUiPropertyChange = (_updatedValue: DialogPropertySyncItem): void => {};
 
   /** Called by UI to request available properties that can be bound to user supplied UI components (See Tool1UiProvider for example). */
   public override supplyDialogItems(): DialogItem[] | undefined {
@@ -198,9 +187,7 @@ class TestDialogDynamicUiDataProvider extends DialogLayoutDataProvider {
 
 class EmptyDialogDynamicUiDataProvider extends DialogLayoutDataProvider {
   /** Applies change of a single property - this is the default method used when property editors are dynamically generated. */
-  public override applyUiPropertyChange = (
-    _updatedValue: DialogPropertySyncItem
-  ): void => {};
+  public override applyUiPropertyChange = (_updatedValue: DialogPropertySyncItem): void => {};
 
   /** Called by UI to request available properties that can be bound to user supplied UI components (See Tool1UiProvider for example). */
   public override supplyDialogItems(): DialogItem[] | undefined {

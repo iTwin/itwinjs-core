@@ -60,11 +60,7 @@ export class IModelJsFs {
   }
 
   /** Write to a file. */
-  public static writeFileSync(
-    pathname: string,
-    data: string | Uint8Array,
-    wflag: string = "w"
-  ): void {
+  public static writeFileSync(pathname: string, data: string | Uint8Array, wflag: string = "w"): void {
     fs.writeFileSync(pathname, data, { flag: wflag });
   }
 
@@ -141,10 +137,7 @@ export class IModelJsFs {
    * @param rootDir  directory from where the traversal starts
    * @param cb callback that would be called with full path of file or directory
    */
-  public static walkDirSync(
-    rootDir: string,
-    cb: (pathname: string, isDir: boolean) => boolean
-  ): void {
+  public static walkDirSync(rootDir: string, cb: (pathname: string, isDir: boolean) => boolean): void {
     const subDir = [];
     for (const childPath of IModelJsFs.readdirSync(rootDir)) {
       const fullPath = path.join(rootDir, childPath);

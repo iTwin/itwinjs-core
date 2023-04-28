@@ -51,15 +51,11 @@ class SamplePackageStateManager {
 
   private static _reducerName = "samplePackageState";
 
-  public static SET_PACKAGE_UI_VISIBLE =
-    SamplePackageStateManager.createActionName("SET_PACKAGE_UI_VISIBLE");
+  public static SET_PACKAGE_UI_VISIBLE = SamplePackageStateManager.createActionName("SET_PACKAGE_UI_VISIBLE");
 
   private static _packageActions: ActionCreatorsObject = {
     setDialogVisible: (packageUiVisible: boolean) =>
-      createAction(
-        SamplePackageStateManager.SET_PACKAGE_UI_VISIBLE,
-        packageUiVisible
-      ),
+      createAction(SamplePackageStateManager.SET_PACKAGE_UI_VISIBLE, packageUiVisible),
   };
 
   private static createActionName(name: string) {
@@ -72,9 +68,7 @@ class SamplePackageStateManager {
     state: ISamplePackageState = SamplePackageStateManager._initialState,
     action: any
   ): ISamplePackageState {
-    type PackageActionsUnion = ActionsUnion<
-      typeof SamplePackageStateManager._packageActions
-    >;
+    type PackageActionsUnion = ActionsUnion<typeof SamplePackageStateManager._packageActions>;
 
     const packageActionsParam = action as PackageActionsUnion;
 
@@ -87,10 +81,7 @@ class SamplePackageStateManager {
   }
 
   public static initialize() {
-    ReducerRegistryInstance.registerReducer(
-      SamplePackageStateManager._reducerName,
-      SamplePackageStateManager.reducer
-    );
+    ReducerRegistryInstance.registerReducer(SamplePackageStateManager._reducerName, SamplePackageStateManager.reducer);
     SamplePackageStateManager.packageStateManagerLoaded = true;
   }
 
@@ -104,11 +95,7 @@ class SamplePackageStateManager {
 
   public static set isPackageUiVisible(visible: boolean) {
     // dispatch both action to update store and UiSyncEvent.
-    UiFramework.dispatchActionToStore(
-      SamplePackageStateManager.SET_PACKAGE_UI_VISIBLE,
-      visible,
-      true
-    );
+    UiFramework.dispatchActionToStore(SamplePackageStateManager.SET_PACKAGE_UI_VISIBLE, visible, true);
   }
 }
 ```

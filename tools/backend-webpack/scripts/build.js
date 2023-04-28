@@ -29,8 +29,7 @@ exports.builder = (yargs) =>
       },
       profile: {
         type: "boolean",
-        describe:
-          "Enable webpack profiling and output stats files for analyzing bundle.",
+        describe: "Enable webpack profiling and output stats files for analyzing bundle.",
       },
     })
     .demandOption(["source", "outDir"]);
@@ -49,33 +48,22 @@ exports.handler = async (argv) => {
   const sourceFile = path.resolve(process.cwd(), argv.source);
 
   // Start the webpack backend build
-  const stats = await buildBackend(
-    getWebpackConfig(sourceFile, outDir, argv.profile)
-  );
+  const stats = await buildBackend(getWebpackConfig(sourceFile, outDir, argv.profile));
 
   console.groupEnd();
   console.log();
-  console.log(
-    `The ${chalk.cyan(path.basename(outDir))} folder is ready to be deployed.`
-  );
+  console.log(`The ${chalk.cyan(path.basename(outDir))} folder is ready to be deployed.`);
 
   if (argv.profile) {
-    const statsPath =
-      path.join(outDir, path.basename(sourceFile, ".js")) + ".stats.json";
+    const statsPath = path.join(outDir, path.basename(sourceFile, ".js")) + ".stats.json";
     await saveJsonStats(stats, statsPath);
     console.log();
-    console.log(
-      `A detailed ${chalk.yellow("webpack stats file")} is available at:`
-    );
+    console.log(`A detailed ${chalk.yellow("webpack stats file")} is available at:`);
     console.log(`   ${chalk.bold(path.relative(process.cwd(), statsPath))}`);
     console.log();
+    console.log(chalk.italic(`You can explore webpack statistics with tools like:`));
     console.log(
-      chalk.italic(`You can explore webpack statistics with tools like:`)
-    );
-    console.log(
-      `   ${chalk.bold("Webpack Analyse:")} ${chalk.underline(
-        chalk.cyan("http://webpack.github.io/analyse/")
-      )}`
+      `   ${chalk.bold("Webpack Analyse:")} ${chalk.underline(chalk.cyan("http://webpack.github.io/analyse/"))}`
     );
     console.log(
       `   ${chalk.bold("Webpack Visualizer:")} ${chalk.underline(

@@ -20,11 +20,9 @@ export class Constant {
   /** symbolic name for 1 kilometer: 1000 meter */
   public static readonly oneKilometer: number = 1000.0;
   /** Diameter of the earth in kilometers. */
-  public static readonly diameterOfEarth: number =
-    12742.0 * Constant.oneKilometer;
+  public static readonly diameterOfEarth: number = 12742.0 * Constant.oneKilometer;
   /** circumference of the earth in meters. */
-  public static readonly circumferenceOfEarth: number =
-    40075.0 * Constant.oneKilometer;
+  public static readonly circumferenceOfEarth: number = 40075.0 * Constant.oneKilometer;
   /** radius of the earth using WGS-84 ellipsoid, in meters */
   public static readonly earthRadiusWGS84 = {
     polar: 6356752.3142,

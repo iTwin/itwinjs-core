@@ -22,11 +22,7 @@ function exercisePointString3d(ck: Checker, lsA: PointString3d) {
   const lsC = lsA.clone()!;
   ck.testTrue(lsC.tryTransformInPlace(transform));
   const planeC = planeA.cloneTransformed(transform)!;
-  ck.testBoolean(
-    inXYPlane,
-    lsC.isInPlane(planeC),
-    "in plane preserved by transform"
-  );
+  ck.testBoolean(inXYPlane, lsC.isInPlane(planeC), "in plane preserved by transform");
   const rangeC = Range3d.create();
   lsC.extendRange(rangeC);
 

@@ -121,17 +121,13 @@ export const DiagnosticCodes = {
  */
 export const Diagnostics = {
   /** EC-001: Required message parameters: schema name, referenced schema name */
-  SupplementalSchemasCannotBeReferenced: createSchemaDiagnosticClass<
-    [string, string]
-  >(
+  SupplementalSchemasCannotBeReferenced: createSchemaDiagnosticClass<[string, string]>(
     getCode(1),
     "Referenced schema '{1}' of schema '{0}' is a supplemental schema. Supplemental schemas are not allowed to be referenced."
   ),
 
   /** EC-002: Required message parameters: schema name, reference schema alias, first schema reference name, second schema reference name. */
-  SchemaRefAliasMustBeUnique: createSchemaDiagnosticClass<
-    [string, string, string, string]
-  >(
+  SchemaRefAliasMustBeUnique: createSchemaDiagnosticClass<[string, string, string, string]>(
     getCode(2),
     "Schema '{0}' has multiple schema references ({2}, {3}) with the same alias '{1}', which is not allowed."
   ),
@@ -149,73 +145,55 @@ export const Diagnostics = {
   ),
 
   /** EC-101: Required message parameters: childClass.FullName, baseClass.FullName, baseClass.schemaItemType */
-  BaseClassIsOfDifferentType: createClassDiagnosticClass<
-    [string, string, string]
-  >(
+  BaseClassIsOfDifferentType: createClassDiagnosticClass<[string, string, string]>(
     DiagnosticCodes.BaseClassOfDifferentType,
     "Class '{0}' cannot derive from base class '{1}' of type '{2}'."
   ),
 
   /** **DEPRECATED** EC-102: Required message parameters: childClass.FullName, baseClass.FullName */
-  AbstractClassWithNonAbstractBase: createClassDiagnosticClass<
-    [string, string]
-  >(
+  AbstractClassWithNonAbstractBase: createClassDiagnosticClass<[string, string]>(
     DiagnosticCodes.AbstractClassWithNonAbstractBase,
     "Abstract Class '{0}' cannot derive from base class '{1}' because it is not an abstract class."
   ),
 
   /** EC-500: Required message parameters: CustomAttribute container name and CustomAttributeClass name. */
-  CustomAttributeNotOfConcreteClass:
-    createCustomAttributeContainerDiagnosticClass<[string, string]>(
-      DiagnosticCodes.CustomAttributeNotOfConcreteClass,
-      "The CustomAttribute container '{0}' has a CustomAttribute with the class '{1}' which is not a concrete class."
-    ),
+  CustomAttributeNotOfConcreteClass: createCustomAttributeContainerDiagnosticClass<[string, string]>(
+    DiagnosticCodes.CustomAttributeNotOfConcreteClass,
+    "The CustomAttribute container '{0}' has a CustomAttribute with the class '{1}' which is not a concrete class."
+  ),
 
   /** EC-501: Required message parameters: CustomAttribute container name, CustomAttributeClass name, CustomAttributeClass Schema name. */
-  CustomAttributeSchemaMustBeReferenced:
-    createCustomAttributeContainerDiagnosticClass<[string, string]>(
-      DiagnosticCodes.CustomAttributeSchemaMustBeReferenced,
-      "The CustomAttribute container '{0}' has a CustomAttribute with the class '{1}' whose schema is not referenced by the container's Schema."
-    ),
+  CustomAttributeSchemaMustBeReferenced: createCustomAttributeContainerDiagnosticClass<[string, string]>(
+    DiagnosticCodes.CustomAttributeSchemaMustBeReferenced,
+    "The CustomAttribute container '{0}' has a CustomAttribute with the class '{1}' whose schema is not referenced by the container's Schema."
+  ),
 
   /** EC-502: Required message parameters: CustomAttribute container name and CustomAttributeClass name. */
-  CustomAttributeClassNotFound: createCustomAttributeContainerDiagnosticClass<
-    [string, string]
-  >(
+  CustomAttributeClassNotFound: createCustomAttributeContainerDiagnosticClass<[string, string]>(
     DiagnosticCodes.CustomAttributeClassNotFound,
     "The CustomAttribute container '{0}' has a CustomAttribute with the class '{1}' which cannot be found."
   ),
 
   /** EC-700: Required message parameters: Enumeration name */
-  EnumerationTypeUnsupported: createSchemaItemDiagnosticClass<
-    Enumeration,
-    [string]
-  >(
+  EnumerationTypeUnsupported: createSchemaItemDiagnosticClass<Enumeration, [string]>(
     DiagnosticCodes.EnumerationTypeUnsupported,
     "Enumeration '{0}' has invalid primitive type."
   ),
 
   /** EC-1100: Required message parameters: mixin class fullName, class fullName, applies to constraint class fullName */
-  MixinAppliedToClassMustDeriveFromConstraint: createSchemaItemDiagnosticClass<
-    EntityClass,
-    [string, string, string]
-  >(
+  MixinAppliedToClassMustDeriveFromConstraint: createSchemaItemDiagnosticClass<EntityClass, [string, string, string]>(
     DiagnosticCodes.MixinAppliedToClassMustDeriveFromConstraint,
     "Mixin '{0}' cannot be applied to the class '{1}' because it does not satisfy the applies to constraint '{2}'."
   ),
 
   /** EC-1300: Required message parameters: childClass.FullName, property name, baseClass.FullName, base value type, child value type */
-  IncompatibleValueTypePropertyOverride: createPropertyDiagnosticClass<
-    [string, string, string, string, string]
-  >(
+  IncompatibleValueTypePropertyOverride: createPropertyDiagnosticClass<[string, string, string, string, string]>(
     DiagnosticCodes.IncompatibleValueTypePropertyOverride,
     "The ECProperty '{0}.{1}' has a base property '{2}.{1}' with a value type of {3} which is incompatible with the value type of {4}."
   ),
 
   /** EC-1301: Required message parameters: childClass.FullName, property name, baseClass.FullName, base property type, child property type */
-  IncompatibleTypePropertyOverride: createPropertyDiagnosticClass<
-    [string, string, string, string, string]
-  >(
+  IncompatibleTypePropertyOverride: createPropertyDiagnosticClass<[string, string, string, string, string]>(
     DiagnosticCodes.IncompatibleTypePropertyOverride,
     "The ECProperty '{0}.{1}' has a base property '{2}.{1}' with a type of {3} which is incompatible with the type of {4}."
   ),
@@ -229,34 +207,28 @@ export const Diagnostics = {
   ),
 
   /** EC-1303: Required message parameters: property.fullName, navigation relationship.fullName */
-  NavigationRelationshipMustBeRoot: createPropertyDiagnosticClass<
-    [string, string]
-  >(
+  NavigationRelationshipMustBeRoot: createPropertyDiagnosticClass<[string, string]>(
     getCode(1303),
     "The referenced relationship '{1}', used in NavigationProperty '{0}' is not the root relationship."
   ),
 
   /** EC-1304: Required message parameters: property.fullName, navigation relationship.fullName */
-  NavigationTargetMustHaveSingularMultiplicity: createPropertyDiagnosticClass<
-    [string, string, string]
-  >(
+  NavigationTargetMustHaveSingularMultiplicity: createPropertyDiagnosticClass<[string, string, string]>(
     getCode(1304),
     "NavigationProperty '{0}' uses the relationship '{1}' that cannot be traversed in the '{2}' direction due to a max multiplicity greater than 1."
   ),
 
   /** EC-1305: Required message parameters: property.fullName, navigation relationship.fullName */
-  NavigationRelationshipAbstractConstraintEntityOrMixin:
-    createPropertyDiagnosticClass<[string, string]>(
-      getCode(1305),
-      "The NavigationProperty '{0}', using the relationship '{1}', points to a RelationshipClass, which is not allowed.  NavigationProperties must point to an EntityClass or Mixin."
-    ),
+  NavigationRelationshipAbstractConstraintEntityOrMixin: createPropertyDiagnosticClass<[string, string]>(
+    getCode(1305),
+    "The NavigationProperty '{0}', using the relationship '{1}', points to a RelationshipClass, which is not allowed.  NavigationProperties must point to an EntityClass or Mixin."
+  ),
 
   /** EC-1306: Required message parameters: class name, property name, navigation relationship.fullName */
-  NavigationClassMustBeAConstraintClassOfRelationship:
-    createPropertyDiagnosticClass<[string, string, string, string]>(
-      getCode(1306),
-      "The class '{0}' of NavigationProperty '{1}' is not supported by the {3} constraint of the referenced relationship '{2}'."
-    ),
+  NavigationClassMustBeAConstraintClassOfRelationship: createPropertyDiagnosticClass<[string, string, string, string]>(
+    getCode(1306),
+    "The class '{0}' of NavigationProperty '{1}' is not supported by the {3} constraint of the referenced relationship '{2}'."
+  ),
 
   /** EC-1500: Required message parameters: abstract constraint class name, relationship end (source/target), relationship name, base relationship name */
   AbstractConstraintMustNarrowBaseConstraints: createSchemaItemDiagnosticClass<
@@ -286,19 +258,16 @@ export const Diagnostics = {
   ),
 
   /** EC-1600: Required message parameters: relationship end (source/target), relationship name */
-  AtLeastOneConstraintClassDefined: createRelationshipConstraintDiagnosticClass<
-    [string, string]
-  >(
+  AtLeastOneConstraintClassDefined: createRelationshipConstraintDiagnosticClass<[string, string]>(
     DiagnosticCodes.AtLeastOneConstraintClassDefined,
     "The {0}-Constraint of '{1}' does not contain any constraint classes."
   ),
 
   /** EC-1601: Required message parameters: relationship end (source/target), relationship name */
-  AbstractConstraintMustExistWithMultipleConstraints:
-    createRelationshipConstraintDiagnosticClass<[string, string]>(
-      DiagnosticCodes.AbstractConstraintMustExistWithMultipleConstraints,
-      "The {0}-Constraint of '{1}' has multiple constraint classes which requires an abstract constraint to be defined."
-    ),
+  AbstractConstraintMustExistWithMultipleConstraints: createRelationshipConstraintDiagnosticClass<[string, string]>(
+    DiagnosticCodes.AbstractConstraintMustExistWithMultipleConstraints,
+    "The {0}-Constraint of '{1}' has multiple constraint classes which requires an abstract constraint to be defined."
+  ),
 };
 
 /**
@@ -321,10 +290,7 @@ export const ECRuleSet: IRuleSet = {
     constraintClassesDeriveFromAbstractContraint,
     derivedConstraintsMustNarrowBaseConstraints,
   ],
-  relationshipConstraintRules: [
-    atLeastOneConstraintClassDefined,
-    abstractConstraintMustExistWithMultipleConstraints,
-  ],
+  relationshipConstraintRules: [atLeastOneConstraintClassDefined, abstractConstraintMustExistWithMultipleConstraints],
   enumerationRules: [enumerationTypeUnsupported],
   entityClassRules: [mixinAppliedToClassMustDeriveFromConstraint],
   customAttributeInstanceRules: [validateCustomAttributeInstance],
@@ -337,9 +303,7 @@ export const ECRuleSet: IRuleSet = {
  * @param schema The schema to validate.
  * @internal
  */
-export async function* validateSchemaReferences(
-  schema: Schema
-): AsyncIterable<SchemaDiagnostic<any[]>> {
+export async function* validateSchemaReferences(schema: Schema): AsyncIterable<SchemaDiagnostic<any[]>> {
   yield* validateSchemaReferencesSync(schema);
 }
 
@@ -348,25 +312,14 @@ export async function* validateSchemaReferences(
  * @param schema The schema to validate.
  * @internal
  */
-export function* validateSchemaReferencesSync(
-  schema: Schema
-): Iterable<SchemaDiagnostic<any[]>> {
+export function* validateSchemaReferencesSync(schema: Schema): Iterable<SchemaDiagnostic<any[]>> {
   const aliases = new Map();
   for (const schemaRef of schema.references) {
-    if (
-      schemaRef.customAttributes &&
-      schemaRef.customAttributes.has("CoreCustomAttributes.SupplementalSchema")
-    )
-      yield new Diagnostics.SupplementalSchemasCannotBeReferenced(schema, [
-        schema.name,
-        schemaRef.name,
-      ]);
+    if (schemaRef.customAttributes && schemaRef.customAttributes.has("CoreCustomAttributes.SupplementalSchema"))
+      yield new Diagnostics.SupplementalSchemasCannotBeReferenced(schema, [schema.name, schemaRef.name]);
 
     if (schema.schemaKey.matches(schemaRef.schemaKey))
-      yield new Diagnostics.ReferenceCyclesNotAllowed(schema, [
-        schema.name,
-        `${schema.name} --> ${schemaRef.name}`,
-      ]);
+      yield new Diagnostics.ReferenceCyclesNotAllowed(schema, [schema.name, `${schema.name} --> ${schemaRef.name}`]);
 
     if (aliases.has(schemaRef.alias)) {
       const currentRef = aliases.get(schemaRef.alias);
@@ -384,41 +337,29 @@ export function* validateSchemaReferencesSync(
   const graph = new SchemaGraph(schema);
   const cycles = graph.detectCycles();
   if (cycles) {
-    const result = cycles
-      .map((cycle) => `${cycle.schema.name} --> ${cycle.refSchema.name}`)
-      .join(", ");
-    yield new Diagnostics.ReferenceCyclesNotAllowed(schema, [
-      schema.name,
-      result,
-    ]);
+    const result = cycles.map((cycle) => `${cycle.schema.name} --> ${cycle.refSchema.name}`).join(", ");
+    yield new Diagnostics.ReferenceCyclesNotAllowed(schema, [schema.name, result]);
   }
 }
 /**
  * EC Rule: Sealed classes cannot be a base class.
  * @internal
  */
-export async function* baseClassIsSealed(
-  ecClass: AnyClass
-): AsyncIterable<ClassDiagnostic<any[]>> {
+export async function* baseClassIsSealed(ecClass: AnyClass): AsyncIterable<ClassDiagnostic<any[]>> {
   if (!ecClass.baseClass) return;
 
   const baseClass = await ecClass.baseClass;
   // return if rule passed
   if (baseClass.modifier !== ECClassModifier.Sealed) return;
 
-  yield new Diagnostics.BaseClassIsSealed(ecClass, [
-    ecClass.fullName,
-    baseClass.fullName,
-  ]);
+  yield new Diagnostics.BaseClassIsSealed(ecClass, [ecClass.fullName, baseClass.fullName]);
 }
 
 /**
  * EC Rule: Base and child class must be of the same type (i.e. Entity, Mixin, Relationship, etc.)
  * @internal
  */
-export async function* baseClassIsOfDifferentType(
-  ecClass: AnyClass
-): AsyncIterable<ClassDiagnostic<any[]>> {
+export async function* baseClassIsOfDifferentType(ecClass: AnyClass): AsyncIterable<ClassDiagnostic<any[]>> {
   if (!ecClass.baseClass) return;
 
   const baseClass = await ecClass.baseClass;
@@ -426,11 +367,7 @@ export async function* baseClassIsOfDifferentType(
   if (baseClass.schemaItemType === ecClass.schemaItemType) return;
 
   const itemType = schemaItemTypeToString(baseClass.schemaItemType);
-  yield new Diagnostics.BaseClassIsOfDifferentType(ecClass, [
-    ecClass.fullName,
-    baseClass.fullName,
-    itemType,
-  ]);
+  yield new Diagnostics.BaseClassIsOfDifferentType(ecClass, [ecClass.fullName, baseClass.fullName, itemType]);
 }
 
 /**
@@ -445,9 +382,7 @@ export async function* incompatibleValueTypePropertyOverride(
   const primitiveType = getPrimitiveType(property);
   if (!primitiveType) return;
 
-  async function callback(
-    baseClass: ECClass
-  ): Promise<PropertyDiagnostic<any[]> | undefined> {
+  async function callback(baseClass: ECClass): Promise<PropertyDiagnostic<any[]> | undefined> {
     const baseProperty = await baseClass.getProperty(property.name);
     if (!baseProperty) return;
 
@@ -484,9 +419,7 @@ export async function* incompatibleTypePropertyOverride(
 ): AsyncIterable<PropertyDiagnostic<any[]>> {
   if (!property.class.baseClass) return;
 
-  async function callback(
-    baseClass: ECClass
-  ): Promise<PropertyDiagnostic<any[]> | undefined> {
+  async function callback(baseClass: ECClass): Promise<PropertyDiagnostic<any[]> | undefined> {
     const baseProperty = await baseClass.getProperty(property.name);
     if (!baseProperty) return;
 
@@ -517,9 +450,7 @@ export async function* incompatibleUnitPropertyOverride(
 ): AsyncIterable<PropertyDiagnostic<any[]>> {
   if (!property.kindOfQuantity || !property.class.baseClass) return;
 
-  async function callback(
-    baseClass: ECClass
-  ): Promise<PropertyDiagnostic<any[]> | undefined> {
+  async function callback(baseClass: ECClass): Promise<PropertyDiagnostic<any[]> | undefined> {
     const baseProperty = await baseClass.getProperty(property.name);
     if (!baseProperty || !baseProperty.kindOfQuantity) return;
 
@@ -560,19 +491,14 @@ export async function* incompatibleUnitPropertyOverride(
  * Validates Navigation Properties. EC Rules: 1303, 1304
  * @internal
  */
-export async function* validateNavigationProperty(
-  property: AnyProperty
-): AsyncIterable<PropertyDiagnostic<any[]>> {
+export async function* validateNavigationProperty(property: AnyProperty): AsyncIterable<PropertyDiagnostic<any[]>> {
   if (!property.isNavigation()) return;
 
   const navProp = property;
   const relationship = await navProp.relationshipClass;
 
   if (relationship.baseClass)
-    yield new Diagnostics.NavigationRelationshipMustBeRoot(property, [
-      property.fullName,
-      relationship.fullName,
-    ]);
+    yield new Diagnostics.NavigationRelationshipMustBeRoot(property, [property.fullName, relationship.fullName]);
 
   let thisConstraint: RelationshipConstraint;
   let thatConstraint: RelationshipConstraint;
@@ -588,30 +514,18 @@ export async function* validateNavigationProperty(
   }
 
   const thatAbstractConstraint = await thatConstraint.abstractConstraint;
-  if (
-    thatAbstractConstraint &&
-    thatAbstractConstraint.schemaItemType === SchemaItemType.RelationshipClass
-  ) {
-    yield new Diagnostics.NavigationRelationshipAbstractConstraintEntityOrMixin(
-      property,
-      [property.fullName, relationship.fullName]
-    );
+  if (thatAbstractConstraint && thatAbstractConstraint.schemaItemType === SchemaItemType.RelationshipClass) {
+    yield new Diagnostics.NavigationRelationshipAbstractConstraintEntityOrMixin(property, [
+      property.fullName,
+      relationship.fullName,
+    ]);
   }
 
-  const isClassSupported = async (
-    ecClass: ECClass,
-    propertyName: string,
-    constraintName: string
-  ): Promise<boolean> => {
-    if (
-      constraintName === ecClass.fullName &&
-      undefined !== (await ecClass.getProperty(propertyName))
-    )
-      return true;
+  const isClassSupported = async (ecClass: ECClass, propertyName: string, constraintName: string): Promise<boolean> => {
+    if (constraintName === ecClass.fullName && undefined !== (await ecClass.getProperty(propertyName))) return true;
 
     const inheritedProp = await ecClass.getInheritedProperty(propertyName);
-    if (inheritedProp && constraintName === inheritedProp.class.fullName)
-      return true;
+    if (inheritedProp && constraintName === inheritedProp.class.fullName) return true;
 
     const baseClass = await ecClass.baseClass;
     if (!baseClass) return false;
@@ -622,35 +536,29 @@ export async function* validateNavigationProperty(
   let classSupported = false;
   if (thisConstraint.constraintClasses) {
     for (const constraintClass of thisConstraint.constraintClasses) {
-      classSupported = await isClassSupported(
-        property.class,
-        property.name,
-        constraintClass.fullName
-      );
+      classSupported = await isClassSupported(property.class, property.name, constraintClass.fullName);
       if (classSupported) break;
     }
   }
 
   if (!classSupported)
-    yield new Diagnostics.NavigationClassMustBeAConstraintClassOfRelationship(
-      property,
-      [
-        property.class.name,
-        property.name,
-        relationship.fullName,
-        navigationClassSide,
-      ]
-    );
+    yield new Diagnostics.NavigationClassMustBeAConstraintClassOfRelationship(property, [
+      property.class.name,
+      property.name,
+      relationship.fullName,
+      navigationClassSide,
+    ]);
 
   if (
     thatConstraint.multiplicity === RelationshipMultiplicity.oneMany ||
     thatConstraint.multiplicity === RelationshipMultiplicity.zeroMany
   ) {
     const direction = strengthDirectionToString(navProp.direction);
-    yield new Diagnostics.NavigationTargetMustHaveSingularMultiplicity(
-      property,
-      [property.fullName, relationship.fullName, direction]
-    );
+    yield new Diagnostics.NavigationTargetMustHaveSingularMultiplicity(property, [
+      property.fullName,
+      relationship.fullName,
+      direction,
+    ]);
   }
 
   return;
@@ -713,15 +621,9 @@ export async function* derivedConstraintsMustNarrowBaseConstraints(
 export async function* constraintClassesDeriveFromAbstractContraint(
   ecClass: RelationshipClass
 ): AsyncIterable<SchemaItemDiagnostic<RelationshipClass, any[]>> {
-  const sourceResult = await applyConstraintClassesDeriveFromAbstractContraint(
-    ecClass,
-    ecClass.source
-  );
+  const sourceResult = await applyConstraintClassesDeriveFromAbstractContraint(ecClass, ecClass.source);
   if (sourceResult) yield sourceResult;
-  const targetResult = await applyConstraintClassesDeriveFromAbstractContraint(
-    ecClass,
-    ecClass.target
-  );
+  const targetResult = await applyConstraintClassesDeriveFromAbstractContraint(ecClass, ecClass.target);
   if (targetResult) yield targetResult;
 }
 
@@ -732,10 +634,7 @@ export async function* constraintClassesDeriveFromAbstractContraint(
 export async function* atLeastOneConstraintClassDefined(
   constraint: RelationshipConstraint
 ): AsyncIterable<RelationshipConstraintDiagnostic<any[]>> {
-  if (
-    !constraint.constraintClasses ||
-    constraint.constraintClasses.length === 0
-  ) {
+  if (!constraint.constraintClasses || constraint.constraintClasses.length === 0) {
     const constraintType = constraint.isSource
       ? ECStringConstants.RELATIONSHIP_END_SOURCE
       : ECStringConstants.RELATIONSHIP_END_TARGET;
@@ -753,10 +652,7 @@ export async function* atLeastOneConstraintClassDefined(
 export async function* abstractConstraintMustExistWithMultipleConstraints(
   constraint: RelationshipConstraint
 ): AsyncIterable<RelationshipConstraintDiagnostic<any[]>> {
-  if (
-    !constraint.constraintClasses ||
-    constraint.constraintClasses.length <= 1
-  ) {
+  if (!constraint.constraintClasses || constraint.constraintClasses.length <= 1) {
     return;
   }
 
@@ -766,10 +662,10 @@ export async function* abstractConstraintMustExistWithMultipleConstraints(
   const constraintType = constraint.isSource
     ? ECStringConstants.RELATIONSHIP_END_SOURCE
     : ECStringConstants.RELATIONSHIP_END_TARGET;
-  yield new Diagnostics.AbstractConstraintMustExistWithMultipleConstraints(
-    constraint,
-    [constraintType, constraint.relationshipClass.fullName]
-  );
+  yield new Diagnostics.AbstractConstraintMustExistWithMultipleConstraints(constraint, [
+    constraintType,
+    constraint.relationshipClass.fullName,
+  ]);
 }
 
 function propertyTypesMatch(propertyA: Property, propertyB: Property) {
@@ -777,8 +673,7 @@ function propertyTypesMatch(propertyA: Property, propertyB: Property) {
 }
 
 function getPrimitiveType(property: Property): PrimitiveType | undefined {
-  if (property.isPrimitive())
-    return (property as PrimitiveProperty).primitiveType;
+  if (property.isPrimitive()) return (property as PrimitiveProperty).primitiveType;
 
   return undefined;
 }
@@ -793,9 +688,7 @@ export async function* enumerationTypeUnsupported(
   const type = enumeration.type;
   if (type === PrimitiveType.Integer || type === PrimitiveType.String) return;
 
-  yield new Diagnostics.EnumerationTypeUnsupported(enumeration, [
-    enumeration.fullName,
-  ]);
+  yield new Diagnostics.EnumerationTypeUnsupported(enumeration, [enumeration.fullName]);
 }
 
 /**
@@ -810,10 +703,11 @@ export async function* mixinAppliedToClassMustDeriveFromConstraint(
     if (!mixin.appliesTo) continue;
 
     if (!(await entityClass.is(await mixin.appliesTo)))
-      yield new Diagnostics.MixinAppliedToClassMustDeriveFromConstraint(
-        entityClass,
-        [mixin.fullName, entityClass.fullName, mixin.appliesTo.fullName]
-      );
+      yield new Diagnostics.MixinAppliedToClassMustDeriveFromConstraint(entityClass, [
+        mixin.fullName,
+        entityClass.fullName,
+        mixin.appliesTo.fullName,
+      ]);
   }
 
   return;
@@ -838,17 +732,12 @@ async function* customAttributeNotOfConcreteClass(
   customAttribute: CustomAttribute
 ): AsyncIterable<CustomAttributeContainerDiagnostic<any[]>> {
   const schema = container.schema;
-  const caClass = (await schema.lookupItem(
-    customAttribute.className
-  )) as ECClass;
+  const caClass = (await schema.lookupItem(customAttribute.className)) as ECClass;
   if (!caClass) return;
 
   if (caClass.modifier !== ECClassModifier.Abstract) return;
 
-  yield new Diagnostics.CustomAttributeNotOfConcreteClass(container, [
-    container.fullName,
-    caClass.fullName,
-  ]);
+  yield new Diagnostics.CustomAttributeNotOfConcreteClass(container, [container.fullName, caClass.fullName]);
 }
 
 /** EC Rule: CustomAttribute Schema must be referenced by the container's Schema. */
@@ -874,14 +763,9 @@ async function* customAttributeClassMustExist(
   customAttribute: CustomAttribute
 ): AsyncIterable<CustomAttributeContainerDiagnostic<any[]>> {
   const schema = container.schema;
-  const caClass = (await schema.lookupItem(
-    customAttribute.className
-  )) as ECClass;
+  const caClass = (await schema.lookupItem(customAttribute.className)) as ECClass;
   if (!caClass)
-    yield new Diagnostics.CustomAttributeClassNotFound(container, [
-      container.fullName,
-      customAttribute.className,
-    ]);
+    yield new Diagnostics.CustomAttributeClassNotFound(container, [container.fullName, customAttribute.className]);
 }
 
 async function applyAbstractConstraintMustNarrowBaseConstraints(
@@ -889,9 +773,7 @@ async function applyAbstractConstraintMustNarrowBaseConstraints(
   constraint: RelationshipConstraint,
   baseRelationship: RelationshipClass
 ): Promise<SchemaItemDiagnostic<RelationshipClass, any[]> | undefined> {
-  const baseConstraint = constraint.isSource
-    ? baseRelationship.source
-    : baseRelationship.target;
+  const baseConstraint = constraint.isSource ? baseRelationship.source : baseRelationship.target;
   const abstractConstraint = await constraint.abstractConstraint;
   if (!abstractConstraint) return;
 
@@ -913,9 +795,7 @@ async function applyDerivedConstraintsMustNarrowBaseConstraints(
   constraint: RelationshipConstraint,
   baseRelationship: RelationshipClass
 ): Promise<SchemaItemDiagnostic<RelationshipClass, any[]> | undefined> {
-  const baseConstraint = constraint.isSource
-    ? baseRelationship.source
-    : baseRelationship.target;
+  const baseConstraint = constraint.isSource ? baseRelationship.source : baseRelationship.target;
 
   if (!constraint.constraintClasses) return;
 
@@ -927,15 +807,12 @@ async function applyDerivedConstraintsMustNarrowBaseConstraints(
     const constraintType = constraint.isSource
       ? ECStringConstants.RELATIONSHIP_END_SOURCE
       : ECStringConstants.RELATIONSHIP_END_TARGET;
-    return new Diagnostics.DerivedConstraintsMustNarrowBaseConstraints(
-      ecClass,
-      [
-        constraintClass.fullName,
-        constraintType,
-        constraint.relationshipClass.fullName,
-        baseRelationship.fullName,
-      ]
-    );
+    return new Diagnostics.DerivedConstraintsMustNarrowBaseConstraints(ecClass, [
+      constraintClass.fullName,
+      constraintType,
+      constraint.relationshipClass.fullName,
+      baseRelationship.fullName,
+    ]);
   }
 
   return;
@@ -957,21 +834,16 @@ async function applyConstraintClassesDeriveFromAbstractContraint(
       constraintClass.schemaItemType === SchemaItemType.Mixin &&
       abstractConstraint.schemaItemType === SchemaItemType.EntityClass
     ) {
-      if (
-        !(await constraintClass.applicableTo(abstractConstraint as EntityClass))
-      ) {
+      if (!(await constraintClass.applicableTo(abstractConstraint as EntityClass))) {
         const constraintType = constraint.isSource
           ? ECStringConstants.RELATIONSHIP_END_SOURCE
           : ECStringConstants.RELATIONSHIP_END_TARGET;
-        return new Diagnostics.ConstraintClassesDeriveFromAbstractContraint(
-          ecClass,
-          [
-            constraintClass.fullName,
-            constraintType,
-            constraint.relationshipClass.fullName,
-            abstractConstraint.fullName,
-          ]
-        );
+        return new Diagnostics.ConstraintClassesDeriveFromAbstractContraint(ecClass, [
+          constraintClass.fullName,
+          constraintType,
+          constraint.relationshipClass.fullName,
+          abstractConstraint.fullName,
+        ]);
       }
       continue;
     }
@@ -980,34 +852,26 @@ async function applyConstraintClassesDeriveFromAbstractContraint(
       const constraintType = constraint.isSource
         ? ECStringConstants.RELATIONSHIP_END_SOURCE
         : ECStringConstants.RELATIONSHIP_END_TARGET;
-      return new Diagnostics.ConstraintClassesDeriveFromAbstractContraint(
-        ecClass,
-        [
-          constraintClass.fullName,
-          constraintType,
-          constraint.relationshipClass.fullName,
-          abstractConstraint.fullName,
-        ]
-      );
+      return new Diagnostics.ConstraintClassesDeriveFromAbstractContraint(ecClass, [
+        constraintClass.fullName,
+        constraintType,
+        constraint.relationshipClass.fullName,
+        abstractConstraint.fullName,
+      ]);
     }
   }
 
   return;
 }
 
-async function getAbstractConstraint(
-  constraint: RelationshipConstraint
-): Promise<ECClass | undefined> {
+async function getAbstractConstraint(constraint: RelationshipConstraint): Promise<ECClass | undefined> {
   const abstractConstraint = await constraint.abstractConstraint;
   if (abstractConstraint) return abstractConstraint;
 
-  const baseRelationship = (await constraint.relationshipClass
-    .baseClass) as RelationshipClass;
+  const baseRelationship = (await constraint.relationshipClass.baseClass) as RelationshipClass;
   if (!baseRelationship) return;
 
-  const baseConstraint = constraint.isSource
-    ? baseRelationship.source
-    : baseRelationship.target;
+  const baseConstraint = constraint.isSource ? baseRelationship.source : baseRelationship.target;
 
   return getAbstractConstraint(baseConstraint);
 }

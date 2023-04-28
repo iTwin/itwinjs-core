@@ -60,10 +60,7 @@ describe("DialogProperty", () => {
   describe("Non-string types", () => {
     it("Number property test", () => {
       const numberProperty = new DialogProperty<number>(
-        PropertyDescriptionHelper.buildTextEditorDescription(
-          "number",
-          "Number"
-        ),
+        PropertyDescriptionHelper.buildTextEditorDescription("number", "Number"),
         1,
         undefined
       );
@@ -71,10 +68,7 @@ describe("DialogProperty", () => {
     });
     it("Boolean property test", () => {
       const booleanProperty = new DialogProperty<boolean>(
-        PropertyDescriptionHelper.buildTextEditorDescription(
-          "boolean",
-          "Boolean"
-        ),
+        PropertyDescriptionHelper.buildTextEditorDescription("boolean", "Boolean"),
         true,
         undefined
       );
@@ -82,10 +76,7 @@ describe("DialogProperty", () => {
     });
     it("Undefined property test", () => {
       const undefinedProperty = new DialogProperty<undefined>(
-        PropertyDescriptionHelper.buildTextEditorDescription(
-          "undefined",
-          "Undefined"
-        ),
+        PropertyDescriptionHelper.buildTextEditorDescription("undefined", "Undefined"),
         undefined,
         undefined
       );

@@ -83,17 +83,10 @@ export class FacetOrientationFixup {
       let edgeIndex1 = edgeIndex0 + 1;
       while (
         edgeIndex1 < numEdges &&
-        SortableEdge.areUndirectedPartners(
-          edgeArray[edgeIndex0],
-          edgeArray[edgeIndex1]
-        )
+        SortableEdge.areUndirectedPartners(edgeArray[edgeIndex0], edgeArray[edgeIndex1])
       ) {
         // splice the loops ...
-        FacetOrientationFixup.swapEntries(
-          this._edgeToPartnerEdge,
-          edgeIndex0,
-          edgeIndex1
-        );
+        FacetOrientationFixup.swapEntries(this._edgeToPartnerEdge, edgeIndex0, edgeIndex1);
         edgeIndex1++;
       }
       // BUT .. everything else will fail if more than 2 anywhere .....
@@ -115,11 +108,7 @@ export class FacetOrientationFixup {
   private _workArray: number[] = [];
 
   private pushFacetEdgesOnStack(seedEdge: number, stack: number[]) {
-    FacetOrientationFixup.extractCyclicIndices(
-      this._edgeToEdgeInComponent,
-      seedEdge,
-      this._workArray
-    );
+    FacetOrientationFixup.extractCyclicIndices(this._edgeToEdgeInComponent, seedEdge, this._workArray);
     for (const edgeIndex of this._workArray) {
       stack.push(edgeIndex);
     }
@@ -146,11 +135,7 @@ export class FacetOrientationFixup {
         while (undefined !== (baseEdgeIndex = edgeStack.pop())) {
           const baseFacet = edgeArray[baseEdgeIndex].facetIndex;
           const baseOrientation = this._facetOrientation[baseFacet];
-          FacetOrientationFixup.extractCyclicIndices(
-            this._edgeToPartnerEdge,
-            baseEdgeIndex,
-            neighborEdges
-          );
+          FacetOrientationFixup.extractCyclicIndices(this._edgeToPartnerEdge, baseEdgeIndex, neighborEdges);
           for (const neighborEdgeIndex of neighborEdges) {
             if (neighborEdgeIndex !== baseEdgeIndex) {
               const neighborFacet = edgeArray[neighborEdgeIndex].facetIndex;
@@ -166,19 +151,14 @@ export class FacetOrientationFixup {
                   : -baseOrientation;
                 this.recordFacetInComponent(neighborFacet, newOrientation);
                 this.pushFacetEdgesOnStack(neighborEdgeIndex, edgeStack);
-                FacetOrientationFixup.swapEntries(
-                  this._edgeToEdgeInComponent,
-                  baseEdgeIndex,
-                  neighborEdgeIndex
-                );
+                FacetOrientationFixup.swapEntries(this._edgeToEdgeInComponent, baseEdgeIndex, neighborEdgeIndex);
               } else {
                 // looking across to an already-visited facet ..
                 const edgeOrientation = SortableEdge.relativeOrientation(
                   edgeArray[baseEdgeIndex],
                   edgeArray[neighborEdgeIndex]
                 );
-                if (edgeOrientation * baseOrientation * neighborOrientation > 0)
-                  return false;
+                if (edgeOrientation * baseOrientation * neighborOrientation > 0) return false;
               }
             }
           }
@@ -218,11 +198,7 @@ export class FacetOrientationFixup {
    *
    * @param data an array of cyclically linked loops.
    */
-  private static extractCyclicIndices(
-    data: number[],
-    index0: number,
-    loopIndices: number[]
-  ) {
+  private static extractCyclicIndices(data: number[], index0: number, loopIndices: number[]) {
     loopIndices.length = 0;
     let i = index0;
     do {

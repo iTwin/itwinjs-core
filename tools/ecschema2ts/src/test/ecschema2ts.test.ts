@@ -44,8 +44,7 @@ describe("Convert schema xml string to typescript string", () => {
       }\n\n`;
 
     const schema = utils.deserializeXml(context, schemaXml);
-    const { schemaTsString, elemTsString, propsTsString } =
-      ecschema2ts.convertSchemaToTs(schema);
+    const { schemaTsString, elemTsString, propsTsString } = ecschema2ts.convertSchemaToTs(schema);
     assert.equal(schemaTsString, expectedSchemaTsString);
     assert.equal(elemTsString, `\n`);
     assert.equal(propsTsString, `\n`);
@@ -120,8 +119,7 @@ describe("Convert schema xml string to typescript string", () => {
       }\n\n`;
 
     const schema = utils.deserializeXml(context, schemaXml);
-    const { schemaTsString, elemTsString, propsTsString } =
-      ecschema2ts.convertSchemaToTs(schema);
+    const { schemaTsString, elemTsString, propsTsString } = ecschema2ts.convertSchemaToTs(schema);
     assert.equal(schemaTsString, expectedSchemaTsString);
     assert.equal(elemTsString, expectedElementTsString);
     assert.equal(propsTsString, expectedPropTsString);
@@ -140,15 +138,12 @@ describe("ecxml to typescript string", () => {
             <ECEntityClass typeName="EntityTest" modified="None">
             </ECEntityClass>
           </ECSchema>`,
-        expectedSchemaImportTs:
-          utils.createExpectedSchemaImportTs("TestSchema"),
+        expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
         expectedPropsImportTs: [],
         expectedPropsTs: [],
         expectedElemImportTs: [
-          new RegExp(
-            `import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`
-          ),
+          new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
           new RegExp(`import { EntityProps } from "@itwin/core-common";`),
         ],
         expectedElemTs: [
@@ -172,15 +167,12 @@ describe("ecxml to typescript string", () => {
             <ECEntityClass typeName="EntityTest" description="Test Description" modified="None">
             </ECEntityClass>
           </ECSchema>`,
-        expectedSchemaImportTs:
-          utils.createExpectedSchemaImportTs("TestSchema"),
+        expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
         expectedPropsImportTs: [],
         expectedPropsTs: [],
         expectedElemImportTs: [
-          new RegExp(
-            `import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`
-          ),
+          new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
           new RegExp(`import { EntityProps } from "@itwin/core-common";`),
         ],
         expectedElemTs: [
@@ -207,15 +199,12 @@ describe("ecxml to typescript string", () => {
             <ECEntityClass typeName="EntityTest" modifier="abstract">
             </ECEntityClass>
           </ECSchema>`,
-        expectedSchemaImportTs:
-          utils.createExpectedSchemaImportTs("TestSchema"),
+        expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
         expectedPropsImportTs: [],
         expectedPropsTs: [],
         expectedElemImportTs: [
-          new RegExp(
-            `import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`
-          ),
+          new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
           new RegExp(`import { EntityProps } from "@itwin/core-common";`),
         ],
         expectedElemTs: [
@@ -243,12 +232,9 @@ describe("ecxml to typescript string", () => {
               <ECProperty propertyName="TestProp" typeName="int"/>
             </ECEntityClass>
           </ECSchema>`,
-        expectedSchemaImportTs:
-          utils.createExpectedSchemaImportTs("TestSchema"),
+        expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
-        expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
-        ],
+        expectedPropsImportTs: [new RegExp(`import { EntityProps } from "@itwin/core-common";`)],
         expectedPropsTs: [
           utils.dedent`
           export interface EntityTestProps extends EntityProps {
@@ -256,13 +242,9 @@ describe("ecxml to typescript string", () => {
           }`,
         ],
         expectedElemImportTs: [
-          new RegExp(
-            `import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`
-          ),
+          new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
           new RegExp(`import { EntityProps } from "@itwin/core-common";`),
-          new RegExp(
-            `import { EntityTestProps } from "./TestSchemaElementProps";`
-          ),
+          new RegExp(`import { EntityTestProps } from "./TestSchemaElementProps";`),
         ],
         expectedElemTs: [
           utils.dedent`
@@ -308,12 +290,9 @@ describe("ecxml to typescript string", () => {
               <ECProperty propertyName="BaseEntityTestIntProp" typeName="int"/>
             </ECEntityClass>
           </ECSchema>`,
-        expectedSchemaImportTs:
-          utils.createExpectedSchemaImportTs("TestSchema"),
+        expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
-        expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
-        ],
+        expectedPropsImportTs: [new RegExp(`import { EntityProps } from "@itwin/core-common";`)],
         expectedPropsTs: [
           utils.dedent`
           export interface IMixin {
@@ -329,9 +308,7 @@ describe("ecxml to typescript string", () => {
           }`,
         ],
         expectedElemImportTs: [
-          new RegExp(
-            `import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`
-          ),
+          new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
           new RegExp(
             `import { (?=.*\\b(EntityTestProps)\\b)(?=.*\\b(BaseEntityTestProps)\\b).* } from "./TestSchemaElementProps";`
           ),
@@ -376,14 +353,9 @@ describe("ecxml to typescript string", () => {
               <ECProperty propertyName="TestEntityIntProp" typeName="int"/>
             </ECEntityClass>
           </ECSchema>`,
-        expectedSchemaImportTs:
-          utils.createExpectedSchemaImportTs("TestSchema"),
+        expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
-        expectedPropsImportTs: [
-          new RegExp(
-            `import { BaseEntityTestProps } from "./ReferenceSchemaElementProps";`
-          ),
-        ],
+        expectedPropsImportTs: [new RegExp(`import { BaseEntityTestProps } from "./ReferenceSchemaElementProps";`)],
         expectedPropsTs: [
           utils.dedent`
           export interface EntityTestProps extends BaseEntityTestProps {
@@ -392,12 +364,8 @@ describe("ecxml to typescript string", () => {
         ],
         expectedElemImportTs: [
           new RegExp(`import { IModelDb } from "@itwin/core-backend";`),
-          new RegExp(
-            `import { EntityTestProps } from "./TestSchemaElementProps";`
-          ),
-          new RegExp(
-            `import { BaseEntityTest } from "./ReferenceSchemaElements";`
-          ),
+          new RegExp(`import { EntityTestProps } from "./TestSchemaElementProps";`),
+          new RegExp(`import { BaseEntityTest } from "./ReferenceSchemaElements";`),
         ],
         expectedElemTs: [
           utils.dedent`
@@ -434,8 +402,7 @@ describe("ecxml to typescript string", () => {
               <ECProperty propertyName="MixinIntProp" typeName="int"/>
             </ECEntityClass>
           </ECSchema>`,
-        expectedSchemaImportTs:
-          utils.createExpectedSchemaImportTs("TestSchema"),
+        expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
         expectedPropsImportTs: [],
         expectedPropsTs: [
@@ -474,8 +441,7 @@ describe("ecxml to typescript string", () => {
               <ECProperty propertyName="MixinIntProp" typeName="int"/>
             </ECEntityClass>
           </ECSchema>`,
-        expectedSchemaImportTs:
-          utils.createExpectedSchemaImportTs("TestSchema"),
+        expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
         expectedPropsImportTs: [],
         expectedPropsTs: [
@@ -516,12 +482,9 @@ describe("ecxml to typescript string", () => {
               <ECEnumerator name="IntEnumeration3" value="3" displayLabel="Third"/>
             </ECEnumeration>
           </ECSchema>`,
-        expectedSchemaImportTs:
-          utils.createExpectedSchemaImportTs("TestSchema"),
+        expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
-        expectedPropsImportTs: [
-          new RegExp(`import { IntEnumeration } from "./TestSchemaElements";`),
-        ],
+        expectedPropsImportTs: [new RegExp(`import { IntEnumeration } from "./TestSchemaElements";`)],
         expectedPropsTs: [
           utils.dedent`
           export interface StructTest {
@@ -561,12 +524,9 @@ describe("ecxml to typescript string", () => {
               <ECEnumerator name="IntEnumeration3" value="3" displayLabel="Third"/>
             </ECEnumeration>
           </ECSchema>`,
-        expectedSchemaImportTs:
-          utils.createExpectedSchemaImportTs("TestSchema"),
+        expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
-        expectedPropsImportTs: [
-          new RegExp(`import { IntEnumeration } from "./TestSchemaElements";`),
-        ],
+        expectedPropsImportTs: [new RegExp(`import { IntEnumeration } from "./TestSchemaElements";`)],
         expectedPropsTs: [
           utils.dedent`
           /**
@@ -607,8 +567,7 @@ describe("ecxml to typescript string", () => {
               <ECProperty propertyName="BasePrimitiveProp" typeName="string" readOnly="false"/>
             </ECStructClass>
           </ECSchema>`,
-        expectedSchemaImportTs:
-          utils.createExpectedSchemaImportTs("TestSchema"),
+        expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
         expectedPropsImportTs: [],
         expectedPropsTs: [
@@ -648,14 +607,9 @@ describe("ecxml to typescript string", () => {
               <ECProperty propertyName="PrimitiveProp" typeName="string" readOnly="false"/>
             </ECStructClass>
           </ECSchema>`,
-        expectedSchemaImportTs:
-          utils.createExpectedSchemaImportTs("TestSchema"),
+        expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
-        expectedPropsImportTs: [
-          new RegExp(
-            `import { BaseStructTest } from "./ReferenceSchemaElementProps";`
-          ),
-        ],
+        expectedPropsImportTs: [new RegExp(`import { BaseStructTest } from "./ReferenceSchemaElementProps";`)],
         expectedPropsTs: [
           utils.dedent`
           export interface StructTest extends BaseStructTest {
@@ -691,17 +645,14 @@ describe("ecxml to typescript string", () => {
             <BaseClass>ref:TestBase</BaseClass>
           </ECEntityClass>
         </ECSchema>`,
-        expectedSchemaImportTs:
-          utils.createExpectedSchemaImportTs("TestSchema"),
+        expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
         expectedPropsImportTs: [],
         expectedPropsTs: [],
         expectedElemImportTs: [
           new RegExp(`import { IModelDb } from "@itwin/core-backend";`),
           new RegExp(`import { TestBase } from "./RefSchemaElements";`),
-          new RegExp(
-            `import { TestBaseProps } from "./RefSchemaElementProps";`
-          ),
+          new RegExp(`import { TestBaseProps } from "./RefSchemaElementProps";`),
         ],
         expectedElemTs: [
           utils.dedent`
@@ -743,20 +694,15 @@ describe("ecxml to typescript string", () => {
             <BaseClass>ref2:TestBase</BaseClass>
           </ECEntityClass>
         </ECSchema>`,
-        expectedSchemaImportTs:
-          utils.createExpectedSchemaImportTs("TestSchema"),
+        expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
         expectedPropsImportTs: [],
         expectedPropsTs: [],
         expectedElemImportTs: [
           new RegExp(`import { IModelDb } from "@itwin/core-backend";`),
           new RegExp(`import { TestBase } from "./RefSchemaElements";`),
-          new RegExp(
-            `import { TestBase as SecondRefSchemaElementsTestBase } from "./SecondRefSchemaElements";`
-          ),
-          new RegExp(
-            `import { TestBaseProps } from "./RefSchemaElementProps";`
-          ),
+          new RegExp(`import { TestBase as SecondRefSchemaElementsTestBase } from "./SecondRefSchemaElements";`),
+          new RegExp(`import { TestBaseProps } from "./RefSchemaElementProps";`),
           new RegExp(
             `import { TestBaseProps as SecondRefSchemaElementPropsTestBaseProps } from "./SecondRefSchemaElementProps";`
           ),
@@ -816,19 +762,14 @@ describe("ecxml to typescript string", () => {
             <BaseClass>ref2:TestBase</BaseClass>
           </ECEntityClass>
         </ECSchema>`,
-        expectedSchemaImportTs:
-          utils.createExpectedSchemaImportTs("TestSchema"),
+        expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
         expectedPropsImportTs: [],
         expectedPropsTs: [],
         expectedElemImportTs: [
           new RegExp(`import { IModelDb } from "@itwin/core-backend";`),
-          new RegExp(
-            `import { (?=.*\\b(TestBase)\\b)(?=.*\\b(TestBase2)\\b).* } from "./RefSchemaElements";`
-          ),
-          new RegExp(
-            `import { TestBase as SecondRefSchemaElementsTestBase } from "./SecondRefSchemaElements";`
-          ),
+          new RegExp(`import { (?=.*\\b(TestBase)\\b)(?=.*\\b(TestBase2)\\b).* } from "./RefSchemaElements";`),
+          new RegExp(`import { TestBase as SecondRefSchemaElementsTestBase } from "./SecondRefSchemaElements";`),
           new RegExp(
             `import { (?=.*\\b(TestBaseProps)\\b)(?=.*\\b(TestBase2Props)\\b).* } from "./RefSchemaElementProps";`
           ),
@@ -891,14 +832,11 @@ describe("ecxml to typescript string", () => {
               <ECStructProperty propertyName="testStructProp" typeName="ref:StructClass"/>
             </ECEntityClass>
           </ECSchema>`,
-        expectedSchemaImportTs:
-          utils.createExpectedSchemaImportTs("TestSchema"),
+        expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
         expectedPropsImportTs: [
           new RegExp(`import { GuidString } from "@itwin/core-bentley";`),
-          new RegExp(
-            `import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`
-          ),
+          new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`),
           new RegExp(`import { StructClass } from "./RefSchemaElementProps";`),
           new RegExp(`import { PropEnum } from "./RefSchemaElements";`),
         ],
@@ -913,12 +851,8 @@ describe("ecxml to typescript string", () => {
           }`,
         ],
         expectedElemImportTs: [
-          new RegExp(
-            `import { (?=.*\\b(IModelDb)\\b)(?=.*\\b(Entity)\\b).* } from "@itwin/core-backend";`
-          ),
-          new RegExp(
-            `import { TestClassProps } from "./TestSchemaElementProps";`
-          ),
+          new RegExp(`import { (?=.*\\b(IModelDb)\\b)(?=.*\\b(Entity)\\b).* } from "@itwin/core-backend";`),
+          new RegExp(`import { TestClassProps } from "./TestSchemaElementProps";`),
         ],
         expectedElemTs: [
           utils.dedent`
@@ -941,15 +875,12 @@ describe("ecxml to typescript string", () => {
             <ECEntityClass typeName="TestClass"/>
             <ECEntityClass typeName="TestClass2"/>
           </ECSchema>`,
-        expectedSchemaImportTs:
-          utils.createExpectedSchemaImportTs("TestSchema"),
+        expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
         expectedPropsImportTs: [],
         expectedPropsTs: [],
         expectedElemImportTs: [
-          new RegExp(
-            `import { (?=.*\\b(IModelDb)\\b)(?=.*\\b(Entity)\\b).* } from "@itwin/core-backend";`
-          ),
+          new RegExp(`import { (?=.*\\b(IModelDb)\\b)(?=.*\\b(Entity)\\b).* } from "@itwin/core-backend";`),
           new RegExp(`import { EntityProps } from "@itwin/core-common";`),
         ],
         expectedElemTs: [
@@ -993,8 +924,7 @@ describe("ecxml to typescript string", () => {
             <ECEnumerator name="Enumerator2" value="testing2" displayLabel="TestEnumerator2"/>
           </ECEnumeration>
         </ECSchema>`,
-        expectedSchemaImportTs:
-          utils.createExpectedSchemaImportTs("TestSchema"),
+        expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
         expectedPropsImportTs: [],
         expectedPropsTs: [],
@@ -1021,8 +951,7 @@ describe("ecxml to typescript string", () => {
         <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
           <ECEnumeration typeName="TestEnum" backingTypeName="int" isStrict="true"/>
         </ECSchema>`,
-        expectedSchemaImportTs:
-          utils.createExpectedSchemaImportTs("TestSchema"),
+        expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
         expectedPropsImportTs: [],
         expectedPropsTs: [],
@@ -1045,8 +974,7 @@ describe("ecxml to typescript string", () => {
               <ECEnumerator name="Enumerator2" value="2" displayLabel="TestEnumerator2"/>
             </ECEnumeration>
           </ECSchema>`,
-        expectedSchemaImportTs:
-          utils.createExpectedSchemaImportTs("TestSchema"),
+        expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
         expectedPropsImportTs: [],
         expectedPropsTs: [],
@@ -1079,8 +1007,7 @@ describe("ecxml to typescript string", () => {
                 description="This is a long description. This is a long boring description. This is a long long long long boring description. This is a long long long long boring description"
                 modifier="None" />
           </ECSchema>`,
-        expectedSchemaImportTs:
-          utils.createExpectedSchemaImportTs("TestSchema"),
+        expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
         expectedPropsImportTs: [],
         expectedPropsTs: [],
@@ -1155,12 +1082,8 @@ describe("ecxml to typescript string", () => {
         expectedPropsImportTs: [],
         expectedPropsTs: [],
         expectedElemImportTs: [
-          new RegExp(
-            `import { SpatialLocationElement, IModelDb } from "@itwin/core-backend";`
-          ),
-          new RegExp(
-            `import { GeometricElement3dProps } from "@itwin/core-common";`
-          ),
+          new RegExp(`import { SpatialLocationElement, IModelDb } from "@itwin/core-backend";`),
+          new RegExp(`import { GeometricElement3dProps } from "@itwin/core-common";`),
         ],
         expectedElemTs: [
           utils.dedent`

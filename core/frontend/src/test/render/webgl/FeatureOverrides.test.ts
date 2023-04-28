@@ -24,9 +24,7 @@ import { OvrFlags } from "../../../render/webgl/RenderFlags";
 import { testBlankViewport } from "../../openBlankViewport";
 
 describe("FeatureOverrides", () => {
-  before(async () =>
-    IModelApp.startup({ localization: new EmptyLocalization() })
-  );
+  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
 
   function makeTarget(): Target {
@@ -39,10 +37,7 @@ describe("FeatureOverrides", () => {
   function makeBranch(ovrs?: FeatureSymbology.Overrides): Branch {
     const branch = new GraphicBranch();
     branch.symbologyOverrides = ovrs;
-    const graphic = IModelApp.renderSystem.createGraphicBranch(
-      branch,
-      Transform.identity
-    );
+    const graphic = IModelApp.renderSystem.createGraphicBranch(branch, Transform.identity);
     expect(graphic).instanceOf(Branch);
     return graphic as Branch;
   }
@@ -64,12 +59,8 @@ describe("FeatureOverrides", () => {
     return createBatch(featureTable);
   }
 
-  function makeOverrides(
-    source?: FeatureSymbology.Source
-  ): FeatureSymbology.Overrides {
-    return source
-      ? FeatureSymbology.Overrides.withSource(source)
-      : new FeatureSymbology.Overrides();
+  function makeOverrides(source?: FeatureSymbology.Source): FeatureSymbology.Overrides {
+    return source ? FeatureSymbology.Overrides.withSource(source) : new FeatureSymbology.Overrides();
   }
 
   function makeSource(): FeatureSymbology.Source {
@@ -94,8 +85,7 @@ describe("FeatureOverrides", () => {
     t1.pushBatch(ba1);
     expect(ba1.perTargetData.data.length).to.equal(1);
     expect(ba1.perTargetData.data[0].featureOverrides.size).to.equal(1);
-    expect(ba1.perTargetData.data[0].featureOverrides.get(undefined)).not.to.be
-      .undefined;
+    expect(ba1.perTargetData.data[0].featureOverrides.get(undefined)).not.to.be.undefined;
     t1.popBatch();
     t1.popBranch();
 
@@ -113,8 +103,7 @@ describe("FeatureOverrides", () => {
     t1.pushBatch(ba1);
     expect(ba1.perTargetData.data.length).to.equal(1);
     expect(ba1.perTargetData.data[0].featureOverrides.size).to.equal(2);
-    expect(ba1.perTargetData.data[0].featureOverrides.get(s1)).not.to.be
-      .undefined;
+    expect(ba1.perTargetData.data[0].featureOverrides.get(s1)).not.to.be.undefined;
     t1.popBatch();
     t1.popBranch();
 
@@ -140,10 +129,8 @@ describe("FeatureOverrides", () => {
     t2.pushBranch(br5);
     t2.pushBatch(ba1);
     expect(ba1.perTargetData.data.length).to.equal(2);
-    expect(ba1.perTargetData.data[1].featureOverrides.get(s1)).not.to.be
-      .undefined;
-    expect(ba1.perTargetData.data[1].featureOverrides.get(s2)).not.to.be
-      .undefined;
+    expect(ba1.perTargetData.data[1].featureOverrides.get(s1)).not.to.be.undefined;
+    expect(ba1.perTargetData.data[1].featureOverrides.get(s2)).not.to.be.undefined;
     expect(ba1.perTargetData.data[1].featureOverrides.size).to.equal(2);
     t2.popBatch();
     t2.popBranch();
@@ -161,8 +148,7 @@ describe("FeatureOverrides", () => {
 
     function hook(overrides: Overrides[]): void {
       reset(overrides);
-      for (const ovr of overrides)
-        ovr.buildLookupTable = () => (ovr.updated = true);
+      for (const ovr of overrides) ovr.buildLookupTable = () => (ovr.updated = true);
     }
 
     const target = makeTarget();
@@ -191,15 +177,11 @@ describe("FeatureOverrides", () => {
 
     update();
 
-    const ovrs = Array.from(
-      batch.perTargetData.data[0].featureOverrides.values()
-    ) as unknown as Overrides[];
+    const ovrs = Array.from(batch.perTargetData.data[0].featureOverrides.values()) as unknown as Overrides[];
     hook(ovrs);
 
     expect(ovrs.length).to.equal(3);
-    expect(
-      Array.from(batch.perTargetData.data[0].featureOverrides.keys())
-    ).to.deep.equal([undefined, s1, s2]);
+    expect(Array.from(batch.perTargetData.data[0].featureOverrides.keys())).to.deep.equal([undefined, s1, s2]);
 
     expect(ovrs.some((x) => x.updated)).to.be.false;
 
@@ -259,8 +241,7 @@ describe("FeatureOverrides", () => {
       for (let i = 0; i < 2; i++) {
         const ovrs = batch.perTargetData.data[i].featureOverrides;
         expect(ovrs.size).to.equal(3);
-        for (const source of [undefined, s1, s2])
-          expect(ovrs.get(source)).not.to.be.undefined;
+        for (const source of [undefined, s1, s2]) expect(ovrs.get(source)).not.to.be.undefined;
       }
     }
 
@@ -305,11 +286,7 @@ describe("FeatureOverrides", () => {
     const e21: ElemId = "0xe21";
     const e22: ElemId = "0xe22";
 
-    function createFeatureTable(
-      modelId: string,
-      elem1: string,
-      elem2: string
-    ): FeatureTable {
+    function createFeatureTable(modelId: string, elem1: string, elem2: string): FeatureTable {
       const featureTable = new FeatureTable(100, modelId);
       featureTable.insertWithIndex(new Feature(elem1, s1), 0);
       featureTable.insertWithIndex(new Feature(elem2, s2), 1);
@@ -349,15 +326,8 @@ describe("FeatureOverrides", () => {
           context.scene.background.push(b2);
         };
 
-        function test(
-          expectedHilitedElements: ElemId | ElemId[],
-          setup: () => void
-        ): void {
-          function expectHilited(
-            batch: Batch,
-            featureIndex: 0 | 1,
-            expectToBeHilited: boolean
-          ): void {
+        function test(expectedHilitedElements: ElemId | ElemId[], setup: () => void): void {
+          function expectHilited(batch: Batch, featureIndex: 0 | 1, expectToBeHilited: boolean): void {
             const ptd = batch.perTargetData.data[0];
             if (!ptd) {
               expect(expectToBeHilited).to.be.false;
@@ -373,9 +343,7 @@ describe("FeatureOverrides", () => {
             expect(data.length).to.equal(2 * numBytesPerFeature);
 
             const tex = new Texture2DDataUpdater(data);
-            const flags = tex.getOvrFlagsAtIndex(
-              featureIndex * numBytesPerFeature
-            );
+            const flags = tex.getOvrFlagsAtIndex(featureIndex * numBytesPerFeature);
             const isHilited = 0 !== (flags & OvrFlags.Hilited);
             expect(isHilited).to.equal(expectToBeHilited);
           }

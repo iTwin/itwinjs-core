@@ -36,12 +36,8 @@ export interface MapLayerAccessTokenParams {
 
 /** @beta */
 export interface MapLayerAccessClient {
-  getAccessToken(
-    params: MapLayerAccessTokenParams
-  ): Promise<MapLayerAccessToken | undefined>;
-  getTokenServiceEndPoint?(
-    mapLayerUrl: string
-  ): Promise<MapLayerTokenEndpoint | undefined>;
+  getAccessToken(params: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined>;
+  getTokenServiceEndPoint?(mapLayerUrl: string): Promise<MapLayerTokenEndpoint | undefined>;
   invalidateToken?(token: MapLayerAccessToken): boolean;
 
   onOAuthProcessEnd?: BeEvent<Listener>;

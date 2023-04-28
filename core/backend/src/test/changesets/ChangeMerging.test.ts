@@ -6,19 +6,8 @@
 import { assert } from "chai";
 import * as path from "path";
 import { Id64String, OpenMode } from "@itwin/core-bentley";
-import {
-  ChangesetFileProps,
-  IModel,
-  SubCategoryAppearance,
-} from "@itwin/core-common";
-import {
-  DictionaryModel,
-  Element,
-  IModelDb,
-  IModelJsFs,
-  SpatialCategory,
-  StandaloneDb,
-} from "../../core-backend";
+import { ChangesetFileProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { DictionaryModel, Element, IModelDb, IModelJsFs, SpatialCategory, StandaloneDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -28,10 +17,7 @@ function createChangeset(imodel: IModelDb): ChangesetFileProps {
 
   // completeCreateChangeset deletes the file that startCreateChangeSet created.
   // We make a copy of it now, before he does that.
-  const csFileName = path.join(
-    KnownTestLocations.outputDir,
-    `${changeset.id}.changeset`
-  );
+  const csFileName = path.join(KnownTestLocations.outputDir, `${changeset.id}.changeset`);
   IModelJsFs.copySync(changeset.pathname, csFileName);
   changeset.pathname = csFileName;
 
@@ -39,11 +25,7 @@ function createChangeset(imodel: IModelDb): ChangesetFileProps {
   return changeset;
 }
 
-function applyChangeSets(
-  imodel: IModelDb,
-  csHistory: ChangesetFileProps[],
-  curIdx: number
-): number {
+function applyChangeSets(imodel: IModelDb, csHistory: ChangesetFileProps[], curIdx: number): number {
   while (curIdx < csHistory.length - 1) {
     ++curIdx;
     imodel.nativeDb.applyChangeset(csHistory[curIdx]);
@@ -55,37 +37,22 @@ describe("ChangeMerging", () => {
   it("should merge changes so that two branches of an iModel converge", () => {
     // Make sure that the seed imodel has had all schema/profile upgrades applied, before we make copies of it.
     // (Otherwise, the upgrade Txn will appear to be in the changesets of the copies.)
-    const testFileName = IModelTestUtils.prepareOutputFile(
-      "ChangeMerging",
-      "upgraded.bim"
-    );
+    const testFileName = IModelTestUtils.prepareOutputFile("ChangeMerging", "upgraded.bim");
     const seedFileName = IModelTestUtils.resolveAssetFile("testImodel.bim");
     IModelJsFs.copySync(seedFileName, testFileName);
     const upgradedDb = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     createChangeset(upgradedDb);
 
     // Open copies of the seed file.
-    const firstFileName = IModelTestUtils.prepareOutputFile(
-      "ChangeMerging",
-      "first.bim"
-    );
-    const secondFileName = IModelTestUtils.prepareOutputFile(
-      "ChangeMerging",
-      "second.bim"
-    );
-    const neutralFileName = IModelTestUtils.prepareOutputFile(
-      "ChangeMerging",
-      "neutral.bim"
-    );
+    const firstFileName = IModelTestUtils.prepareOutputFile("ChangeMerging", "first.bim");
+    const secondFileName = IModelTestUtils.prepareOutputFile("ChangeMerging", "second.bim");
+    const neutralFileName = IModelTestUtils.prepareOutputFile("ChangeMerging", "neutral.bim");
     IModelJsFs.copySync(testFileName, firstFileName);
     IModelJsFs.copySync(testFileName, secondFileName);
     IModelJsFs.copySync(testFileName, neutralFileName);
     const firstDb = StandaloneDb.openFile(firstFileName, OpenMode.ReadWrite);
     const secondDb = StandaloneDb.openFile(secondFileName, OpenMode.ReadWrite);
-    const neutralDb = StandaloneDb.openFile(
-      neutralFileName,
-      OpenMode.ReadWrite
-    );
+    const neutralDb = StandaloneDb.openFile(neutralFileName, OpenMode.ReadWrite);
     assert.isTrue(firstDb !== secondDb);
     firstDb.nativeDb.resetBriefcaseId(100);
     secondDb.nativeDb.resetBriefcaseId(200);
@@ -107,12 +74,8 @@ describe("ChangeMerging", () => {
         IModelTestUtils.getUniqueModelCode(firstDb, "newPhysicalModel"),
         true
       );
-      const dictionary: DictionaryModel =
-        firstDb.models.getModel<DictionaryModel>(IModel.dictionaryId);
-      const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(
-        dictionary,
-        "ThisTestSpatialCategory"
-      );
+      const dictionary: DictionaryModel = firstDb.models.getModel<DictionaryModel>(IModel.dictionaryId);
+      const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
       spatialCategoryId = SpatialCategory.insert(
         dictionary.iModel,
         dictionary.id,
@@ -120,11 +83,7 @@ describe("ChangeMerging", () => {
         new SubCategoryAppearance({ color: 0xff0000 })
       );
       el1 = firstDb.elements.insertElement(
-        IModelTestUtils.createPhysicalObject(
-          firstDb,
-          modelId,
-          spatialCategoryId
-        ).toJSON()
+        IModelTestUtils.createPhysicalObject(firstDb, modelId, spatialCategoryId).toJSON()
       );
       firstDb.saveChanges();
       csHistory.push(createChangeset(firstDb));
@@ -136,16 +95,12 @@ describe("ChangeMerging", () => {
       // first -> second, neutral
       secondParent = applyChangeSets(secondDb, csHistory, secondParent);
       assert.isTrue(secondDb.models.getModel(modelId) !== undefined);
-      assert.isTrue(
-        secondDb.elements.getElement(spatialCategoryId) !== undefined
-      );
+      assert.isTrue(secondDb.elements.getElement(spatialCategoryId) !== undefined);
       assert.isTrue(secondDb.elements.getElement(el1) !== undefined);
 
       neutralParent = applyChangeSets(neutralDb, csHistory, neutralParent);
       assert.isTrue(neutralDb.models.getModel(modelId) !== undefined);
-      assert.isTrue(
-        neutralDb.elements.getElement(spatialCategoryId) !== undefined
-      );
+      assert.isTrue(neutralDb.elements.getElement(spatialCategoryId) !== undefined);
       assert.isTrue(neutralDb.elements.getElement(el1) !== undefined);
     }
 
@@ -156,8 +111,7 @@ describe("ChangeMerging", () => {
     // first: modify el1.userLabel
     if (true) {
       const el1cc = firstDb.elements.getElement(el1);
-      expectedValueOfEl1UserLabel =
-        el1cc.userLabel = `${el1cc.userLabel} -> changed by first`;
+      expectedValueOfEl1UserLabel = el1cc.userLabel = `${el1cc.userLabel} -> changed by first`;
       firstDb.elements.updateElement(el1cc.toJSON());
       firstDb.saveChanges("first modified el1.userLabel");
       csHistory.push(createChangeset(firstDb));

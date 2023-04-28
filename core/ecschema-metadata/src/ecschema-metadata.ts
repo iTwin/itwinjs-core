@@ -43,11 +43,7 @@ export {
   PrimitiveOrEnumPropertyBase,
 } from "./Metadata/Property";
 export { PropertyCategory } from "./Metadata/PropertyCategory";
-export {
-  RelationshipClass,
-  RelationshipConstraint,
-  RelationshipMultiplicity,
-} from "./Metadata/RelationshipClass";
+export { RelationshipClass, RelationshipConstraint, RelationshipMultiplicity } from "./Metadata/RelationshipClass";
 export { Schema } from "./Metadata/Schema";
 export * from "./Metadata/SchemaItem";
 export { Unit } from "./Metadata/Unit";
@@ -61,10 +57,7 @@ export * from "./UnitConversion/UnitConverter";
 export * from "./UnitProvider/SchemaUnitProvider";
 export * from "./Validation/SchemaWalker";
 export * from "./SchemaPartVisitorDelegate";
-export {
-  CustomAttribute,
-  CustomAttributeContainerProps,
-} from "./Metadata/CustomAttribute";
+export { CustomAttribute, CustomAttributeContainerProps } from "./Metadata/CustomAttribute";
 export { SchemaGraph } from "./utils/SchemaGraph";
 
 /** @docs-package-description

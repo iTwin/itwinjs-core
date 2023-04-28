@@ -56,22 +56,17 @@ export class ThematicUniforms implements WebGLDisposable {
     if (undefined !== this.thematicDisplay)
       return (
         ThematicDisplayMode.Height === this._displayMode[0] &&
-        ThematicGradientMode.IsoLines ===
-          this.thematicDisplay.gradientSettings.mode
+        ThematicGradientMode.IsoLines === this.thematicDisplay.gradientSettings.mode
       );
     return false;
   }
 
   public get wantSlopeMode(): boolean {
-    return undefined !== this.thematicDisplay
-      ? ThematicDisplayMode.Slope === this._displayMode[0]
-      : false;
+    return undefined !== this.thematicDisplay ? ThematicDisplayMode.Slope === this._displayMode[0] : false;
   }
 
   public get wantHillShadeMode(): boolean {
-    return undefined !== this.thematicDisplay
-      ? ThematicDisplayMode.HillShade === this._displayMode[0]
-      : false;
+    return undefined !== this.thematicDisplay ? ThematicDisplayMode.HillShade === this._displayMode[0] : false;
   }
 
   public get wantGlobalSensorTexture(): boolean {
@@ -85,10 +80,7 @@ export class ThematicUniforms implements WebGLDisposable {
   private _scratchVector = new Vector3d();
 
   private _updateAxis(axis: Vector3d, viewMatrix?: Transform) {
-    const tAxis =
-      viewMatrix !== undefined
-        ? viewMatrix.multiplyVector(axis, this._scratchVector)
-        : axis;
+    const tAxis = viewMatrix !== undefined ? viewMatrix.multiplyVector(axis, this._scratchVector) : axis;
     tAxis.normalizeInPlace();
     this._axis[0] = tAxis.x;
     this._axis[1] = tAxis.y;
@@ -107,28 +99,14 @@ export class ThematicUniforms implements WebGLDisposable {
   public update(target: Target): void {
     const plan = target.plan;
 
-    if (
-      this.thematicDisplay &&
-      plan.thematic &&
-      this.thematicDisplay.equals(plan.thematic) &&
-      this._texture
-    ) {
-      if (undefined !== this._sensors)
-        this._sensors.update(target.uniforms.frustum.viewMatrix);
+    if (this.thematicDisplay && plan.thematic && this.thematicDisplay.equals(plan.thematic) && this._texture) {
+      if (undefined !== this._sensors) this._sensors.update(target.uniforms.frustum.viewMatrix);
 
       if (ThematicDisplayMode.Slope === this.thematicDisplay.displayMode) {
-        this._updateAxis(
-          this.thematicDisplay.axis,
-          target.uniforms.frustum.viewMatrix
-        );
+        this._updateAxis(this.thematicDisplay.axis, target.uniforms.frustum.viewMatrix);
         desync(this);
-      } else if (
-        ThematicDisplayMode.HillShade === this.thematicDisplay.displayMode
-      ) {
-        this._updateSunDirection(
-          this.thematicDisplay.sunDirection,
-          target.uniforms.frustum.viewMatrix
-        );
+      } else if (ThematicDisplayMode.HillShade === this.thematicDisplay.displayMode) {
+        this._updateSunDirection(this.thematicDisplay.sunDirection, target.uniforms.frustum.viewMatrix);
         desync(this);
       }
 
@@ -153,20 +131,13 @@ export class ThematicUniforms implements WebGLDisposable {
 
     this._updateAxis(
       this.thematicDisplay.axis,
-      ThematicDisplayMode.Slope === this.thematicDisplay.displayMode
-        ? target.uniforms.frustum.viewMatrix
-        : undefined
+      ThematicDisplayMode.Slope === this.thematicDisplay.displayMode ? target.uniforms.frustum.viewMatrix : undefined
     );
 
     if (ThematicDisplayMode.HillShade === this.thematicDisplay.displayMode)
-      this._updateSunDirection(
-        this.thematicDisplay.sunDirection,
-        target.uniforms.frustum.viewMatrix
-      );
+      this._updateSunDirection(this.thematicDisplay.sunDirection, target.uniforms.frustum.viewMatrix);
 
-    const marginRgb = FloatRgb.fromColorDef(
-      this.thematicDisplay.gradientSettings.marginColor
-    );
+    const marginRgb = FloatRgb.fromColorDef(this.thematicDisplay.gradientSettings.marginColor);
     this._marginColor[0] = marginRgb.red;
     this._marginColor[1] = marginRgb.green;
     this._marginColor[2] = marginRgb.blue;
@@ -176,15 +147,9 @@ export class ThematicUniforms implements WebGLDisposable {
     this._fragSettings[0] = this.thematicDisplay.gradientSettings.mode;
 
     const sensorSettings = this.thematicDisplay.sensorSettings;
-    this._fragSettings[1] =
-      undefined === sensorSettings
-        ? 0
-        : this.thematicDisplay.sensorSettings.distanceCutoff;
+    this._fragSettings[1] = undefined === sensorSettings ? 0 : this.thematicDisplay.sensorSettings.distanceCutoff;
 
-    this._fragSettings[2] = Math.min(
-      this.thematicDisplay.gradientSettings.stepCount,
-      this._gradientDimension
-    );
+    this._fragSettings[2] = Math.min(this.thematicDisplay.gradientSettings.stepCount, this._gradientDimension);
 
     // If we want sensors and have no distance cutoff, then create a global shared sensor texture.
     if (target.wantThematicSensors && !(this._distanceCutoff > 0)) {
@@ -193,14 +158,9 @@ export class ThematicUniforms implements WebGLDisposable {
       this._sensors = ThematicSensors.create(target, Range3d.createNull());
     }
 
-    const symb = Gradient.Symb.createThematic(
-      this.thematicDisplay.gradientSettings
-    );
+    const symb = Gradient.Symb.createThematic(this.thematicDisplay.gradientSettings);
     const image = symb.getThematicImageForRenderer(this._gradientDimension);
-    this._texture = TextureHandle.createForImageBuffer(
-      image,
-      RenderTexture.Type.ThematicGradient
-    );
+    this._texture = TextureHandle.createForImageBuffer(image, RenderTexture.Type.ThematicGradient);
   }
 
   public bindRange(uniform: UniformHandle): void {

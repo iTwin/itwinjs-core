@@ -58,9 +58,7 @@ export class ParityRegion extends CurveCollection {
    * * The returned structure CAPTURES the loops.
    * * The loops are NOT reorganized by hole analysis.
    */
-  public static createLoops(
-    data?: Loop | Loop[] | Loop[][]
-  ): Loop | ParityRegion {
+  public static createLoops(data?: Loop | Loop[] | Loop[][]): Loop | ParityRegion {
     if (data instanceof Loop) return data;
     const result = new ParityRegion();
     result.addLoops(data);
@@ -80,10 +78,7 @@ export class ParityRegion extends CurveCollection {
     return 4;
   }
   /** invoke `processor.announceParityRegion(this, indexInParent)` */
-  public announceToCurveProcessor(
-    processor: RecursiveCurveProcessor,
-    indexInParent: number = -1
-  ): void {
+  public announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent: number = -1): void {
     return processor.announceParityRegion(this, indexInParent);
   }
   /** Return a deep copy. */

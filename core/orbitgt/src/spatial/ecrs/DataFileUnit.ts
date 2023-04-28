@@ -20,9 +20,7 @@ import { AList } from "../../system/collection/AList";
 export class DataFileUnit {
   private static DATA_LINES: AList<string> = null;
   private static addPart0(l: AList<string>): void {
-    l.add(
-      "UOM_CODE	UNIT_OF_MEAS_NAME	UNIT_OF_MEAS_TYPE	TARGET_UOM_CODE	FACTOR_B	FACTOR_C	ABBREVIATION"
-    );
+    l.add("UOM_CODE	UNIT_OF_MEAS_NAME	UNIT_OF_MEAS_TYPE	TARGET_UOM_CODE	FACTOR_B	FACTOR_C	ABBREVIATION");
     l.add("1024	bin	scale	9201	1	1	bin");
     l.add("1025	millimetre	length	9001	1	1000	millimetre");
     l.add("1026	metre per second	length	1026	1	1	metre per second");
@@ -31,9 +29,7 @@ export class DataFileUnit {
     l.add("1029	year	time	1040	31556925.445	1	year");
     l.add("1030	parts per billion per year	scale	1036	1	3.1556925445E+16	ppb/a");
     l.add("1031	milliarc-second	angle	9101	3.14159265358979	648000000	msec");
-    l.add(
-      "1032	milliarc-seconds per year	angle	1035	3.14159265358979	2.044888768836E+16	msec/a"
-    );
+    l.add("1032	milliarc-seconds per year	angle	1035	3.14159265358979	2.044888768836E+16	msec/a");
     l.add("1033	centimetre	length	9001	1	100	centimetre");
     l.add("1034	centimetres per year	length	1026	1	3155692544.5	cm/a");
     l.add("1035	radian per second	angle	1035	1	1	radian per second");
@@ -41,9 +37,7 @@ export class DataFileUnit {
     l.add("1040	second	time	1040	1	1	second");
     l.add("1041	parts per million per year	scale	1036	1	31556925445000	ppm/a");
     l.add("1042	metres per year	length	1026	1	31556925.445	m/a");
-    l.add(
-      "1043	arc-seconds per year	angle	1035	3.14159265358979	20448887688360	sec/a"
-    );
+    l.add("1043	arc-seconds per year	angle	1035	3.14159265358979	20448887688360	sec/a");
     l.add("9001	metre	length	9001	1	1	metre");
     l.add("9002	foot	length	9001	0.3048	1	foot");
     l.add("9003	US survey foot	length	9001	12	39.37	ftUS");
@@ -97,19 +91,13 @@ export class DataFileUnit {
     l.add("9112	centesimal minute	angle	9101	3.14159265358979	20000	c");
     l.add("9113	centesimal second	angle	9101	3.14159265358979	2000000	cc");
     l.add("9114	mil_6400	angle	9101	3.14159265358979	3200	mil_6400");
-    l.add(
-      "9122	degree (supplier to define representation)	angle	9101	3.14159265358979	180	deg"
-    );
+    l.add("9122	degree (supplier to define representation)	angle	9101	3.14159265358979	180	deg");
     l.add("9201	unity	scale	9201	1	1	unity");
     l.add("9202	parts per million	scale	9201	1	1000000	parts per million");
     l.add("9203	coefficient	scale	9201	1	1	coefficient");
     l.add("9300	British foot (Sears 1922 truncated)	length	9001	0.914398	3	ftSe(T)");
-    l.add(
-      "9301	British chain (Sears 1922 truncated)	length	9001	20.116756	1	chSe(T)"
-    );
-    l.add(
-      "9302	British link (Sears 1922 truncated)	length	9001	20.116756	100	lkSe(T)"
-    );
+    l.add("9301	British chain (Sears 1922 truncated)	length	9001	20.116756	1	chSe(T)");
+    l.add("9302	British link (Sears 1922 truncated)	length	9001	20.116756	100	lkSe(T)");
   }
   public static getDataLines(): AList<string> {
     if (DataFileUnit.DATA_LINES == null) {

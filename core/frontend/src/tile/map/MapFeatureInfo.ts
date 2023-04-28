@@ -6,11 +6,7 @@
  * @module MapLayers
  */
 
-import {
-  PropertyDescription,
-  PropertyRecord,
-  PropertyValue,
-} from "@itwin/appui-abstract";
+import { PropertyDescription, PropertyRecord, PropertyValue } from "@itwin/appui-abstract";
 import { Cartographic } from "@itwin/core-common";
 
 /** @alpha */

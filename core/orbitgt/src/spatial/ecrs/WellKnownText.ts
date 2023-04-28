@@ -55,8 +55,7 @@ export class WellKnownText {
   public static readonly TYPE_GENERIC: string = "generic";
 
   /** The conversion ratio from "arc-sec" to "radian" */
-  private static readonly _ARC_SEC_TO_RAD: float64 =
-    ((1.0 / 3600.0) * Math.PI) / 180.0;
+  private static readonly _ARC_SEC_TO_RAD: float64 = ((1.0 / 3600.0) * Math.PI) / 180.0;
 
   /** The counter for creating unique codes */
   private static _CODES: int32 = 100000;
@@ -73,14 +72,8 @@ export class WellKnownText {
    */
   private static unquote(name: string): string {
     name = Strings.trim(name);
-    ASystem.assert0(
-      Strings.startsWith(name, '"'),
-      "Name '" + name + "' does not start with a quote"
-    );
-    ASystem.assert0(
-      Strings.endsWith(name, '"'),
-      "Name '" + name + "' does not end with a quote"
-    );
+    ASystem.assert0(Strings.startsWith(name, '"'), "Name '" + name + "' does not start with a quote");
+    ASystem.assert0(Strings.endsWith(name, '"'), "Name '" + name + "' does not end with a quote");
     return Strings.substring(name, 1, Strings.getLength(name) - 1);
   }
 
@@ -118,18 +111,11 @@ export class WellKnownText {
    * @param dialect the dialect of WKT to parse.
    * @return the EPSG code (zero if not found).
    */
-  private static getEPSGCode(
-    authority: WellKnownTextNode,
-    dialect: string
-  ): int32 {
+  private static getEPSGCode(authority: WellKnownTextNode, dialect: string): int32 {
     // example: AUTHORITY["EPSG","2320"]
     if (authority == null) return 0;
-    let name: string = WellKnownText.unquote(
-      authority.getArgument(0).getName()
-    );
-    let code: string = WellKnownText.unquote(
-      authority.getArgument(1).getName()
-    );
+    let name: string = WellKnownText.unquote(authority.getArgument(0).getName());
+    let code: string = WellKnownText.unquote(authority.getArgument(1).getName());
     if (Strings.equalsIgnoreCase(name, "EPSG") == false) return 0;
     let epsgCode: int32 = Numbers.getInteger(code, 0);
     return epsgCode; // Enabled on 06/06/2014
@@ -141,29 +127,16 @@ export class WellKnownText {
    * @param dialect the dialect of WKT to parse.
    * @return the unit.
    */
-  private static parseLinearUnit(
-    node: WellKnownTextNode,
-    dialect: string
-  ): Unit {
+  private static parseLinearUnit(node: WellKnownTextNode, dialect: string): Unit {
     /* Get the parameters */
     let name: string = WellKnownText.unquote(node.getArgument(0).getName());
-    let conversionFactor: float64 = WellKnownText.getDouble(
-      node.getArgument(1).getName()
-    );
+    let conversionFactor: float64 = WellKnownText.getDouble(node.getArgument(1).getName());
     let authority: WellKnownTextNode = node.getArgumentByName("AUTHORITY");
     /* Do we have an EPGS code ? */
     let epsgCode: int32 = WellKnownText.getEPSGCode(authority, dialect);
     let code: int32 = epsgCode == 0 ? WellKnownText._CODES++ : epsgCode;
     /* Return the unit */
-    return new Unit(
-      code,
-      name,
-      name /*abbreviation*/,
-      "length",
-      Unit.METER /*targetUnitCode*/,
-      conversionFactor,
-      1.0
-    );
+    return new Unit(code, name, name /*abbreviation*/, "length", Unit.METER /*targetUnitCode*/, conversionFactor, 1.0);
   }
 
   /**
@@ -172,29 +145,16 @@ export class WellKnownText {
    * @param dialect the dialect of WKT to parse.
    * @return the unit.
    */
-  private static parseAngularUnit(
-    node: WellKnownTextNode,
-    dialect: string
-  ): Unit {
+  private static parseAngularUnit(node: WellKnownTextNode, dialect: string): Unit {
     /* Get the parameters */
     let name: string = WellKnownText.unquote(node.getArgument(0).getName());
-    let conversionFactor: float64 = WellKnownText.getDouble(
-      node.getArgument(1).getName()
-    );
+    let conversionFactor: float64 = WellKnownText.getDouble(node.getArgument(1).getName());
     let authority: WellKnownTextNode = node.getArgumentByName("AUTHORITY");
     /* Do we have an EPGS code ? */
     let epsgCode: int32 = WellKnownText.getEPSGCode(authority, dialect);
     let code: int32 = epsgCode == 0 ? WellKnownText._CODES++ : epsgCode;
     /* Return the unit */
-    return new Unit(
-      code,
-      name,
-      name /*abbreviation*/,
-      "angle",
-      Unit.RADIAN /*targetUnitCode*/,
-      conversionFactor,
-      1.0
-    );
+    return new Unit(code, name, name /*abbreviation*/, "angle", Unit.RADIAN /*targetUnitCode*/, conversionFactor, 1.0);
   }
 
   /**
@@ -204,32 +164,17 @@ export class WellKnownText {
    * @param dialect the dialect of WKT to parse.
    * @return the ellipsoid.
    */
-  private static parseSpheroid(
-    crsCode: int32,
-    node: WellKnownTextNode,
-    dialect: string
-  ): Ellipsoid {
+  private static parseSpheroid(crsCode: int32, node: WellKnownTextNode, dialect: string): Ellipsoid {
     /* Get the parameters */
     let name: string = WellKnownText.unquote(node.getArgument(0).getName());
-    let semiMajorAxis: float64 = WellKnownText.getDouble(
-      node.getArgument(1).getName()
-    );
-    let invFlattening: float64 = WellKnownText.getDouble(
-      node.getArgument(2).getName()
-    );
+    let semiMajorAxis: float64 = WellKnownText.getDouble(node.getArgument(1).getName());
+    let invFlattening: float64 = WellKnownText.getDouble(node.getArgument(2).getName());
     let authority: WellKnownTextNode = node.getArgumentByName("AUTHORITY");
     /* Do we have an EPGS code ? */
     let epsgCode: int32 = WellKnownText.getEPSGCode(authority, dialect);
     let code: int32 = epsgCode == 0 ? WellKnownText._CODES++ : epsgCode;
     /* Return the ellipsoid */
-    return new Ellipsoid(
-      code,
-      name,
-      Unit.METER,
-      semiMajorAxis,
-      invFlattening,
-      0.0
-    );
+    return new Ellipsoid(code, name, Unit.METER, semiMajorAxis, invFlattening, 0.0);
   }
 
   /**
@@ -239,27 +184,16 @@ export class WellKnownText {
    * @param dialect the dialect of WKT to parse.
    * @return the prime-meridian.
    */
-  private static parsePrimeMeridian(
-    crsCode: int32,
-    node: WellKnownTextNode,
-    dialect: string
-  ): PrimeMeridian {
+  private static parsePrimeMeridian(crsCode: int32, node: WellKnownTextNode, dialect: string): PrimeMeridian {
     /* Get the parameters */
     let name: string = WellKnownText.unquote(node.getArgument(0).getName());
-    let longitude: float64 = WellKnownText.getDouble(
-      node.getArgument(1).getName()
-    );
+    let longitude: float64 = WellKnownText.getDouble(node.getArgument(1).getName());
     let authority: WellKnownTextNode = node.getArgumentByName("AUTHORITY");
     /* Do we have an EPGS code ? */
     let epsgCode: int32 = WellKnownText.getEPSGCode(authority, dialect);
     let code: int32 = epsgCode == 0 ? WellKnownText._CODES++ : epsgCode;
     /* Return the prime-meridian */
-    return new PrimeMeridian(
-      code,
-      name,
-      longitude /*lonFromGreenwich*/,
-      Unit.DEGREE /*?*/
-    );
+    return new PrimeMeridian(code, name, longitude /*lonFromGreenwich*/, Unit.DEGREE /*?*/);
   }
 
   /**
@@ -268,10 +202,7 @@ export class WellKnownText {
    * @param dialect the dialect of WKT to parse.
    * @return the transform.
    */
-  public static parseToWGS84(
-    node: WellKnownTextNode,
-    dialect: string
-  ): OperationMethod {
+  public static parseToWGS84(node: WellKnownTextNode, dialect: string): OperationMethod {
     /* No transform ? */
     if (node == null) return null;
     /* Get the parameters */
@@ -310,29 +241,15 @@ export class WellKnownText {
   ): Datum {
     /* Get the parameters */
     let name: string = WellKnownText.unquote(node.getArgument(0).getName());
-    let spheroid: Ellipsoid = WellKnownText.parseSpheroid(
-      crsCode,
-      node.getArgumentByName("SPHEROID"),
-      dialect
-    );
-    let toWGS84: OperationMethod = WellKnownText.parseToWGS84(
-      node.getArgumentByName("TOWGS84"),
-      dialect
-    );
-    if (toWGS84 == null)
-      toWGS84 = PositionVector.create(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0); // default (identity) transform added on 19/06/2013 to allow ViewTransform creation.
+    let spheroid: Ellipsoid = WellKnownText.parseSpheroid(crsCode, node.getArgumentByName("SPHEROID"), dialect);
+    let toWGS84: OperationMethod = WellKnownText.parseToWGS84(node.getArgumentByName("TOWGS84"), dialect);
+    if (toWGS84 == null) toWGS84 = PositionVector.create(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0); // default (identity) transform added on 19/06/2013 to allow ViewTransform creation.
     let authority: WellKnownTextNode = node.getArgumentByName("AUTHORITY");
     /* Do we have an EPGS code ? */
     let epsgCode: int32 = WellKnownText.getEPSGCode(authority, dialect);
     let code: int32 = epsgCode == 0 ? WellKnownText._CODES++ : epsgCode;
     /* Return the datum */
-    let datum: Datum = new Datum(
-      code,
-      name,
-      Datum.TYPE_GEODETIC,
-      spheroid,
-      primeMeridian
-    );
+    let datum: Datum = new Datum(code, name, Datum.TYPE_GEODETIC, spheroid, primeMeridian);
     datum.setToWGS84(toWGS84);
     return datum;
   }
@@ -353,9 +270,7 @@ export class WellKnownText {
     // for method names and parameter names and units
     //
     /* Get the projection name */
-    let projectionName: string = WellKnownText.unquote(
-      projection.getArgument(0).getName()
-    );
+    let projectionName: string = WellKnownText.unquote(projection.getArgument(0).getName());
     /* Get the standard units */
     let DEG: Unit = Registry.getUnit(Unit.DEGREE);
     let METER: Unit = Registry.getUnit(Unit.METER);
@@ -365,12 +280,8 @@ export class WellKnownText {
     for (let i: number = 0; i < parameters.size(); i++) {
       /* Get the parameter name and value */
       let parameter: WellKnownTextNode = parameters.get(i);
-      let parameterName: string = WellKnownText.unquote(
-        parameter.getArgument(0).getName()
-      );
-      let parameterValue: float64 = WellKnownText.getDouble(
-        parameter.getArgument(1).getName()
-      );
+      let parameterName: string = WellKnownText.unquote(parameter.getArgument(0).getName());
+      let parameterValue: float64 = WellKnownText.getDouble(parameter.getArgument(1).getName());
       /* Hotine_Oblique_Mercator */
       if (Strings.equalsIgnoreCase(projectionName, "Hotine_Oblique_Mercator")) {
         if (Strings.equalsIgnoreCase(parameterName, "latitude_of_center"))
@@ -389,19 +300,14 @@ export class WellKnownText {
           parameterList.add(new ParameterValue(8807, parameterValue, METER));
       }
       /* Krovak */
-      if (
-        Strings.equalsIgnoreCase(projectionName, "Krovak") ||
-        Strings.equalsIgnoreCase(projectionName, "KrovakEN")
-      ) {
+      if (Strings.equalsIgnoreCase(projectionName, "Krovak") || Strings.equalsIgnoreCase(projectionName, "KrovakEN")) {
         if (Strings.equalsIgnoreCase(parameterName, "latitude_of_center"))
           parameterList.add(new ParameterValue(8811, parameterValue, DEG));
         if (Strings.equalsIgnoreCase(parameterName, "longitude_of_center"))
           parameterList.add(new ParameterValue(8833, parameterValue, DEG));
         if (Strings.equalsIgnoreCase(parameterName, "azimuth"))
           parameterList.add(new ParameterValue(1036, parameterValue, DEG)); // changed from 8813 to 1036 on 31/08/2017
-        if (
-          Strings.equalsIgnoreCase(parameterName, "pseudo_standard_parallel_1")
-        )
+        if (Strings.equalsIgnoreCase(parameterName, "pseudo_standard_parallel_1"))
           parameterList.add(new ParameterValue(8818, parameterValue, DEG));
         if (Strings.equalsIgnoreCase(parameterName, "scale_factor"))
           parameterList.add(new ParameterValue(8819, parameterValue, SCALE));
@@ -411,9 +317,7 @@ export class WellKnownText {
           parameterList.add(new ParameterValue(8807, parameterValue, METER));
       }
       /* Lambert_Conformal_Conic_1SP */
-      if (
-        Strings.equalsIgnoreCase(projectionName, "Lambert_Conformal_Conic_1SP")
-      ) {
+      if (Strings.equalsIgnoreCase(projectionName, "Lambert_Conformal_Conic_1SP")) {
         if (Strings.equalsIgnoreCase(parameterName, "latitude_of_origin"))
           parameterList.add(new ParameterValue(8801, parameterValue, DEG));
         if (Strings.equalsIgnoreCase(parameterName, "central_meridian"))
@@ -427,14 +331,8 @@ export class WellKnownText {
       }
       /* Lambert_Conformal_Conic_2SP / Lambert_Conformal_Conic_2SP_Belgium / Lambert_Conformal_Conic  */
       if (
-        Strings.equalsIgnoreCase(
-          projectionName,
-          "Lambert_Conformal_Conic_2SP"
-        ) ||
-        Strings.equalsIgnoreCase(
-          projectionName,
-          "Lambert_Conformal_Conic_2SP_Belgium"
-        ) ||
+        Strings.equalsIgnoreCase(projectionName, "Lambert_Conformal_Conic_2SP") ||
+        Strings.equalsIgnoreCase(projectionName, "Lambert_Conformal_Conic_2SP_Belgium") ||
         Strings.equalsIgnoreCase(projectionName, "Lambert_Conformal_Conic")
       ) {
         if (Strings.equalsIgnoreCase(parameterName, "latitude_of_origin"))
@@ -501,24 +399,19 @@ export class WellKnownText {
     /* Create the right method */
     if (Strings.equalsIgnoreCase(projectionName, "Hotine_Oblique_Mercator"))
       return new HotineObliqueMercator(parameterList);
-    if (Strings.equalsIgnoreCase(projectionName, "Krovak"))
-      return new KrovakObliqueConformalConic(parameterList);
-    if (Strings.equalsIgnoreCase(projectionName, "KrovakEN"))
-      return new KrovakObliqueConformalConicEN(parameterList);
+    if (Strings.equalsIgnoreCase(projectionName, "Krovak")) return new KrovakObliqueConformalConic(parameterList);
+    if (Strings.equalsIgnoreCase(projectionName, "KrovakEN")) return new KrovakObliqueConformalConicEN(parameterList);
     if (Strings.equalsIgnoreCase(projectionName, "Lambert_Conformal_Conic_1SP"))
       return new LambertConical1SP(parameterList);
     if (Strings.equalsIgnoreCase(projectionName, "Lambert_Conformal_Conic_2SP"))
       return new LambertConical2SP(parameterList);
     if (Strings.equalsIgnoreCase(projectionName, "Lambert_Conformal_Conic"))
       return new LambertConical2SP(parameterList);
-    if (Strings.equalsIgnoreCase(projectionName, "Mercator_1SP"))
-      return new Mercator1SP(parameterList);
-    if (Strings.equalsIgnoreCase(projectionName, "Oblique_Mercator"))
-      return new ObliqueMercator(parameterList);
+    if (Strings.equalsIgnoreCase(projectionName, "Mercator_1SP")) return new Mercator1SP(parameterList);
+    if (Strings.equalsIgnoreCase(projectionName, "Oblique_Mercator")) return new ObliqueMercator(parameterList);
     if (Strings.equalsIgnoreCase(projectionName, "Oblique_Stereographic"))
       return new ObliqueStereographic(parameterList);
-    if (Strings.equalsIgnoreCase(projectionName, "Transverse_Mercator"))
-      return new TransverseMercator(parameterList);
+    if (Strings.equalsIgnoreCase(projectionName, "Transverse_Mercator")) return new TransverseMercator(parameterList);
     ASystem.assert0(false, "Unknown projection type '" + projectionName + "'");
     return null;
   }
@@ -530,11 +423,7 @@ export class WellKnownText {
    * @param dialect the dialect of WKT to parse.
    * @return the CRS.
    */
-  private static parseGeocentric(
-    crsCode: int32,
-    node: WellKnownTextNode,
-    dialect: string
-  ): CRS {
+  private static parseGeocentric(crsCode: int32, node: WellKnownTextNode, dialect: string): CRS {
     /* Get the parameters */
     let name: string = WellKnownText.unquote(node.getArgument(0).getName());
     let primeMeridian: PrimeMeridian = WellKnownText.parsePrimeMeridian(
@@ -542,18 +431,10 @@ export class WellKnownText {
       node.getArgumentByName("PRIMEM"),
       dialect
     );
-    let datum: Datum = WellKnownText.parseDatum(
-      crsCode,
-      node.getArgumentByName("DATUM"),
-      primeMeridian,
-      dialect
-    );
+    let datum: Datum = WellKnownText.parseDatum(crsCode, node.getArgumentByName("DATUM"), primeMeridian, dialect);
     let toWGS84m: OperationMethod = datum.getToWGS84();
     let toWGS84s: AList<Operation> = new AList<Operation>();
-    let linearUnit: Unit = WellKnownText.parseLinearUnit(
-      node.getArgumentByName("UNIT"),
-      dialect
-    );
+    let linearUnit: Unit = WellKnownText.parseLinearUnit(node.getArgumentByName("UNIT"), dialect);
     let axis: AList<WellKnownTextNode> = node.getArgumentsByName("AXIS");
     let authority: WellKnownTextNode = node.getArgumentByName("AUTHORITY");
     /* Do we have an EPGS code ? */
@@ -592,11 +473,7 @@ export class WellKnownText {
    * @param dialect the dialect of WKT to parse.
    * @return the CRS.
    */
-  private static parseGeographic(
-    crsCode: int32,
-    node: WellKnownTextNode,
-    dialect: string
-  ): CRS {
+  private static parseGeographic(crsCode: int32, node: WellKnownTextNode, dialect: string): CRS {
     /* Get the parameters */
     let name: string = WellKnownText.unquote(node.getArgument(0).getName());
     let primeMeridian: PrimeMeridian = WellKnownText.parsePrimeMeridian(
@@ -604,18 +481,10 @@ export class WellKnownText {
       node.getArgumentByName("PRIMEM"),
       dialect
     );
-    let datum: Datum = WellKnownText.parseDatum(
-      crsCode,
-      node.getArgumentByName("DATUM"),
-      primeMeridian,
-      dialect
-    );
+    let datum: Datum = WellKnownText.parseDatum(crsCode, node.getArgumentByName("DATUM"), primeMeridian, dialect);
     let toWGS84m: OperationMethod = datum.getToWGS84();
     let toWGS84s: AList<Operation> = new AList<Operation>();
-    let angularUnit: Unit = WellKnownText.parseAngularUnit(
-      node.getArgumentByName("UNIT"),
-      dialect
-    );
+    let angularUnit: Unit = WellKnownText.parseAngularUnit(node.getArgumentByName("UNIT"), dialect);
     let axis: AList<WellKnownTextNode> = node.getArgumentsByName("AXIS");
     let authority: WellKnownTextNode = node.getArgumentByName("AUTHORITY");
     /* Do we have an EPGS code ? */
@@ -654,30 +523,14 @@ export class WellKnownText {
    * @param dialect the dialect of WKT to parse.
    * @return the CRS.
    */
-  private static parseProjection(
-    crsCode: int32,
-    node: WellKnownTextNode,
-    dialect: string
-  ): CRS {
+  private static parseProjection(crsCode: int32, node: WellKnownTextNode, dialect: string): CRS {
     /* Get the parameters */
     let name: string = WellKnownText.unquote(node.getArgument(0).getName());
-    let baseCRS: CRS = WellKnownText.parseGeographic(
-      -crsCode,
-      node.getArgumentByName("GEOGCS"),
-      dialect
-    );
+    let baseCRS: CRS = WellKnownText.parseGeographic(-crsCode, node.getArgumentByName("GEOGCS"), dialect);
     let projection: WellKnownTextNode = node.getArgumentByName("PROJECTION");
-    let parameters: AList<WellKnownTextNode> =
-      node.getArgumentsByName("PARAMETER");
-    let projectionMethod: OperationMethod = WellKnownText.parseProjectionMethod(
-      projection,
-      parameters,
-      dialect
-    );
-    let linearUnit: Unit = WellKnownText.parseLinearUnit(
-      node.getArgumentByName("UNIT"),
-      dialect
-    );
+    let parameters: AList<WellKnownTextNode> = node.getArgumentsByName("PARAMETER");
+    let projectionMethod: OperationMethod = WellKnownText.parseProjectionMethod(projection, parameters, dialect);
+    let linearUnit: Unit = WellKnownText.parseLinearUnit(node.getArgumentByName("UNIT"), dialect);
     let axis: AList<WellKnownTextNode> = node.getArgumentsByName("AXIS");
     let authority: WellKnownTextNode = node.getArgumentByName("AUTHORITY");
     /* Do we have an EPGS code ? */
@@ -713,11 +566,7 @@ export class WellKnownText {
    * @param dialect the dialect of WKT to parse.
    * @return the CRS.
    */
-  private static parseVertical(
-    crsCode: int32,
-    node: WellKnownTextNode,
-    dialect: string
-  ): CRS {
+  private static parseVertical(crsCode: int32, node: WellKnownTextNode, dialect: string): CRS {
     /* Get the parameters */
     let name: string = WellKnownText.unquote(node.getArgument(0).getName());
     let authority: WellKnownTextNode = node.getArgumentByName("AUTHORITY");
@@ -725,13 +574,7 @@ export class WellKnownText {
     let epsgCode: int32 = WellKnownText.getEPSGCode(authority, dialect);
     let code: int32 = epsgCode == 0 ? crsCode : epsgCode;
     /* Create the datum */
-    let datum: Datum = new Datum(
-      code,
-      name,
-      Datum.TYPE_VERTICAL,
-      null /*spheroid*/,
-      null /*primeMeridian*/
-    );
+    let datum: Datum = new Datum(code, name, Datum.TYPE_VERTICAL, null /*spheroid*/, null /*primeMeridian*/);
     /* Return the CRS */
     return new CRS(
       code,
@@ -753,11 +596,7 @@ export class WellKnownText {
    * @param dialect the dialect of WKT to parse.
    * @return the CRS (null if unable to parse).
    */
-  public static parseSpatialReferenceSystem(
-    crsCode: int32,
-    text: string,
-    dialect: string
-  ): CRS {
+  public static parseSpatialReferenceSystem(crsCode: int32, text: string, dialect: string): CRS {
     let node: WellKnownTextNode = WellKnownTextNode.parse(text);
     if (Strings.equalsIgnoreCase(node.getName(), "GEOCCS"))
       return WellKnownText.parseGeocentric(crsCode, node, dialect);
@@ -765,12 +604,8 @@ export class WellKnownText {
       return WellKnownText.parseGeographic(crsCode, node, dialect);
     if (Strings.equalsIgnoreCase(node.getName(), "PROJCS"))
       return WellKnownText.parseProjection(crsCode, node, dialect);
-    if (Strings.equalsIgnoreCase(node.getName(), "VERTCS"))
-      return WellKnownText.parseVertical(crsCode, node, dialect);
-    Message.printWarning(
-      WellKnownText.MODULE,
-      "Invalid spatial reference system WKT '" + text + "'"
-    );
+    if (Strings.equalsIgnoreCase(node.getName(), "VERTCS")) return WellKnownText.parseVertical(crsCode, node, dialect);
+    Message.printWarning(WellKnownText.MODULE, "Invalid spatial reference system WKT '" + text + "'");
     return null;
   }
 }

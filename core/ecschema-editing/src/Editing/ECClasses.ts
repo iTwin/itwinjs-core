@@ -24,11 +24,7 @@ import {
   StructPropertyProps,
 } from "@itwin/ecschema-metadata";
 import { assert } from "@itwin/core-bentley";
-import {
-  PropertyEditResults,
-  SchemaContextEditor,
-  SchemaItemEditResults,
-} from "./Editor";
+import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableClass } from "./Mutable/MutableClass";
 import * as Rules from "../Validation/ECRules";
 import { MutableProperty } from "./Mutable/MutableProperty";
@@ -61,12 +57,9 @@ export class ECClasses {
       type !== PrimitiveType.DateTime &&
       type !== PrimitiveType.Integer
     )
-      throw new Error(
-        "Property creation is restricted to type Double, String, DateTime, and Integer."
-      );
+      throw new Error("Property creation is restricted to type Double, String, DateTime, and Integer.");
 
-    if ("" === prefix)
-      throw new Error("The specified property name prefix is invalid");
+    if ("" === prefix) throw new Error("The specified property name prefix is invalid");
 
     const prefixedName = `${prefix}_${name}`;
 
@@ -132,14 +125,9 @@ export class ECClasses {
       return { errorMessage: e.message };
     }
 
-    const enumSchemaItemKey = mutableClass.schema.getSchemaItemKey(
-      type.fullName
-    );
+    const enumSchemaItemKey = mutableClass.schema.getSchemaItemKey(type.fullName);
     if (enumSchemaItemKey === undefined)
-      throw new ECObjectsError(
-        ECObjectsStatus.InvalidECJson,
-        `Unable to locate the enumeration ${type.fullName}.`
-      );
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the enumeration ${type.fullName}.`);
 
     await mutableClass.createPrimitiveProperty(name, type);
     return { itemKey: classKey, propertyName: name };
@@ -192,10 +180,7 @@ export class ECClasses {
       return { errorMessage: e.message };
     }
 
-    const newProperty = await mutableClass.createPrimitiveArrayProperty(
-      name,
-      type
-    );
+    const newProperty = await mutableClass.createPrimitiveArrayProperty(name, type);
     await newProperty.fromJSON(primitiveProps);
     return { itemKey: classKey, propertyName: name };
   }
@@ -263,18 +248,12 @@ export class ECClasses {
       return { errorMessage: e.message };
     }
 
-    const newProperty = await mutableClass.createStructArrayProperty(
-      name,
-      type
-    );
+    const newProperty = await mutableClass.createStructArrayProperty(name, type);
     await newProperty.fromJSON(structProps);
     return { itemKey: classKey, propertyName: name };
   }
 
-  public async deleteProperty(
-    classKey: SchemaItemKey,
-    name: string
-  ): Promise<PropertyEditResults> {
+  public async deleteProperty(classKey: SchemaItemKey, name: string): Promise<PropertyEditResults> {
     let mutableClass: MutableClass;
     try {
       mutableClass = await this.getClass(classKey);
@@ -290,9 +269,7 @@ export class ECClasses {
     const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
     if (schema === undefined)
       return {
-        errorMessage: `Schema Key ${classKey.schemaKey.toString(
-          true
-        )} not found in context`,
+        errorMessage: `Schema Key ${classKey.schemaKey.toString(true)} not found in context`,
       };
 
     const ecClass = await schema.getItem<ECClass>(classKey.name);
@@ -321,10 +298,7 @@ export class ECClasses {
 
     mutableClass.addCustomAttribute(customAttribute);
 
-    const diagnostics = Rules.validateCustomAttributeInstance(
-      mutableClass,
-      customAttribute
-    );
+    const diagnostics = Rules.validateCustomAttributeInstance(mutableClass, customAttribute);
 
     const result: SchemaItemEditResults = { errorMessage: "" };
     for await (const diagnostic of diagnostics) {
@@ -357,9 +331,7 @@ export class ECClasses {
       return { errorMessage: e.message };
     }
 
-    const property = (await mutableClass.getProperty(
-      propertyName
-    )) as MutableProperty;
+    const property = (await mutableClass.getProperty(propertyName)) as MutableProperty;
     if (!property) {
       return {
         errorMessage: `Property with the name ${propertyName} could not be found in the class ${classKey.fullName}.`,
@@ -368,10 +340,7 @@ export class ECClasses {
 
     property.addCustomAttribute(customAttribute);
 
-    const diagnostics = Rules.validateCustomAttributeInstance(
-      property,
-      customAttribute
-    );
+    const diagnostics = Rules.validateCustomAttributeInstance(property, customAttribute);
 
     const result: SchemaItemEditResults = { errorMessage: "" };
     for await (const diagnostic of diagnostics) {
@@ -392,9 +361,7 @@ export class ECClasses {
     if (ecClass === undefined)
       throw new ECObjectsError(
         ECObjectsStatus.ClassNotFound,
-        `Class ${
-          classKey.name
-        } was not found in schema ${classKey.schemaKey.toString(true)}`
+        `Class ${classKey.name} was not found in schema ${classKey.schemaKey.toString(true)}`
       );
 
     switch (ecClass.schemaItemType) {
@@ -405,19 +372,13 @@ export class ECClasses {
       case SchemaItemType.RelationshipClass:
         break;
       default:
-        throw new ECObjectsError(
-          ECObjectsStatus.InvalidSchemaItemType,
-          `Schema item type not supported`
-        );
+        throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Schema item type not supported`);
     }
 
     return ecClass;
   }
 
-  private removeCustomAttribute(
-    container: CustomAttributeContainerProps,
-    customAttribute: CustomAttribute
-  ) {
+  private removeCustomAttribute(container: CustomAttributeContainerProps, customAttribute: CustomAttribute) {
     assert(container.customAttributes !== undefined);
     const map = container.customAttributes as Map<string, CustomAttribute>;
     map.delete(customAttribute.className);

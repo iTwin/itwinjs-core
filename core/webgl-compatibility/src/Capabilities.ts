@@ -98,10 +98,7 @@ const buggyMaliMatchers = [/Mali-G71/, /Mali-G72/, /Mali-G76/];
 // https://en.wikipedia.org/wiki/List_of_Intel_graphics_processing_units
 const integratedIntelGpuMatchers = [/(U)?HD Graphics/, /Iris/];
 
-function isIntegratedGraphics(args: {
-  unmaskedVendor?: string;
-  unmaskedRenderer?: string;
-}): boolean {
+function isIntegratedGraphics(args: { unmaskedVendor?: string; unmaskedRenderer?: string }): boolean {
   if (
     args.unmaskedRenderer &&
     args.unmaskedRenderer.includes("Intel") &&
@@ -196,102 +193,54 @@ export class Capabilities {
     return false;
   }
   public get supportsDrawBuffers(): boolean {
-    return (
-      this._isWebGL2 ||
-      this.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers") !==
-        undefined
-    );
+    return this._isWebGL2 || this.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers") !== undefined;
   }
   public get supportsInstancing(): boolean {
-    return (
-      this._isWebGL2 ||
-      this.queryExtensionObject<ANGLE_instanced_arrays>(
-        "ANGLE_instanced_arrays"
-      ) !== undefined
-    );
+    return this._isWebGL2 || this.queryExtensionObject<ANGLE_instanced_arrays>("ANGLE_instanced_arrays") !== undefined;
   }
   public get supports32BitElementIndex(): boolean {
-    return (
-      this._isWebGL2 ||
-      this.queryExtensionObject<OES_element_index_uint>(
-        "OES_element_index_uint"
-      ) !== undefined
-    );
+    return this._isWebGL2 || this.queryExtensionObject<OES_element_index_uint>("OES_element_index_uint") !== undefined;
   }
   public get supportsTextureFloat(): boolean {
-    return (
-      this._isWebGL2 ||
-      this.queryExtensionObject<OES_texture_float>("OES_texture_float") !==
-        undefined
-    );
+    return this._isWebGL2 || this.queryExtensionObject<OES_texture_float>("OES_texture_float") !== undefined;
   }
   public get supportsTextureFloatLinear(): boolean {
     return (
-      this._isWebGL2 ||
-      this.queryExtensionObject<OES_texture_float_linear>(
-        "OES_texture_float_linear"
-      ) !== undefined
+      this._isWebGL2 || this.queryExtensionObject<OES_texture_float_linear>("OES_texture_float_linear") !== undefined
     );
   }
   public get supportsTextureHalfFloat(): boolean {
-    return (
-      this._isWebGL2 ||
-      this.queryExtensionObject<OES_texture_half_float>(
-        "OES_texture_half_float"
-      ) !== undefined
-    );
+    return this._isWebGL2 || this.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float") !== undefined;
   }
   public get supportsTextureHalfFloatLinear(): boolean {
     return (
       this._isWebGL2 ||
-      this.queryExtensionObject<OES_texture_half_float_linear>(
-        "OES_texture_half_float_linear"
-      ) !== undefined
+      this.queryExtensionObject<OES_texture_half_float_linear>("OES_texture_half_float_linear") !== undefined
     );
   }
   public get supportsTextureFilterAnisotropic(): boolean {
-    return (
-      this.queryExtensionObject<EXT_texture_filter_anisotropic>(
-        "EXT_texture_filter_anisotropic"
-      ) !== undefined
-    );
+    return this.queryExtensionObject<EXT_texture_filter_anisotropic>("EXT_texture_filter_anisotropic") !== undefined;
   }
   public get supportsShaderTextureLOD(): boolean {
-    return (
-      this._isWebGL2 ||
-      this.queryExtensionObject<EXT_shader_texture_lod>(
-        "EXT_shader_texture_lod"
-      ) !== undefined
-    );
+    return this._isWebGL2 || this.queryExtensionObject<EXT_shader_texture_lod>("EXT_shader_texture_lod") !== undefined;
   }
   public get supportsVertexArrayObjects(): boolean {
     return (
-      this._isWebGL2 ||
-      this.queryExtensionObject<OES_vertex_array_object>(
-        "OES_vertex_array_object"
-      ) !== undefined
+      this._isWebGL2 || this.queryExtensionObject<OES_vertex_array_object>("OES_vertex_array_object") !== undefined
     );
   }
   public get supportsFragDepth(): boolean {
-    return (
-      this._isWebGL2 ||
-      this.queryExtensionObject<EXT_frag_depth>("EXT_frag_depth") !== undefined
-    );
+    return this._isWebGL2 || this.queryExtensionObject<EXT_frag_depth>("EXT_frag_depth") !== undefined;
   }
   public get supportsDisjointTimerQuery(): boolean {
     return (
-      (this._isWebGL2 &&
-        this.queryExtensionObject<any>("EXT_disjoint_timer_query_webgl2") !==
-          undefined) ||
+      (this._isWebGL2 && this.queryExtensionObject<any>("EXT_disjoint_timer_query_webgl2") !== undefined) ||
       this.queryExtensionObject<any>("EXT_disjoint_timer_query") !== undefined
     );
   }
   public get supportsStandardDerivatives(): boolean {
     return (
-      this._isWebGL2 ||
-      this.queryExtensionObject<OES_standard_derivatives>(
-        "OES_standard_derivatives"
-      ) !== undefined
+      this._isWebGL2 || this.queryExtensionObject<OES_standard_derivatives>("OES_standard_derivatives") !== undefined
     );
   }
 
@@ -348,8 +297,7 @@ export class Capabilities {
   private _findMissingFeatures(featuresToSeek: WebGLFeature[]): WebGLFeature[] {
     const missingFeatures: WebGLFeature[] = [];
     for (const featureName of featuresToSeek) {
-      if (-1 === this._presentFeatures.indexOf(featureName))
-        missingFeatures.push(featureName);
+      if (-1 === this._presentFeatures.indexOf(featureName)) missingFeatures.push(featureName);
     }
     return missingFeatures;
   }
@@ -359,36 +307,23 @@ export class Capabilities {
     const features: WebGLFeature[] = [];
 
     // simply check for presence of various extensions if that gives enough information
-    if (
-      this._isWebGL2 ||
-      this._extensionMap["OES_element_index_uint" as WebGLExtensionName] !==
-        undefined
-    )
+    if (this._isWebGL2 || this._extensionMap["OES_element_index_uint" as WebGLExtensionName] !== undefined)
       features.push(WebGLFeature.UintElementIndex);
-    if (
-      this._isWebGL2 ||
-      this._extensionMap["ANGLE_instanced_arrays" as WebGLExtensionName] !==
-        undefined
-    )
+    if (this._isWebGL2 || this._extensionMap["ANGLE_instanced_arrays" as WebGLExtensionName] !== undefined)
       features.push(WebGLFeature.Instancing);
 
-    if (this.supportsMRTTransparency)
-      features.push(WebGLFeature.MrtTransparency);
+    if (this.supportsMRTTransparency) features.push(WebGLFeature.MrtTransparency);
     if (this.supportsMRTPickShaders) features.push(WebGLFeature.MrtPick);
     if (this.supportsShadowMaps) features.push(WebGLFeature.ShadowMaps);
-    if (this._hasRequiredTextureUnits)
-      features.push(WebGLFeature.MinimalTextureUnits);
+    if (this._hasRequiredTextureUnits) features.push(WebGLFeature.MinimalTextureUnits);
     if (this.supportsFragDepth) features.push(WebGLFeature.FragDepth);
-    if (this.supportsStandardDerivatives)
-      features.push(WebGLFeature.StandardDerivatives);
+    if (this.supportsStandardDerivatives) features.push(WebGLFeature.StandardDerivatives);
     if (this.supportsAntiAliasing) features.push(WebGLFeature.AntiAliasing);
 
-    if (DepthType.TextureUnsignedInt24Stencil8 === this._maxDepthType)
-      features.push(WebGLFeature.DepthTexture);
+    if (DepthType.TextureUnsignedInt24Stencil8 === this._maxDepthType) features.push(WebGLFeature.DepthTexture);
 
     // check if at least half-float rendering is available based on maximum discovered renderable target
-    if (RenderType.TextureUnsignedByte !== this._maxRenderType)
-      features.push(WebGLFeature.FloatRendering);
+    if (RenderType.TextureUnsignedByte !== this._maxRenderType) features.push(WebGLFeature.FloatRendering);
 
     return features;
   }
@@ -398,66 +333,40 @@ export class Capabilities {
     missingRequiredFeatures: WebGLFeature[],
     missingOptionalFeatures: WebGLFeature[]
   ): WebGLRenderCompatibilityStatus {
-    let status: WebGLRenderCompatibilityStatus =
-      WebGLRenderCompatibilityStatus.AllOkay;
-    if (missingOptionalFeatures.length > 0)
-      status = WebGLRenderCompatibilityStatus.MissingOptionalFeatures;
-    if (missingRequiredFeatures.length > 0)
-      status = WebGLRenderCompatibilityStatus.MissingRequiredFeatures;
+    let status: WebGLRenderCompatibilityStatus = WebGLRenderCompatibilityStatus.AllOkay;
+    if (missingOptionalFeatures.length > 0) status = WebGLRenderCompatibilityStatus.MissingOptionalFeatures;
+    if (missingRequiredFeatures.length > 0) status = WebGLRenderCompatibilityStatus.MissingRequiredFeatures;
     return status;
   }
 
   /** Initializes the capabilities based on a GL context. Must be called first. */
-  public init(
-    gl: WebGLContext,
-    disabledExtensions?: WebGLExtensionName[]
-  ): WebGLRenderCompatibilityInfo {
+  public init(gl: WebGLContext, disabledExtensions?: WebGLExtensionName[]): WebGLRenderCompatibilityInfo {
     const gl2 = !(gl instanceof WebGLRenderingContext) ? gl : undefined;
     this._isWebGL2 = undefined !== gl2;
 
     this._isMobile = ProcessDetector.isMobileBrowser;
 
     const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
-    const unmaskedRenderer =
-      debugInfo !== null
-        ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
-        : undefined;
-    const unmaskedVendor =
-      debugInfo !== null
-        ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL)
-        : undefined;
+    const unmaskedRenderer = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : undefined;
+    const unmaskedVendor = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : undefined;
 
     this._driverBugs = {};
-    if (
-      unmaskedRenderer &&
-      buggyIntelMatchers.some((x) => x.test(unmaskedRenderer))
-    )
+    if (unmaskedRenderer && buggyIntelMatchers.some((x) => x.test(unmaskedRenderer)))
       this._driverBugs.fragDepthDoesNotDisableEarlyZ = true;
 
-    if (
-      unmaskedRenderer &&
-      buggyMaliMatchers.some((x) => x.test(unmaskedRenderer))
-    )
+    if (unmaskedRenderer && buggyMaliMatchers.some((x) => x.test(unmaskedRenderer)))
       this._driverBugs.msaaWillHang = true;
 
     this._maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
     this._supportsCreateImageBitmap =
-      typeof createImageBitmap === "function" &&
-      ProcessDetector.isChromium &&
-      !ProcessDetector.isIOSBrowser;
+      typeof createImageBitmap === "function" && ProcessDetector.isChromium && !ProcessDetector.isIOSBrowser;
     this._maxTexSizeAllow = Math.min(this._maxTextureSize, maxTexSizeAllowed);
     this._maxFragTextureUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
-    this._maxVertTextureUnits = gl.getParameter(
-      gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS
-    );
+    this._maxVertTextureUnits = gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
     this._maxVertAttribs = gl.getParameter(gl.MAX_VERTEX_ATTRIBS);
-    this._maxVertUniformVectors = gl.getParameter(
-      gl.MAX_VERTEX_UNIFORM_VECTORS
-    );
+    this._maxVertUniformVectors = gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS);
     this._maxVaryingVectors = gl.getParameter(gl.MAX_VARYING_VECTORS);
-    this._maxFragUniformVectors = gl.getParameter(
-      gl.MAX_FRAGMENT_UNIFORM_VECTORS
-    );
+    this._maxFragUniformVectors = gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS);
     this._maxAntialiasSamples = this._driverBugs.msaaWillHang
       ? 1
       : this._isWebGL2 && undefined !== gl2
@@ -469,11 +378,7 @@ export class Capabilities {
       for (const extStr of extensions) {
         const ext = extStr as WebGLExtensionName;
         if (-1 === knownExtensions.indexOf(ext)) continue;
-        else if (
-          undefined !== disabledExtensions &&
-          -1 !== disabledExtensions.indexOf(ext)
-        )
-          continue;
+        else if (undefined !== disabledExtensions && -1 !== disabledExtensions.indexOf(ext)) continue;
 
         const extObj: any = gl.getExtension(ext); // This call enables the extension and returns a WebGLObject containing extension instance.
         if (null !== extObj) this._extensionMap[ext] = extObj;
@@ -484,20 +389,14 @@ export class Capabilities {
       this._maxColorAttachments = gl.getParameter(gl2.MAX_COLOR_ATTACHMENTS);
       this._maxDrawBuffers = gl.getParameter(gl2.MAX_DRAW_BUFFERS);
     } else {
-      const dbExt: WEBGL_draw_buffers | undefined =
-        this.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
-      this._maxColorAttachments =
-        dbExt !== undefined
-          ? gl.getParameter(dbExt.MAX_COLOR_ATTACHMENTS_WEBGL)
-          : 1;
-      this._maxDrawBuffers =
-        dbExt !== undefined ? gl.getParameter(dbExt.MAX_DRAW_BUFFERS_WEBGL) : 1;
+      const dbExt: WEBGL_draw_buffers | undefined = this.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
+      this._maxColorAttachments = dbExt !== undefined ? gl.getParameter(dbExt.MAX_COLOR_ATTACHMENTS_WEBGL) : 1;
+      this._maxDrawBuffers = dbExt !== undefined ? gl.getParameter(dbExt.MAX_DRAW_BUFFERS_WEBGL) : 1;
     }
 
     // Determine the maximum color-renderable attachment type.
     const allowFloatRender =
-      (undefined === disabledExtensions ||
-        -1 === disabledExtensions.indexOf("OES_texture_float")) &&
+      (undefined === disabledExtensions || -1 === disabledExtensions.indexOf("OES_texture_float")) &&
       // iOS>=15 allows full-float rendering. However, it does not actually work on non-M1 devices.
       // Because of this, for now we disallow full float rendering on iOS devices.
       // ###TODO: Re-assess this after future iOS updates.
@@ -517,20 +416,14 @@ export class Capabilities {
     ) {
       this._maxRenderType = RenderType.TextureFloat;
     } else if (this.isWebGL2) {
-      this._maxRenderType = this.isTextureRenderable(
-        gl,
-        (gl as WebGL2RenderingContext).HALF_FLOAT
-      )
+      this._maxRenderType = this.isTextureRenderable(gl, (gl as WebGL2RenderingContext).HALF_FLOAT)
         ? RenderType.TextureHalfFloat
         : RenderType.TextureUnsignedByte;
     } else {
       const hfExt: OES_texture_half_float | undefined =
-        this.queryExtensionObject<OES_texture_half_float>(
-          "OES_texture_half_float"
-        );
+        this.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float");
       this._maxRenderType =
-        hfExt !== undefined &&
-        this.isTextureRenderable(gl, hfExt.HALF_FLOAT_OES)
+        hfExt !== undefined && this.isTextureRenderable(gl, hfExt.HALF_FLOAT_OES)
           ? RenderType.TextureHalfFloat
           : RenderType.TextureUnsignedByte;
     }
@@ -538,24 +431,16 @@ export class Capabilities {
     // Determine the maximum depth attachment type.
     // this._maxDepthType = this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt32 : DepthType.RenderBufferUnsignedShort16;
     this._maxDepthType =
-      this._isWebGL2 ||
-      this.queryExtensionObject("WEBGL_depth_texture") !== undefined
+      this._isWebGL2 || this.queryExtensionObject("WEBGL_depth_texture") !== undefined
         ? DepthType.TextureUnsignedInt24Stencil8
         : DepthType.RenderBufferUnsignedShort16;
 
     this._presentFeatures = this._gatherFeatures();
-    const missingRequiredFeatures = this._findMissingFeatures(
-      Capabilities.requiredFeatures
-    );
-    const missingOptionalFeatures = this._findMissingFeatures(
-      Capabilities.optionalFeatures
-    );
+    const missingRequiredFeatures = this._findMissingFeatures(Capabilities.requiredFeatures);
+    const missingOptionalFeatures = this._findMissingFeatures(Capabilities.optionalFeatures);
 
     return {
-      status: this._getCompatibilityStatus(
-        missingRequiredFeatures,
-        missingOptionalFeatures
-      ),
+      status: this._getCompatibilityStatus(missingRequiredFeatures, missingOptionalFeatures),
       missingRequiredFeatures,
       missingOptionalFeatures,
       unmaskedRenderer,
@@ -570,17 +455,12 @@ export class Capabilities {
     };
   }
 
-  public static create(
-    gl: WebGLContext,
-    disabledExtensions?: WebGLExtensionName[]
-  ): Capabilities | undefined {
+  public static create(gl: WebGLContext, disabledExtensions?: WebGLExtensionName[]): Capabilities | undefined {
     const caps = new Capabilities();
     const compatibility = caps.init(gl, disabledExtensions);
     if (
-      WebGLRenderCompatibilityStatus.CannotCreateContext ===
-        compatibility.status ||
-      WebGLRenderCompatibilityStatus.MissingRequiredFeatures ===
-        compatibility.status
+      WebGLRenderCompatibilityStatus.CannotCreateContext === compatibility.status ||
+      WebGLRenderCompatibilityStatus.MissingRequiredFeatures === compatibility.status
     )
       return undefined;
     return caps;
@@ -592,41 +472,13 @@ export class Capabilities {
     gl.bindTexture(gl.TEXTURE_2D, tex);
     if (this.isWebGL2) {
       if (gl.FLOAT === texType)
-        gl.texImage2D(
-          gl.TEXTURE_2D,
-          0,
-          (gl as WebGL2RenderingContext).RGBA32F,
-          1,
-          1,
-          0,
-          gl.RGBA,
-          texType,
-          null
-        );
-      else
-        gl.texImage2D(
-          gl.TEXTURE_2D,
-          0,
-          (gl as WebGL2RenderingContext).RGBA16F,
-          1,
-          1,
-          0,
-          gl.RGBA,
-          texType,
-          null
-        );
-    } else
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, texType, null);
+        gl.texImage2D(gl.TEXTURE_2D, 0, (gl as WebGL2RenderingContext).RGBA32F, 1, 1, 0, gl.RGBA, texType, null);
+      else gl.texImage2D(gl.TEXTURE_2D, 0, (gl as WebGL2RenderingContext).RGBA16F, 1, 1, 0, gl.RGBA, texType, null);
+    } else gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, texType, null);
 
     const fb: WebGLFramebuffer | null = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-    gl.framebufferTexture2D(
-      gl.FRAMEBUFFER,
-      gl.COLOR_ATTACHMENT0,
-      gl.TEXTURE_2D,
-      tex,
-      0
-    );
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
 
     const fbStatus: number = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -638,24 +490,14 @@ export class Capabilities {
     return fbStatus === gl.FRAMEBUFFER_COMPLETE;
   }
 
-  public setMaxAnisotropy(
-    desiredMax: number | undefined,
-    gl: WebGLContext
-  ): void {
-    const ext = this.queryExtensionObject<EXT_texture_filter_anisotropic>(
-      "EXT_texture_filter_anisotropic"
-    );
+  public setMaxAnisotropy(desiredMax: number | undefined, gl: WebGLContext): void {
+    const ext = this.queryExtensionObject<EXT_texture_filter_anisotropic>("EXT_texture_filter_anisotropic");
     if (undefined === ext) return;
 
     if (undefined === this._maxAnisotropy)
-      this._maxAnisotropy = gl.getParameter(
-        ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT
-      ) as number;
+      this._maxAnisotropy = gl.getParameter(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT) as number;
 
-    const max =
-      undefined !== desiredMax
-        ? Math.min(desiredMax, this._maxAnisotropy)
-        : this._maxAnisotropy;
+    const max = undefined !== desiredMax ? Math.min(desiredMax, this._maxAnisotropy) : this._maxAnisotropy;
     gl.texParameterf(gl.TEXTURE_2D, ext.TEXTURE_MAX_ANISOTROPY_EXT, max);
   }
 }

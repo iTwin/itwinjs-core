@@ -3,29 +3,17 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import {
-  FrustumUniforms,
-  FrustumUniformType,
-} from "../../../render/webgl/FrustumUniforms";
+import { FrustumUniforms, FrustumUniformType } from "../../../render/webgl/FrustumUniforms";
 
 class TestUniforms extends FrustumUniforms {
   public constructor() {
     super();
   }
 
-  public testSetPlanes(
-    top: number,
-    bottom: number,
-    left: number,
-    right: number
-  ): void {
+  public testSetPlanes(top: number, bottom: number, left: number, right: number): void {
     this.setPlanes(top, bottom, left, right);
   }
-  public testSetFrustum(
-    nearPlane: number,
-    farPlane: number,
-    type: FrustumUniformType
-  ): void {
+  public testSetFrustum(nearPlane: number, farPlane: number, type: FrustumUniformType): void {
     this.setFrustum(nearPlane, farPlane, type);
   }
 }

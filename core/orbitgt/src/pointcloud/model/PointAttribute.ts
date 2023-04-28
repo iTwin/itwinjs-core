@@ -51,12 +51,7 @@ export class PointAttribute {
    * @param type the type of the attribute.
    * @param default value the default value of the attribute (use null to create a default value).
    */
-  public constructor(
-    name: string,
-    description: string,
-    type: int32,
-    defaultValue: AttributeValue
-  ) {
+  public constructor(name: string, description: string, type: int32, defaultValue: AttributeValue) {
     if (defaultValue == null) defaultValue = AttributeValue.createDefault(type);
     ASystem.assert0(
       defaultValue.getType() == type,
@@ -186,12 +181,7 @@ export class PointAttribute {
    * @return the copy.
    */
   public setDescription(description: string): PointAttribute {
-    return new PointAttribute(
-      this._name,
-      description,
-      this._type,
-      this._defaultValue
-    );
+    return new PointAttribute(this._name, description, this._type, this._defaultValue);
   }
 
   /**
@@ -268,13 +258,9 @@ export class PointAttribute {
    * @param attributeType the type of attributes.
    * @param attributeCount the number of attributes.
    */
-  public static getByteSize(
-    attributeType: int32,
-    attributeCount: int32
-  ): int32 {
+  public static getByteSize(attributeType: int32, attributeCount: int32): int32 {
     if (attributeCount <= 0) return 0;
-    if (attributeType == AttributeTypes.TYPE_BOOLEAN)
-      return ((attributeCount - 1) >> 3) + 1;
+    if (attributeType == AttributeTypes.TYPE_BOOLEAN) return ((attributeCount - 1) >> 3) + 1;
     if (attributeType == AttributeTypes.TYPE_INT1) return attributeCount;
     if (attributeType == AttributeTypes.TYPE_INT2) return attributeCount << 1;
     if (attributeType == AttributeTypes.TYPE_INT4) return attributeCount << 2;
@@ -290,27 +276,16 @@ export class PointAttribute {
    * @param attributeType the type of attributes.
    * @param attributeCount the number of attributes.
    */
-  public static getByteSizeForCount(
-    attributeType: int32,
-    attributeCount: ALong
-  ): ALong {
+  public static getByteSizeForCount(attributeType: int32, attributeCount: ALong): ALong {
     if (attributeCount.isPositive() == false) return ALong.ZERO;
-    if (attributeType == AttributeTypes.TYPE_BOOLEAN)
-      return attributeCount.subInt(1).divInt(8).addInt(1);
-    if (attributeType == AttributeTypes.TYPE_INT1)
-      return attributeCount.mulInt(1);
-    if (attributeType == AttributeTypes.TYPE_INT2)
-      return attributeCount.mulInt(2);
-    if (attributeType == AttributeTypes.TYPE_INT4)
-      return attributeCount.mulInt(4);
-    if (attributeType == AttributeTypes.TYPE_INT8)
-      return attributeCount.mulInt(8);
-    if (attributeType == AttributeTypes.TYPE_FLOAT4)
-      return attributeCount.mulInt(4);
-    if (attributeType == AttributeTypes.TYPE_FLOAT8)
-      return attributeCount.mulInt(8);
-    if (attributeType == AttributeTypes.TYPE_COLOR)
-      return attributeCount.mulInt(3);
+    if (attributeType == AttributeTypes.TYPE_BOOLEAN) return attributeCount.subInt(1).divInt(8).addInt(1);
+    if (attributeType == AttributeTypes.TYPE_INT1) return attributeCount.mulInt(1);
+    if (attributeType == AttributeTypes.TYPE_INT2) return attributeCount.mulInt(2);
+    if (attributeType == AttributeTypes.TYPE_INT4) return attributeCount.mulInt(4);
+    if (attributeType == AttributeTypes.TYPE_INT8) return attributeCount.mulInt(8);
+    if (attributeType == AttributeTypes.TYPE_FLOAT4) return attributeCount.mulInt(4);
+    if (attributeType == AttributeTypes.TYPE_FLOAT8) return attributeCount.mulInt(8);
+    if (attributeType == AttributeTypes.TYPE_COLOR) return attributeCount.mulInt(3);
     return ALong.ZERO;
   }
 
@@ -320,14 +295,10 @@ export class PointAttribute {
    * @param attributeName the name of an attribute.
    * @return the index (negative if not found).
    */
-  public static indexOfName(
-    attributes: Array<PointAttribute>,
-    attributeName: string
-  ): int32 {
+  public static indexOfName(attributes: Array<PointAttribute>, attributeName: string): int32 {
     if (attributes == null) return -1;
     if (attributeName == null) return -1;
-    for (let i: number = 0; i < attributes.length; i++)
-      if (attributes[i].hasName(attributeName)) return i;
+    for (let i: number = 0; i < attributes.length; i++) if (attributes[i].hasName(attributeName)) return i;
     return -1;
   }
 
@@ -337,14 +308,10 @@ export class PointAttribute {
    * @param attribute the definition of an attribute.
    * @return the index (negative if not found).
    */
-  public static indexOf(
-    attributes: Array<PointAttribute>,
-    attribute: PointAttribute
-  ): int32 {
+  public static indexOf(attributes: Array<PointAttribute>, attribute: PointAttribute): int32 {
     if (attributes == null) return -1;
     if (attribute == null) return -1;
-    for (let i: number = 0; i < attributes.length; i++)
-      if (attributes[i].hasName(attribute.getName())) return i;
+    for (let i: number = 0; i < attributes.length; i++) if (attributes[i].hasName(attribute.getName())) return i;
     return -1;
   }
 
@@ -354,10 +321,7 @@ export class PointAttribute {
    * @param attributeName the name of an attribute.
    * @return true if found.
    */
-  public static hasAttributeName(
-    attributes: Array<PointAttribute>,
-    attributeName: string
-  ): boolean {
+  public static hasAttributeName(attributes: Array<PointAttribute>, attributeName: string): boolean {
     return PointAttribute.indexOfName(attributes, attributeName) >= 0;
   }
 
@@ -367,10 +331,7 @@ export class PointAttribute {
    * @param attribute the definition of an attribute.
    * @return true if found.
    */
-  public static hasAttribute(
-    attributes: Array<PointAttribute>,
-    attribute: PointAttribute
-  ): boolean {
+  public static hasAttribute(attributes: Array<PointAttribute>, attribute: PointAttribute): boolean {
     return PointAttribute.indexOf(attributes, attribute) >= 0;
   }
 
@@ -380,14 +341,10 @@ export class PointAttribute {
    * @param attributeName the name of an attribute.
    * @return the index (negative if not found).
    */
-  public static listIndexOfName(
-    attributes: AList<PointAttribute>,
-    attributeName: string
-  ): int32 {
+  public static listIndexOfName(attributes: AList<PointAttribute>, attributeName: string): int32 {
     if (attributes == null) return -1;
     if (attributeName == null) return -1;
-    for (let i: number = 0; i < attributes.size(); i++)
-      if (attributes.get(i).hasName(attributeName)) return i;
+    for (let i: number = 0; i < attributes.size(); i++) if (attributes.get(i).hasName(attributeName)) return i;
     return -1;
   }
 
@@ -397,14 +354,10 @@ export class PointAttribute {
    * @param attribute the definition of an attribute.
    * @return the index (negative if not found).
    */
-  public static listIndexOf(
-    attributes: AList<PointAttribute>,
-    attribute: PointAttribute
-  ): int32 {
+  public static listIndexOf(attributes: AList<PointAttribute>, attribute: PointAttribute): int32 {
     if (attributes == null) return -1;
     if (attribute == null) return -1;
-    for (let i: number = 0; i < attributes.size(); i++)
-      if (attributes.get(i).hasName(attribute.getName())) return i;
+    for (let i: number = 0; i < attributes.size(); i++) if (attributes.get(i).hasName(attribute.getName())) return i;
     return -1;
   }
 
@@ -414,10 +367,7 @@ export class PointAttribute {
    * @param attributeName the name of an attribute.
    * @return true if found.
    */
-  public static listHasAttributeName(
-    attributes: AList<PointAttribute>,
-    attributeName: string
-  ): boolean {
+  public static listHasAttributeName(attributes: AList<PointAttribute>, attributeName: string): boolean {
     return PointAttribute.listIndexOfName(attributes, attributeName) >= 0;
   }
 
@@ -427,10 +377,7 @@ export class PointAttribute {
    * @param attribute the definition of an attribute.
    * @return true if found.
    */
-  public static listHasAttribute(
-    attributes: AList<PointAttribute>,
-    attribute: PointAttribute
-  ): boolean {
+  public static listHasAttribute(attributes: AList<PointAttribute>, attribute: PointAttribute): boolean {
     return PointAttribute.listIndexOf(attributes, attribute) >= 0;
   }
 }

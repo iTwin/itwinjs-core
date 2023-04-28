@@ -6,12 +6,7 @@
 const fs = require("fs");
 const path = require("path");
 const { spawn } = require("child_process");
-const {
-  logBuildError,
-  logBuildWarning,
-  failBuild,
-  throwAfterTimeout,
-} = require("./utils");
+const { logBuildError, logBuildWarning, failBuild, throwAfterTimeout } = require("./utils");
 
 const rushCommonDir = path.join(__dirname, "../../../../common/");
 
@@ -37,9 +32,7 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
 
   if (jsonOut.error) {
     console.error(jsonOut.error.summary);
-    logBuildWarning(
-      "Rush audit failed. This may be caused by a problem with the npm audit server."
-    );
+    logBuildWarning("Rush audit failed. This may be caused by a problem with the npm audit server.");
   }
 
   // A list of temporary advisories excluded from the High and Critical list.
@@ -70,18 +63,14 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
       ) {
         logBuildError(message);
         shouldFailBuild = true;
-      } else if (
-        excludedAdvisories.includes(advisory.github_advisory_id) ||
-        severity === "MODERATE"
-      )
+      } else if (excludedAdvisories.includes(advisory.github_advisory_id) || severity === "MODERATE")
         // Only warn on MODERATE severity items
         logBuildWarning(message);
     }
   }
 
   // For some reason yarn audit can return the json without the vulnerabilities
-  if (undefined === jsonOut.metadata.vulnerabilities || shouldFailBuild)
-    failBuild();
+  if (undefined === jsonOut.metadata.vulnerabilities || shouldFailBuild) failBuild();
 
   process.exit();
 })();
@@ -90,16 +79,10 @@ function runPnpmAuditAsync(cwd) {
   return new Promise((resolve, reject) => {
     // pnpm audit requires a package.json file so we temporarily create one and
     // then delete it later
-    fs.writeFileSync(
-      path.join(rushCommonDir, "config/rush/package.json"),
-      JSON.stringify("{}", null, 2)
-    );
+    fs.writeFileSync(path.join(rushCommonDir, "config/rush/package.json"), JSON.stringify("{}", null, 2));
 
     console.log("Running audit");
-    const pnpmPath = path.join(
-      rushCommonDir,
-      "temp/pnpm-local/node_modules/.bin/pnpm"
-    );
+    const pnpmPath = path.join(rushCommonDir, "temp/pnpm-local/node_modules/.bin/pnpm");
     const child = spawn(pnpmPath, ["audit", "--json"], { cwd, shell: true });
 
     let stdout = "";

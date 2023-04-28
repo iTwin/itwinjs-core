@@ -33,8 +33,7 @@ export class UnexpectedErrors {
   /** handler for logging exception to console */
   public static readonly consoleLog = (e: any) => console.error(e); // eslint-disable-line no-console
   /** handler for logging exception with [[Logger]] */
-  public static readonly errorLog = (e: any) =>
-    Logger.logException("unhandled", e);
+  public static readonly errorLog = (e: any) => Logger.logException("unhandled", e);
 
   private static _telemetry: OnUnexpectedError[] = [];
   private static _handler = this.errorLog; // default to error logging

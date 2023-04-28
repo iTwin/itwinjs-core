@@ -120,8 +120,7 @@ export class TerrainSettings {
 
   public toJSON(): TerrainProps {
     const props: TerrainProps = { heightOriginMode: this.heightOriginMode };
-    if ("CesiumWorldTerrain" !== this.providerName)
-      props.providerName = this.providerName;
+    if ("CesiumWorldTerrain" !== this.providerName) props.providerName = this.providerName;
     if (1 !== this.exaggeration) props.exaggeration = this.exaggeration;
     if (this.nonLocatable) props.nonLocatable = true;
     if (this.applyLighting) props.applyLighting = true;

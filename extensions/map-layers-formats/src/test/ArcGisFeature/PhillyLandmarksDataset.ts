@@ -245,8 +245,7 @@ export class PhillyLandmarksDataset {
               value: {
                 valueFormat: 0,
                 value: "Various high-crash roadway curves in District 6-0",
-                displayValue:
-                  "Various high-crash roadway curves in District 6-0",
+                displayValue: "Various high-crash roadway curves in District 6-0",
               },
               property: {
                 name: "GEOGRAPHIC_DESCRIPTION",
@@ -617,10 +616,8 @@ export class PhillyLandmarksDataset {
             {
               value: {
                 valueFormat: 0,
-                value:
-                  "Delaware Valley Regional Planning Commission MPO                           ",
-                displayValue:
-                  "Delaware Valley Regional Planning Commission MPO                           ",
+                value: "Delaware Valley Regional Planning Commission MPO                           ",
+                displayValue: "Delaware Valley Regional Planning Commission MPO                           ",
               },
               property: {
                 name: "PLANNING_PARTNER_NAME",
@@ -2354,8 +2351,7 @@ export class PhillyLandmarksDataset {
           PROJECT_TOTAL_LENGTH: 6.77,
           LOCAL_PROJECT_FLAG: "N",
           LET_RESPONSIBLE_AGENCY: null,
-          GEOGRAPHIC_DESCRIPTION:
-            "Various high-crash roadway curves in District 6-0",
+          GEOGRAPHIC_DESCRIPTION: "Various high-crash roadway curves in District 6-0",
           PROJECT_STATE_CODE: "CAND",
           PROJECT_STATUS_CODE_DESC: "Candidate",
           CODE_ID: 43,
@@ -2395,8 +2391,7 @@ export class PhillyLandmarksDataset {
           CAPITAL_BUDGET_YEAR: null,
           CAPTIAL_BUDGET_REQUIRED_FLAG: "Y",
           CAPITAL_BUDGET_APPROVED_FLAG: "N",
-          PLANNING_PARTNER_NAME:
-            "Delaware Valley Regional Planning Commission MPO                           ",
+          PLANNING_PARTNER_NAME: "Delaware Valley Regional Planning Commission MPO                           ",
           RESPONSIBLE_DISTRICT_NAME: "District 6-0                  ",
           RESPONSIBLE_COUNTY_CODE: 15,
           RESPONSIBLE_COUNTY_NAME: "Chester       ",
@@ -2669,10 +2664,9 @@ export class PhillyLandmarksDataset {
             geometry: {
               lengths: [24, 6],
               coords: [
-                398, 127, -7, -1, -18, -3, -7, -1, 0, -3, -12, -2, 1, -5, 1, -6,
-                -18, -3, -1, 0, 0, -1, 3, -15, 21, 3, 6, -39, 10, 2, 3, 0, 61,
-                11, -1, 6, -8, 43, -1, 6, -19, -4, -2, 12, -12, -2, 0, 2, 417,
-                109, 3, -16, -21, -3, -2, 15, 16, 3, 4, 1,
+                398, 127, -7, -1, -18, -3, -7, -1, 0, -3, -12, -2, 1, -5, 1, -6, -18, -3, -1, 0, 0, -1, 3, -15, 21, 3,
+                6, -39, 10, 2, 3, 0, 61, 11, -1, 6, -8, 43, -1, 6, -19, -4, -2, 12, -12, -2, 0, 2, 417, 109, 3, -16,
+                -21, -3, -2, 15, 16, 3, 4, 1,
               ],
             },
           },
@@ -2729,9 +2723,8 @@ export class PhillyLandmarksDataset {
             geometry: {
               lengths: [24],
               coords: [
-                360, 491, -2, -1, -1, 0, -1, 0, -1, 0, -1, 1, -4, 1, -10, 2,
-                -15, 3, -1, 0, -1, 0, -2, 0, -1, 0, -1, 0, -1, -1, -1, 0, -2,
-                -1, 0, -1, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0,
+                360, 491, -2, -1, -1, 0, -1, 0, -1, 0, -1, 1, -4, 1, -10, 2, -15, 3, -1, 0, -1, 0, -2, 0, -1, 0, -1, 0,
+                -1, -1, -1, 0, -2, -1, 0, -1, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0,
               ],
             },
           },
@@ -2842,9 +2835,8 @@ export class PhillyLandmarksDataset {
             geometry: {
               lengths: [22, 2],
               coords: [
-                360, 491, -2, -1, -1, 0, -1, 0, -1, 0, -1, 1, -4, 1, -10, 2,
-                -15, 3, -1, 0, -1, 0, -2, 0, -1, 0, -1, 0, -1, -1, -1, 0, -2,
-                -1, 0, -1, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0,
+                360, 491, -2, -1, -1, 0, -1, 0, -1, 0, -1, 1, -4, 1, -10, 2, -15, 3, -1, 0, -1, 0, -2, 0, -1, 0, -1, 0,
+                -1, -1, -1, 0, -2, -1, 0, -1, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0,
               ],
             },
           },
@@ -2946,9 +2938,7 @@ export class PhillyLandmarksDataset {
         },
         fields: [],
         values: [],
-        features: [
-          { attributes: [], geometry: { lengths: [], coords: [88, 488] } },
-        ],
+        features: [{ attributes: [], geometry: { lengths: [], coords: [88, 488] } }],
       },
     },
   };
@@ -2990,9 +2980,7 @@ export class PhillyLandmarksDataset {
         },
         fields: [],
         values: [],
-        features: [
-          { attributes: [], geometry: { lengths: [], coords: [88, 488] } },
-        ],
+        features: [{ attributes: [], geometry: { lengths: [], coords: [88, 488] } }],
       },
     },
   };

@@ -25,12 +25,7 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
       };
 
       this._statusBarItems = [
-        StatusBarItemUtilities.createStatusBarItem(
-          "ToolAssistance",
-          StatusBarSection.Left,
-          10,
-          <ToolAssistance />
-        ),
+        StatusBarItemUtilities.createStatusBarItem("ToolAssistance", StatusBarSection.Left, 10, <ToolAssistance />),
         StatusBarItemUtilities.createStatusBarItem(
           "ToolAssistanceSeparator",
           StatusBarSection.Left,
@@ -40,12 +35,7 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
             <StatusBarSeparator />{" "}
           </FooterMode>
         ),
-        StatusBarItemUtilities.createStatusBarItem(
-          "MessageCenter",
-          StatusBarSection.Left,
-          20,
-          <MessageCenter />
-        ),
+        StatusBarItemUtilities.createStatusBarItem("MessageCenter", StatusBarSection.Left, 20, <MessageCenter />),
         StatusBarItemUtilities.createStatusBarItem(
           "MessageCenterSeparator",
           StatusBarSection.Left,
@@ -55,24 +45,9 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
             <StatusBarSeparator />{" "}
           </FooterMode>
         ),
-        StatusBarItemUtilities.createStatusBarItem(
-          "DisplayStyle",
-          StatusBarSection.Center,
-          40,
-          <DisplayStyle />
-        ),
-        StatusBarItemUtilities.createStatusBarItem(
-          "ActivityCenter",
-          StatusBarSection.Center,
-          10,
-          <ActivityCenter />
-        ),
-        StatusBarItemUtilities.createStatusBarItem(
-          "ViewAttributes",
-          StatusBarSection.Center,
-          60,
-          <ViewAttributes />
-        ),
+        StatusBarItemUtilities.createStatusBarItem("DisplayStyle", StatusBarSection.Center, 40, <DisplayStyle />),
+        StatusBarItemUtilities.createStatusBarItem("ActivityCenter", StatusBarSection.Center, 10, <ActivityCenter />),
+        StatusBarItemUtilities.createStatusBarItem("ViewAttributes", StatusBarSection.Center, 60, <ViewAttributes />),
         StatusBarItemUtilities.createStatusBarItem(
           "Sections",
           StatusBarSection.Center,
@@ -85,31 +60,17 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
           40,
           <ClearEmphasis hideWhenUnused={true} />
         ),
-        StatusBarItemUtilities.createStatusBarItem(
-          "SnapMode",
-          StatusBarSection.Center,
-          30,
-          <SnapMode />,
-          { condition: snapCondition }
-        ),
+        StatusBarItemUtilities.createStatusBarItem("SnapMode", StatusBarSection.Center, 30, <SnapMode />, {
+          condition: snapCondition,
+        }),
         StatusBarItemUtilities.createStatusBarItem(
           "TileLoadIndicator",
           StatusBarSection.Right,
           10,
           <TileLoadIndicator />
         ),
-        StatusBarItemUtilities.createStatusBarItem(
-          "SelectionInfo",
-          StatusBarSection.Right,
-          30,
-          <SelectionInfo />
-        ),
-        StatusBarItemUtilities.createStatusBarItem(
-          "SelectionScope",
-          StatusBarSection.Right,
-          20,
-          <SelectionScope />
-        ),
+        StatusBarItemUtilities.createStatusBarItem("SelectionInfo", StatusBarSection.Right, 30, <SelectionInfo />),
+        StatusBarItemUtilities.createStatusBarItem("SelectionScope", StatusBarSection.Right, 20, <SelectionScope />),
       ];
     }
     return this._statusBarItems;
@@ -120,10 +81,7 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
   }
 }
 
-ConfigurableUiManager.registerControl(
-  "AppStatusBar",
-  AppStatusBarWidgetControl
-);
+ConfigurableUiManager.registerControl("AppStatusBar", AppStatusBarWidgetControl);
 ```
 
 ## API Reference

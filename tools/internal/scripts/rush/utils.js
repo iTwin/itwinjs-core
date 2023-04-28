@@ -3,14 +3,12 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 function logBuildWarning(msg) {
-  if (process.env.TF_BUILD)
-    console.error("##vso[task.logissue type=warning;]%s", msg);
+  if (process.env.TF_BUILD) console.error("##vso[task.logissue type=warning;]%s", msg);
   else console.error("WARNING: %s", msg);
 }
 
 function logBuildError(msg) {
-  if (process.env.TF_BUILD)
-    console.error("##vso[task.logissue type=error;]%s", msg);
+  if (process.env.TF_BUILD) console.error("##vso[task.logissue type=error;]%s", msg);
   else console.error("ERROR: %s", msg);
 }
 

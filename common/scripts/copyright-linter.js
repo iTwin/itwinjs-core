@@ -31,18 +31,13 @@ function getCopyrightBanner(useCRLF) {
 
 const longCopyright = "/?/[*](.|\n|\r\n)*?Copyright(.|\n|\r\n)*?[*]/(\n|\r\n)";
 const shortCopyright = "//\\s*Copyright.*\n";
-const oldCopyrightBanner = RegExp(
-  `^(${longCopyright})|(${shortCopyright})`,
-  "m"
-);
+const oldCopyrightBanner = RegExp(`^(${longCopyright})|(${shortCopyright})`, "m");
 
 if (filePaths) {
   filePaths.forEach((filePath) => {
     let fileContent = fs.readFileSync(filePath, { encoding: "utf8" });
     const lastNewlineIdx = fileContent.lastIndexOf("\n");
-    const copyrightBanner = getCopyrightBanner(
-      lastNewlineIdx > 0 && fileContent[lastNewlineIdx - 1] === "\r"
-    );
+    const copyrightBanner = getCopyrightBanner(lastNewlineIdx > 0 && fileContent[lastNewlineIdx - 1] === "\r");
 
     if (fileContent.startsWith(copyrightBanner)) return;
 

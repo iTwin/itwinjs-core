@@ -240,10 +240,7 @@ describe("DisplayValue", () => {
 
     it("returns valid array value", () => {
       // eslint-disable-next-line deprecation/deprecation
-      const v: DisplayValuesArrayJSON = [
-        faker.random.word(),
-        faker.random.word(),
-      ];
+      const v: DisplayValuesArrayJSON = [faker.random.word(), faker.random.word()];
       // eslint-disable-next-line deprecation/deprecation
       expect(DisplayValue.fromJSON(v)).to.deep.eq(v);
     });

@@ -13,22 +13,19 @@ describe("DisplayStyle", () => {
   let db: StandaloneDb;
 
   before(() => {
-    db = StandaloneDb.createEmpty(
-      IModelTestUtils.prepareOutputFile("DisplayStyle", "DisplayStyle.bim"),
-      {
-        rootSubject: {
-          name: "DisplayStyle tests",
-          description: "DisplayStyle tests",
-        },
-        client: "DisplayStyle",
-        globalOrigin: { x: 0, y: 0 },
-        projectExtents: {
-          low: { x: -500, y: -500, z: -50 },
-          high: { x: 500, y: 500, z: 50 },
-        },
-        guid: Guid.createValue(),
-      }
-    );
+    db = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("DisplayStyle", "DisplayStyle.bim"), {
+      rootSubject: {
+        name: "DisplayStyle tests",
+        description: "DisplayStyle tests",
+      },
+      client: "DisplayStyle",
+      globalOrigin: { x: 0, y: 0 },
+      projectExtents: {
+        low: { x: -500, y: -500, z: -50 },
+        high: { x: 500, y: 500, z: 50 },
+      },
+      guid: Guid.createValue(),
+    });
   });
 
   after(() => {

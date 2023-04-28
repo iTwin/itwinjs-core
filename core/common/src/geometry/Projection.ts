@@ -144,10 +144,8 @@ export class AffineTransform implements AffineTransformProps {
    *  @public */
   public equals(other: AffineTransform): boolean {
     return (
-      Math.abs(this.translationX - other.translationX) <
-        Geometry.smallMetricDistance &&
-      Math.abs(this.translationY - other.translationY) <
-        Geometry.smallMetricDistance &&
+      Math.abs(this.translationX - other.translationX) < Geometry.smallMetricDistance &&
+      Math.abs(this.translationY - other.translationY) < Geometry.smallMetricDistance &&
       Math.abs(this.a1 - other.a1) < Geometry.smallFraction &&
       Math.abs(this.b1 - other.b1) < Geometry.smallFraction &&
       Math.abs(this.a2 - other.a2) < Geometry.smallFraction &&
@@ -316,9 +314,7 @@ export class Projection implements ProjectionProps {
       this.scaleFactor = _data.scaleFactor;
       this.elevationAboveGeoid = _data.elevationAboveGeoid;
       this.geoidSeparation = _data.geoidSeparation;
-      this.affine = _data.affine
-        ? AffineTransform.fromJSON(_data.affine)
-        : undefined;
+      this.affine = _data.affine ? AffineTransform.fromJSON(_data.affine) : undefined;
       this.standardParallel = _data.standardParallel;
       this.standardParallel1 = _data.standardParallel1;
       this.standardParallel2 = _data.standardParallel2;
@@ -386,61 +382,21 @@ export class Projection implements ProjectionProps {
     // in the units of the projection which can be foot or US survey foot, they are still within the same order
     // of size that Geometry.smallMetricDistance can be used effectively.
     if (
-      !Geometry.isAlmostEqualOptional(
-        this.falseEasting,
-        other.falseEasting,
-        Geometry.smallMetricDistance
-      ) ||
-      !Geometry.isAlmostEqualOptional(
-        this.falseNorthing,
-        other.falseNorthing,
-        Geometry.smallMetricDistance
-      ) ||
-      !Geometry.isAlmostEqualOptional(
-        this.centralMeridian,
-        other.centralMeridian,
-        Geometry.smallAngleDegrees
-      ) ||
-      !Geometry.isAlmostEqualOptional(
-        this.latitudeOfOrigin,
-        other.latitudeOfOrigin,
-        Geometry.smallAngleDegrees
-      ) ||
-      !Geometry.isAlmostEqualOptional(
-        this.longitudeOfOrigin,
-        other.longitudeOfOrigin,
-        Geometry.smallAngleDegrees
-      ) ||
-      !Geometry.isAlmostEqualOptional(
-        this.scaleFactor,
-        other.scaleFactor,
-        Geometry.smallFraction
-      ) ||
+      !Geometry.isAlmostEqualOptional(this.falseEasting, other.falseEasting, Geometry.smallMetricDistance) ||
+      !Geometry.isAlmostEqualOptional(this.falseNorthing, other.falseNorthing, Geometry.smallMetricDistance) ||
+      !Geometry.isAlmostEqualOptional(this.centralMeridian, other.centralMeridian, Geometry.smallAngleDegrees) ||
+      !Geometry.isAlmostEqualOptional(this.latitudeOfOrigin, other.latitudeOfOrigin, Geometry.smallAngleDegrees) ||
+      !Geometry.isAlmostEqualOptional(this.longitudeOfOrigin, other.longitudeOfOrigin, Geometry.smallAngleDegrees) ||
+      !Geometry.isAlmostEqualOptional(this.scaleFactor, other.scaleFactor, Geometry.smallFraction) ||
       !Geometry.isAlmostEqualOptional(
         this.elevationAboveGeoid,
         other.elevationAboveGeoid,
         Geometry.smallMetricDistance
       ) ||
-      !Geometry.isAlmostEqualOptional(
-        this.geoidSeparation,
-        other.geoidSeparation,
-        Geometry.smallMetricDistance
-      ) ||
-      !Geometry.isAlmostEqualOptional(
-        this.standardParallel,
-        other.standardParallel,
-        Geometry.smallAngleDegrees
-      ) ||
-      !Geometry.isAlmostEqualOptional(
-        this.standardParallel1,
-        other.standardParallel1,
-        Geometry.smallAngleDegrees
-      ) ||
-      !Geometry.isAlmostEqualOptional(
-        this.standardParallel2,
-        other.standardParallel2,
-        Geometry.smallAngleDegrees
-      ) ||
+      !Geometry.isAlmostEqualOptional(this.geoidSeparation, other.geoidSeparation, Geometry.smallMetricDistance) ||
+      !Geometry.isAlmostEqualOptional(this.standardParallel, other.standardParallel, Geometry.smallAngleDegrees) ||
+      !Geometry.isAlmostEqualOptional(this.standardParallel1, other.standardParallel1, Geometry.smallAngleDegrees) ||
+      !Geometry.isAlmostEqualOptional(this.standardParallel2, other.standardParallel2, Geometry.smallAngleDegrees) ||
       !Geometry.isAlmostEqualOptional(
         this.centralPointLongitude,
         other.centralPointLongitude,
@@ -451,31 +407,11 @@ export class Projection implements ProjectionProps {
         other.centralPointLatitude,
         Geometry.smallAngleDegrees
       ) ||
-      !Geometry.isAlmostEqualOptional(
-        this.point1Longitude,
-        other.point1Longitude,
-        Geometry.smallAngleDegrees
-      ) ||
-      !Geometry.isAlmostEqualOptional(
-        this.point1Latitude,
-        other.point1Latitude,
-        Geometry.smallAngleDegrees
-      ) ||
-      !Geometry.isAlmostEqualOptional(
-        this.point2Longitude,
-        other.point2Longitude,
-        Geometry.smallAngleDegrees
-      ) ||
-      !Geometry.isAlmostEqualOptional(
-        this.point2Latitude,
-        other.point2Latitude,
-        Geometry.smallAngleDegrees
-      ) ||
-      !Geometry.isAlmostEqualOptional(
-        this.azimuth,
-        other.azimuth,
-        Geometry.smallAngleDegrees
-      )
+      !Geometry.isAlmostEqualOptional(this.point1Longitude, other.point1Longitude, Geometry.smallAngleDegrees) ||
+      !Geometry.isAlmostEqualOptional(this.point1Latitude, other.point1Latitude, Geometry.smallAngleDegrees) ||
+      !Geometry.isAlmostEqualOptional(this.point2Longitude, other.point2Longitude, Geometry.smallAngleDegrees) ||
+      !Geometry.isAlmostEqualOptional(this.point2Latitude, other.point2Latitude, Geometry.smallAngleDegrees) ||
+      !Geometry.isAlmostEqualOptional(this.azimuth, other.azimuth, Geometry.smallAngleDegrees)
     )
       return false;
 
@@ -510,8 +446,7 @@ export class Carto2DDegrees implements Carto2DDegreesProps {
     return this._latitude;
   }
   public set latitude(newLatitude: number) {
-    if (newLatitude <= 90.0 && newLatitude >= -90.0)
-      this._latitude = newLatitude;
+    if (newLatitude <= 90.0 && newLatitude >= -90.0) this._latitude = newLatitude;
   }
   /** Longitude value in degrees */
   public longitude!: number;

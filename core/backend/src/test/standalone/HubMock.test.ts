@@ -47,18 +47,9 @@ describe("HubMock", () => {
     const statRev0 = IModelJsFs.lstatSync(version0);
     assert.equal(stat1?.size, statRev0?.size);
 
-    assert.equal(
-      2,
-      localHub.acquireNewBriefcaseId("user1", "user1 briefcase 1")
-    );
-    assert.equal(
-      3,
-      localHub.acquireNewBriefcaseId("user2", "user2 briefcase 1")
-    );
-    assert.equal(
-      4,
-      localHub.acquireNewBriefcaseId("user3", "user3 briefcase 1")
-    );
+    assert.equal(2, localHub.acquireNewBriefcaseId("user1", "user1 briefcase 1"));
+    assert.equal(3, localHub.acquireNewBriefcaseId("user2", "user2 briefcase 1"));
+    assert.equal(4, localHub.acquireNewBriefcaseId("user3", "user3 briefcase 1"));
 
     let briefcases = localHub.getBriefcases();
     assert.equal(briefcases.length, 3);
@@ -140,9 +131,7 @@ describe("HubMock", () => {
       pushDate: "",
       index: 0,
       userCreated: "user1",
-      pathname: IModelTestUtils.resolveAssetFile(
-        "CloneTest.01.00.00.ecschema.xml"
-      ),
+      pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.00.ecschema.xml"),
     };
     cs1.index = localHub.addChangeset(cs1); // first changeset
     const changesets1 = localHub.queryChangesets();
@@ -166,9 +155,7 @@ describe("HubMock", () => {
       pushDate: "",
       index: 0,
       userCreated: "user2",
-      pathname: IModelTestUtils.resolveAssetFile(
-        "CloneTest.01.00.01.ecschema.xml"
-      ),
+      pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.01.ecschema.xml"),
     };
     cs2.index = localHub.addChangeset(cs2); // second changeset, parent = cs1
     const changesets2 = localHub.queryChangesets();
@@ -199,9 +186,7 @@ describe("HubMock", () => {
     localHub.addNamedVersion({ versionName: version2, csIndex: cs2.index });
     assert.equal(localHub.findNamedVersion(version1).index, cs1.index);
     expect(() => localHub.findNamedVersion("not there")).throws("not found");
-    expect(() =>
-      localHub.addNamedVersion({ versionName: version2, csIndex: cs2.index })
-    ).throws("insert");
+    expect(() => localHub.addNamedVersion({ versionName: version2, csIndex: cs2.index })).throws("insert");
     localHub.deleteNamedVersion(version1);
     expect(() => localHub.findNamedVersion(version1)).throws("not found");
 
@@ -217,9 +202,7 @@ describe("HubMock", () => {
       pushDate: "",
       index: 0,
     };
-    expect(() => localHub.addChangeset(cs3)).throws(
-      "no briefcase with that id"
-    );
+    expect(() => localHub.addChangeset(cs3)).throws("no briefcase with that id");
     cs3.briefcaseId = 5;
     expect(() => localHub.addChangeset(cs3)).throws("can't insert");
     // now test for valid changeset id, but bad parentId
@@ -293,10 +276,7 @@ describe("HubMock", () => {
     assert.isTrue((lockStat as LockStatusShared).sharedBy.has(5));
 
     expect(() =>
-      localHub.acquireLock(
-        { ...lock1, state: LockState.Exclusive },
-        { briefcaseId: 6, changeset: { id: "cs1" } }
-      )
+      localHub.acquireLock({ ...lock1, state: LockState.Exclusive }, { briefcaseId: 6, changeset: { id: "cs1" } })
     )
       .to.throw("shared lock is held")
       .include({ briefcaseId: 3, briefcaseAlias: "user2 briefcase 1" });
@@ -333,17 +313,10 @@ describe("HubMock", () => {
     localHub.acquireLock(lock1, { briefcaseId: 6, changeset: cs1 });
     assert.equal(localHub.countSharedLocks(), 0);
     assert.equal(localHub.countLocks(), 1);
-    expect(() =>
-      localHub.acquireLock(lock1, { briefcaseId: 5, changeset: cs1 })
-    )
+    expect(() => localHub.acquireLock(lock1, { briefcaseId: 5, changeset: cs1 }))
       .to.throw("exclusive lock is already held")
       .include({ briefcaseId: 6, briefcaseAlias: "alias for 5" });
-    expect(() =>
-      localHub.acquireLock(
-        { ...lock1, state: LockState.Shared },
-        { briefcaseId: 5, changeset: cs1 }
-      )
-    )
+    expect(() => localHub.acquireLock({ ...lock1, state: LockState.Shared }, { briefcaseId: 5, changeset: cs1 }))
       .to.throw("exclusive lock is already held")
       .include({ briefcaseId: 6, briefcaseAlias: "alias for 5" });
     localHub.releaseLocks([lock1], {
@@ -355,36 +328,22 @@ describe("HubMock", () => {
     assert.equal(lockStat.state, LockState.None);
     assert.equal(lockStat.lastCsIndex, cs2.index);
 
-    expect(() =>
-      localHub.acquireLock(lock1, { briefcaseId: 5, changeset: cs1 })
-    ).to.throw("pull is required");
+    expect(() => localHub.acquireLock(lock1, { briefcaseId: 5, changeset: cs1 })).to.throw("pull is required");
     localHub.acquireLock(lock1, { briefcaseId: 5, changeset: cs2 });
     lockStat = localHub.queryLockStatus(lock1.id);
     assert.equal(lockStat.state, LockState.Exclusive);
     assert.equal((lockStat as LockStatusExclusive).briefcaseId, 5);
     assert.equal(lockStat.lastCsIndex, cs2.index);
 
-    localHub.acquireLock(
-      { state: LockState.Exclusive, id: "0x22" },
-      { briefcaseId: 5, changeset: cs1 }
-    );
+    localHub.acquireLock({ state: LockState.Exclusive, id: "0x22" }, { briefcaseId: 5, changeset: cs1 });
     lockStat = localHub.queryLockStatus("0x22");
     assert.equal(lockStat.state, LockState.Exclusive);
     assert.equal((lockStat as LockStatusExclusive).briefcaseId, 5);
     assert.isUndefined(lockStat.lastCsIndex);
 
-    localHub.acquireLock(
-      { state: LockState.Exclusive, id: "0x23" },
-      { briefcaseId: 6, changeset: cs1 }
-    );
-    localHub.acquireLock(
-      { state: LockState.Shared, id: "0x24" },
-      { briefcaseId: 6, changeset: cs1 }
-    );
-    localHub.acquireLock(
-      { state: LockState.Shared, id: "0x24" },
-      { briefcaseId: 5, changeset: cs1 }
-    );
+    localHub.acquireLock({ state: LockState.Exclusive, id: "0x23" }, { briefcaseId: 6, changeset: cs1 });
+    localHub.acquireLock({ state: LockState.Shared, id: "0x24" }, { briefcaseId: 6, changeset: cs1 });
+    localHub.acquireLock({ state: LockState.Shared, id: "0x24" }, { briefcaseId: 5, changeset: cs1 });
 
     let locks = localHub.queryAllLocks(5);
     assert.equal(locks.length, 3);
@@ -428,9 +387,7 @@ describe("HubMock", () => {
       pushDate: "",
       index: 0,
       userCreated: "user1",
-      pathname: IModelTestUtils.resolveAssetFile(
-        "CloneTest.01.00.00.ecschema.xml"
-      ),
+      pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.00.ecschema.xml"),
     };
     const cs2: ChangesetFileProps = {
       id: "changeset1",
@@ -441,9 +398,7 @@ describe("HubMock", () => {
       pushDate: "",
       index: 0,
       userCreated: "user2",
-      pathname: IModelTestUtils.resolveAssetFile(
-        "CloneTest.01.00.01.ecschema.xml"
-      ),
+      pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.01.ecschema.xml"),
     };
     cs1.index = localHub.addChangeset(cs1);
     cs2.index = localHub.addChangeset(cs2);
@@ -476,10 +431,7 @@ describe("HubMock", () => {
       progressCallback,
     });
     previousReport = { downloaded: 0, total: 0 };
-    const totalSize = cPropsSet.reduce(
-      (sum, props) => sum + (props.size ?? 0),
-      0
-    );
+    const totalSize = cPropsSet.reduce((sum, props) => sum + (props.size ?? 0), 0);
     for (const report of progressReports) {
       assert.isTrue(report.downloaded > previousReport.downloaded);
       assert.equal(report.total, totalSize);
@@ -489,9 +441,7 @@ describe("HubMock", () => {
     progressReports = [];
     progressCallback = (downloaded, total) => {
       progressReports.push({ downloaded, total });
-      return downloaded > total / 2
-        ? ProgressStatus.Abort
-        : ProgressStatus.Continue;
+      return downloaded > total / 2 ? ProgressStatus.Abort : ProgressStatus.Continue;
     };
     let errorThrown: boolean = false;
     try {

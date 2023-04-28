@@ -4,11 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Range3d } from "@itwin/core-geometry";
 import { Cartographic, ColorDef } from "@itwin/core-common";
-import {
-  BlankConnection,
-  IModelConnection,
-  SpatialViewState,
-} from "@itwin/core-frontend";
+import { BlankConnection, IModelConnection, SpatialViewState } from "@itwin/core-frontend";
 
 export class BlankConnectionExample {
   // __PUBLISH_EXTRACT_START__ BlankConnection.open
@@ -39,11 +35,7 @@ export class BlankConnectionExample {
     const ext = iModel.projectExtents;
 
     // start with a new "blank" spatial view to show the extents of the project, from top view
-    const blankView = SpatialViewState.createBlank(
-      iModel,
-      ext.low,
-      ext.high.minus(ext.low)
-    );
+    const blankView = SpatialViewState.createBlank(iModel, ext.low, ext.high.minus(ext.low));
 
     // turn on the background map
     const style = blankView.displayStyle;

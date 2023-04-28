@@ -28,9 +28,7 @@ export class IndexedCollectionInterval<T extends CollectionWithLength> {
     this.end = limit;
   }
   /** Create an interval which matches a complete indexed collection. */
-  public static createComplete<T extends CollectionWithLength>(
-    points: T
-  ): IndexedCollectionInterval<T> {
+  public static createComplete<T extends CollectionWithLength>(points: T): IndexedCollectionInterval<T> {
     return new this(points, 0, points.length);
   }
   /** Create an interval which matches a collection from `start <= i < end`. */
@@ -76,8 +74,7 @@ export class IndexedCollectionInterval<T extends CollectionWithLength> {
   public get isValidSubset(): boolean {
     return (
       this.length === 0 ||
-      (this.localIndexToParentIndex(0) !== undefined &&
-        this.localIndexToParentIndex(this.length - 1) !== undefined)
+      (this.localIndexToParentIndex(0) !== undefined && this.localIndexToParentIndex(this.length - 1) !== undefined)
     );
   }
   /** restrict this.end to this.points.length */
@@ -104,11 +101,7 @@ export class IndexedCollectionInterval<T extends CollectionWithLength> {
    * * use optional begin and end arguments if present; if not take begin and and from other.
    * * cap end at points.length.
    */
-  public setFrom(
-    other: IndexedCollectionInterval<T>,
-    base?: number,
-    limit?: number
-  ) {
+  public setFrom(other: IndexedCollectionInterval<T>, base?: number, limit?: number) {
     this.points = other.points;
     this.begin = base === undefined ? other.begin : base;
     this.end = limit === undefined ? other.end : limit;

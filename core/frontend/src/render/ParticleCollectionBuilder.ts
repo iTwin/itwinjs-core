@@ -7,16 +7,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import {
-  Matrix3d,
-  Point2d,
-  Point3d,
-  Range3d,
-  Transform,
-  Vector2d,
-  XAndY,
-  XYAndZ,
-} from "@itwin/core-geometry";
+import { Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import {
   ColorDef,
   ColorIndex,
@@ -132,9 +123,7 @@ export namespace ParticleCollectionBuilder {
   /** Creates a new ParticleCollectionBuilder.
    * @throws Error if size is not greater than zero.
    */
-  export function create(
-    params: ParticleCollectionBuilderParams
-  ): ParticleCollectionBuilder {
+  export function create(params: ParticleCollectionBuilderParams): ParticleCollectionBuilder {
     return new Builder(params);
   }
 }
@@ -146,13 +135,7 @@ class Particle {
   public readonly height: number;
   public readonly rotationMatrix?: Matrix3d;
 
-  public constructor(
-    centroid: XYAndZ,
-    width: number,
-    height: number,
-    transparency: number,
-    rotationMatrix?: Matrix3d
-  ) {
+  public constructor(centroid: XYAndZ, width: number, height: number, transparency: number, rotationMatrix?: Matrix3d) {
     this.centroid = Point3d.fromJSON(centroid);
     this.transparency = transparency;
     this.width = width;
@@ -179,24 +162,15 @@ class Builder implements ParticleCollectionBuilder {
     this._isViewCoords = true === params.isViewCoords;
     this._pickableId = params.pickableId;
     this._texture = params.texture;
-    this._transparency =
-      undefined !== params.transparency
-        ? clampTransparency(params.transparency)
-        : 0;
+    this._transparency = undefined !== params.transparency ? clampTransparency(params.transparency) : 0;
     this._localToWorldTransform = params.origin
-      ? Transform.createTranslationXYZ(
-          params.origin.x,
-          params.origin.y,
-          params.origin.z
-        )
+      ? Transform.createTranslationXYZ(params.origin.x, params.origin.y, params.origin.z)
       : Transform.createIdentity();
 
-    if ("number" === typeof params.size)
-      this._size = new Vector2d(params.size, params.size);
+    if ("number" === typeof params.size) this._size = new Vector2d(params.size, params.size);
     else this._size = Vector2d.fromJSON(params.size);
 
-    if (this._size.x <= 0 || this._size.y <= 0)
-      throw new Error("Particle size must be greater than zero");
+    if (this._size.x <= 0 || this._size.y <= 0) throw new Error("Particle size must be greater than zero");
   }
 
   public get size(): XAndY {
@@ -225,34 +199,20 @@ class Builder implements ParticleCollectionBuilder {
       height = size.y;
     }
 
-    if (width <= 0 || height <= 0)
-      throw new Error("A particle must have a size greater than zero");
+    if (width <= 0 || height <= 0) throw new Error("A particle must have a size greater than zero");
 
-    const transparency =
-      undefined !== props.transparency
-        ? clampTransparency(props.transparency)
-        : this.transparency;
-    if (
-      transparency !== this.transparency &&
-      this._particlesTranslucent.length > 0
-    )
+    const transparency = undefined !== props.transparency ? clampTransparency(props.transparency) : this.transparency;
+    if (transparency !== this.transparency && this._particlesTranslucent.length > 0)
       this._hasVaryingTransparency = true;
 
-    const particle = new Particle(
-      props,
-      width,
-      height,
-      transparency,
-      props.rotationMatrix
-    );
+    const particle = new Particle(props, width, height, transparency, props.rotationMatrix);
     if (transparency > 0) this._particlesTranslucent.push(particle);
     else this._particlesOpaque.push(particle);
     this._range.extendPoint(particle.centroid);
   }
 
   public finish(): RenderGraphic | undefined {
-    if (0 === this._particlesTranslucent.length + this._particlesOpaque.length)
-      return undefined;
+    if (0 === this._particlesTranslucent.length + this._particlesOpaque.length) return undefined;
 
     // Order-independent transparency doesn't work well with opaque geometry - it will look semi-transparent.
     // If we have a mix of opaque and transparent particles, put them in separate graphics to be rendered in separate passes.
@@ -273,42 +233,28 @@ class Builder implements ParticleCollectionBuilder {
 
     // Transform from origin to collection, then to world.
     const toCollection = Transform.createTranslation(range.center);
-    const toWorld = toCollection.multiplyTransformTransform(
-      this._localToWorldTransform
-    );
+    const toWorld = toCollection.multiplyTransformTransform(this._localToWorldTransform);
     const branch = new GraphicBranch(true);
     if (opaque) branch.add(opaque);
 
     if (transparent) branch.add(transparent);
 
-    let graphic = this._viewport.target.renderSystem.createGraphicBranch(
-      branch,
-      toWorld
-    );
+    let graphic = this._viewport.target.renderSystem.createGraphicBranch(branch, toWorld);
 
     // If we have a pickable Id, produce a batch.
     // NB: We pass this._pickableId as the FeatureTable's modelId so that it will be treated like a reality model or a map -
     // specifically, it can be located and display a tooltip, but can't be selected.
-    const featureTable = this._pickableId
-      ? new FeatureTable(1, this._pickableId)
-      : undefined;
+    const featureTable = this._pickableId ? new FeatureTable(1, this._pickableId) : undefined;
     if (featureTable) {
       this._localToWorldTransform.multiplyRange(range, range);
       featureTable.insert(new Feature(this._pickableId));
-      graphic = this._viewport.target.renderSystem.createBatch(
-        graphic,
-        PackedFeatureTable.pack(featureTable),
-        range
-      );
+      graphic = this._viewport.target.renderSystem.createBatch(graphic, PackedFeatureTable.pack(featureTable), range);
     }
 
     return graphic;
   }
 
-  private createGraphic(
-    particles: Particle[],
-    uniformTransparency: number | undefined
-  ): RenderGraphic | undefined {
+  private createGraphic(particles: Particle[], uniformTransparency: number | undefined): RenderGraphic | undefined {
     const numParticles = particles.length;
     if (numParticles <= 0) return undefined;
 
@@ -330,9 +276,7 @@ class Builder implements ParticleCollectionBuilder {
     const transforms = new Float32Array(floatsPerTransform * numParticles);
     const bytesPerOverride = 8;
     const symbologyOverrides =
-      undefined === uniformTransparency
-        ? new Uint8Array(bytesPerOverride * numParticles)
-        : undefined;
+      undefined === uniformTransparency ? new Uint8Array(bytesPerOverride * numParticles) : undefined;
 
     const viewToWorld = this._viewport.view.getRotation().transpose();
     let tfIndex = 0;
@@ -388,11 +332,7 @@ class Builder implements ParticleCollectionBuilder {
     // Produce instanced quads.
     // Note: We do not need to allocate an array of featureIds. If we have a pickableId, all particles refer to the same Feature, with index 0.
     // So we leave the vertex attribute disabled causing the shader to receive the default (0, 0, 0) which happens to correspond to our feature index.
-    const quad = createQuad(
-      meanSize,
-      this._texture,
-      uniformTransparency ?? 0x7f
-    );
+    const quad = createQuad(meanSize, this._texture, uniformTransparency ?? 0x7f);
     const transformCenter = new Point3d(0, 0, 0);
     const range = computeRange(this._range, rangeCenter, maxSize);
     const instances = {
@@ -406,11 +346,7 @@ class Builder implements ParticleCollectionBuilder {
   }
 }
 
-function createQuad(
-  size: XAndY,
-  texture: RenderTexture,
-  transparency: number
-): MeshParams {
+function createQuad(size: XAndY, texture: RenderTexture, transparency: number): MeshParams {
   const halfWidth = size.x / 2;
   const halfHeight = size.y / 2;
   const corners = [
@@ -439,12 +375,7 @@ function createQuad(
     features: new FeatureIndex(),
     textureMapping: {
       texture,
-      uvParams: [
-        new Point2d(0, 1),
-        new Point2d(1, 1),
-        new Point2d(0, 0),
-        new Point2d(1, 0),
-      ],
+      uvParams: [new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0)],
     },
   };
 
@@ -459,11 +390,7 @@ function clampTransparency(transparency: number): number {
   return transparency;
 }
 
-function computeRange(
-  centroidRange: Range3d,
-  center: Point3d,
-  maxSize: number
-): Range3d {
+function computeRange(centroidRange: Range3d, center: Point3d, maxSize: number): Range3d {
   const range2 = centroidRange.clone();
   range2.low.subtractInPlace(center);
   range2.high.subtractInPlace(center);

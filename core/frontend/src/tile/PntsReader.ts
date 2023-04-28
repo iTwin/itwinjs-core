@@ -6,12 +6,7 @@
  * @module Tiles
  */
 
-import {
-  ByteStream,
-  Id64String,
-  Logger,
-  utf8ToString,
-} from "@itwin/core-bentley";
+import { ByteStream, Id64String, Logger, utf8ToString } from "@itwin/core-bentley";
 import { Point3d, Range3d } from "@itwin/core-geometry";
 import {
   BatchType,
@@ -96,28 +91,15 @@ type UnquantizedPntsProps = CommonPntsProps & {
 
 type PntsProps = QuantizedPntsProps | UnquantizedPntsProps;
 
-function readPntsColors(
-  stream: ByteStream,
-  dataOffset: number,
-  pnts: PntsProps
-): Uint8Array | undefined {
+function readPntsColors(stream: ByteStream, dataOffset: number, pnts: PntsProps): Uint8Array | undefined {
   const nPts = pnts.POINTS_LENGTH;
   const nComponents = 3 * nPts;
-  if (pnts.RGB)
-    return new Uint8Array(
-      stream.arrayBuffer,
-      dataOffset + pnts.RGB.byteOffset,
-      nComponents
-    );
+  if (pnts.RGB) return new Uint8Array(stream.arrayBuffer, dataOffset + pnts.RGB.byteOffset, nComponents);
 
   if (pnts.RGBA) {
     // ###TODO support point cloud transparency.
     const rgb = new Uint8Array(nComponents);
-    const rgba = new Uint8Array(
-      stream.arrayBuffer,
-      dataOffset + pnts.RGBA.byteOffset,
-      nComponents
-    );
+    const rgba = new Uint8Array(stream.arrayBuffer, dataOffset + pnts.RGBA.byteOffset, nComponents);
     for (let i = 0; i < nComponents; i += 4) {
       rgb[i + 0] = rgba[i + 0];
       rgb[i + 1] = rgba[i + 1];
@@ -127,11 +109,7 @@ function readPntsColors(
     return rgb;
   } else if (pnts.RGB565) {
     // Each color is 16 bits: 5 red, 6 green, 5 blue.
-    const crgb = new Uint16Array(
-      stream.arrayBuffer,
-      dataOffset + pnts.RGB565.byteOffset,
-      nPts
-    );
+    const crgb = new Uint16Array(stream.arrayBuffer, dataOffset + pnts.RGB565.byteOffset, nPts);
     const rgb = new Uint8Array(nComponents);
     for (let i = 0; i < nPts; i++) {
       const c = crgb[i];
@@ -146,11 +124,7 @@ function readPntsColors(
   return undefined;
 }
 
-function readPnts(
-  stream: ByteStream,
-  dataOffset: number,
-  pnts: PntsProps
-): PointCloudProps | undefined {
+function readPnts(stream: ByteStream, dataOffset: number, pnts: PntsProps): PointCloudProps | undefined {
   const nPts = pnts.POINTS_LENGTH;
   let params: QParams3d;
   let points: Uint16Array | Float32Array;
@@ -168,29 +142,19 @@ function readPnts(
     );
 
     params = QParams3d.fromOriginAndScale(qOrigin, qScale);
-    points = new Uint16Array(
-      stream.arrayBuffer,
-      dataOffset + qpos.byteOffset,
-      3 * nPts
-    );
+    points = new Uint16Array(stream.arrayBuffer, dataOffset + qpos.byteOffset, 3 * nPts);
   } else {
     const qOrigin = new Point3d(0, 0, 0);
     const qScale = new Point3d(1, 1, 1);
     params = QParams3d.fromOriginAndScale(qOrigin, qScale);
-    points = new Float32Array(
-      stream.arrayBuffer,
-      dataOffset + pnts.POSITION.byteOffset,
-      3 * nPts
-    );
+    points = new Float32Array(stream.arrayBuffer, dataOffset + pnts.POSITION.byteOffset, 3 * nPts);
   }
 
   const colors = readPntsColors(stream, dataOffset, pnts);
   return { params, points, colors };
 }
 
-async function decodeDracoPointCloud(
-  buf: Uint8Array
-): Promise<PointCloudProps | undefined> {
+async function decodeDracoPointCloud(buf: Uint8Array): Promise<PointCloudProps | undefined> {
   try {
     const dracoLoader = (await import("@loaders.gl/draco")).DracoLoader;
     const mesh = await dracoLoader.parse(buf, {});
@@ -218,18 +182,10 @@ async function decodeDracoPointCloud(
     let posRange: Range3d;
     const bbox = mesh.header?.boundingBox;
     if (bbox) {
-      posRange = Range3d.createXYZXYZ(
-        bbox[0][0],
-        bbox[0][1],
-        bbox[0][2],
-        bbox[1][0],
-        bbox[1][1],
-        bbox[1][2]
-      );
+      posRange = Range3d.createXYZXYZ(bbox[0][0], bbox[0][1], bbox[0][2], bbox[1][0], bbox[1][1], bbox[1][2]);
     } else {
       posRange = Range3d.createNull();
-      for (let i = 0; i < pos.length; i += 3)
-        posRange.extendXYZ(pos[i], pos[i + 1], pos[i + 2]);
+      for (let i = 0; i < pos.length; i += 3) posRange.extendXYZ(pos[i], pos[i + 1], pos[i + 2]);
     }
 
     const params = QParams3d.fromRange(posRange);
@@ -250,10 +206,7 @@ async function decodeDracoPointCloud(
       colors: colors instanceof Uint8Array ? colors : undefined,
     };
   } catch (err) {
-    Logger.logWarning(
-      FrontendLoggerCategory.Render,
-      "Failed to decode draco-encoded point cloud"
-    );
+    Logger.logWarning(FrontendLoggerCategory.Render, "Failed to decode draco-encoded point cloud");
     Logger.logException(FrontendLoggerCategory.Render, err);
     return undefined;
   }
@@ -288,16 +241,10 @@ export async function readPointCloudTileContent(
 
   let props: PointCloudProps | undefined;
   const dataOffset = featureTableJsonOffset + header.featureTableJsonLength;
-  const draco = featureValue.extensions
-    ? featureValue.extensions["3DTILES_draco_point_compression"]
-    : undefined;
+  const draco = featureValue.extensions ? featureValue.extensions["3DTILES_draco_point_compression"] : undefined;
   if (draco) {
     try {
-      const buf = new Uint8Array(
-        stream.arrayBuffer,
-        dataOffset + draco.byteOffset,
-        draco.byteLength
-      );
+      const buf = new Uint8Array(stream.arrayBuffer, dataOffset + draco.byteOffset, draco.byteLength);
       props = await decodeDracoPointCloud(buf);
     } catch (_) {
       //
@@ -351,9 +298,7 @@ export async function readPointCloudTileContent(
   // cloud), so 2 is a decent default
   // (If voxelSize is used normally in this case, it draws different size pixels for different tiles, and since
   // they can overlap ranges, no good way found to calculate a voxelSize)
-  const voxelSize = tile.additiveRefinement
-    ? 0
-    : params.rangeDiagonal.maxAbs() / 256;
+  const voxelSize = tile.additiveRefinement ? 0 : params.rangeDiagonal.maxAbs() / 256;
 
   graphic = system.createPointCloud(
     {
@@ -367,10 +312,6 @@ export async function readPointCloudTileContent(
     iModel
   );
 
-  graphic = system.createBatch(
-    graphic!,
-    PackedFeatureTable.pack(featureTable),
-    batchRange
-  );
+  graphic = system.createBatch(graphic!, PackedFeatureTable.pack(featureTable), batchRange);
   return { graphic, rtcCenter };
 }

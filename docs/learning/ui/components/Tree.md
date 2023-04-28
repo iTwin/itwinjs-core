@@ -77,15 +77,8 @@ This React component utilizes the [ControlledTree]($components-react) component 
 ```tsx
 import * as React from "react";
 import { IModelConnection } from "@itwin/core-frontend";
-import {
-  ControlledTree,
-  useTreeModel,
-  SelectionMode,
-} from "@itwin/components-react";
-import {
-  usePresentationTreeNodeLoader,
-  useUnifiedSelectionTreeEventHandler,
-} from "@itwin/presentation-components";
+import { ControlledTree, useTreeModel, SelectionMode } from "@itwin/components-react";
+import { usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler } from "@itwin/presentation-components";
 const RULESET_TREE = require("./Tree.ruleset.json"); // eslint-disable-line @typescript-eslint/no-var-requires
 
 /** React properties for the tree component */

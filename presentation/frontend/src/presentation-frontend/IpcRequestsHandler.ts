@@ -15,18 +15,14 @@ import {
 
 /** @internal */
 export class IpcRequestsHandler {
-  private _ipcProxy = IpcApp.makeIpcProxy<PresentationIpcInterface>(
-    PRESENTATION_IPC_CHANNEL_NAME
-  );
+  private _ipcProxy = IpcApp.makeIpcProxy<PresentationIpcInterface>(PRESENTATION_IPC_CHANNEL_NAME);
   public readonly clientId: string;
 
   constructor(clientId: string) {
     this.clientId = clientId;
   }
 
-  public async setRulesetVariable(
-    params: Omit<SetRulesetVariableParams<RulesetVariable>, "clientId">
-  ) {
+  public async setRulesetVariable(params: Omit<SetRulesetVariableParams<RulesetVariable>, "clientId">) {
     const jsonParams: SetRulesetVariableParams<RulesetVariableJSON> = {
       ...params,
       clientId: this.clientId,
@@ -35,9 +31,7 @@ export class IpcRequestsHandler {
     return this._ipcProxy.setRulesetVariable(jsonParams);
   }
 
-  public async unsetRulesetVariable(
-    params: Omit<UnsetRulesetVariableParams, "clientId">
-  ) {
+  public async unsetRulesetVariable(params: Omit<UnsetRulesetVariableParams, "clientId">) {
     const jsonParams: UnsetRulesetVariableParams = {
       ...params,
       clientId: this.clientId,

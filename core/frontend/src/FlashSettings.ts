@@ -67,10 +67,7 @@ export class FlashSettings {
    * ```
    */
   public constructor(options?: FlashSettingsOptions) {
-    this.litMode =
-      options?.litMode === FlashMode.Hilite
-        ? FlashMode.Hilite
-        : FlashMode.Brighten;
+    this.litMode = options?.litMode === FlashMode.Hilite ? FlashMode.Hilite : FlashMode.Brighten;
 
     const maxIntensity = options?.maxIntensity ?? 1;
     this.maxIntensity = Math.min(1, Math.max(0, maxIntensity));
@@ -78,8 +75,7 @@ export class FlashSettings {
     let duration = options?.duration;
     if (duration) {
       const ms = Math.max(0, Math.min(10 * 1000, duration.milliseconds));
-      if (ms !== duration.milliseconds)
-        duration = BeDuration.fromMilliseconds(ms);
+      if (ms !== duration.milliseconds) duration = BeDuration.fromMilliseconds(ms);
     } else {
       duration = BeDuration.fromSeconds(0.25);
     }

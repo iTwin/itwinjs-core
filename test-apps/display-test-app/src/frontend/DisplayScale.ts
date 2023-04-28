@@ -4,18 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Matrix3d, Point3d, Transform } from "@itwin/core-geometry";
-import {
-  IModelApp,
-  ModelDisplayTransformProvider,
-  Tool,
-} from "@itwin/core-frontend";
+import { IModelApp, ModelDisplayTransformProvider, Tool } from "@itwin/core-frontend";
 import { parseArgs } from "@itwin/frontend-devtools";
 
 class DisplayScaleTransformProvider implements ModelDisplayTransformProvider {
-  public constructor(
-    private readonly _models: Set<string>,
-    private readonly _scaleTransform: Transform
-  ) {}
+  public constructor(private readonly _models: Set<string>, private readonly _scaleTransform: Transform) {}
 
   public getModelDisplayTransform(modelId: string): Transform | undefined {
     return this._models.has(modelId) ? this._scaleTransform.clone() : undefined;
@@ -44,8 +37,7 @@ export class ApplyModelDisplayScaleTool extends Tool {
     // If there was already a transform then we need to undo it for the frustum.
     if (
       undefined !== vp.view.modelDisplayTransformProvider &&
-      vp.view.modelDisplayTransformProvider instanceof
-        DisplayScaleTransformProvider
+      vp.view.modelDisplayTransformProvider instanceof DisplayScaleTransformProvider
     ) {
       const t = vp.view.modelDisplayTransformProvider.transform;
       const sx = t.matrix.getColumn(0).magnitude();
@@ -93,11 +85,7 @@ export class ApplyModelDisplayScaleTool extends Tool {
 
   public override async parseAndRun(...input: string[]): Promise<boolean> {
     const args = parseArgs(input);
-    const scale = new Point3d(
-      args.getFloat("x") ?? 1.0,
-      args.getFloat("y") ?? 1.0,
-      args.getFloat("z") ?? 1.0
-    );
+    const scale = new Point3d(args.getFloat("x") ?? 1.0, args.getFloat("y") ?? 1.0, args.getFloat("z") ?? 1.0);
     return this.run(scale);
   }
 }

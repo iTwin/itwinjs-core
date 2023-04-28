@@ -16,15 +16,9 @@ import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
 import { Order2Bezier } from "../numerics/BezierPolynomials";
-import {
-  CurveExtendOptions,
-  VariantCurveExtendParameter,
-} from "./CurveExtendMode";
+import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
 import { CurveIntervalRole, CurveLocationDetail } from "./CurveLocationDetail";
-import {
-  AnnounceNumberNumberCurvePrimitive,
-  CurvePrimitive,
-} from "./CurvePrimitive";
+import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
 import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
 import { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
@@ -152,11 +146,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     return c;
   }
   /** Create with start and end points.  The point contents are cloned into the LineSegment3d. */
-  public static create(
-    point0: Point3d,
-    point1: Point3d,
-    result?: LineSegment3d
-  ): LineSegment3d {
+  public static create(point0: Point3d, point1: Point3d, result?: LineSegment3d): LineSegment3d {
     if (result) {
       result.set(point0, point1); // and this will clone them !!
       return result;
@@ -176,23 +166,13 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    * @param z z coordinate to use for both points.
    * @param result optional existing LineSegment to be reinitialized.
    */
-  public static createXYXY(
-    x0: number,
-    y0: number,
-    x1: number,
-    y1: number,
-    z: number = 0,
-    result?: LineSegment3d
-  ) {
+  public static createXYXY(x0: number, y0: number, x1: number, y1: number, z: number = 0, result?: LineSegment3d) {
     if (result) {
       result._point0.set(x0, y0, z);
       result._point1.set(x1, y1, z);
       return result;
     }
-    return new LineSegment3d(
-      Point3d.create(x0, y0, z),
-      Point3d.create(x1, y1, z)
-    );
+    return new LineSegment3d(Point3d.create(x0, y0, z), Point3d.create(x1, y1, z));
   }
 
   /** create a LineSegment3d from xy coordinates of start and end, with common z.
@@ -217,10 +197,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
       result._point1.set(x1, y1, z1);
       return result;
     }
-    return new LineSegment3d(
-      Point3d.create(x0, y0, z0),
-      Point3d.create(x1, y1, z1)
-    );
+    return new LineSegment3d(Point3d.create(x0, y0, z0), Point3d.create(x1, y1, z1));
   }
 
   /** Return the point at fractional position along the line segment. */
@@ -232,13 +209,8 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     return this._point0.distance(this._point1);
   }
   /** Return the length of the partial segment between fractions. */
-  public override curveLengthBetweenFractions(
-    fraction0: number,
-    fraction1: number
-  ): number {
-    return (
-      Math.abs(fraction1 - fraction0) * this._point0.distance(this._point1)
-    );
+  public override curveLengthBetweenFractions(fraction0: number, fraction1: number): number {
+    return Math.abs(fraction1 - fraction0) * this._point0.distance(this._point1);
   }
   /** Return the length of the segment. */
   public quickLength(): number {
@@ -255,11 +227,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     extend: VariantCurveExtendParameter,
     result?: CurveLocationDetail
   ): CurveLocationDetail {
-    let fraction = spacePoint.fractionOfProjectionToLine(
-      this._point0,
-      this._point1,
-      0.0
-    );
+    let fraction = spacePoint.fractionOfProjectionToLine(this._point0, this._point1, 0.0);
     fraction = CurveExtendOptions.correctFraction(extend, fraction);
     result = CurveLocationDetail.create(this, result);
     // remark: This can be done by result.setFP (fraction, thePoint, undefined, a)
@@ -292,21 +260,14 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
   /** Compute points of simple (transverse) with a plane.
    * * Use isInPlane to test if the line segment is completely in the plane.
    */
-  public override appendPlaneIntersectionPoints(
-    plane: PlaneAltitudeEvaluator,
-    result: CurveLocationDetail[]
-  ): number {
+  public override appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number {
     const h0 = plane.altitude(this._point0);
     const h1 = plane.altitude(this._point1);
     const fraction = Order2Bezier.solveCoffs(h0, h1);
     let numIntersection = 0;
     if (fraction !== undefined) {
       numIntersection++;
-      const detail = CurveLocationDetail.createCurveFractionPoint(
-        this,
-        fraction,
-        this.fractionToPoint(fraction)
-      );
+      const detail = CurveLocationDetail.createCurveFractionPoint(this, fraction, this.fractionToPoint(fraction));
       detail.intervalRole = CurveIntervalRole.isolated;
       result.push(detail);
     }
@@ -372,10 +333,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
   public override isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof LineSegment3d) {
       const ls = other;
-      return (
-        this._point0.isAlmostEqual(ls._point0) &&
-        this._point1.isAlmostEqual(ls._point1)
-      );
+      return this._point0.isAlmostEqual(ls._point0) && this._point1.isAlmostEqual(ls._point1);
     }
     return false;
   }
@@ -386,20 +344,10 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     dest.appendFractionalStrokePoints(this, numStroke, 0.0, 1.0);
   }
   /** Emit strokes to caller-supplied handler */
-  public emitStrokableParts(
-    handler: IStrokeHandler,
-    options?: StrokeOptions
-  ): void {
+  public emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void {
     handler.startCurvePrimitive(this);
     const numStroke = this.computeStrokeCountForOptions(options);
-    handler.announceSegmentInterval(
-      this,
-      this._point0,
-      this._point1,
-      numStroke,
-      0.0,
-      1.0
-    );
+    handler.announceSegmentInterval(this, this._point0, this._point1, numStroke, 0.0, 1.0);
     handler.endCurvePrimitive(this);
   }
 
@@ -410,8 +358,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
   public computeStrokeCountForOptions(options?: StrokeOptions): number {
     let numStroke = 1;
     if (options) {
-      if (options.maxEdgeLength)
-        numStroke = options.applyMaxEdgeLength(numStroke, this.curveLength());
+      if (options.maxEdgeLength) numStroke = options.applyMaxEdgeLength(numStroke, this.curveLength());
       numStroke = options.applyMinStrokesPerPrimitive(numStroke);
     }
     return numStroke;
@@ -426,19 +373,13 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    * @param clipper clip structure (e.g. clip planes)
    * @param announce function to be called announcing fractional intervals"  ` announce(fraction0, fraction1, curvePrimitive)`
    */
-  public override announceClipIntervals(
-    clipper: Clipper,
-    announce?: AnnounceNumberNumberCurvePrimitive
-  ): boolean {
+  public override announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     return clipper.announceClippedSegmentIntervals(
       0.0,
       1.0,
       this._point0,
       this._point1,
-      announce
-        ? (fraction0: number, fraction1: number) =>
-            announce(fraction0, fraction1, this)
-        : undefined
+      announce ? (fraction0: number, fraction1: number) => announce(fraction0, fraction1, this) : undefined
     );
   }
 
@@ -446,24 +387,14 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    * @param fractionA [in] start fraction
    * @param fractionB [in] end fraction
    */
-  public override clonePartialCurve(
-    fractionA: number,
-    fractionB: number
-  ): LineSegment3d {
-    return LineSegment3d.create(
-      this.fractionToPoint(fractionA),
-      this.fractionToPoint(fractionB)
-    );
+  public override clonePartialCurve(fractionA: number, fractionB: number): LineSegment3d {
+    return LineSegment3d.create(this.fractionToPoint(fractionA), this.fractionToPoint(fractionB));
   }
   /**
    * Returns a (high accuracy) range of the curve between fractional positions
    * * Default implementation returns teh range of the curve from clonePartialCurve
    */
-  public override rangeBetweenFractions(
-    fraction0: number,
-    fraction1: number,
-    transform?: Transform
-  ): Range3d {
+  public override rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d {
     // (This is cheap -- don't bother testing for fraction0===fraction1)
     if (!transform) {
       const range = Range3d.create();
@@ -490,9 +421,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     const offsetVec = Vector3d.createStartEnd(this._point0, this._point1);
     if (offsetVec.normalizeInPlace()) {
       offsetVec.rotate90CCWXY(offsetVec);
-      const offsetDist = OffsetOptions.getOffsetDistance(
-        offsetDistanceOrOptions
-      );
+      const offsetDist = OffsetOptions.getOffsetDistance(offsetDistanceOrOptions);
       return LineSegment3d.create(
         this._point0.plusScaled(offsetVec, offsetDist),
         this._point1.plusScaled(offsetVec, offsetDist)
@@ -506,14 +435,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    * @param lowHigh optional receiver for output
    * @returns range of fractional projection parameters onto the ray, where 0.0 is start of the ray and 1.0 is the end of the ray.
    */
-  public override projectedParameterRange(
-    ray: Vector3d | Ray3d,
-    lowHigh?: Range1d
-  ): Range1d | undefined {
-    return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(
-      this,
-      ray,
-      lowHigh
-    );
+  public override projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
+    return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(this, ray, lowHigh);
   }
 }

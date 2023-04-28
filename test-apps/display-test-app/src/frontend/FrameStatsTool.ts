@@ -20,9 +20,7 @@ export class FrameStatsTool extends Tool {
       if (vp.onFrameStats.numberOfListeners > 0) vp.onFrameStats.clear();
       else
         vp.onFrameStats.addListener((stats: Readonly<FrameStats>) => {
-          console.log(
-            `frame stats (vp=${vp.viewportId}) = ${JSON.stringify(stats)}`
-          ); // eslint-disable-line no-console
+          console.log(`frame stats (vp=${vp.viewportId}) = ${JSON.stringify(stats)}`); // eslint-disable-line no-console
         });
     }
     return true;

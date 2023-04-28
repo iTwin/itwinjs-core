@@ -8,13 +8,7 @@
  */
 
 import { AxisAlignedBox3d, ColorDef, LinePixels } from "@itwin/core-common";
-import {
-  DecorateContext,
-  GraphicType,
-  IModelApp,
-  IModelConnection,
-  Tool,
-} from "@itwin/core-frontend";
+import { DecorateContext, GraphicType, IModelApp, IModelConnection, Tool } from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 
 /** @beta */
@@ -39,9 +33,7 @@ export class ProjectExtentsDecoration {
         this._removeDecorationListener = undefined;
       }
     } else if (add) {
-      if (!this._removeDecorationListener)
-        this._removeDecorationListener =
-          IModelApp.viewManager.addDecorator(this);
+      if (!this._removeDecorationListener) this._removeDecorationListener = IModelApp.viewManager.addDecorator(this);
     }
   }
 
@@ -56,24 +48,13 @@ export class ProjectExtentsDecoration {
     const vp = context.viewport;
     if (!vp.view.isSpatialView()) return;
 
-    const builderAccVis = context.createGraphicBuilder(
-      GraphicType.WorldDecoration
-    );
-    const builderAccHid = context.createGraphicBuilder(
-      GraphicType.WorldOverlay
-    );
-    const colorAccVis = ColorDef.white.adjustedForContrast(
-      context.viewport.view.backgroundColor
-    );
+    const builderAccVis = context.createGraphicBuilder(GraphicType.WorldDecoration);
+    const builderAccHid = context.createGraphicBuilder(GraphicType.WorldOverlay);
+    const colorAccVis = ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor);
     const colorAccHid = colorAccVis.withAlpha(100);
 
     builderAccVis.setSymbology(colorAccVis, ColorDef.black, 3);
-    builderAccHid.setSymbology(
-      colorAccHid,
-      ColorDef.black,
-      1,
-      LinePixels.Code2
-    );
+    builderAccHid.setSymbology(colorAccHid, ColorDef.black, 1, LinePixels.Code2);
 
     builderAccVis.addRangeBox(this._extents);
     builderAccHid.addRangeBox(this._extents);
@@ -90,9 +71,7 @@ export class ProjectExtentsDecoration {
     }
 
     if (undefined === ProjectExtentsDecoration._decorator) {
-      ProjectExtentsDecoration._decorator = new ProjectExtentsDecoration(
-        imodel
-      );
+      ProjectExtentsDecoration._decorator = new ProjectExtentsDecoration(imodel);
       return true;
     } else {
       ProjectExtentsDecoration._decorator.stop();
@@ -108,10 +87,7 @@ export class ProjectExtentsDecoration {
  * @returns true if the extents are now ON, false if they are now OFF.
  * @beta
  */
-export function toggleProjectExtents(
-  imodel: IModelConnection,
-  enabled?: boolean
-): boolean {
+export function toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): boolean {
   return ProjectExtentsDecoration.toggle(imodel, enabled);
 }
 
@@ -136,8 +112,7 @@ export class ToggleProjectExtentsTool extends Tool {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp && vp.view.isSpatialView()) {
       const iModel = vp.iModel;
-      if (toggleProjectExtents(iModel, enable))
-        vp.onChangeView.addOnce(() => toggleProjectExtents(iModel, false));
+      if (toggleProjectExtents(iModel, enable)) vp.onChangeView.addOnce(() => toggleProjectExtents(iModel, false));
     }
 
     return true;

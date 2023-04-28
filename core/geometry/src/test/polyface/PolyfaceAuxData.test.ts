@@ -10,12 +10,7 @@ import { Path } from "../../curve/Path";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
-import {
-  AuxChannel,
-  AuxChannelData,
-  AuxChannelDataType,
-  PolyfaceAuxData,
-} from "../../polyface/AuxData";
+import { AuxChannel, AuxChannelData, AuxChannelDataType, PolyfaceAuxData } from "../../polyface/AuxData";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
@@ -52,10 +47,7 @@ function createCantileverBeamPolyface(
 
   const scratchPoint = Point3d.create();
   for (let i = 0; i < polyface.data.point.length; i++) {
-    const point = polyface.data.point.getPoint3dAtCheckedPointIndex(
-      i,
-      scratchPoint
-    ) as Point3d;
+    const point = polyface.data.point.getPoint3dAtCheckedPointIndex(i, scratchPoint) as Point3d;
     heightData.push(point.z * zScale);
   }
   const heightChannel = new AuxChannel(
@@ -65,10 +57,7 @@ function createCantileverBeamPolyface(
     ""
   );
 
-  polyface.data.auxData = new PolyfaceAuxData(
-    [heightChannel],
-    polyface.data.pointIndex
-  );
+  polyface.data.auxData = new PolyfaceAuxData([heightChannel], polyface.data.pointIndex);
 
   return polyface;
 }
@@ -115,12 +104,7 @@ describe("PolyfaceAuxData", () => {
       "MicrometerA"
     );
 
-    const channelA = new AuxChannel(
-      [data00, data10],
-      AuxChannelDataType.Distance,
-      "MyDistancesA",
-      "MicrometerA"
-    );
+    const channelA = new AuxChannel([data00, data10], AuxChannelDataType.Distance, "MyDistancesA", "MicrometerA");
 
     const channelB = new AuxChannel(
       [data00, data20, data10],
@@ -156,30 +140,12 @@ describe("PolyfaceAuxData", () => {
     ck.testTrue(range00.containsX(12), "channel range");
     ck.testFalse(range00.containsX(100), "channel range");
 
-    for (const channelType of [
-      AuxChannelDataType.Normal,
-      AuxChannelDataType.Vector,
-    ]) {
-      const vectorData = new AuxChannelData(
-        1,
-        [10, 11, 12, 20, 21, 22, 30, 31, 32]
-      );
-      const vectorChannel = new AuxChannel(
-        [vectorData],
-        channelType,
-        "vector or normal data",
-        "inputB"
-      );
+    for (const channelType of [AuxChannelDataType.Normal, AuxChannelDataType.Vector]) {
+      const vectorData = new AuxChannelData(1, [10, 11, 12, 20, 21, 22, 30, 31, 32]);
+      const vectorChannel = new AuxChannel([vectorData], channelType, "vector or normal data", "inputB");
       ck.testFalse(vectorChannel.isScalar, "vector type");
-      ck.testUndefined(
-        vectorChannel.scalarRange,
-        "no scalarRange on vector channel"
-      );
-      ck.testExactNumber(
-        vectorChannel.entriesPerValue,
-        3,
-        "3 members in vector data"
-      );
+      ck.testUndefined(vectorChannel.scalarRange, "no scalarRange on vector channel");
+      ck.testExactNumber(vectorChannel.entriesPerValue, 3, "3 members in vector data");
     }
     expect(ck.getNumErrors()).equals(0);
   });

@@ -43,9 +43,7 @@ export interface IDiagnosticReporter {
  * a schema full name, and the Map's value is a collection of rule codes to suppress.
  * @beta
  */
-export abstract class SuppressionDiagnosticReporter
-  implements IDiagnosticReporter
-{
+export abstract class SuppressionDiagnosticReporter implements IDiagnosticReporter {
   private _suppressions?: Map<string, string[]>;
 
   /**
@@ -70,13 +68,8 @@ export abstract class SuppressionDiagnosticReporter
    * @param diagnostic The diagnostic to report.
    */
   public report(diagnostic: AnyDiagnostic) {
-    if (
-      this._suppressions &&
-      this._suppressions.has(diagnostic.schema.fullName)
-    ) {
-      const suppressedCodes = this._suppressions.get(
-        diagnostic.schema.fullName
-      );
+    if (this._suppressions && this._suppressions.has(diagnostic.schema.fullName)) {
+      const suppressedCodes = this._suppressions.get(diagnostic.schema.fullName);
       if (suppressedCodes!.includes(diagnostic.code)) return;
     }
 
@@ -103,10 +96,7 @@ export abstract class FormatDiagnosticReporter extends SuppressionDiagnosticRepo
    * @param suppressions A Map where the key is a schema full name and the value is collection of diagnostic codes to suppress.
    * @param localization The Localization instance to use to translate validation messages.
    */
-  constructor(
-    suppressions?: Map<string, string[]>,
-    localization?: Localization
-  ) {
+  constructor(suppressions?: Map<string, string[]>, localization?: Localization) {
     super(suppressions);
     this.localization = localization;
   }
@@ -130,10 +120,7 @@ export abstract class FormatDiagnosticReporter extends SuppressionDiagnosticRepo
    * @param diagnostic The diagnostic to report.
    * @param messageText The formatted message.
    */
-  protected abstract reportDiagnostic(
-    diagnostic: AnyDiagnostic,
-    messageText: string
-  ): void;
+  protected abstract reportDiagnostic(diagnostic: AnyDiagnostic, messageText: string): void;
 
   /**
    * Helper method that formats string with provided arguments where the place holders
@@ -142,33 +129,22 @@ export abstract class FormatDiagnosticReporter extends SuppressionDiagnosticRepo
    * @param args The arguments to place in the text.
    * @param baseIndex The base index for the args, used for validation (typically 0, which is the default).
    */
-  protected formatStringFromArgs(
-    text: string,
-    args: ArrayLike<string>,
-    baseIndex = 0
-  ): string {
-    return text.replace(/{(\d+)}/g, (_match, index: string) =>
-      this.assertDefined(args[+index + baseIndex])
-    );
+  protected formatStringFromArgs(text: string, args: ArrayLike<string>, baseIndex = 0): string {
+    return text.replace(/{(\d+)}/g, (_match, index: string) => this.assertDefined(args[+index + baseIndex]));
   }
 
   private formatMessage(diagnostic: AnyDiagnostic): string {
     let translatedMessage = this.translateMessage(diagnostic);
 
     if (diagnostic.messageArgs && diagnostic.messageArgs.length > 0)
-      translatedMessage = this.formatStringFromArgs(
-        translatedMessage,
-        diagnostic.messageArgs
-      );
+      translatedMessage = this.formatStringFromArgs(translatedMessage, diagnostic.messageArgs);
     return translatedMessage;
   }
 
   private translateMessage(diagnostic: AnyDiagnostic): string {
     if (!this.localization) return diagnostic.messageText;
 
-    return this.localization.getLocalizedString(
-      this.getTranslationKey(diagnostic)
-    );
+    return this.localization.getLocalizedString(this.getTranslationKey(diagnostic));
   }
 
   private getTranslationKey(diagnostic: AnyDiagnostic): string {
@@ -176,8 +152,7 @@ export abstract class FormatDiagnosticReporter extends SuppressionDiagnosticRepo
   }
 
   private assertDefined<T>(value: T | null | undefined, message?: string): T {
-    if (value === undefined || value === null)
-      return assert(false, message) as never;
+    if (value === undefined || value === null) return assert(false, message) as never;
 
     return value;
   }

@@ -8,11 +8,7 @@
 
 import { BlurGeometry, BlurType } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
-import {
-  FragmentShaderComponent,
-  VariablePrecision,
-  VariableType,
-} from "../ShaderBuilder";
+import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { Texture2DHandle } from "../Texture";
 import { addRenderOrderConstants } from "./FeatureSymbology";
@@ -64,10 +60,7 @@ const testRenderOrder = `
 `;
 
 /** @internal */
-export function createBlurProgram(
-  context: WebGL2RenderingContext,
-  type: BlurType
-): ShaderProgram {
+export function createBlurProgram(context: WebGL2RenderingContext, type: BlurType): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 
@@ -75,10 +68,7 @@ export function createBlurProgram(
 
   if (BlurType.TestOrder === type) {
     addRenderOrderConstants(frag);
-    frag.set(
-      FragmentShaderComponent.ComputeBaseColor,
-      testRenderOrder + computeBlur
-    );
+    frag.set(FragmentShaderComponent.ComputeBaseColor, testRenderOrder + computeBlur);
   } else {
     frag.set(FragmentShaderComponent.ComputeBaseColor, computeBlur);
   }
@@ -90,11 +80,7 @@ export function createBlurProgram(
   frag.addUniform("u_textureToBlur", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_textureToBlur", (uniform, params) => {
       const geom = params.geometry as BlurGeometry;
-      Texture2DHandle.bindSampler(
-        uniform,
-        geom.textureToBlur,
-        TextureUnit.Zero
-      );
+      Texture2DHandle.bindSampler(uniform, geom.textureToBlur, TextureUnit.Zero);
     });
   });
 
@@ -127,17 +113,8 @@ export function createBlurProgram(
       prog.addGraphicUniform("u_pickDepthAndOrder", (uniform, params) => {
         const geom = params.geometry as BlurGeometry;
         if (params.target.compositor.needHiddenEdges)
-          Texture2DHandle.bindSampler(
-            uniform,
-            geom.depthAndOrderHidden,
-            TextureUnit.One
-          );
-        else
-          Texture2DHandle.bindSampler(
-            uniform,
-            geom.depthAndOrder,
-            TextureUnit.One
-          );
+          Texture2DHandle.bindSampler(uniform, geom.depthAndOrderHidden, TextureUnit.One);
+        else Texture2DHandle.bindSampler(uniform, geom.depthAndOrder, TextureUnit.One);
       });
     });
     builder.vert.headerComment = "//!V! BlurTestOrder";

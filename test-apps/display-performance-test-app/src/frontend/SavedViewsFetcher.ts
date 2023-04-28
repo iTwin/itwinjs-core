@@ -8,23 +8,13 @@ import { ViewStateSpec } from "./TestConfig";
 export class SavedViewsFetcher {
   private readonly _cache: { [iModelId: string]: ViewStateSpec[] } = {};
 
-  public async getSavedViews(
-    iTwinId: string,
-    iModelId: string,
-    accessToken: string
-  ): Promise<ViewStateSpec[]> {
+  public async getSavedViews(iTwinId: string, iModelId: string, accessToken: string): Promise<ViewStateSpec[]> {
     if (this._cache[iModelId]) return this._cache[iModelId];
 
-    const savedViewsList = await fetchSavedViewsList(
-      iTwinId,
-      iModelId,
-      accessToken
-    );
+    const savedViewsList = await fetchSavedViewsList(iTwinId, iModelId, accessToken);
 
     const savedViews = await Promise.all(
-      savedViewsList.savedViews.map(async (sv) =>
-        fetchSavedView(sv.id, accessToken)
-      )
+      savedViewsList.savedViews.map(async (sv) => fetchSavedView(sv.id, accessToken))
     );
 
     // Sanity check for the future
@@ -93,17 +83,11 @@ async function fetchSavedViewsList(
 }
 
 /** Returns the saved view with the actual view data */
-async function fetchSavedView(
-  savedViewId: string,
-  accessToken: string
-): Promise<SavedViewResponse> {
-  return fetch(
-    `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/savedviews/${savedViewId}`,
-    {
-      method: "GET",
-      headers: {
-        Authorization: accessToken, // eslint-disable-line @typescript-eslint/naming-convention
-      },
-    }
-  ).then(async (response) => response.json());
+async function fetchSavedView(savedViewId: string, accessToken: string): Promise<SavedViewResponse> {
+  return fetch(`https://${process.env.IMJS_URL_PREFIX}api.bentley.com/savedviews/${savedViewId}`, {
+    method: "GET",
+    headers: {
+      Authorization: accessToken, // eslint-disable-line @typescript-eslint/naming-convention
+    },
+  }).then(async (response) => response.json());
 }

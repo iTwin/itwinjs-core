@@ -7,10 +7,7 @@
  */
 
 import { SingleSchemaClassSpecification } from "../ClassSpecifications";
-import {
-  ChildNodeSpecificationBase,
-  DefaultGroupingPropertiesContainer,
-} from "./ChildNodeSpecification";
+import { ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
 
 /**
  * Returns nodes for instances returned by a provided ECSQL query.
@@ -37,9 +34,7 @@ export interface CustomQueryInstanceNodesSpecification
  * @see [Custom query specifications reference documentation section]($docs/presentation/hierarchies/CustomQueryInstanceNodes.md#attribute-queries)
  * @public
  */
-export declare type QuerySpecification =
-  | StringQuerySpecification
-  | ECPropertyValueQuerySpecification;
+export declare type QuerySpecification = StringQuerySpecification | ECPropertyValueQuerySpecification;
 
 /**
  * Used for serializing array of [[QuerySpecification]] to JSON.
@@ -90,8 +85,7 @@ export interface StringQuerySpecification extends QuerySpecificationBase {
  * @see [ECProperty value query specification reference documentation section]($docs/presentation/hierarchies/CustomQueryInstanceNodes.md#ecproperty-value-query-specification)
  * @public
  */
-export interface ECPropertyValueQuerySpecification
-  extends QuerySpecificationBase {
+export interface ECPropertyValueQuerySpecification extends QuerySpecificationBase {
   /** Used for serializing to JSON. */
   specType: "ECPropertyValue";
 

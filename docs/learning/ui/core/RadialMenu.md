@@ -40,10 +40,7 @@ export interface TestRadialMenuState {
   data: any;
 }
 
-export class TestRadialMenu extends React.Component<
-  TestRadialMenuProps,
-  TestRadialMenuState
-> {
+export class TestRadialMenu extends React.Component<TestRadialMenuProps, TestRadialMenuState> {
   public readonly state: Readonly<TestRadialMenuState>;
 
   constructor(props: TestRadialMenuProps) {

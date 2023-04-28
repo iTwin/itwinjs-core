@@ -35,17 +35,9 @@ describe("UnionFind", () => {
           context.askParent(invalidIndex),
           "askParent with invalid index is identity function."
         );
-        ck.testExactNumber(
-          invalidIndex,
-          context.findRoot(invalidIndex),
-          "findRoot with invalid index is identity"
-        );
+        ck.testExactNumber(invalidIndex, context.findRoot(invalidIndex), "findRoot with invalid index is identity");
       }
-      ck.testExactNumber(
-        numLeaf,
-        context.countRoots(),
-        "Root count in singleton context"
-      );
+      ck.testExactNumber(numLeaf, context.countRoots(), "Root count in singleton context");
       // merge in a sequence that reduces the subset count predictably.
       let numSubset = numLeaf;
       // blockSize is a power-of-2 divisor of numLeaf
@@ -56,22 +48,14 @@ describe("UnionFind", () => {
           for (let i = 0; i < blockSize; i++) {
             context.mergeSubsets(i0, i0 + i);
             if (context.isValidIndex(i0) && context.isValidIndex(i0 + i))
-              ck.testExactNumber(
-                context.askParent(i0),
-                context.askParent(i0 + i),
-                "verify merge happened"
-              );
+              ck.testExactNumber(context.askParent(i0), context.askParent(i0 + i), "verify merge happened");
           }
           if (blockSize > 1) numSubset--;
           // fuzziness.  If all blocks were complete, the was a merge in each and we know how many should be there.
           // But the counting is harder in the incomplete case.
           // So only test the complete case.
           if (numLeaf / blockSize === Math.floor(numLeaf / blockSize))
-            ck.testExactNumber(
-              numSubset,
-              context.countRoots(),
-              "Expected root count after merge at binary depth"
-            );
+            ck.testExactNumber(numSubset, context.countRoots(), "Expected root count after merge at binary depth");
         }
         if (numLeaf / blockSize === Math.floor(numLeaf / blockSize))
           ck.testExactNumber(
@@ -87,16 +71,8 @@ describe("UnionFind", () => {
       const numRoot1 = context.countRoots();
       const numLongPath1 = context.countNonTrivialPaths();
 
-      ck.testExactNumber(
-        numRoot0,
-        numRoot1,
-        "Leaf queries do not change root count"
-      );
-      ck.testLE(
-        numLongPath1,
-        numLongPath0,
-        "Leaf queries can reduce number of long paths"
-      );
+      ck.testExactNumber(numRoot0, numRoot1, "Leaf queries do not change root count");
+      ck.testLE(numLongPath1, numLongPath0, "Leaf queries can reduce number of long paths");
       ck.testExactNumber(0, numLongPath1, "Leaf queries eliminate long paths"); // is this really certain?
     }
     expect(ck.getNumErrors()).equals(0);

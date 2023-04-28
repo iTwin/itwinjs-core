@@ -47,9 +47,7 @@ export function getConfigurationString(key: keyof DtaStringConfiguration) {
  * @param key The parameter name of the parameter to get.
  * @returns The value of the boolean configuration param, or false if the param is undefined.
  */
-export function getConfigurationBoolean(
-  key: keyof DtaBooleanConfiguration
-): boolean {
+export function getConfigurationBoolean(key: keyof DtaBooleanConfiguration): boolean {
   return (configuration as DtaBooleanConfiguration)[key] ?? false;
 }
 
@@ -71,9 +69,7 @@ const getFrontendConfig = async (useRPC = false) => {
       });
     }
   } else {
-    const config: DtaConfiguration = useRPC
-      ? await DtaRpcInterface.getClient().getEnvConfig()
-      : getConfig();
+    const config: DtaConfiguration = useRPC ? await DtaRpcInterface.getClient().getEnvConfig() : getConfig();
     Object.assign(configuration, config);
   }
 
@@ -99,13 +95,9 @@ async function openFile(props: OpenIModelProps): Promise<IModelConnection> {
   return iModelConnection;
 }
 
-function setConfigurationResults(): [
-  renderSystemOptions: RenderSystem.Options,
-  tileAdminProps: TileAdmin.Props
-] {
+function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, tileAdminProps: TileAdmin.Props] {
   const renderSystemOptions: RenderSystem.Options = {
-    disabledExtensions:
-      configuration.disabledExtensions as WebGLExtensionName[],
+    disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[],
     preserveShaderSourceCode: true === configuration.preserveShaderSourceCode,
     logarithmicDepthBuffer: false !== configuration.logarithmicZBuffer,
     dpiAwareViewports: false !== configuration.dpiAwareViewports,
@@ -126,40 +118,29 @@ function setConfigurationResults(): [
 
   if (configuration.disableInstancing) tileAdminProps.enableInstancing = false;
 
-  if (false === configuration.enableImprovedElision)
-    tileAdminProps.enableImprovedElision = false;
+  if (false === configuration.enableImprovedElision) tileAdminProps.enableImprovedElision = false;
 
-  if (configuration.ignoreAreaPatterns)
-    tileAdminProps.ignoreAreaPatterns = true;
+  if (configuration.ignoreAreaPatterns) tileAdminProps.ignoreAreaPatterns = true;
 
-  if (false === configuration.useProjectExtents)
-    tileAdminProps.useProjectExtents = false;
+  if (false === configuration.useProjectExtents) tileAdminProps.useProjectExtents = false;
 
   if (configuration.cacheTileMetadata) tileAdminProps.cacheTileMetadata = true;
 
-  if (configuration.disableMagnification)
-    tileAdminProps.disableMagnification = true;
+  if (configuration.disableMagnification) tileAdminProps.disableMagnification = true;
 
-  if (configuration.disableBRepCache)
-    tileAdminProps.optimizeBRepProcessing = false;
+  if (configuration.disableBRepCache) tileAdminProps.optimizeBRepProcessing = false;
 
   if (undefined !== configuration.gpuMemoryLimit)
-    tileAdminProps.gpuMemoryLimits =
-      configuration.gpuMemoryLimit as GpuMemoryLimit;
+    tileAdminProps.gpuMemoryLimits = configuration.gpuMemoryLimit as GpuMemoryLimit;
 
-  tileAdminProps.enableExternalTextures =
-    configuration.enableExternalTextures !== false;
-  tileAdminProps.enableFrontendScheduleScripts =
-    configuration.enableFrontendScheduleScripts !== false;
-  tileAdminProps.tileTreeExpirationTime =
-    configuration.tileTreeExpirationSeconds;
+  tileAdminProps.enableExternalTextures = configuration.enableExternalTextures !== false;
+  tileAdminProps.enableFrontendScheduleScripts = configuration.enableFrontendScheduleScripts !== false;
+  tileAdminProps.tileTreeExpirationTime = configuration.tileTreeExpirationSeconds;
   tileAdminProps.tileExpirationTime = configuration.tileExpirationSeconds;
   tileAdminProps.maximumLevelsToSkip = configuration.maxTilesToSkip;
   tileAdminProps.alwaysRequestEdges = true === configuration.alwaysLoadEdges;
-  tileAdminProps.minimumSpatialTolerance =
-    configuration.minimumSpatialTolerance;
-  tileAdminProps.alwaysSubdivideIncompleteTiles =
-    true === configuration.alwaysSubdivideIncompleteTiles;
+  tileAdminProps.minimumSpatialTolerance = configuration.minimumSpatialTolerance;
+  tileAdminProps.alwaysSubdivideIncompleteTiles = true === configuration.alwaysSubdivideIncompleteTiles;
   tileAdminProps.cesiumIonKey = configuration.cesiumIonKey;
 
   return [renderSystemOptions, tileAdminProps];
@@ -194,18 +175,11 @@ const dtaFrontendMain = async () => {
   let tileAdminProps: TileAdmin.Props;
   let renderSystemOptions: RenderSystem.Options;
   [renderSystemOptions, tileAdminProps] = setConfigurationResults();
-  await DisplayTestApp.startup(
-    configuration,
-    renderSystemOptions,
-    tileAdminProps
-  );
-  if (false !== configuration.enableDiagnostics)
-    IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
+  await DisplayTestApp.startup(configuration, renderSystemOptions, tileAdminProps);
+  if (false !== configuration.enableDiagnostics) IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 
   if (!configuration.standalone && !configuration.customOrchestratorUri) {
-    alert(
-      "Standalone iModel required. Set IMJS_STANDALONE_FILENAME in environment"
-    );
+    alert("Standalone iModel required. Set IMJS_STANDALONE_FILENAME in environment");
     return;
   }
 
@@ -217,18 +191,11 @@ const dtaFrontendMain = async () => {
     // console.log("New Front End Configuration from backend:", JSON.stringify(configuration)); // eslint-disable-line no-console
     await IModelApp.shutdown();
     [renderSystemOptions, tileAdminProps] = setConfigurationResults();
-    await DisplayTestApp.startup(
-      configuration,
-      renderSystemOptions,
-      tileAdminProps
-    );
-    if (false !== configuration.enableDiagnostics)
-      IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
+    await DisplayTestApp.startup(configuration, renderSystemOptions, tileAdminProps);
+    if (false !== configuration.enableDiagnostics) IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 
     if (!configuration.standalone && !configuration.customOrchestratorUri) {
-      alert(
-        "Standalone iModel required. Set IMJS_STANDALONE_FILENAME in environment"
-      );
+      alert("Standalone iModel required. Set IMJS_STANDALONE_FILENAME in environment");
       return;
     }
   }
@@ -274,10 +241,7 @@ const dtaFrontendMain = async () => {
     Logger.setLevelDefault(LogLevel.Warning);
     Logger.setLevel("core-frontend.Render", LogLevel.Error);
 
-    if (configuration.startupMacro)
-      await IModelApp.tools.parseAndRun(
-        `dta macro ${configuration.startupMacro}`
-      );
+    if (configuration.startupMacro) await IModelApp.tools.parseAndRun(`dta macro ${configuration.startupMacro}`);
   } catch (reason) {
     alert(reason);
     return;
@@ -309,9 +273,7 @@ async function initView(iModel: IModelConnection | undefined) {
     undefined !== configuration.standalonePath
       ? {
           directory: configuration.standalonePath,
-          input: document.getElementById(
-            "browserFileSelector"
-          ) as HTMLInputElement,
+          input: document.getElementById("browserFileSelector") as HTMLInputElement,
         }
       : undefined;
 

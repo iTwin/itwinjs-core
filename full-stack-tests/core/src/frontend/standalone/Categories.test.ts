@@ -55,8 +55,7 @@ describe("IModelConnection.Categories", () => {
     expectedSubCategoryIds: string | string[]
   ): void {
     expect(cat.id).to.equal(id);
-    if ("string" === typeof expectedSubCategoryIds)
-      expectedSubCategoryIds = [expectedSubCategoryIds];
+    if ("string" === typeof expectedSubCategoryIds) expectedSubCategoryIds = [expectedSubCategoryIds];
 
     expect(cat.subCategories.size).to.equal(expectedSubCategoryIds.length);
     for (const subcatId of expectedSubCategoryIds) {
@@ -126,10 +125,7 @@ describe("IModelConnection.Categories", () => {
   });
 
   it("ignores duplicate Ids", async () => {
-    const cats = await imodel.categories.getCategoryInfo([
-      ...allCats,
-      ...allCats,
-    ]);
+    const cats = await imodel.categories.getCategoryInfo([...allCats, ...allCats]);
     expect(cats.size).to.equal(5);
     expect(Array.from(cats.keys()).sort()).to.deep.equal(allCats);
 

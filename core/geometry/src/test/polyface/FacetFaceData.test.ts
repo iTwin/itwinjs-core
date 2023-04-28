@@ -26,11 +26,7 @@ describe("FacetFaceData", () => {
       true,
       true
     );
-    ffd.setParamDistanceRangeFromNewFaceData(
-      polyfaceA,
-      0,
-      polyfaceA.facetCount
-    );
+    ffd.setParamDistanceRangeFromNewFaceData(polyfaceA, 0, polyfaceA.facetCount);
 
     const paramRange = ffd.paramRange;
     const distanceRange = ffd.paramDistanceRange;
@@ -42,11 +38,7 @@ describe("FacetFaceData", () => {
     ffdB1.scaleDistances(3.5);
     const distanceRange1 = ffdB1.paramDistanceRange;
 
-    for (const uv of [
-      Point2d.create(0, 0),
-      Point2d.create(0.2, 0.5),
-      Point2d.create(0.75, 0.8),
-    ]) {
+    for (const uv of [Point2d.create(0, 0), Point2d.create(0.2, 0.5), Point2d.create(0.75, 0.8)]) {
       const uvA = paramRange.fractionToPoint(uv.x, uv.y);
       const uvB = distanceRange.fractionToPoint(uv.x, uv.y);
       const uvAtoB = ffd.convertParamToDistance(uvA);
@@ -61,9 +53,7 @@ describe("FacetFaceData", () => {
     }
 
     // confirm failure with start face out of range
-    ck.testFalse(
-      ffdB0.setParamDistanceRangeFromNewFaceData(polyfaceA, 100, 110)
-    );
+    ck.testFalse(ffdB0.setParamDistanceRangeFromNewFaceData(polyfaceA, 100, 110));
     // confirm failure with end face less than start face
     ck.testFalse(ffdB0.setParamDistanceRangeFromNewFaceData(polyfaceA, 2, 0));
     ck.testFalse(ffdB0.setParamDistanceRangeFromNewFaceData(polyfaceA, 2, 2));

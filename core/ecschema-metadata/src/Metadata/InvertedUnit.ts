@@ -44,10 +44,7 @@ export class InvertedUnit extends SchemaItem {
    * @param standalone Serialization includes only this object (as opposed to the full schema).
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
    */
-  public override toJSON(
-    standalone: boolean = false,
-    includeSchemaVersion: boolean = false
-  ): InvertedUnitProps {
+  public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): InvertedUnitProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     schemaJson.invertsUnit = this.invertsUnit!.fullName;
     schemaJson.unitSystem = this.unitSystem!.fullName;
@@ -60,11 +57,7 @@ export class InvertedUnit extends SchemaItem {
 
     const unitSystem = await this.unitSystem;
     if (undefined !== unitSystem) {
-      const unitSystemName = XmlSerializationUtils.createXmlTypedName(
-        this.schema,
-        unitSystem.schema,
-        unitSystem.name
-      );
+      const unitSystemName = XmlSerializationUtils.createXmlTypedName(this.schema, unitSystem.schema, unitSystem.name);
       itemElement.setAttribute("unitSystem", unitSystemName);
     }
 
@@ -83,46 +76,32 @@ export class InvertedUnit extends SchemaItem {
 
   public override fromJSONSync(invertedUnitProps: InvertedUnitProps) {
     super.fromJSONSync(invertedUnitProps);
-    const unitSchemaItemKey = this.schema.getSchemaItemKey(
-      invertedUnitProps.invertsUnit
-    );
-    this._invertsUnit = new DelayedPromiseWithProps<SchemaItemKey, Unit>(
-      unitSchemaItemKey,
-      async () => {
-        const invertsUnit = await this.schema.lookupItem<Unit>(
-          unitSchemaItemKey
+    const unitSchemaItemKey = this.schema.getSchemaItemKey(invertedUnitProps.invertsUnit);
+    this._invertsUnit = new DelayedPromiseWithProps<SchemaItemKey, Unit>(unitSchemaItemKey, async () => {
+      const invertsUnit = await this.schema.lookupItem<Unit>(unitSchemaItemKey);
+      if (undefined === invertsUnit)
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidECJson,
+          `Unable to locate the invertsUnit ${invertedUnitProps.invertsUnit}.`
         );
-        if (undefined === invertsUnit)
-          throw new ECObjectsError(
-            ECObjectsStatus.InvalidECJson,
-            `Unable to locate the invertsUnit ${invertedUnitProps.invertsUnit}.`
-          );
-        return invertsUnit;
-      }
-    );
+      return invertsUnit;
+    });
 
-    const unitSystemSchemaItemKey = this.schema.getSchemaItemKey(
-      invertedUnitProps.unitSystem
-    );
+    const unitSystemSchemaItemKey = this.schema.getSchemaItemKey(invertedUnitProps.unitSystem);
     if (!unitSystemSchemaItemKey)
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `Unable to locate the unitSystem ${invertedUnitProps.unitSystem}.`
       );
-    this._unitSystem = new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(
-      unitSystemSchemaItemKey,
-      async () => {
-        const unitSystem = await this.schema.lookupItem<UnitSystem>(
-          unitSystemSchemaItemKey
+    this._unitSystem = new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemSchemaItemKey, async () => {
+      const unitSystem = await this.schema.lookupItem<UnitSystem>(unitSystemSchemaItemKey);
+      if (undefined === unitSystem)
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidECJson,
+          `Unable to locate the unitSystem ${invertedUnitProps.unitSystem}.`
         );
-        if (undefined === unitSystem)
-          throw new ECObjectsError(
-            ECObjectsStatus.InvalidECJson,
-            `Unable to locate the unitSystem ${invertedUnitProps.unitSystem}.`
-          );
-        return unitSystem;
-      }
-    );
+      return unitSystem;
+    });
   }
 
   public override async fromJSON(invertedUnitProps: InvertedUnitProps) {
@@ -152,8 +131,6 @@ export class InvertedUnit extends SchemaItem {
  */
 export abstract class MutableInvertedUnit extends InvertedUnit {
   public abstract override setInvertsUnit(invertsUnit: LazyLoadedUnit): void;
-  public abstract override setUnitSystem(
-    unitSystem: LazyLoadedUnitSystem
-  ): void;
+  public abstract override setUnitSystem(unitSystem: LazyLoadedUnitSystem): void;
   public abstract override setDisplayLabel(displayLabel: string): void;
 }

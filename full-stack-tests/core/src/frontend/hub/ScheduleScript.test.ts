@@ -42,18 +42,10 @@ describe("Schedule script (#integration)", () => {
     await TestUtility.startFrontend(TestUtility.iModelAppOptions);
     await TestUtility.initialize(TestUsers.regular);
 
-    const iTwinId = await TestUtility.queryITwinIdByName(
-      TestUtility.testITwinName
-    );
-    const oldIModelId = await TestUtility.queryIModelIdByName(
-      iTwinId,
-      TestUtility.testIModelNames.synchro
-    );
+    const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
+    const oldIModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.synchro);
     dbOld = await CheckpointConnection.openRemote(iTwinId, oldIModelId);
-    const newIModelId = await TestUtility.queryIModelIdByName(
-      iTwinId,
-      TestUtility.testIModelNames.synchroNew
-    );
+    const newIModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.synchroNew);
     dbNew = await CheckpointConnection.openRemote(iTwinId, newIModelId);
   });
 
@@ -72,16 +64,11 @@ describe("Schedule script (#integration)", () => {
       imodel: IModelConnection,
       expectValid: boolean
     ) => {
-      const treeId = `f_1-A:${scriptSourceId}_#${nodeId.toString(
-        16
-      )}_${modelId}`;
+      const treeId = `f_1-A:${scriptSourceId}_#${nodeId.toString(16)}_${modelId}`;
       let treeProps;
       let threw = false;
       try {
-        treeProps = await IModelApp.tileAdmin.requestTileTreeProps(
-          imodel,
-          treeId
-        );
+        treeProps = await IModelApp.tileAdmin.requestTileTreeProps(imodel, treeId);
       } catch {
         threw = true;
       }
@@ -103,9 +90,7 @@ describe("Schedule script (#integration)", () => {
   });
 
   it("excludes element Ids if specified", async () => {
-    const scriptHasNonEmptyElementIds = (
-      script: RenderSchedule.ScriptProps
-    ) => {
+    const scriptHasNonEmptyElementIds = (script: RenderSchedule.ScriptProps) => {
       expect(script.length).least(1);
       let numElementIdProps = 0;
       let numNonEmptyElementIdProps = 0;
@@ -114,8 +99,7 @@ describe("Schedule script (#integration)", () => {
         for (const elementTimeline of modelTimeline.elementTimelines) {
           expect(elementTimeline.elementIds).not.to.be.undefined;
           ++numElementIdProps;
-          if (0 < elementTimeline.elementIds.length)
-            ++numNonEmptyElementIdProps;
+          if (0 < elementTimeline.elementIds.length) ++numNonEmptyElementIdProps;
         }
       }
 
@@ -133,21 +117,17 @@ describe("Schedule script (#integration)", () => {
 
     const timelineHasNonEmptyElementIds = (props: ElementProps | undefined) => {
       expect(props).not.to.be.undefined;
-      return scriptHasNonEmptyElementIds(
-        JSON.parse((props as RenderTimelineProps).script)
-      );
+      return scriptHasNonEmptyElementIds(JSON.parse((props as RenderTimelineProps).script));
     };
 
     const testStyle = async (imodel: IModelConnection) => {
       const styles = await imodel.elements.getProps(embedStyleId);
       expect(styles.length).to.equal(1);
-      expect(styleHasNonEmptyElementIds(styles[0] as DisplayStyleProps)).to.be
-        .true;
+      expect(styleHasNonEmptyElementIds(styles[0] as DisplayStyleProps)).to.be.true;
 
       const view = await imodel.views.load(viewId);
       expect(view.displayStyle.id).to.equal(embedStyleId);
-      expect(styleHasNonEmptyElementIds(view.displayStyle.toJSON())).to.be
-        .false;
+      expect(styleHasNonEmptyElementIds(view.displayStyle.toJSON())).to.be.false;
 
       let style = await imodel.elements.loadProps(embedStyleId, {
         displayStyle: { omitScheduleScriptElementIds: true },
@@ -171,12 +151,9 @@ describe("Schedule script (#integration)", () => {
 
     const timelines = await dbNew.elements.getProps(timelineId);
     expect(timelines.length).to.equal(1);
-    expect(timelineHasNonEmptyElementIds(timelines[0] as RenderTimelineProps))
-      .to.be.true;
+    expect(timelineHasNonEmptyElementIds(timelines[0] as RenderTimelineProps)).to.be.true;
 
-    expect(
-      timelineHasNonEmptyElementIds(await dbNew.elements.loadProps(timelineId))
-    ).to.be.true;
+    expect(timelineHasNonEmptyElementIds(await dbNew.elements.loadProps(timelineId))).to.be.true;
     expect(
       timelineHasNonEmptyElementIds(
         await dbNew.elements.loadProps(timelineId, {
@@ -229,9 +206,7 @@ describe("Schedule script (#integration)", () => {
     expect(view.displayStyle.scheduleScript).not.to.be.undefined;
 
     // eslint-disable-next-line deprecation/deprecation
-    expect(view.displayStyle.scheduleScriptReference!.sourceId).to.equal(
-      embedStyleId
-    );
+    expect(view.displayStyle.scheduleScriptReference!.sourceId).to.equal(embedStyleId);
     expect(countTileTrees(view)).to.equal(3);
   });
 
@@ -274,9 +249,7 @@ describe("Schedule script (#integration)", () => {
     imodel: IModelConnection,
     load = true
   ): Promise<DisplayStyle3dState> {
-    const props = (
-      await imodel.elements.getProps(styleId)
-    )[0] as DisplayStyle3dProps;
+    const props = (await imodel.elements.getProps(styleId))[0] as DisplayStyle3dProps;
     expect(props).not.to.be.undefined;
     const style = new DisplayStyle3dState(props, imodel);
     if (load) await style.load();

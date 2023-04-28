@@ -11,10 +11,7 @@ import { Geometry } from "../../Geometry";
 import { AnyCurve } from "../CurveChain";
 import { CurveChain, CurveCollection } from "../CurveCollection";
 import { CurveCurve } from "../CurveCurve";
-import {
-  CurveLocationDetail,
-  CurveLocationDetailPair,
-} from "../CurveLocationDetail";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
 import { Path } from "../Path";
 
@@ -35,9 +32,7 @@ class CutFractionDescriptor {
    */
   public setFrom(other: CutFractionDescriptor, combineCutFlag: boolean) {
     if (combineCutFlag && this.isSameFraction(other))
-      this.otherCurveDetail = other.otherCurveDetail
-        ? other.otherCurveDetail
-        : this.otherCurveDetail;
+      this.otherCurveDetail = other.otherCurveDetail ? other.otherCurveDetail : this.otherCurveDetail;
     this.fraction = other.fraction;
   }
   /** Test if a the fractions are almost equal. */
@@ -63,11 +58,7 @@ export class CurveSplitContext {
   ): boolean {
     if (data.length === 0) return false;
     for (const pair of data) {
-      if (
-        pair.detailA.fraction > fractionTolerance ||
-        pair.detailA.fraction < 1 - fractionTolerance
-      )
-        return true;
+      if (pair.detailA.fraction > fractionTolerance || pair.detailA.fraction < 1 - fractionTolerance) return true;
     }
     return false;
   }
@@ -78,10 +69,7 @@ export class CurveSplitContext {
     dest: CurvePrimitive[]
   ) {
     if (!cutA.isSameFraction(cutB)) {
-      const fragment = curveToCut.clonePartialCurve(
-        cutA.fraction,
-        cutB.fraction
-      );
+      const fragment = curveToCut.clonePartialCurve(cutA.fraction, cutB.fraction);
       if (fragment !== undefined) {
         fragment.startCut = cutA.otherCurveDetail;
         fragment.endCut = cutB.otherCurveDetail;
@@ -98,10 +86,7 @@ export class CurveSplitContext {
     intersections: CurveLocationDetailPair[] | undefined,
     fragments: CurvePrimitive[]
   ) {
-    if (
-      intersections === undefined ||
-      !CurveSplitContext.hasInteriorDetailAIntersections(intersections)
-    ) {
+    if (intersections === undefined || !CurveSplitContext.hasInteriorDetailAIntersections(intersections)) {
       fragments.push(curveToCut.clone());
       return;
     }
@@ -125,33 +110,15 @@ export class CurveSplitContext {
     const context = new CurveSplitContext();
     if (curvesToCut instanceof CurvePrimitive) {
       const result: CurvePrimitive[] = [];
-      const intersections = CurveCurve.intersectionXYPairs(
-        curvesToCut,
-        false,
-        cutterCurves,
-        false
-      );
-      context.collectSinglePrimitiveFragments(
-        curvesToCut,
-        intersections,
-        result
-      );
+      const intersections = CurveCurve.intersectionXYPairs(curvesToCut, false, cutterCurves, false);
+      context.collectSinglePrimitiveFragments(curvesToCut, intersections, result);
       if (result.length === 1) return result[0];
       return Path.createArray(result);
     } else if (curvesToCut instanceof CurveChain) {
       const result: CurvePrimitive[] = [];
       for (const primitive of curvesToCut.children) {
-        const intersections = CurveCurve.intersectionXYPairs(
-          primitive,
-          false,
-          cutterCurves,
-          false
-        );
-        context.collectSinglePrimitiveFragments(
-          primitive,
-          intersections,
-          result
-        );
+        const intersections = CurveCurve.intersectionXYPairs(primitive, false, cutterCurves, false);
+        context.collectSinglePrimitiveFragments(primitive, intersections, result);
       }
       return Path.createArray(result);
     }

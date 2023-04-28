@@ -3,10 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  NodeKey,
-  StandardNodeTypes,
-} from "../../presentation-common/hierarchy/Key";
+import { NodeKey, StandardNodeTypes } from "../../presentation-common/hierarchy/Key";
 import { createTestECInstanceKey } from "../_helpers/EC";
 import { createTestNodeKey } from "../_helpers/Hierarchy";
 import {
@@ -85,84 +82,50 @@ describe("NodeKey", () => {
   describe("isInstancesNodeKey", () => {
     it("returns correct results for different types of nodes", () => {
       expect(NodeKey.isInstancesNodeKey(createRandomBaseNodeKey())).to.be.false;
-      expect(NodeKey.isInstancesNodeKey(createRandomECInstancesNodeKey())).to.be
-        .true;
-      expect(NodeKey.isInstancesNodeKey(createRandomECClassGroupingNodeKey()))
-        .to.be.false;
-      expect(
-        NodeKey.isInstancesNodeKey(createRandomECPropertyGroupingNodeKey())
-      ).to.be.false;
-      expect(NodeKey.isInstancesNodeKey(createRandomLabelGroupingNodeKey())).to
-        .be.false;
+      expect(NodeKey.isInstancesNodeKey(createRandomECInstancesNodeKey())).to.be.true;
+      expect(NodeKey.isInstancesNodeKey(createRandomECClassGroupingNodeKey())).to.be.false;
+      expect(NodeKey.isInstancesNodeKey(createRandomECPropertyGroupingNodeKey())).to.be.false;
+      expect(NodeKey.isInstancesNodeKey(createRandomLabelGroupingNodeKey())).to.be.false;
     });
   });
 
   describe("isClassGroupingNodeKey", () => {
     it("returns correct results for different types of nodes", () => {
-      expect(NodeKey.isClassGroupingNodeKey(createRandomBaseNodeKey())).to.be
-        .false;
-      expect(NodeKey.isClassGroupingNodeKey(createRandomECInstancesNodeKey()))
-        .to.be.false;
-      expect(
-        NodeKey.isClassGroupingNodeKey(createRandomECClassGroupingNodeKey())
-      ).to.be.true;
-      expect(
-        NodeKey.isClassGroupingNodeKey(createRandomECPropertyGroupingNodeKey())
-      ).to.be.false;
-      expect(NodeKey.isClassGroupingNodeKey(createRandomLabelGroupingNodeKey()))
-        .to.be.false;
+      expect(NodeKey.isClassGroupingNodeKey(createRandomBaseNodeKey())).to.be.false;
+      expect(NodeKey.isClassGroupingNodeKey(createRandomECInstancesNodeKey())).to.be.false;
+      expect(NodeKey.isClassGroupingNodeKey(createRandomECClassGroupingNodeKey())).to.be.true;
+      expect(NodeKey.isClassGroupingNodeKey(createRandomECPropertyGroupingNodeKey())).to.be.false;
+      expect(NodeKey.isClassGroupingNodeKey(createRandomLabelGroupingNodeKey())).to.be.false;
     });
   });
 
   describe("isPropertyGroupingNodeKey", () => {
     it("returns correct results for different types of nodes", () => {
-      expect(NodeKey.isPropertyGroupingNodeKey(createRandomBaseNodeKey())).to.be
-        .false;
-      expect(
-        NodeKey.isPropertyGroupingNodeKey(createRandomECInstancesNodeKey())
-      ).to.be.false;
-      expect(
-        NodeKey.isPropertyGroupingNodeKey(createRandomECClassGroupingNodeKey())
-      ).to.be.false;
-      expect(
-        NodeKey.isPropertyGroupingNodeKey(
-          createRandomECPropertyGroupingNodeKey()
-        )
-      ).to.be.true;
-      expect(
-        NodeKey.isPropertyGroupingNodeKey(createRandomLabelGroupingNodeKey())
-      ).to.be.false;
+      expect(NodeKey.isPropertyGroupingNodeKey(createRandomBaseNodeKey())).to.be.false;
+      expect(NodeKey.isPropertyGroupingNodeKey(createRandomECInstancesNodeKey())).to.be.false;
+      expect(NodeKey.isPropertyGroupingNodeKey(createRandomECClassGroupingNodeKey())).to.be.false;
+      expect(NodeKey.isPropertyGroupingNodeKey(createRandomECPropertyGroupingNodeKey())).to.be.true;
+      expect(NodeKey.isPropertyGroupingNodeKey(createRandomLabelGroupingNodeKey())).to.be.false;
     });
   });
 
   describe("isLabelGroupingNodeKey", () => {
     it("returns correct results for different types of nodes", () => {
-      expect(NodeKey.isLabelGroupingNodeKey(createRandomBaseNodeKey())).to.be
-        .false;
-      expect(NodeKey.isLabelGroupingNodeKey(createRandomECInstancesNodeKey()))
-        .to.be.false;
-      expect(
-        NodeKey.isLabelGroupingNodeKey(createRandomECClassGroupingNodeKey())
-      ).to.be.false;
-      expect(
-        NodeKey.isLabelGroupingNodeKey(createRandomECPropertyGroupingNodeKey())
-      ).to.be.false;
-      expect(NodeKey.isLabelGroupingNodeKey(createRandomLabelGroupingNodeKey()))
-        .to.be.true;
+      expect(NodeKey.isLabelGroupingNodeKey(createRandomBaseNodeKey())).to.be.false;
+      expect(NodeKey.isLabelGroupingNodeKey(createRandomECInstancesNodeKey())).to.be.false;
+      expect(NodeKey.isLabelGroupingNodeKey(createRandomECClassGroupingNodeKey())).to.be.false;
+      expect(NodeKey.isLabelGroupingNodeKey(createRandomECPropertyGroupingNodeKey())).to.be.false;
+      expect(NodeKey.isLabelGroupingNodeKey(createRandomLabelGroupingNodeKey())).to.be.true;
     });
   });
 
   describe("isGroupingNodeKey", () => {
     it("returns correct results for different types of nodes", () => {
       expect(NodeKey.isGroupingNodeKey(createRandomBaseNodeKey())).to.be.false;
-      expect(NodeKey.isGroupingNodeKey(createRandomECInstancesNodeKey())).to.be
-        .false;
-      expect(NodeKey.isGroupingNodeKey(createRandomECClassGroupingNodeKey())).to
-        .be.true;
-      expect(NodeKey.isGroupingNodeKey(createRandomECPropertyGroupingNodeKey()))
-        .to.be.true;
-      expect(NodeKey.isGroupingNodeKey(createRandomLabelGroupingNodeKey())).to
-        .be.true;
+      expect(NodeKey.isGroupingNodeKey(createRandomECInstancesNodeKey())).to.be.false;
+      expect(NodeKey.isGroupingNodeKey(createRandomECClassGroupingNodeKey())).to.be.true;
+      expect(NodeKey.isGroupingNodeKey(createRandomECPropertyGroupingNodeKey())).to.be.true;
+      expect(NodeKey.isGroupingNodeKey(createRandomLabelGroupingNodeKey())).to.be.true;
     });
   });
 
@@ -210,10 +173,7 @@ describe("NodeKey", () => {
         const lhs = createTestNodeKey({
           version: 1,
           type: StandardNodeTypes.ECInstancesNode,
-          instanceKeys: [
-            createTestECInstanceKey({ id: "0x1" }),
-            createTestECInstanceKey({ id: "0x2" }),
-          ],
+          instanceKeys: [createTestECInstanceKey({ id: "0x1" }), createTestECInstanceKey({ id: "0x2" })],
         });
         const rhs = createTestNodeKey({
           version: 2,
@@ -231,18 +191,12 @@ describe("NodeKey", () => {
         const lhs = createTestNodeKey({
           version: 1,
           type: StandardNodeTypes.ECInstancesNode,
-          instanceKeys: [
-            createTestECInstanceKey({ id: "0x1" }),
-            createTestECInstanceKey({ id: "0x2" }),
-          ],
+          instanceKeys: [createTestECInstanceKey({ id: "0x1" }), createTestECInstanceKey({ id: "0x2" })],
         });
         const rhs = createTestNodeKey({
           version: 2,
           type: StandardNodeTypes.ECInstancesNode,
-          instanceKeys: [
-            createTestECInstanceKey({ id: "0x1" }),
-            createTestECInstanceKey({ id: "0x3" }),
-          ],
+          instanceKeys: [createTestECInstanceKey({ id: "0x1" }), createTestECInstanceKey({ id: "0x3" })],
         });
         expect(NodeKey.equals(lhs, rhs)).to.be.false;
       });
@@ -251,18 +205,12 @@ describe("NodeKey", () => {
         const lhs = createTestNodeKey({
           version: 1,
           type: StandardNodeTypes.ECInstancesNode,
-          instanceKeys: [
-            createTestECInstanceKey({ id: "0x1" }),
-            createTestECInstanceKey({ id: "0x2" }),
-          ],
+          instanceKeys: [createTestECInstanceKey({ id: "0x1" }), createTestECInstanceKey({ id: "0x2" })],
         });
         const rhs = createTestNodeKey({
           version: 2,
           type: StandardNodeTypes.ECInstancesNode,
-          instanceKeys: [
-            createTestECInstanceKey({ id: "0x1" }),
-            createTestECInstanceKey({ id: "0x2" }),
-          ],
+          instanceKeys: [createTestECInstanceKey({ id: "0x1" }), createTestECInstanceKey({ id: "0x2" })],
         });
         expect(NodeKey.equals(lhs, rhs)).to.be.true;
       });

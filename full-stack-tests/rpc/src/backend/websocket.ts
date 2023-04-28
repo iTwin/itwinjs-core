@@ -4,10 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { LocalhostIpcHost } from "@itwin/core-backend";
-import {
-  BentleyCloudRpcConfiguration,
-  BentleyCloudRpcManager,
-} from "@itwin/core-common";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@itwin/core-common";
 import { WebEditServer } from "@itwin/express-server";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, rpcInterfaces } from "../common/TestRpcInterface";
@@ -19,10 +16,7 @@ async function init() {
   const port = Number(process.env.CERTA_PORT || 3021) + 2000;
 
   await commonSetup();
-  registerBackendCallback(
-    BackendTestCallbacks.getEnvironment,
-    () => "websocket"
-  );
+  registerBackendCallback(BackendTestCallbacks.getEnvironment, () => "websocket");
 
   const rpcConfig = BentleyCloudRpcManager.initializeImpl(
     { info: { title: "rpc-full-stack-test", version: "v1.0" } },
@@ -46,9 +40,7 @@ async function init() {
   };
 }
 
-function initializeAttachedInterfacesTest(
-  config: BentleyCloudRpcConfiguration
-) {
+function initializeAttachedInterfacesTest(config: BentleyCloudRpcConfiguration) {
   AttachedInterfaceImpl.register();
   config.attach(AttachedInterface);
 }

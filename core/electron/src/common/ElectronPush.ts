@@ -13,10 +13,7 @@ import {
   RpcPushTransport,
   RpcRequestFulfillment,
 } from "@itwin/core-common";
-import {
-  BackendIpcTransport,
-  FrontendIpcTransport,
-} from "./ElectronIpcTransport";
+import { BackendIpcTransport, FrontendIpcTransport } from "./ElectronIpcTransport";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -44,10 +41,7 @@ export class ElectronPushTransport extends RpcPushTransport {
     this._last = response.status;
 
     if (this.onMessage) {
-      const messageData = RpcMarshaling.deserialize(
-        this._ipc.protocol,
-        response.result
-      );
+      const messageData = RpcMarshaling.deserialize(this._ipc.protocol, response.result);
       this.onMessage(response.id, messageData);
     }
 
@@ -60,20 +54,13 @@ export class ElectronPushConnection<T> extends RpcPushConnection<T> {
   private _ipc: BackendIpcTransport;
   private _next: number = -1;
 
-  public constructor(
-    channel: RpcPushChannel<T>,
-    client: unknown,
-    ipc: BackendIpcTransport
-  ) {
+  public constructor(channel: RpcPushChannel<T>, client: unknown, ipc: BackendIpcTransport) {
     super(channel, client);
     this._ipc = ipc;
   }
 
   public async send(messageData: any) {
-    const result = await RpcMarshaling.serialize(
-      this._ipc.protocol,
-      messageData
-    );
+    const result = await RpcMarshaling.serialize(this._ipc.protocol, messageData);
     const fulfillment: RpcRequestFulfillment = {
       result,
       rawResult: messageData,

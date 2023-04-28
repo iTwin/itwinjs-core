@@ -4,12 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Id64Arg } from "@itwin/core-bentley";
-import {
-  createButton,
-  createTextBox,
-  deserializeViewState,
-  serializeViewState,
-} from "@itwin/frontend-devtools";
+import { createButton, createTextBox, deserializeViewState, serializeViewState } from "@itwin/frontend-devtools";
 import { IModelConnection, Viewport, ViewState } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Provider } from "./FeatureOverrides";
@@ -32,15 +27,10 @@ export class SavedViewPicker extends ToolBarDropDown {
 
   public set selectedView(view: NamedViewStatePropsString | undefined) {
     this._selectedView = view;
-    if (undefined !== this._onSelectedViewChanged)
-      this._onSelectedViewChanged();
+    if (undefined !== this._onSelectedViewChanged) this._onSelectedViewChanged();
   }
 
-  public constructor(
-    vp: Viewport,
-    parent: HTMLElement,
-    viewer: ApplySavedView
-  ) {
+  public constructor(vp: Viewport, parent: HTMLElement, viewer: ApplySavedView) {
     super();
 
     this._vp = vp;
@@ -82,9 +72,7 @@ export class SavedViewPicker extends ToolBarDropDown {
     if (!this._imodel.isOpen) return;
 
     const filename = this._imodel.key;
-    const esvString = await DtaRpcInterface.getClient().readExternalSavedViews(
-      filename
-    );
+    const esvString = await DtaRpcInterface.getClient().readExternalSavedViews(filename);
     this._views.loadFromString(esvString);
     this.populateFromViewList();
   }
@@ -93,8 +81,7 @@ export class SavedViewPicker extends ToolBarDropDown {
     this.selectedView = undefined;
     this._onSelectedViewChanged = undefined;
 
-    while (this._element.hasChildNodes())
-      this._element.removeChild(this._element.firstChild!);
+    while (this._element.hasChildNodes()) this._element.removeChild(this._element.firstChild!);
 
     const textBox = createTextBox({
       id: "txt_viewName",
@@ -116,15 +103,11 @@ export class SavedViewPicker extends ToolBarDropDown {
 
     const viewsList = document.createElement("select");
     // If only 1 entry in list, input becomes a combo box and can't select the view...
-    viewsList.size =
-      1 === this._views.length ? 2 : Math.min(15, this._views.length);
+    viewsList.size = 1 === this._views.length ? 2 : Math.min(15, this._views.length);
     viewsList.style.width = "100%";
     viewsList.style.display = 0 < this._views.length ? "" : "none";
     viewsDiv.appendChild(viewsList);
-    viewsDiv.onchange = () =>
-      (this.selectedView = viewsList.value
-        ? this.findView(viewsList.value)
-        : undefined);
+    viewsDiv.onchange = () => (this.selectedView = viewsList.value ? this.findView(viewsList.value) : undefined);
     viewsList.addEventListener("keyup", async (ev) => {
       if (ev.key === "Delete") await this.deleteView();
     });
@@ -179,10 +162,7 @@ export class SavedViewPicker extends ToolBarDropDown {
 
     this._onSelectedViewChanged = () => {
       const disabled = undefined === this._selectedView;
-      recallButton.disabled =
-        updateButton.disabled =
-        deleteButton.disabled =
-          disabled;
+      recallButton.disabled = updateButton.disabled = deleteButton.disabled = disabled;
     };
 
     textBox.div.style.marginLeft = textBox.div.style.marginRight = "3px";
@@ -194,11 +174,7 @@ export class SavedViewPicker extends ToolBarDropDown {
       textBox.textbox.style.color = viewExists ? "red" : "";
     };
 
-    newButton.disabled =
-      recallButton.disabled =
-      updateButton.disabled =
-      deleteButton.disabled =
-        true;
+    newButton.disabled = recallButton.disabled = updateButton.disabled = deleteButton.disabled = true;
   }
 
   private async recallView(): Promise<void> {
@@ -228,8 +204,7 @@ export class SavedViewPicker extends ToolBarDropDown {
   }
 
   private async deleteView(): Promise<void> {
-    if (undefined !== this._selectedView)
-      return this.deleteViewByName(this._selectedView.name);
+    if (undefined !== this._selectedView) return this.deleteViewByName(this._selectedView.name);
   }
 
   private async deleteViewByName(name: string): Promise<void> {
@@ -260,12 +235,7 @@ export class SavedViewPicker extends ToolBarDropDown {
       const overrideElements = provider.toJSON();
       overrideElementsString = JSON.stringify(overrideElements);
     }
-    const nvsp = new NamedViewStatePropsString(
-      newName,
-      json,
-      selectedElementsString,
-      overrideElementsString
-    );
+    const nvsp = new NamedViewStatePropsString(newName, json, selectedElementsString, overrideElementsString);
     this._views.insert(nvsp);
     this.populateFromViewList();
 
@@ -285,10 +255,7 @@ export class SavedViewPicker extends ToolBarDropDown {
     if (undefined === filename) return;
 
     const namedViews = this._views.getPrintString();
-    await DtaRpcInterface.getClient().writeExternalSavedViews(
-      filename,
-      namedViews
-    );
+    await DtaRpcInterface.getClient().writeExternalSavedViews(filename, namedViews);
   }
 
   private findView(name: string): NamedViewStatePropsString | undefined {

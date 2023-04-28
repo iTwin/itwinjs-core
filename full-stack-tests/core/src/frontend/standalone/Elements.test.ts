@@ -77,39 +77,27 @@ describe("Elements", () => {
       const id = placement.elementId;
       if (ids2d.has(id)) {
         expect(placement).instanceof(Placement2d);
-        const props = (
-          await imodel.elements.getProps(id)
-        )[0] as GeometricElement2dProps;
+        const props = (await imodel.elements.getProps(id))[0] as GeometricElement2dProps;
         const actual = Placement2d.fromJSON(props.placement);
-        expect(
-          placement.calculateRange().isAlmostEqual(actual.calculateRange())
-        ).to.be.true;
+        expect(placement.calculateRange().isAlmostEqual(actual.calculateRange())).to.be.true;
       } else {
         expect(ids3d.has(id)).to.be.true;
         expect(placement).instanceof(Placement3d);
-        const props = (
-          await imodel.elements.getProps(id)
-        )[0] as GeometricElement3dProps;
+        const props = (await imodel.elements.getProps(id))[0] as GeometricElement3dProps;
         const actual = Placement3d.fromJSON(props.placement);
-        expect(
-          placement.calculateRange().isAlmostEqual(actual.calculateRange())
-        ).to.be.true;
+        expect(placement.calculateRange().isAlmostEqual(actual.calculateRange())).to.be.true;
       }
     }
 
     const placements2d = await imodel.elements.getPlacements(ids, {
       type: "2d",
     });
-    expect(placements2d.map((x) => x.elementId).sort()).to.deep.equal(
-      Array.from(ids2d).sort()
-    );
+    expect(placements2d.map((x) => x.elementId).sort()).to.deep.equal(Array.from(ids2d).sort());
 
     const placements3d = await imodel.elements.getPlacements(ids, {
       type: "3d",
     });
-    expect(placements3d.map((x) => x.elementId).sort()).to.deep.equal(
-      Array.from(ids3d).sort()
-    );
+    expect(placements3d.map((x) => x.elementId).sort()).to.deep.equal(Array.from(ids3d).sort());
   });
 
   it("queries individual placements", async () => {

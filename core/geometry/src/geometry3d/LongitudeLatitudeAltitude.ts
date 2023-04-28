@@ -71,11 +71,7 @@ export class LongitudeLatitudeNumber implements BeJSONFunctions {
   }
   /** Create with all zero angles and altitude. */
   public static createZero(): LongitudeLatitudeNumber {
-    return new LongitudeLatitudeNumber(
-      Angle.createDegrees(0),
-      Angle.createDegrees(0),
-      0
-    );
+    return new LongitudeLatitudeNumber(Angle.createDegrees(0), Angle.createDegrees(0), 0);
   }
   /** Create with strongly typed `Angle` inputs */
   public static create(
@@ -105,11 +101,7 @@ export class LongitudeLatitudeNumber implements BeJSONFunctions {
       result._altitude = h;
       return result;
     }
-    return new LongitudeLatitudeNumber(
-      Angle.createRadians(longitudeRadians),
-      Angle.createRadians(latitudeRadians),
-      h
-    );
+    return new LongitudeLatitudeNumber(Angle.createRadians(longitudeRadians), Angle.createRadians(latitudeRadians), h);
   }
   /** Create with angles in degrees. */
   public static createDegrees(
@@ -124,11 +116,7 @@ export class LongitudeLatitudeNumber implements BeJSONFunctions {
       result._altitude = h;
       return result;
     }
-    return new LongitudeLatitudeNumber(
-      Angle.createDegrees(longitudeDegrees),
-      Angle.createDegrees(latitudeDegrees),
-      h
-    );
+    return new LongitudeLatitudeNumber(Angle.createDegrees(longitudeDegrees), Angle.createDegrees(latitudeDegrees), h);
   }
   /**
    * Set content from a JSON object.
@@ -175,10 +163,6 @@ export class LongitudeLatitudeNumber implements BeJSONFunctions {
   }
   /** Return a copy */
   public clone(): LongitudeLatitudeNumber {
-    return new LongitudeLatitudeNumber(
-      this._longitude.clone(),
-      this._latitude.clone(),
-      this._altitude
-    );
+    return new LongitudeLatitudeNumber(this._longitude.clone(), this._latitude.clone(), this._altitude);
   }
 }

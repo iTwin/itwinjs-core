@@ -126,9 +126,7 @@ export namespace Gradient {
       result.shift = json.shift ? json.shift : 0;
       json.keys.forEach((key) => result.keys.push(new KeyColor(key)));
       result.thematicSettings =
-        json.thematicSettings === undefined
-          ? undefined
-          : ThematicGradientSettings.fromJSON(json.thematicSettings);
+        json.thematicSettings === undefined ? undefined : ThematicGradientSettings.fromJSON(json.thematicSettings);
 
       return result;
     }
@@ -179,25 +177,16 @@ export namespace Gradient {
       result.thematicSettings = settings;
 
       if (settings.colorScheme < ThematicGradientColorScheme.Custom) {
-        for (const keyValue of Gradient.Symb._fixedSchemeKeys[
-          settings.colorScheme
-        ])
+        for (const keyValue of Gradient.Symb._fixedSchemeKeys[settings.colorScheme])
           result.keys.push(
             new KeyColor({
               value: keyValue[0],
-              color: ColorDef.computeTbgrFromComponents(
-                keyValue[1],
-                keyValue[3],
-                keyValue[2]
-              ),
+              color: ColorDef.computeTbgrFromComponents(keyValue[1], keyValue[3], keyValue[2]),
             })
           );
       } else {
         // custom color scheme; must use custom keys
-        assert(
-          settings.customKeys.length > 1,
-          "Custom thematic mode requires at least two keys to be defined"
-        );
+        assert(settings.customKeys.length > 1, "Custom thematic mode requires at least two keys to be defined");
         if (settings.customKeys.length > 1) {
           settings.customKeys.forEach((keyColor) => result.keys.push(keyColor));
         } else {
@@ -206,11 +195,7 @@ export namespace Gradient {
             result.keys.push(
               new KeyColor({
                 value: keyValue[0],
-                color: ColorDef.from(
-                  keyValue[1],
-                  keyValue[3],
-                  keyValue[2]
-                ).toJSON(),
+                color: ColorDef.from(keyValue[1], keyValue[3], keyValue[2]).toJSON(),
               })
             );
         }
@@ -261,24 +246,17 @@ export namespace Gradient {
       if ((lhs.angle === undefined) !== (rhs.angle === undefined))
         if (lhs.angle === undefined) return -1;
         else return 1;
-      if (lhs.angle && !lhs.angle.isAlmostEqualNoPeriodShift(rhs.angle!))
-        return lhs.angle.radians - rhs.angle!.radians;
-      if (lhs.keys.length !== rhs.keys.length)
-        return lhs.keys.length - rhs.keys.length;
+      if (lhs.angle && !lhs.angle.isAlmostEqualNoPeriodShift(rhs.angle!)) return lhs.angle.radians - rhs.angle!.radians;
+      if (lhs.keys.length !== rhs.keys.length) return lhs.keys.length - rhs.keys.length;
       for (let i = 0; i < lhs.keys.length; i++) {
-        if (lhs.keys[i].value !== rhs.keys[i].value)
-          return lhs.keys[i].value - rhs.keys[i].value;
-        if (!lhs.keys[i].color.equals(rhs.keys[i].color))
-          return lhs.keys[i].color.tbgr - rhs.keys[i].color.tbgr;
+        if (lhs.keys[i].value !== rhs.keys[i].value) return lhs.keys[i].value - rhs.keys[i].value;
+        if (!lhs.keys[i].color.equals(rhs.keys[i].color)) return lhs.keys[i].color.tbgr - rhs.keys[i].color.tbgr;
       }
       if (lhs.thematicSettings !== rhs.thematicSettings)
         if (undefined === lhs.thematicSettings) return -1;
         else if (undefined === rhs.thematicSettings) return 1;
         else {
-          const thematicCompareResult = ThematicGradientSettings.compare(
-            lhs.thematicSettings,
-            rhs.thematicSettings
-          );
+          const thematicCompareResult = ThematicGradientSettings.compare(lhs.thematicSettings, rhs.thematicSettings);
           if (0 !== thematicCompareResult) return thematicCompareResult;
         }
       return 0;
@@ -315,8 +293,7 @@ export namespace Gradient {
         w1 = value;
       } else {
         // locate value in map, blend corresponding colors
-        while (idx < this.keys.length - 2 && value > this.keys[idx + 1].value)
-          idx++;
+        while (idx < this.keys.length - 2 && value > this.keys[idx + 1].value) idx++;
 
         d = this.keys[idx + 1].value - this.keys[idx].value;
         w1 = d < 0.0001 ? 0.0 : (value - this.keys[idx].value) / d;
@@ -359,10 +336,7 @@ export namespace Gradient {
      * @internal
      */
     public getThematicImageForRenderer(maxDimension: number): ImageBuffer {
-      assert(
-        Mode.Thematic === this.mode,
-        "getThematicImageForRenderer only is used for thematic display."
-      );
+      assert(Mode.Thematic === this.mode, "getThematicImageForRenderer only is used for thematic display.");
 
       let settings = this.thematicSettings;
       if (settings === undefined) {
@@ -370,10 +344,7 @@ export namespace Gradient {
       }
 
       const stepCount = Math.min(settings.stepCount, maxDimension);
-      const dimension =
-        ThematicGradientMode.Smooth === settings.mode
-          ? maxDimension
-          : stepCount;
+      const dimension = ThematicGradientMode.Smooth === settings.mode ? maxDimension : stepCount;
       const image = new Uint8Array(1 * dimension * 4);
       let currentIdx = image.length - 1;
 
@@ -490,9 +461,7 @@ export namespace Gradient {
               const x = i / width - xs;
               const xr = 0.8 * (x * cosA + y * sinA);
               const yr = y * cosA - x * sinA;
-              const f = Math.sin(
-                (Math.PI / 2) * (1 - Math.sqrt(xr * xr + yr * yr))
-              );
+              const f = Math.sin((Math.PI / 2) * (1 - Math.sqrt(xr * xr + yr * yr)));
               const color = this.mapColor(f);
               image[currentIdx--] = color.getAlpha();
               image[currentIdx--] = color.colors.b;
@@ -510,9 +479,7 @@ export namespace Gradient {
             const y = ys + j / height - 0.5;
             for (let i = 0; i < width; i++) {
               const x = xs + i / width - 0.5;
-              const f = Math.sin(
-                (Math.PI / 2) * (1.0 - Math.sqrt(x * x + y * y) / r)
-              );
+              const f = Math.sin((Math.PI / 2) * (1.0 - Math.sqrt(x * x + y * y) / r));
               const color = this.mapColor(f);
               image[currentIdx--] = color.getAlpha();
               image[currentIdx--] = color.colors.b;
@@ -529,9 +496,7 @@ export namespace Gradient {
             const y = j / height - ys;
             for (let i = 0; i < width; i++) {
               const x = i / width - xs;
-              const f = Math.sin(
-                (Math.PI / 2) * (1.0 - Math.sqrt(x * x + y * y))
-              );
+              const f = Math.sin((Math.PI / 2) * (1.0 - Math.sqrt(x * x + y * y)));
               const color = this.mapColor(f);
               image[currentIdx--] = color.getAlpha();
               image[currentIdx--] = color.colors.b;
@@ -542,8 +507,7 @@ export namespace Gradient {
           break;
         }
         case Mode.Thematic: {
-          const settings =
-            this.thematicSettings ?? ThematicGradientSettings.defaults;
+          const settings = this.thematicSettings ?? ThematicGradientSettings.defaults;
 
           for (let j = 0; j < height; j++) {
             let f = 1 - j / height;
@@ -551,22 +515,17 @@ export namespace Gradient {
 
             if (
               includeThematicMargin &&
-              (f < ThematicGradientSettings.margin ||
-                f > ThematicGradientSettings.contentMax)
+              (f < ThematicGradientSettings.margin || f > ThematicGradientSettings.contentMax)
             ) {
               color = settings.marginColor;
             } else {
-              f =
-                (f - ThematicGradientSettings.margin) /
-                ThematicGradientSettings.contentRange;
+              f = (f - ThematicGradientSettings.margin) / ThematicGradientSettings.contentRange;
               switch (settings.mode) {
                 case ThematicGradientMode.SteppedWithDelimiter:
                 case ThematicGradientMode.IsoLines:
                 case ThematicGradientMode.Stepped: {
                   if (settings.stepCount > 1) {
-                    const fStep =
-                      Math.floor(f * settings.stepCount - 0.00001) /
-                      (settings.stepCount - 1);
+                    const fStep = Math.floor(f * settings.stepCount - 0.00001) / (settings.stepCount - 1);
                     color = this.mapColor(fStep);
                   }
                   break;
@@ -588,11 +547,7 @@ export namespace Gradient {
       }
 
       assert(-1 === currentIdx);
-      const imageBuffer = ImageBuffer.create(
-        image,
-        ImageBufferFormat.Rgba,
-        width
-      );
+      const imageBuffer = ImageBuffer.create(image, ImageBufferFormat.Rgba, width);
       assert(undefined !== imageBuffer);
       return imageBuffer;
     }

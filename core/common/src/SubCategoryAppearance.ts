@@ -59,9 +59,7 @@ export class SubCategoryAppearance {
   }
   /** A value in the range [0, 1] indicating the fill transparency of the geometry where 0.0 means "fully opaque" and 1.0 means "fully transparent". */
   public get fillTransparency(): number {
-    return undefined !== this._fillTransparency
-      ? this._fillTransparency
-      : this.transparency;
+    return undefined !== this._fillTransparency ? this._fillTransparency : this.transparency;
   }
 
   constructor(props?: SubCategoryAppearance.Props) {
@@ -87,8 +85,7 @@ export class SubCategoryAppearance {
     this.materialId = Id64.fromJSON(props.material);
     this.transparency = JsonUtils.asDouble(props.transp);
     if (props.fill) this._fillColor = ColorDef.fromJSON(props.fill);
-    if (props.transpFill)
-      this._fillTransparency = JsonUtils.asDouble(props.transpFill);
+    if (props.transpFill) this._fillTransparency = JsonUtils.asDouble(props.transpFill);
   }
 
   public equals(other: SubCategoryAppearance): boolean {

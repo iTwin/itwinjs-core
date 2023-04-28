@@ -10,32 +10,14 @@ import { Buffer } from "node:buffer";
 import * as fs from "node:fs";
 import * as https from "node:https";
 import * as path from "node:path";
-import {
-  AccessToken,
-  BentleyError,
-  GetMetaDataFunction,
-  Logger,
-} from "@itwin/core-bentley";
-import {
-  ProgressCallback,
-  ProgressInfo,
-  request,
-  RequestOptions,
-} from "./Request";
+import { AccessToken, BentleyError, GetMetaDataFunction, Logger } from "@itwin/core-bentley";
+import { ProgressCallback, ProgressInfo, request, RequestOptions } from "./Request";
 import { MobileHost } from "./MobileHost";
 
 const loggerCategory: string = "mobile.filehandler";
 
-const defined = (
-  argumentName: string,
-  argument?: any,
-  allowEmpty: boolean = false
-) => {
-  if (
-    argument === undefined ||
-    argument === null ||
-    (argument === "" && !allowEmpty)
-  )
+const defined = (argumentName: string, argument?: any, allowEmpty: boolean = false) => {
+  if (argument === undefined || argument === null || (argument === "" && !allowEmpty))
     throw Error(`Argument ${argumentName} is null or undefined`);
 };
 
@@ -51,11 +33,7 @@ export interface CancelRequest {
  * @internal
  */
 export class UserCancelledError extends BentleyError {
-  public constructor(
-    errorNumber: number,
-    message: string,
-    getMetaData?: GetMetaDataFunction
-  ) {
+  public constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction) {
     super(errorNumber, message, getMetaData);
     this.name = "User cancelled operation";
   }
@@ -65,11 +43,7 @@ export class UserCancelledError extends BentleyError {
  * @internal
  */
 export class DownloadFailed extends BentleyError {
-  public constructor(
-    errorNumber: number,
-    message: string,
-    getMetaData?: GetMetaDataFunction
-  ) {
+  public constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction) {
     super(errorNumber, message, getMetaData);
     this.name = "Fail to download file";
   }
@@ -79,11 +53,7 @@ export class DownloadFailed extends BentleyError {
  * @internal
  */
 export class SasUrlExpired extends BentleyError {
-  public constructor(
-    errorNumber: number,
-    message: string,
-    getMetaData?: GetMetaDataFunction
-  ) {
+  public constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction) {
     super(errorNumber, message, getMetaData);
     this.name = "SaS url has expired";
   }
@@ -116,10 +86,8 @@ export class MobileFileHandler {
    */
   private static getSafeUrlForLogging(url: string): string {
     const safeToLogDownloadUrl = new URL(url);
-    if (safeToLogDownloadUrl.search && safeToLogDownloadUrl.search.length > 0)
-      safeToLogDownloadUrl.search = "...";
-    if (safeToLogDownloadUrl.hash && safeToLogDownloadUrl.hash.length > 0)
-      safeToLogDownloadUrl.hash = "...";
+    if (safeToLogDownloadUrl.search && safeToLogDownloadUrl.search.length > 0) safeToLogDownloadUrl.search = "...";
+    if (safeToLogDownloadUrl.hash && safeToLogDownloadUrl.hash.length > 0) safeToLogDownloadUrl.hash = "...";
     return safeToLogDownloadUrl.toString();
   }
 
@@ -128,10 +96,7 @@ export class MobileFileHandler {
    * @param download sas url for download
    * @param futureSeconds should be valid in future for given seconds.
    */
-  public static isUrlExpired(
-    downloadUrl: string,
-    futureSeconds?: number
-  ): boolean {
+  public static isUrlExpired(downloadUrl: string, futureSeconds?: number): boolean {
     const sasUrl = new URL(downloadUrl);
     const se = sasUrl.searchParams.get("se");
     if (se) {
@@ -176,39 +141,25 @@ export class MobileFileHandler {
 
     MobileFileHandler.makeDirectoryRecursive(path.dirname(downloadToPathname));
     try {
-      await MobileHost.downloadFile(
-        downloadUrl,
-        downloadToPathname,
-        progressCallback,
-        cancelRequest
-      );
+      await MobileHost.downloadFile(downloadUrl, downloadToPathname, progressCallback, cancelRequest);
     } catch (err) {
       if (fs.existsSync(downloadToPathname)) fs.unlinkSync(downloadToPathname); // Just in case there was a partial download, delete the file
 
-      if (!(err instanceof UserCancelledError))
-        Logger.logError(loggerCategory, `Error downloading file`);
+      if (!(err instanceof UserCancelledError)) Logger.logError(loggerCategory, `Error downloading file`);
       throw err;
     }
     if (fileSize && fs.existsSync(downloadToPathname)) {
       if (fs.lstatSync(downloadToPathname).size !== fileSize) {
         fs.unlinkSync(downloadToPathname);
-        Logger.logError(
-          loggerCategory,
-          `Downloaded file is of incorrect size ${safeToLogUrl}`
-        );
-        throw new DownloadFailed(
-          403,
-          "Download failed. Expected filesize does not match"
-        );
+        Logger.logError(loggerCategory, `Downloaded file is of incorrect size ${safeToLogUrl}`);
+        throw new DownloadFailed(403, "Download failed. Expected filesize does not match");
       }
     }
     Logger.logTrace(loggerCategory, `Downloaded file from ${safeToLogUrl}`);
   }
   /** Get encoded block id from its number. */
   private getBlockId(blockId: number) {
-    return Buffer.from(blockId.toString(16).padStart(5, "0")).toString(
-      "base64"
-    );
+    return Buffer.from(blockId.toString(16).padStart(5, "0")).toString("base64");
   }
 
   private async uploadChunk(
@@ -220,13 +171,7 @@ export class MobileFileHandler {
   ) {
     const chunkSize = 4 * 1024 * 1024;
     let buffer = Buffer.alloc(chunkSize);
-    const bytesRead = fs.readSync(
-      fileDescriptor,
-      buffer,
-      0,
-      chunkSize,
-      chunkSize * blockId
-    );
+    const bytesRead = fs.readSync(fileDescriptor, buffer, 0, chunkSize, chunkSize * blockId);
     buffer = buffer.subarray(0, bytesRead);
 
     const options: RequestOptions = {
@@ -245,9 +190,7 @@ export class MobileFileHandler {
       },
     };
 
-    const uploadUrl = `${uploadUrlString}&comp=block&blockid=${this.getBlockId(
-      blockId
-    )}`;
+    const uploadUrl = `${uploadUrlString}&comp=block&blockid=${this.getBlockId(blockId)}`;
     await request(uploadUrl, options);
   }
 
@@ -264,8 +207,7 @@ export class MobileFileHandler {
     uploadFromPathname: string,
     progressCallback?: ProgressCallback
   ): Promise<void> {
-    const safeToLogUrl =
-      MobileFileHandler.getSafeUrlForLogging(uploadUrlString);
+    const safeToLogUrl = MobileFileHandler.getSafeUrlForLogging(uploadUrlString);
     Logger.logTrace(loggerCategory, `Uploading file to ${safeToLogUrl}`);
     defined("uploadUrlString", uploadUrlString);
     defined("uploadFromPathname", uploadFromPathname);
@@ -287,13 +229,7 @@ export class MobileFileHandler {
           });
       };
       for (; i * chunkSize < fileSize; ++i) {
-        await this.uploadChunk(
-          accessToken,
-          uploadUrlString,
-          file,
-          i,
-          progressCallback ? callback : undefined
-        );
+        await this.uploadChunk(accessToken, uploadUrlString, file, i, progressCallback ? callback : undefined);
         blockList += `<Latest>${this.getBlockId(i)}</Latest>`;
       }
       blockList += "</BlockList>";

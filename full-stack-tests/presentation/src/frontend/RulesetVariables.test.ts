@@ -14,11 +14,7 @@ import {
   RuleTypes,
 } from "@itwin/presentation-common";
 import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
-import {
-  Presentation,
-  PresentationManager,
-  RulesetVariablesManager,
-} from "@itwin/presentation-frontend";
+import { Presentation, PresentationManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
 import { initialize, resetBackend, terminate } from "../IntegrationTests";
 
 const RULESET: Ruleset = {
@@ -89,22 +85,13 @@ describe("Ruleset Variables", async () => {
   });
 
   it("adds and modifies int[] variable", async () => {
-    let valueArray = [
-      faker.random.number(),
-      faker.random.number(),
-      faker.random.number(),
-    ];
+    let valueArray = [faker.random.number(), faker.random.number(), faker.random.number()];
     const variableId = faker.random.word();
     await variables.setInts(variableId, valueArray);
     let actualValueArray = await variables.getInts(variableId);
     expect(actualValueArray).to.deep.equal(valueArray);
 
-    valueArray = [
-      faker.random.number(),
-      faker.random.number(),
-      faker.random.number(),
-      faker.random.number(),
-    ];
+    valueArray = [faker.random.number(), faker.random.number(), faker.random.number(), faker.random.number()];
     await variables.setInts(variableId, valueArray);
     actualValueArray = await variables.getInts(variableId);
     expect(actualValueArray).to.deep.equal(valueArray);
@@ -130,24 +117,14 @@ describe("Ruleset Variables", async () => {
     let actualValueArray = await variables.getId64s(variableId);
     expect(actualValueArray).to.deep.equal(valueArray);
 
-    valueArray = [
-      createRandomId(),
-      createRandomId(),
-      createRandomId(),
-      createRandomId(),
-    ];
+    valueArray = [createRandomId(), createRandomId(), createRandomId(), createRandomId()];
     await variables.setId64s(variableId, valueArray);
     actualValueArray = await variables.getId64s(variableId);
     expect(actualValueArray).to.deep.equal(valueArray);
   });
 
   it("accessing int[] variable with different types", async () => {
-    const valueArray = [
-      faker.random.number(),
-      faker.random.number(),
-      faker.random.number(),
-      faker.random.number(),
-    ];
+    const valueArray = [faker.random.number(), faker.random.number(), faker.random.number(), faker.random.number()];
     const variableId = faker.random.word();
     await variables.setInts(variableId, valueArray);
 
@@ -201,9 +178,7 @@ describe("Ruleset Variables", async () => {
     expect(id64ArrayValue.length).to.equal(0);
 
     const id64Value = await variables.getId64(variableId);
-    expect(id64Value).to.deep.eq(
-      Id64.fromLocalAndBriefcaseIds(value ? 1 : 0, 0)
-    );
+    expect(id64Value).to.deep.eq(Id64.fromLocalAndBriefcaseIds(value ? 1 : 0, 0));
 
     const intArrayValue = await variables.getInts(variableId);
     expect(intArrayValue.length).to.equal(0);
@@ -255,12 +230,7 @@ describe("Ruleset Variables", async () => {
   });
 
   it("accessing Id64[] variable with different types", async () => {
-    const valueArray = [
-      createRandomId(),
-      createRandomId(),
-      createRandomId(),
-      createRandomId(),
-    ];
+    const valueArray = [createRandomId(), createRandomId(), createRandomId(), createRandomId()];
     const variableId = faker.random.word();
     await variables.setId64s(variableId, valueArray);
 
@@ -285,8 +255,7 @@ describe("Ruleset Variables", async () => {
     let frontends: PresentationManager[];
 
     beforeEach(async () => {
-      const testIModelName =
-        "assets/datasets/Properties_60InstancesWithUrl2.ibim";
+      const testIModelName = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
       imodel = await SnapshotConnection.openFile(testIModelName);
       frontends = [0, 1].map(() => PresentationManager.create());
     });
@@ -298,14 +267,8 @@ describe("Ruleset Variables", async () => {
 
     it("handles multiple simultaneous requests from different frontends with ruleset variables", async () => {
       for (let i = 0; i < 100; ++i) {
-        frontends.forEach(async (f, fi) =>
-          f.vars(RULESET.id).setString("variable_id", `${i}_${fi}`)
-        );
-        const nodes = await Promise.all(
-          frontends.map(async (f) =>
-            f.getNodes({ imodel, rulesetOrId: RULESET })
-          )
-        );
+        frontends.forEach(async (f, fi) => f.vars(RULESET.id).setString("variable_id", `${i}_${fi}`));
+        const nodes = await Promise.all(frontends.map(async (f) => f.getNodes({ imodel, rulesetOrId: RULESET })));
         frontends.forEach((_f, fi) => {
           expect(nodes[fi][0].label.displayValue).to.eq(`${i}_${fi}`);
         });
@@ -318,8 +281,7 @@ describe("Ruleset Variables", async () => {
     let frontend: PresentationManager;
 
     beforeEach(async () => {
-      const testIModelName: string =
-        "assets/datasets/Properties_60InstancesWithUrl2.ibim";
+      const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
       imodel = await SnapshotConnection.openFile(testIModelName);
       expect(imodel).is.not.null;
       frontend = PresentationManager.create();
@@ -332,14 +294,8 @@ describe("Ruleset Variables", async () => {
 
     it("can use the same frontend-registered ruleset variables after backend is reset", async () => {
       const vars = frontend.vars("AnyRulesetId");
-      const var1: [string, string] = [
-        faker.random.uuid(),
-        faker.random.words(),
-      ];
-      const var2: [string, number] = [
-        faker.random.uuid(),
-        faker.random.number(),
-      ];
+      const var1: [string, string] = [faker.random.uuid(), faker.random.words()];
+      const var2: [string, number] = [faker.random.uuid(), faker.random.number()];
 
       await vars.setString(var1[0], var1[1]);
       expect(await vars.getString(var1[0])).to.eq(var1[1]);
@@ -361,9 +317,7 @@ describe("Ruleset Variables", async () => {
     let imodel: IModelConnection;
 
     beforeEach(async () => {
-      imodel = await SnapshotConnection.openFile(
-        "assets/datasets/Properties_60InstancesWithUrl2.ibim"
-      );
+      imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
     });
 
     afterEach(async () => {
@@ -378,8 +332,7 @@ describe("Ruleset Variables", async () => {
             ruleType: RuleTypes.Content,
             specifications: [
               {
-                specType:
-                  ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+                specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
                 classes: {
                   schemaName: "PCJ_TestSchema",
                   classNames: ["TestClass"],

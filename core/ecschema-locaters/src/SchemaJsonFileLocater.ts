@@ -26,10 +26,7 @@ import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
  * from the file system using configurable search paths.
  * @beta
  */
-export class SchemaJsonFileLocater
-  extends SchemaFileLocater
-  implements ISchemaLocater
-{
+export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaLocater {
   /**
    * Constructs a SchemaKey based on the information in the Schema JSON
    * @param data The Schema JSON as a string
@@ -55,10 +52,7 @@ export class SchemaJsonFileLocater
     const schemaName = dataJson.name;
     const schemaVersion = dataJson.version;
 
-    const key = new SchemaKey(
-      schemaName.toString(),
-      ECVersion.fromString(schemaVersion.toString())
-    );
+    const key = new SchemaKey(schemaName.toString(), ECVersion.fromString(schemaVersion.toString()));
     return key;
   }
 
@@ -75,17 +69,11 @@ export class SchemaJsonFileLocater
     context: SchemaContext
   ): Promise<T | undefined> {
     // Grab all schema files that match the schema key
-    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(
-      schemaKey,
-      matchType,
-      "json"
-    );
+    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(schemaKey, matchType, "json");
     if (!candidates || candidates.length === 0) return undefined;
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[
-      candidates.length - 1
-    ];
+    const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaPath = maxCandidate.fileName;
 
     // Load the file
@@ -113,17 +101,11 @@ export class SchemaJsonFileLocater
     context: SchemaContext
   ): T | undefined {
     // Grab all schema files that match the schema key
-    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(
-      schemaKey,
-      matchType,
-      "json"
-    );
+    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(schemaKey, matchType, "json");
     if (!candidates || candidates.length === 0) return undefined;
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[
-      candidates.length - 1
-    ];
+    const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaPath = maxCandidate.fileName;
 
     // Load the file

@@ -176,12 +176,7 @@ export function addLineCode(prog: ProgramBuilder, args: string) {
 
   const funcCall: string = `computeLineCodeTextureCoords(${args})`;
 
-  prog.addFunctionComputedVaryingWithArgs(
-    "v_texc",
-    VariableType.Vec2,
-    funcCall,
-    computeTextureCoord
-  );
+  prog.addFunctionComputedVaryingWithArgs("v_texc", VariableType.Vec2, funcCall, computeTextureCoord);
 
   addFrustum(prog);
   addLineCodeTexture(prog.frag);
@@ -346,15 +341,9 @@ const computePosition = `
 const lineCodeArgs = "g_windowDir, g_windowPos, miterAdjust";
 
 /** @internal */
-export function createPolylineBuilder(
-  isInstanced: IsInstanced,
-  positionType: PositionType
-): ProgramBuilder {
+export function createPolylineBuilder(isInstanced: IsInstanced, positionType: PositionType): ProgramBuilder {
   const instanced = IsInstanced.Yes === isInstanced;
-  const attrMap = AttributeMap.findAttributeMap(
-    TechniqueId.Polyline,
-    instanced
-  );
+  const attrMap = AttributeMap.findAttributeMap(TechniqueId.Polyline, instanced);
   const builder = new ProgramBuilder(attrMap, { positionType, instanced });
 
   addShaderFlags(builder);
@@ -371,15 +360,9 @@ export function createPolylineBuilder(
 }
 
 /** @internal */
-export function createPolylineHiliter(
-  isInstanced: IsInstanced,
-  positionType: PositionType
-): ProgramBuilder {
+export function createPolylineHiliter(isInstanced: IsInstanced, positionType: PositionType): ProgramBuilder {
   const instanced = IsInstanced.Yes === isInstanced;
-  const attrMap = AttributeMap.findAttributeMap(
-    TechniqueId.Polyline,
-    instanced
-  );
+  const attrMap = AttributeMap.findAttributeMap(TechniqueId.Polyline, instanced);
   const builder = new ProgramBuilder(attrMap, { positionType, instanced });
 
   addCommon(builder);

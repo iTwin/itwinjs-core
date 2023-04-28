@@ -14,11 +14,7 @@ import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry } from "../Geometry";
-import {
-  GeometryHandler,
-  UVSurface,
-  UVSurfaceIsoParametricDistance,
-} from "../geometry3d/GeometryHandler";
+import { GeometryHandler, UVSurface, UVSurfaceIsoParametricDistance } from "../geometry3d/GeometryHandler";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { Vector2d } from "../geometry3d/Point2dVector2d";
@@ -35,10 +31,7 @@ import { SolidPrimitive } from "./SolidPrimitive";
  * * The stored matrix has unit vectors in the xy columns, and full-length z column.
  * @public
  */
-export class Cone
-  extends SolidPrimitive
-  implements UVSurface, UVSurfaceIsoParametricDistance
-{
+export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParametricDistance {
   /** String name for schema properties */
   public readonly solidPrimitiveType = "cone";
 
@@ -46,12 +39,7 @@ export class Cone
   private _radiusA: number; // nominal radius at z=0.  skewed axes may make it an ellipse
   private _radiusB: number; // radius at z=1.  skewed axes may make it an ellipse
   private _maxRadius: number; // maximum radius anywhere on the cone.
-  protected constructor(
-    map: Transform,
-    radiusA: number,
-    radiusB: number,
-    capped: boolean
-  ) {
+  protected constructor(map: Transform, radiusA: number, radiusB: number, capped: boolean) {
     super(capped);
     this._localToWorld = map;
     this._radiusA = radiusA;
@@ -60,12 +48,7 @@ export class Cone
   }
   /** Return a clone of this Cone. */
   public clone(): Cone {
-    return new Cone(
-      this._localToWorld.clone(),
-      this._radiusA,
-      this._radiusB,
-      this.capped
-    );
+    return new Cone(this._localToWorld.clone(), this._radiusA, this._radiusB, this.capped);
   }
   /** Return a coordinate frame (right handed unit vectors)
    * * origin at center of the base circle.
@@ -81,10 +64,7 @@ export class Cone
    */
   public tryTransformInPlace(transform: Transform): boolean {
     if (transform.matrix.isSingular()) return false;
-    transform.multiplyTransformTransform(
-      this._localToWorld,
-      this._localToWorld
-    );
+    transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
     return true;
   }
   /**
@@ -92,10 +72,7 @@ export class Cone
    */
   public cloneTransformed(transform: Transform): Cone | undefined {
     const result = this.clone();
-    transform.multiplyTransformTransform(
-      result._localToWorld,
-      result._localToWorld
-    );
+    transform.multiplyTransformTransform(result._localToWorld, result._localToWorld);
     return result;
   }
   /** create a cylinder or cone from two endpoints and their radii.   The circular cross sections are perpendicular to the axis line
@@ -140,12 +117,7 @@ export class Cone
     radiusA = Math.abs(Geometry.correctSmallMetricDistance(radiusA));
     radiusB = Math.abs(Geometry.correctSmallMetricDistance(radiusB));
     const vectorZ = centerA.vectorTo(centerB);
-    const localToWorld = Transform.createOriginAndMatrixColumns(
-      centerA,
-      vectorX,
-      vectorY,
-      vectorZ
-    );
+    const localToWorld = Transform.createOriginAndMatrixColumns(centerA, vectorX, vectorY, vectorZ);
     return new Cone(localToWorld, radiusA, radiusB, capped);
   }
   /** (Property accessor) Return the center point at the base plane */
@@ -188,8 +160,7 @@ export class Cone
   public override isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof Cone) {
       if (this.capped !== other.capped) return false;
-      if (!this._localToWorld.isAlmostEqualAllowZRotation(other._localToWorld))
-        return false;
+      if (!this._localToWorld.isAlmostEqualAllowZRotation(other._localToWorld)) return false;
       return (
         Geometry.isSameCoordinate(this._radiusA, other._radiusA) &&
         Geometry.isSameCoordinate(this._radiusB, other._radiusB)
@@ -293,21 +264,12 @@ export class Cone
    * * v = 1 is the top plane
    * * u = 0 to u = 1 wraps the angular range.
    */
-  public uvFractionToPoint(
-    uFraction: number,
-    vFraction: number,
-    result?: Point3d
-  ): Point3d {
+  public uvFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d {
     const theta = uFraction * Math.PI * 2.0;
     const r = Geometry.interpolate(this._radiusA, vFraction, this._radiusB);
     const cosTheta = Math.cos(theta);
     const sinTheta = Math.sin(theta);
-    return this._localToWorld.multiplyXYZ(
-      r * cosTheta,
-      r * sinTheta,
-      vFraction,
-      result
-    );
+    return this._localToWorld.multiplyXYZ(r * cosTheta, r * sinTheta, vFraction, result);
   }
   /** Evaluate a point tangent plane on the Cone surfaces, with
    * * v = 0 is the base plane.
@@ -327,16 +289,8 @@ export class Cone
     const fTheta = 2.0 * Math.PI;
     return Plane3dByOriginAndVectors.createOriginAndVectors(
       this._localToWorld.multiplyXYZ(r * cosTheta, r * sinTheta, vFraction),
-      this._localToWorld.multiplyVectorXYZ(
-        -r * sinTheta * fTheta,
-        r * cosTheta * fTheta,
-        0
-      ),
-      this._localToWorld.multiplyVectorXYZ(
-        drdv * cosTheta,
-        drdv * sinTheta,
-        1.0
-      ),
+      this._localToWorld.multiplyVectorXYZ(-r * sinTheta * fTheta, r * cosTheta * fTheta, 0),
+      this._localToWorld.multiplyVectorXYZ(drdv * cosTheta, drdv * sinTheta, 1.0),
       result
     );
   }
@@ -362,10 +316,7 @@ export class Cone
     const zSkewDistance = zSkewVector.magnitudeXY();
     return Vector2d.create(
       Math.PI * 2 * Math.max(this._radiusA, this._radiusB),
-      Geometry.hypotenuseXY(
-        Math.abs(this._radiusB - this._radiusA) + zSkewDistance,
-        hZ
-      )
+      Geometry.hypotenuseXY(Math.abs(this._radiusB - this._radiusA) + zSkewDistance, hZ)
     );
   }
 }

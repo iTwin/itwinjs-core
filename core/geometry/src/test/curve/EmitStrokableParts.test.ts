@@ -18,10 +18,7 @@ import { Checker } from "../Checker";
 function maxSegmentLength(linestring: LineString3d): number {
   let aMax = 0;
   for (let i = 0; i + 1 < linestring.numPoints(); i++) {
-    aMax = Math.max(
-      linestring.pointAt(i)!.distance(linestring.pointAt(i + 1)!),
-      aMax
-    );
+    aMax = Math.max(linestring.pointAt(i)!.distance(linestring.pointAt(i + 1)!), aMax);
   }
   return aMax;
 }
@@ -40,16 +37,9 @@ class StrokeVerifier implements IStrokeHandler {
   public startCurvePrimitive(cp: CurvePrimitive): void {
     this._myCP = cp;
   }
-  public announcePointTangent(
-    xyz: Point3d,
-    fraction: number,
-    tangent: Vector3d
-  ): void {
+  public announcePointTangent(xyz: Point3d, fraction: number, tangent: Vector3d): void {
     this.frameBuilder.announcePoint(xyz);
-    this._ck.testTrue(
-      this.frameBuilder.hasOrigin,
-      "frameBuilder.hasOrigin after a point is announced"
-    );
+    this._ck.testTrue(this.frameBuilder.hasOrigin, "frameBuilder.hasOrigin after a point is announced");
     this.frameBuilder.announceVector(tangent);
     if (this._ck.testPointer(this._myCP)) {
       const ray = this._myCP.fractionToPointAndDerivative(fraction);
@@ -82,10 +72,7 @@ class StrokeVerifier implements IStrokeHandler {
     this._myCP = undefined;
   }
   public startParentCurvePrimitive(_cp: CurvePrimitive): void {
-    this._ck.testUndefined(
-      this._myParent,
-      "Stroker parentCurve cannot be recursive"
-    );
+    this._ck.testUndefined(this._myParent, "Stroker parentCurve cannot be recursive");
     this._myParent = _cp;
   }
   public endParentCurvePrimitive(_cp: CurvePrimitive): void {
@@ -97,9 +84,7 @@ describe("EmitStrokableParts", () => {
   it("MaxEdgeLength", () => {
     const ck = new Checker();
     const curves = Sample.createSmoothCurvePrimitives();
-    curves.push(
-      LineString3d.createRectangleXY(Point3d.create(0, 0), 4, 2, true)
-    );
+    curves.push(LineString3d.createRectangleXY(Point3d.create(0, 0), 4, 2, true));
     for (const c of curves) {
       const ls1 = LineString3d.create();
       // const aTotal = c.curveLength();
@@ -111,12 +96,7 @@ describe("EmitStrokableParts", () => {
       const ls2 = LineString3d.create();
       c.emitStrokes(ls2, options);
       const aMax2 = maxSegmentLength(ls2);
-      ck.testLE(
-        aMax2,
-        options.maxEdgeLength,
-        "maxEdgeLength effective for strokes",
-        c
-      );
+      ck.testLE(aMax2, options.maxEdgeLength, "maxEdgeLength effective for strokes", c);
       const handler = new StrokeVerifier(ck);
       c.emitStrokableParts(handler, options);
     }

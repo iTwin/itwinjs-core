@@ -32,11 +32,7 @@ export class SchemaLoader {
    */
   public getSchema<T extends Schema>(schemaName: string): T {
     const schema = this.tryGetSchema(schemaName);
-    if (!schema)
-      throw new ECObjectsError(
-        ECObjectsStatus.UnableToLocateSchema,
-        `reading schema=${schemaName}`
-      );
+    if (!schema) throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `reading schema=${schemaName}`);
 
     return schema as T;
   }

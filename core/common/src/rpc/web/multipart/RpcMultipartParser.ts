@@ -191,9 +191,7 @@ export class RpcMultipartParser {
               // empty header field
               throw new Error("Empty header field");
             }
-            this._onParseHeaderField(
-              this._buffer.subarray(this._headerFieldMark as number, i)
-            );
+            this._onParseHeaderField(this._buffer.subarray(this._headerFieldMark as number, i));
             this._headerFieldMark = null;
             state = HEADER_VALUE_START;
             break;
@@ -212,9 +210,7 @@ export class RpcMultipartParser {
         /* falls through */
         case HEADER_VALUE:
           if (c === CR) {
-            this._onParseHeaderValue(
-              this._buffer.subarray(this._headerValueMark as number, i)
-            );
+            this._onParseHeaderValue(this._buffer.subarray(this._headerValueMark as number, i));
             this._headerValueMark = null;
             this._onParseHeaderEnd();
             state = HEADER_VALUE_ALMOST_DONE;
@@ -253,9 +249,7 @@ export class RpcMultipartParser {
           if (index < boundaryLength) {
             if (boundary[index] === c) {
               if (index === 0) {
-                this._onParsePartData(
-                  this._buffer.subarray(this._partDataMark as number, i)
-                );
+                this._onParsePartData(this._buffer.subarray(this._partDataMark as number, i));
                 this._partDataMark = null;
               }
               index++;
@@ -405,8 +399,7 @@ export class RpcMultipartParser {
   }
 
   private _onParsePartEnd() {
-    const partValue =
-      this._partChunks.length === 1 ? this._partChunks[0] : this._concatParts();
+    const partValue = this._partChunks.length === 1 ? this._partChunks[0] : this._concatParts();
 
     if (this._partName === "objects") {
       const partDecoder = new TextDecoder();

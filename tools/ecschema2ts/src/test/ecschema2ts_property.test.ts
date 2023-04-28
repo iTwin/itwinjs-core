@@ -17,9 +17,7 @@ describe("ecjson properties to ts", () => {
               <ECProperty propertyName="BinaryProp" typeName="binary"/>
             </ECEntityClass>
           </ECSchema>`,
-        expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
-        ],
+        expectedPropsImportTs: [new RegExp(`import { EntityProps } from "@itwin/core-common";`)],
         expectedPropsTs: [
           utils.dedent`
           export interface TestClassProps extends EntityProps {
@@ -40,9 +38,7 @@ describe("ecjson properties to ts", () => {
           </ECSchema>`,
         expectedPropsImportTs: [
           new RegExp(`import { EntityProps } from "@itwin/core-common";`),
-          new RegExp(
-            `import { (?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`
-          ),
+          new RegExp(`import { (?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`),
         ],
         expectedPropsTs: [
           utils.dedent`
@@ -64,9 +60,7 @@ describe("ecjson properties to ts", () => {
           </ECSchema>`,
         expectedPropsImportTs: [
           new RegExp(`import { EntityProps } from "@itwin/core-common";`),
-          new RegExp(
-            `import { (?=.*\\b(Point2d)\\b).* } from "@itwin/core-geometry";`
-          ),
+          new RegExp(`import { (?=.*\\b(Point2d)\\b).* } from "@itwin/core-geometry";`),
         ],
         expectedPropsTs: [
           utils.dedent`
@@ -86,9 +80,7 @@ describe("ecjson properties to ts", () => {
               <ECProperty propertyName="BoolProp" typeName="bool"/>
             </ECEntityClass>
           </ECSchema>`,
-        expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
-        ],
+        expectedPropsImportTs: [new RegExp(`import { EntityProps } from "@itwin/core-common";`)],
         expectedPropsTs: [
           utils.dedent`
           export interface TestClassProps extends EntityProps {
@@ -107,9 +99,7 @@ describe("ecjson properties to ts", () => {
               <ECProperty propertyName="IntProp" typeName="int"/>
             </ECEntityClass>
           </ECSchema>`,
-        expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
-        ],
+        expectedPropsImportTs: [new RegExp(`import { EntityProps } from "@itwin/core-common";`)],
         expectedPropsTs: [
           utils.dedent`
           export interface TestClassProps extends EntityProps {
@@ -128,9 +118,7 @@ describe("ecjson properties to ts", () => {
               <ECProperty propertyName="DoubleProp" typeName="double"/>
             </ECEntityClass>
           </ECSchema>`,
-        expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
-        ],
+        expectedPropsImportTs: [new RegExp(`import { EntityProps } from "@itwin/core-common";`)],
         expectedPropsTs: [
           utils.dedent`
           export interface TestClassProps extends EntityProps {
@@ -149,9 +137,7 @@ describe("ecjson properties to ts", () => {
               <ECProperty propertyName="DateTimeProp" typeName="dateTime"/>
             </ECEntityClass>
           </ECSchema>`,
-        expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
-        ],
+        expectedPropsImportTs: [new RegExp(`import { EntityProps } from "@itwin/core-common";`)],
         expectedPropsTs: [
           utils.dedent`
           export interface TestClassProps extends EntityProps {
@@ -170,9 +156,7 @@ describe("ecjson properties to ts", () => {
               <ECProperty propertyName="StringProp" typeName="string"/>
             </ECEntityClass>
           </ECSchema>`,
-        expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
-        ],
+        expectedPropsImportTs: [new RegExp(`import { EntityProps } from "@itwin/core-common";`)],
         expectedPropsTs: [
           utils.dedent`
           export interface TestClassProps extends EntityProps {
@@ -191,9 +175,7 @@ describe("ecjson properties to ts", () => {
               <ECProperty propertyName="LongProp" typeName="long"/>
             </ECEntityClass>
           </ECSchema>`,
-        expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
-        ],
+        expectedPropsImportTs: [new RegExp(`import { EntityProps } from "@itwin/core-common";`)],
         expectedPropsTs: [
           utils.dedent`
           export interface TestClassProps extends EntityProps {
@@ -253,9 +235,7 @@ describe("ecjson properties to ts", () => {
                 <ECStructProperty propertyName="StructProp" typeName="DerivedStruct"/>
             </ECEntityClass>
           </ECSchema>`,
-        expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
-        ],
+        expectedPropsImportTs: [new RegExp(`import { EntityProps } from "@itwin/core-common";`)],
         expectedPropsTs: [
           utils.dedent`
           export interface TestClassProps extends EntityProps {
@@ -319,9 +299,7 @@ describe("ecjson properties to ts", () => {
           </ECSchema>`,
         expectedPropsImportTs: [
           new RegExp(`import { EntityProps } from "@itwin/core-common";`),
-          new RegExp(
-            `import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`
-          ),
+          new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`),
         ],
         expectedPropsTs: [
           utils.dedent`
@@ -357,9 +335,7 @@ describe("ecjson properties to ts", () => {
                 <ECStructArrayProperty propertyName="StructArrayProp" typeName="TestStruct" minOccurs="0" maxOccurs="unbounded"/>
             </ECEntityClass>
           </ECSchema>`,
-        expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
-        ],
+        expectedPropsImportTs: [new RegExp(`import { EntityProps } from "@itwin/core-common";`)],
         expectedPropsTs: [
           utils.dedent`
           export interface TestClassProps extends EntityProps {
@@ -436,9 +412,7 @@ describe("ecjson properties to ts", () => {
                 </ECNavigationProperty>
             </ECEntityClass>
           </ECSchema>`,
-        expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
-        ],
+        expectedPropsImportTs: [new RegExp(`import { EntityProps } from "@itwin/core-common";`)],
         expectedPropsTs: [
           utils.dedent`
           export interface TestClassProps extends EntityProps {

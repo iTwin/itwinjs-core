@@ -28,8 +28,7 @@ export class RangeSearch {
     standardDeviationAdjustment: number = RangeSearch.defaultStandardDeviationAdjustment
   ): Range2dSearchInterface<T> | undefined {
     // for smallish sets, just linear search  . . ..
-    if (rangeLengthData.xSums.count < RangeSearch.smallCountLimit)
-      return new LinearSearchRange2dArray();
+    if (rangeLengthData.xSums.count < RangeSearch.smallCountLimit) return new LinearSearchRange2dArray();
     const numXBlock = this.estimateGridBlockCount(
       rangeLengthData.range.xLength(),
       rangeLengthData.xSums,
@@ -66,12 +65,8 @@ export class RangeSearch {
   ): number {
     if (sums.count < 1) return 1;
     const representativeRangeLength =
-      rangesPerBlockEdge *
-      (sums.mean + standardDeviationAdjustment * sums.standardDeviation);
-    const gridEdgeLength = Geometry.conditionalDivideFraction(
-      totalLength,
-      representativeRangeLength
-    );
+      rangesPerBlockEdge * (sums.mean + standardDeviationAdjustment * sums.standardDeviation);
+    const gridEdgeLength = Geometry.conditionalDivideFraction(totalLength, representativeRangeLength);
     if (gridEdgeLength === undefined) return 1;
     return Math.ceil(gridEdgeLength);
   }

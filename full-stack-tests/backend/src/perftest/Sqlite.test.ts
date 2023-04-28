@@ -7,21 +7,14 @@ import * as os from "os";
 import * as path from "path";
 import * as readline from "readline";
 import { DbResult, OpenMode, StopWatch, using } from "@itwin/core-bentley";
-import {
-  ECDb,
-  ECDbOpenMode,
-  SQLiteDb,
-  SqliteStatement,
-} from "@itwin/core-backend";
+import { ECDb, ECDbOpenMode, SQLiteDb, SqliteStatement } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 
 function makeRandStr(length: number) {
   let text = "";
-  const possible =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-  for (let i = 0; i < length; i++)
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  for (let i = 0; i < length; i++) text += possible.charAt(Math.floor(Math.random() * possible.length));
 
   return text;
 }
@@ -32,13 +25,7 @@ async function reportProgress(prefix: string, c: number, m: number) {
     process.stdout.write(os.EOL);
   }
 }
-async function createSeedFile(
-  pathName: string,
-  tbl: string,
-  nCols: number,
-  nRows: number,
-  startId: number
-) {
+async function createSeedFile(pathName: string, tbl: string, nCols: number, nRows: number, startId: number) {
   const kMaxLengthOfString = 11;
   await using(new ECDb(), async (ecdb) => {
     ecdb.createDb(pathName);
@@ -48,23 +35,18 @@ async function createSeedFile(
     }
     const sp = new StopWatch(undefined, true);
     process.stdout.write(`Creating seed file ... ${pathName}\n`);
-    ecdb.withPreparedSqliteStatement(
-      `create table [${tbl}](id integer primary key,${cols.join(",")});`,
-      (stmt) => stmt.step()
+    ecdb.withPreparedSqliteStatement(`create table [${tbl}](id integer primary key,${cols.join(",")});`, (stmt) =>
+      stmt.step()
     );
     await using(
-      ecdb.prepareSqliteStatement(
-        `insert into ${tbl} values(?${",?".repeat(nCols)});`
-      ),
+      ecdb.prepareSqliteStatement(`insert into ${tbl} values(?${",?".repeat(nCols)});`),
       async (stmt: SqliteStatement) => {
         for (let i = 0; i < nRows; i++) {
           stmt.reset();
           stmt.clearBindings();
           stmt.bindValue(1, startId + i);
           for (let j = 2; j < nCols; j++) {
-            const randStr = makeRandStr(
-              Math.round(Math.random() * kMaxLengthOfString + 1)
-            );
+            const randStr = makeRandStr(Math.round(Math.random() * kMaxLengthOfString + 1));
             stmt.bindValue(j, randStr);
           }
           stmt.step();
@@ -77,18 +59,11 @@ async function createSeedFile(
     process.stdout.write(`Completed in ${sp.elapsedSeconds} sec\n`);
   });
 }
-async function readRow(
-  stmt: SqliteStatement,
-  id: number,
-  nParam: number = 1
-): Promise<boolean> {
+async function readRow(stmt: SqliteStatement, id: number, nParam: number = 1): Promise<boolean> {
   stmt.reset();
   stmt.clearBindings();
   stmt.bindValue(nParam, id);
-  return (
-    stmt.step() === DbResult.BE_SQLITE_ROW &&
-    stmt.getValue(0).getInteger() === id
-  );
+  return stmt.step() === DbResult.BE_SQLITE_ROW && stmt.getValue(0).getInteger() === id;
 }
 
 async function simulateRowRead(
@@ -124,18 +99,14 @@ function changePageSize(dbName: string, pageSizeInKb: number) {
   db.withOpenDb({ dbName, openMode: OpenMode.ReadWrite }, () => {
     let pageSize = 0;
     db.withPreparedSqliteStatement(`PRAGMA page_size`, (stmt) => {
-      if (DbResult.BE_SQLITE_ROW !== stmt.step())
-        throw new Error(`changePageSize() failed to get page size`);
+      if (DbResult.BE_SQLITE_ROW !== stmt.step()) throw new Error(`changePageSize() failed to get page size`);
       pageSize = stmt.getValue(0).getInteger();
     });
     db.vacuum({
-      pageSize:
-        pageSize === pageSizeInKb * 1024 ? undefined : pageSizeInKb * 1024,
+      pageSize: pageSize === pageSizeInKb * 1024 ? undefined : pageSizeInKb * 1024,
     });
   });
-  process.stdout.write(
-    `Change page size to ${pageSizeInKb}K took ${sp.elapsedSeconds} sec\n`
-  );
+  process.stdout.write(`Change page size to ${pageSizeInKb}K took ${sp.elapsedSeconds} sec\n`);
 }
 
 interface ReadParams {
@@ -179,18 +150,10 @@ async function runReadTest(param: ReadParams) {
   const seedFilePath = path.join(param.seedFolder, seedFileName);
   const testFilepath = path.join(param.testFolder, testFile);
   const report = path.join(param.seedFolder, "report.csv");
-  if (!fs.existsSync(param.seedFolder))
-    fs.mkdirSync(param.seedFolder, { recursive: true });
-  if (!fs.existsSync(param.testFolder))
-    fs.mkdirSync(param.testFolder, { recursive: true });
+  if (!fs.existsSync(param.seedFolder)) fs.mkdirSync(param.seedFolder, { recursive: true });
+  if (!fs.existsSync(param.testFolder)) fs.mkdirSync(param.testFolder, { recursive: true });
   if (!fs.existsSync(seedFilePath)) {
-    await createSeedFile(
-      seedFilePath,
-      testTableName,
-      param.columnsCount,
-      param.seedRowCount,
-      param.startId
-    );
+    await createSeedFile(seedFilePath, testTableName, param.columnsCount, param.seedRowCount, param.startId);
     if (fs.existsSync(testFilepath)) fs.unlinkSync(testFilepath);
   }
   if (!fs.existsSync(testFilepath)) fs.copyFileSync(seedFilePath, testFilepath);
@@ -202,8 +165,7 @@ async function runReadTest(param: ReadParams) {
     process.stdout.write(`Run ... [${r}/${param.runCount}] `);
     await using(new ECDb(), async (ecdb: ECDb) => {
       ecdb.openDb(testFilepath, ECDbOpenMode.Readonly);
-      if (!ecdb.isOpen)
-        throw new Error(`changePageSize() fail to open file ${testFilepath}`);
+      if (!ecdb.isOpen) throw new Error(`changePageSize() fail to open file ${testFilepath}`);
       await ecdb.withPreparedSqliteStatement(
         `select * from ${testTableName} where id=?`,
         async (stmt: SqliteStatement) => {
@@ -222,19 +184,12 @@ async function runReadTest(param: ReadParams) {
 
   const avg = average(result);
   const stddev = standardDeviation(result);
-  process.stdout.write(
-    `\nAvg Time:${avg.toFixed(4)} sec, stddev:${stddev.toFixed(4)}\n`
-  );
+  process.stdout.write(`\nAvg Time:${avg.toFixed(4)} sec, stddev:${stddev.toFixed(4)}\n`);
   if (!fs.existsSync(report))
-    fs.appendFileSync(
-      report,
-      "test dir, runs, page size, avg time elapsed (sec), std-dev\r\n"
-    );
+    fs.appendFileSync(report, "test dir, runs, page size, avg time elapsed (sec), std-dev\r\n");
   fs.appendFileSync(
     report,
-    `${param.testFolder}, ${param.runCount}, ${
-      param.pageSizeInKb
-    }K, ${avg.toFixed(4)}, ${stddev.toFixed(4)}\r\n`
+    `${param.testFolder}, ${param.runCount}, ${param.pageSizeInKb}K, ${avg.toFixed(4)}, ${stddev.toFixed(4)}\r\n`
   );
 }
 /* This test suite require configuring dataset path

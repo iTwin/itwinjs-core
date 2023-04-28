@@ -13,9 +13,7 @@ describe("IconSpecUtilities", () => {
   });
 
   it("should correctly return svg source from iconSpec", () => {
-    const svgSource = IconSpecUtilities.getSvgSource(
-      `${IconSpecUtilities.SVG_PREFIX}test`
-    );
+    const svgSource = IconSpecUtilities.getSvgSource(`${IconSpecUtilities.SVG_PREFIX}test`);
     expect(svgSource).to.eq("test");
   });
 
@@ -30,9 +28,7 @@ describe("IconSpecUtilities", () => {
   });
 
   it("should correctly return WebSvg source from iconSpec", () => {
-    const webSvgSource = IconSpecUtilities.getWebComponentSource(
-      `${IconSpecUtilities.WEB_COMPONENT_PREFIX}test`
-    );
+    const webSvgSource = IconSpecUtilities.getWebComponentSource(`${IconSpecUtilities.WEB_COMPONENT_PREFIX}test`);
     expect(webSvgSource).to.eq("test");
   });
 

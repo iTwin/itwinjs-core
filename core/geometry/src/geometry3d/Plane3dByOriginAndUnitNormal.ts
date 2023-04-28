@@ -21,10 +21,7 @@ import { XAndY } from "./XYZProps";
  * * a unit normal.
  * @public
  */
-export class Plane3dByOriginAndUnitNormal
-  extends Plane3d
-  implements BeJSONFunctions
-{
+export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunctions {
   private _origin: Point3d;
   private _normal: Vector3d;
   // constructor captures references !!!
@@ -34,33 +31,15 @@ export class Plane3dByOriginAndUnitNormal
     this._normal = normal;
   }
   // This is private because it does not check validity of the unit vector.
-  private static _create(
-    x: number,
-    y: number,
-    z: number,
-    u: number,
-    v: number,
-    w: number
-  ) {
-    return new Plane3dByOriginAndUnitNormal(
-      Point3d.create(x, y, z),
-      Vector3d.create(u, v, w)
-    );
+  private static _create(x: number, y: number, z: number, u: number, v: number, w: number) {
+    return new Plane3dByOriginAndUnitNormal(Point3d.create(x, y, z), Vector3d.create(u, v, w));
   }
   /**
    * Create a plane parallel to the XY plane
    * @param origin optional plane origin.  If omitted, the origin is placed at 000
    */
   public static createXYPlane(origin?: Point3d): Plane3dByOriginAndUnitNormal {
-    if (origin)
-      return Plane3dByOriginAndUnitNormal._create(
-        origin.x,
-        origin.y,
-        origin.z,
-        0,
-        0,
-        1
-      );
+    if (origin) return Plane3dByOriginAndUnitNormal._create(origin.x, origin.y, origin.z, 0, 0, 1);
     return Plane3dByOriginAndUnitNormal._create(0, 0, 0, 0, 0, 1);
   }
   /**
@@ -68,15 +47,7 @@ export class Plane3dByOriginAndUnitNormal
    * @param origin optional plane origin.  If omitted, the origin is placed at 000
    */
   public static createYZPlane(origin?: Point3d): Plane3dByOriginAndUnitNormal {
-    if (origin)
-      return Plane3dByOriginAndUnitNormal._create(
-        origin.x,
-        origin.y,
-        origin.z,
-        1,
-        0,
-        0
-      );
+    if (origin) return Plane3dByOriginAndUnitNormal._create(origin.x, origin.y, origin.z, 1, 0, 0);
     return Plane3dByOriginAndUnitNormal._create(0, 0, 0, 1, 0, 0);
   }
   /**
@@ -84,15 +55,7 @@ export class Plane3dByOriginAndUnitNormal
    * @param origin optional plane origin.  If omitted, the origin is placed at 000
    */
   public static createZXPlane(origin?: Point3d): Plane3dByOriginAndUnitNormal {
-    if (origin)
-      return Plane3dByOriginAndUnitNormal._create(
-        origin.x,
-        origin.y,
-        origin.z,
-        0,
-        1,
-        0
-      );
+    if (origin) return Plane3dByOriginAndUnitNormal._create(origin.x, origin.y, origin.z, 0, 1, 0);
     return Plane3dByOriginAndUnitNormal._create(0, 0, 0, 0, 1, 0);
   }
   /** Create a new Plane3dByOriginAndUnitNormal with given origin and normal.
@@ -121,8 +84,7 @@ export class Plane3dByOriginAndUnitNormal
     source: Plane3d,
     result?: Plane3dByOriginAndUnitNormal
   ): Plane3dByOriginAndUnitNormal | undefined {
-    if (source instanceof Plane3dByOriginAndUnitNormal)
-      return source.clone(result);
+    if (source instanceof Plane3dByOriginAndUnitNormal) return source.clone(result);
     if (result) {
       if (source.getUnitNormal(result._normal) === undefined) return undefined;
       source.getAnyPointOnPlane(result._origin);
@@ -205,8 +167,7 @@ export class Plane3dByOriginAndUnitNormal
     vector: Vector3d
   ): Plane3dByOriginAndUnitNormal | undefined {
     const cross = vector.crossProductStartEnd(pointA, pointB);
-    if (cross.tryNormalizeInPlace())
-      return new Plane3dByOriginAndUnitNormal(pointA, cross);
+    if (cross.tryNormalizeInPlace()) return new Plane3dByOriginAndUnitNormal(pointA, cross);
     return undefined;
   }
 
@@ -221,8 +182,7 @@ export class Plane3dByOriginAndUnitNormal
     pointC: Point3d
   ): Plane3dByOriginAndUnitNormal | undefined {
     const cross = pointA.crossProductToPoints(pointB, pointC);
-    if (cross.tryNormalizeInPlace())
-      return new Plane3dByOriginAndUnitNormal(pointA, cross);
+    if (cross.tryNormalizeInPlace()) return new Plane3dByOriginAndUnitNormal(pointA, cross);
     return undefined;
   }
 
@@ -237,17 +197,13 @@ export class Plane3dByOriginAndUnitNormal
     vectorC: Vector3d
   ): Plane3dByOriginAndUnitNormal | undefined {
     const cross = vectorB.crossProduct(vectorC);
-    if (cross.tryNormalizeInPlace())
-      return new Plane3dByOriginAndUnitNormal(pointA, cross);
+    if (cross.tryNormalizeInPlace()) return new Plane3dByOriginAndUnitNormal(pointA, cross);
     return undefined;
   }
 
   /** test for (toleranced) equality with `other` */
   public isAlmostEqual(other: Plane3dByOriginAndUnitNormal): boolean {
-    return (
-      this._origin.isAlmostEqual(other._origin) &&
-      this._normal.isAlmostEqual(other._normal)
-    );
+    return this._origin.isAlmostEqual(other._origin) && this._normal.isAlmostEqual(other._normal);
   }
   /** Parse a json fragment `{origin: [x,y,z], normal: [ux,uy,uz]}`  */
   public setFromJSON(json?: any) {
@@ -307,41 +263,27 @@ export class Plane3dByOriginAndUnitNormal
     this._normal.setFrom(normal);
   }
   /** return a deep clone (point and normal cloned) */
-  public clone(
-    result?: Plane3dByOriginAndUnitNormal
-  ): Plane3dByOriginAndUnitNormal {
+  public clone(result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal {
     if (result) {
       result.set(this._origin, this._normal);
       return result;
     }
-    return new Plane3dByOriginAndUnitNormal(
-      this._origin.clone(),
-      this._normal.clone()
-    );
+    return new Plane3dByOriginAndUnitNormal(this._origin.clone(), this._normal.clone());
   }
   /** Create a clone and return the transform of the clone. */
-  public cloneTransformed(
-    transform: Transform,
-    inverse: boolean = false
-  ): Plane3dByOriginAndUnitNormal | undefined {
+  public cloneTransformed(transform: Transform, inverse: boolean = false): Plane3dByOriginAndUnitNormal | undefined {
     const result = this.clone();
     if (inverse) {
       transform.multiplyInversePoint3d(result._origin, result._origin);
       if (
-        transform.matrix.multiplyTransposeVector(
-          result._normal,
-          result._normal
-        ) !== undefined &&
+        transform.matrix.multiplyTransposeVector(result._normal, result._normal) !== undefined &&
         result._normal.normalizeInPlace()
       )
         return result;
     } else {
       transform.multiplyPoint3d(result._origin, result._origin);
       if (
-        transform.matrix.multiplyInverseTranspose(
-          result._normal,
-          result._normal
-        ) !== undefined &&
+        transform.matrix.multiplyInverseTranspose(result._normal, result._normal) !== undefined &&
         result._normal.normalizeInPlace()
       )
         return result;
@@ -358,10 +300,7 @@ export class Plane3dByOriginAndUnitNormal
   }
   /** Return the altitude of point (x,y)  given xy parts using only the xy parts of origin and unit normal */
   public altitudeXY(x: number, y: number): number {
-    return (
-      (x - this._origin.x) * this._normal.x +
-      (y - this._origin.y) * this._normal.y
-    );
+    return (x - this._origin.x) * this._normal.x + (y - this._origin.y) * this._normal.y;
   }
   /**
    * Return the x component of the normal used to evaluate altitude.
@@ -424,19 +363,12 @@ export class Plane3dByOriginAndUnitNormal
   }
   /** Return the projection of spacePoint onto the plane. */
   public projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d {
-    return spacePoint.plusScaled(
-      this._normal,
-      -this._normal.dotProductStartEnd(this._origin, spacePoint),
-      result
-    );
+    return spacePoint.plusScaled(this._normal, -this._normal.dotProductStartEnd(this._origin, spacePoint), result);
   }
   /** Returns true if spacePoint is within distance tolerance of the plane.
    * * This logic is identical to the [[Plane3d]] method but avoids a level of function call.
    */
-  public override isPointInPlane(
-    spacePoint: Point3d,
-    tolerance: number = Geometry.smallMetricDistance
-  ): boolean {
+  public override isPointInPlane(spacePoint: Point3d, tolerance: number = Geometry.smallMetricDistance): boolean {
     const altitude = this._normal.dotProductStartEnd(this._origin, spacePoint);
     return Math.abs(altitude) <= tolerance;
   }

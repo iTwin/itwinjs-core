@@ -29,9 +29,7 @@ export class AnimationIntervalTool extends Tool {
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     const millis = Number.parseInt(args[0], 10);
-    const interval = !Number.isNaN(millis)
-      ? BeDuration.fromMilliseconds(millis)
-      : undefined;
+    const interval = !Number.isNaN(millis) ? BeDuration.fromMilliseconds(millis) : undefined;
     return this.run(interval);
   }
 }

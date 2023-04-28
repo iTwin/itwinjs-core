@@ -68,8 +68,7 @@ export class Transform {
     let transform: Transform = new Transform();
     let index: int32 = 0;
     for (let r: number = 0; r < 4; r++)
-      for (let c: number = 0; c < 4; c++)
-        transform.setElement(r, c, elements[index++]);
+      for (let c: number = 0; c < 4; c++) transform.setElement(r, c, elements[index++]);
     return transform;
   }
 
@@ -84,8 +83,7 @@ export class Transform {
     let transform: Transform = new Transform();
     let index: int32 = 0;
     for (let c: number = 0; c < 4; c++)
-      for (let r: number = 0; r < 4; r++)
-        transform.setElement(r, c, elements[index++]);
+      for (let r: number = 0; r < 4; r++) transform.setElement(r, c, elements[index++]);
     return transform;
   }
 
@@ -137,17 +135,7 @@ export class Transform {
     m22: float64,
     m23: float64
   ): Transform {
-    let transform: Transform = Transform.fromRotationElements(
-      m00,
-      m01,
-      m02,
-      m10,
-      m11,
-      m12,
-      m20,
-      m21,
-      m22
-    );
+    let transform: Transform = Transform.fromRotationElements(m00, m01, m02, m10, m11, m12, m20, m21, m22);
     transform.setElement(0, 3, m03);
     transform.setElement(1, 3, m13);
     transform.setElement(2, 3, m23);
@@ -205,8 +193,7 @@ export class Transform {
    * @param elements the elements (row major order).
    */
   public setElements(elements: Float64Array): void {
-    for (let i: number = 0; i < this._elements.length; i++)
-      this._elements[i] = elements[i];
+    for (let i: number = 0; i < this._elements.length; i++) this._elements[i] = elements[i];
   }
 
   /**
@@ -214,11 +201,7 @@ export class Transform {
    * @return the X column.
    */
   public getColumnX(): Coordinate {
-    return new Coordinate(
-      this.getElement(0, 0),
-      this.getElement(1, 0),
-      this.getElement(2, 0)
-    );
+    return new Coordinate(this.getElement(0, 0), this.getElement(1, 0), this.getElement(2, 0));
   }
 
   /**
@@ -226,11 +209,7 @@ export class Transform {
    * @return the Y column.
    */
   public getColumnY(): Coordinate {
-    return new Coordinate(
-      this.getElement(0, 1),
-      this.getElement(1, 1),
-      this.getElement(2, 1)
-    );
+    return new Coordinate(this.getElement(0, 1), this.getElement(1, 1), this.getElement(2, 1));
   }
 
   /**
@@ -238,11 +217,7 @@ export class Transform {
    * @return the Z column.
    */
   public getColumnZ(): Coordinate {
-    return new Coordinate(
-      this.getElement(0, 2),
-      this.getElement(1, 2),
-      this.getElement(2, 2)
-    );
+    return new Coordinate(this.getElement(0, 2), this.getElement(1, 2), this.getElement(2, 2));
   }
 
   /**
@@ -250,11 +225,7 @@ export class Transform {
    * @return the translation column.
    */
   public getTranslation(): Coordinate {
-    return new Coordinate(
-      this.getElement(0, 3),
-      this.getElement(1, 3),
-      this.getElement(2, 3)
-    );
+    return new Coordinate(this.getElement(0, 3), this.getElement(1, 3), this.getElement(2, 3));
   }
 
   /**
@@ -364,10 +335,7 @@ export class Transform {
    */
   public rotateX(angle: float64): void {
     if (angle == 0.0) return;
-    let result: Transform = Transform.multiply2(
-      this,
-      Transform.createRotationX(angle)
-    );
+    let result: Transform = Transform.multiply2(this, Transform.createRotationX(angle));
     this.setElements(result.getElements());
   }
 
@@ -392,10 +360,7 @@ export class Transform {
    */
   public rotateY(angle: float64): void {
     if (angle == 0.0) return;
-    let result: Transform = Transform.multiply2(
-      this,
-      Transform.createRotationY(angle)
-    );
+    let result: Transform = Transform.multiply2(this, Transform.createRotationY(angle));
     this.setElements(result.getElements());
   }
 
@@ -420,10 +385,7 @@ export class Transform {
    */
   public rotateZ(angle: float64): void {
     if (angle == 0.0) return;
-    let result: Transform = Transform.multiply2(
-      this,
-      Transform.createRotationZ(angle)
-    );
+    let result: Transform = Transform.multiply2(this, Transform.createRotationZ(angle));
     this.setElements(result.getElements());
   }
 
@@ -464,34 +426,22 @@ export class Transform {
       d.setElement(
         i,
         0,
-        ai0 * b.getElement(0, 0) +
-          ai1 * b.getElement(1, 0) +
-          ai2 * b.getElement(2, 0) +
-          ai3 * b.getElement(3, 0)
+        ai0 * b.getElement(0, 0) + ai1 * b.getElement(1, 0) + ai2 * b.getElement(2, 0) + ai3 * b.getElement(3, 0)
       ); // multiply by column(0) of "b"
       d.setElement(
         i,
         1,
-        ai0 * b.getElement(0, 1) +
-          ai1 * b.getElement(1, 1) +
-          ai2 * b.getElement(2, 1) +
-          ai3 * b.getElement(3, 1)
+        ai0 * b.getElement(0, 1) + ai1 * b.getElement(1, 1) + ai2 * b.getElement(2, 1) + ai3 * b.getElement(3, 1)
       ); // multiply by column(1) of "b"
       d.setElement(
         i,
         2,
-        ai0 * b.getElement(0, 2) +
-          ai1 * b.getElement(1, 2) +
-          ai2 * b.getElement(2, 2) +
-          ai3 * b.getElement(3, 2)
+        ai0 * b.getElement(0, 2) + ai1 * b.getElement(1, 2) + ai2 * b.getElement(2, 2) + ai3 * b.getElement(3, 2)
       ); // multiply by column(2) of "b"
       d.setElement(
         i,
         3,
-        ai0 * b.getElement(0, 3) +
-          ai1 * b.getElement(1, 3) +
-          ai2 * b.getElement(2, 3) +
-          ai3 * b.getElement(3, 3)
+        ai0 * b.getElement(0, 3) + ai1 * b.getElement(1, 3) + ai2 * b.getElement(2, 3) + ai3 * b.getElement(3, 3)
       ); // multiply by column(3) of "b"
     }
     /* Return the transform */
@@ -523,10 +473,7 @@ export class Transform {
    * @param tz the z translation.
    */
   public translate(tx: float64, ty: float64, tz: float64): void {
-    let result: Transform = Transform.multiply2(
-      this,
-      Transform.createTranslation(tx, ty, tz)
-    );
+    let result: Transform = Transform.multiply2(this, Transform.createTranslation(tx, ty, tz));
     this.setElements(result.getElements());
   }
 
@@ -545,10 +492,7 @@ export class Transform {
    * @param sz the z scale.
    */
   public scale(sx: float64, sy: float64, sz: float64): void {
-    let result: Transform = Transform.multiply2(
-      this,
-      Transform.createScale(sx, sy, sz)
-    );
+    let result: Transform = Transform.multiply2(this, Transform.createScale(sx, sy, sz));
     this.setElements(result.getElements());
   }
 
@@ -576,8 +520,7 @@ export class Transform {
     let h: float64 = this.getElement(2, 1);
     let i: float64 = this.getElement(2, 2);
     /* Invert the 3x3 matrix */
-    let idet: float64 =
-      1.0 / (a * (e * i - h * f) - b * (d * i - g * f) + c * (d * h - g * e));
+    let idet: float64 = 1.0 / (a * (e * i - h * f) - b * (d * i - g * f) + c * (d * h - g * e));
     let inverse: Transform = new Transform();
     inverse.setElement(0, 0, (e * i - f * h) * idet);
     inverse.setElement(0, 1, -(b * i - c * h) * idet);
@@ -589,11 +532,7 @@ export class Transform {
     inverse.setElement(2, 1, -(a * h - b * g) * idet);
     inverse.setElement(2, 2, (a * e - b * d) * idet);
     /* Invert the translation */
-    let t: Coordinate = new Coordinate(
-      this.getElement(0, 3),
-      this.getElement(1, 3),
-      this.getElement(2, 3)
-    );
+    let t: Coordinate = new Coordinate(this.getElement(0, 3), this.getElement(1, 3), this.getElement(2, 3));
     inverse.transformTo(t, t);
     inverse.setElement(0, 3, -t.getX());
     inverse.setElement(1, 3, -t.getY());
@@ -635,11 +574,7 @@ export class Transform {
    * @param tz the z translation.
    * @return the transform.
    */
-  public static createTranslation(
-    tx: float64,
-    ty: float64,
-    tz: float64
-  ): Transform {
+  public static createTranslation(tx: float64, ty: float64, tz: float64): Transform {
     let transform: Transform = Transform.createIdentity();
     transform.setElement(0, 3, tx);
     transform.setElement(1, 3, ty);
@@ -653,11 +588,7 @@ export class Transform {
    * @return the transform.
    */
   public static createTranslation2(position: Coordinate): Transform {
-    return Transform.createTranslation(
-      position.getX(),
-      position.getY(),
-      position.getZ()
-    );
+    return Transform.createTranslation(position.getX(), position.getY(), position.getZ());
   }
 
   /**
@@ -758,12 +689,7 @@ export class Transform {
    * @param col3 the fourth column (considered zero if null).
    * @return the transformation.
    */
-  public static createWithColumns(
-    col0: Coordinate,
-    col1: Coordinate,
-    col2: Coordinate,
-    col3: Coordinate
-  ): Transform {
+  public static createWithColumns(col0: Coordinate, col1: Coordinate, col2: Coordinate, col3: Coordinate): Transform {
     let transform: Transform = Transform.createIdentity();
     transform.setElement(0, 0, col0.getX());
     transform.setElement(1, 0, col0.getY());
@@ -790,12 +716,7 @@ export class Transform {
    * @param d the fourth quaternion element (q4).
    * @return the rotation matrix.
    */
-  public static fromQuaternion(
-    a: float64,
-    b: float64,
-    c: float64,
-    d: float64
-  ): Transform {
+  public static fromQuaternion(a: float64, b: float64, c: float64, d: float64): Transform {
     // See "Quaternions and spatial rotation" section "From a quaternion to an orthogonal matrix"
     // at https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation
     //
@@ -837,21 +758,9 @@ export class Transform {
     let sx: float64 = source.getX();
     let sy: float64 = source.getY();
     let sz: float64 = source.getZ();
-    target.x =
-      this._elements[0] * sx +
-      this._elements[1] * sy +
-      this._elements[2] * sz +
-      this._elements[3];
-    target.y =
-      this._elements[4] * sx +
-      this._elements[5] * sy +
-      this._elements[6] * sz +
-      this._elements[7];
-    target.z =
-      this._elements[8] * sx +
-      this._elements[9] * sy +
-      this._elements[10] * sz +
-      this._elements[11];
+    target.x = this._elements[0] * sx + this._elements[1] * sy + this._elements[2] * sz + this._elements[3];
+    target.y = this._elements[4] * sx + this._elements[5] * sy + this._elements[6] * sz + this._elements[7];
+    target.z = this._elements[8] * sx + this._elements[9] * sy + this._elements[10] * sz + this._elements[11];
     return target;
   }
 
@@ -891,8 +800,7 @@ export class Transform {
    * @return true if same.
    */
   public same(other: Transform): boolean {
-    for (let i: number = 0; i < 16; i++)
-      if (this._elements[i] != other._elements[i]) return false;
+    for (let i: number = 0; i < 16; i++) if (this._elements[i] != other._elements[i]) return false;
     return true;
   }
 

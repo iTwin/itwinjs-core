@@ -39,10 +39,7 @@ export class DirectHalfCosineSpiralEvaluator extends XYCurveEvaluator {
   }
   /** return a deep copy of the evaluator */
   public clone(): DirectHalfCosineSpiralEvaluator {
-    return new DirectHalfCosineSpiralEvaluator(
-      this.nominalLength1,
-      this.nominalRadius1
-    );
+    return new DirectHalfCosineSpiralEvaluator(this.nominalLength1, this.nominalRadius1);
   }
   /** Member by member matchup ... */
   public isAlmostEqual(other: any): boolean {
@@ -62,10 +59,7 @@ export class DirectHalfCosineSpiralEvaluator extends XYCurveEvaluator {
   /** Evaluate Y at fractional position. */
   public fractionToY(fraction: number): number {
     const theta = fraction * Math.PI;
-    return (
-      this._c *
-      (this._c2 * fraction * fraction - this._c1 * (1.0 - Math.cos(theta)))
-    );
+    return this._c * (this._c2 * fraction * fraction - this._c1 * (1.0 - Math.cos(theta)));
   }
   /** Evaluate derivative of X with respect to fraction at fractional position. */
   public fractionToDX(_fraction: number): number {
@@ -77,9 +71,7 @@ export class DirectHalfCosineSpiralEvaluator extends XYCurveEvaluator {
   public fractionToDY(fraction: number): number {
     const pi = Math.PI;
     const theta = fraction * pi;
-    return (
-      this._c * (2.0 * this._c2 * fraction - this._c1 * pi * Math.sin(theta))
-    );
+    return this._c * (2.0 * this._c2 * fraction - this._c1 * pi * Math.sin(theta));
   }
   /** Evaluate second derivative of X with respect to fraction at fractional position. */
   public fractionToDDX(_fraction: number): number {
@@ -109,10 +101,7 @@ export class DirectHalfCosineSpiralEvaluator extends XYCurveEvaluator {
   /** Return the magnitude of the first vector at fractional coordinate. */
 
   public override fractionToTangentMagnitude(fraction: number): number {
-    return Geometry.hypotenuseXY(
-      this.fractionToDX(fraction),
-      this.fractionToDY(fraction)
-    );
+    return Geometry.hypotenuseXY(this.fractionToDX(fraction), this.fractionToDY(fraction));
   }
   /** Invert the fractionToX function for given X. */
   public xToFraction(x: number): number | undefined {

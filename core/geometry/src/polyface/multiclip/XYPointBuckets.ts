@@ -49,8 +49,7 @@ export class XYIndexGrid<T> {
 
   /** Return the `i` index of cells containing x coordinate */
   public xIndex(x: number): number {
-    const fraction =
-      (x - this._range.low.x) / (this._range.high.x - this._range.low.x);
+    const fraction = (x - this._range.low.x) / (this._range.high.x - this._range.low.x);
     const q = Math.floor(fraction * this._numXEdge);
     if (q < 0) return 0;
     if (q > this._numXEdge - 1) return this._numXEdge - 1;
@@ -58,8 +57,7 @@ export class XYIndexGrid<T> {
   }
   /** Return the `j` index of cells containing x coordinate */
   public yIndex(y: number): number {
-    const fraction =
-      (y - this._range.low.y) / (this._range.high.y - this._range.low.y);
+    const fraction = (y - this._range.low.y) / (this._range.high.y - this._range.low.y);
     const q = Math.floor(fraction * this._numYEdge);
     if (q < 0) return 0;
     if (q > this._numYEdge - 1) return this._numYEdge - 1;
@@ -76,14 +74,8 @@ export class XYIndexGrid<T> {
     totalEntries: number,
     targetEntriesPerCell: number
   ): XYIndexGrid<T> | undefined {
-    if (range.low.x >= range.high.x || range.low.y >= range.high.y)
-      return undefined;
-    const range2d = Range2d.createXYXY(
-      range.low.x,
-      range.low.y,
-      range.high.x,
-      range.high.y
-    );
+    if (range.low.x >= range.high.x || range.low.y >= range.high.y) return undefined;
+    const range2d = Range2d.createXYXY(range.low.x, range.low.y, range.high.x, range.high.y);
 
     const dx = range2d.xLength();
     const dy = range2d.yLength();
@@ -92,14 +84,10 @@ export class XYIndexGrid<T> {
     let numX: number;
     let numY: number;
     if (dy > dx) {
-      numY = Math.ceil(
-        Math.sqrt((dy * totalEntries) / (targetEntriesPerCell * dx))
-      );
+      numY = Math.ceil(Math.sqrt((dy * totalEntries) / (targetEntriesPerCell * dx)));
       numX = Math.ceil(totalEntries / numY);
     } else {
-      numX = Math.ceil(
-        Math.sqrt((dx * totalEntries) / (targetEntriesPerCell * dy))
-      );
+      numX = Math.ceil(Math.sqrt((dx * totalEntries) / (targetEntriesPerCell * dy)));
       numY = Math.ceil(totalEntries / (numX * targetEntriesPerCell));
     }
     return new XYIndexGrid(range2d, numX, numY);
@@ -164,27 +152,17 @@ export class XYPointBuckets {
   public get indexGrid(): XYIndexGrid<number> {
     return this._buckets;
   }
-  private constructor(
-    points: IndexedXYZCollection,
-    buckets: XYIndexGrid<number>
-  ) {
+  private constructor(points: IndexedXYZCollection, buckets: XYIndexGrid<number>) {
     this._points = points;
     this._buckets = buckets;
   }
   /** Create an XYIndex grid with all indices of all `points` entered */
-  public static create(
-    points: IndexedXYZCollection,
-    targetPointsPerCell: number
-  ): XYPointBuckets | undefined {
+  public static create(points: IndexedXYZCollection, targetPointsPerCell: number): XYPointBuckets | undefined {
     const n = points.length;
     if (points.length < 1) return undefined;
     const range = points.getRange();
     range.expandInPlace(Geometry.smallMetricDistance * 1000.0);
-    const buckets = XYIndexGrid.createWithEstimatedCounts<number>(
-      range,
-      points.length,
-      targetPointsPerCell
-    );
+    const buckets = XYIndexGrid.createWithEstimatedCounts<number>(range, points.length, targetPointsPerCell);
     if (buckets === undefined) return undefined;
     const result = new XYPointBuckets(points, buckets);
     const point = Point3d.create();

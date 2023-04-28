@@ -56,34 +56,13 @@ export namespace AmbientOcclusion {
       if (undefined === json) json = {};
 
       this.bias = JsonUtils.asDouble(json.bias, Settings._defaultBias);
-      this.zLengthCap = JsonUtils.asDouble(
-        json.zLengthCap,
-        Settings._defaultZLengthCap
-      );
-      this.maxDistance = JsonUtils.asDouble(
-        json.maxDistance,
-        Settings._defaultMaxDistance
-      );
-      this.intensity = JsonUtils.asDouble(
-        json.intensity,
-        Settings._defaultIntensity
-      );
-      this.texelStepSize = JsonUtils.asDouble(
-        json.texelStepSize,
-        Settings._defaultTexelStepSize
-      );
-      this.blurDelta = JsonUtils.asDouble(
-        json.blurDelta,
-        Settings._defaultBlurDelta
-      );
-      this.blurSigma = JsonUtils.asDouble(
-        json.blurSigma,
-        Settings._defaultBlurSigma
-      );
-      this.blurTexelStepSize = JsonUtils.asDouble(
-        json.blurTexelStepSize,
-        Settings._defaultBlurTexelStepSize
-      );
+      this.zLengthCap = JsonUtils.asDouble(json.zLengthCap, Settings._defaultZLengthCap);
+      this.maxDistance = JsonUtils.asDouble(json.maxDistance, Settings._defaultMaxDistance);
+      this.intensity = JsonUtils.asDouble(json.intensity, Settings._defaultIntensity);
+      this.texelStepSize = JsonUtils.asDouble(json.texelStepSize, Settings._defaultTexelStepSize);
+      this.blurDelta = JsonUtils.asDouble(json.blurDelta, Settings._defaultBlurDelta);
+      this.blurSigma = JsonUtils.asDouble(json.blurSigma, Settings._defaultBlurSigma);
+      this.blurTexelStepSize = JsonUtils.asDouble(json.blurTexelStepSize, Settings._defaultBlurTexelStepSize);
     }
 
     public static defaults = new Settings({});
@@ -95,34 +74,14 @@ export namespace AmbientOcclusion {
     public toJSON(): Props {
       return {
         bias: this.bias !== Settings._defaultBias ? this.bias : undefined,
-        zLengthCap:
-          this.zLengthCap !== Settings._defaultZLengthCap
-            ? this.zLengthCap
-            : undefined,
-        maxDistance:
-          this.maxDistance !== Settings._defaultMaxDistance
-            ? this.maxDistance
-            : undefined,
-        intensity:
-          this.intensity !== Settings._defaultIntensity
-            ? this.intensity
-            : undefined,
-        texelStepSize:
-          this.texelStepSize !== Settings._defaultTexelStepSize
-            ? this.texelStepSize
-            : undefined,
-        blurDelta:
-          this.blurDelta !== Settings._defaultBlurDelta
-            ? this.blurDelta
-            : undefined,
-        blurSigma:
-          this.blurSigma !== Settings._defaultBlurSigma
-            ? this.blurSigma
-            : undefined,
+        zLengthCap: this.zLengthCap !== Settings._defaultZLengthCap ? this.zLengthCap : undefined,
+        maxDistance: this.maxDistance !== Settings._defaultMaxDistance ? this.maxDistance : undefined,
+        intensity: this.intensity !== Settings._defaultIntensity ? this.intensity : undefined,
+        texelStepSize: this.texelStepSize !== Settings._defaultTexelStepSize ? this.texelStepSize : undefined,
+        blurDelta: this.blurDelta !== Settings._defaultBlurDelta ? this.blurDelta : undefined,
+        blurSigma: this.blurSigma !== Settings._defaultBlurSigma ? this.blurSigma : undefined,
         blurTexelStepSize:
-          this.blurTexelStepSize !== Settings._defaultBlurTexelStepSize
-            ? this.blurTexelStepSize
-            : undefined,
+          this.blurTexelStepSize !== Settings._defaultBlurTexelStepSize ? this.blurTexelStepSize : undefined,
       };
     }
   }

@@ -5,30 +5,12 @@
 import * as path from "path";
 import { DbResult, Id64String } from "@itwin/core-bentley";
 import { Angle, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import {
-  BriefcaseDb,
-  ECSqlStatement,
-  Element,
-  IModelDb,
-  IModelHost,
-} from "@itwin/core-backend";
-import {
-  Code,
-  IModelReadRpcInterface,
-  RpcInterfaceDefinition,
-  RpcManager,
-  TestRpcManager,
-} from "@itwin/core-common";
-import {
-  RobotWorldReadRpcInterface,
-  RobotWorldWriteRpcInterface,
-} from "../common/RobotWorldRpcInterface";
+import { BriefcaseDb, ECSqlStatement, Element, IModelDb, IModelHost } from "@itwin/core-backend";
+import { Code, IModelReadRpcInterface, RpcInterfaceDefinition, RpcManager, TestRpcManager } from "@itwin/core-common";
+import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
 import { Barrier } from "./BarrierElement";
 import { Robot } from "./RobotElement";
-import {
-  RobotWorldReadRpcImpl,
-  RobotWorldWriteRpcImpl,
-} from "./RobotWorldRpcImpl";
+import { RobotWorldReadRpcImpl, RobotWorldWriteRpcImpl } from "./RobotWorldRpcImpl";
 import { RobotWorld } from "./RobotWorldSchema";
 
 // An example of how to implement a service.
@@ -40,10 +22,7 @@ import { RobotWorld } from "./RobotWorldSchema";
 export class RobotWorldEngine {
   private static _exposeWriteInterface = false;
 
-  public static countRobotsInArray(
-    iModelDb: IModelDb,
-    elemIds: Id64String[]
-  ): number {
+  public static countRobotsInArray(iModelDb: IModelDb, elemIds: Id64String[]): number {
     let robotCount: number = 0;
     for (const elemId of elemIds) {
       const elem: Element = iModelDb.elements.getElement(elemId);
@@ -63,10 +42,7 @@ export class RobotWorldEngine {
   }
 
   // __PUBLISH_EXTRACT_START__ ECSqlStatement.spatialQuery
-  public static queryObstaclesHitByRobot(
-    iModelDb: IModelDb,
-    rid: Id64String
-  ): Id64String[] {
+  public static queryObstaclesHitByRobot(iModelDb: IModelDb, rid: Id64String): Id64String[] {
     const robot1 = iModelDb.elements.getElement<Robot>(rid);
 
     const selStmt = `SELECT rt.ECInstanceId FROM BisCore.SpatialIndex rt WHERE rt.ECInstanceId MATCH iModel_spatial_overlap_aabb(:bbox) AND rt.ECInstanceId <> :thisRobot`;
@@ -84,10 +60,7 @@ export class RobotWorldEngine {
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ECSqlStatement.spatialQuery
-  public static queryBarriersHitByRobot(
-    iModelDb: IModelDb,
-    rid: Id64String
-  ): Id64String[] {
+  public static queryBarriersHitByRobot(iModelDb: IModelDb, rid: Id64String): Id64String[] {
     const robot1 = iModelDb.elements.getElement<Robot>(rid);
 
     const selStmt = `SELECT rt.ECInstanceId FROM BisCore.SpatialIndex rt WHERE rt.ECInstanceId MATCH iModel_spatial_overlap_aabb(:bbox) AND rt.ECInstanceId <> :thisRobot`;
@@ -104,11 +77,7 @@ export class RobotWorldEngine {
   }
   // __PUBLISH_EXTRACT_END__
 
-  public static moveRobot(
-    iModelDb: IModelDb,
-    id: Id64String,
-    location: Point3d
-  ) {
+  public static moveRobot(iModelDb: IModelDb, id: Id64String, location: Point3d) {
     const r = iModelDb.elements.getElement<Robot>(id);
     r.placement.origin = location;
     iModelDb.elements.updateElement(r.toJSON());
@@ -165,10 +134,7 @@ export class RobotWorldEngine {
       cacheDir: path.join(__dirname, ".cache"),
     });
 
-    RpcManager.registerImpl(
-      RobotWorldWriteRpcInterface,
-      RobotWorldWriteRpcImpl
-    ); // register impls that we don't want in the doc example
+    RpcManager.registerImpl(RobotWorldWriteRpcInterface, RobotWorldWriteRpcImpl); // register impls that we don't want in the doc example
     this.registerImpls();
     const interfaces = this.chooseInterfacesToExpose();
     TestRpcManager.initialize(interfaces);
@@ -194,13 +160,9 @@ export class RobotWorldEngine {
 
   // __PUBLISH_EXTRACT_START__ RpcInterface.selectInterfacesToExpose
   private static chooseInterfacesToExpose(): RpcInterfaceDefinition[] {
-    const interfaces: RpcInterfaceDefinition[] = [
-      IModelReadRpcInterface,
-      RobotWorldReadRpcInterface,
-    ];
+    const interfaces: RpcInterfaceDefinition[] = [IModelReadRpcInterface, RobotWorldReadRpcInterface];
 
-    if (this._exposeWriteInterface)
-      interfaces.push(RobotWorldWriteRpcInterface);
+    if (this._exposeWriteInterface) interfaces.push(RobotWorldWriteRpcInterface);
 
     return interfaces;
   }

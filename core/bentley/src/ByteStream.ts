@@ -35,10 +35,7 @@ export class ByteStream {
    * For both of the above reasons, prefer to use [[fromUint8Array]].
    * @deprecated in 3.x. Use [[fromUint8Array]] or [[fromArrayBuffer]].
    */
-  public constructor(
-    buffer: ArrayBuffer | SharedArrayBuffer,
-    subView?: { byteOffset: number; byteLength: number }
-  ) {
+  public constructor(buffer: ArrayBuffer | SharedArrayBuffer, subView?: { byteOffset: number; byteLength: number }) {
     if (undefined !== subView) {
       this._view = new DataView(buffer, subView.byteOffset, subView.byteLength);
       this._byteOffset = subView.byteOffset;
@@ -149,9 +146,7 @@ export class ByteStream {
   }
   /** Read an unsigned 24-bit integer from the current read position and advance by 3 bytes. */
   public readUint24(): number {
-    return (
-      this.readUint8() | (this.readUint8() << 8) | (this.readUint8() << 16)
-    );
+    return this.readUint8() | (this.readUint8() << 8) | (this.readUint8() << 16);
   }
 
   /** @deprecated in 3.x. use [[readUint8]]. */
@@ -191,32 +186,20 @@ export class ByteStream {
    * @param numBytes The number of bytes to read.
    */
   public nextBytes(numBytes: number): Uint8Array {
-    const bytes = new Uint8Array(
-      this.arrayBuffer,
-      this.curPos + this._byteOffset,
-      numBytes
-    );
+    const bytes = new Uint8Array(this.arrayBuffer, this.curPos + this._byteOffset, numBytes);
     this.advance(numBytes);
     return bytes;
   }
 
   /** Read the specified number of bytes at the specified offset without changing the read position. */
   public readBytes(readPos: number, numBytes: number): Uint8Array {
-    return new Uint8Array(
-      this.arrayBuffer,
-      readPos + this._byteOffset,
-      numBytes
-    );
+    return new Uint8Array(this.arrayBuffer, readPos + this._byteOffset, numBytes);
   }
 
   /** Read the specified number of unsigned 32-bit integers from the current read position and advance the read position. */
   public nextUint32s(numUint32s: number): Uint32Array {
     const numBytes = numUint32s * 4;
-    const uint32s = new Uint32Array(
-      this.arrayBuffer,
-      this.curPos + this._byteOffset,
-      numUint32s
-    );
+    const uint32s = new Uint32Array(this.arrayBuffer, this.curPos + this._byteOffset, numUint32s);
     this.advance(numBytes);
     return uint32s;
   }

@@ -55,10 +55,7 @@ export class FileStorage {
   /**
    * Read some parts of a file.
    */
-  public async readFileParts(
-    fileName: string,
-    ranges: AList<FileRange>
-  ): Promise<AList<FileContent>> {
+  public async readFileParts(fileName: string, ranges: AList<FileRange>): Promise<AList<FileContent>> {
     /* Override this method */
     return null;
   }
@@ -66,11 +63,7 @@ export class FileStorage {
   /**
    * Read a part of a file.
    */
-  public async readFilePart(
-    fileName: string,
-    offset: ALong,
-    size: int32
-  ): Promise<ABuffer> {
+  public async readFilePart(fileName: string, offset: ALong, size: int32): Promise<ABuffer> {
     /* Override this method */
     return null;
   }
@@ -78,10 +71,7 @@ export class FileStorage {
   /**
    * Write a file.
    */
-  public async writeFile(
-    fileName: string,
-    fileContent: ABuffer
-  ): Promise<void> {
+  public async writeFile(fileName: string, fileContent: ABuffer): Promise<void> {
     /* Override this method */
   }
 }

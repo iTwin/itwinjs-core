@@ -60,9 +60,7 @@ describe("Property", () => {
     testKindOfQuantity = await mutable.createKindOfQuantity("TestKoQ");
     testEnumeration = await mutable.createEnumeration("TestEnumeration");
     testStruct = await mutable.createStructClass("TestStruct");
-    testRelationship = await mutable.createRelationshipClass(
-      "TestRelationship"
-    );
+    testRelationship = await mutable.createRelationshipClass("TestRelationship");
   });
 
   describe("type guards", () => {
@@ -79,28 +77,19 @@ describe("Property", () => {
       enumProperty = new EnumerationProperty(
         testClass,
         "B",
-        new DelayedPromiseWithProps(
-          testEnumeration.key,
-          async () => testEnumeration
-        )
+        new DelayedPromiseWithProps(testEnumeration.key, async () => testEnumeration)
       );
       structProperty = new StructProperty(testClass, "C", testStruct);
       navProperty = new NavigationProperty(
         testClass,
         "D",
-        new DelayedPromiseWithProps(
-          testRelationship.key,
-          async () => testRelationship
-        )
+        new DelayedPromiseWithProps(testRelationship.key, async () => testRelationship)
       );
       primitiveArrayProperty = new PrimitiveArrayProperty(testClass, "E");
       enumArrayProperty = new EnumerationArrayProperty(
         testClass,
         "F",
-        new DelayedPromiseWithProps(
-          testEnumeration.key,
-          async () => testEnumeration
-        )
+        new DelayedPromiseWithProps(testEnumeration.key, async () => testEnumeration)
       );
       structArrayProperty = new StructArrayProperty(testClass, "G", testStruct);
     });
@@ -320,10 +309,7 @@ describe("Property", () => {
         className: "CoreCustomAttributes.HiddenSchema",
       });
       const serialized = testProp.toJSON();
-      assert.strictEqual(
-        serialized.customAttributes![0].className,
-        "CoreCustomAttributes.HiddenSchema"
-      );
+      assert.strictEqual(serialized.customAttributes![0].className, "CoreCustomAttributes.HiddenSchema");
     });
     it("Serialization with one custom attribute- additional properties", () => {
       const propertyJson = {
@@ -339,10 +325,7 @@ describe("Property", () => {
         ShowClasses: true,
       });
       const serialized = testProp.toJSON();
-      assert.strictEqual(
-        serialized.customAttributes![0].className,
-        "CoreCustomAttributes.HiddenSchema"
-      );
+      assert.strictEqual(serialized.customAttributes![0].className, "CoreCustomAttributes.HiddenSchema");
       assert.isTrue(serialized.customAttributes![0].ShowClasses);
     });
     it("Serialization with multiple custom attributes- only class name", async () => {
@@ -360,18 +343,9 @@ describe("Property", () => {
       testProp.addCustomAttribute({ className: "CoreAttributes.HiddenSchema" });
       testProp.addCustomAttribute({ className: "CoreCustom.HiddenSchema" });
       const serialized = testProp.toJSON();
-      assert.strictEqual(
-        serialized.customAttributes![0].className,
-        "CoreCustomAttributes.HiddenSchema"
-      );
-      assert.strictEqual(
-        serialized.customAttributes![1].className,
-        "CoreAttributes.HiddenSchema"
-      );
-      assert.strictEqual(
-        serialized.customAttributes![2].className,
-        "CoreCustom.HiddenSchema"
-      );
+      assert.strictEqual(serialized.customAttributes![0].className, "CoreCustomAttributes.HiddenSchema");
+      assert.strictEqual(serialized.customAttributes![1].className, "CoreAttributes.HiddenSchema");
+      assert.strictEqual(serialized.customAttributes![2].className, "CoreCustom.HiddenSchema");
     });
     it("Serialization with multiple custom attributes- additional properties", async () => {
       const propertyJson = {
@@ -404,35 +378,18 @@ describe("Property", () => {
   describe("toXml", () => {
     const newDom = createEmptyXmlDocument();
 
-    function getCustomAttribute(
-      containerElement: Element,
-      name: string
-    ): Element {
-      const caElements =
-        containerElement.getElementsByTagName("ECCustomAttributes");
-      expect(caElements.length).to.equal(
-        1,
-        "Expected 1 ECCustomAttributes Element"
-      );
+    function getCustomAttribute(containerElement: Element, name: string): Element {
+      const caElements = containerElement.getElementsByTagName("ECCustomAttributes");
+      expect(caElements.length).to.equal(1, "Expected 1 ECCustomAttributes Element");
       const caElement = containerElement.getElementsByTagName(name);
-      expect(caElement.length).to.equal(
-        1,
-        `Expected one CustomAttribute Element with the name '${name}`
-      );
+      expect(caElement.length).to.equal(1, `Expected one CustomAttribute Element with the name '${name}`);
       return caElement[0];
     }
 
-    function getCAPropertyValueElement(
-      schema: Element,
-      caName: string,
-      propertyName: string
-    ): Element {
+    function getCAPropertyValueElement(schema: Element, caName: string, propertyName: string): Element {
       const attribute = getCustomAttribute(schema, caName);
       const propArray = attribute.getElementsByTagName(propertyName);
-      expect(propArray.length).to.equal(
-        1,
-        `Expected 1 CustomAttribute Property with the name '${propertyName}'`
-      );
+      expect(propArray.length).to.equal(1, `Expected 1 CustomAttribute Property with the name '${propertyName}'`);
       return propArray[0];
     }
 
@@ -475,12 +432,8 @@ describe("Property", () => {
       const serialized = await testProp.toXml(newDom);
       expect(serialized.nodeName).to.eql("ECProperty");
       expect(serialized.getAttribute("propertyName")).to.eql("ValidProp");
-      expect(serialized.getAttribute("displayLabel")).to.eql(
-        "SomeDisplayLabel"
-      );
-      expect(serialized.getAttribute("description")).to.eql(
-        "A really long description..."
-      );
+      expect(serialized.getAttribute("displayLabel")).to.eql("SomeDisplayLabel");
+      expect(serialized.getAttribute("description")).to.eql("A really long description...");
       expect(serialized.getAttribute("readOnly")).to.eql("true");
       expect(serialized.getAttribute("priority")).to.eql("100");
       expect(serialized.getAttribute("kindOfQuantity")).to.eql("TestKoQ");
@@ -490,34 +443,20 @@ describe("Property", () => {
     it("Serialization with one custom attribute defined in ref schema, only class name", async () => {
       const context = new SchemaContext();
       const refSchema = new Schema(context, "RefSchema", "ref", 1, 0, 5);
-      const refCAClass = await (
-        refSchema as MutableSchema
-      ).createCustomAttributeClass("TestCustomAttribute");
+      const refCAClass = await (refSchema as MutableSchema).createCustomAttributeClass("TestCustomAttribute");
       assert.isDefined(refCAClass);
       await context.addSchema(refSchema);
-      const testSchema = await Schema.fromJson(
-        getSchemaJson(),
-        new SchemaContext()
-      );
+      const testSchema = await Schema.fromJson(getSchemaJson(), new SchemaContext());
       await (testSchema as MutableSchema).addReference(refSchema);
-      const entityClass = (await testSchema.getItem<EntityClass>(
-        "testClass"
-      )) as ECClass;
-      const property = (await entityClass.getProperty(
-        "TestProperty"
-      )) as MutableProperty;
+      const entityClass = (await testSchema.getItem<EntityClass>("testClass")) as ECClass;
+      const property = (await entityClass.getProperty("TestProperty")) as MutableProperty;
       property.addCustomAttribute({
         className: "RefSchema.TestCustomAttribute",
       });
       const serialized = await property.toXml(newDom);
 
-      const attributeElement = getCustomAttribute(
-        serialized,
-        "TestCustomAttribute"
-      );
-      expect(attributeElement.getAttribute("xmlns")).to.equal(
-        "RefSchema.01.00.05"
-      );
+      const attributeElement = getCustomAttribute(serialized, "TestCustomAttribute");
+      expect(attributeElement.getAttribute("xmlns")).to.equal("RefSchema.01.00.05");
     });
 
     it("Serialization with one custom attribute defined in same schema, only class name", async () => {
@@ -527,23 +466,13 @@ describe("Property", () => {
           appliesTo: "Schema",
         },
       };
-      const testSchema = await Schema.fromJson(
-        getSchemaJson(attributeJson),
-        new SchemaContext()
-      );
-      const entityClass = (await testSchema.getItem<EntityClass>(
-        "testClass"
-      )) as ECClass;
-      const property = (await entityClass.getProperty(
-        "TestProperty"
-      )) as MutableProperty;
+      const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
+      const entityClass = (await testSchema.getItem<EntityClass>("testClass")) as ECClass;
+      const property = (await entityClass.getProperty("TestProperty")) as MutableProperty;
       property.addCustomAttribute({ className: "TestCustomAttribute" });
       const serialized = await property.toXml(newDom);
 
-      const attributeElement = getCustomAttribute(
-        serialized,
-        "TestCustomAttribute"
-      );
+      const attributeElement = getCustomAttribute(serialized, "TestCustomAttribute");
       expect(attributeElement.getAttribute("xmlns")).to.be.empty;
     });
 
@@ -607,16 +536,9 @@ describe("Property", () => {
         },
       };
 
-      const testSchema = await Schema.fromJson(
-        getSchemaJson(attributeJson),
-        new SchemaContext()
-      );
-      const entityClass = (await testSchema.getItem<EntityClass>(
-        "testClass"
-      )) as ECClass;
-      const property = (await entityClass.getProperty(
-        "TestProperty"
-      )) as MutableProperty;
+      const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
+      const entityClass = (await testSchema.getItem<EntityClass>("testClass")) as ECClass;
+      const property = (await entityClass.getProperty("TestProperty")) as MutableProperty;
 
       const nowTicks = Date.now();
       const ca = {
@@ -636,65 +558,25 @@ describe("Property", () => {
       property.addCustomAttribute(ca);
       const serialized = await property.toXml(newDom);
 
-      let element = getCAPropertyValueElement(
-        serialized,
-        "TestCustomAttribute",
-        "TrueBoolean"
-      );
+      let element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "TrueBoolean");
       expect(element.textContent).to.equal("True");
-      element = getCAPropertyValueElement(
-        serialized,
-        "TestCustomAttribute",
-        "FalseBoolean"
-      );
+      element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "FalseBoolean");
       expect(element.textContent).to.equal("False");
-      element = getCAPropertyValueElement(
-        serialized,
-        "TestCustomAttribute",
-        "Integer"
-      );
+      element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Integer");
       expect(element.textContent).to.equal("1");
-      element = getCAPropertyValueElement(
-        serialized,
-        "TestCustomAttribute",
-        "Long"
-      );
+      element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Long");
       expect(element.textContent).to.equal("100");
-      element = getCAPropertyValueElement(
-        serialized,
-        "TestCustomAttribute",
-        "Double"
-      );
+      element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Double");
       expect(element.textContent).to.equal("200");
-      element = getCAPropertyValueElement(
-        serialized,
-        "TestCustomAttribute",
-        "DateTime"
-      );
+      element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "DateTime");
       expect(element.textContent).to.equal(nowTicks.toString());
-      element = getCAPropertyValueElement(
-        serialized,
-        "TestCustomAttribute",
-        "Point2D"
-      );
+      element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Point2D");
       expect(element.textContent).to.equal("100,200");
-      element = getCAPropertyValueElement(
-        serialized,
-        "TestCustomAttribute",
-        "Point3D"
-      );
+      element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Point3D");
       expect(element.textContent).to.equal("100,200,300");
-      element = getCAPropertyValueElement(
-        serialized,
-        "TestCustomAttribute",
-        "IGeometry"
-      );
+      element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "IGeometry");
       expect(element.textContent).to.equal("geometry");
-      element = getCAPropertyValueElement(
-        serialized,
-        "TestCustomAttribute",
-        "Binary"
-      );
+      element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Binary");
       expect(element.textContent).to.equal("binary");
     });
 
@@ -713,16 +595,9 @@ describe("Property", () => {
         },
       };
 
-      const testSchema = await Schema.fromJson(
-        getSchemaJson(attributeJson),
-        new SchemaContext()
-      );
-      const entityClass = (await testSchema.getItem<EntityClass>(
-        "testClass"
-      )) as ECClass;
-      const property = (await entityClass.getProperty(
-        "TestProperty"
-      )) as MutableProperty;
+      const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
+      const entityClass = (await testSchema.getItem<EntityClass>("testClass")) as ECClass;
+      const property = (await entityClass.getProperty("TestProperty")) as MutableProperty;
 
       const ca = {
         className: "TestCustomAttribute",
@@ -732,11 +607,7 @@ describe("Property", () => {
       property.addCustomAttribute(ca);
       const serialized = await property.toXml(newDom);
 
-      const element = getCAPropertyValueElement(
-        serialized,
-        "TestCustomAttribute",
-        "BooleanArray"
-      );
+      const element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "BooleanArray");
       const children = element.childNodes;
       expect(children.length).to.equal(3);
       expect(children[0].textContent).to.equal("True");
@@ -774,16 +645,9 @@ describe("Property", () => {
         },
       };
 
-      const testSchema = await Schema.fromJson(
-        getSchemaJson(attributeJson),
-        new SchemaContext()
-      );
-      const entityClass = (await testSchema.getItem<EntityClass>(
-        "testClass"
-      )) as ECClass;
-      const property = (await entityClass.getProperty(
-        "TestProperty"
-      )) as MutableProperty;
+      const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
+      const entityClass = (await testSchema.getItem<EntityClass>("testClass")) as ECClass;
+      const property = (await entityClass.getProperty("TestProperty")) as MutableProperty;
 
       const ca = {
         className: "TestCustomAttribute",
@@ -796,11 +660,7 @@ describe("Property", () => {
       property.addCustomAttribute(ca);
       const serialized = await property.toXml(newDom);
 
-      const element = getCAPropertyValueElement(
-        serialized,
-        "TestCustomAttribute",
-        "Struct"
-      );
+      const element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Struct");
       const children = element.childNodes;
       expect(children.length).to.equal(2);
       expect(children[0].textContent).to.equal("1");
@@ -837,16 +697,9 @@ describe("Property", () => {
         },
       };
 
-      const testSchema = await Schema.fromJson(
-        getSchemaJson(attributeJson),
-        new SchemaContext()
-      );
-      const entityClass = (await testSchema.getItem<EntityClass>(
-        "testClass"
-      )) as ECClass;
-      const property = (await entityClass.getProperty(
-        "TestProperty"
-      )) as MutableProperty;
+      const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
+      const entityClass = (await testSchema.getItem<EntityClass>("testClass")) as ECClass;
+      const property = (await entityClass.getProperty("TestProperty")) as MutableProperty;
 
       const ca = {
         className: "TestCustomAttribute",
@@ -865,11 +718,7 @@ describe("Property", () => {
       property.addCustomAttribute(ca);
       const serialized = await property.toXml(newDom);
 
-      const element = getCAPropertyValueElement(
-        serialized,
-        "TestCustomAttribute",
-        "StructArray"
-      );
+      const element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "StructArray");
       const structs = element.getElementsByTagName("TestStruct");
       expect(structs.length).to.equal(2);
 
@@ -1056,20 +905,9 @@ describe("PrimitiveProperty", () => {
     let testProperty: PrimitiveProperty;
 
     beforeEach(() => {
-      const schema = new Schema(
-        new SchemaContext(),
-        "TestSchema",
-        "ts",
-        1,
-        0,
-        0
-      );
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       const testClass = new EntityClass(schema, "TestClass");
-      testProperty = new PrimitiveProperty(
-        testClass,
-        "TestProperty",
-        PrimitiveType.Double
-      );
+      testProperty = new PrimitiveProperty(testClass, "TestProperty", PrimitiveType.Double);
     });
 
     it("should successfully deserialize valid JSON", async () => {
@@ -1100,9 +938,7 @@ describe("PrimitiveProperty", () => {
         typeName: "string",
       };
       expect(testProperty).to.exist;
-      await expect(testProperty.fromJSON(propertyJson)).to.be.rejectedWith(
-        ECObjectsError
-      );
+      await expect(testProperty.fromJSON(propertyJson)).to.be.rejectedWith(ECObjectsError);
     });
   });
 
@@ -1110,33 +946,14 @@ describe("PrimitiveProperty", () => {
     let testProperty: PrimitiveProperty;
     beforeEach(() => {
       const context = new SchemaContext();
-      const referencedSchema = new Schema(
-        context,
-        "Reference",
-        "ref",
-        1,
-        0,
-        0
-      ) as MutableSchema;
+      const referencedSchema = new Schema(context, "Reference", "ref", 1, 0, 0) as MutableSchema;
       referencedSchema.createKindOfQuantitySync("MyKindOfQuantity");
 
-      const schema = new Schema(
-        context,
-        "TestSchema",
-        "ts",
-        1,
-        0,
-        0
-      ) as MutableSchema;
+      const schema = new Schema(context, "TestSchema", "ts", 1, 0, 0) as MutableSchema;
       schema.addReferenceSync(referencedSchema);
 
-      const testClass = schema.createEntityClassSync(
-        "TestClass"
-      ) as ECClass as MutableClass;
-      testProperty = testClass.createPrimitivePropertySync(
-        "Primitive",
-        PrimitiveType.Double
-      );
+      const testClass = schema.createEntityClassSync("TestClass") as ECClass as MutableClass;
+      testProperty = testClass.createPrimitivePropertySync("Primitive", PrimitiveType.Double);
     });
 
     const propertyJson = {
@@ -1165,33 +982,14 @@ describe("PrimitiveProperty", () => {
     let testProperty: PrimitiveProperty;
     beforeEach(() => {
       const context = new SchemaContext();
-      const referencedSchema = new Schema(
-        context,
-        "Reference",
-        "ref",
-        1,
-        0,
-        0
-      ) as MutableSchema;
+      const referencedSchema = new Schema(context, "Reference", "ref", 1, 0, 0) as MutableSchema;
       referencedSchema.createPropertyCategorySync("MyCategory");
 
-      const schema = new Schema(
-        context,
-        "TestSchema",
-        "ts",
-        1,
-        0,
-        0
-      ) as MutableSchema;
+      const schema = new Schema(context, "TestSchema", "ts", 1, 0, 0) as MutableSchema;
       schema.addReferenceSync(referencedSchema);
 
-      const testClass = schema.createEntityClassSync(
-        "TestClass"
-      ) as ECClass as MutableClass;
-      testProperty = testClass.createPrimitivePropertySync(
-        "Primitive",
-        PrimitiveType.Double
-      );
+      const testClass = schema.createEntityClassSync("TestClass") as ECClass as MutableClass;
+      testProperty = testClass.createPrimitivePropertySync("Primitive", PrimitiveType.Double);
     });
 
     const propertyJson = {
@@ -1220,20 +1018,9 @@ describe("PrimitiveProperty", () => {
     let testProperty: PrimitiveProperty;
 
     beforeEach(() => {
-      const schema = new Schema(
-        new SchemaContext(),
-        "TestSchema",
-        "ts",
-        1,
-        0,
-        0
-      );
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       const testClass = new EntityClass(schema, "TestClass");
-      testProperty = new PrimitiveProperty(
-        testClass,
-        "TestProperty",
-        PrimitiveType.Double
-      );
+      testProperty = new PrimitiveProperty(testClass, "TestProperty", PrimitiveType.Double);
     });
 
     it("should successfully serialize valid JSON", async () => {
@@ -1263,20 +1050,9 @@ describe("PrimitiveProperty", () => {
     const newDom = createEmptyXmlDocument();
 
     beforeEach(() => {
-      const schema = new Schema(
-        new SchemaContext(),
-        "TestSchema",
-        "ts",
-        1,
-        0,
-        0
-      );
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       const testClass = new EntityClass(schema, "TestClass");
-      testProperty = new PrimitiveProperty(
-        testClass,
-        "TestProperty",
-        PrimitiveType.Double
-      );
+      testProperty = new PrimitiveProperty(testClass, "TestProperty", PrimitiveType.Double);
     });
 
     it("Simple serialization", async () => {
@@ -1301,9 +1077,7 @@ describe("PrimitiveProperty", () => {
       expect(serialized.getAttribute("maximumLength")).to.eql("4");
       expect(serialized.getAttribute("minimumValue")).to.eql("6");
       expect(serialized.getAttribute("maximumValue")).to.eql("8");
-      expect(serialized.getAttribute("extendedTypeName")).to.eql(
-        "SomeExtendedType"
-      );
+      expect(serialized.getAttribute("extendedTypeName")).to.eql("SomeExtendedType");
     });
   });
 });
@@ -1314,17 +1088,8 @@ describe("EnumerationProperty", () => {
     let testEnum: Enumeration;
 
     beforeEach(async () => {
-      const schema = new Schema(
-        new SchemaContext(),
-        "TestSchema",
-        "ts",
-        1,
-        0,
-        0
-      );
-      const testClass = await (schema as MutableSchema).createEntityClass(
-        "TestClass"
-      );
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
+      const testClass = await (schema as MutableSchema).createEntityClass("TestClass");
       testEnum = await (schema as MutableSchema).createEnumeration("TestEnum");
       testProperty = new EnumerationProperty(
         testClass,
@@ -1351,9 +1116,7 @@ describe("EnumerationProperty", () => {
         typeName: "ThisDoesNotMatch",
       };
       expect(testProperty).to.exist;
-      await expect(testProperty.fromJSON(propertyJson)).to.be.rejectedWith(
-        ECObjectsError
-      );
+      await expect(testProperty.fromJSON(propertyJson)).to.be.rejectedWith(ECObjectsError);
     });
   });
 
@@ -1362,17 +1125,8 @@ describe("EnumerationProperty", () => {
     let testEnum: Enumeration;
 
     beforeEach(async () => {
-      const schema = new Schema(
-        new SchemaContext(),
-        "TestSchema",
-        "ts",
-        1,
-        0,
-        0
-      );
-      const testClass = await (schema as MutableSchema).createEntityClass(
-        "TestClass"
-      );
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
+      const testClass = await (schema as MutableSchema).createEntityClass("TestClass");
       testEnum = await (schema as MutableSchema).createEnumeration("TestEnum");
       testProperty = new EnumerationProperty(
         testClass,
@@ -1400,20 +1154,9 @@ describe("EnumerationProperty", () => {
     const newDom = createEmptyXmlDocument();
 
     beforeEach(async () => {
-      const schema = new Schema(
-        new SchemaContext(),
-        "TestSchema",
-        "ts",
-        1,
-        0,
-        0
-      );
-      const testClass = await (schema as MutableSchema).createEntityClass(
-        "TestClass"
-      );
-      testEnum = await (schema as MutableSchema).createEnumeration(
-        "TestEnumeration"
-      );
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
+      const testClass = await (schema as MutableSchema).createEntityClass("TestClass");
+      testEnum = await (schema as MutableSchema).createEnumeration("TestEnumeration");
       testProperty = new EnumerationProperty(
         testClass,
         "TestProperty",
@@ -1438,28 +1181,12 @@ describe("EnumerationProperty", () => {
 
     it("Simple serialization with schema reference", async () => {
       const context = new SchemaContext();
-      const referencedSchema = new Schema(
-        context,
-        "ReferenceSchema",
-        "ref",
-        1,
-        0,
-        0
-      ) as MutableSchema;
+      const referencedSchema = new Schema(context, "ReferenceSchema", "ref", 1, 0, 0) as MutableSchema;
       testEnum = referencedSchema.createEnumerationSync("TestEnumeration");
-      const schema = new Schema(
-        context,
-        "TestSchema",
-        "ts",
-        1,
-        0,
-        0
-      ) as MutableSchema;
+      const schema = new Schema(context, "TestSchema", "ts", 1, 0, 0) as MutableSchema;
       schema.addReferenceSync(referencedSchema);
 
-      const testClass = schema.createEntityClassSync(
-        "TestClass"
-      ) as ECClass as MutableClass;
+      const testClass = schema.createEntityClassSync("TestClass") as ECClass as MutableClass;
       testProperty = new EnumerationProperty(
         testClass,
         "TestProperty",
@@ -1488,20 +1215,9 @@ describe("StructProperty", () => {
     let testStruct: StructClass;
 
     beforeEach(async () => {
-      const schema = new Schema(
-        new SchemaContext(),
-        "TestSchema",
-        "ts",
-        1,
-        0,
-        0
-      );
-      const testClass = await (schema as MutableSchema).createEntityClass(
-        "TestClass"
-      );
-      testStruct = await (schema as MutableSchema).createStructClass(
-        "TestStruct"
-      );
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
+      const testClass = await (schema as MutableSchema).createEntityClass("TestClass");
+      testStruct = await (schema as MutableSchema).createStructClass("TestStruct");
       testProperty = new StructProperty(testClass, "TestProperty", testStruct);
     });
 
@@ -1523,9 +1239,7 @@ describe("StructProperty", () => {
         typeName: "ThisDoesNotMatch",
       };
       expect(testProperty).to.exist;
-      await expect(testProperty.fromJSON(propertyJson)).to.be.rejectedWith(
-        ECObjectsError
-      );
+      await expect(testProperty.fromJSON(propertyJson)).to.be.rejectedWith(ECObjectsError);
     });
   });
 
@@ -1534,20 +1248,9 @@ describe("StructProperty", () => {
     let testStruct: StructClass;
 
     beforeEach(async () => {
-      const schema = new Schema(
-        new SchemaContext(),
-        "TestSchema",
-        "ts",
-        1,
-        0,
-        0
-      );
-      const testClass = await (schema as MutableSchema).createEntityClass(
-        "TestClass"
-      );
-      testStruct = await (schema as MutableSchema).createStructClass(
-        "TestStruct"
-      );
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
+      const testClass = await (schema as MutableSchema).createEntityClass("TestClass");
+      testStruct = await (schema as MutableSchema).createStructClass("TestStruct");
       testProperty = new StructProperty(testClass, "TestProperty", testStruct);
     });
 
@@ -1560,10 +1263,7 @@ describe("StructProperty", () => {
       expect(testProperty).to.exist;
       await testProperty.fromJSON(propertyJson);
       const testPropSerialization = testProperty.toJSON();
-      assert.strictEqual(
-        testPropSerialization.typeName,
-        "TestSchema.TestStruct"
-      );
+      assert.strictEqual(testPropSerialization.typeName, "TestSchema.TestStruct");
     });
   });
 
@@ -1573,20 +1273,9 @@ describe("StructProperty", () => {
     const newDom = createEmptyXmlDocument();
 
     beforeEach(async () => {
-      const schema = new Schema(
-        new SchemaContext(),
-        "TestSchema",
-        "ts",
-        1,
-        0,
-        0
-      );
-      const testClass = await (schema as MutableSchema).createEntityClass(
-        "TestClass"
-      );
-      testStruct = await (schema as MutableSchema).createStructClass(
-        "TestStruct"
-      );
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
+      const testClass = await (schema as MutableSchema).createEntityClass("TestClass");
+      testStruct = await (schema as MutableSchema).createStructClass("TestStruct");
       testProperty = new StructProperty(testClass, "TestProperty", testStruct);
     });
 
@@ -1610,14 +1299,7 @@ describe("PrimitiveArrayProperty", () => {
     let testProperty: PrimitiveArrayProperty;
 
     beforeEach(() => {
-      const schema = new Schema(
-        new SchemaContext(),
-        "TestSchema",
-        "ts",
-        1,
-        0,
-        0
-      );
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       const testClass = new EntityClass(schema, "TestClass");
       testProperty = new PrimitiveArrayProperty(testClass, "TestProperty");
     });
@@ -1640,19 +1322,9 @@ describe("PrimitiveArrayProperty", () => {
       let testArrayProperty: PrimitiveArrayProperty;
 
       beforeEach(() => {
-        const schema = new Schema(
-          new SchemaContext(),
-          "TestSchema",
-          "ts",
-          1,
-          0,
-          0
-        );
+        const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
         const testClass = new EntityClass(schema, "TestClass");
-        testArrayProperty = new PrimitiveArrayProperty(
-          testClass,
-          "TestProperty"
-        );
+        testArrayProperty = new PrimitiveArrayProperty(testClass, "TestProperty");
       });
 
       it("should successfully serialize valid JSON", async () => {
@@ -1675,19 +1347,9 @@ describe("PrimitiveArrayProperty", () => {
       const newDom = createEmptyXmlDocument();
 
       beforeEach(() => {
-        const schema = new Schema(
-          new SchemaContext(),
-          "TestSchema",
-          "ts",
-          1,
-          0,
-          0
-        );
+        const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
         const testClass = new EntityClass(schema, "TestClass");
-        testArrayProperty = new PrimitiveArrayProperty(
-          testClass,
-          "TestProperty"
-        );
+        testArrayProperty = new PrimitiveArrayProperty(testClass, "TestProperty");
       });
 
       it("Simple serialization", async () => {
@@ -1714,23 +1376,10 @@ describe("NavigationProperty (Deserialization not fully implemented)", () => {
     const newDom = createEmptyXmlDocument();
 
     beforeEach(() => {
-      const schema = new Schema(
-        new SchemaContext(),
-        "TestSchema",
-        "ts",
-        1,
-        0,
-        0
-      );
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       const testClass = new EntityClass(schema, "TestClass");
-      const relationshipClass = new RelationshipClass(
-        schema,
-        "TestRelationship"
-      );
-      const lazyRelationship = new DelayedPromiseWithProps(
-        relationshipClass.key,
-        async () => relationshipClass
-      );
+      const relationshipClass = new RelationshipClass(schema, "TestRelationship");
+      const lazyRelationship = new DelayedPromiseWithProps(relationshipClass.key, async () => relationshipClass);
       testNavigationProperty = new NavigationProperty(
         testClass,
         "TestProperty",
@@ -1750,9 +1399,7 @@ describe("NavigationProperty (Deserialization not fully implemented)", () => {
       await testNavigationProperty.fromJSON(propertyJson);
       const serialized = await testNavigationProperty.toXml(newDom);
       expect(serialized.nodeName).to.eql("ECNavigationProperty");
-      expect(serialized.getAttribute("relationshipName")).to.eql(
-        "TestRelationship"
-      );
+      expect(serialized.getAttribute("relationshipName")).to.eql("TestRelationship");
       expect(serialized.getAttribute("direction")).to.eql("Forward");
     });
   });
@@ -1764,25 +1411,12 @@ describe("NavigationProperty (Deserialization not fully implemented)", () => {
     });
 
     it("should return true if object is of Property type", async () => {
-      const testSchema = new Schema(
-        new SchemaContext(),
-        "testSchema",
-        "ts",
-        12,
-        22,
-        93
-      );
+      const testSchema = new Schema(new SchemaContext(), "testSchema", "ts", 12, 22, 93);
       const mutable = testSchema as MutableSchema;
       const testClass = await mutable.createEntityClass("TestClass");
-      const testEnum = new Enumeration(
-        testSchema,
-        "TestEnumeration",
-        PrimitiveType.Integer
-      );
+      const testEnum = new Enumeration(testSchema, "TestEnumeration", PrimitiveType.Integer);
       const testStruct = await mutable.createStructClass("TestStruct");
-      const testRelationship = await mutable.createRelationshipClass(
-        "TestRelationship"
-      );
+      const testRelationship = await mutable.createRelationshipClass("TestRelationship");
 
       const primitiveProperty = new PrimitiveProperty(testClass, "A");
       expect(Property.isProperty(primitiveProperty)).to.be.true;
@@ -1797,10 +1431,7 @@ describe("NavigationProperty (Deserialization not fully implemented)", () => {
       const navProperty = new NavigationProperty(
         testClass,
         "D",
-        new DelayedPromiseWithProps(
-          testRelationship.key,
-          async () => testRelationship
-        )
+        new DelayedPromiseWithProps(testRelationship.key, async () => testRelationship)
       );
       expect(Property.isProperty(navProperty)).to.be.true;
       const primitiveArrayProperty = new PrimitiveArrayProperty(testClass, "E");
@@ -1811,23 +1442,12 @@ describe("NavigationProperty (Deserialization not fully implemented)", () => {
         new DelayedPromiseWithProps(testEnum.key, async () => testEnum)
       );
       expect(Property.isProperty(enumArrayProperty)).to.be.true;
-      const structArrayProperty = new StructArrayProperty(
-        testClass,
-        "G",
-        testStruct
-      );
+      const structArrayProperty = new StructArrayProperty(testClass, "G", testStruct);
       expect(Property.isProperty(structArrayProperty)).to.be.true;
     });
 
     it("should return false if object is not of Property type", () => {
-      const testSchema = new Schema(
-        new SchemaContext(),
-        "testSchema",
-        "ts",
-        12,
-        22,
-        93
-      );
+      const testSchema = new Schema(new SchemaContext(), "testSchema", "ts", 12, 22, 93);
       const testClass = new EntityClass(testSchema, "ExampleEntity");
       expect(Property.isProperty(testClass)).to.be.false;
       expect(Property.isProperty(testSchema)).to.be.false;

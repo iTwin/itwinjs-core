@@ -87,9 +87,7 @@ export type BackstageItem = BackstageActionItem | BackstageStageLauncher; // esl
  * @deprecated in 3.6. Use [isBackstageActionItem]($appui-react) instead.
  * @public
  */
-export const isActionItem = (
-  item: BackstageItem
-): item is BackstageActionItem => {
+export const isActionItem = (item: BackstageItem): item is BackstageActionItem => {
   // eslint-disable-line deprecation/deprecation
   return (item as BackstageActionItem).execute !== undefined; // eslint-disable-line deprecation/deprecation
 };
@@ -98,9 +96,7 @@ export const isActionItem = (
  * @deprecated in 3.6. Use [isBackstageStageLauncher]($appui-react) instead.
  * @public
  */
-export const isStageLauncher = (
-  item: BackstageItem
-): item is BackstageStageLauncher => {
+export const isStageLauncher = (item: BackstageItem): item is BackstageStageLauncher => {
   // eslint-disable-line deprecation/deprecation
   return (item as BackstageStageLauncher).stageId !== undefined; // eslint-disable-line deprecation/deprecation
 };

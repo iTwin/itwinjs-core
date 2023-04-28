@@ -41,17 +41,10 @@ function isLowerCaseNonZeroHexDigit(str: string, index: number) {
   return isLowerCaseHexDigit(str, index, false);
 }
 
-function isLowerCaseHexDigit(
-  str: string,
-  index: number,
-  allowZero: boolean = true
-): boolean {
+function isLowerCaseHexDigit(str: string, index: number, allowZero: boolean = true): boolean {
   const charCode = str.charCodeAt(index);
   const minDecimalDigit = allowZero ? 0x30 : 0x31; // '0' or '1'...
-  return (
-    (charCode >= minDecimalDigit && charCode <= 0x39) ||
-    (charCode >= 0x61 && charCode <= 0x66)
-  ); //  '0'-'9, 'a' -'f'
+  return (charCode >= minDecimalDigit && charCode <= 0x39) || (charCode >= 0x61 && charCode <= 0x66); //  '0'-'9, 'a' -'f'
 }
 
 function isValidHexString(id: string, startIndex: number, len: number) {
@@ -61,8 +54,7 @@ function isValidHexString(id: string, startIndex: number, len: number) {
   if (!isLowerCaseNonZeroHexDigit(id, startIndex)) return false;
 
   // ...followed by len-1 lowercase hexadecimal digits.
-  for (let i = 1; i < len; i++)
-    if (!isLowerCaseHexDigit(id, startIndex + i)) return false;
+  for (let i = 1; i < len; i++) if (!isLowerCaseHexDigit(id, startIndex + i)) return false;
 
   return true;
 }
@@ -157,13 +149,9 @@ export namespace Id64 {
    * @returns an Id64String containing the hexadecimal string representation of the unsigned 64-bit integer which would result from the
    * operation `localId | (briefcaseId << 40)`, or an invalid Id "0" if the inputs are invalid.
    */
-  export function fromLocalAndBriefcaseIds(
-    localId: number,
-    briefcaseId: number
-  ): Id64String {
+  export function fromLocalAndBriefcaseIds(localId: number, briefcaseId: number): Id64String {
     // NB: Yes, we must check the run-time type...
-    if (typeof localId !== "number" || typeof briefcaseId !== "number")
-      return invalid;
+    if (typeof localId !== "number" || typeof briefcaseId !== "number") return invalid;
 
     localId = Math.floor(localId);
     if (0 === localId) return invalid;
@@ -171,10 +159,7 @@ export namespace Id64 {
     briefcaseId = Math.floor(briefcaseId);
     const lowStr = localId.toString(16);
     return `0x${
-      briefcaseId === 0
-        ? lowStr
-        : briefcaseId.toString(16) +
-          (_localIdPrefixByLocalIdLength[lowStr.length] + lowStr)
+      briefcaseId === 0 ? lowStr : briefcaseId.toString(16) + (_localIdPrefixByLocalIdLength[lowStr.length] + lowStr)
     }`;
   }
 
@@ -211,11 +196,7 @@ export namespace Id64 {
   }
 
   // Convert a substring to a uint32. This is twice as fast as using Number.parseInt().
-  function substringToUint32(
-    id: Id64String,
-    start: number,
-    end: number
-  ): number {
+  function substringToUint32(id: Id64String, start: number, end: number): number {
     let uint32 = 0;
     for (let i = start; i < end; i++) {
       const uint4 = charCodeToUint4(id.charCodeAt(i));
@@ -234,10 +215,7 @@ export namespace Id64 {
    * operation `lowBytes | (highBytes << 32)`.
    * @see [[Id64.fromUint32PairObject]] if you have a [[Id64.Uint32Pair]] object.
    */
-  export function fromUint32Pair(
-    lowBytes: number,
-    highBytes: number
-  ): Id64String {
+  export function fromUint32Pair(lowBytes: number, highBytes: number): Id64String {
     const localIdLow = lowBytes >>> 0;
     const localIdHigh = (highBytes & 0x000000ff) * (0xffffffff + 1); // aka (highBytes & 0xff) << 32
     const localId = localIdLow + localIdHigh; // aka localIdLow | localIdHigh
@@ -275,10 +253,7 @@ export namespace Id64 {
   /** Returns true if the inputs represent two halves of a valid 64-bit Id.
    * @see [[Id64.Uint32Pair]].
    */
-  export function isValidUint32Pair(
-    lowBytes: number,
-    highBytes: number
-  ): boolean {
+  export function isValidUint32Pair(lowBytes: number, highBytes: number): boolean {
     // Detect local ID of zero
     return 0 !== lowBytes || 0 !== (highBytes & 0x000000ff);
   }
@@ -379,20 +354,12 @@ export namespace Id64 {
 
   /** Return the first [[Id64String]] of an [[Id64Arg]]. */
   export function getFirst(arg: Id64Arg): Id64String {
-    return typeof arg === "string"
-      ? arg
-      : Array.isArray(arg)
-      ? arg[0]
-      : arg.values().next().value;
+    return typeof arg === "string" ? arg : Array.isArray(arg) ? arg[0] : arg.values().next().value;
   }
 
   /** Return the number of [[Id64String]]s represented by an [[Id64Arg]]. */
   export function sizeOf(arg: Id64Arg): number {
-    return typeof arg === "string"
-      ? 1
-      : Array.isArray(arg)
-      ? arg.length
-      : arg.size;
+    return typeof arg === "string" ? 1 : Array.isArray(arg) ? arg.length : arg.size;
   }
 
   /** Returns true if the [[Id64Arg]] contains the specified Id. */
@@ -584,9 +551,7 @@ export namespace Id64 {
     /** Populates and returns an array of all Ids contained in the set. */
     public toId64Array(): Id64Array {
       const ids: Id64Array = [];
-      for (const entry of this._map)
-        for (const low of entry[1])
-          ids.push(Id64.fromUint32Pair(low, entry[0]));
+      for (const entry of this._map) for (const low of entry[1]) ids.push(Id64.fromUint32Pair(low, entry[0]));
 
       return ids;
     }
@@ -594,16 +559,14 @@ export namespace Id64 {
     /** Populates and returns a set of all Ids contained in the set. */
     public toId64Set(): Id64Set {
       const ids = new Set<string>();
-      for (const entry of this._map)
-        for (const low of entry[1]) ids.add(Id64.fromUint32Pair(low, entry[0]));
+      for (const entry of this._map) for (const low of entry[1]) ids.add(Id64.fromUint32Pair(low, entry[0]));
 
       return ids;
     }
 
     /** Execute a function against each Id in this set. */
     public forEach(func: (lo: number, hi: number) => void): void {
-      for (const entry of this._map)
-        for (const lo of entry[1]) func(lo, entry[0]);
+      for (const entry of this._map) for (const lo of entry[1]) func(lo, entry[0]);
     }
   }
 
@@ -659,8 +622,7 @@ export namespace Id64 {
     /** Execute a function against each entry in this map. */
     public forEach(func: (lo: number, hi: number, value: T) => void): void {
       for (const outerEntry of this._map)
-        for (const innerEntry of outerEntry[1])
-          func(innerEntry[0], outerEntry[0], innerEntry[1]);
+        for (const innerEntry of outerEntry[1]) func(innerEntry[0], outerEntry[0], innerEntry[1]);
     }
   }
 }
@@ -702,9 +664,7 @@ export class TransientIdSequence {
  * @public
  */
 export namespace Guid {
-  const uuidPattern = new RegExp(
-    "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-  );
+  const uuidPattern = new RegExp("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
 
   /** Represents the empty Guid 00000000-0000-0000-0000-000000000000 */
   export const empty: GuidString = "00000000-0000-0000-0000-000000000000";
@@ -718,9 +678,7 @@ export namespace Guid {
 
   /** Determine whether the input string is a valid V4 Guid string */
   export function isV4Guid(value: string): boolean {
-    return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(
-      value
-    );
+    return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(value);
   }
 
   /** Create a new V4 Guid value */
@@ -749,19 +707,11 @@ export namespace Guid {
 
     // Remove any existing "-" characters and position them properly, if there remains exactly 32 hexadecimal digits
     const noDashValue = lowerValue.replace(/-/g, "");
-    const noDashPattern =
-      /^([0-9a-f]{8})([0-9a-f]{4})([0-9a-f]{4})([0-9a-f]{4})([0-9a-f]{12})$/;
+    const noDashPattern = /^([0-9a-f]{8})([0-9a-f]{4})([0-9a-f]{4})([0-9a-f]{4})([0-9a-f]{12})$/;
     if (noDashPattern.test(noDashValue)) {
       return noDashValue.replace(
         noDashPattern,
-        (
-          _match: string,
-          p1: string,
-          p2: string,
-          p3: string,
-          p4: string,
-          p5: string
-        ) => `${p1}-${p2}-${p3}-${p4}-${p5}`
+        (_match: string, p1: string, p2: string, p3: string, p4: string, p5: string) => `${p1}-${p2}-${p3}-${p4}-${p5}`
       );
     }
 

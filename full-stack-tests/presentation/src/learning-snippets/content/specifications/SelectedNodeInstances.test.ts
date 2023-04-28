@@ -14,9 +14,7 @@ describe("Learning Snippets", () => {
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile(
-      "assets/datasets/Properties_60InstancesWithUrl2.ibim"
-    );
+    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {
@@ -142,9 +140,7 @@ describe("Learning Snippets", () => {
         });
 
         expect(content!.contentSet).to.have.lengthOf(1);
-        expect(content!.contentSet[0].primaryKeys[0].className).to.equal(
-          "BisCore:SpatialViewDefinition"
-        );
+        expect(content!.contentSet[0].primaryKeys[0].className).to.equal("BisCore:SpatialViewDefinition");
       });
     });
   });

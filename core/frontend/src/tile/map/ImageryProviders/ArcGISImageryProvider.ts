@@ -17,10 +17,7 @@ import {
   MapLayerImageryProviderStatus,
 } from "../../internal";
 import { IModelApp } from "../../../IModelApp";
-import {
-  NotifyMessageDetails,
-  OutputMessagePriority,
-} from "../../../NotificationManager";
+import { NotifyMessageDetails, OutputMessagePriority } from "../../../NotificationManager";
 
 /** Base class for ArcGIS map-layer imagery providers.
  *
@@ -40,9 +37,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
 
   constructor(settings: ImageMapLayerSettings, usesCachedTiles: boolean) {
     super(settings, usesCachedTiles);
-    this._accessClient = IModelApp.mapLayerFormatRegistry?.getAccessClient(
-      settings.formatId
-    );
+    this._accessClient = IModelApp.mapLayerFormatRegistry?.getAccessClient(settings.formatId);
   }
 
   /** Updates the accessClient token state whenever the status of the provider change.
@@ -51,10 +46,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
   protected override onStatusUpdated(status: MapLayerImageryProviderStatus) {
     if (status === MapLayerImageryProviderStatus.RequireAuth) {
       // Invalidate the token, so a new one get generated
-      if (
-        this._accessClient?.invalidateToken !== undefined &&
-        this._lastAccessToken !== undefined
-      ) {
+      if (this._accessClient?.invalidateToken !== undefined && this._lastAccessToken !== undefined) {
         this._accessClient.invalidateToken(this._lastAccessToken);
       }
 
@@ -78,9 +70,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
       );
     } catch (_e) {}
     if (metadata && metadata.accessTokenRequired) {
-      const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(
-        this._settings.formatId
-      );
+      const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(this._settings.formatId);
       if (accessClient) {
         try {
           // Keep track of last used access token, so we can invalidate it later when an errors occurs
@@ -107,15 +97,11 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     const urlObj = new URL(url);
 
     if (this._accessTokenRequired && this._accessClient) {
-      this._lastAccessToken = await ArcGisUtilities.appendSecurityToken(
-        urlObj,
-        this._accessClient,
-        {
-          mapLayerUrl: new URL(this._settings.url),
-          userName: this._settings.userName,
-          password: this._settings.password,
-        }
-      );
+      this._lastAccessToken = await ArcGisUtilities.appendSecurityToken(urlObj, this._accessClient, {
+        mapLayerUrl: new URL(this._settings.url),
+        userName: this._settings.userName,
+        password: this._settings.password,
+      });
     }
 
     let response = await fetch(urlObj.toString(), options);
@@ -135,68 +121,46 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
       response = await fetch(tmpUrl.toString(), options);
     }
 
-    errorCode = await ArcGisUtilities.checkForResponseErrorCode(
-      response.clone()
-    );
+    errorCode = await ArcGisUtilities.checkForResponseErrorCode(response.clone());
 
     if (
       errorCode !== undefined &&
-      (errorCode === ArcGisErrorCode.TokenRequired ||
-        errorCode === ArcGisErrorCode.InvalidToken)
+      (errorCode === ArcGisErrorCode.TokenRequired || errorCode === ArcGisErrorCode.InvalidToken)
     ) {
-      if (
-        this._settings.userName &&
-        this._settings.userName.length > 0 &&
-        this._lastAccessToken
-      ) {
+      if (this._settings.userName && this._settings.userName.length > 0 && this._lastAccessToken) {
         // **** Legacy token ONLY ***
 
         // Token might have expired, make a second attempt by forcing new token.
-        if (
-          this._accessClient?.invalidateToken !== undefined &&
-          this._lastAccessToken !== undefined
-        )
+        if (this._accessClient?.invalidateToken !== undefined && this._lastAccessToken !== undefined)
           this._accessClient.invalidateToken(this._lastAccessToken);
 
         const urlObj2 = new URL(url);
         if (this._accessClient) {
           try {
-            this._lastAccessToken = await ArcGisUtilities.appendSecurityToken(
-              urlObj,
-              this._accessClient,
-              {
-                mapLayerUrl: urlObj,
-                userName: this._settings.userName,
-                password: this._settings.password,
-              }
-            );
+            this._lastAccessToken = await ArcGisUtilities.appendSecurityToken(urlObj, this._accessClient, {
+              mapLayerUrl: urlObj,
+              userName: this._settings.userName,
+              password: this._settings.password,
+            });
           } catch {}
         }
 
         // Make a second attempt with refreshed token
         response = await fetch(urlObj2.toString(), options);
-        errorCode = await ArcGisUtilities.checkForResponseErrorCode(
-          response.clone()
-        );
+        errorCode = await ArcGisUtilities.checkForResponseErrorCode(response.clone());
       }
 
-      if (
-        errorCode === ArcGisErrorCode.TokenRequired ||
-        errorCode === ArcGisErrorCode.InvalidToken
-      ) {
+      if (errorCode === ArcGisErrorCode.TokenRequired || errorCode === ArcGisErrorCode.InvalidToken) {
         // Looks like the initially generated token has expired.
 
         if (this.status === MapLayerImageryProviderStatus.Valid) {
           // Only report new status change to avoid spamming the UI
           this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
           this.onStatusChanged.raiseEvent(this);
-          const msg = IModelApp.localization.getLocalizedString(
-            "iModelJs:MapLayers.Messages.FetchTooltipTokenError",
-            { layerName: this._settings.name }
-          );
-          IModelApp.notifications.outputMessage(
-            new NotifyMessageDetails(OutputMessagePriority.Warning, msg)
-          );
+          const msg = IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Messages.FetchTooltipTokenError", {
+            layerName: this._settings.name,
+          });
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
         }
       }
     }

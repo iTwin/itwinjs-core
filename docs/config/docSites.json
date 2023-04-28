@@ -29,14 +29,7 @@
     "smallLogo": "assets/itwinjs-logo-small.svg",
     "sponsoredByLogo": "assets/bentley.svg",
     "favicon": "assets/iTwinJs.ico",
-    "docSiteOrder": [
-      "getting-started",
-      "learning",
-      "bis",
-      "reference",
-      "changehistory",
-      "presentation"
-    ],
+    "docSiteOrder": ["getting-started", "learning", "bis", "reference", "changehistory", "presentation"],
     "headerTabs": {
       "Getting Started": "getting-started",
       "Samples": "sample-showcase",

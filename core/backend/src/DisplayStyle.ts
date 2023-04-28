@@ -6,13 +6,7 @@
  * @module ViewDefinitions
  */
 
-import {
-  CompressedId64Set,
-  Id64,
-  Id64Array,
-  Id64String,
-  OrderedId64Iterable,
-} from "@itwin/core-bentley";
+import { CompressedId64Set, Id64, Id64Array, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import {
   BisCodeSpec,
   Code,
@@ -56,14 +50,8 @@ export abstract class DisplayStyle extends DefinitionElement {
    * @param scopeModelId The Id of the DefinitionModel that contains the DisplayStyle and provides the scope for its name.
    * @param codeValue The DisplayStyle name
    */
-  public static createCode(
-    iModel: IModelDb,
-    scopeModelId: CodeScopeProps,
-    codeValue: string
-  ): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(
-      BisCodeSpec.displayStyle
-    );
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.displayStyle);
     return new Code({
       spec: codeSpec.id,
       scope: scopeModelId,
@@ -72,16 +60,13 @@ export abstract class DisplayStyle extends DefinitionElement {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(
-    referenceIds: EntityReferenceSet
-  ): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     for (const [id] of this.settings.subCategoryOverrides) {
       referenceIds.addElement(id);
     }
 
-    for (const excludedElementId of this.settings.excludedElementIds)
-      referenceIds.addElement(excludedElementId);
+    for (const excludedElementId of this.settings.excludedElementIds) referenceIds.addElement(excludedElementId);
 
     if (this.settings.renderTimeline) {
       referenceIds.addElement(this.settings.renderTimeline);
@@ -99,18 +84,14 @@ export abstract class DisplayStyle extends DefinitionElement {
   ): void {
     super.onCloned(context, sourceElementProps, targetElementProps);
 
-    if (!context.isBetweenIModels || !targetElementProps.jsonProperties?.styles)
-      return;
+    if (!context.isBetweenIModels || !targetElementProps.jsonProperties?.styles) return;
 
     const settings = targetElementProps.jsonProperties.styles;
     if (settings.subCategoryOvr) {
       for (let i = 0; i < settings.subCategoryOvr.length /* */; ) {
         const ovr = settings.subCategoryOvr[i];
-        ovr.subCategory = context.findTargetElementId(
-          Id64.fromJSON(ovr.subCategory)
-        );
-        if (Id64.invalid === ovr.subCategory)
-          settings.subCategoryOvr.splice(i, 1);
+        ovr.subCategory = context.findTargetElementId(Id64.fromJSON(ovr.subCategory));
+        if (Id64.invalid === ovr.subCategory) settings.subCategoryOvr.splice(i, 1);
         else i++;
       }
     }
@@ -127,24 +108,15 @@ export abstract class DisplayStyle extends DefinitionElement {
       }
 
       if (0 === excluded.length) delete settings.excludedElements;
-      else
-        settings.excludedElements = CompressedId64Set.compressIds(
-          OrderedId64Iterable.sortArray(excluded)
-        );
+      else settings.excludedElements = CompressedId64Set.compressIds(OrderedId64Iterable.sortArray(excluded));
     }
 
     if (settings.renderTimeline) {
-      const renderTimeline = context.findTargetElementId(
-        settings.renderTimeline
-      );
-      if (Id64.isValid(renderTimeline))
-        settings.renderTimeline = renderTimeline;
+      const renderTimeline = context.findTargetElementId(settings.renderTimeline);
+      if (Id64.isValid(renderTimeline)) settings.renderTimeline = renderTimeline;
       else delete settings.renderTimeline;
     } else if (settings.scheduleScript) {
-      const scheduleScript = RenderTimeline.remapScript(
-        context,
-        settings.scheduleScript
-      );
+      const scheduleScript = RenderTimeline.remapScript(context, settings.scheduleScript);
       if (scheduleScript.length > 0) settings.scheduleScript = scheduleScript;
       else delete settings.scheduleScript;
     }
@@ -154,17 +126,13 @@ export abstract class DisplayStyle extends DefinitionElement {
     let script;
     let sourceId;
     if (this.settings.renderTimeline) {
-      const timeline = this.iModel.elements.tryGetElement<RenderTimeline>(
-        this.settings.renderTimeline
-      );
+      const timeline = this.iModel.elements.tryGetElement<RenderTimeline>(this.settings.renderTimeline);
       if (timeline) {
         script = RenderSchedule.Script.fromJSON(timeline.scriptProps);
         sourceId = timeline.id;
       }
     } else if (this.settings.scheduleScriptProps) {
-      script = RenderSchedule.Script.fromJSON(
-        this.settings.scheduleScriptProps
-      );
+      script = RenderSchedule.Script.fromJSON(this.settings.scheduleScriptProps);
       sourceId = this.id;
     }
 
@@ -200,11 +168,7 @@ export class DisplayStyle2d extends DisplayStyle {
    * @returns The newly constructed DisplayStyle2d element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static create(
-    iModelDb: IModelDb,
-    definitionModelId: Id64String,
-    name: string
-  ): DisplayStyle2d {
+  public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string): DisplayStyle2d {
     const displayStyleProps: DisplayStyleProps = {
       classFullName: this.classFullName,
       code: this.createCode(iModelDb, definitionModelId, name),
@@ -227,11 +191,7 @@ export class DisplayStyle2d extends DisplayStyle {
    * @returns The Id of the newly inserted DisplayStyle2d element.
    * @throws [[IModelError]] if unable to insert the element.
    */
-  public static insert(
-    iModelDb: IModelDb,
-    definitionModelId: Id64String,
-    name: string
-  ): Id64String {
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string): Id64String {
     const displayStyle = this.create(iModelDb, definitionModelId, name);
     return iModelDb.elements.insertElement(displayStyle.toJSON());
   }
@@ -246,10 +206,7 @@ export class DisplayStyle2d extends DisplayStyle {
  * @public
  */
 export interface DisplayStyleCreationOptions
-  extends Omit<
-    DisplayStyle3dSettingsProps,
-    "backgroundColor" | "scheduleScript"
-  > {
+  extends Omit<DisplayStyle3dSettingsProps, "backgroundColor" | "scheduleScript"> {
   /** If supplied, the [ViewFlags]($common) applied by the display style.
    * If undefined, [DisplayStyle3dSettingsProps.viewflags]($common) will be used if present (note the difference in case); otherwise, default-constructed [ViewFlags]($common) will be used.
    */
@@ -279,12 +236,9 @@ export class DisplayStyle3d extends DisplayStyle {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(
-    referenceIds: EntityReferenceSet
-  ): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    for (const textureId of this.settings.environment.sky.textureIds)
-      referenceIds.addElement(textureId);
+    for (const textureId of this.settings.environment.sky.textureIds) referenceIds.addElement(textureId);
 
     if (this.settings.planProjectionSettings)
       for (const planProjectionSetting of this.settings.planProjectionSettings)
@@ -299,54 +253,33 @@ export class DisplayStyle3d extends DisplayStyle {
   ): void {
     super.onCloned(context, sourceElementProps, targetElementProps);
     if (context.isBetweenIModels) {
-      const convertTexture = (id: string) =>
-        Id64.isValidId64(id) ? context.findTargetElementId(id) : id;
+      const convertTexture = (id: string) => (Id64.isValidId64(id) ? context.findTargetElementId(id) : id);
 
       const skyBoxImageProps: SkyBoxImageProps | undefined =
         targetElementProps?.jsonProperties?.styles?.environment?.sky?.image;
-      if (
-        skyBoxImageProps?.texture &&
-        Id64.isValidId64(skyBoxImageProps.texture)
-      )
+      if (skyBoxImageProps?.texture && Id64.isValidId64(skyBoxImageProps.texture))
         skyBoxImageProps.texture = convertTexture(skyBoxImageProps.texture);
 
       if (skyBoxImageProps?.textures) {
-        skyBoxImageProps.textures.front = convertTexture(
-          skyBoxImageProps.textures.front
-        );
-        skyBoxImageProps.textures.back = convertTexture(
-          skyBoxImageProps.textures.back
-        );
-        skyBoxImageProps.textures.left = convertTexture(
-          skyBoxImageProps.textures.left
-        );
-        skyBoxImageProps.textures.right = convertTexture(
-          skyBoxImageProps.textures.right
-        );
-        skyBoxImageProps.textures.top = convertTexture(
-          skyBoxImageProps.textures.top
-        );
-        skyBoxImageProps.textures.bottom = convertTexture(
-          skyBoxImageProps.textures.bottom
-        );
+        skyBoxImageProps.textures.front = convertTexture(skyBoxImageProps.textures.front);
+        skyBoxImageProps.textures.back = convertTexture(skyBoxImageProps.textures.back);
+        skyBoxImageProps.textures.left = convertTexture(skyBoxImageProps.textures.left);
+        skyBoxImageProps.textures.right = convertTexture(skyBoxImageProps.textures.right);
+        skyBoxImageProps.textures.top = convertTexture(skyBoxImageProps.textures.top);
+        skyBoxImageProps.textures.bottom = convertTexture(skyBoxImageProps.textures.bottom);
       }
 
       if (targetElementProps?.jsonProperties?.styles?.planProjections) {
         const remappedPlanProjections: {
           [modelId: string]: PlanProjectionSettingsProps;
         } = {};
-        for (const entry of Object.entries(
-          targetElementProps.jsonProperties.styles.planProjections
-        )) {
-          const remappedModelId: Id64String = context.findTargetElementId(
-            entry[0]
-          );
+        for (const entry of Object.entries(targetElementProps.jsonProperties.styles.planProjections)) {
+          const remappedModelId: Id64String = context.findTargetElementId(entry[0]);
           if (Id64.isValidId64(remappedModelId)) {
             remappedPlanProjections[remappedModelId] = entry[1];
           }
         }
-        targetElementProps.jsonProperties.styles.planProjections =
-          remappedPlanProjections;
+        targetElementProps.jsonProperties.styles.planProjections = remappedPlanProjections;
       }
     }
   }
@@ -369,9 +302,7 @@ export class DisplayStyle3d extends DisplayStyle {
     if (!viewflags) viewflags = options.viewflags ?? new ViewFlags().toJSON();
 
     const backgroundColor =
-      options.backgroundColor instanceof ColorDef
-        ? options.backgroundColor.toJSON()
-        : options.backgroundColor;
+      options.backgroundColor instanceof ColorDef ? options.backgroundColor.toJSON() : options.backgroundColor;
 
     const settings: DisplayStyle3dSettingsProps = {
       ...options,
@@ -403,12 +334,7 @@ export class DisplayStyle3d extends DisplayStyle {
     name: string,
     options?: DisplayStyleCreationOptions
   ): Id64String {
-    const displayStyle = this.create(
-      iModelDb,
-      definitionModelId,
-      name,
-      options
-    );
+    const displayStyle = this.create(iModelDb, definitionModelId, name, options);
     return iModelDb.elements.insertElement(displayStyle.toJSON());
   }
 }

@@ -376,11 +376,7 @@ export class BentleyError extends Error {
    * @param message  message that describes the problem (should not be localized).
    * @param metaData metaData about the exception.
    */
-  public constructor(
-    public errorNumber: number,
-    message?: string,
-    metaData?: LoggingMetaData
-  ) {
+  public constructor(public errorNumber: number, message?: string, metaData?: LoggingMetaData) {
     super(message);
     this.errorNumber = errorNumber;
     this._metaData = metaData;

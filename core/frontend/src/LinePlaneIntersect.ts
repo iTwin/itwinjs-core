@@ -26,8 +26,7 @@ export function linePlaneIntersect(
     const t = linePt.vectorTo(planePt).dotProduct(planeNormal);
     temp = planeNormal.scale(t);
   } else {
-    const t =
-      (planeNormal.dotProduct(planePt) - planeNormal.dotProduct(linePt)) / dot;
+    const t = (planeNormal.dotProduct(planePt) - planeNormal.dotProduct(linePt)) / dot;
     temp = lineNormal!.scale(t);
   }
 

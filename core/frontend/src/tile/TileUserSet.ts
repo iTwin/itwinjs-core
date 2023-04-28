@@ -77,10 +77,7 @@ class TileUserSetSet extends SortedArray<TileUserSet> {
     return newSet;
   }
 
-  public getTileUserSet(
-    user: TileUser,
-    users?: ReadonlyTileUserSet
-  ): TileUserSet {
+  public getTileUserSet(user: TileUser, users?: ReadonlyTileUserSet): TileUserSet {
     if (undefined === users || users.isEmpty) return this.getForUser(user);
 
     // Use the scratch set for equality comparison - only allocate if no equivalent set already exists.
@@ -119,10 +116,7 @@ class TileUserSetSet extends SortedArray<TileUserSet> {
 export class UniqueTileUserSets {
   private readonly _sets = new TileUserSetSet();
 
-  public getTileUserSet(
-    user: TileUser,
-    users?: ReadonlyTileUserSet
-  ): ReadonlyTileUserSet {
+  public getTileUserSet(user: TileUser, users?: ReadonlyTileUserSet): ReadonlyTileUserSet {
     return this._sets.getTileUserSet(user, users);
   }
 

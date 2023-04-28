@@ -40,15 +40,9 @@ const argv = yargs
   .string("classifiedName")
   .describe("classifiedURL", "Add classified reality model URL")
   .string("classifiedURL")
-  .describe(
-    "classifiedOutside",
-    "Classifier Outside (on, off, dimmed, hilite, color)"
-  )
+  .describe("classifiedOutside", "Classifier Outside (on, off, dimmed, hilite, color)")
   .choices("classifiedOutside", ["on", "off", "dimmed", "hilite", "color"])
-  .describe(
-    "classifiedInside",
-    "Classifier Outside (on, off, dimmed, hilite, color)"
-  )
+  .describe("classifiedInside", "Classifier Outside (on, off, dimmed, hilite, color)")
   .choices("classifiedInside", ["on", "off", "dimmed", "hilite", "color"])
   .demandOption(["input", "output"])
   .parseSync();
@@ -77,9 +71,7 @@ const argv = yargs
 
   try {
     await importer.import();
-    process.stdout.write(
-      `IModel: ${argv.output} Created for GeoJson: ${argv.input}\n`
-    );
+    process.stdout.write(`IModel: ${argv.output} Created for GeoJson: ${argv.input}\n`);
     await IModelHost.shutdown();
   } catch (_error) {
     process.stdout.write("Error occurred\n");

@@ -16,11 +16,7 @@ import {
 } from "@itwin/core-common";
 
 import { request } from "./request/Request";
-import {
-  PublisherProductInfo,
-  RealityDataSource,
-  SpatialLocationAndExtents,
-} from "./RealityDataSource";
+import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } from "./RealityDataSource";
 import { ThreeDTileFormatInterpreter } from "./tile/internal";
 
 /** This class provides access to the reality data provider services.
@@ -96,16 +92,13 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
    * This method returns the URL to access the actual 3d tiles from the service provider.
    * @returns string containing the URL to reality data.
    */
-  public async getServiceUrl(
-    _iTwinId: GuidString | undefined
-  ): Promise<string | undefined> {
+  public async getServiceUrl(_iTwinId: GuidString | undefined): Promise<string | undefined> {
     return this._tilesetUrl;
   }
 
   public async getRootDocument(iTwinId: GuidString | undefined): Promise<any> {
     const url = await this.getServiceUrl(iTwinId);
-    if (!url)
-      throw new IModelError(BentleyStatus.ERROR, "Unable to get service url");
+    if (!url) throw new IModelError(BentleyStatus.ERROR, "Unable to get service url");
 
     // The following is only if the reality data is not stored on PW Context Share.
     this.setBaseUrl(url);
@@ -139,14 +132,11 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
    * @returns spatial location and extents
    * @internal
    */
-  public async getSpatialLocationAndExtents(): Promise<
-    SpatialLocationAndExtents | undefined
-  > {
+  public async getSpatialLocationAndExtents(): Promise<SpatialLocationAndExtents | undefined> {
     let spatialLocation: SpatialLocationAndExtents | undefined;
     if (this.key.format === RealityDataFormat.ThreeDTile) {
       const rootDocument = await this.getRootDocument(undefined);
-      spatialLocation =
-        ThreeDTileFormatInterpreter.getSpatialLocationAndExtents(rootDocument);
+      spatialLocation = ThreeDTileFormatInterpreter.getSpatialLocationAndExtents(rootDocument);
     }
     return spatialLocation;
   }
@@ -156,9 +146,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
    * @returns information to identify the product and engine that create this reality data
    * @alpha
    */
-  public async getPublisherProductInfo(): Promise<
-    PublisherProductInfo | undefined
-  > {
+  public async getPublisherProductInfo(): Promise<PublisherProductInfo | undefined> {
     let publisherInfo: PublisherProductInfo | undefined;
     return publisherInfo;
   }

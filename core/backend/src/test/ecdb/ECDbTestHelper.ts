@@ -8,11 +8,7 @@ import { ECDb } from "../../ECDb";
 import { IModelJsFs } from "../../IModelJsFs";
 
 export class ECDbTestHelper {
-  public static createECDb(
-    outDir: string,
-    fileName: string,
-    schemaXml?: string
-  ): ECDb {
+  public static createECDb(outDir: string, fileName: string, schemaXml?: string): ECDb {
     if (!IModelJsFs.existsSync(outDir)) IModelJsFs.mkdirSync(outDir);
 
     const outPath = path.join(outDir, fileName);

@@ -81,32 +81,17 @@ export class SpatialViewState extends ViewState3d {
     const cat = new CategorySelectorState(blank, iModel);
     const modelSelectorState = new ModelSelectorState(blank, iModel);
     const displayStyleState = new DisplayStyle3dState(blank, iModel);
-    const view = new this(
-      blank,
-      iModel,
-      cat,
-      displayStyleState,
-      modelSelectorState
-    );
+    const view = new this(blank, iModel, cat, displayStyleState, modelSelectorState);
     view.setOrigin(origin);
     view.setExtents(extents);
     if (undefined !== rotation) view.setRotation(rotation);
     return view;
   }
 
-  public static override createFromProps(
-    props: ViewStateProps,
-    iModel: IModelConnection
-  ): SpatialViewState {
+  public static override createFromProps(props: ViewStateProps, iModel: IModelConnection): SpatialViewState {
     const cat = new CategorySelectorState(props.categorySelectorProps, iModel);
-    const displayStyleState = new DisplayStyle3dState(
-      props.displayStyleProps,
-      iModel
-    );
-    const modelSelectorState = new ModelSelectorState(
-      props.modelSelectorProps!,
-      iModel
-    );
+    const displayStyleState = new DisplayStyle3dState(props.displayStyleProps, iModel);
+    const modelSelectorState = new ModelSelectorState(props.modelSelectorProps!, iModel);
     return new this(
       props.viewDefinitionProps as SpatialViewDefinitionProps,
       iModel,
@@ -144,9 +129,7 @@ export class SpatialViewState extends ViewState3d {
   }
 
   public override equals(other: this): boolean {
-    return (
-      super.equals(other) && this.modelSelector.equals(other.modelSelector)
-    );
+    return super.equals(other) && this.modelSelector.equals(other.modelSelector);
   }
 
   public override createAuxCoordSystem(acsName: string): AuxCoordSystemState {
@@ -166,18 +149,14 @@ export class SpatialViewState extends ViewState3d {
    */
   protected getDisplayedExtents(): AxisAlignedBox3d {
     /* eslint-disable-next-line deprecation/deprecation */
-    const extents = Range3d.fromJSON<AxisAlignedBox3d>(
-      this.iModel.displayedExtents
-    );
+    const extents = Range3d.fromJSON<AxisAlignedBox3d>(this.iModel.displayedExtents);
     extents.scaleAboutCenterInPlace(1.0001); // projectExtents. lying smack up against the extents is not excluded by frustum...
     extents.extendRange(this.getGroundExtents());
     return extents;
   }
 
   private computeBaseExtents(): AxisAlignedBox3d {
-    const extents = Range3d.fromJSON<AxisAlignedBox3d>(
-      this.iModel.projectExtents
-    );
+    const extents = Range3d.fromJSON<AxisAlignedBox3d>(this.iModel.projectExtents);
 
     // Ensure geometry coincident with planes of the project extents is not clipped.
     extents.scaleAboutCenterInPlace(1.0001);
@@ -222,30 +201,19 @@ export class SpatialViewState extends ViewState3d {
   }
 
   /** @internal */
-  protected override preload(
-    hydrateRequest: HydrateViewStateRequestProps
-  ): void {
+  protected override preload(hydrateRequest: HydrateViewStateRequestProps): void {
     super.preload(hydrateRequest);
-    const notLoaded = this.iModel.models.filterLoaded(
-      this.modelSelector.models
-    );
+    const notLoaded = this.iModel.models.filterLoaded(this.modelSelector.models);
     if (undefined === notLoaded) return; // all requested models are already loaded
-    hydrateRequest.notLoadedModelSelectorStateModels =
-      CompressedId64Set.sortAndCompress(notLoaded);
+    hydrateRequest.notLoadedModelSelectorStateModels = CompressedId64Set.sortAndCompress(notLoaded);
   }
 
   /** @internal */
-  protected override async postload(
-    hydrateResponse: HydrateViewStateResponseProps
-  ): Promise<void> {
+  protected override async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
     const promises = [];
     promises.push(super.postload(hydrateResponse));
     if (hydrateResponse.modelSelectorStateModels !== undefined)
-      promises.push(
-        this.iModel.models.updateLoadedWithModelProps(
-          hydrateResponse.modelSelectorStateModels
-        )
-      );
+      promises.push(this.iModel.models.updateLoadedWithModelProps(hydrateResponse.modelSelectorStateModels));
     await Promise.all(promises);
   }
 
@@ -265,15 +233,12 @@ export class SpatialViewState extends ViewState3d {
   public forEachModel(func: (model: GeometricModelState) => void) {
     for (const modelId of this.modelSelector.models) {
       const model = this.iModel.models.getLoaded(modelId);
-      if (undefined !== model && undefined !== model.asGeometricModel3d)
-        func(model as GeometricModel3dState);
+      if (undefined !== model && undefined !== model.asGeometricModel3d) func(model as GeometricModel3dState);
     }
   }
 
   /** @internal */
-  public override forEachModelTreeRef(
-    func: (treeRef: TileTreeReference) => void
-  ): void {
+  public override forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void {
     for (const ref of this._treeRefs) func(ref);
   }
 
@@ -281,9 +246,7 @@ export class SpatialViewState extends ViewState3d {
   public override createScene(context: SceneContext): void {
     super.createScene(context);
     context.textureDrapes.forEach((drape) => drape.collectGraphics(context));
-    context.viewport.target.updateSolarShadows(
-      this.getDisplayStyle3d().wantShadows ? context : undefined
-    );
+    context.viewport.target.updateSolarShadows(this.getDisplayStyle3d().wantShadows ? context : undefined);
   }
 
   /** @internal */
@@ -322,15 +285,9 @@ export class SpatialViewState extends ViewState3d {
       this.onViewedModelsChanged.raiseEvent();
     };
 
-    this._unregisterModelSelectorListeners.push(
-      models.onAdded.addListener(func)
-    );
-    this._unregisterModelSelectorListeners.push(
-      models.onDeleted.addListener(func)
-    );
-    this._unregisterModelSelectorListeners.push(
-      models.onCleared.addListener(func)
-    );
+    this._unregisterModelSelectorListeners.push(models.onAdded.addListener(func));
+    this._unregisterModelSelectorListeners.push(models.onDeleted.addListener(func));
+    this._unregisterModelSelectorListeners.push(models.onCleared.addListener(func));
   }
 
   private unregisterModelSelectorListeners(): void {

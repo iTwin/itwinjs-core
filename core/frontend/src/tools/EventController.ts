@@ -61,9 +61,7 @@ export class EventController {
     };
     domType.forEach((type) => {
       element.addEventListener(type, listener, false);
-      this._removals.push(() =>
-        element.removeEventListener(type, listener, false)
-      );
+      this._removals.push(() => element.removeEventListener(type, listener, false));
     });
   }
 }

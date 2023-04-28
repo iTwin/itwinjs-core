@@ -21,12 +21,7 @@ export class Range1dArray {
    *  Output live parts of rangeA, advancing B over intervals that do not extend beyond {rangeA}
    *  iB is advanced to the first interval whose high is to the right of {rangeA.high}
    */
-  private static advanceIntervalDifference(
-    rangeA: Range1d,
-    dataB: Range1d[],
-    iB: number,
-    retVal: Range1d[]
-  ) {
+  private static advanceIntervalDifference(rangeA: Range1d, dataB: Range1d[], iB: number, retVal: Range1d[]) {
     const nB = dataB.length;
     let low = rangeA.low;
     let high = rangeA.high;
@@ -51,10 +46,7 @@ export class Range1dArray {
   }
 
   /** Intersect intervals in two pre-sorted sets. Output may NOT be the same as either input. */
-  public static differenceSorted(
-    dataA: Range1d[],
-    dataB: Range1d[]
-  ): Range1d[] {
+  public static differenceSorted(dataA: Range1d[], dataB: Range1d[]): Range1d[] {
     const nA = dataA.length;
     const iB = 0;
     const retVal: Range1d[] = [];
@@ -69,11 +61,7 @@ export class Range1dArray {
    *  Look rangeB to decide (a) what output interval to create and (b) which read index to advance.
    *  Returns true or false to indicate whether the value associated with rangeA or rangeB should be incremented after this function returns
    */
-  private static advanceIntervalIntersection(
-    rangeA: Range1d,
-    rangeB: Range1d,
-    retVal: Range1d[]
-  ): boolean {
+  private static advanceIntervalIntersection(rangeA: Range1d, rangeB: Range1d, retVal: Range1d[]): boolean {
     if (rangeB.low > rangeA.high) {
       return true;
     } else if (rangeB.high >= rangeA.high) {
@@ -95,12 +83,10 @@ export class Range1dArray {
       const rangeA = dataA[iA];
       const rangeB = dataB[iB];
       if (rangeA.low <= rangeB.low) {
-        if (Range1dArray.advanceIntervalIntersection(rangeA, rangeB, retVal))
-          iA++;
+        if (Range1dArray.advanceIntervalIntersection(rangeA, rangeB, retVal)) iA++;
         else iB++;
       } else {
-        if (Range1dArray.advanceIntervalIntersection(rangeB, rangeA, retVal))
-          iB++;
+        if (Range1dArray.advanceIntervalIntersection(rangeB, rangeA, retVal)) iB++;
         else iA++;
       }
     }
@@ -111,11 +97,7 @@ export class Range1dArray {
   /** Internal step: Read an interval from the array.
    *  If it overlaps the work interval, advance the work interval, and return true to notify caller to increment read index.
    */
-  private static advanceIntervalUnion(
-    workRange: Range1d,
-    source: Range1d[],
-    readIndex: number
-  ): boolean {
+  private static advanceIntervalUnion(workRange: Range1d, source: Range1d[], readIndex: number): boolean {
     if (readIndex >= source.length) return false;
     const candidate = source[readIndex];
     if (candidate.low > workRange.high) return false;
@@ -181,10 +163,7 @@ export class Range1dArray {
   }
 
   /** Cleans up the array, compressing any overlapping ranges. If removeZeroLengthRanges is set to true, will also remove any Ranges in the form (x, x) */
-  public static simplifySortUnion(
-    data: Range1d[],
-    removeZeroLengthRanges: boolean = false
-  ) {
+  public static simplifySortUnion(data: Range1d[], removeZeroLengthRanges: boolean = false) {
     if (data.length < 2) return;
 
     data.sort(compareRange1dLexicalLowHigh);
@@ -193,8 +172,7 @@ export class Range1dArray {
     for (let i = 1; i < data.length; i++) {
       if (data[i].low <= data[currentIndex].high) {
         // extend the current range
-        if (data[i].high > data[currentIndex].high)
-          data[currentIndex].high = data[i].high;
+        if (data[i].high > data[currentIndex].high) data[currentIndex].high = data[i].high;
       } else {
         // data[i] is a new entry.
         currentIndex++;
@@ -214,10 +192,7 @@ export class Range1dArray {
   }
 
   /** Apply parity logic among ranges which are not pre-sorted. */
-  public static simplifySortParity(
-    data: Range1d[],
-    removeZeroLengthRanges: boolean = false
-  ) {
+  public static simplifySortParity(data: Range1d[], removeZeroLengthRanges: boolean = false) {
     const numData: number[] = [];
     for (const range of data) {
       if (range.low !== range.high) {
@@ -326,25 +301,14 @@ export class Range1dArray {
   ): GrowableFloat64Array | number[] {
     const numRange = data.length;
     if (numRange > 0) {
-      if (undefined !== initialRangeFraction)
-        result.push(data[0].fractionToPoint(initialRangeFraction));
+      if (undefined !== initialRangeFraction) result.push(data[0].fractionToPoint(initialRangeFraction));
       for (let i = 0; i < numRange; i++) {
-        if (
-          rangeFraction !== undefined &&
-          (includeDegenerateRange || data[i].low !== data[i].high)
-        )
+        if (rangeFraction !== undefined && (includeDegenerateRange || data[i].low !== data[i].high))
           result.push(data[i].fractionToPoint(rangeFraction));
-        if (
-          i > 1 &&
-          gapFraction !== undefined &&
-          (includeDegenerateGap || data[i].low !== data[i].high)
-        )
-          result.push(
-            Geometry.interpolate(data[i - 1].high, gapFraction, data[i].low)
-          );
+        if (i > 1 && gapFraction !== undefined && (includeDegenerateGap || data[i].low !== data[i].high))
+          result.push(Geometry.interpolate(data[i - 1].high, gapFraction, data[i].low));
       }
-      if (undefined !== finalRangeFraction)
-        result.push(data[numRange - 1].fractionToPoint(finalRangeFraction));
+      if (undefined !== finalRangeFraction) result.push(data[numRange - 1].fractionToPoint(finalRangeFraction));
     }
     return result;
   }

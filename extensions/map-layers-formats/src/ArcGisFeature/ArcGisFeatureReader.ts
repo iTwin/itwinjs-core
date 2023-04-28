@@ -26,32 +26,18 @@ export abstract class ArcGisFeatureReader {
     this._layerMetadata = layerMetadata;
   }
 
-  public abstract readAndRender(
-    response: ArcGisResponseData,
-    _renderer: ArcGisFeatureRenderer
-  ): void;
+  public abstract readAndRender(response: ArcGisResponseData, _renderer: ArcGisFeatureRenderer): void;
 
-  public abstract readFeatureInfo(
-    response: ArcGisResponseData,
-    featureInfos: MapLayerFeatureInfo[]
-  ): void;
+  public abstract readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[]): void;
 
   protected toFixedWithoutPadding = (value: number) => {
-    return this.floatPrecision === undefined
-      ? value
-      : parseFloat(value.toFixed(this.floatPrecision));
+    return this.floatPrecision === undefined ? value : parseFloat(value.toFixed(this.floatPrecision));
   };
 
-  protected getDisplayValue = (
-    typename: StandardTypeNames,
-    value: Primitives.Value | undefined
-  ) => {
+  protected getDisplayValue = (typename: StandardTypeNames, value: Primitives.Value | undefined) => {
     if (value === undefined) {
       return "";
-    } else if (
-      typename === StandardTypeNames.DateTime &&
-      this.forceDateDisplayValueToIso
-    ) {
+    } else if (typename === StandardTypeNames.DateTime && this.forceDateDisplayValueToIso) {
       return (value as Date).toISOString();
     } else {
       return `${value}`;

@@ -56,8 +56,7 @@ export namespace RenderMemory {
     public constructor() {
       super();
       this.consumers = [];
-      for (let i = 0; i < BufferType.COUNT; i++)
-        this.consumers[i] = new Consumers();
+      for (let i = 0; i < BufferType.COUNT; i++) this.consumers[i] = new Consumers();
     }
 
     public get surfaces() {
@@ -142,8 +141,7 @@ export namespace RenderMemory {
     /** @internal */
     public constructor() {
       this.consumers = [];
-      for (let i = 0; i < ConsumerType.COUNT; i++)
-        this.consumers[i] = new Consumers();
+      for (let i = 0; i < ConsumerType.COUNT; i++) this.consumers[i] = new Consumers();
     }
 
     /** The total reported memory consumption, in bytes.

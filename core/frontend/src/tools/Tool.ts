@@ -6,12 +6,7 @@
  * @module Tools
  */
 
-import {
-  DialogItem,
-  DialogItemValue,
-  DialogProperty,
-  DialogPropertySyncItem,
-} from "@itwin/appui-abstract";
+import { DialogItem, DialogItemValue, DialogProperty, DialogPropertySyncItem } from "@itwin/appui-abstract";
 import { assert } from "@itwin/core-bentley";
 import { GeometryStreamProps, IModelError } from "@itwin/core-common";
 import { Point2d, Point3d, PolygonOps, XAndY } from "@itwin/core-geometry";
@@ -254,11 +249,9 @@ export class BeButtonEvent implements BeButtonEventProps {
     if (undefined !== props.viewPoint) this.viewPoint = props.viewPoint;
     if (undefined !== props.viewport) this.viewport = props.viewport;
     if (undefined !== props.coordsFrom) this.coordsFrom = props.coordsFrom;
-    if (undefined !== props.keyModifiers)
-      this.keyModifiers = props.keyModifiers;
+    if (undefined !== props.keyModifiers) this.keyModifiers = props.keyModifiers;
     if (undefined !== props.isDown) this.isDown = props.isDown;
-    if (undefined !== props.isDoubleClick)
-      this.isDoubleClick = props.isDoubleClick;
+    if (undefined !== props.isDoubleClick) this.isDoubleClick = props.isDoubleClick;
     if (undefined !== props.isDragging) this.isDragging = props.isDragging;
     if (undefined !== props.button) this.button = props.button;
     if (undefined !== props.inputSource) this.inputSource = props.inputSource;
@@ -349,10 +342,7 @@ export class BeTouchEvent extends BeButtonEvent implements BeTouchEventProps {
       y: touch.clientY - rect.top,
     });
   }
-  public static getTouchListCentroid(
-    list: TouchList,
-    vp: ScreenViewport
-  ): Point2d | undefined {
+  public static getTouchListCentroid(list: TouchList, vp: ScreenViewport): Point2d | undefined {
     switch (list.length) {
       case 0: {
         return undefined;
@@ -361,10 +351,7 @@ export class BeTouchEvent extends BeButtonEvent implements BeTouchEventProps {
         return this.getTouchPosition(list[0], vp);
       }
       case 2: {
-        return this.getTouchPosition(list[0], vp).interpolate(
-          0.5,
-          this.getTouchPosition(list[1], vp)
-        );
+        return this.getTouchPosition(list[0], vp).interpolate(0.5, this.getTouchPosition(list[1], vp));
       }
       default: {
         const points: Point2d[] = [];
@@ -405,8 +392,7 @@ export class BeWheelEvent extends BeButtonEvent implements BeWheelEventProps {
   public time: number;
   public constructor(props?: BeWheelEventProps) {
     super(props);
-    this.wheelDelta =
-      props && props.wheelDelta !== undefined ? props.wheelDelta : 0;
+    this.wheelDelta = props && props.wheelDelta !== undefined ? props.wheelDelta : 0;
     this.time = props && props.time ? props.time : Date.now();
   }
   public override setFrom(src: BeWheelEvent): this {
@@ -621,9 +607,7 @@ export abstract class InteractiveTool extends Tool {
   /** Called to allow snapping to pickable decoration geometry.
    * @note Snap geometry can be different from decoration geometry (ex. center point of a + symbol). Valid decoration geometry for snapping should be "stable" and not change based on the current cursor location.
    */
-  public getDecorationGeometry(
-    _hit: HitDetail
-  ): GeometryStreamProps | undefined {
+  public getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined {
     return undefined;
   }
 
@@ -731,10 +715,7 @@ export abstract class InteractiveTool extends Tool {
    * @return Yes to prevent further processing of this event
    * @see [[onModifierKeyTransition]]
    */
-  public async onKeyTransition(
-    _wentDown: boolean,
-    _keyEvent: KeyboardEvent
-  ): Promise<EventHandled> {
+  public async onKeyTransition(_wentDown: boolean, _keyEvent: KeyboardEvent): Promise<EventHandled> {
     return EventHandled.No;
   }
 
@@ -754,10 +735,7 @@ export abstract class InteractiveTool extends Tool {
    * @param _startEv The event from the last call to onTouchStart
    * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.
    */
-  public async onTouchMoveStart(
-    _ev: BeTouchEvent,
-    _startEv: BeTouchEvent
-  ): Promise<EventHandled> {
+  public async onTouchMoveStart(_ev: BeTouchEvent, _startEv: BeTouchEvent): Promise<EventHandled> {
     return EventHandled.No;
   }
 
@@ -770,10 +748,7 @@ export abstract class InteractiveTool extends Tool {
     return EventHandled.No;
   }
 
-  public isCompatibleViewport(
-    _vp: ScreenViewport,
-    _isSelectedViewChange: boolean
-  ): boolean {
+  public isCompatibleViewport(_vp: ScreenViewport, _isSelectedViewChange: boolean): boolean {
     return true;
   }
   public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean {
@@ -785,10 +760,7 @@ export abstract class InteractiveTool extends Tool {
    * @param previous The previously active view.
    * @param current The new active view.
    */
-  public onSelectedViewportChanged(
-    _previous: ScreenViewport | undefined,
-    _current: ScreenViewport | undefined
-  ): void {}
+  public onSelectedViewportChanged(_previous: ScreenViewport | undefined, _current: ScreenViewport | undefined): void {}
 
   /**
    * Invoked before the locate tooltip is displayed to retrieve the information about the located element. Allows the tool to override the toolTip.
@@ -831,10 +803,7 @@ export abstract class InteractiveTool extends Tool {
   /** Invoked to allow tools to filter which elements can be located.
    * @return Reject if hit is unacceptable for this tool (fill out response with explanation, if it is defined)
    */
-  public async filterHit(
-    _hit: HitDetail,
-    _out?: LocateResponse
-  ): Promise<LocateFilterStatus> {
+  public async filterHit(_hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus> {
     return LocateFilterStatus.Accept;
   }
 
@@ -874,8 +843,7 @@ export abstract class InteractiveTool extends Tool {
     if (undefined !== coordLockOvr) {
       toolAdmin.toolState.coordLockOvr = coordLockOvr;
     } else {
-      if (enableLocate && !accuSnap.isSnapEnabled)
-        toolAdmin.toolState.coordLockOvr |= CoordinateLockOverrides.ACS;
+      if (enableLocate && !accuSnap.isSnapEnabled) toolAdmin.toolState.coordLockOvr |= CoordinateLockOverrides.ACS;
       else toolAdmin.toolState.coordLockOvr &= ~CoordinateLockOverrides.ACS;
     }
   }
@@ -898,14 +866,8 @@ export abstract class InteractiveTool extends Tool {
   protected toolSettingProperties?: Map<string, DialogProperty<any>>;
 
   /** @internal */
-  protected restoreToolSettingPropertyValue(
-    property: DialogProperty<any>
-  ): boolean {
-    const itemValue =
-      IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(
-        this.toolId,
-        property.name
-      );
+  protected restoreToolSettingPropertyValue(property: DialogProperty<any>): boolean {
+    const itemValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, property.name);
     if (undefined === itemValue?.value) return false;
 
     property.dialogItemValue = itemValue;
@@ -913,34 +875,23 @@ export abstract class InteractiveTool extends Tool {
   }
 
   /** @internal */
-  protected saveToolSettingPropertyValue(
-    property: DialogProperty<any>,
-    itemValue: DialogItemValue
-  ): boolean {
+  protected saveToolSettingPropertyValue(property: DialogProperty<any>, itemValue: DialogItemValue): boolean {
     if (undefined === itemValue.value) return false;
 
     property.value = itemValue.value;
-    IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(
-      this.toolId,
-      property.item
-    );
+    IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, property.item);
     return true;
   }
 
   /** @internal */
-  protected syncToolSettingPropertyValue(
-    property: DialogProperty<any>,
-    isDisabled?: boolean
-  ): void {
+  protected syncToolSettingPropertyValue(property: DialogProperty<any>, isDisabled?: boolean): void {
     if (undefined !== isDisabled) property.isDisabled = isDisabled;
 
     this.syncToolSettingsProperties([property.syncItem]);
   }
 
   /** @internal */
-  protected getToolSettingPropertyByName(
-    propertyName: string
-  ): DialogProperty<any> {
+  protected getToolSettingPropertyByName(propertyName: string): DialogProperty<any> {
     const foundProperty = this.toolSettingProperties?.get(propertyName);
     if (foundProperty) return foundProperty;
 
@@ -951,9 +902,7 @@ export abstract class InteractiveTool extends Tool {
    * @see [[changeToolSettingPropertyValue]]
    * @public
    */
-  protected getToolSettingPropertyLocked(
-    _property: DialogProperty<any>
-  ): DialogProperty<any> | undefined {
+  protected getToolSettingPropertyLocked(_property: DialogProperty<any>): DialogProperty<any> | undefined {
     return undefined;
   }
 
@@ -962,17 +911,13 @@ export abstract class InteractiveTool extends Tool {
    * @see [[getToolSettingPropertyLocked]] to return the corresponding locked property, if any.
    * @public
    */
-  protected changeToolSettingPropertyValue(
-    syncItem: DialogPropertySyncItem
-  ): boolean {
+  protected changeToolSettingPropertyValue(syncItem: DialogPropertySyncItem): boolean {
     const property = this.getToolSettingPropertyByName(syncItem.propertyName);
 
-    if (!this.saveToolSettingPropertyValue(property, syncItem.value))
-      return false;
+    if (!this.saveToolSettingPropertyValue(property, syncItem.value)) return false;
 
     const lockedProperty = this.getToolSettingPropertyLocked(property);
-    if (undefined !== lockedProperty)
-      this.syncToolSettingPropertyValue(lockedProperty, !property.value);
+    if (undefined !== lockedProperty) this.syncToolSettingPropertyValue(lockedProperty, !property.value);
 
     return true;
   }
@@ -981,9 +926,7 @@ export abstract class InteractiveTool extends Tool {
    * @see [[supplyToolSettingsProperties]]
    * @public
    */
-  protected initializeToolSettingPropertyValues(
-    properties: DialogProperty<any>[]
-  ): void {
+  protected initializeToolSettingPropertyValues(properties: DialogProperty<any>[]): void {
     if (undefined !== this.toolSettingProperties) return;
 
     this.toolSettingProperties = new Map<string, DialogProperty<any>>();
@@ -1006,9 +949,7 @@ export abstract class InteractiveTool extends Tool {
    * @see [[changeToolSettingPropertyValue]]
    * @public
    */
-  public async applyToolSettingPropertyChange(
-    _updatedValue: DialogPropertySyncItem
-  ): Promise<boolean> {
+  public async applyToolSettingPropertyChange(_updatedValue: DialogPropertySyncItem): Promise<boolean> {
     return true;
   }
 
@@ -1048,11 +989,7 @@ export abstract class InputCollector extends InteractiveTool {
   public override async run(..._args: any[]): Promise<boolean> {
     const toolAdmin = IModelApp.toolAdmin;
     // An input collector can only suspend a primitive tool, don't install if a viewing tool is active...
-    if (
-      undefined !== toolAdmin.viewTool ||
-      !(await toolAdmin.onInstallTool(this))
-    )
-      return false;
+    if (undefined !== toolAdmin.viewTool || !(await toolAdmin.onInstallTool(this))) return false;
 
     await toolAdmin.startInputCollector(this);
     await toolAdmin.onPostInstallTool(this);
@@ -1062,9 +999,7 @@ export abstract class InputCollector extends InteractiveTool {
   public async exitTool() {
     return IModelApp.toolAdmin.exitInputCollector();
   }
-  public override async onResetButtonUp(
-    _ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
     await this.exitTool();
     return EventHandled.Yes;
   }
@@ -1161,8 +1096,7 @@ export class ToolRegistry {
 
     if (toolClass.toolId.length === 0) return; // must be an abstract class, ignore it
 
-    if (!toolClass.namespace)
-      throw new IModelError(-1, "Tools must have a namespace");
+    if (!toolClass.namespace) throw new IModelError(-1, "Tools must have a namespace");
 
     this.tools.set(toolClass.toolId, toolClass);
     this._keyinList = undefined; // throw away the current keyinList so we'll produce a new one next time we're asked.
@@ -1302,11 +1236,7 @@ export class ToolRegistry {
     let tool;
     const args: string[] = [];
     const findTool = (lowerKeyin: string) =>
-      tools.find(
-        (x) =>
-          x.keyin.toLowerCase() === lowerKeyin ||
-          x.englishKeyin.toLowerCase() === lowerKeyin
-      );
+      tools.find((x) => x.keyin.toLowerCase() === lowerKeyin || x.englishKeyin.toLowerCase() === lowerKeyin);
 
     // try the trivial, common case first
     tool = findTool(keyin.toLowerCase());
@@ -1316,16 +1246,11 @@ export class ToolRegistry {
     // ###TODO there's actually nothing that prevents a Tool from including leading/trailing spaces in its keyin, or sequences of more than one space...we will fail to find such tools if they exist...
     const split = this.tokenize(keyin);
     const tokens = split.tokens;
-    if (split.mismatchedQuotes)
-      return { ok: false, error: KeyinParseError.MismatchedQuotes };
-    else if (tokens.length <= 1)
-      return { ok: false, error: KeyinParseError.ToolNotFound };
+    if (split.mismatchedQuotes) return { ok: false, error: KeyinParseError.MismatchedQuotes };
+    else if (tokens.length <= 1) return { ok: false, error: KeyinParseError.ToolNotFound };
 
     // Find the longest starting substring that matches a tool's keyin.
-    const maxIndex =
-      undefined !== split.firstQuotedIndex
-        ? split.firstQuotedIndex - 1
-        : tokens.length - 2;
+    const maxIndex = undefined !== split.firstQuotedIndex ? split.firstQuotedIndex - 1 : tokens.length - 2;
     for (let i = maxIndex; i >= 0; i--) {
       let substr = tokens[0];
       for (let j = 1; j <= i; j++) {
@@ -1342,9 +1267,7 @@ export class ToolRegistry {
       }
     }
 
-    return tool
-      ? { ok: true, tool, args }
-      : { ok: false, error: KeyinParseError.ToolNotFound };
+    return tool ? { ok: true, tool, args } : { ok: false, error: KeyinParseError.ToolNotFound };
   }
 
   /** Get a list of Tools currently registered, excluding hidden tools */
@@ -1378,16 +1301,11 @@ export class ToolRegistry {
 
     assert(parsed.ok); // exhaustive switch above...
     const maxArgs = parsed.tool.maxArgs;
-    if (
-      parsed.args.length < parsed.tool.minArgs ||
-      (undefined !== maxArgs && parsed.args.length > maxArgs)
-    )
+    if (parsed.args.length < parsed.tool.minArgs || (undefined !== maxArgs && parsed.args.length > maxArgs))
       return ParseAndRunResult.BadArgumentCount;
 
     const tool = new parsed.tool();
-    return (await tool.parseAndRun(...parsed.args))
-      ? ParseAndRunResult.Success
-      : ParseAndRunResult.FailedToRun;
+    return (await tool.parseAndRun(...parsed.args)) ? ParseAndRunResult.Success : ParseAndRunResult.FailedToRun;
   }
 
   /**
@@ -1397,11 +1315,7 @@ export class ToolRegistry {
    * @public
    */
   public findPartialMatches(keyin: string): FuzzySearchResults<ToolType> {
-    return new FuzzySearch<ToolType>().search(
-      this.getToolList(),
-      ["keyin"],
-      keyin.toLowerCase()
-    );
+    return new FuzzySearch<ToolType>().search(this.getToolList(), ["keyin"], keyin.toLowerCase());
   }
 
   /**
@@ -1413,9 +1327,7 @@ export class ToolRegistry {
    */
   public findExactMatch(keyin: string): ToolType | undefined {
     keyin = keyin.toLowerCase();
-    return this.getToolList().find(
-      (thisTool) => thisTool.keyin.toLowerCase() === keyin
-    );
+    return this.getToolList().find((thisTool) => thisTool.keyin.toLowerCase() === keyin);
   }
 }
 

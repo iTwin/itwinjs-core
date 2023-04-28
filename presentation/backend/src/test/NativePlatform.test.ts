@@ -111,9 +111,7 @@ describe("default NativePlatform", () => {
           }),
           cancel: () => {},
         }));
-      await expect(
-        nativePlatform.handleRequest(undefined, "")
-      ).to.eventually.be.rejectedWith(
+      await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(
         PresentationNativePlatformResponseError,
         "test"
       );
@@ -131,9 +129,7 @@ describe("default NativePlatform", () => {
           }),
           cancel: () => {},
         }));
-      await expect(
-        nativePlatform.handleRequest(undefined, "")
-      ).to.eventually.be.rejectedWith(
+      await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(
         PresentationNativePlatformResponseError,
         "test"
       );
@@ -152,10 +148,7 @@ describe("default NativePlatform", () => {
           cancel: () => {},
         }));
       await expect(nativePlatform.handleRequest(undefined, ""))
-        .to.eventually.be.rejectedWith(
-          PresentationNativePlatformResponseError,
-          "test"
-        )
+        .to.eventually.be.rejectedWith(PresentationNativePlatformResponseError, "test")
         .with.property("errorNumber", PresentationStatus.ResultSetTooLarge);
     });
 
@@ -189,9 +182,7 @@ describe("default NativePlatform", () => {
           result: Promise.resolve({ result: "0" }),
           cancel: cancelFunction,
         }));
-      expect(
-        await nativePlatform.handleRequest(undefined, "", cancelEvent)
-      ).to.deep.equal({ result: "0" });
+      expect(await nativePlatform.handleRequest(undefined, "", cancelEvent)).to.deep.equal({ result: "0" });
       addonMock.verifyAll();
       cancelEvent.raiseEvent();
       cancelEvent.raiseEvent();
@@ -243,10 +234,7 @@ describe("default NativePlatform", () => {
           message: "test",
         },
       }));
-    expect(() => nativePlatform.setupRulesetDirectories([])).to.throw(
-      PresentationError,
-      "test"
-    );
+    expect(() => nativePlatform.setupRulesetDirectories([])).to.throw(PresentationError, "test");
   });
 
   it("calls addon's getRulesets", async () => {
@@ -299,22 +287,10 @@ describe("default NativePlatform", () => {
     const variableId = faker.random.word();
     const value = faker.random.word();
     addonMock
-      .setup((x) =>
-        x.setRulesetVariableValue(
-          rulesetId,
-          variableId,
-          VariableValueTypes.String,
-          value
-        )
-      )
+      .setup((x) => x.setRulesetVariableValue(rulesetId, variableId, VariableValueTypes.String, value))
       .returns(() => ({ result: undefined }))
       .verifiable();
-    nativePlatform.setRulesetVariableValue(
-      rulesetId,
-      variableId,
-      VariableValueTypes.String,
-      value
-    );
+    nativePlatform.setRulesetVariableValue(rulesetId, variableId, VariableValueTypes.String, value);
     addonMock.verifyAll();
   });
 
@@ -334,20 +310,10 @@ describe("default NativePlatform", () => {
     const variableId = faker.random.word();
     const value = faker.random.word();
     addonMock
-      .setup((x) =>
-        x.getRulesetVariableValue(
-          rulesetId,
-          variableId,
-          VariableValueTypes.String
-        )
-      )
+      .setup((x) => x.getRulesetVariableValue(rulesetId, variableId, VariableValueTypes.String))
       .returns(() => ({ result: value }))
       .verifiable();
-    const result = nativePlatform.getRulesetVariableValue(
-      rulesetId,
-      variableId,
-      VariableValueTypes.String
-    );
+    const result = nativePlatform.getRulesetVariableValue(rulesetId, variableId, VariableValueTypes.String);
     addonMock.verifyAll();
     expect(result).to.deep.equal({ result: value });
   });
@@ -379,9 +345,7 @@ describe("default NativePlatform", () => {
       .setup((x) => x.nativeDb)
       .returns(() => undefined as any)
       .verifiable(moq.Times.atLeastOnce());
-    expect(() => nativePlatform.getImodelAddon(mock.object)).to.throw(
-      PresentationError
-    );
+    expect(() => nativePlatform.getImodelAddon(mock.object)).to.throw(PresentationError);
     mock.verifyAll();
   });
 });

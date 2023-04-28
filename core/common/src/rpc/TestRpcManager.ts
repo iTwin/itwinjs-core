@@ -7,10 +7,7 @@
  */
 
 import { RpcInterfaceDefinition } from "../RpcInterface";
-import {
-  RpcConfiguration,
-  RpcDefaultConfiguration,
-} from "./core/RpcConfiguration";
+import { RpcConfiguration, RpcDefaultConfiguration } from "./core/RpcConfiguration";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -33,8 +30,7 @@ export class TestRpcManager {
       public override interfaces: any = () => interfaces;
     };
 
-    for (const def of interfaces)
-      RpcConfiguration.assign(def, () => RpcDefaultConfiguration);
+    for (const def of interfaces) RpcConfiguration.assign(def, () => RpcDefaultConfiguration);
 
     const instance = RpcConfiguration.obtain(config);
     RpcConfiguration.initializeInterfaces(instance);

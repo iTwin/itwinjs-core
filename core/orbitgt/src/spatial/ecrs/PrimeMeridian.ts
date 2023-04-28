@@ -47,12 +47,7 @@ export class PrimeMeridian {
    * @param lonFromGreenwich the longitude from Greenwich.
    * @param unitCode the code of the unit of longitude.
    */
-  public constructor(
-    code: int32,
-    name: string,
-    lonFromGreenwich: float64,
-    unitCode: int32
-  ) {
+  public constructor(code: int32, name: string, lonFromGreenwich: float64, unitCode: int32) {
     /* Store parameters */
     this._code = code;
     this._name = name;

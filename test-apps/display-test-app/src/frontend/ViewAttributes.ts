@@ -110,9 +110,7 @@ const renderingStyles: RenderingStyle[] = [
     viewflags: renderingStyleViewFlags,
     lights: {
       solar: {
-        direction: [
-          -0.9833878378071199, -0.18098510351728977, 0.013883542698953828,
-        ],
+        direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828],
       },
     },
   },
@@ -145,9 +143,7 @@ const renderingStyles: RenderingStyle[] = [
     },
     lights: {
       solar: {
-        direction: [
-          -0.9833878378071199, -0.18098510351728977, 0.013883542698953828,
-        ],
+        direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828],
       },
     },
     hline: {
@@ -181,9 +177,7 @@ const renderingStyles: RenderingStyle[] = [
     viewflags: { ...renderingStyleViewFlags, shadows: true },
     lights: {
       solar: {
-        direction: [
-          0.9391245716329828, 0.10165764029437066, -0.3281931795832247,
-        ],
+        direction: [0.9391245716329828, 0.10165764029437066, -0.3281931795832247],
       },
       hemisphere: { intensity: 0.2 },
       portrait: { intensity: 0 },
@@ -243,9 +237,7 @@ const renderingStyles: RenderingStyle[] = [
     viewflags: renderingStyleViewFlags,
     lights: {
       solar: {
-        direction: [
-          -0.9833878378071199, -0.18098510351728977, 0.013883542698953828,
-        ],
+        direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828],
         intensity: 1.05,
       },
       ambient: { intensity: 0.25 },
@@ -302,9 +294,7 @@ const renderingStyles: RenderingStyle[] = [
     viewflags: { ...renderingStyleViewFlags, ambientOcclusion: true },
     lights: {
       solar: {
-        direction: [
-          -0.9833878378071199, -0.18098510351728977, 0.013883542698953828,
-        ],
+        direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828],
         intensity: 0,
       },
       ambient: { intensity: 0.75 },
@@ -343,9 +333,7 @@ const renderingStyles: RenderingStyle[] = [
     viewflags: { ...renderingStyleViewFlags, visEdges: true },
     lights: {
       solar: {
-        direction: [
-          -0.9833878378071199, -0.18098510351728977, 0.013883542698953828,
-        ],
+        direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828],
         intensity: 3,
         alwaysEnabled: true,
       },
@@ -414,9 +402,7 @@ const renderingStyles: RenderingStyle[] = [
     viewflags: { ...renderingStyleViewFlags, visEdges: true },
     lights: {
       solar: {
-        direction: [
-          -0.9833878378071199, -0.18098510351728977, 0.013883542698953828,
-        ],
+        direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828],
       },
       specularIntensity: 4.15,
     },
@@ -462,9 +448,7 @@ export class ViewAttributes {
   private _displayStylePickerDiv?: HTMLDivElement;
   public set displayStylePickerInput(newComboBox: ComboBox) {
     while (this._displayStylePickerDiv!.hasChildNodes())
-      this._displayStylePickerDiv!.removeChild(
-        this._displayStylePickerDiv!.firstChild!
-      );
+      this._displayStylePickerDiv!.removeChild(this._displayStylePickerDiv!.firstChild!);
 
     this._displayStylePickerDiv!.appendChild(newComboBox.div);
   }
@@ -497,14 +481,10 @@ export class ViewAttributes {
       },
       body: flagsDiv,
     });
-    (
-      vfMenu.div.firstElementChild!.lastElementChild! as HTMLElement
-    ).style.borderColor = "grey";
+    (vfMenu.div.firstElementChild!.lastElementChild! as HTMLElement).style.borderColor = "grey";
 
     this._updates.push((_view) => {
-      vfMenu.label.style.fontWeight = ViewAttributes._expandViewFlags
-        ? "bold"
-        : "500";
+      vfMenu.label.style.fontWeight = ViewAttributes._expandViewFlags ? "bold" : "500";
     });
 
     this._element.appendChild(flagsDiv);
@@ -519,17 +499,8 @@ export class ViewAttributes {
     this.addViewFlagAttribute(flagsDiv, "Line Weights", "weights");
     this.addViewFlagAttribute(flagsDiv, "Line Styles", "styles");
     this.addViewFlagAttribute(flagsDiv, "Clip Volume", "clipVolume", true);
-    this.addViewFlagAttribute(
-      flagsDiv,
-      "Force Surface Discard",
-      "forceSurfaceDiscard",
-      true
-    );
-    this.addViewFlagAttribute(
-      flagsDiv,
-      "White-on-white Reversal",
-      "whiteOnWhiteReversal"
-    );
+    this.addViewFlagAttribute(flagsDiv, "Force Surface Discard", "forceSurfaceDiscard", true);
+    this.addViewFlagAttribute(flagsDiv, "White-on-white Reversal", "whiteOnWhiteReversal");
 
     this.addCameraToggle(flagsDiv);
     this.addMonochrome(flagsDiv);
@@ -565,12 +536,7 @@ export class ViewAttributes {
     this._updates.push((view) => env.update(view));
   }
 
-  private addViewFlagAttribute(
-    parent: HTMLElement,
-    label: string,
-    flag: ViewFlag,
-    only3d: boolean = false
-  ): void {
+  private addViewFlagAttribute(parent: HTMLElement, label: string, flag: ViewFlag, only3d: boolean = false): void {
     const elems = this.addCheckbox(
       label,
       (enabled: boolean) => {
@@ -602,8 +568,7 @@ export class ViewAttributes {
     );
 
     const update = (view: ViewState) => {
-      const visible =
-        view.is3d() && view.allow3dManipulations() && view.supportsCamera();
+      const visible = view.is3d() && view.allow3dManipulations() && view.supportsCamera();
       elems.div.style.display = visible ? "block" : "none";
       if (visible) elems.checkbox.checked = this._vp.isCameraOn;
     };
@@ -619,8 +584,7 @@ export class ViewAttributes {
       display: "inline",
       value: this._vp.view.displayStyle.settings.monochromeColor.toHexString(),
       handler: (color) => {
-        this._vp.view.displayStyle.settings.monochromeColor =
-          ColorDef.create(color);
+        this._vp.view.displayStyle.settings.monochromeColor = ColorDef.create(color);
         this.sync();
       },
     });
@@ -629,9 +593,7 @@ export class ViewAttributes {
     const scaledCb = this.addCheckbox(
       "Scaled",
       (enabled: boolean) => {
-        this._vp.displayStyle.settings.monochromeMode = enabled
-          ? MonochromeMode.Scaled
-          : MonochromeMode.Flat;
+        this._vp.displayStyle.settings.monochromeMode = enabled ? MonochromeMode.Scaled : MonochromeMode.Flat;
         this.sync();
       },
       parent
@@ -645,10 +607,8 @@ export class ViewAttributes {
     this._updates.push((view: ViewState) => {
       if (view.viewFlags.monochrome) {
         colorInput.div.style.display = scaledCb.div.style.display = "";
-        colorInput.input.value =
-          view.displayStyle.settings.monochromeColor.toHexString();
-        scaledCb.checkbox.checked =
-          MonochromeMode.Scaled === view.displayStyle.settings.monochromeMode;
+        colorInput.input.value = view.displayStyle.settings.monochromeColor.toHexString();
+        scaledCb.checkbox.checked = MonochromeMode.Scaled === view.displayStyle.settings.monochromeMode;
       } else {
         colorInput.div.style.display = scaledCb.div.style.display = "none";
       }
@@ -672,9 +632,7 @@ export class ViewAttributes {
       id: "viewAttr_renderMode",
       value: this._vp.viewFlags.renderMode,
       handler: (thing) => {
-        this._vp.viewFlags = this._vp.viewFlags.withRenderMode(
-          Number.parseInt(thing.value, 10)
-        );
+        this._vp.viewFlags = this._vp.viewFlags.withRenderMode(Number.parseInt(thing.value, 10));
         this.sync();
       },
     }).select;
@@ -690,9 +648,10 @@ export class ViewAttributes {
 
   private addRenderingStyles(): void {
     const div = document.createElement("div");
-    const entries: ComboBoxEntry[] = renderingStyles.map(
-      (renderingStyle, index) => ({ name: renderingStyle.name, value: index })
-    );
+    const entries: ComboBoxEntry[] = renderingStyles.map((renderingStyle, index) => ({
+      name: renderingStyle.name,
+      value: index,
+    }));
     createComboBox({
       parent: div,
       name: "Rendering Style: ",
@@ -729,8 +688,7 @@ export class ViewAttributes {
     return view.displayStyle.settings.backgroundMap;
   }
   private addBackgroundMapOrTerrain(): void {
-    const isMapSupported = (view: ViewState) =>
-      view.is3d() && view.iModel.isGeoLocated;
+    const isMapSupported = (view: ViewState) => view.is3d() && view.iModel.isGeoLocated;
 
     const div = document.createElement("div");
 
@@ -747,11 +705,7 @@ export class ViewAttributes {
       showOrHideSettings(enabled);
       this.sync();
     };
-    const checkboxInterface = this.addCheckbox(
-      "Background Map",
-      enableMap,
-      div
-    );
+    const checkboxInterface = this.addCheckbox("Background Map", enableMap, div);
     const checkbox = checkboxInterface.checkbox;
     const checkboxLabel = checkboxInterface.label;
 
@@ -807,15 +761,10 @@ export class ViewAttributes {
       this.sync();
     };
 
-    const terrainCheckbox = this.addCheckbox(
-      "Terrain",
-      enableTerrain,
-      backgroundSettingsDiv
-    ).checkbox;
+    const terrainCheckbox = this.addCheckbox("Terrain", enableTerrain, backgroundSettingsDiv).checkbox;
     const transCheckbox = this.addCheckbox(
       "Transparency",
-      (enabled: boolean) =>
-        this.updateBackgroundMap({ transparency: enabled ? 0.5 : false }),
+      (enabled: boolean) => this.updateBackgroundMap({ transparency: enabled ? 0.5 : false }),
       backgroundSettingsDiv
     ).checkbox;
     const locatable = this.addCheckbox(
@@ -848,8 +797,7 @@ export class ViewAttributes {
       locatable.checked = map.locatable;
       globeModes.value = map.globeMode.toString();
 
-      if (map.applyTerrain !== terrainCheckbox.checked)
-        enableTerrain(terrainCheckbox.checked);
+      if (map.applyTerrain !== terrainCheckbox.checked) enableTerrain(terrainCheckbox.checked);
     });
 
     div.appendChild(backgroundSettingsDiv);
@@ -881,8 +829,7 @@ export class ViewAttributes {
 
     const depthCheckbox = this.addCheckbox(
       "Depth",
-      (enabled: boolean) =>
-        this.updateBackgroundMap({ useDepthBuffer: enabled }),
+      (enabled: boolean) => this.updateBackgroundMap({ useDepthBuffer: enabled }),
       mapSettingsDiv
     ).checkbox;
 
@@ -906,8 +853,7 @@ export class ViewAttributes {
   }
 
   private addTerrainSettings() {
-    const getTerrainSettings = (view: ViewState) =>
-      view.displayStyle.settings.backgroundMap.terrainSettings;
+    const getTerrainSettings = (view: ViewState) => view.displayStyle.settings.backgroundMap.terrainSettings;
     const updateTerrainSettings = (props: TerrainProps) =>
       this._vp.changeBackgroundMapProps({ terrainSettings: props });
 
@@ -985,11 +931,7 @@ export class ViewAttributes {
     return settingsDiv;
   }
 
-  private addCheckbox(
-    cbLabel: string,
-    handler: (enabled: boolean) => void,
-    parent?: HTMLElement
-  ): CheckBox {
+  private addCheckbox(cbLabel: string, handler: (enabled: boolean) => void, parent?: HTMLElement): CheckBox {
     if (undefined === parent) parent = this._element;
 
     return createCheckBox({
@@ -1019,14 +961,10 @@ export class ViewAttributes {
   }
 
   private get _edgeSettings() {
-    return (this._vp.view as ViewState3d).getDisplayStyle3d().settings
-      .hiddenLineSettings;
+    return (this._vp.view as ViewState3d).getDisplayStyle3d().settings.hiddenLineSettings;
   }
   private overrideEdgeSettings(props: HiddenLine.SettingsProps) {
-    (
-      this._vp.view as ViewState3d
-    ).getDisplayStyle3d().settings.hiddenLineSettings =
-      this._edgeSettings.override(props);
+    (this._vp.view as ViewState3d).getDisplayStyle3d().settings.hiddenLineSettings = this._edgeSettings.override(props);
     this.sync();
   }
 
@@ -1045,9 +983,7 @@ export class ViewAttributes {
       body: edgeDisplayDiv,
     });
     nestedMenu.label.style.fontWeight = "500";
-    (
-      nestedMenu.div.firstElementChild!.lastElementChild! as HTMLElement
-    ).style.borderColor = "grey";
+    (nestedMenu.div.firstElementChild!.lastElementChild! as HTMLElement).style.borderColor = "grey";
 
     const slider: Slider = createSlider({
       id: this._nextId,
@@ -1104,9 +1040,7 @@ export class ViewAttributes {
     edgeDisplayDiv.appendChild(hidEditor);
 
     this._updates.push((view) => {
-      nestedMenu.label.style.fontWeight = ViewAttributes._expandEdgeDisplay
-        ? "bold"
-        : "500";
+      nestedMenu.label.style.fontWeight = ViewAttributes._expandEdgeDisplay ? "bold" : "500";
       if (view.is2d()) {
         nestedMenu.div.hidden = true;
         return;
@@ -1114,15 +1048,13 @@ export class ViewAttributes {
 
       nestedMenu.div.hidden = false;
       const settings = this._edgeSettings;
-      slider.slider.value = slider.readout.innerText =
-        settings.transparencyThreshold.toString();
+      slider.slider.value = slider.readout.innerText = settings.transparencyThreshold.toString();
 
       const vf = this._vp.viewFlags;
       visEdgesCb.checkbox.checked = vf.visibleEdges;
       visEditor.hidden = !vf.visibleEdges;
       hidEdgesCb.checkbox.checked = vf.visibleEdges && vf.hiddenEdges;
-      smoothEdgesCb.checkbox.checked =
-        IModelApp.tileAdmin.generateAllPolyfaceEdges;
+      smoothEdgesCb.checkbox.checked = IModelApp.tileAdmin.generateAllPolyfaceEdges;
       hidEditor.hidden = !vf.hiddenEdges;
     });
     const hr = document.createElement("hr");
@@ -1131,24 +1063,15 @@ export class ViewAttributes {
   }
 
   private addHiddenLineEditor(forHiddenEdges: boolean): HTMLDivElement {
-    const style = this._vp.view.is3d()
-      ? this._edgeSettings
-      : HiddenLine.Settings.defaults;
+    const style = this._vp.view.is3d() ? this._edgeSettings : HiddenLine.Settings.defaults;
     const settings = forHiddenEdges ? style.hidden : style.visible;
     const div = document.createElement("div");
     div.style.paddingLeft = "10px";
-    div.hidden = forHiddenEdges
-      ? !this._vp.view.viewFlags.hiddenEdges
-      : !this._vp.view.viewFlags.visibleEdges;
+    div.hidden = forHiddenEdges ? !this._vp.view.viewFlags.hiddenEdges : !this._vp.view.viewFlags.visibleEdges;
 
-    const getSettings = () =>
-      forHiddenEdges ? this._edgeSettings.hidden : this._edgeSettings.visible;
+    const getSettings = () => (forHiddenEdges ? this._edgeSettings.hidden : this._edgeSettings.visible);
     const overrideSettings = (newSettings: HiddenLine.Style) =>
-      this.overrideEdgeSettings(
-        forHiddenEdges
-          ? { hidden: newSettings.toJSON() }
-          : { visible: newSettings.toJSON() }
-      );
+      this.overrideEdgeSettings(forHiddenEdges ? { hidden: newSettings.toJSON() } : { visible: newSettings.toJSON() });
 
     // Color override (visible only)
     let colorCb: HTMLInputElement | undefined;
@@ -1163,8 +1086,7 @@ export class ViewAttributes {
       colorCb.checked = settings.ovrColor;
       colorDiv.appendChild(colorCb);
 
-      const color =
-        undefined !== settings.color ? settings.color.toHexString() : "#ffffff";
+      const color = undefined !== settings.color ? settings.color.toHexString() : "#ffffff";
       colorInput = createColorInput({
         parent: colorDiv,
         id: this._nextId,
@@ -1172,16 +1094,11 @@ export class ViewAttributes {
         value: color,
         display: "inline",
         disabled: !settings.ovrColor,
-        handler: (value: string) =>
-          overrideSettings(getSettings().overrideColor(ColorDef.create(value))),
+        handler: (value: string) => overrideSettings(getSettings().overrideColor(ColorDef.create(value))),
       }).input;
 
       colorCb.addEventListener("click", () =>
-        overrideSettings(
-          getSettings().overrideColor(
-            colorCb!.checked ? ColorDef.create(colorInput!.value) : undefined
-          )
-        )
+        overrideSettings(getSettings().overrideColor(colorCb!.checked ? ColorDef.create(colorInput!.value) : undefined))
       );
     }
 
@@ -1211,23 +1128,13 @@ export class ViewAttributes {
     });
     widthDiv.appendChild(width);
     widthCb.addEventListener("click", () =>
-      overrideSettings(
-        getSettings().overrideWidth(
-          widthCb.checked ? parseInt(width.value, 10) : undefined
-        )
-      )
+      overrideSettings(getSettings().overrideWidth(widthCb.checked ? parseInt(width.value, 10) : undefined))
     );
 
     // Line style override
-    const patternCb = Settings.addStyle(
-      div,
-      settings.pattern ? settings.pattern : LinePixels.Invalid,
-      (select) => {
-        overrideSettings(
-          getSettings().overridePattern(parseInt(select.value, 10))
-        );
-      }
-    );
+    const patternCb = Settings.addStyle(div, settings.pattern ? settings.pattern : LinePixels.Invalid, (select) => {
+      overrideSettings(getSettings().overridePattern(parseInt(select.value, 10)));
+    });
 
     // Synchronization
     this._updates.push((view: ViewState) => {
@@ -1240,16 +1147,14 @@ export class ViewAttributes {
       if (undefined !== colorCb && undefined !== colorInput) {
         colorCb.checked = undefined !== curStyle.color;
         colorInput.disabled = !colorCb.checked;
-        if (undefined !== curStyle.color)
-          colorInput.value = curStyle.color.toHexString();
+        if (undefined !== curStyle.color) colorInput.value = curStyle.color.toHexString();
       }
 
       widthCb.checked = undefined !== curStyle.width;
       width.disabled = !widthCb.checked;
       if (undefined !== curStyle.width) width.value = curStyle.width.toString();
 
-      const pix =
-        undefined !== curStyle.pattern ? curStyle.pattern : LinePixels.Invalid;
+      const pix = undefined !== curStyle.pattern ? curStyle.pattern : LinePixels.Invalid;
       patternCb.select.value = pix.toString();
     });
 
@@ -1273,14 +1178,11 @@ export class ViewAttributesPanel extends ToolBarDropDown {
   }
 
   public async populate(): Promise<void> {
-    if (undefined !== this._displayStylePickerInput)
-      this._displayStylePickerInput.select.disabled = true;
+    if (undefined !== this._displayStylePickerInput) this._displayStylePickerInput.select.disabled = true;
 
     const view = this._vp.view;
     const is3d = view.is3d();
-    const sqlName: string = is3d
-      ? DisplayStyle3dState.classFullName
-      : DisplayStyle2dState.classFullName;
+    const sqlName: string = is3d ? DisplayStyle3dState.classFullName : DisplayStyle2dState.classFullName;
     const displayStyleProps = await this._vp.view.iModel.elements.queryProps({
       from: sqlName,
       where: "IsPrivate=FALSE",
@@ -1294,10 +1196,8 @@ export class ViewAttributesPanel extends ToolBarDropDown {
         value: displayStyleProp.id,
       });
       let displayStyle: DisplayStyleState;
-      if (is3d)
-        displayStyle = new DisplayStyle3dState(displayStyleProp, view.iModel);
-      else
-        displayStyle = new DisplayStyle2dState(displayStyleProp, view.iModel);
+      if (is3d) displayStyle = new DisplayStyle3dState(displayStyleProp, view.iModel);
+      else displayStyle = new DisplayStyle2dState(displayStyleProp, view.iModel);
 
       displayStyles.set(displayStyleProp.id!, displayStyle);
     }
@@ -1318,8 +1218,7 @@ export class ViewAttributesPanel extends ToolBarDropDown {
     });
 
     this._displayStylePickerInput.select.disabled = false;
-    if (undefined !== this._attributes)
-      this._attributes.displayStylePickerInput = this._displayStylePickerInput;
+    if (undefined !== this._attributes) this._attributes.displayStylePickerInput = this._displayStylePickerInput;
   }
   public override get onViewChanged(): Promise<void> {
     return this.populate();
@@ -1329,20 +1228,14 @@ export class ViewAttributesPanel extends ToolBarDropDown {
     return undefined !== this._attributes;
   }
   protected _open(): void {
-    this._attributes = new ViewAttributes(
-      this._vp,
-      this._parent,
-      this._disableEdges
-    );
+    this._attributes = new ViewAttributes(this._vp, this._parent, this._disableEdges);
     const loadingComboBox = createComboBox({
       name: "Display Style: ",
       id: "DisplayStyles",
       entries: [{ name: "Now Loading...", value: undefined }],
     });
-    if (undefined === this._displayStylePickerInput)
-      this._attributes.displayStylePickerInput = loadingComboBox;
-    else
-      this._attributes.displayStylePickerInput = this._displayStylePickerInput;
+    if (undefined === this._displayStylePickerInput) this._attributes.displayStylePickerInput = loadingComboBox;
+    else this._attributes.displayStylePickerInput = this._displayStylePickerInput;
   }
 
   protected _close(): void {

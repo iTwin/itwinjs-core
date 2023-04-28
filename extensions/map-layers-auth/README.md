@@ -44,8 +44,7 @@ export function ArcGisOauthRedirect() {
 ```ts
 const enterpriseClientIds = [
   {
-    serviceBaseUrl:
-      SampleAppIModelApp.testAppConfiguration.arcGisEnterpriseBaseUrl,
+    serviceBaseUrl: SampleAppIModelApp.testAppConfiguration.arcGisEnterpriseBaseUrl,
     clientId: SampleAppIModelApp.testAppConfiguration?.arcGisEnterpriseClientId,
   },
 ];
@@ -53,8 +52,7 @@ const accessClient = new ArcGisAccessClient();
 const initStatus = accessClient.initialize({
   redirectUri: "http://localhost:3000/esri-oauth2-callback",
   clientIds: {
-    arcgisOnlineClientId:
-      SampleAppIModelApp?.testAppConfiguration?.arcGisOnlineClientId,
+    arcgisOnlineClientId: SampleAppIModelApp?.testAppConfiguration?.arcGisOnlineClientId,
     enterpriseClientIds,
   },
 });

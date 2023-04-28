@@ -41,11 +41,7 @@ class IndexedAreaAndNormal {
  * @internal
  */
 class SectorData {
-  private constructor(
-    facetData: IndexedAreaAndNormal,
-    sectorIndex: number,
-    vertexIndex: number
-  ) {
+  private constructor(facetData: IndexedAreaAndNormal, sectorIndex: number, vertexIndex: number) {
     this.facetData = facetData;
     this.sectorClusterData = undefined;
     this.sectorIndex = sectorIndex;
@@ -87,10 +83,7 @@ export class BuildAverageNormalsContext {
    * @param polyface polyface to update.
    * @param toleranceAngle averaging is done between normals up to this angle.
    */
-  public static buildFastAverageNormals(
-    polyface: IndexedPolyface,
-    toleranceAngle: Angle
-  ) {
+  public static buildFastAverageNormals(polyface: IndexedPolyface, toleranceAngle: Angle) {
     // We ASSUME that the visitor order matches index order in polyface.data .....
     const visitor = polyface.createVisitor(0);
     const defaultNormal = Vector3d.create(0, 0, 1);
@@ -110,18 +103,9 @@ export class BuildAverageNormalsContext {
       } else {
         facetNormal.scaleInPlace(1.0 / area);
       }
-      const facetData = new IndexedAreaAndNormal(
-        facetIndex++,
-        area,
-        facetNormal
-      );
+      const facetData = new IndexedAreaAndNormal(facetIndex++, area, facetNormal);
       for (let i = 0; i < visitor.pointCount; i++) {
-        SectorData.pushToArray(
-          sectors,
-          facetData,
-          sectorIndex++,
-          visitor.clientPointIndex(i)
-        );
+        SectorData.pushToArray(sectors, facetData, sectorIndex++, visitor.clientPointIndex(i));
       }
     }
     // Sort by the vertex index so all the sectors around each vertex are clustered . .
@@ -136,20 +120,12 @@ export class BuildAverageNormalsContext {
     if (toleranceRadians < 0.0001) toleranceRadians = 0.0001;
 
     let clusterIndex = 0;
-    for (
-      let baseSectorIndex = 0;
-      baseSectorIndex < sectors.length;
-      baseSectorIndex++
-    ) {
+    for (let baseSectorIndex = 0; baseSectorIndex < sectors.length; baseSectorIndex++) {
       const baseData = sectors[baseSectorIndex];
       const vertexIndex = baseData.vertexIndex;
       const baseFacetData = baseData.facetData;
       if (baseData.sectorClusterData === undefined) {
-        const clusterNormal = new IndexedAreaAndNormal(
-          clusterIndex++,
-          0.0,
-          Vector3d.createZero()
-        );
+        const clusterNormal = new IndexedAreaAndNormal(clusterIndex++, 0.0, Vector3d.createZero());
         clusters.push(clusterNormal);
         // Accumulate with equal weights . . .
         clusterNormal.addWeightedNormal(1.0, baseData.facetData.normal.clone());
@@ -160,16 +136,9 @@ export class BuildAverageNormalsContext {
         ) {
           const candidateSector = sectors[candidateSectorIndex];
           if (candidateSector.vertexIndex !== vertexIndex) break;
-          if (
-            candidateSector.facetData.normal.angleTo(baseFacetData.normal)
-              .radians > toleranceRadians
-          )
-            continue;
+          if (candidateSector.facetData.normal.angleTo(baseFacetData.normal).radians > toleranceRadians) continue;
           if (candidateSector.sectorClusterData === undefined) {
-            clusterNormal.addWeightedNormal(
-              1.0,
-              candidateSector.facetData.normal
-            );
+            clusterNormal.addWeightedNormal(1.0, candidateSector.facetData.normal);
             candidateSector.sectorClusterData = clusterNormal;
           }
         }
@@ -203,11 +172,9 @@ export class BuildAverageNormalsContext {
     const newIndices: number[] = [];
     while (visitor.moveToNextFacet()) {
       const thisNormalIndex = newNormals.length;
-      if (PolygonOps.unitNormal(visitor.point, facetNormal))
-        newNormals.push(facetNormal);
+      if (PolygonOps.unitNormal(visitor.point, facetNormal)) newNormals.push(facetNormal);
       else newNormals.push(defaultNormal);
-      for (let i = 0; i < visitor.pointCount; i++)
-        newIndices.push(thisNormalIndex);
+      for (let i = 0; i < visitor.pointCount; i++) newIndices.push(thisNormalIndex);
     }
     polyface.data.normalIndex = newIndices;
     polyface.data.normal = newNormals;

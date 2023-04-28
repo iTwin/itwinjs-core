@@ -33,8 +33,7 @@ describe("ElementGraphics", () => {
 
   it("obtains graphics for elements", async () => {
     const elementId = "0x29";
-    const element =
-      imodel.elements.tryGetElement<GeometricElement3d>(elementId);
+    const element = imodel.elements.tryGetElement<GeometricElement3d>(elementId);
     expect(element).not.to.be.undefined;
     expect(element).instanceof(GeometricElement3d);
 
@@ -45,9 +44,7 @@ describe("ElementGraphics", () => {
       formatVersion: CurrentImdlVersion.Major,
     };
 
-    const result = await imodel.nativeDb.generateElementGraphics(
-      request as any
-    ); // ###TODO update package versions in addon
+    const result = await imodel.nativeDb.generateElementGraphics(request as any); // ###TODO update package versions in addon
     expect(result.status).to.equal(ElementGraphicsStatus.Success);
     assert(result.status === ElementGraphicsStatus.Success);
 
@@ -79,9 +76,7 @@ describe("ElementGraphics", () => {
       geometry: { format: "json", data: element!.geom! },
     };
 
-    const result = await imodel.nativeDb.generateElementGraphics(
-      request as any
-    ); // ###TODO update package versions in addon
+    const result = await imodel.nativeDb.generateElementGraphics(request as any); // ###TODO update package versions in addon
     expect(result.status).to.equal(ElementGraphicsStatus.Success);
     assert(result.status === ElementGraphicsStatus.Success);
 
@@ -107,12 +102,9 @@ describe("ElementGraphics", () => {
     for (const entry of it) {
       if ("geometryQuery" !== entry.primitive.type) continue;
 
-      if (!ElementGeometry.appendGeometryParams(entry.geomParams, entries))
-        continue;
+      if (!ElementGeometry.appendGeometryParams(entry.geomParams, entries)) continue;
 
-      const geomEntry = ElementGeometry.fromGeometryQuery(
-        entry.primitive.geometry
-      );
+      const geomEntry = ElementGeometry.fromGeometryQuery(entry.primitive.geometry);
       expect(geomEntry).not.to.be.undefined;
       entries.push(geomEntry!);
     }
@@ -128,9 +120,7 @@ describe("ElementGraphics", () => {
       geometry: { format: "flatbuffer", data: entries },
     };
 
-    const result = await imodel.nativeDb.generateElementGraphics(
-      request as any
-    ); // ###TODO update package versions in addon
+    const result = await imodel.nativeDb.generateElementGraphics(request as any); // ###TODO update package versions in addon
     expect(result.status).to.equal(ElementGraphicsStatus.Success);
     assert(result.status === ElementGraphicsStatus.Success);
 
@@ -141,10 +131,7 @@ describe("ElementGraphics", () => {
   });
 
   it("produces expected errors", async () => {
-    type TestCase = [
-      ElementGraphicsStatus,
-      Partial<ElementGraphicsRequestProps>
-    ];
+    type TestCase = [ElementGraphicsStatus, Partial<ElementGraphicsRequestProps>];
     const testCases: TestCase[] = [
       [ElementGraphicsStatus.ElementNotFound, { elementId: "0" }],
       [ElementGraphicsStatus.ElementNotFound, { elementId: "0x12345678" }],
@@ -157,14 +144,8 @@ describe("ElementGraphics", () => {
       [ElementGraphicsStatus.InvalidJson, { toleranceLog10: "tol" as any }],
 
       [ElementGraphicsStatus.Success, { formatVersion: undefined }],
-      [
-        ElementGraphicsStatus.UnknownMajorFormatVersion,
-        { formatVersion: CurrentImdlVersion.Major + 1 },
-      ],
-      [
-        ElementGraphicsStatus.UnknownMajorFormatVersion,
-        { formatVersion: "latest" as any },
-      ],
+      [ElementGraphicsStatus.UnknownMajorFormatVersion, { formatVersion: CurrentImdlVersion.Major + 1 }],
+      [ElementGraphicsStatus.UnknownMajorFormatVersion, { formatVersion: "latest" as any }],
     ];
 
     for (const testCase of testCases) {
@@ -176,12 +157,9 @@ describe("ElementGraphics", () => {
         ...testCase[1],
       };
 
-      const result = await imodel.nativeDb.generateElementGraphics(
-        request as any
-      ); // ###TODO update package versions in addon
+      const result = await imodel.nativeDb.generateElementGraphics(request as any); // ###TODO update package versions in addon
       expect(result.status).to.equal(testCase[0]);
-      if (result.status === ElementGraphicsStatus.Success)
-        expect(result.content).not.to.be.undefined;
+      if (result.status === ElementGraphicsStatus.Success) expect(result.content).not.to.be.undefined;
     }
   });
 });

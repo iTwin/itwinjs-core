@@ -20,19 +20,10 @@ import { MomentData } from "../geometry4d/MomentData";
 import { Polyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../topology/Graph";
-import {
-  LineStringDataVariant,
-  MultiLineStringDataVariant,
-  Triangulator,
-} from "../topology/Triangulation";
+import { LineStringDataVariant, MultiLineStringDataVariant, Triangulator } from "../topology/Triangulation";
 import { ChainCollectorContext } from "./ChainCollectorContext";
 import { AnyCurve, AnyRegion } from "./CurveChain";
-import {
-  BagOfCurves,
-  ConsolidateAdjacentCurvePrimitivesOptions,
-  CurveChain,
-  CurveCollection,
-} from "./CurveCollection";
+import { BagOfCurves, ConsolidateAdjacentCurvePrimitivesOptions, CurveChain, CurveCollection } from "./CurveCollection";
 import { CurveCurve } from "./CurveCurve";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ";
@@ -52,11 +43,7 @@ import { PlanarSubdivision } from "./Query/PlanarSubdivision";
 import { RegionMomentsXY } from "./RegionMomentsXY";
 import { OffsetHelpers } from "./internalContexts/MultiChainCollector";
 import { GeometryQuery } from "./GeometryQuery";
-import {
-  RegionBooleanContext,
-  RegionGroupOpType,
-  RegionOpsFaceToFaceSearch,
-} from "./RegionOpsClassificationSweeps";
+import { RegionBooleanContext, RegionGroupOpType, RegionOpsFaceToFaceSearch } from "./RegionOpsClassificationSweeps";
 import { UnionRegion } from "./UnionRegion";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { ParityRegion } from "./ParityRegion";
@@ -74,12 +61,7 @@ export type ChainTypes = CurvePrimitive | Path | BagOfCurves | Loop | undefined;
  *   * "X" -- has exterior markup
  * @internal
  */
-export type GraphCheckPointFunction = (
-  name: string,
-  graph: HalfEdgeGraph,
-  properties: string,
-  extraData?: any
-) => any;
+export type GraphCheckPointFunction = (name: string, graph: HalfEdgeGraph, properties: string, extraData?: any) => any;
 /**
  * Enumeration of the binary operation types for a booleans among regions
  * @public
@@ -149,9 +131,7 @@ export class RegionOps {
    *    call `principalMomentData = MomentData.inertiaProductsToPrincipalAxes (rawMomentData.origin, rawMomentData.sums);`
    * @param root any CurveCollection or CurvePrimitive.
    */
-  public static computeXYZWireMomentSums(
-    root: AnyCurve
-  ): MomentData | undefined {
+  public static computeXYZWireMomentSums(root: AnyCurve): MomentData | undefined {
     const handler = new CurveWireMomentsXYZ();
     handler.visitLeaves(root);
     const result = handler.momentData;
@@ -177,35 +157,22 @@ export class RegionOps {
         if (points) this.addLoopsToGraph(graph, points, announceIsolatedLoop);
       }
     } else if (data instanceof IndexedXYZCollection) {
-      const loopSeed = Triangulator.directCreateFaceLoopFromCoordinates(
-        graph,
-        data
-      );
+      const loopSeed = Triangulator.directCreateFaceLoopFromCoordinates(graph, data);
       if (loopSeed !== undefined) announceIsolatedLoop(graph, loopSeed);
     } else if (Array.isArray(data)) {
       if (data.length > 0) {
         if (Point3d.isAnyImmediatePointType(data[0])) {
-          const loopSeed = Triangulator.directCreateFaceLoopFromCoordinates(
-            graph,
-            data as LineStringDataVariant
-          );
+          const loopSeed = Triangulator.directCreateFaceLoopFromCoordinates(graph, data as LineStringDataVariant);
           if (loopSeed !== undefined) announceIsolatedLoop(graph, loopSeed);
         } else if (data[0] instanceof IndexedXYZCollection) {
           for (const loop of data) {
-            const loopSeed = Triangulator.directCreateFaceLoopFromCoordinates(
-              graph,
-              loop as IndexedXYZCollection
-            );
+            const loopSeed = Triangulator.directCreateFaceLoopFromCoordinates(graph, loop as IndexedXYZCollection);
             if (loopSeed !== undefined) announceIsolatedLoop(graph, loopSeed);
           }
         } else {
           for (const child of data) {
             if (Array.isArray(child))
-              this.addLoopsToGraph(
-                graph,
-                child as MultiLineStringDataVariant,
-                announceIsolatedLoop
-              );
+              this.addLoopsToGraph(graph, child as MultiLineStringDataVariant, announceIsolatedLoop);
           }
         }
       }
@@ -222,16 +189,12 @@ export class RegionOps {
     edgeTag: any
   ): HalfEdge[] | undefined {
     const loopSeeds: HalfEdge[] = [];
-    this.addLoopsToGraph(
-      graph,
-      data,
-      (_graph: HalfEdgeGraph, seed: HalfEdge) => {
-        if (seed) {
-          loopSeeds.push(seed);
-          seed.setMaskAndEdgeTagAroundFace(mask, edgeTag, true);
-        }
+    this.addLoopsToGraph(graph, data, (_graph: HalfEdgeGraph, seed: HalfEdge) => {
+      if (seed) {
+        loopSeeds.push(seed);
+        seed.setMaskAndEdgeTagAroundFace(mask, edgeTag, true);
       }
-    );
+    });
     if (loopSeeds.length > 0) return loopSeeds;
     return undefined;
   }
@@ -242,10 +205,7 @@ export class RegionOps {
    * @param graph
    * @param triangulate
    */
-  private static finishGraphToPolyface(
-    graph: HalfEdgeGraph | undefined,
-    triangulate: boolean
-  ): Polyface | undefined {
+  private static finishGraphToPolyface(graph: HalfEdgeGraph | undefined, triangulate: boolean): Polyface | undefined {
     if (graph) {
       if (triangulate) {
         Triangulator.triangulateAllPositiveAreaFaces(graph);
@@ -340,22 +300,14 @@ export class RegionOps {
     mergeTolerance: number = Geometry.smallMetricDistance
   ): AnyRegion | undefined {
     const result = UnionRegion.create();
-    const context = RegionBooleanContext.create(
-      RegionGroupOpType.Union,
-      RegionGroupOpType.Union
-    );
+    const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
     context.addMembers(loopsA, loopsB);
     context.annotateAndMergeCurvesInGraph(mergeTolerance);
     const range = context.groupA.range().union(context.groupB.range());
     const areaTol = this.computeXYAreaTolerance(range);
     context.runClassificationSweep(
       operation,
-      (
-        _graph: HalfEdgeGraph,
-        face: HalfEdge,
-        faceType: -1 | 0 | 1,
-        area: number
-      ) => {
+      (_graph: HalfEdgeGraph, face: HalfEdge, faceType: -1 | 0 | 1, area: number) => {
         // ignore danglers and null faces, but not 2-edge "banana" faces with nonzero area
         if (face.countEdgesAroundFace() < 2) return;
         if (Math.abs(area) < areaTol) return;
@@ -386,15 +338,14 @@ export class RegionOps {
     inputB: MultiLineStringDataVariant[],
     triangulate: boolean = false
   ): Polyface | undefined {
-    const graph =
-      RegionOpsFaceToFaceSearch.doBinaryBooleanBetweenMultiLoopInputs(
-        inputA,
-        RegionGroupOpType.Union,
-        operation,
-        inputB,
-        RegionGroupOpType.Union,
-        true
-      );
+    const graph = RegionOpsFaceToFaceSearch.doBinaryBooleanBetweenMultiLoopInputs(
+      inputA,
+      RegionGroupOpType.Union,
+      operation,
+      inputB,
+      RegionGroupOpType.Union,
+      true
+    );
     return this.finishGraphToPolyface(graph, triangulate);
   }
   /**
@@ -413,20 +364,16 @@ export class RegionOps {
     operation: RegionBinaryOpType,
     inputB: MultiLineStringDataVariant[]
   ): AnyRegion | undefined {
-    const graph =
-      RegionOpsFaceToFaceSearch.doBinaryBooleanBetweenMultiLoopInputs(
-        inputA,
-        RegionGroupOpType.Union,
-        operation,
-        inputB,
-        RegionGroupOpType.Union,
-        true
-      );
-    if (!graph) return undefined;
-    const loopEdges = HalfEdgeGraphSearch.collectExtendedBoundaryLoopsInGraph(
-      graph,
-      HalfEdgeMask.EXTERIOR
+    const graph = RegionOpsFaceToFaceSearch.doBinaryBooleanBetweenMultiLoopInputs(
+      inputA,
+      RegionGroupOpType.Union,
+      operation,
+      inputB,
+      RegionGroupOpType.Union,
+      true
     );
+    if (!graph) return undefined;
+    const loopEdges = HalfEdgeGraphSearch.collectExtendedBoundaryLoopsInGraph(graph, HalfEdgeMask.EXTERIOR);
     const allLoops: Loop[] = [];
     for (const graphLoop of loopEdges) {
       const points = new GrowableXYZArray();
@@ -473,10 +420,7 @@ export class RegionOps {
     curves: Path | Loop,
     offsetDistanceOrOptions: number | JointOptions | OffsetOptions
   ): CurveCollection | undefined {
-    return CurveChainWireOffsetContext.constructCurveXYOffset(
-      curves,
-      offsetDistanceOrOptions
-    );
+    return CurveChainWireOffsetContext.constructCurveXYOffset(curves, offsetDistanceOrOptions);
   }
   /**
    * Test if point (x,y) is IN, OUT or ON a region.
@@ -485,11 +429,7 @@ export class RegionOps {
    * @param x x coordinate of point to test
    * @param y y coordinate of point to test
    */
-  public static testPointInOnOutRegionXY(
-    curves: AnyRegion,
-    x: number,
-    y: number
-  ): number {
+  public static testPointInOnOutRegionXY(curves: AnyRegion, x: number, y: number): number {
     return PointInOnOutContext.testPointInOnOutRegionXY(curves, x, y);
   }
   /** Create curve collection of subtype determined by gaps between the input curves.
@@ -510,16 +450,9 @@ export class RegionOps {
     if (n === 0) return undefined;
     let maxGap = 0.0;
     let isPath = false;
-    if (wrap)
-      maxGap = Geometry.maxXY(
-        maxGap,
-        curves[0].startPoint().distance(curves[n - 1].endPoint())
-      );
+    if (wrap) maxGap = Geometry.maxXY(maxGap, curves[0].startPoint().distance(curves[n - 1].endPoint()));
     for (let i = 0; i + 1 < n; i++)
-      maxGap = Geometry.maxXY(
-        maxGap,
-        curves[i].endPoint().distance(curves[i + 1].startPoint())
-      );
+      maxGap = Geometry.maxXY(maxGap, curves[i].endPoint().distance(curves[i + 1].startPoint()));
     let collection: Loop | Path | BagOfCurves;
     if (Geometry.isSmallMetricDistance(maxGap)) {
       collection = wrap ? Loop.create() : Path.create();
@@ -528,8 +461,7 @@ export class RegionOps {
       collection = BagOfCurves.create();
     }
     for (const c of curves) collection.tryAddChild(c);
-    if (isPath && consolidateAdjacentPrimitives)
-      RegionOps.consolidateAdjacentPrimitives(collection);
+    if (isPath && consolidateAdjacentPrimitives) RegionOps.consolidateAdjacentPrimitives(collection);
     return collection;
   }
 
@@ -561,10 +493,7 @@ export class RegionOps {
    * * Assemble paths from consecutive curves NOT separated by either gaps or the split markup set by [[cloneCurvesWithXYSplits]].
    * * Return simplest form -- single primitive, single path, or bag of curves.
    */
-  public static splitToPathsBetweenBreaks(
-    source: AnyCurve | undefined,
-    makeClones: boolean
-  ): ChainTypes {
+  public static splitToPathsBetweenBreaks(source: AnyCurve | undefined, makeClones: boolean): ChainTypes {
     if (source === undefined) return undefined;
     if (source instanceof CurvePrimitive) return source;
     // source is a collection .  ..
@@ -592,11 +521,7 @@ export class RegionOps {
     outsideOffsets: AnyCurve[];
     chains: ChainTypes;
   } {
-    return OffsetHelpers.collectInsideAndOutsideOffsets(
-      fragments,
-      offsetDistance,
-      gapTolerance
-    );
+    return OffsetHelpers.collectInsideAndOutsideOffsets(fragments, offsetDistance, gapTolerance);
   }
   /**
    * Restructure curve fragments as chains.
@@ -604,10 +529,7 @@ export class RegionOps {
    * @param gapTolerance absolute endpoint tolerance for computing chains
    * @returns chains, possibly wrapped in BagOfCurves if there multiple chains
    */
-  public static collectChains(
-    fragments: AnyCurve[],
-    gapTolerance: number = Geometry.smallMetricDistance
-  ): ChainTypes {
+  public static collectChains(fragments: AnyCurve[], gapTolerance: number = Geometry.smallMetricDistance): ChainTypes {
     return OffsetHelpers.collectChains(fragments, gapTolerance);
   }
 
@@ -625,51 +547,21 @@ export class RegionOps {
     coincidentParts: AnyCurve[];
   } {
     const result = { insideParts: [], outsideParts: [], coincidentParts: [] };
-    const pathWithIntersectionMarkup = RegionOps.cloneCurvesWithXYSplits(
-      curvesToCut,
-      region
-    );
-    const splitPaths = RegionOps.splitToPathsBetweenBreaks(
-      pathWithIntersectionMarkup,
-      true
-    );
+    const pathWithIntersectionMarkup = RegionOps.cloneCurvesWithXYSplits(curvesToCut, region);
+    const splitPaths = RegionOps.splitToPathsBetweenBreaks(pathWithIntersectionMarkup, true);
     if (splitPaths instanceof CurveCollection) {
       for (const child of splitPaths.children) {
-        const pointOnChild =
-          CurveCollection.createCurveLocationDetailOnAnyCurvePrimitive(child);
+        const pointOnChild = CurveCollection.createCurveLocationDetailOnAnyCurvePrimitive(child);
         if (pointOnChild) {
-          const inOnOut = RegionOps.testPointInOnOutRegionXY(
-            region,
-            pointOnChild.point.x,
-            pointOnChild.point.y
-          );
-          pushToInOnOutArrays(
-            child,
-            inOnOut,
-            result.outsideParts,
-            result.coincidentParts,
-            result.insideParts
-          );
+          const inOnOut = RegionOps.testPointInOnOutRegionXY(region, pointOnChild.point.x, pointOnChild.point.y);
+          pushToInOnOutArrays(child, inOnOut, result.outsideParts, result.coincidentParts, result.insideParts);
         }
       }
     } else if (splitPaths instanceof CurvePrimitive) {
-      const pointOnChild =
-        CurveCollection.createCurveLocationDetailOnAnyCurvePrimitive(
-          splitPaths
-        );
+      const pointOnChild = CurveCollection.createCurveLocationDetailOnAnyCurvePrimitive(splitPaths);
       if (pointOnChild) {
-        const inOnOut = RegionOps.testPointInOnOutRegionXY(
-          region,
-          pointOnChild.point.x,
-          pointOnChild.point.y
-        );
-        pushToInOnOutArrays(
-          splitPaths,
-          inOnOut,
-          result.outsideParts,
-          result.coincidentParts,
-          result.insideParts
-        );
+        const inOnOut = RegionOps.testPointInOnOutRegionXY(region, pointOnChild.point.x, pointOnChild.point.y);
+        pushToInOnOutArrays(splitPaths, inOnOut, result.outsideParts, result.coincidentParts, result.insideParts);
       }
     }
     return result;
@@ -696,8 +588,7 @@ export class RegionOps {
     } else if (data instanceof IndexedXYZCollection) {
       let dataToUse;
       if (requireClosurePoint && data.length === 5) {
-        if (!Geometry.isSmallMetricDistance(data.distanceIndexIndex(0, 4)!))
-          return undefined;
+        if (!Geometry.isSmallMetricDistance(data.distanceIndexIndex(0, 4)!)) return undefined;
         dataToUse = data;
       } else if (!requireClosurePoint && data.length === 4) {
         dataToUse = data;
@@ -705,21 +596,14 @@ export class RegionOps {
         return undefined;
       } else {
         dataToUse = GrowableXYZArray.create(data);
-        PolylineCompressionContext.compressInPlaceByShortEdgeLength(
-          dataToUse,
-          Geometry.smallMetricDistance
-        );
+        PolylineCompressionContext.compressInPlaceByShortEdgeLength(dataToUse, Geometry.smallMetricDistance);
         if (dataToUse.length < (requireClosurePoint ? 5 : 4)) return undefined;
       }
       const vector01 = dataToUse.vectorIndexIndex(0, 1)!;
       const vector03 = dataToUse.vectorIndexIndex(0, 3)!;
       const vector12 = dataToUse.vectorIndexIndex(1, 2)!;
       const normalVector = vector01.crossProduct(vector03);
-      if (
-        normalVector.normalizeInPlace() &&
-        vector12.isAlmostEqual(vector03) &&
-        vector01.isPerpendicularTo(vector03)
-      ) {
+      if (normalVector.normalizeInPlace() && vector12.isAlmostEqual(vector03) && vector01.isPerpendicularTo(vector03)) {
         return Transform.createOriginAndMatrixColumns(
           dataToUse.getPoint3dAtUncheckedPointIndex(0),
           vector01,
@@ -728,25 +612,11 @@ export class RegionOps {
         );
       }
     } else if (Array.isArray(data)) {
-      return this.rectangleEdgeTransform(
-        new Point3dArrayCarrier(data),
-        requireClosurePoint
-      );
-    } else if (
-      data instanceof Loop &&
-      data.children.length === 1 &&
-      data.children[0] instanceof LineString3d
-    ) {
+      return this.rectangleEdgeTransform(new Point3dArrayCarrier(data), requireClosurePoint);
+    } else if (data instanceof Loop && data.children.length === 1 && data.children[0] instanceof LineString3d) {
       return this.rectangleEdgeTransform(data.children[0].packedPoints, true);
-    } else if (
-      data instanceof Path &&
-      data.children.length === 1 &&
-      data.children[0] instanceof LineString3d
-    ) {
-      return this.rectangleEdgeTransform(
-        data.children[0].packedPoints,
-        requireClosurePoint
-      );
+    } else if (data instanceof Path && data.children.length === 1 && data.children[0] instanceof LineString3d) {
+      return this.rectangleEdgeTransform(data.children[0].packedPoints, requireClosurePoint);
     } else if (data instanceof CurveChain) {
       if (!data.checkForNonLinearPrimitives()) {
         // const linestring = LineString3d.create();
@@ -786,13 +656,10 @@ export class RegionOps {
    * * `UnionRegion` if any other input configuration. Its children are individually ordered/oriented as in the above cases.
    * @see [[PolygonOps.sortOuterAndHoleLoopsXY]]
    */
-  public static sortOuterAndHoleLoopsXY(
-    loops: Array<Loop | IndexedXYZCollection>
-  ): AnyRegion {
+  public static sortOuterAndHoleLoopsXY(loops: Array<Loop | IndexedXYZCollection>): AnyRegion {
     const loopAndArea: SortablePolygon[] = [];
     for (const candidate of loops) {
-      if (candidate instanceof Loop)
-        SortablePolygon.pushLoop(loopAndArea, candidate);
+      if (candidate instanceof Loop) SortablePolygon.pushLoop(loopAndArea, candidate);
       else if (candidate instanceof IndexedXYZCollection) {
         const loop = Loop.createPolygon(candidate);
         SortablePolygon.pushLoop(loopAndArea, loop);
@@ -812,27 +679,14 @@ export class RegionOps {
    *    * `slivers` contains sliver loops that have zero area, such as appear between coincident curves.
    *    * `edges` contains a [[LoopCurveLoopCurve]] object for each component edge, collecting both loops adjacent to the edge and a constituent curve in each.
    */
-  public static constructAllXYRegionLoops(
-    curvesAndRegions: AnyCurve | AnyCurve[]
-  ): SignedLoops[] {
-    const primitivesA = RegionOps.collectCurvePrimitives(
-      curvesAndRegions,
-      undefined,
-      true
-    );
+  public static constructAllXYRegionLoops(curvesAndRegions: AnyCurve | AnyCurve[]): SignedLoops[] {
+    const primitivesA = RegionOps.collectCurvePrimitives(curvesAndRegions, undefined, true);
     const primitivesB = this.expandLineStrings(primitivesA);
     const range = this.curveArrayRange(primitivesB);
     const areaTol = this.computeXYAreaTolerance(range);
-    const intersections =
-      CurveCurve.allIntersectionsAmongPrimitivesXY(primitivesB);
-    const graph = PlanarSubdivision.assembleHalfEdgeGraph(
-      primitivesB,
-      intersections
-    );
-    return PlanarSubdivision.collectSignedLoopSetsInHalfEdgeGraph(
-      graph,
-      areaTol
-    );
+    const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(primitivesB);
+    const graph = PlanarSubdivision.assembleHalfEdgeGraph(primitivesB, intersections);
+    return PlanarSubdivision.collectSignedLoopSetsInHalfEdgeGraph(graph, areaTol);
   }
 
   /**
@@ -850,28 +704,14 @@ export class RegionOps {
     smallestPossiblePrimitives: boolean = false,
     explodeLinestrings: boolean = false
   ): CurvePrimitive[] {
-    const results: CurvePrimitive[] =
-      collectorArray === undefined ? [] : collectorArray;
+    const results: CurvePrimitive[] = collectorArray === undefined ? [] : collectorArray;
     if (candidates instanceof CurvePrimitive) {
-      candidates.collectCurvePrimitives(
-        results,
-        smallestPossiblePrimitives,
-        explodeLinestrings
-      );
+      candidates.collectCurvePrimitives(results, smallestPossiblePrimitives, explodeLinestrings);
     } else if (candidates instanceof CurveCollection) {
-      candidates.collectCurvePrimitives(
-        results,
-        smallestPossiblePrimitives,
-        explodeLinestrings
-      );
+      candidates.collectCurvePrimitives(results, smallestPossiblePrimitives, explodeLinestrings);
     } else if (Array.isArray(candidates)) {
       for (const c of candidates) {
-        this.collectCurvePrimitives(
-          c,
-          results,
-          smallestPossiblePrimitives,
-          explodeLinestrings
-        );
+        this.collectCurvePrimitives(c, results, smallestPossiblePrimitives, explodeLinestrings);
       }
     }
     return results;
@@ -881,9 +721,7 @@ export class RegionOps {
    * @param candidates input curves
    * @return copied (captured) inputs except for the linestrings, which are exploded
    */
-  public static expandLineStrings(
-    candidates: CurvePrimitive[]
-  ): CurvePrimitive[] {
+  public static expandLineStrings(candidates: CurvePrimitive[]): CurvePrimitive[] {
     const result: CurvePrimitive[] = [];
     for (const c of candidates) {
       if (c instanceof LineString3d) {
@@ -909,10 +747,8 @@ export class RegionOps {
       for (const c of data) {
         if (c instanceof GeometryQuery) c.extendRange(range, worldToLocal);
         else if (c instanceof Point3d) range.extendPoint(c, worldToLocal);
-        else if (c instanceof GrowableXYZArray)
-          range.extendRange(c.getRange(worldToLocal));
-        else if (Array.isArray(c))
-          range.extendRange(this.curveArrayRange(c, worldToLocal));
+        else if (c instanceof GrowableXYZArray) range.extendRange(c.getRange(worldToLocal));
+        else if (Array.isArray(c)) range.extendRange(this.curveArrayRange(c, worldToLocal));
       }
     }
     return range;

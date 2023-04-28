@@ -19,27 +19,15 @@ import {
   SpatialClassifierOutsideDisplay,
   TextureTransparency,
 } from "@itwin/core-common";
-import {
-  Matrix4d,
-  Plane3dByOriginAndUnitNormal,
-  Point3d,
-  Vector3d,
-} from "@itwin/core-geometry";
+import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@itwin/core-geometry";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
-import {
-  GraphicsCollectorDrawArgs,
-  SpatialClassifierTileTreeReference,
-  TileTreeReference,
-} from "../../tile/internal";
+import { GraphicsCollectorDrawArgs, SpatialClassifierTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
 import { ViewState3d } from "../../ViewState";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import {
-  PlanarClassifierTarget,
-  RenderPlanarClassifier,
-} from "../RenderPlanarClassifier";
+import { PlanarClassifierTarget, RenderPlanarClassifier } from "../RenderPlanarClassifier";
 import { BatchState } from "./BatchState";
 import { BranchStack } from "./BranchStack";
 import {
@@ -96,9 +84,7 @@ class ClassifierTextures implements WebGLDisposable {
   ) {}
 
   public get isDisposed(): boolean {
-    return (
-      this.color.isDisposed && this.feature.isDisposed && this.hilite.isDisposed
-    );
+    return this.color.isDisposed && this.feature.isDisposed && this.hilite.isDisposed;
   }
 
   public dispose(): void {
@@ -113,10 +99,7 @@ class ClassifierTextures implements WebGLDisposable {
     stats.addPlanarClassifier(this.hilite.bytesUsed);
   }
 
-  public static create(
-    width: number,
-    height: number
-  ): ClassifierTextures | undefined {
+  public static create(width: number, height: number): ClassifierTextures | undefined {
     const hColor = createTextureHandle(width, height);
     const hFeature = createTextureHandle(width, height);
     const hHilite = createTextureHandle(width, height);
@@ -140,12 +123,7 @@ class ClassifierFrameBuffers implements WebGLDisposable {
   ) {}
 
   public get isDisposed(): boolean {
-    return (
-      this.textures.isDisposed &&
-      this._hilite.isDisposed &&
-      this._fbo.isDisposed &&
-      this._clearGeom.isDisposed
-    );
+    return this.textures.isDisposed && this._hilite.isDisposed && this._fbo.isDisposed && this._clearGeom.isDisposed;
   }
 
   public dispose(): void {
@@ -172,26 +150,18 @@ class ClassifierFrameBuffers implements WebGLDisposable {
     });
   }
 
-  public static create(
-    width: number,
-    height: number
-  ): ClassifierFrameBuffers | undefined {
+  public static create(width: number, height: number): ClassifierFrameBuffers | undefined {
     const textures = ClassifierTextures.create(width, height);
     if (undefined === textures) return undefined;
 
     const hiliteFbo = FrameBuffer.create([textures.hilite.texture]);
     if (undefined === hiliteFbo) return undefined;
 
-    const fbo = FrameBuffer.create([
-      textures.color.texture,
-      textures.feature.texture,
-    ]);
+    const fbo = FrameBuffer.create([textures.color.texture, textures.feature.texture]);
     if (undefined === fbo) return undefined;
 
     const geom = ViewportQuadGeometry.create(TechniqueId.ClearPickAndColor);
-    return undefined !== geom
-      ? new this(textures, hiliteFbo, fbo, geom)
-      : undefined;
+    return undefined !== geom ? new this(textures, hiliteFbo, fbo, geom) : undefined;
   }
 }
 
@@ -217,10 +187,7 @@ abstract class SingleTextureFrameBuffer implements WebGLDisposable {
     dispose(this.texture);
     dispose(this.fbo);
   }
-  public static createTextureAndFrameBuffer(
-    width: number,
-    height: number
-  ): TextureAndFbo | undefined {
+  public static createTextureAndFrameBuffer(width: number, height: number): TextureAndFbo | undefined {
     const hTexture = TextureHandle.createForAttachment(
       width,
       height,
@@ -244,17 +211,9 @@ abstract class SingleTextureFrameBuffer implements WebGLDisposable {
   }
 }
 class MaskFrameBuffer extends SingleTextureFrameBuffer {
-  public static create(
-    width: number,
-    height: number
-  ): MaskFrameBuffer | undefined {
-    const textureFbo = SingleTextureFrameBuffer.createTextureAndFrameBuffer(
-      width,
-      height
-    );
-    return undefined === textureFbo
-      ? undefined
-      : new MaskFrameBuffer(textureFbo);
+  public static create(width: number, height: number): MaskFrameBuffer | undefined {
+    const textureFbo = SingleTextureFrameBuffer.createTextureAndFrameBuffer(width, height);
+    return undefined === textureFbo ? undefined : new MaskFrameBuffer(textureFbo);
   }
   public draw(cmds: DrawCommands, target: Target): void {
     const system = System.instance;
@@ -302,19 +261,10 @@ class ClassifierCombinationBuffer extends CombineTexturesFrameBuffer {
     );
     if (undefined === combineGeom) return undefined;
 
-    const textureFbo = SingleTextureFrameBuffer.createTextureAndFrameBuffer(
-      width,
-      2 * height
-    );
+    const textureFbo = SingleTextureFrameBuffer.createTextureAndFrameBuffer(width, 2 * height);
     return undefined === textureFbo
       ? undefined
-      : new ClassifierCombinationBuffer(
-          textureFbo,
-          combineGeom,
-          width,
-          height,
-          2
-        );
+      : new ClassifierCombinationBuffer(textureFbo, combineGeom, width, height, 2);
   }
 }
 class ClassifierAndMaskCombinationBuffer extends CombineTexturesFrameBuffer {
@@ -332,29 +282,17 @@ class ClassifierAndMaskCombinationBuffer extends CombineTexturesFrameBuffer {
     );
     if (undefined === combineGeom) return undefined;
 
-    const textureFbo = SingleTextureFrameBuffer.createTextureAndFrameBuffer(
-      width,
-      3 * height
-    );
+    const textureFbo = SingleTextureFrameBuffer.createTextureAndFrameBuffer(width, 3 * height);
     return undefined === textureFbo
       ? undefined
-      : new ClassifierAndMaskCombinationBuffer(
-          textureFbo,
-          combineGeom,
-          width,
-          height,
-          3
-        );
+      : new ClassifierAndMaskCombinationBuffer(textureFbo, combineGeom, width, height, 3);
   }
 }
 
 const scratchPrevRenderState = new RenderState();
 
 /** @internal */
-export class PlanarClassifier
-  extends RenderPlanarClassifier
-  implements RenderMemory.Consumer, WebGLDisposable
-{
+export class PlanarClassifier extends RenderPlanarClassifier implements RenderMemory.Consumer, WebGLDisposable {
   private _classifierBuffers?: ClassifierFrameBuffers;
   private _maskBuffer?: MaskFrameBuffer;
   private _classifierCombinedBuffer?: ClassifierCombinationBuffer;
@@ -371,10 +309,7 @@ export class PlanarClassifier
   private _anyOpaque = false;
   private _anyTranslucent = false;
   private _classifier?: SpatialClassifier;
-  private readonly _plane = Plane3dByOriginAndUnitNormal.create(
-    new Point3d(0, 0, 0),
-    new Vector3d(0, 0, 1)
-  )!; // TBD -- Support other planes - default to X-Y for now.
+  private readonly _plane = Plane3dByOriginAndUnitNormal.create(new Point3d(0, 0, 0), new Vector3d(0, 0, 1))!; // TBD -- Support other planes - default to X-Y for now.
   private readonly _renderState = new RenderState();
   private readonly _renderCommands: RenderCommands;
   private readonly _branchStack = new BranchStack();
@@ -384,34 +319,14 @@ export class PlanarClassifier
   private _planarClipMaskOverrides?: FeatureSymbology.Overrides;
   private _contentMode: PlanarClassifierContent = PlanarClassifierContent.None;
 
-  private static _postProjectionMatrix = Matrix4d.createRowValues(
-    0,
-    1,
-    0,
-    0,
-    0,
-    0,
-    -1,
-    0,
-    1,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1
-  );
+  private static _postProjectionMatrix = Matrix4d.createRowValues(0, 1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 1);
   private _debugFrustum?: Frustum;
   private _doDebugFrustum = false;
   private _debugFrustumGraphic?: RenderGraphic = undefined;
   private _isClassifyingPointCloud?: boolean; // we will detect this the first time we draw
   private readonly _bgColor = ColorDef.from(0, 0, 0, 255);
 
-  private constructor(
-    classifier: SpatialClassifier | undefined,
-    target: Target
-  ) {
+  private constructor(classifier: SpatialClassifier | undefined, target: Target) {
     super();
     this._classifier = classifier;
 
@@ -419,11 +334,7 @@ export class PlanarClassifier
     flags.depthMask = flags.blend = flags.depthTest = false;
 
     this._batchState = new BatchState(this._branchStack);
-    this._renderCommands = new RenderCommands(
-      target,
-      this._branchStack,
-      this._batchState
-    );
+    this._renderCommands = new RenderCommands(target, this._branchStack, this._batchState);
   }
   public get textureImageCount(): number {
     return this._contentMode;
@@ -438,15 +349,11 @@ export class PlanarClassifier
       params[2] = -params[2];
 
     params[3] =
-      this._planarClipMask?.settings.transparency === undefined
-        ? -1
-        : this._planarClipMask.settings.transparency;
+      this._planarClipMask?.settings.transparency === undefined ? -1 : this._planarClipMask.settings.transparency;
   }
 
   public get hiliteTexture(): Texture | undefined {
-    return undefined !== this._classifierBuffers
-      ? this._classifierBuffers.textures.hilite
-      : undefined;
+    return undefined !== this._classifierBuffers ? this._classifierBuffers.textures.hilite : undefined;
   }
   public get projectionMatrix(): Matrix4d {
     return this._projectionMatrix;
@@ -465,14 +372,10 @@ export class PlanarClassifier
     return this._anyTranslucent;
   }
   public get insideDisplay(): SpatialClassifierInsideDisplay {
-    return this._classifier
-      ? this._classifier.flags.inside
-      : SpatialClassifierInsideDisplay.Off;
+    return this._classifier ? this._classifier.flags.inside : SpatialClassifierInsideDisplay.Off;
   }
   public get outsideDisplay(): SpatialClassifierOutsideDisplay {
-    return this._classifier
-      ? this._classifier.flags.outside
-      : SpatialClassifierOutsideDisplay.On;
+    return this._classifier ? this._classifier.flags.outside : SpatialClassifierOutsideDisplay.On;
   }
   public get isClassifyingPointCloud(): boolean {
     return true === this._isClassifyingPointCloud;
@@ -482,22 +385,16 @@ export class PlanarClassifier
     this._graphics!.push(graphic);
   }
 
-  public static create(
-    properties: SpatialClassifier | undefined,
-    target: Target
-  ): PlanarClassifier {
+  public static create(properties: SpatialClassifier | undefined, target: Target): PlanarClassifier {
     return new PlanarClassifier(properties, target);
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    if (undefined !== this._classifierBuffers)
-      this._classifierBuffers.textures.collectStatistics(stats);
+    if (undefined !== this._classifierBuffers) this._classifierBuffers.textures.collectStatistics(stats);
 
-    if (undefined !== this._maskBuffer)
-      this._maskBuffer.collectStatistics(stats);
+    if (undefined !== this._maskBuffer) this._maskBuffer.collectStatistics(stats);
 
-    if (undefined !== this._classifierCombinedBuffer)
-      this._classifierCombinedBuffer.collectStatistics(stats);
+    if (undefined !== this._classifierCombinedBuffer) this._classifierCombinedBuffer.collectStatistics(stats);
 
     if (undefined !== this._classifierAndMaskCombinedBuffer)
       this._classifierAndMaskCombinedBuffer.collectStatistics(stats);
@@ -511,9 +408,7 @@ export class PlanarClassifier
     this._classifierBuffers = dispose(this._classifierBuffers);
     this._maskBuffer = dispose(this._maskBuffer);
     this._classifierCombinedBuffer = dispose(this._classifierCombinedBuffer);
-    this._classifierAndMaskCombinedBuffer = dispose(
-      this._classifierAndMaskCombinedBuffer
-    );
+    this._classifierAndMaskCombinedBuffer = dispose(this._classifierAndMaskCombinedBuffer);
   }
 
   public get texture(): Texture | undefined {
@@ -530,14 +425,8 @@ export class PlanarClassifier
   }
   public getOrCreateClassifierTexture(): Texture | undefined {
     if (undefined === this._classifierBuffers)
-      this._classifierBuffers = ClassifierFrameBuffers.create(
-        this._width,
-        this._height
-      );
-    if (
-      undefined !== this._classifierBuffers &&
-      undefined === this._classifierCombinedBuffer
-    )
+      this._classifierBuffers = ClassifierFrameBuffers.create(this._width, this._height);
+    if (undefined !== this._classifierBuffers && undefined === this._classifierCombinedBuffer)
       this._classifierCombinedBuffer = ClassifierCombinationBuffer.create(
         this._width,
         this._height,
@@ -564,23 +453,16 @@ export class PlanarClassifier
 
   public pushBatchState(batchState: BatchState) {
     this._baseBatchId = batchState.nextBatchId - 1;
-    if (undefined !== this._classifierGraphics)
-      this.pushBatches(batchState, this._classifierGraphics);
+    if (undefined !== this._classifierGraphics) this.pushBatches(batchState, this._classifierGraphics);
   }
 
-  public setSource(
-    classifierTreeRef?: SpatialClassifierTileTreeReference,
-    planarClipMask?: PlanarClipMaskState
-  ) {
+  public setSource(classifierTreeRef?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMaskState) {
     this._classifierTreeRef = classifierTreeRef;
     this._classifier = classifierTreeRef?.activeClassifier;
     this._planarClipMask = planarClipMask;
   }
 
-  public collectGraphics(
-    context: SceneContext,
-    target: PlanarClassifierTarget
-  ): void {
+  public collectGraphics(context: SceneContext, target: PlanarClassifierTarget): void {
     this._classifierGraphics.length = this._maskGraphics.length = 0;
     if (undefined === context.viewingSpace) return;
 
@@ -590,20 +472,14 @@ export class PlanarClassifier
     const requiredHeight = context.target.viewRect.height;
     const requiredWidth = context.target.viewRect.width;
 
-    if (requiredWidth !== this._width || requiredHeight !== this._height)
-      this.dispose();
+    if (requiredWidth !== this._width || requiredHeight !== this._height) this.dispose();
 
     this._width = requiredWidth;
     this._height = requiredHeight;
-    const maskTrees = this._planarClipMask?.getTileTrees(
-      viewState,
-      target.modelId
-    );
+    const maskTrees = this._planarClipMask?.getTileTrees(viewState, target.modelId);
     if (!maskTrees && !this._classifierTreeRef) return;
 
-    const allTrees = maskTrees
-      ? maskTrees.slice()
-      : new Array<TileTreeReference>();
+    const allTrees = maskTrees ? maskTrees.slice() : new Array<TileTreeReference>();
     if (this._classifierTreeRef) allTrees.push(this._classifierTreeRef);
 
     const projection = PlanarTextureProjection.computePlanarTextureProjection(
@@ -615,27 +491,16 @@ export class PlanarClassifier
       this._width,
       this._height
     );
-    if (
-      !projection.textureFrustum ||
-      !projection.projectionMatrix ||
-      !projection.worldToViewMap
-    )
-      return;
+    if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap) return;
 
     this._projectionMatrix = projection.projectionMatrix;
     this._frustum = projection.textureFrustum;
     this._debugFrustum = projection.debugFrustum;
-    this._planarClipMaskOverrides =
-      this._planarClipMask?.getPlanarClipMaskSymbologyOverrides();
+    this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides();
 
-    const drawTree = (
-      treeRef: TileTreeReference,
-      graphics: RenderGraphic[]
-    ) => {
+    const drawTree = (treeRef: TileTreeReference, graphics: RenderGraphic[]) => {
       this._graphics = graphics;
-      const frustumPlanes = this._frustum
-        ? FrustumPlanes.fromFrustum(this._frustum)
-        : FrustumPlanes.createEmpty();
+      const frustumPlanes = this._frustum ? FrustumPlanes.fromFrustum(this._frustum) : FrustumPlanes.createEmpty();
       const drawArgs = GraphicsCollectorDrawArgs.create(
         context,
         this,
@@ -647,11 +512,9 @@ export class PlanarClassifier
 
       this._graphics = undefined;
     };
-    if (this._classifierTreeRef)
-      drawTree(this._classifierTreeRef, this._classifierGraphics);
+    if (this._classifierTreeRef) drawTree(this._classifierTreeRef, this._classifierGraphics);
 
-    if (maskTrees)
-      maskTrees.forEach((maskTree) => drawTree(maskTree, this._maskGraphics));
+    if (maskTrees) maskTrees.forEach((maskTree) => drawTree(maskTree, this._maskGraphics));
 
     // Shader behaves slightly differently when classifying surfaces vs point clouds.
     this._isClassifyingPointCloud = target.isPointCloud;
@@ -687,21 +550,17 @@ export class PlanarClassifier
       }
     } else {
       if (undefined === this._classifierBuffers) {
-        this._classifierBuffers = ClassifierFrameBuffers.create(
-          this._width,
-          this._height
-        );
+        this._classifierBuffers = ClassifierFrameBuffers.create(this._width, this._height);
         if (undefined === this._classifierBuffers) return;
       }
       if (this._maskGraphics.length === 0) {
         if (undefined === this._classifierCombinedBuffer) {
-          combinationBuffer = this._classifierCombinedBuffer =
-            ClassifierCombinationBuffer.create(
-              this._width,
-              this._height,
-              this._classifierBuffers.textures.color,
-              this._classifierBuffers.textures.feature
-            );
+          combinationBuffer = this._classifierCombinedBuffer = ClassifierCombinationBuffer.create(
+            this._width,
+            this._height,
+            this._classifierBuffers.textures.color,
+            this._classifierBuffers.textures.feature
+          );
           if (undefined === this._classifierCombinedBuffer) return;
         }
         this._contentMode = PlanarClassifierContent.ClassifierOnly;
@@ -712,14 +571,13 @@ export class PlanarClassifier
           if (undefined === this._maskBuffer) return;
         }
         if (undefined === this._classifierAndMaskCombinedBuffer) {
-          combinationBuffer = this._classifierAndMaskCombinedBuffer =
-            ClassifierAndMaskCombinationBuffer.create(
-              this._width,
-              this._height,
-              this._classifierBuffers.textures.color,
-              this._classifierBuffers.textures.feature,
-              this._maskBuffer.texture
-            );
+          combinationBuffer = this._classifierAndMaskCombinedBuffer = ClassifierAndMaskCombinationBuffer.create(
+            this._width,
+            this._height,
+            this._classifierBuffers.textures.color,
+            this._classifierBuffers.textures.feature,
+            this._maskBuffer.texture
+          );
           if (undefined === this._classifierAndMaskCombinedBuffer) return;
         }
         combinationBuffer = this._classifierAndMaskCombinedBuffer;
@@ -727,8 +585,7 @@ export class PlanarClassifier
       }
     }
 
-    if (undefined !== this._debugFrustumGraphic)
-      target.graphics.foreground.push(this._debugFrustumGraphic);
+    if (undefined !== this._debugFrustumGraphic) target.graphics.foreground.push(this._debugFrustumGraphic);
 
     // Temporarily override the Target's state.
     const system = System.instance;
@@ -748,9 +605,7 @@ export class PlanarClassifier
     const prevState = system.currentRenderState.clone(scratchPrevRenderState);
     system.context.viewport(0, 0, this._width, this._height);
     const vf = target.currentViewFlags.copy(
-      this._classifierTreeRef
-        ? this._classifierTreeRef.viewFlags
-        : maskViewFlags
+      this._classifierTreeRef ? this._classifierTreeRef.viewFlags : maskViewFlags
     );
 
     system.applyRenderState(this._renderState);
@@ -763,15 +618,9 @@ export class PlanarClassifier
 
     const prevProjMatrix = target.uniforms.frustum.projectionMatrix;
     target.uniforms.frustum.changeProjectionMatrix(
-      PlanarClassifier._postProjectionMatrix.multiplyMatrixMatrix(
-        prevProjMatrix
-      )
+      PlanarClassifier._postProjectionMatrix.multiplyMatrixMatrix(prevProjMatrix)
     );
-    target.uniforms.branch.changeRenderPlan(
-      vf,
-      target.plan.is3d,
-      target.plan.hline
-    );
+    target.uniforms.branch.changeRenderPlan(vf, target.plan.is3d, target.plan.hline);
 
     const renderCommands = this._renderCommands;
     const getDrawCommands = (graphics: RenderGraphic[]) => {
@@ -798,20 +647,15 @@ export class PlanarClassifier
     };
 
     if (this._classifierGraphics.length > 0 && this._classifierBuffers) {
-      this._classifierBuffers.draw(
-        getDrawCommands(this._classifierGraphics),
-        target
-      );
+      this._classifierBuffers.draw(getDrawCommands(this._classifierGraphics), target);
 
       // Draw any hilited classifiers.
       const hiliteCommands = renderCommands.getCommands(RenderPass.Hilite);
       this._anyHilited = 0 !== hiliteCommands.length;
-      if (this._anyHilited)
-        this._classifierBuffers.drawHilite(hiliteCommands, target);
+      if (this._anyHilited) this._classifierBuffers.drawHilite(hiliteCommands, target);
     }
     if (this._maskGraphics.length > 0 && this._maskBuffer) {
-      if (this._planarClipMaskOverrides)
-        target.overrideFeatureSymbology(this._planarClipMaskOverrides);
+      if (this._planarClipMaskOverrides) target.overrideFeatureSymbology(this._planarClipMaskOverrides);
       if (
         this._planarClipMask &&
         this._planarClipMask.settings.transparency !== undefined &&
@@ -828,11 +672,6 @@ export class PlanarClassifier
     target.overrideFeatureSymbology(prevOverrides);
 
     system.applyRenderState(prevState);
-    system.context.viewport(
-      0,
-      0,
-      target.viewRect.width,
-      target.viewRect.height
-    );
+    system.context.viewport(0, 0, target.viewRect.width, target.viewRect.height);
   }
 }

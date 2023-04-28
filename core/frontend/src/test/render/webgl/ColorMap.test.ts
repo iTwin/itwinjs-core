@@ -157,12 +157,8 @@ describe("ColorMap", () => {
     assert.isTrue(colorIndex.numColors === 1);
     a.toColorIndex(colorIndex, indices);
     assert.isFalse(colorIndex.isUniform);
-    assert.isTrue(
-      colorIndex.nonUniform && colorIndex.nonUniform.colors.length === 2
-    );
-    let values = colorIndex.nonUniform
-      ? colorIndex.nonUniform.colors.values()
-      : undefined;
+    assert.isTrue(colorIndex.nonUniform && colorIndex.nonUniform.colors.length === 2);
+    let values = colorIndex.nonUniform ? colorIndex.nonUniform.colors.values() : undefined;
     assert.isTrue(values && values.next().value === 0x0000ffff);
     assert.isTrue(values && values.next().value === 0x000000ff);
     assert.isTrue(values && values.next().done);
@@ -176,12 +172,8 @@ describe("ColorMap", () => {
     assert.isTrue(colorIndex.numColors === 1);
     a.toColorIndex(colorIndex, indices);
     assert.isFalse(colorIndex.isUniform);
-    assert.isTrue(
-      colorIndex.nonUniform && colorIndex.nonUniform.colors.length === 3
-    );
-    values = colorIndex.nonUniform
-      ? colorIndex.nonUniform.colors.values()
-      : undefined;
+    assert.isTrue(colorIndex.nonUniform && colorIndex.nonUniform.colors.length === 3);
+    values = colorIndex.nonUniform ? colorIndex.nonUniform.colors.values() : undefined;
     assert.isTrue(values && values.next().value === 0x00000000);
     assert.isTrue(values && values.next().value === 0x0000ffff);
     assert.isTrue(values && values.next().value === 0x000000ff);

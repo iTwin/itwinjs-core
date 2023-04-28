@@ -39,9 +39,7 @@ const settings = new Settings(process.env);
   // Start the backend
   const iModelClient = new IModelsClient({
     api: {
-      baseUrl: `https://${
-        process.env.IMJS_URL_PREFIX ?? ""
-      }api.bentley.com/imodels`,
+      baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`,
     },
   });
   const hubAccess = new BackendIModelsAccess(iModelClient);

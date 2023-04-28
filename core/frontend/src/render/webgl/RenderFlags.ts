@@ -140,15 +140,11 @@ export namespace Pass {
 
   /** Return true if the specified Pass renders both during RenderPass.Translucent and one of the opaque RenderPasses. */
   export function rendersOpaqueAndTranslucent(pass: Pass): pass is DoublePass {
-    return (
-      "opaque-translucent" === pass || "opaque-planar-translucent" === pass
-    );
+    return "opaque-translucent" === pass || "opaque-planar-translucent" === pass;
   }
 
   export function toOpaquePass(pass: DoublePass): RenderPass {
-    return "opaque-translucent" === pass
-      ? RenderPass.OpaqueGeneral
-      : RenderPass.OpaquePlanar;
+    return "opaque-translucent" === pass ? RenderPass.OpaqueGeneral : RenderPass.OpaquePlanar;
   }
 }
 

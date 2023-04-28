@@ -4,12 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import {
-  Feature,
-  FeatureTable,
-  GeometryClass,
-  PackedFeatureTable,
-} from "@itwin/core-common";
+import { Feature, FeatureTable, GeometryClass, PackedFeatureTable } from "@itwin/core-common";
 import {
   HiliteSet,
   IModelApp,
@@ -63,11 +58,7 @@ describe("FeatureOverrides", () => {
     vp = ScreenViewport.create(viewDiv, vpView);
 
     vp.target.setHiliteSet(new HiliteSet(imodel));
-    const ovr = FeatureOverrides.createFromTarget(
-      vp.target as Target,
-      {},
-      undefined
-    );
+    const ovr = FeatureOverrides.createFromTarget(vp.target as Target, {}, undefined);
     const features = new FeatureTable(1);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
 
@@ -92,11 +83,7 @@ describe("FeatureOverrides", () => {
     vp = ScreenViewport.create(viewDiv, vpView);
 
     vp.target.setHiliteSet(new HiliteSet(imodel));
-    const ovr = FeatureOverrides.createFromTarget(
-      vp.target as Target,
-      {},
-      undefined
-    );
+    const ovr = FeatureOverrides.createFromTarget(vp.target as Target, {}, undefined);
     const features = new FeatureTable(2);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
     features.insertWithIndex(new Feature(Id64.fromString("0x2")), 1);
@@ -125,11 +112,7 @@ describe("FeatureTable", () => {
       new Feature("0x4", "0xabcdabcdabcdabcd", GeometryClass.Primary),
       new Feature("0xabcdabcdabcdabce", "0x63", GeometryClass.Construction),
       new Feature("0xabcdabcdabcdabcc", "0xc8", GeometryClass.Primary),
-      new Feature(
-        "0xabcdabcdabcdabc7",
-        "0xabcdabcdabcdabd1",
-        GeometryClass.Construction
-      ),
+      new Feature("0xabcdabcdabcdabc7", "0xabcdabcdabcdabd1", GeometryClass.Construction),
       new Feature("0x2", "0xabcdabcdabcdabcd", GeometryClass.Primary),
       new Feature("0x1", "0x1", GeometryClass.Construction),
     ];

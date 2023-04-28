@@ -3,11 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-  assert,
-  compareStringsOrUndefined,
-  GuidString,
-} from "@itwin/core-bentley";
+import { assert, compareStringsOrUndefined, GuidString } from "@itwin/core-bentley";
 import {
   ComboBox,
   ComboBoxEntry,
@@ -94,13 +90,9 @@ export class ClassificationsPanel extends ToolBarDropDown {
     if (undefined !== modelProps) {
       // Find existing classifier, or create if one doesn't exist for modelId.
       const modelId = modelProps.id!;
-      classifier = this._selectedSpatialClassifiers.find(
-        (x) => x.modelId === modelId
-      );
+      classifier = this._selectedSpatialClassifiers.find((x) => x.modelId === modelId);
       if (!classifier)
-        classifier = this._selectedSpatialClassifiers.add(
-          new SpatialClassifier(modelId, modelProps.name!)
-        );
+        classifier = this._selectedSpatialClassifiers.add(new SpatialClassifier(modelId, modelProps.name!));
     }
 
     this._selectedSpatialClassifiers.setActive(classifier);
@@ -136,29 +128,19 @@ export class ClassificationsPanel extends ToolBarDropDown {
     this._element.appendChild(this._realityModelPickerMenu.div);
   }
 
-  private createRealityDataSourceKeyFromITwinRealityData(
-    iTwinRealityData: ITwinRealityData
-  ): RealityDataSourceKey {
+  private createRealityDataSourceKeyFromITwinRealityData(iTwinRealityData: ITwinRealityData): RealityDataSourceKey {
     return {
       provider: RealityDataProvider.ContextShare,
-      format:
-        iTwinRealityData.type === "OPC"
-          ? RealityDataFormat.OPC
-          : RealityDataFormat.ThreeDTile,
+      format: iTwinRealityData.type === "OPC" ? RealityDataFormat.OPC : RealityDataFormat.ThreeDTile,
       id: iTwinRealityData.id,
     };
   }
 
-  private hasAttachedRealityModelFromKey(
-    style: DisplayStyle3dState,
-    rdSourceKey: RealityDataSourceKey
-  ): boolean {
+  private hasAttachedRealityModelFromKey(style: DisplayStyle3dState, rdSourceKey: RealityDataSourceKey): boolean {
     return (
       undefined !==
       style.settings.contextRealityModels.models.find(
-        (x) =>
-          x.rdSourceKey &&
-          RealityDataSourceKey.isEqual(rdSourceKey, x.rdSourceKey)
+        (x) => x.rdSourceKey && RealityDataSourceKey.isEqual(rdSourceKey, x.rdSourceKey)
       )
     );
   }
@@ -206,15 +188,11 @@ export class ClassificationsPanel extends ToolBarDropDown {
       return;
     }
 
-    const range = new CartographicRange(
-      this._vp.iModel.projectExtents,
-      ecef.getTransform()
-    );
+    const range = new CartographicRange(this._vp.iModel.projectExtents, ecef.getTransform());
     let available: RealityDataResponse = { realityDatas: [] };
     try {
       if (this._iTwinId !== undefined && IModelApp.authorizationClient) {
-        const accessToken =
-          await IModelApp.authorizationClient.getAccessToken();
+        const accessToken = await IModelApp.authorizationClient.getAccessToken();
         if (accessToken) {
           const criteria: RealityDataQueryCriteria = {
             extent: range,
@@ -225,9 +203,11 @@ export class ClassificationsPanel extends ToolBarDropDown {
             /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
             baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/realitydata`,
           };
-          available = await new RealityDataAccessClient(
-            realityDataClientOptions
-          ).getRealityDatas(accessToken, this._iTwinId, criteria);
+          available = await new RealityDataAccessClient(realityDataClientOptions).getRealityDatas(
+            accessToken,
+            this._iTwinId,
+            criteria
+          );
         }
       }
     } catch (_error) {
@@ -238,14 +218,9 @@ export class ClassificationsPanel extends ToolBarDropDown {
     }
 
     for (const rdEntry of available.realityDatas) {
-      const name =
-        undefined !== rdEntry.displayName ? rdEntry.displayName : rdEntry.id;
-      const rdSourceKey =
-        this.createRealityDataSourceKeyFromITwinRealityData(rdEntry);
-      const tilesetUrl = await IModelApp.realityDataAccess?.getRealityDataUrl(
-        this._iTwinId,
-        rdSourceKey.id
-      );
+      const name = undefined !== rdEntry.displayName ? rdEntry.displayName : rdEntry.id;
+      const rdSourceKey = this.createRealityDataSourceKeyFromITwinRealityData(rdEntry);
+      const tilesetUrl = await IModelApp.realityDataAccess?.getRealityDataUrl(this._iTwinId, rdSourceKey.id);
       const isDisplaySupported = this.isSupportedDisplayType(rdEntry.type);
       if (tilesetUrl && isDisplaySupported) {
         const entry: ContextRealityModelProps = {
@@ -260,10 +235,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
           name,
           id: RealityDataSourceKey.convertToString(rdSourceKey),
           parent: this._realityModelPickerMenu.body,
-          isChecked: this.hasAttachedRealityModelFromKey(
-            view.displayStyle,
-            rdSourceKey
-          ),
+          isChecked: this.hasAttachedRealityModelFromKey(view.displayStyle, rdSourceKey),
           handler: (checkbox) => this.toggle(entry, checkbox.checked),
         });
       }
@@ -271,8 +243,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
     IModelApp.makeHTMLElement("hr", {
       parent: this._realityModelPickerMenu.body,
     });
-    if (available.realityDatas.length > 0)
-      this._realityModelPickerMenu.div.style.display = "block";
+    if (available.realityDatas.length > 0) this._realityModelPickerMenu.div.style.display = "block";
   }
 
   private populateRealityModelList(): void {
@@ -294,10 +265,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
 
     // include any attached reality models (may be any number; must be loaded already)
     for (const loaded of this._vp.iModel.models)
-      if (
-        loaded instanceof SpatialModelState &&
-        undefined !== loaded.classifiers
-      )
+      if (loaded instanceof SpatialModelState && undefined !== loaded.classifiers)
         realityModels.push({
           spatialClassifiers: loaded.classifiers,
           modelName: `${loaded.name} (attached)`,
@@ -318,19 +286,14 @@ export class ClassificationsPanel extends ToolBarDropDown {
       handler: (select) => {
         const valueIndex = Number.parseInt(select.value, 10);
         this._selectedSpatialClassifiersIndex = valueIndex;
-        const spatialClassifier =
-          valueIndex >= 0
-            ? realityModels[valueIndex].spatialClassifiers
-            : undefined;
+        const spatialClassifier = valueIndex >= 0 ? realityModels[valueIndex].spatialClassifiers : undefined;
         this.setSelectedClassification(spatialClassifier);
       },
       entries,
     });
 
     if (undefined !== realityModels[activeIndex])
-      this.setSelectedClassification(
-        realityModels[activeIndex].spatialClassifiers
-      );
+      this.setSelectedClassification(realityModels[activeIndex].spatialClassifiers);
     else this.setSelectedClassification(undefined);
   }
 
@@ -358,10 +321,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
       parent: this._modelListDiv,
       id: "classifiers_modelBox",
       name: "Active Classifier: ",
-      value:
-        undefined !== this._selectedClassifier
-          ? this._selectedClassifier.modelId
-          : undefined,
+      value: undefined !== this._selectedClassifier ? this._selectedClassifier.modelId : undefined,
       handler: (select) => {
         this.setAsActiveClassifier(this._models[select.value]);
         this.populateRealityModelList();
@@ -395,22 +355,14 @@ export class ClassificationsPanel extends ToolBarDropDown {
   }
 
   private updateModelComboBox(modelId: string): void {
-    if (undefined !== this._modelComboBox)
-      this._modelComboBox.select.value = modelId;
+    if (undefined !== this._modelComboBox) this._modelComboBox.select.value = modelId;
   }
 
-  private detachRealityModelByKey(
-    style: DisplayStyle3dState,
-    rdSourceKey: RealityDataSourceKey
-  ): boolean {
+  private detachRealityModelByKey(style: DisplayStyle3dState, rdSourceKey: RealityDataSourceKey): boolean {
     const model = style.settings.contextRealityModels.models.find(
-      (x) =>
-        x.rdSourceKey &&
-        RealityDataSourceKey.isEqual(rdSourceKey, x.rdSourceKey)
+      (x) => x.rdSourceKey && RealityDataSourceKey.isEqual(rdSourceKey, x.rdSourceKey)
     );
-    return (
-      undefined !== model && style.settings.contextRealityModels.delete(model)
-    );
+    return undefined !== model && style.settings.contextRealityModels.delete(model);
   }
 
   private toggle(entry: ContextRealityModelProps, enabled: boolean): void {
@@ -426,9 +378,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
     this._vp.invalidateScene();
   }
 
-  private setSelectedClassification(
-    spatialClassifiers: SpatialClassifiers | undefined
-  ) {
+  private setSelectedClassification(spatialClassifiers: SpatialClassifiers | undefined) {
     this._selectedSpatialClassifiers = spatialClassifiers;
     if (undefined === spatialClassifiers) {
       this.updateModelComboBox(NO_MODEL_ID);
@@ -475,10 +425,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
 
     const updateFlags = (newFlags: Partial<SpatialClassifierFlagsProps>) => {
       const c = this._selectedClassifier!;
-      this._selectedSpatialClassifiers!.replace(
-        c,
-        c.clone({ flags: c.flags.clone(newFlags) })
-      );
+      this._selectedSpatialClassifiers!.replace(c, c.clone({ flags: c.flags.clone(newFlags) }));
     };
 
     createComboBox({
@@ -487,10 +434,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
       parent,
       entries: insideEntries,
       handler: (select) => {
-        const newValue = Number.parseInt(
-          select.value,
-          10
-        ) as SpatialClassifierInsideDisplay;
+        const newValue = Number.parseInt(select.value, 10) as SpatialClassifierInsideDisplay;
         updateFlags({ inside: newValue });
         this._vp.invalidateScene();
       },
@@ -503,10 +447,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
       parent,
       entries: outsideEntries,
       handler: (select) => {
-        const newValue = Number.parseInt(
-          select.value,
-          10
-        ) as SpatialClassifierOutsideDisplay;
+        const newValue = Number.parseInt(select.value, 10) as SpatialClassifierOutsideDisplay;
         updateFlags({ outside: newValue });
         this._vp.invalidateScene();
       },
@@ -522,10 +463,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
       value: classifier.expand,
       handler: (value) => {
         const c = this._selectedClassifier!;
-        this._selectedSpatialClassifiers!.replace(
-          c,
-          c.clone({ expand: value })
-        );
+        this._selectedSpatialClassifiers!.replace(c, c.clone({ expand: value }));
         this._vp.invalidateScene();
       },
     });

@@ -21,18 +21,10 @@ import { ALong } from "./ALong";
 export class Numbers {
   /** The static byte buffer for number format conversions */
   private static readonly BUFFER1: ArrayBuffer = new ArrayBuffer(8);
-  private static readonly I8_BUFFER1: Int8Array = new Int8Array(
-    Numbers.BUFFER1
-  );
-  private static readonly I32_BUFFER1: Int32Array = new Int32Array(
-    Numbers.BUFFER1
-  );
-  private static readonly F32_BUFFER1: Float32Array = new Float32Array(
-    Numbers.BUFFER1
-  );
-  private static readonly F64_BUFFER1: Float64Array = new Float64Array(
-    Numbers.BUFFER1
-  );
+  private static readonly I8_BUFFER1: Int8Array = new Int8Array(Numbers.BUFFER1);
+  private static readonly I32_BUFFER1: Int32Array = new Int32Array(Numbers.BUFFER1);
+  private static readonly F32_BUFFER1: Float32Array = new Float32Array(Numbers.BUFFER1);
+  private static readonly F64_BUFFER1: Float64Array = new Float64Array(Numbers.BUFFER1);
 
   private constructor() {}
 

@@ -50,9 +50,7 @@ export class Schema {
    * @internal
    */
   protected constructor() {
-    throw new Error(
-      `cannot create an instance of a Schema ${this.constructor.name}`
-    );
+    throw new Error(`cannot create an instance of a Schema ${this.constructor.name}`);
   }
 }
 
@@ -69,10 +67,7 @@ export class Schemas {
   public static registerSchema(schema: typeof Schema) {
     const key = schema.schemaName.toLowerCase();
     if (this.getRegisteredSchema(key))
-      throw new IModelError(
-        IModelStatus.DuplicateName,
-        `Schema "${schema.schemaName}" is already registered`
-      );
+      throw new IModelError(IModelStatus.DuplicateName, `Schema "${schema.schemaName}" is already registered`);
     this._registeredSchemas.set(key, schema);
   }
 
@@ -93,9 +88,7 @@ export class Schemas {
    * @param schemaName The name of the schema
    * @returns the previously registered schema or undefined if not registered.
    */
-  public static getRegisteredSchema(
-    schemaName: string
-  ): typeof Schema | undefined {
+  public static getRegisteredSchema(schemaName: string): typeof Schema | undefined {
     return this._registeredSchemas.get(schemaName.toLowerCase());
   }
 }

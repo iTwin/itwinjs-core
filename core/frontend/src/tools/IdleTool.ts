@@ -7,20 +7,8 @@
  */
 
 import { IModelApp } from "../IModelApp";
-import {
-  BeButton,
-  BeButtonEvent,
-  BeTouchEvent,
-  BeWheelEvent,
-  EventHandled,
-  InteractiveTool,
-} from "./Tool";
-import {
-  DefaultViewTouchTool,
-  FitViewTool,
-  ViewHandleType,
-  ViewManip,
-} from "./ViewTool";
+import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, EventHandled, InteractiveTool } from "./Tool";
+import { DefaultViewTouchTool, FitViewTool, ViewHandleType, ViewManip } from "./ViewTool";
 
 /**
  * The default "idle" tool. If no tool is active, or the active tool does not respond to a given
@@ -46,9 +34,7 @@ export class IdleTool extends InteractiveTool {
   public static override toolId = "Idle";
   public static override hidden = true;
 
-  public override async onMouseStartDrag(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
     if (!ev.viewport) return EventHandled.No;
 
     let toolId: string;
@@ -57,12 +43,8 @@ export class IdleTool extends InteractiveTool {
     switch (ev.button) {
       case BeButton.Middle:
         if (ev.isControlKey) {
-          toolId = ev.viewport.view.allow3dManipulations()
-            ? "View.Look"
-            : "View.Scroll";
-          handleId = ev.viewport.view.allow3dManipulations()
-            ? ViewHandleType.Look
-            : ViewHandleType.Scroll;
+          toolId = ev.viewport.view.allow3dManipulations() ? "View.Look" : "View.Scroll";
+          handleId = ev.viewport.view.allow3dManipulations() ? ViewHandleType.Look : ViewHandleType.Scroll;
         } else if (ev.isShiftKey) {
           toolId = "View.Rotate";
           handleId = ViewHandleType.Rotate;
@@ -74,16 +56,14 @@ export class IdleTool extends InteractiveTool {
 
       case BeButton.Data:
         // When no active tool is present install rotate view tool on drag of data button
-        if (undefined !== IModelApp.toolAdmin.activeTool)
-          return EventHandled.No;
+        if (undefined !== IModelApp.toolAdmin.activeTool) return EventHandled.No;
         toolId = "View.Rotate";
         handleId = ViewHandleType.Rotate;
         break;
 
       default:
         // When no active tool is present install pan view tool on drag of reset button
-        if (undefined !== IModelApp.toolAdmin.activeTool)
-          return EventHandled.No;
+        if (undefined !== IModelApp.toolAdmin.activeTool) return EventHandled.No;
         toolId = "View.Pan";
         handleId = ViewHandleType.Pan;
         break;
@@ -91,20 +71,15 @@ export class IdleTool extends InteractiveTool {
 
     const currTool = IModelApp.toolAdmin.viewTool;
     if (currTool) {
-      if (currTool instanceof ViewManip)
-        return currTool.startHandleDrag(ev, handleId); // See if current view tool can drag using this handle, leave it active regardless...
+      if (currTool instanceof ViewManip) return currTool.startHandleDrag(ev, handleId); // See if current view tool can drag using this handle, leave it active regardless...
       return EventHandled.No;
     }
-    const viewTool = IModelApp.tools.create(toolId, ev.viewport, true, true) as
-      | ViewManip
-      | undefined;
+    const viewTool = IModelApp.tools.create(toolId, ev.viewport, true, true) as ViewManip | undefined;
     if (viewTool && (await viewTool.run())) return viewTool.startHandleDrag(ev);
     return EventHandled.Yes;
   }
 
-  public override async onMiddleButtonUp(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onMiddleButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     if (!ev.viewport) return EventHandled.No;
 
     if (ev.isDoubleClick) {
@@ -122,10 +97,7 @@ export class IdleTool extends InteractiveTool {
     return IModelApp.toolAdmin.processWheelEvent(ev, true);
   }
 
-  public override async onTouchMoveStart(
-    ev: BeTouchEvent,
-    startEv: BeTouchEvent
-  ): Promise<EventHandled> {
+  public override async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> {
     const tool = new DefaultViewTouchTool(startEv, ev);
     return (await tool.run()) ? EventHandled.Yes : EventHandled.No;
   }
@@ -133,17 +105,11 @@ export class IdleTool extends InteractiveTool {
   public override async onTouchTap(ev: BeTouchEvent): Promise<EventHandled> {
     if (ev.isSingleTap) {
       // Send data down/up for single finger tap.
-      await IModelApp.toolAdmin.convertTouchTapToButtonDownAndUp(
-        ev,
-        BeButton.Data
-      );
+      await IModelApp.toolAdmin.convertTouchTapToButtonDownAndUp(ev, BeButton.Data);
       return EventHandled.Yes;
     } else if (ev.isTwoFingerTap) {
       // Send reset down/up for two finger tap.
-      await IModelApp.toolAdmin.convertTouchTapToButtonDownAndUp(
-        ev,
-        BeButton.Reset
-      );
+      await IModelApp.toolAdmin.convertTouchTapToButtonDownAndUp(ev, BeButton.Reset);
       return EventHandled.Yes;
     } else if (ev.isDoubleTap) {
       // Fit view on single finger double tap.

@@ -45,9 +45,7 @@ function _offsetDebugFunction(
         const xx = node.isMaskSet(HalfEdgeMask.EXTERIOR) ? "X" : " ";
         const breakA = node.isMaskSet(breakMaskA) ? "A" : " ";
         const breakB = node.isMaskSet(breakMaskB) ? "B" : " ";
-        const s = `${node.id.toString()}+${xx}${breakA}${breakB}[${cleanupZero(
-          node.x
-        )},${cleanupZero(node.y)}]`;
+        const s = `${node.id.toString()}+${xx}${breakA}${breakB}[${cleanupZero(node.x)},${cleanupZero(node.y)}]`;
         return s;
       },
       (node: HalfEdge) => {
@@ -86,11 +84,7 @@ describe("OffsetMeshContext", () => {
           for (let i = 0; i < numEdge; i++) {
             const theta = Angle.createDegrees((i * 360) / numEdge);
             const zz = i === 0.0 ? height : 0.0; // make the base non-planar!
-            strokes.addPointXYZ(
-              xScale * radius * theta.cos(),
-              radius * theta.sin(),
-              zz
-            );
+            strokes.addPointXYZ(xScale * radius * theta.cos(), radius * theta.sin(), zz);
           }
           strokes.addClosurePoint();
           const apex = Point3d.create(0, 0, height);
@@ -98,24 +92,12 @@ describe("OffsetMeshContext", () => {
           builder.addTriangleFan(apex, strokes, false);
           const polyface = builder.claimPolyface();
           // GeometryCoreTestIO.consoleLog({ height, numEdge });
-          x0 = testOffsets(
-            ck,
-            allGeometry,
-            polyface,
-            [0.1],
-            signs,
-            x0,
-            globalSeparateFaceEdgeAndVertexOutputs
-          );
+          x0 = testOffsets(ck, allGeometry, polyface, [0.1], signs, x0, globalSeparateFaceEdgeAndVertexOutputs);
         }
       }
     }
     OffsetMeshContext.stringDebugFunction = undefined;
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "OffsetMeshContext",
-      "OffsetPyramids"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetPyramids");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -142,20 +124,8 @@ describe("OffsetMeshContext", () => {
     const baseGraph = OffsetMeshContext.buildBaseGraph (polyface);
     GraphChecker.dumpGraph (baseGraph);
     */
-    testOffsets(
-      ck,
-      allGeometry,
-      polyface,
-      [0.5, 0.5, 1.0],
-      [1.0, -1.0],
-      0.0,
-      globalSeparateFaceEdgeAndVertexOutputs
-    );
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "OffsetMeshContext",
-      "OffsetsFromFan"
-    );
+    testOffsets(ck, allGeometry, polyface, [0.5, 0.5, 1.0], [1.0, -1.0], 0.0, globalSeparateFaceEdgeAndVertexOutputs);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetsFromFan");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -170,11 +140,7 @@ describe("OffsetMeshContext", () => {
         const builder = PolyfaceBuilder.create(options);
         const strokes = LineString3d.create();
         for (let i = 0; i <= pointCount; i++) {
-          strokes.addPointXYZ(
-            2,
-            Geometry.interpolate(-2, i / pointCount, 2),
-            2
-          );
+          strokes.addPointXYZ(2, Geometry.interpolate(-2, i / pointCount, 2), 2);
         }
         const coneA = Point3d.create(0, 0, apexHeight);
         const coneB = Point3d.create(0, 0, 0);
@@ -197,11 +163,7 @@ describe("OffsetMeshContext", () => {
         );
       }
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "OffsetMeshContext",
-      "OffsetsFanToLine"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetsFanToLine");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -220,18 +182,7 @@ describe("OffsetMeshContext", () => {
       // height of cone point.
       for (const numApronEdges of [8, 2, 4]) {
         const builder = PolyfaceBuilder.create(options);
-        const arc = Arc3d.createXYZXYZXYZ(
-          0,
-          0,
-          0,
-          0,
-          yB,
-          0,
-          xC,
-          0,
-          zC,
-          AngleSweep.createStartEndDegrees(0, 180)
-        );
+        const arc = Arc3d.createXYZXYZXYZ(0, 0, 0, 0, yB, 0, xC, 0, zC, AngleSweep.createStartEndDegrees(0, 180));
         const strokes = LineString3d.create();
         const conePoint = Point3d.create(0, 0, zCone);
         strokes.addPointXYZ(xA, 0, 0);
@@ -242,24 +193,12 @@ describe("OffsetMeshContext", () => {
         builder.addTriangleFan(conePoint, strokes, false);
         const polyface = builder.claimPolyface();
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, strokes, x0, -8.0);
-        x0 = testOffsets(
-          ck,
-          allGeometry,
-          polyface,
-          [0.5],
-          [1.0],
-          x0,
-          globalSeparateFaceEdgeAndVertexOutputs
-        );
+        x0 = testOffsets(ck, allGeometry, polyface, [0.5], [1.0], x0, globalSeparateFaceEdgeAndVertexOutputs);
         OffsetMeshContext.stringDebugFunction = undefined;
       }
       x0 += 10.0;
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "OffsetMeshContext",
-      "OffsetsWithConeApron"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetsWithConeApron");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -295,32 +234,16 @@ describe("OffsetMeshContext", () => {
       );
       if (numTest > 0)
         mesh.data.point.mapComponent(2, (x: number, y: number, _z: number) => {
-          return (
-            1.0 *
-            RFunctions.cosineOfMappedAngle(x, 0.0, 5.0) *
-            RFunctions.cosineOfMappedAngle(y, 0.0, 8.0)
-          );
+          return 1.0 * RFunctions.cosineOfMappedAngle(x, 0.0, 5.0) * RFunctions.cosineOfMappedAngle(y, 0.0, 8.0);
         });
       if (densityMultiplier < 1)
         OffsetMeshContext.stringDebugFunction = (message: string) => {
           GeometryCoreTestIO.consoleLog(message);
         };
-      x0 = testOffsets(
-        ck,
-        allGeometry,
-        mesh,
-        [0.1],
-        [1.0],
-        x0,
-        globalSeparateFaceEdgeAndVertexOutputs
-      );
+      x0 = testOffsets(ck, allGeometry, mesh, [0.1], [1.0], x0, globalSeparateFaceEdgeAndVertexOutputs);
       OffsetMeshContext.stringDebugFunction = undefined;
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "OffsetMeshContext",
-      "OffsetDTM"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetDTM");
     expect(ck.getNumErrors()).equals(0);
   });
   it("OffsetSampler", () => {
@@ -354,11 +277,7 @@ describe("OffsetMeshContext", () => {
     }
     OffsetMeshContext.stringDebugFunction = undefined;
 
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "OffsetMeshContext",
-      "OffsetSampler"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetSampler");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -366,14 +285,8 @@ describe("OffsetMeshContext", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0.0;
-    const closedSweeps = Sample.createClosedSolidSampler(
-      true,
-      Angle.createDegrees(-90)
-    );
-    const openSweeps = Sample.createClosedSolidSampler(
-      false,
-      Angle.createDegrees(-90)
-    );
+    const closedSweeps = Sample.createClosedSolidSampler(true, Angle.createDegrees(-90));
+    const openSweeps = Sample.createClosedSolidSampler(false, Angle.createDegrees(-90));
     const allSweeps = closedSweeps.concat(openSweeps);
     const facetOptions = StrokeOptions.createForCurves();
     facetOptions.shouldTriangulate = true;
@@ -403,11 +316,7 @@ describe("OffsetMeshContext", () => {
     }
     OffsetMeshContext.stringDebugFunction = undefined;
 
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "OffsetMeshContext",
-      "OffsetOptionsSampler"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetOptionsSampler");
     expect(ck.getNumErrors()).equals(0);
   });
   it("ChamferExample", () => {
@@ -423,12 +332,7 @@ describe("OffsetMeshContext", () => {
       const theta = Angle.createDegrees(180 - degreesBetweenNormals);
       const point1 = Point3d.create(a, 0, 0);
       const point2 = Point3d.create(a * theta.cos(), theta.sin(), 0);
-      const solid = LinearSweep.createZSweep(
-        [point2, point0, point1],
-        0,
-        3,
-        capped
-      )!;
+      const solid = LinearSweep.createZSweep([point2, point0, point1], 0, 3, capped)!;
       allSweeps.push(solid);
     }
 
@@ -461,11 +365,7 @@ describe("OffsetMeshContext", () => {
     }
     OffsetMeshContext.stringDebugFunction = undefined;
 
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "OffsetMeshContext",
-      "ChamferExample"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "ChamferExample");
     expect(ck.getNumErrors()).equals(0);
   });
 });
@@ -497,11 +397,7 @@ function testOffsets(
             y0 += yStepC;
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsetMesh, x0, y0);
       */
-      const offsetMeshB = PolyfaceQuery.cloneOffset(
-        polyface,
-        offsetSign * offset,
-        offsetOptions
-      );
+      const offsetMeshB = PolyfaceQuery.cloneOffset(polyface, offsetSign * offset, offsetOptions);
       // y0 += 2 * yStepC;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsetMeshB, x0, y0);
       // y0 += yStepC;
@@ -516,23 +412,9 @@ function testOffsets(
         ]) {
           y0 += yStepC;
           offsetOptions.outputSelector = outputSelect;
-          const offsetMeshA = PolyfaceQuery.cloneOffset(
-            polyface,
-            offsetSign * offset,
-            offsetOptions
-          );
-          GeometryCoreTestIO.captureCloneGeometry(
-            allGeometry,
-            polyface,
-            x0,
-            y0
-          );
-          GeometryCoreTestIO.captureCloneGeometry(
-            allGeometry,
-            offsetMeshA,
-            x0,
-            y0
-          );
+          const offsetMeshA = PolyfaceQuery.cloneOffset(polyface, offsetSign * offset, offsetOptions);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsetMeshA, x0, y0);
         }
       }
       x0 += xStep;
@@ -567,13 +449,8 @@ function displayOffsetsWithOptionExamples(
           y0 += yStepC;
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsetMesh, x0, y0);
     */
-    const offsetMeshB = PolyfaceQuery.cloneOffset(
-      polyface,
-      offset,
-      offsetOptions
-    );
-    if (originalWithOffsets)
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0);
+    const offsetMeshB = PolyfaceQuery.cloneOffset(polyface, offset, offsetOptions);
+    if (originalWithOffsets) GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsetMeshB, x0, y0);
     y0 += yStepA;
   }

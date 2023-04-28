@@ -5,10 +5,7 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import {
-  ArcGisExtent,
-  ArcGisFeatureQuery,
-} from "../../ArcGisFeature/ArcGisFeatureQuery";
+import { ArcGisExtent, ArcGisFeatureQuery } from "../../ArcGisFeature/ArcGisFeatureQuery";
 
 describe("ArcGisFeatureQuery", () => {
   const sandbox = sinon.createSandbox();
@@ -20,12 +17,7 @@ describe("ArcGisFeatureQuery", () => {
   });
 
   it("should not apply different switches if not needed", async () => {
-    const query = new ArcGisFeatureQuery(
-      "https://test.com/rest/",
-      0,
-      "JSON",
-      3857
-    );
+    const query = new ArcGisFeatureQuery("https://test.com/rest/", 0, "JSON", 3857);
     const queryUrl = query.toString();
     expect(queryUrl).to.not.contains("resultRecordCount");
     expect(queryUrl).to.not.contains("resultOffset");
@@ -52,31 +44,25 @@ describe("ArcGisFeatureQuery", () => {
         latestWkid: 3857,
       },
     };
-    const query = new ArcGisFeatureQuery(
-      "https://test.com/rest/",
-      0,
-      "JSON",
-      3857,
-      {
-        resultRecordCount: 10,
-        resultOffset: 11,
-        returnGeometry: true,
-        geometry: { type: "esriGeometryEnvelope", geom: fakeEnvelope },
-        geometryType: "esriGeometryEnvelope",
-        spatialRel: "esriSpatialRelIntersects",
-        resultType: "tile",
-        maxRecordCountFactor: 1000,
-        returnExceededLimitFeatures: false,
-        quantizationParameters: {
-          mode: "view",
-          originPosition: "upperLeft",
-          tolerance: 10,
-          extent: fakeEnvelope,
-        },
-        outFields: "test",
-        distance: 100,
-      }
-    );
+    const query = new ArcGisFeatureQuery("https://test.com/rest/", 0, "JSON", 3857, {
+      resultRecordCount: 10,
+      resultOffset: 11,
+      returnGeometry: true,
+      geometry: { type: "esriGeometryEnvelope", geom: fakeEnvelope },
+      geometryType: "esriGeometryEnvelope",
+      spatialRel: "esriSpatialRelIntersects",
+      resultType: "tile",
+      maxRecordCountFactor: 1000,
+      returnExceededLimitFeatures: false,
+      quantizationParameters: {
+        mode: "view",
+        originPosition: "upperLeft",
+        tolerance: 10,
+        extent: fakeEnvelope,
+      },
+      outFields: "test",
+      distance: 100,
+    });
     const queryUrl = query.toString();
     expect(queryUrl).to.contains("resultRecordCount=10");
     expect(queryUrl).to.contains("resultOffset=11");
@@ -106,15 +92,9 @@ describe("ArcGisFeatureQuery", () => {
         latestWkid: 3857,
       },
     };
-    const query = new ArcGisFeatureQuery(
-      "https://test.com/rest/",
-      0,
-      "JSON",
-      3857,
-      {
-        spatialRel: "esriSpatialRelIntersects",
-      }
-    );
+    const query = new ArcGisFeatureQuery("https://test.com/rest/", 0, "JSON", 3857, {
+      spatialRel: "esriSpatialRelIntersects",
+    });
 
     let queryUrl = query.toString();
     expect(queryUrl).to.not.contains("geometryType=");

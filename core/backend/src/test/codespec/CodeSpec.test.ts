@@ -11,19 +11,16 @@ import { StandaloneDb } from "../../IModelDb";
 describe("CodeSpec", () => {
   let imodel: StandaloneDb;
   before(() => {
-    imodel = StandaloneDb.createEmpty(
-      IModelTestUtils.prepareOutputFile("CodeSpec", "CodeSpec.bim"),
-      {
-        rootSubject: { name: "CodeSpec tests", description: "CodeSpec tests" },
-        client: "CodeSpec",
-        globalOrigin: { x: 0, y: 0 },
-        projectExtents: {
-          low: { x: -500, y: -500, z: -50 },
-          high: { x: 500, y: 500, z: 50 },
-        },
-        guid: Guid.createValue(),
-      }
-    );
+    imodel = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("CodeSpec", "CodeSpec.bim"), {
+      rootSubject: { name: "CodeSpec tests", description: "CodeSpec tests" },
+      client: "CodeSpec",
+      globalOrigin: { x: 0, y: 0 },
+      projectExtents: {
+        low: { x: -500, y: -500, z: -50 },
+        high: { x: 500, y: 500, z: 50 },
+      },
+      guid: Guid.createValue(),
+    });
   });
 
   after(() => {
@@ -40,9 +37,7 @@ describe("CodeSpec", () => {
 
     codeSpec = imodel.codeSpecs.getById(codeSpecId);
 
-    expect(codeSpec.scopeReq).to.be.equal(
-      CodeScopeSpec.ScopeRequirement.ElementId
-    );
+    expect(codeSpec.scopeReq).to.be.equal(CodeScopeSpec.ScopeRequirement.ElementId);
     expect(codeSpec.scopeType).to.be.equal(CodeScopeSpec.Type.Model);
     expect(codeSpec.isExternal).false;
 
@@ -59,9 +54,7 @@ describe("CodeSpec", () => {
     expect(codeSpec.name).equal("PumpTag");
     expect(codeSpec.isExternal).true;
 
-    expect(codeSpec.scopeReq).to.be.equal(
-      CodeScopeSpec.ScopeRequirement.FederationGuid
-    );
+    expect(codeSpec.scopeReq).to.be.equal(CodeScopeSpec.ScopeRequirement.FederationGuid);
     expect(codeSpec.scopeType).to.be.equal(CodeScopeSpec.Type.Repository);
 
     codeSpec = imodel.codeSpecs.getById(codeSpecId);

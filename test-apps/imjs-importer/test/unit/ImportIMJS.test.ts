@@ -17,10 +17,7 @@ describe("ImportIMJS", () => {
   });
 
   it("imjsFromNative", async () => {
-    const importer = ImportIMJS.create(
-      "d:\\bfiles\\importIMJS\\imjsFromNative.bim",
-      "testSubject"
-    );
+    const importer = ImportIMJS.create("d:\\bfiles\\importIMJS\\imjsFromNative.bim", "testSubject");
     let ok = true;
 
     if (importer) {
@@ -97,17 +94,12 @@ describe("ImportIMJS", () => {
       "ViewWidget",
       "XYPointBuckets",
     ]) {
-      const importer = ImportIMJS.create(
-        "d:\\bfiles\\importIMJS\\" + directoryTail + ".bim",
-        "testSubject"
-      );
+      const importer = ImportIMJS.create("d:\\bfiles\\importIMJS\\" + directoryTail + ".bim", "testSubject");
       let ok = true;
 
       if (importer) {
         const modelGroups = importer.importFilesFromDirectory(
-          "d:\\git20B\\imodeljs\\core\\geometry\\src\\test\\output\\" +
-            directoryTail +
-            "\\"
+          "d:\\git20B\\imodeljs\\core\\geometry\\src\\test\\output\\" + directoryTail + "\\"
         );
         let numModel = 0;
         for (const group of modelGroups) {

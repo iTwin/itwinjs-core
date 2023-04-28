@@ -6,22 +6,10 @@
  * @module IModelConnection
  */
 
-import {
-  BeTimePoint,
-  Dictionary,
-  dispose,
-  Id64Array,
-  Id64String,
-  IModelStatus,
-} from "@itwin/core-bentley";
+import { BeTimePoint, Dictionary, dispose, Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import {
-  TileTree,
-  TileTreeLoadStatus,
-  TileTreeOwner,
-  TileTreeSupplier,
-} from "./tile/internal";
+import { TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeSupplier } from "./tile/internal";
 
 class TreeOwner implements TileTreeOwner {
   private _tileTree?: TileTree;
@@ -41,11 +29,7 @@ class TreeOwner implements TileTreeOwner {
     return this._iModel;
   }
 
-  public constructor(
-    id: any,
-    supplier: TileTreeSupplier,
-    iModel: IModelConnection
-  ) {
+  public constructor(id: any, supplier: TileTreeSupplier, iModel: IModelConnection) {
     this.id = id;
     this._supplier = supplier;
     this._iModel = iModel;
@@ -101,15 +85,9 @@ class TreeOwner implements TileTreeOwner {
  * @public
  * @extensions
  */
-export class Tiles
-  implements
-    Iterable<{ supplier: TileTreeSupplier; id: any; owner: TileTreeOwner }>
-{
+export class Tiles implements Iterable<{ supplier: TileTreeSupplier; id: any; owner: TileTreeOwner }> {
   private _iModel: IModelConnection;
-  private readonly _treesBySupplier = new Map<
-    TileTreeSupplier,
-    Dictionary<any, TreeOwner>
-  >();
+  private readonly _treesBySupplier = new Map<TileTreeSupplier, Dictionary<any, TreeOwner>>();
   private _disposed = false;
 
   /** @internal */
@@ -129,8 +107,7 @@ export class Tiles
 
     // When project extents change, purge tile trees for spatial models.
     iModel.onProjectExtentsChanged.addListener(async () => {
-      if (!iModel.isBriefcaseConnection() || !iModel.editingScope)
-        await this.purgeModelTrees(this.getSpatialModels());
+      if (!iModel.isBriefcaseConnection() || !iModel.editingScope) await this.purgeModelTrees(this.getSpatialModels());
     });
   }
 
@@ -144,8 +121,7 @@ export class Tiles
    * @internal
    */
   public reset(): void {
-    for (const supplier of this._treesBySupplier)
-      supplier[1].forEach((_key, value) => value.dispose());
+    for (const supplier of this._treesBySupplier) supplier[1].forEach((_key, value) => value.dispose());
 
     this._treesBySupplier.clear();
   }
@@ -155,17 +131,11 @@ export class Tiles
     return IModelApp.tileAdmin.purgeTileTrees(this._iModel, modelIds);
   }
 
-  private getModelsAnimatedByScheduleScript(
-    scriptSourceElementId: Id64String
-  ): Set<Id64String> {
+  private getModelsAnimatedByScheduleScript(scriptSourceElementId: Id64String): Set<Id64String> {
     const modelIds = new Set<Id64String>();
     for (const supplier of this._treesBySupplier.keys())
       if (supplier.addModelsAnimatedByScript)
-        supplier.addModelsAnimatedByScript(
-          modelIds,
-          scriptSourceElementId,
-          this.getTreeOwnersForSupplier(supplier)
-        );
+        supplier.addModelsAnimatedByScript(modelIds, scriptSourceElementId, this.getTreeOwnersForSupplier(supplier));
 
     return modelIds;
   }
@@ -177,12 +147,8 @@ export class Tiles
    * @param scriptSourceElementId The Id of the RenderTimeline or DisplayStyle element that hosts the script.
    * @public
    */
-  public async updateForScheduleScript(
-    scriptSourceElementId: Id64String
-  ): Promise<void> {
-    return this.purgeModelTrees(
-      this.getModelsAnimatedByScheduleScript(scriptSourceElementId)
-    );
+  public async updateForScheduleScript(scriptSourceElementId: Id64String): Promise<void> {
+    return this.purgeModelTrees(this.getModelsAnimatedByScheduleScript(scriptSourceElementId));
   }
 
   private async purgeModelTrees(modelIds: Set<Id64String>): Promise<void> {
@@ -196,11 +162,7 @@ export class Tiles
   private getSpatialModels(): Set<Id64String> {
     const modelIds = new Set<Id64String>();
     for (const supplier of this._treesBySupplier.keys())
-      if (supplier.addSpatialModels)
-        supplier.addSpatialModels(
-          modelIds,
-          this.getTreeOwnersForSupplier(supplier)
-        );
+      if (supplier.addSpatialModels) supplier.addSpatialModels(modelIds, this.getTreeOwnersForSupplier(supplier));
 
     return modelIds;
   }
@@ -212,9 +174,7 @@ export class Tiles
   public getTileTreeOwner(id: any, supplier: TileTreeSupplier): TileTreeOwner {
     let trees = this._treesBySupplier.get(supplier);
     if (undefined === trees) {
-      trees = new Dictionary<any, TreeOwner>((lhs, rhs) =>
-        supplier.compareTileTreeIds(lhs, rhs)
-      );
+      trees = new Dictionary<any, TreeOwner>((lhs, rhs) => supplier.compareTileTreeIds(lhs, rhs));
       this._treesBySupplier.set(supplier, trees);
     }
 
@@ -250,8 +210,7 @@ export class Tiles
 
   /** Invokes a function on each extant TileTreeOwner. */
   public forEachTreeOwner(func: (owner: TileTreeOwner) => void): void {
-    for (const dict of this._treesBySupplier.values())
-      dict.forEach((_key, value) => func(value));
+    for (const dict of this._treesBySupplier.values()) dict.forEach((_key, value) => func(value));
   }
 
   /** Iterate over all of the TileTreeOwners. */
@@ -261,18 +220,14 @@ export class Tiles
     owner: TileTreeOwner;
   }> {
     for (const [supplier, dict] of this._treesBySupplier) {
-      for (const entry of dict)
-        yield { supplier, id: entry.key, owner: entry.value };
+      for (const entry of dict) yield { supplier, id: entry.key, owner: entry.value };
     }
   }
 
   /** Obtain the TileTreeOwners supplied by the specified supplier. */
-  public getTreeOwnersForSupplier(
-    supplier: TileTreeSupplier
-  ): Iterable<{ id: any; owner: TileTreeOwner }> {
+  public getTreeOwnersForSupplier(supplier: TileTreeSupplier): Iterable<{ id: any; owner: TileTreeOwner }> {
     function* iterator(trees: Dictionary<any, TreeOwner> | undefined) {
-      if (trees)
-        for (const entry of trees) yield { id: entry.key, owner: entry.value };
+      if (trees) for (const entry of trees) yield { id: entry.key, owner: entry.value };
     }
 
     return {
@@ -289,10 +244,7 @@ export class Tiles
       const dict = entry[1];
       dict.forEach((_treeId, owner) => {
         const tree = owner.tileTree;
-        if (
-          undefined !== tree &&
-          tree.lastSelectedTime.milliseconds < olderThan.milliseconds
-        )
+        if (undefined !== tree && tree.lastSelectedTime.milliseconds < olderThan.milliseconds)
           if (undefined === exclude || !exclude.has(tree)) owner.dispose();
       });
     }

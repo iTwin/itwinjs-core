@@ -4,21 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken, BeEvent, BriefcaseStatus } from "@itwin/core-bentley";
-import {
-  IpcHandler,
-  IpcHost,
-  NativeHost,
-  NativeHostOpts,
-} from "@itwin/core-backend";
-import {
-  IpcWebSocketBackend,
-  RpcInterfaceDefinition,
-} from "@itwin/core-common";
-import {
-  CancelRequest,
-  DownloadFailed,
-  UserCancelledError,
-} from "./MobileFileHandler";
+import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
+import { IpcWebSocketBackend, RpcInterfaceDefinition } from "@itwin/core-common";
+import { CancelRequest, DownloadFailed, UserCancelledError } from "./MobileFileHandler";
 import { ProgressCallback } from "./Request";
 import { mobileAppChannel, mobileAppNotify } from "../common/MobileAppChannel";
 import {
@@ -104,11 +92,7 @@ export abstract class MobileDevice {
   public abstract resumeDownloadInBackground(requestId: number): boolean;
   public abstract reconnect(connection: number): void;
   public abstract authGetAccessToken(
-    callback: (
-      accessToken?: string,
-      expirationDate?: string,
-      err?: string
-    ) => void
+    callback: (accessToken?: string, expirationDate?: string, err?: string) => void
   ): void;
 }
 
@@ -147,10 +131,7 @@ export class MobileHost {
   public static readonly onEnterBackground = new BeEvent();
   public static readonly onWillTerminate = new BeEvent();
   public static readonly onAuthAccessTokenChanged = new BeEvent<
-    (
-      accessToken: string | undefined,
-      expirationDate: string | undefined
-    ) => void
+    (accessToken: string | undefined, expirationDate: string | undefined) => void
   >();
 
   /** Send a notification to the MobileApp connected to this MobileHost. */
@@ -169,18 +150,12 @@ export class MobileHost {
   /**  @internal */
   public static async authGetAccessToken() {
     return new Promise<[AccessToken, string]>((resolve, reject) => {
-      this.device.authGetAccessToken(
-        (
-          tokenString?: AccessToken,
-          expirationDate?: string,
-          error?: string
-        ) => {
-          if (error) {
-            reject(error);
-          }
-          resolve([tokenString ?? "", expirationDate ?? ""]);
+      this.device.authGetAccessToken((tokenString?: AccessToken, expirationDate?: string, error?: string) => {
+        if (error) {
+          reject(error);
         }
-      );
+        resolve([tokenString ?? "", expirationDate ?? ""]);
+      });
     });
   }
 
@@ -196,23 +171,15 @@ export class MobileHost {
       let lastReportedOn = Date.now();
       const minTimeBeforeReportingProgress = 1000;
       if (progress) {
-        progressCb = (
-          _bytesWritten: number,
-          totalBytesWritten: number,
-          totalBytesExpectedToWrite: number
-        ) => {
+        progressCb = (_bytesWritten: number, totalBytesWritten: number, totalBytesExpectedToWrite: number) => {
           const currentTime = Date.now();
           const timeSinceLastEvent = currentTime - lastReportedOn;
           // report all event for last 5 Mbs so we never miss 100% progress event
-          const lastEvent =
-            totalBytesExpectedToWrite - totalBytesWritten < 1024 * 1024 * 5;
-          if (timeSinceLastEvent < minTimeBeforeReportingProgress && !lastEvent)
-            return;
+          const lastEvent = totalBytesExpectedToWrite - totalBytesWritten < 1024 * 1024 * 5;
+          if (timeSinceLastEvent < minTimeBeforeReportingProgress && !lastEvent) return;
 
           lastReportedOn = currentTime;
-          const percent = Number(
-            (100 * (totalBytesWritten / totalBytesExpectedToWrite)).toFixed(2)
-          );
+          const percent = Number((100 * (totalBytesWritten / totalBytesExpectedToWrite)).toFixed(2));
           progress({
             total: totalBytesExpectedToWrite,
             loaded: totalBytesWritten,
@@ -224,19 +191,8 @@ export class MobileHost {
         downloadUrl,
         false,
         downloadTo,
-        (
-          _downloadUrl: string,
-          _downloadFileUrl: string,
-          cancelled: boolean,
-          err?: string
-        ) => {
-          if (cancelled)
-            reject(
-              new UserCancelledError(
-                BriefcaseStatus.DownloadCancelled,
-                "User cancelled download"
-              )
-            );
+        (_downloadUrl: string, _downloadFileUrl: string, cancelled: boolean, err?: string) => {
+          if (cancelled) reject(new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download"));
           else if (err) reject(new DownloadFailed(400, "Download failed"));
           else resolve();
         },
@@ -270,16 +226,9 @@ export class MobileHost {
         MobileHost.notifyMobileFrontend("notifyWillTerminate");
       });
       this.onAuthAccessTokenChanged.addListener(
-        (
-          accessToken: string | undefined,
-          expirationDate: string | undefined
-        ) => {
+        (accessToken: string | undefined, expirationDate: string | undefined) => {
           authorizationClient.setAccessToken(accessToken, expirationDate);
-          MobileHost.notifyMobileFrontend(
-            "notifyAuthAccessTokenChanged",
-            accessToken,
-            expirationDate
-          );
+          MobileHost.notifyMobileFrontend("notifyAuthAccessTokenChanged", accessToken, expirationDate);
         }
       );
 

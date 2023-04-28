@@ -36,9 +36,7 @@ export class AtmosphereEditor {
 
     const isAtmosphereSupported = (view: ViewState) => view.is3d();
     const isAtmosphereEnabled = (view: ViewState) =>
-      view.is3d()
-        ? view.getDisplayStyle3d().environment.displayAtmosphere
-        : false;
+      view.is3d() ? view.getDisplayStyle3d().environment.displayAtmosphere : false;
 
     const atmosphereMenu = createNestedMenu({
       id: "atmosphere_menu",
@@ -51,11 +49,8 @@ export class AtmosphereEditor {
         atmosphereMenu.label.style.fontWeight = expanded ? "bold" : "500";
       },
     });
-    (
-      atmosphereMenu.div.firstElementChild!.lastElementChild! as HTMLElement
-    ).style.borderColor = "grey";
-    atmosphereMenu.label.style.fontWeight =
-      AtmosphereEditor._expandAtmosphereEditor ? "bold" : "500";
+    (atmosphereMenu.div.firstElementChild!.lastElementChild! as HTMLElement).style.borderColor = "grey";
+    atmosphereMenu.label.style.fontWeight = AtmosphereEditor._expandAtmosphereEditor ? "bold" : "500";
 
     const checkboxInterface = createCheckBox({
       parent: atmosphereMenu.body,
@@ -73,8 +68,7 @@ export class AtmosphereEditor {
     };
 
     const enableAtmosphere = (enabled: boolean) => {
-      const displaySettings = (this._vp.view as ViewState3d).getDisplayStyle3d()
-        .settings;
+      const displaySettings = (this._vp.view as ViewState3d).getDisplayStyle3d().settings;
       displaySettings.environment = displaySettings.environment.clone({
         displayAtmosphere: enabled,
       });
@@ -313,13 +307,10 @@ export class AtmosphereEditor {
   private updateAtmosphereUI(view: ViewState) {
     const settings = this.getAtmosphereSettings(view);
 
-    this._atmosphereHeightAboveEarth.input.value =
-      settings.atmosphereHeightAboveEarth.toString();
-    this._depthBelowEarthForMaxDensity.input.value =
-      settings.depthBelowEarthForMaxDensity.toString();
+    this._atmosphereHeightAboveEarth.input.value = settings.atmosphereHeightAboveEarth.toString();
+    this._depthBelowEarthForMaxDensity.input.value = settings.depthBelowEarthForMaxDensity.toString();
     this._densityFalloff.input.value = settings.densityFalloff.toString();
-    this._scatteringStrength.input.value =
-      settings.scatteringStrength.toString();
+    this._scatteringStrength.input.value = settings.scatteringStrength.toString();
     this._wavelengthR.input.value = settings.wavelengths.r.toString();
     this._wavelengthG.input.value = settings.wavelengths.g.toString();
     this._wavelengthB.input.value = settings.wavelengths.b.toString();
@@ -328,9 +319,7 @@ export class AtmosphereEditor {
     this._exposure.input.value = settings.exposure.toString();
   }
 
-  private updateAtmosphere(
-    updateFunction: (view: ViewState) => Atmosphere.Props
-  ) {
+  private updateAtmosphere(updateFunction: (view: ViewState) => Atmosphere.Props) {
     const props = updateFunction(this._vp.view);
     assert(this._vp.view.is3d());
     const settings = this._vp.view.getDisplayStyle3d().settings;

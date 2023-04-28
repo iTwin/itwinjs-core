@@ -56,12 +56,7 @@ export class BlockRecord {
    * @param blockSize the block size.
    * @return the block index.
    */
-  public static toBlockIndex(
-    tileX: int32,
-    tileY: int32,
-    tileZ: int32,
-    blockSize: int32
-  ): GridIndex {
+  public static toBlockIndex(tileX: int32, tileY: int32, tileZ: int32, blockSize: int32): GridIndex {
     return new GridIndex(
       BlockRecord.toBlockIndex1(tileX, blockSize),
       BlockRecord.toBlockIndex1(tileY, blockSize),

@@ -25,9 +25,7 @@ Since an iTwin.js app [frontend](../learning/App.md#app-frontend) is written usi
 In some cases, the Web view environment will provide platform-specific globals and modules. The frontend can use these modules in guarded code. To detect the platform of the frontend:
 
 ```ts
-const isIos: bool = /iphone|ipod|ipad/.test(
-  window.navigator.userAgent.toLowerCase()
-);
+const isIos: bool = /iphone|ipod|ipad/.test(window.navigator.userAgent.toLowerCase());
 // ... other mobile platforms ...
 
 if (isIos) {

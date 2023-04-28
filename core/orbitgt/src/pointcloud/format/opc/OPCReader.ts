@@ -64,17 +64,9 @@ export class OPCReader extends PointCloudReader {
    * @param lazyLoading avoid early loading of all block indexes to keep a low memory profile? Lazy loading only loads the block indexes of the top 6 levels (see CLOUD-1152 issue)
    * @return the reader.
    */
-  public static async openFile(
-    fileStorage: FileStorage,
-    fileName: string,
-    lazyLoading: boolean
-  ): Promise<OPCReader> {
+  public static async openFile(fileStorage: FileStorage, fileName: string, lazyLoading: boolean): Promise<OPCReader> {
     /* Open the file */
-    const fileReader: FileReader = await FileReader.openFile(
-      fileStorage,
-      fileName,
-      lazyLoading
-    );
+    const fileReader: FileReader = await FileReader.openFile(fileStorage, fileName, lazyLoading);
     /* Create the reader */
     return new OPCReader(fileReader, 0, fileReader.getLevelCount());
   }
@@ -82,11 +74,7 @@ export class OPCReader extends PointCloudReader {
   /**
    * Create a new reader.
    */
-  private constructor(
-    fileReader: FileReader,
-    levelOffset: int32,
-    levelCount: int32
-  ) {
+  private constructor(fileReader: FileReader, levelOffset: int32, levelCount: int32) {
     super();
     this._fileReader = fileReader;
     this._levelOffset = levelOffset;
@@ -117,11 +105,7 @@ export class OPCReader extends PointCloudReader {
   public override getProperty(propertyName: string): Object {
     if (propertyName == null) return null;
     if (Strings.equalsIgnoreCase(propertyName, "metricCellSize"))
-      return new Coordinate(
-        this._fileReader.getFileRecord().getMetricCellSize(),
-        0.0,
-        0.0
-      );
+      return new Coordinate(this._fileReader.getFileRecord().getMetricCellSize(), 0.0, 0.0);
     return null;
   }
 
@@ -154,10 +138,7 @@ export class OPCReader extends PointCloudReader {
    * @see PointCloudReader#getFileBounds
    */
   public override getFileBounds(): Bounds {
-    return this._fileReader
-      .getGeometryReader(0)
-      .getGeometryRecord()
-      .getBounds();
+    return this._fileReader.getGeometryReader(0).getGeometryRecord().getBounds();
   }
 
   /**
@@ -172,12 +153,9 @@ export class OPCReader extends PointCloudReader {
    * PointCloudReader method.
    * @see PointCloudReader#getMinAttributeValue
    */
-  public override getMinAttributeValue(
-    attribute: PointAttribute
-  ): AttributeValue {
+  public override getMinAttributeValue(attribute: PointAttribute): AttributeValue {
     for (const reader of this._fileReader.getAttributeReaders())
-      if (reader.getAttribute().hasName(attribute.getName()))
-        return reader.getMinimumValue();
+      if (reader.getAttribute().hasName(attribute.getName())) return reader.getMinimumValue();
     return null;
   }
 
@@ -185,12 +163,9 @@ export class OPCReader extends PointCloudReader {
    * PointCloudReader method.
    * @see PointCloudReader#getMaxAttributeValue
    */
-  public override getMaxAttributeValue(
-    attribute: PointAttribute
-  ): AttributeValue {
+  public override getMaxAttributeValue(attribute: PointAttribute): AttributeValue {
     for (const reader of this._fileReader.getAttributeReaders())
-      if (reader.getAttribute().hasName(attribute.getName()))
-        return reader.getMaximumValue();
+      if (reader.getAttribute().hasName(attribute.getName())) return reader.getMaximumValue();
     return null;
   }
 
@@ -207,10 +182,7 @@ export class OPCReader extends PointCloudReader {
    * @see PointCloudReader#getLevelPointCount
    */
   public override getLevelPointCount(level: int32): ALong {
-    return this._fileReader
-      .getDirectoryReader(level)
-      .getDirectoryRecord()
-      .getPointCount();
+    return this._fileReader.getDirectoryReader(level).getDirectoryRecord().getPointCount();
   }
 
   /**
@@ -218,10 +190,7 @@ export class OPCReader extends PointCloudReader {
    * @see PointCloudReader#getLevelPointBounds
    */
   public override getLevelPointBounds(level: int32): Bounds {
-    return this._fileReader
-      .getGeometryReader(level)
-      .getGeometryRecord()
-      .getBounds();
+    return this._fileReader.getGeometryReader(level).getGeometryRecord().getBounds();
   }
 
   /**
@@ -229,9 +198,7 @@ export class OPCReader extends PointCloudReader {
    * @see PointCloudReader#getLevelBlockGrid
    */
   public override getLevelBlockGrid(level: int32): Grid {
-    return this.getLevelTileGrid(level).scale(
-      this._fileReader.getFileRecord().getBlockSize()
-    );
+    return this.getLevelTileGrid(level).scale(this._fileReader.getFileRecord().getBlockSize());
   }
 
   /**
@@ -239,10 +206,7 @@ export class OPCReader extends PointCloudReader {
    * @see PointCloudReader#getLevelTileGrid
    */
   public override getLevelTileGrid(level: int32): Grid {
-    return this._fileReader
-      .getGeometryReader(level)
-      .getGeometryRecord()
-      .getTileGrid();
+    return this._fileReader.getGeometryReader(level).getGeometryRecord().getTileGrid();
   }
 
   /**
@@ -257,34 +221,22 @@ export class OPCReader extends PointCloudReader {
    * PointCloudReader method.
    * @see PointCloudReader#readBlockIndexes
    */
-  public override readBlockIndexes(
-    level: int32,
-    fileContents: ContentLoader
-  ): Array<BlockIndex> {
+  public override readBlockIndexes(level: int32, fileContents: ContentLoader): Array<BlockIndex> {
     /* Get the directory reader */
-    const directoryReader: DirectoryReader =
-      this._fileReader.getDirectoryReader(level);
+    const directoryReader: DirectoryReader = this._fileReader.getDirectoryReader(level);
     /* Already read all blocks? */
     const blocks: Array<BlockIndex> = directoryReader.getBlocks();
     if (blocks.length > 0) return blocks;
     /* Delegate to the directory reader */
-    return directoryReader.readBlocks(
-      this._fileReader.getFileRecord(),
-      fileContents
-    );
+    return directoryReader.readBlocks(this._fileReader.getFileRecord(), fileContents);
   }
 
   /**
    * PointCloudReader method.
    * @see PointCloudReader#readTileIndexes
    */
-  public override readTileIndexes(
-    block: BlockIndex,
-    fileContents: ContentLoader
-  ): Array<TileIndex> {
-    return this._fileReader
-      .getDirectoryReader(block.level)
-      .readTiles2(block, fileContents);
+  public override readTileIndexes(block: BlockIndex, fileContents: ContentLoader): Array<TileIndex> {
+    return this._fileReader.getDirectoryReader(block.level).readTiles2(block, fileContents);
   }
 
   /**
@@ -298,21 +250,16 @@ export class OPCReader extends PointCloudReader {
     /* Should we read all attributes? */
     if (parameters.readAllExtraAttributes()) {
       /* Read all attributes */
-      for (const reader of this._fileReader.getAttributeReaders())
-        readers.add(reader);
+      for (const reader of this._fileReader.getAttributeReaders()) readers.add(reader);
     } else {
       /* Read color? */
       if (parameters.readColor()) {
-        const reader: AttributeReader = this._fileReader.findAttributeReader(
-          StandardAttributes.COLOR.getName()
-        );
+        const reader: AttributeReader = this._fileReader.findAttributeReader(StandardAttributes.COLOR.getName());
         if (reader != null) readers.add(reader);
       }
       /* Read intensity? */
       if (parameters.readIntensity()) {
-        const reader: AttributeReader = this._fileReader.findAttributeReader(
-          StandardAttributes.INTENSITY.getName()
-        );
+        const reader: AttributeReader = this._fileReader.findAttributeReader(StandardAttributes.INTENSITY.getName());
         if (reader != null) readers.add(reader);
       }
       /* Read the extra attributes */
@@ -321,26 +268,16 @@ export class OPCReader extends PointCloudReader {
         /* Get the name of the extra attribute */
         const extraAttribute: string = extraAttributes.get(i);
         /* Did we already add the color? */
-        if (
-          parameters.readColor() &&
-          Strings.equalsIgnoreCase(
-            extraAttribute,
-            StandardAttributes.COLOR.getName()
-          )
-        )
+        if (parameters.readColor() && Strings.equalsIgnoreCase(extraAttribute, StandardAttributes.COLOR.getName()))
           continue;
         /* Did we already add the intensity? */
         if (
           parameters.readIntensity() &&
-          Strings.equalsIgnoreCase(
-            extraAttribute,
-            StandardAttributes.INTENSITY.getName()
-          )
+          Strings.equalsIgnoreCase(extraAttribute, StandardAttributes.INTENSITY.getName())
         )
           continue;
         /* Find the attribute reader */
-        const reader: AttributeReader =
-          this._fileReader.findAttributeReader(extraAttribute);
+        const reader: AttributeReader = this._fileReader.findAttributeReader(extraAttribute);
         /* Add the reader */
         if (reader != null) readers.add(reader);
       }
@@ -361,9 +298,7 @@ export class OPCReader extends PointCloudReader {
     /* Create the attribute mask */
     const attributeMask: AttributeMask = this.getAttributeMask(readRequest);
     /* Create the read buffer */
-    const tileBuffer: TileReadBuffer = new TileReadBuffer(
-      attributeMask.attributes.length
-    );
+    const tileBuffer: TileReadBuffer = new TileReadBuffer(attributeMask.attributes.length);
     /* Read the points in the tile */
     const pointOffset: int32 = 0;
     const pointCount: int32 = tileIndex.pointCount;
@@ -395,9 +330,7 @@ export class OPCReader extends PointCloudReader {
       /* Create the attribute mask */
       const readRequest: ReadRequest = ReadRequest.READ_GEOMETRY_AND_COLOR;
       const readers: AList<AttributeReader> = new AList<AttributeReader>();
-      const colorReader: AttributeReader = this._fileReader.findAttributeReader(
-        StandardAttributes.COLOR.getName()
-      );
+      const colorReader: AttributeReader = this._fileReader.findAttributeReader(StandardAttributes.COLOR.getName());
       if (colorReader != null) readers.add(colorReader);
       const attributeMask: AttributeMask = new AttributeMask(readers);
       /* Has the data been loaded? */
@@ -407,10 +340,7 @@ export class OPCReader extends PointCloudReader {
         /* Create the read buffer */
         tileBuffer = new TileReadBuffer(attributeMask.attributes.length);
         /* Create the point data buffer */
-        const tileGrid: Grid = this._fileReader
-          .getGeometryReader(tileIndex.level)
-          .getGeometryRecord()
-          .getTileGrid();
+        const tileGrid: Grid = this._fileReader.getGeometryReader(tileIndex.level).getGeometryRecord().getTileGrid();
         const tileBounds: Bounds = tileGrid.getCellBounds(tileIndex.gridIndex);
         pointData = new PointDataRaw(tileIndex, tileBounds, null, null, null);
       }
@@ -431,9 +361,7 @@ export class OPCReader extends PointCloudReader {
         const defaultG: int32 = 198;
         const defaultB: int32 = 13;
         /* Create a default color buffer (BGR sample sequence) */
-        pointData.colors = Uint8Buffer.wrap(
-          new ABuffer(3 * tileIndex.pointCount)
-        );
+        pointData.colors = Uint8Buffer.wrap(new ABuffer(3 * tileIndex.pointCount));
         for (let i: number = 0; i < tileIndex.pointCount; i++) {
           pointData.colors.set(3 * i + 0, defaultB);
           pointData.colors.set(3 * i + 1, defaultG);
@@ -450,10 +378,7 @@ export class OPCReader extends PointCloudReader {
    * PointCloudReader interface method.
    * @see PointCloudReader#clipToLevelRange
    */
-  public override clipToLevelRange(
-    levelOffset: int32,
-    levelCount: int32
-  ): PointCloudReader {
+  public override clipToLevelRange(levelOffset: int32, levelCount: int32): PointCloudReader {
     /* Check the parameters */
     ASystem.assert0(levelOffset >= 0, `Invalid level offset ${levelOffset}`);
     ASystem.assert0(levelCount > 0, `Invalid level count ${levelCount}`);
@@ -462,10 +387,6 @@ export class OPCReader extends PointCloudReader {
       `Level range ${levelOffset}+${levelCount} not possible in ${this._levelCount} levels`
     );
     /* Create a new reader */
-    return new OPCReader(
-      this._fileReader,
-      this._levelOffset + levelOffset,
-      levelCount
-    );
+    return new OPCReader(this._fileReader, this._levelOffset + levelOffset, levelCount);
   }
 }

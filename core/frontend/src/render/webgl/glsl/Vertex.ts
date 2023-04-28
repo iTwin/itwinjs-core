@@ -55,8 +55,7 @@ vec4 computeVertexPosition(vec3 encodedIndex) {
 }
 `;
 
-const computeLineWeight =
-  "\nfloat computeLineWeight() { return g_lineWeight; }\n";
+const computeLineWeight = "\nfloat computeLineWeight() { return g_lineWeight; }\n";
 const computeLineCode = "\nfloat computeLineCode() { return g_lineCode; }\n";
 
 export function addSamplePosition(vert: VertexShaderBuilder): void {
@@ -91,9 +90,7 @@ const getSamplePositionUnquantizedPostlude = `
 
 function getSamplePosition(type: PositionType): string {
   return `${getSamplePositionPrelude}${
-    "quantized" === type
-      ? getSamplePositionQuantizedPostlude
-      : getSamplePositionUnquantizedPostlude
+    "quantized" === type ? getSamplePositionQuantizedPostlude : getSamplePositionUnquantizedPostlude
   }`;
 }
 
@@ -107,11 +104,7 @@ export function addModelViewProjectionMatrix(vert: VertexShaderBuilder): void {
   } else {
     vert.addUniform("u_mvp", VariableType.Mat4, (prog) => {
       prog.addGraphicUniform("u_mvp", (uniform, params) => {
-        params.target.uniforms.branch.bindModelViewProjectionMatrix(
-          uniform,
-          params.geometry,
-          params.isViewCoords
-        );
+        params.target.uniforms.branch.bindModelViewProjectionMatrix(uniform, params.geometry, params.isViewCoords);
       });
     });
   }
@@ -149,11 +142,7 @@ export function addInstancedRtcMatrix(vert: VertexShaderBuilder): void {
 /** @internal */
 export function addModelViewMatrix(vert: VertexShaderBuilder): void {
   const bind = (uniform: UniformHandle, params: DrawParams) => {
-    params.target.uniforms.branch.bindModelViewMatrix(
-      uniform,
-      params.geometry,
-      params.isViewCoords
-    );
+    params.target.uniforms.branch.bindModelViewMatrix(uniform, params.geometry, params.isViewCoords);
   };
 
   if (vert.usesInstancedGeometry) {
@@ -230,22 +219,16 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
 
   const unquantized = "unquantized" === vert.positionType;
   const maxRgbaPerVert = unquantized ? 6 : 4;
-  for (let i = 0; i < maxRgbaPerVert; i++)
-    vert.addGlobal(`g_vertLutData${i}`, VariableType.Vec4);
+  for (let i = 0; i < maxRgbaPerVert; i++) vert.addGlobal(`g_vertLutData${i}`, VariableType.Vec4);
 
   vert.addFunction(decodeUint24);
   vert.addFunction(decodeUint16);
 
-  vert.addFunction(
-    unquantized ? computeUnquantizedPosition : computeVertexPositionFromLUT
-  );
+  vert.addFunction(unquantized ? computeUnquantizedPosition : computeVertexPositionFromLUT);
 
   vert.addUniform("u_vertLUT", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_vertLUT", (uniform, params) => {
-      params.geometry.asLUT!.lut.texture.bindSampler(
-        uniform,
-        TextureUnit.VertexLUT
-      );
+      params.geometry.asLUT!.lut.texture.bindSampler(uniform, TextureUnit.VertexLUT);
     });
   });
 
@@ -268,9 +251,7 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
   vert.addGlobal("g_featureAndMaterialIndex", VariableType.Vec4);
 
   // Read the vertex data from the vertex table up front.  Yields a consistent (if unexplainable) small performance boost.
-  vert.addInitializer(
-    unquantized ? prereadUnquantizedVertexData : prereadQuantizedVertexData
-  );
+  vert.addInitializer(unquantized ? prereadUnquantizedVertexData : prereadQuantizedVertexData);
 }
 
 /** @internal */
@@ -302,9 +283,7 @@ export function addPosition(vert: VertexShaderBuilder, fromLUT: boolean) {
 export function addAlpha(vert: VertexShaderBuilder): void {
   vert.addUniform("u_hasAlpha", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_hasAlpha", (uniform, params) => {
-      uniform.setUniform1f(
-        Pass.rendersTranslucent(params.geometry.getPass(params.target)) ? 1 : 0
-      );
+      uniform.setUniform1f(Pass.rendersTranslucent(params.geometry.getPass(params.target)) ? 1 : 0);
     });
   });
 }
@@ -320,9 +299,7 @@ export function addLineWeight(vert: VertexShaderBuilder): void {
   vert.addGlobal("g_lineWeight", VariableType.Float);
   if (vert.usesInstancedGeometry) {
     addInstanceOverrides(vert);
-    vert.addInitializer(
-      "g_lineWeight = mix(u_lineWeight, a_instanceOverrides.g, extractInstanceBit(kOvrBit_Weight));"
-    );
+    vert.addInitializer("g_lineWeight = mix(u_lineWeight, a_instanceOverrides.g, extractInstanceBit(kOvrBit_Weight));");
   } else {
     vert.addInitializer("g_lineWeight = u_lineWeight;");
   }
@@ -331,10 +308,7 @@ export function addLineWeight(vert: VertexShaderBuilder): void {
 }
 
 /** @internal */
-export function replaceLineWeight(
-  vert: VertexShaderBuilder,
-  func: string
-): void {
+export function replaceLineWeight(vert: VertexShaderBuilder, func: string): void {
   vert.replaceFunction(computeLineWeight, func);
 }
 
@@ -349,9 +323,7 @@ export function addLineCode(vert: VertexShaderBuilder): void {
   vert.addGlobal("g_lineCode", VariableType.Float);
   if (vert.usesInstancedGeometry) {
     addInstanceOverrides(vert);
-    vert.addInitializer(
-      "g_lineCode = mix(u_lineCode, a_instanceOverrides.b, extractInstanceBit(kOvrBit_LineCode));"
-    );
+    vert.addInitializer("g_lineCode = mix(u_lineCode, a_instanceOverrides.b, extractInstanceBit(kOvrBit_LineCode));");
   } else {
     vert.addInitializer("g_lineCode = u_lineCode;");
   }

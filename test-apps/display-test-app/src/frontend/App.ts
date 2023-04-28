@@ -4,10 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { GuidString, ProcessDetector } from "@itwin/core-bentley";
-import {
-  ElectronApp,
-  ElectronAppOpts,
-} from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { ElectronApp, ElectronAppOpts } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { BrowserAuthorizationCallbackHandler } from "@itwin/browser-authorization";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
@@ -36,24 +33,15 @@ import {
   Tool,
   ToolAdmin,
 } from "@itwin/core-frontend";
-import {
-  MobileApp,
-  MobileAppOpts,
-} from "@itwin/core-mobile/lib/cjs/MobileFrontend";
-import {
-  RealityDataAccessClient,
-  RealityDataClientOptions,
-} from "@itwin/reality-data-client";
+import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
+import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 import { ApplyModelDisplayScaleTool } from "./DisplayScale";
 import { ApplyModelTransformTool } from "./DisplayTransform";
-import {
-  GenerateElementGraphicsTool,
-  GenerateTileContentTool,
-} from "./TileContentTool";
+import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileContentTool";
 import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { EditingScopeTool, PlaceLineStringTool } from "./EditingTools";
@@ -86,19 +74,12 @@ import {
 import { SyncViewportFrustaTool, SyncViewportsTool } from "./SyncViewportsTool";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
-import {
-  MarkupTool,
-  ModelClipTool,
-  ZoomToSelectedElementsTool,
-} from "./Viewer";
+import { MarkupTool, ModelClipTool, ZoomToSelectedElementsTool } from "./Viewer";
 import { MacroTool } from "./MacroTools";
 import { TerrainDrapeTool } from "./TerrainDrapeTool";
 import { SaveImageTool } from "./SaveImageTool";
 import { BingTerrainMeshProvider } from "./BingTerrainProvider";
-import {
-  AttachCustomRealityDataTool,
-  registerRealityDataSourceProvider,
-} from "./RealityDataProvider";
+import { AttachCustomRealityDataTool, registerRealityDataSourceProvider } from "./RealityDataProvider";
 import { MapLayersFormats } from "@itwin/map-layers-formats";
 import { OpenRealityModelSettingsTool } from "./RealityModelDisplaySettingsWidget";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
@@ -121,12 +102,8 @@ class DisplayTestAppAccuSnap extends AccuSnap {
 
 class DisplayTestAppToolAdmin extends ToolAdmin {
   /** Process shortcut key events */
-  public override async processShortcutKey(
-    keyEvent: KeyboardEvent,
-    wentDown: boolean
-  ): Promise<boolean> {
-    if (wentDown && AccuDrawHintBuilder.isEnabled)
-      return AccuDrawShortcuts.processShortcutKey(keyEvent);
+  public override async processShortcutKey(keyEvent: KeyboardEvent, wentDown: boolean): Promise<boolean> {
+    if (wentDown && AccuDrawHintBuilder.isEnabled) return AccuDrawShortcuts.processShortcutKey(keyEvent);
     return false;
   }
 }
@@ -202,8 +179,7 @@ class RefreshTilesTool extends Tool {
   }
 
   public override async run(changedModelIds?: string[]): Promise<boolean> {
-    if (undefined !== changedModelIds && 0 === changedModelIds.length)
-      changedModelIds = undefined;
+    if (undefined !== changedModelIds && 0 === changedModelIds.length) changedModelIds = undefined;
 
     IModelApp.viewManager.refreshForModifiedModels(changedModelIds);
     return true;
@@ -295,9 +271,7 @@ export class DisplayTestApp {
     renderSys: RenderSystem.Options,
     tileAdmin: TileAdmin.Props
   ): Promise<void> {
-    let socketUrl = new URL(
-      configuration.customOrchestratorUri || "http://localhost:3001"
-    );
+    let socketUrl = new URL(configuration.customOrchestratorUri || "http://localhost:3001");
     socketUrl = LocalhostIpcApp.buildUrlForSocket(socketUrl);
     const realityDataClientOptions: RealityDataClientOptions = {
       /** API Version. v1 by default */
@@ -312,24 +286,13 @@ export class DisplayTestApp {
         tileAdmin,
         toolAdmin: new DisplayTestAppToolAdmin(),
         uiAdmin: new UiManager(),
-        realityDataAccess: new RealityDataAccessClient(
-          realityDataClientOptions
-        ),
+        realityDataAccess: new RealityDataAccessClient(realityDataClientOptions),
         renderSys,
-        rpcInterfaces: [
-          DtaRpcInterface,
-          IModelReadRpcInterface,
-          IModelTileRpcInterface,
-          SnapshotIModelRpcInterface,
-        ],
+        rpcInterfaces: [DtaRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface],
         /* eslint-disable @typescript-eslint/naming-convention */
         mapLayerOptions: {
-          MapboxImagery: configuration.mapBoxKey
-            ? { key: "access_token", value: configuration.mapBoxKey }
-            : undefined,
-          BingMaps: configuration.bingMapsKey
-            ? { key: "key", value: configuration.bingMapsKey }
-            : undefined,
+          MapboxImagery: configuration.mapBoxKey ? { key: "access_token", value: configuration.mapBoxKey } : undefined,
+          BingMaps: configuration.bingMapsKey ? { key: "key", value: configuration.bingMapsKey } : undefined,
         },
         /* eslint-enable @typescript-eslint/naming-convention */
         hubAccess: createHubAccess(configuration),
@@ -348,9 +311,7 @@ export class DisplayTestApp {
       // The electron package produces an exception every time getAccessToken is called, which is quite frequently.
       // It makes debugging with "pause on caught exceptions" infuriating.
       // ###TODO fix that in the client and remove this
-      if (!configuration.noElectronAuth)
-        opts.iModelApp!.authorizationClient =
-          new ElectronRendererAuthorization();
+      if (!configuration.noElectronAuth) opts.iModelApp!.authorizationClient = new ElectronRendererAuthorization();
 
       await ElectronApp.startup(opts);
     } else if (ProcessDetector.isMobileAppFrontend) {
@@ -359,22 +320,16 @@ export class DisplayTestApp {
       const redirectUri = "http://localhost:3000/signin-callback";
       const urlObj = new URL(redirectUri);
       if (urlObj.pathname === window.location.pathname) {
-        await BrowserAuthorizationCallbackHandler.handleSigninCallback(
-          redirectUri
-        );
+        await BrowserAuthorizationCallbackHandler.handleSigninCallback(redirectUri);
       }
 
       const rpcParams: BentleyCloudRpcParams = {
         info: { title: "ui-test-app", version: "v1.0" },
-        uriPrefix:
-          configuration.customOrchestratorUri || "http://localhost:3001",
+        uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001",
       };
       if (opts.iModelApp?.rpcInterfaces)
         // eslint-disable-line deprecation/deprecation
-        BentleyCloudRpcManager.initializeClient(
-          rpcParams,
-          opts.iModelApp.rpcInterfaces
-        ); // eslint-disable-line deprecation/deprecation
+        BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp.rpcInterfaces); // eslint-disable-line deprecation/deprecation
       await LocalhostIpcApp.startup(opts);
     }
 

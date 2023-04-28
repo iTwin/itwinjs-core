@@ -14,9 +14,7 @@ describe("Learning Snippets", () => {
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile(
-      "assets/datasets/Properties_60InstancesWithUrl2.ibim"
-    );
+    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {
@@ -110,8 +108,7 @@ describe("Learning Snippets", () => {
           },
           {
             label: {
-              displayValue:
-                "Definition Model For DgnV8Bridge:D:\\Temp\\Properties_60InstancesWithUrl2.dgn, Default",
+              displayValue: "Definition Model For DgnV8Bridge:D:\\Temp\\Properties_60InstancesWithUrl2.dgn, Default",
             },
           },
           {
@@ -124,17 +121,12 @@ describe("Learning Snippets", () => {
           },
         ]);
 
-      const privateModels = [
-        "BisCore.DictionaryModel",
-        "BisCore.RealityDataSources",
-      ];
+      const privateModels = ["BisCore.DictionaryModel", "BisCore.RealityDataSources"];
       await Promise.all(
         modelNodes.map(async (modelNode) => {
           if (!modelNode.hasChildren) return;
 
-          const expectedChildrenType = privateModels.includes(
-            modelNode.label.displayValue
-          )
+          const expectedChildrenType = privateModels.includes(modelNode.label.displayValue)
             ? StandardNodeTypes.ECPropertyGroupingNode
             : StandardNodeTypes.ECInstancesNode;
           const childNodes = await Presentation.presentation.getNodes({

@@ -6,19 +6,8 @@
  * @module ChangedElementsDb
  */
 
-import {
-  AccessToken,
-  DbResult,
-  IDisposable,
-  IModelStatus,
-  OpenMode,
-} from "@itwin/core-bentley";
-import {
-  ChangeData,
-  ChangedElements,
-  ChangedModels,
-  IModelError,
-} from "@itwin/core-common";
+import { AccessToken, DbResult, IDisposable, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import { ChangeData, ChangedElements, ChangedModels, IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDbOpenMode } from "./ECDb";
@@ -66,12 +55,8 @@ export class ChangedElementsDb implements IDisposable {
    * @throws [IModelError]($common) if the operation failed.
    */
   private _createDb(briefcase: IModelDb, pathName: string): void {
-    const status: DbResult = this.nativeDb.createDb(
-      briefcase.nativeDb,
-      pathName
-    );
-    if (status !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(status, "Failed to created ECDb");
+    const status: DbResult = this.nativeDb.createDb(briefcase.nativeDb, pathName);
+    if (status !== DbResult.BE_SQLITE_OK) throw new IModelError(status, "Failed to created ECDb");
   }
 
   /** Open the Changed Elements Db.
@@ -79,18 +64,11 @@ export class ChangedElementsDb implements IDisposable {
    * @param openMode Open mode
    * @throws [IModelError]($common) if the operation failed.
    */
-  private _openDb(
-    pathName: string,
-    openMode: ECDbOpenMode = ECDbOpenMode.Readonly
-  ): void {
-    const nativeOpenMode =
-      openMode === ECDbOpenMode.Readonly
-        ? OpenMode.Readonly
-        : OpenMode.ReadWrite;
+  private _openDb(pathName: string, openMode: ECDbOpenMode = ECDbOpenMode.Readonly): void {
+    const nativeOpenMode = openMode === ECDbOpenMode.Readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
     const tryUpgrade = openMode === ECDbOpenMode.FileUpgrade;
     const status = this.nativeDb.openDb(pathName, nativeOpenMode, tryUpgrade);
-    if (status !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(status, "Failed to open ECDb");
+    if (status !== DbResult.BE_SQLITE_OK) throw new IModelError(status, "Failed to open ECDb");
   }
 
   /** Open the Changed Elements Db.
@@ -98,10 +76,7 @@ export class ChangedElementsDb implements IDisposable {
    * @param openMode Open mode
    * @returns ChangedElementsDb
    */
-  public static openDb(
-    pathName: string,
-    openMode: ECDbOpenMode = ECDbOpenMode.Readonly
-  ): ChangedElementsDb {
+  public static openDb(pathName: string, openMode: ECDbOpenMode = ECDbOpenMode.Readonly): ChangedElementsDb {
     const cacheDb = new ChangedElementsDb();
     cacheDb._openDb(pathName, openMode);
     return cacheDb;
@@ -112,10 +87,7 @@ export class ChangedElementsDb implements IDisposable {
    * @param pathName The path to the ECDb file to create.
    * @returns The new cache db
    */
-  public static createDb(
-    briefcase: IModelDb,
-    pathName: string
-  ): ChangedElementsDb {
+  public static createDb(briefcase: IModelDb, pathName: string): ChangedElementsDb {
     const cacheDb = new ChangedElementsDb();
     cacheDb._createDb(briefcase, pathName);
     return cacheDb;
@@ -165,8 +137,7 @@ export class ChangedElementsDb implements IDisposable {
       options.tempDir,
       options.wantChunkTraversal
     );
-    if (status !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(status, "Failed to process changesets");
+    if (status !== DbResult.BE_SQLITE_OK) throw new IModelError(status, "Failed to process changesets");
     return status;
   }
 
@@ -223,8 +194,7 @@ export class ChangedElementsDb implements IDisposable {
       options.relationshipCacheSize,
       options.wantChunkTraversal
     );
-    if (status !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(status, "Failed to process changesets");
+    if (status !== DbResult.BE_SQLITE_OK) throw new IModelError(status, "Failed to process changesets");
     return status;
   }
 
@@ -234,14 +204,8 @@ export class ChangedElementsDb implements IDisposable {
    * @returns Returns the changed elements between the changesets provided
    * @throws [IModelError]($common) if the operation failed.
    */
-  public getChangedElements(
-    startChangesetId: string,
-    endChangesetId: string
-  ): ChangedElements | undefined {
-    const result = this.nativeDb.getChangedElements(
-      startChangesetId,
-      endChangesetId
-    );
+  public getChangedElements(startChangesetId: string, endChangesetId: string): ChangedElements | undefined {
+    const result = this.nativeDb.getChangedElements(startChangesetId, endChangesetId);
     if (result.error || !result.result)
       throw new IModelError(
         result.error ? result.error.status : -1,
@@ -256,14 +220,8 @@ export class ChangedElementsDb implements IDisposable {
    * @returns Returns the changed models between the changesets provided
    * @throws [IModelError]($common) if the operation failed.
    */
-  public getChangedModels(
-    startChangesetId: string,
-    endChangesetId: string
-  ): ChangedModels | undefined {
-    const result = this.nativeDb.getChangedElements(
-      startChangesetId,
-      endChangesetId
-    );
+  public getChangedModels(startChangesetId: string, endChangesetId: string): ChangedModels | undefined {
+    const result = this.nativeDb.getChangedElements(startChangesetId, endChangesetId);
     if (result.error || !result.result)
       throw new IModelError(
         result.error ? result.error.status : -1,
@@ -278,16 +236,9 @@ export class ChangedElementsDb implements IDisposable {
    * @returns Returns the changed models between the changesets provided
    * @throws [IModelError]($common) if the operation failed.
    */
-  public getChangeData(
-    startChangesetId: string,
-    endChangesetId: string
-  ): ChangeData | undefined {
-    const result = this.nativeDb.getChangedElements(
-      startChangesetId,
-      endChangesetId
-    );
-    if (result.error)
-      throw new IModelError(result.error.status, result.error.message);
+  public getChangeData(startChangesetId: string, endChangesetId: string): ChangeData | undefined {
+    const result = this.nativeDb.getChangedElements(startChangesetId, endChangesetId);
+    if (result.error) throw new IModelError(result.error.status, result.error.message);
     return result.result as ChangeData;
   }
 
@@ -315,10 +266,7 @@ export class ChangedElementsDb implements IDisposable {
   /** @internal */
   public get nativeDb(): IModelJsNative.ChangedElementsECDb {
     if (!this._nativeDb)
-      throw new IModelError(
-        IModelStatus.BadRequest,
-        "ChangedElementsDb object has already been disposed."
-      );
+      throw new IModelError(IModelStatus.BadRequest, "ChangedElementsDb object has already been disposed.");
 
     return this._nativeDb;
   }

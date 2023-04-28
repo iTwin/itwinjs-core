@@ -27,9 +27,7 @@ export class ColorInfo {
     return new ColorInfo(color.hasTranslucency, color);
   }
   public static createNonUniform(hasTranslucency: boolean) {
-    return hasTranslucency
-      ? this._nonUniformTranslucent
-      : this._nonUniformOpaque;
+    return hasTranslucency ? this._nonUniformTranslucent : this._nonUniformOpaque;
   }
   public static createFromColorDef(color: ColorDef) {
     return this.createUniform(FloatRgba.fromColorDef(color));

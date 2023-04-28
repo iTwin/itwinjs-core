@@ -14,9 +14,7 @@ export class CesiumIonAssetProvider {
     return url.includes("$CesiumIonAsset=");
   }
   // TBD - Allow an object to override the URL and provide its own authentication.
-  public static parseCesiumUrl(
-    url: string
-  ): { id: number; key: string } | undefined {
+  public static parseCesiumUrl(url: string): { id: number; key: string } | undefined {
     const cesiumSuffix = "$CesiumIonAsset=";
     const cesiumIndex = url.indexOf(cesiumSuffix);
     if (cesiumIndex < 0) return undefined;

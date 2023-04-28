@@ -199,10 +199,7 @@ class XMLHttpRequestProxy {
       this._xhrMethod = method;
       this._xhrUrl = url;
       if (username) {
-        this.setRequestHeader(
-          "Authorization",
-          `Basic ${btoa(`${username}:${password}`)}`
-        ); // eslint-disable-line deprecation/deprecation
+        this.setRequestHeader("Authorization", `Basic ${btoa(`${username}:${password}`)}`); // eslint-disable-line deprecation/deprecation
       }
     }
   }
@@ -301,12 +298,8 @@ class XMLHttpRequestProxy {
 }
 
 class FetchProxy {
-  public static async fetch(
-    input: RequestInfo,
-    init?: RequestInit
-  ): Promise<Response> {
-    const req: Request =
-      input instanceof Request ? input : new Request(input, init);
+  public static async fetch(input: RequestInfo, init?: RequestInit): Promise<Response> {
+    const req: Request = input instanceof Request ? input : new Request(input, init);
     const beforeHandlers = HttpHandler.handlers.filter((value) => {
       return value.canHandle(req.url) && value.before;
     });
@@ -327,9 +320,7 @@ class FetchProxy {
   }
 }
 export interface IHttpHandler {
-  onRequest(
-    callback: (input: Request) => Response | undefined | null
-  ): IHttpHandler;
+  onRequest(callback: (input: Request) => Response | undefined | null): IHttpHandler;
   onResponse(callback: (input: Response) => Response): IHttpHandler;
 }
 class HttpHandler implements IHttpHandler {
@@ -345,9 +336,7 @@ class HttpHandler implements IHttpHandler {
     }
     return url.startsWith(this._urlRegEx);
   }
-  public onRequest(
-    callback: (input: Request) => Response | undefined | null
-  ): IHttpHandler {
+  public onRequest(callback: (input: Request) => Response | undefined | null): IHttpHandler {
     this.before = callback;
     return this;
   }
@@ -391,16 +380,12 @@ export class HttpRequestHook {
     }
   }
 }
-export async function usingOfflineScope<TResult>(
-  func: () => Promise<TResult>
-): Promise<TResult> {
+export async function usingOfflineScope<TResult>(func: () => Promise<TResult>): Promise<TResult> {
   return usingBackendOfflineScope(async () => {
     return usingFrontendOfflineScope(func);
   });
 }
-export async function usingBackendOfflineScope<TResult>(
-  func: () => Promise<TResult>
-): Promise<TResult> {
+export async function usingBackendOfflineScope<TResult>(func: () => Promise<TResult>): Promise<TResult> {
   await TestRpcInterface.getClient().beginOfflineScope();
   const endScope = async () => {
     await TestRpcInterface.getClient().endOfflineScope();
@@ -409,9 +394,7 @@ export async function usingBackendOfflineScope<TResult>(
   result.then(endScope, endScope);
   return result;
 }
-export async function usingFrontendOfflineScope<TResult>(
-  func: () => Promise<TResult>
-): Promise<TResult> {
+export async function usingFrontendOfflineScope<TResult>(func: () => Promise<TResult>): Promise<TResult> {
   HttpRequestHook.install();
   HttpRequestHook.accept("http://localhost")
     .onRequest(() => undefined)

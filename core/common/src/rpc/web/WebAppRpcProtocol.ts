@@ -10,18 +10,10 @@ import { BentleyError, Logger } from "@itwin/core-bentley";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { BackendReadable, BackendWritable } from "../../BackendTypes";
 import { RpcConfiguration } from "../core/RpcConfiguration";
-import {
-  RpcContentType,
-  RpcRequestStatus,
-  WEB_RPC_CONSTANTS,
-} from "../core/RpcConstants";
+import { RpcContentType, RpcRequestStatus, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
 import { RpcOperation } from "../core/RpcOperation";
 import { RpcProtocol, SerializedRpcRequest } from "../core/RpcProtocol";
-import {
-  OpenAPIInfo,
-  OpenAPIParameter,
-  RpcOpenAPIDescription,
-} from "./OpenAPI";
+import { OpenAPIInfo, OpenAPIParameter, RpcOpenAPIDescription } from "./OpenAPI";
 import { WebAppRpcLogging } from "./WebAppRpcLogging";
 import { WebAppRpcRequest } from "./WebAppRpcRequest";
 
@@ -73,18 +65,12 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
   public override preserveStreams = true;
 
   /** Convenience handler for an RPC operation get request for an HTTP server. */
-  public async handleOperationGetRequest(
-    req: HttpServerRequest,
-    res: HttpServerResponse
-  ) {
+  public async handleOperationGetRequest(req: HttpServerRequest, res: HttpServerResponse) {
     return this.handleOperationPostRequest(req, res);
   }
 
   /** Convenience handler for an RPC operation post request for an HTTP server. */
-  public async handleOperationPostRequest(
-    req: HttpServerRequest,
-    res: HttpServerResponse
-  ) {
+  public async handleOperationPostRequest(req: HttpServerRequest, res: HttpServerResponse) {
     let request: SerializedRpcRequest;
     try {
       request = await WebAppRpcRequest.parseRequest(this, req);
@@ -104,18 +90,13 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
   }
 
   /** Convenience handler for an OpenAPI description request for an HTTP server. */
-  public handleOpenApiDescriptionRequest(
-    _req: HttpServerRequest,
-    res: HttpServerResponse
-  ) {
+  public handleOpenApiDescriptionRequest(_req: HttpServerRequest, res: HttpServerResponse) {
     const description = JSON.stringify(this.openAPIDescription);
     res.send(description);
   }
 
   /** Converts an HTTP content type value to an RPC content type value. */
-  public static computeContentType(
-    httpType: string | null | undefined
-  ): RpcContentType {
+  public static computeContentType(httpType: string | null | undefined): RpcContentType {
     if (!httpType) return RpcContentType.Unknown;
 
     if (httpType.indexOf(WEB_RPC_CONSTANTS.ANY_TEXT) === 0) {
@@ -211,9 +192,7 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
   /** Returns the OpenAPI-compatible URI path parameters for an RPC operation.
    * @internal
    */
-  public abstract supplyPathParametersForOperation(
-    _operation: RpcOperation
-  ): OpenAPIParameter[];
+  public abstract supplyPathParametersForOperation(_operation: RpcOperation): OpenAPIParameter[];
 
   /** Constructs an HTTP protocol. */
   public constructor(configuration: RpcConfiguration) {

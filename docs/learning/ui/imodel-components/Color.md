@@ -21,11 +21,7 @@ The following sample shows the components above used together to form a color pi
 
 ```tsx
 import { HSVColor, ColorDef, ColorByName } from "@itwin/core-common";
-import {
-  SaturationPicker,
-  HueSlider,
-  ColorSwatch,
-} from "@itwin/imodel-components-react";
+import { SaturationPicker, HueSlider, ColorSwatch } from "@itwin/imodel-components-react";
 ```
 
 #### State
@@ -127,10 +123,7 @@ interface State {
 #### render() method
 
 ```tsx
-<ColorPickerButton
-  initialColor={this.state.color}
-  onColorPick={this._handleColorChange}
-/>
+<ColorPickerButton initialColor={this.state.color} onColorPick={this._handleColorChange} />
 ```
 
 #### Handler Function

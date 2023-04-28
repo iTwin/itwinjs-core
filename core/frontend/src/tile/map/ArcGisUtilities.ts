@@ -43,19 +43,14 @@ export class ArcGisUtilities {
   private static getBBoxString(range?: MapCartoRectangle) {
     if (!range) range = MapCartoRectangle.createMaximum();
 
-    return `${range.low.x * Angle.degreesPerRadian},${
-      range.low.y * Angle.degreesPerRadian
-    },${range.high.x * Angle.degreesPerRadian},${
-      range.high.y * Angle.degreesPerRadian
-    }`;
+    return `${range.low.x * Angle.degreesPerRadian},${range.low.y * Angle.degreesPerRadian},${
+      range.high.x * Angle.degreesPerRadian
+    },${range.high.y * Angle.degreesPerRadian}`;
   }
 
   public static async getNationalMapSources(): Promise<MapLayerSource[]> {
     const sources = new Array<MapLayerSource>();
-    const response = await fetch(
-      "https://viewer.nationalmap.gov/tnmaccess/api/getMapServiceList",
-      { method: "GET" }
-    );
+    const response = await fetch("https://viewer.nationalmap.gov/tnmaccess/api/getMapServiceList", { method: "GET" });
     const services = await response.json();
 
     if (!Array.isArray(services)) return sources;
@@ -92,10 +87,7 @@ export class ArcGisUtilities {
     }
     return sources;
   }
-  public static async getServiceDirectorySources(
-    url: string,
-    baseUrl?: string
-  ): Promise<MapLayerSource[]> {
+  public static async getServiceDirectorySources(url: string, baseUrl?: string): Promise<MapLayerSource[]> {
     if (undefined === baseUrl) baseUrl = url;
     let sources = new Array<MapLayerSource>();
     const response = await fetch(`${url}?f=json`, { method: "GET" });
@@ -103,12 +95,7 @@ export class ArcGisUtilities {
     if (json !== undefined) {
       if (Array.isArray(json.folders)) {
         for (const folder of json.folders) {
-          sources = sources.concat(
-            await ArcGisUtilities.getServiceDirectorySources(
-              `${url}/${folder}`,
-              url
-            )
-          );
+          sources = sources.concat(await ArcGisUtilities.getServiceDirectorySources(`${url}/${folder}`, url));
         }
       }
       if (Array.isArray(json.services)) {
@@ -183,13 +170,7 @@ export class ArcGisUtilities {
     password?: string,
     ignoreCache?: boolean
   ): Promise<MapLayerSourceValidation> {
-    const metadata = await this.getServiceJson(
-      url,
-      formatId,
-      userName,
-      password,
-      ignoreCache
-    );
+    const metadata = await this.getServiceJson(url, formatId, userName, password, ignoreCache);
     const json = metadata?.content;
     if (json === undefined) {
       return { status: MapLayerSourceStatus.InvalidUrl };
@@ -210,9 +191,7 @@ export class ArcGisUtilities {
       const capabilities: string = json.capabilities;
       capsArray = capabilities.split(",").map((entry) => entry.toLowerCase());
 
-      const filtered = capsArray.filter((element, _index, _array) =>
-        capabilitiesFilter.includes(element)
-      );
+      const filtered = capsArray.filter((element, _index, _array) => capabilitiesFilter.includes(element));
       hasCapabilities = filtered.length === capabilitiesFilter.length;
     }
     if (!hasCapabilities) {
@@ -220,11 +199,7 @@ export class ArcGisUtilities {
     }
 
     // Only EPSG:3857 is supported with pre-rendered tiles.
-    if (
-      json.tileInfo &&
-      capsArray.includes("tilesonly") &&
-      !ArcGisUtilities.isEpsg3857Compatible(json.tileInfo)
-    ) {
+    if (json.tileInfo && capsArray.includes("tilesonly") && !ArcGisUtilities.isEpsg3857Compatible(json.tileInfo)) {
       return { status: MapLayerSourceStatus.InvalidCoordinateSystem };
     }
 
@@ -233,11 +208,8 @@ export class ArcGisUtilities {
       subLayers = new Array<MapSubLayerProps>();
 
       for (const layer of json.layers) {
-        const parent =
-          layer.parentLayerId < 0 ? undefined : layer.parentLayerId;
-        const children = Array.isArray(layer.subLayerIds)
-          ? layer.subLayerIds
-          : undefined;
+        const parent = layer.parentLayerId < 0 ? undefined : layer.parentLayerId;
+        const children = Array.isArray(layer.subLayerIds) ? layer.subLayerIds : undefined;
         subLayers.push({
           name: layer.name,
           visible: layer.defaultVisibility !== false,
@@ -254,23 +226,13 @@ export class ArcGisUtilities {
    * Validate MapService tiling metadata and checks if the tile tree is 'Google Maps' compatible.
    */
   public static isEpsg3857Compatible(tileInfo: any) {
-    if (
-      tileInfo.spatialReference?.latestWkid !== 3857 ||
-      !Array.isArray(tileInfo.lods)
-    )
-      return false;
+    if (tileInfo.spatialReference?.latestWkid !== 3857 || !Array.isArray(tileInfo.lods)) return false;
 
     const zeroLod = tileInfo.lods[0];
-    return (
-      zeroLod.level === 0 &&
-      Math.abs(zeroLod.resolution - 156543.03392800014) < 0.001
-    );
+    return zeroLod.level === 0 && Math.abs(zeroLod.resolution - 156543.03392800014) < 0.001;
   }
 
-  private static _serviceCache = new Map<
-    string,
-    ArcGISServiceMetadata | undefined
-  >();
+  private static _serviceCache = new Map<string, ArcGISServiceMetadata | undefined>();
 
   /**
    * Fetch an ArcGIS service metadata, and returns its JSON representation.
@@ -298,8 +260,7 @@ export class ArcGisUtilities {
 
       // In some cases, caller might already know token is required, so append it immediately
       if (requireToken) {
-        const accessClient =
-          IModelApp.mapLayerFormatRegistry.getAccessClient(formatId);
+        const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(formatId);
         if (accessClient) {
           accessTokenRequired = true;
           await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {
@@ -313,15 +274,10 @@ export class ArcGisUtilities {
 
       // Append security token when corresponding error code is returned by ArcGIS service
       let errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
-      if (
-        !accessTokenRequired &&
-        errorCode !== undefined &&
-        errorCode === ArcGisErrorCode.TokenRequired
-      ) {
+      if (!accessTokenRequired && errorCode !== undefined && errorCode === ArcGisErrorCode.TokenRequired) {
         accessTokenRequired = true;
         // If token required
-        const accessClient =
-          IModelApp.mapLayerFormatRegistry.getAccessClient(formatId);
+        const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(formatId);
         if (accessClient) {
           tmpUrl = new URL(url);
           tmpUrl.searchParams.append("f", "json");
@@ -338,10 +294,7 @@ export class ArcGisUtilities {
       const json = await response.json();
       const info = { content: json, accessTokenRequired };
       // Cache the response only if it doesn't contain any error.
-      ArcGisUtilities._serviceCache.set(
-        url,
-        errorCode === undefined ? info : undefined
-      );
+      ArcGisUtilities._serviceCache.set(url, errorCode === undefined ? info : undefined);
       return info; // Always return json, even though it contains an error code.
     } catch (_error) {
       ArcGisUtilities._serviceCache.set(url, undefined);
@@ -353,10 +306,7 @@ export class ArcGisUtilities {
    */
   public static async checkForResponseErrorCode(response: Response) {
     const tmpResponse = response;
-    if (
-      response.headers &&
-      tmpResponse.headers.get("content-type")?.toLowerCase().includes("json")
-    ) {
+    if (response.headers && tmpResponse.headers.get("content-type")?.toLowerCase().includes("json")) {
       try {
         // Note:
         // Since response stream can only be read once (i.e. calls to .json() method)
@@ -410,14 +360,7 @@ export class ArcGisUtilities {
     screenDpi = 96
   ): { zoom: number; resolution: number; scale: number }[] {
     // Note: There is probably a more direct way to compute this, but I prefer to go for a simple and well documented approach.
-    if (
-      startZoom < 0 ||
-      endZoom < startZoom ||
-      tileSize < 0 ||
-      screenDpi < 1 ||
-      latitude < -90 ||
-      latitude > 90
-    )
+    if (startZoom < 0 || endZoom < startZoom || tileSize < 0 || screenDpi < 1 || latitude < -90 || latitude > 90)
       return [];
 
     const inchPerMeter = 1 / 0.0254;
@@ -452,12 +395,7 @@ export class ArcGisUtilities {
   ): { minLod?: number; maxLod?: number } {
     let minLod: number | undefined, maxLod: number | undefined;
 
-    const zoomScales = ArcGisUtilities.computeZoomLevelsScales(
-      0,
-      defaultMaxLod,
-      0 /* latitude 0 = Equator*/,
-      tileSize
-    );
+    const zoomScales = ArcGisUtilities.computeZoomLevelsScales(0, defaultMaxLod, 0 /* latitude 0 = Equator*/, tileSize);
 
     if (zoomScales.length > 0) {
       if (minScale) {

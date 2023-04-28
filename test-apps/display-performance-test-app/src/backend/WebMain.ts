@@ -19,12 +19,7 @@ import { initializeBackend } from "./backend";
 /* eslint-disable no-console */
 
 export function getRpcInterfaces() {
-  return [
-    DisplayPerfRpcInterface,
-    IModelTileRpcInterface,
-    SnapshotIModelRpcInterface,
-    IModelReadRpcInterface,
-  ];
+  return [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
 }
 
 // Start the Express web server
@@ -33,18 +28,9 @@ function startWebServer() {
   const appExp = express();
   // Enable CORS for all apis
   appExp.all("/*", (_req, res, next) => {
-    res.header(
-      "Access-Control-Allow-Origin",
-      BentleyCloudRpcConfiguration.accessControl.allowOrigin
-    );
-    res.header(
-      "Access-Control-Allow-Methods",
-      BentleyCloudRpcConfiguration.accessControl.allowMethods
-    );
-    res.header(
-      "Access-Control-Allow-Headers",
-      BentleyCloudRpcConfiguration.accessControl.allowHeaders
-    );
+    res.header("Access-Control-Allow-Origin", BentleyCloudRpcConfiguration.accessControl.allowOrigin);
+    res.header("Access-Control-Allow-Methods", BentleyCloudRpcConfiguration.accessControl.allowMethods);
+    res.header("Access-Control-Allow-Headers", BentleyCloudRpcConfiguration.accessControl.allowHeaders);
     next();
   });
   // All we do is serve out static files, so We have only the simple public path route.
@@ -57,10 +43,7 @@ function startWebServer() {
   // Run the server...
   appExp.set("port", 3000);
   const announceWebServer = () => {};
-  DisplayPerfRpcInterface.webServer = appExp.listen(
-    appExp.get("port"),
-    announceWebServer
-  );
+  DisplayPerfRpcInterface.webServer = appExp.listen(appExp.get("port"), announceWebServer);
 }
 
 (async () => {
@@ -76,15 +59,8 @@ function startWebServer() {
   const chromeFlags: Array<string> = [];
 
   process.argv.forEach((arg) => {
-    if (arg.split(".").pop() === "json")
-      DisplayPerfRpcInterface.jsonFilePath = arg;
-    else if (
-      arg === "chrome" ||
-      arg === "edge" ||
-      arg === "firefox" ||
-      arg === "safari"
-    )
-      browser = arg;
+    if (arg.split(".").pop() === "json") DisplayPerfRpcInterface.jsonFilePath = arg;
+    else if (arg === "chrome" || arg === "edge" || arg === "firefox" || arg === "safari") browser = arg;
     else if (arg === "headless") chromeFlags.push("--headless");
   });
 
@@ -104,33 +80,18 @@ function startWebServer() {
 
   // Enable CORS for all apis
   app.all("/*", (_req, res, next) => {
-    res.header(
-      "Access-Control-Allow-Origin",
-      BentleyCloudRpcConfiguration.accessControl.allowOrigin
-    );
-    res.header(
-      "Access-Control-Allow-Methods",
-      BentleyCloudRpcConfiguration.accessControl.allowMethods
-    );
-    res.header(
-      "Access-Control-Allow-Headers",
-      BentleyCloudRpcConfiguration.accessControl.allowHeaders
-    );
+    res.header("Access-Control-Allow-Origin", BentleyCloudRpcConfiguration.accessControl.allowOrigin);
+    res.header("Access-Control-Allow-Methods", BentleyCloudRpcConfiguration.accessControl.allowMethods);
+    res.header("Access-Control-Allow-Headers", BentleyCloudRpcConfiguration.accessControl.allowHeaders);
     next();
   });
 
   // --------------------------------------------
   // Routes
   // --------------------------------------------
-  app.get("/v3/swagger.json", (req, res) =>
-    cloudConfig.protocol.handleOpenApiDescriptionRequest(req, res)
-  );
-  app.post("*", async (req, res) =>
-    cloudConfig.protocol.handleOperationPostRequest(req, res)
-  );
-  app.get(/\/imodel\//, async (req, res) =>
-    cloudConfig.protocol.handleOperationGetRequest(req, res)
-  );
+  app.get("/v3/swagger.json", (req, res) => cloudConfig.protocol.handleOpenApiDescriptionRequest(req, res));
+  app.post("*", async (req, res) => cloudConfig.protocol.handleOperationPostRequest(req, res));
+  app.get(/\/imodel\//, async (req, res) => cloudConfig.protocol.handleOperationGetRequest(req, res));
   app.use("*", (_req, res) => res.send("<h1>iTwin.js RPC Server</h1>"));
 
   // ---------------------------------------------
@@ -138,11 +99,7 @@ function startWebServer() {
   // ---------------------------------------------
   app.set("port", serverConfig.port);
   const announce = () =>
-    console.log(
-      `***** Display Performance Testing App listening on ${
-        serverConfig.baseUrl
-      }:${app.get("port")}`
-    );
+    console.log(`***** Display Performance Testing App listening on ${serverConfig.baseUrl}:${app.get("port")}`);
 
   DisplayPerfRpcInterface.backendServer = app.listen(app.get("port"), announce);
 

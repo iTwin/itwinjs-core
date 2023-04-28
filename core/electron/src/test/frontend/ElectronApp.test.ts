@@ -4,11 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import {
-  EmptyLocalization,
-  RpcInterface,
-  RpcRegistry,
-} from "@itwin/core-common";
+import { EmptyLocalization, RpcInterface, RpcRegistry } from "@itwin/core-common";
 import { IModelApp, NativeApp } from "@itwin/core-frontend";
 import { ElectronApp } from "../../ElectronFrontend";
 
@@ -46,15 +42,9 @@ describe("ElectronApp tests.", () => {
         localization: new EmptyLocalization(),
       },
     });
-    assert(
-      RpcRegistry.instance.definitionClasses.has(TestRpcInterface.interfaceName)
-    );
+    assert(RpcRegistry.instance.definitionClasses.has(TestRpcInterface.interfaceName));
 
     await ElectronApp.shutdown();
-    assert(
-      !RpcRegistry.instance.definitionClasses.has(
-        TestRpcInterface.interfaceName
-      )
-    );
+    assert(!RpcRegistry.instance.definitionClasses.has(TestRpcInterface.interfaceName));
   });
 });

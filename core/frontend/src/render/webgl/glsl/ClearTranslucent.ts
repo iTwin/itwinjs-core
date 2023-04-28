@@ -17,9 +17,7 @@ const assignFragData = `
 `;
 
 /** @internal */
-export function createClearTranslucentProgram(
-  context: WebGL2RenderingContext
-): ShaderProgram {
+export function createClearTranslucentProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(false);
   const frag = builder.frag;
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);

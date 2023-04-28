@@ -38,14 +38,8 @@ export abstract class PhysicalMaterial extends DefinitionElement {
    * @param definitionModelId The Id of the DefinitionModel that will contain the PhysicalMaterial and provide the scope for its name.
    * @param name The name (codeValue) of the PhysicalMaterial
    */
-  public static createCode(
-    iModel: IModelDb,
-    definitionModelId: CodeScopeProps,
-    name: string
-  ): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(
-      BisCodeSpec.physicalMaterial
-    );
+  public static createCode(iModel: IModelDb, definitionModelId: CodeScopeProps, name: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.physicalMaterial);
     return new Code({
       spec: codeSpec.id,
       scope: definitionModelId,
@@ -105,15 +99,9 @@ export class RenderMaterialElement extends DefinitionElement {
    * @param scopeModelId The Id of the DefinitionModel that contains the RenderMaterial and provides the scope for its name.
    * @param name The RenderMaterial name
    */
-  public static createCode(
-    iModel: IModelDb,
-    scopeModelId: CodeScopeProps,
-    name: string
-  ): Code {
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, name: string): Code {
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.texture);
-    return 0 === name.length
-      ? Code.createEmpty()
-      : new Code({ spec: codeSpec.id, scope: scopeModelId, value: name });
+    return 0 === name.length ? Code.createEmpty() : new Code({ spec: codeSpec.id, scope: scopeModelId, value: name });
   }
   /**
    * Create a RenderMaterial with given parameters.
@@ -138,8 +126,7 @@ export class RenderMaterialElement extends DefinitionElement {
       function choose<K extends keyof TexMap>(obj: TexMap, key: K): void {
         const pat = params.patternMap;
         if (pat && undefined !== pat[key]) obj[key] = pat[key];
-        else if (params.normalMap && undefined !== params.normalMap[key])
-          obj[key] = params.normalMap[key];
+        else if (params.normalMap && undefined !== params.normalMap[key]) obj[key] = params.normalMap[key];
       }
 
       const baseProps: TexMap = {};
@@ -158,8 +145,7 @@ export class RenderMaterialElement extends DefinitionElement {
       choose(baseProps, "pattern_constantlod_maxdistanceclamp");
 
       maps = {};
-      if (params.patternMap)
-        maps.Pattern = { ...params.patternMap, ...baseProps };
+      if (params.patternMap) maps.Pattern = { ...params.patternMap, ...baseProps };
 
       if (params.normalMap) {
         maps.Normal = {
@@ -223,12 +209,7 @@ export class RenderMaterialElement extends DefinitionElement {
     materialName: string,
     params: RenderMaterialElementParams
   ): Id64String {
-    const renderMaterial = this.create(
-      iModelDb,
-      definitionModelId,
-      materialName,
-      params
-    );
+    const renderMaterial = this.create(iModelDb, definitionModelId, materialName, params);
     return iModelDb.elements.insertElement(renderMaterial.toJSON());
   }
 }
@@ -296,7 +277,6 @@ export namespace RenderMaterialElement {
  * @see [[RenderMaterialElement.create]] and [[RenderMaterialElement.insert]] to create a [[RenderMaterial]] from parameters of this type.
  * @public
  */
-export interface RenderMaterialElementParams
-  extends RenderMaterialElement.Params {
+export interface RenderMaterialElementParams extends RenderMaterialElement.Params {
   // eslint-disable-line deprecation/deprecation, @typescript-eslint/no-empty-interface
 }

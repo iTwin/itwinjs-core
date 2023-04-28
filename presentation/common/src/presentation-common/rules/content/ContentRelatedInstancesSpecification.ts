@@ -15,8 +15,7 @@ import { ContentSpecificationBase } from "./ContentSpecification";
  * @see [Content related instances specification reference documentation page]($docs/presentation/content/ContentRelatedInstances.md)
  * @public
  */
-export interface ContentRelatedInstancesSpecification
-  extends ContentSpecificationBase {
+export interface ContentRelatedInstancesSpecification extends ContentSpecificationBase {
   /** Used for serializing to JSON. */
   specType: "ContentRelatedInstances";
 

@@ -43,9 +43,7 @@ export class BatchState {
     return undefined !== this._curBatch ? this._curBatch.batchId : 0;
   }
   public get currentBatchIModel(): IModelConnection | undefined {
-    return undefined !== this._curBatch
-      ? this._curBatch.batchIModel
-      : undefined;
+    return undefined !== this._curBatch ? this._curBatch.batchIModel : undefined;
   }
   public get isEmpty(): boolean {
     return 0 === this._batches.length;
@@ -78,17 +76,11 @@ export class BatchState {
     const featureIndex = featureId - batch.batchId;
     assert(featureIndex >= 0);
 
-    const parts = batch.featureTable.getElementIdPair(
-      featureIndex,
-      BatchState._scratchElementIdPair
-    );
+    const parts = batch.featureTable.getElementIdPair(featureIndex, BatchState._scratchElementIdPair);
     return Id64.fromUint32Pair(parts.lower, parts.upper);
   }
 
-  public getFeature(
-    featureId: number,
-    result: ModelFeature
-  ): ModelFeature | undefined {
+  public getFeature(featureId: number, result: ModelFeature): ModelFeature | undefined {
     const batch = this.find(featureId);
     if (undefined === batch) return undefined;
 
@@ -134,18 +126,14 @@ export class BatchState {
   private indexOf(featureId: number): number {
     if (featureId <= 0) return -1;
 
-    const found = lowerBound(
-      featureId,
-      this._batches,
-      (lhs: number, rhs: Batch) => {
-        // Determine if the requested feature ID is within the range of this batch.
-        if (lhs < rhs.batchId) return -1;
+    const found = lowerBound(featureId, this._batches, (lhs: number, rhs: Batch) => {
+      // Determine if the requested feature ID is within the range of this batch.
+      if (lhs < rhs.batchId) return -1;
 
-        const numFeatures = rhs.featureTable.numFeatures;
-        const nextBatchId = rhs.batchId + (numFeatures > 0 ? numFeatures : 1);
-        return lhs < nextBatchId ? 0 : 1;
-      }
-    );
+      const numFeatures = rhs.featureTable.numFeatures;
+      const nextBatchId = rhs.batchId + (numFeatures > 0 ? numFeatures : 1);
+      return lhs < nextBatchId ? 0 : 1;
+    });
 
     return found.index < this._batches.length ? found.index : -1;
   }

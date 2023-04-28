@@ -3,18 +3,8 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  ColorDef,
-  FeatureAppearance,
-  MonochromeMode,
-  RenderMode,
-} from "@itwin/core-common";
-import {
-  FeatureSymbology,
-  IModelConnection,
-  SnapshotConnection,
-  Viewport,
-} from "@itwin/core-frontend";
+import { ColorDef, FeatureAppearance, MonochromeMode, RenderMode } from "@itwin/core-common";
+import { FeatureSymbology, IModelConnection, SnapshotConnection, Viewport } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { Color, testOnScreenViewport } from "../TestViewport";
 
@@ -93,10 +83,7 @@ describe("Monochrome", async () => {
 
       class ColorOverride {
         constructor(public color: ColorDef) {}
-        public addFeatureOverrides(
-          ovrs: FeatureSymbology.Overrides,
-          _vp: Viewport
-        ): void {
+        public addFeatureOverrides(ovrs: FeatureSymbology.Overrides, _vp: Viewport): void {
           ovrs.setDefaultOverrides(FeatureAppearance.fromRgb(this.color));
         }
       }

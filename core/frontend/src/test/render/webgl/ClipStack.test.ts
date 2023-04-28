@@ -102,21 +102,15 @@ describe("ClipStack", async () => {
     }
 
     public expectInvoked(expected: Partial<Invoked>) {
-      if (undefined !== expected.uploadTexture)
-        expect(this.invoked.uploadTexture).to.equal(expected.uploadTexture);
+      if (undefined !== expected.uploadTexture) expect(this.invoked.uploadTexture).to.equal(expected.uploadTexture);
 
-      if (undefined !== expected.updateTexture)
-        expect(this.invoked.updateTexture).to.equal(expected.updateTexture);
+      if (undefined !== expected.updateTexture) expect(this.invoked.updateTexture).to.equal(expected.updateTexture);
 
       if (undefined !== expected.allocateGpuBuffer)
-        expect(this.invoked.allocateGpuBuffer).to.equal(
-          expected.allocateGpuBuffer
-        );
+        expect(this.invoked.allocateGpuBuffer).to.equal(expected.allocateGpuBuffer);
 
       if (undefined !== expected.recomputeTexture)
-        expect(this.invoked.recomputeTexture).to.equal(
-          expected.recomputeTexture
-        );
+        expect(this.invoked.recomputeTexture).to.equal(expected.recomputeTexture);
 
       this.reset();
     }

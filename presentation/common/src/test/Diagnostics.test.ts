@@ -145,19 +145,11 @@ describe("compareDiagnosticsSeverities", () => {
   });
 
   it("returns positive when given lhs is higher severity than rhs", () => {
-    expect(
-      compareDiagnosticsSeverities(undefined, "warning")
-    ).to.be.greaterThan(0);
-    expect(compareDiagnosticsSeverities(undefined, "info")).to.be.greaterThan(
-      0
-    );
-    expect(compareDiagnosticsSeverities(undefined, "debug")).to.be.greaterThan(
-      0
-    );
+    expect(compareDiagnosticsSeverities(undefined, "warning")).to.be.greaterThan(0);
+    expect(compareDiagnosticsSeverities(undefined, "info")).to.be.greaterThan(0);
+    expect(compareDiagnosticsSeverities(undefined, "debug")).to.be.greaterThan(0);
     expect(compareDiagnosticsSeverities(undefined, true)).to.be.greaterThan(0);
-    expect(compareDiagnosticsSeverities(undefined, "trace")).to.be.greaterThan(
-      0
-    );
+    expect(compareDiagnosticsSeverities(undefined, "trace")).to.be.greaterThan(0);
 
     expect(compareDiagnosticsSeverities(false, "warning")).to.be.greaterThan(0);
     expect(compareDiagnosticsSeverities(false, "info")).to.be.greaterThan(0);
@@ -165,24 +157,16 @@ describe("compareDiagnosticsSeverities", () => {
     expect(compareDiagnosticsSeverities(false, true)).to.be.greaterThan(0);
     expect(compareDiagnosticsSeverities(false, "trace")).to.be.greaterThan(0);
 
-    expect(compareDiagnosticsSeverities("error", "warning")).to.be.greaterThan(
-      0
-    );
+    expect(compareDiagnosticsSeverities("error", "warning")).to.be.greaterThan(0);
     expect(compareDiagnosticsSeverities("error", "info")).to.be.greaterThan(0);
     expect(compareDiagnosticsSeverities("error", "debug")).to.be.greaterThan(0);
     expect(compareDiagnosticsSeverities("error", true)).to.be.greaterThan(0);
     expect(compareDiagnosticsSeverities("error", "trace")).to.be.greaterThan(0);
 
-    expect(compareDiagnosticsSeverities("warning", "info")).to.be.greaterThan(
-      0
-    );
-    expect(compareDiagnosticsSeverities("warning", "debug")).to.be.greaterThan(
-      0
-    );
+    expect(compareDiagnosticsSeverities("warning", "info")).to.be.greaterThan(0);
+    expect(compareDiagnosticsSeverities("warning", "debug")).to.be.greaterThan(0);
     expect(compareDiagnosticsSeverities("warning", true)).to.be.greaterThan(0);
-    expect(compareDiagnosticsSeverities("warning", "trace")).to.be.greaterThan(
-      0
-    );
+    expect(compareDiagnosticsSeverities("warning", "trace")).to.be.greaterThan(0);
 
     expect(compareDiagnosticsSeverities("info", "debug")).to.be.greaterThan(0);
     expect(compareDiagnosticsSeverities("info", true)).to.be.greaterThan(0);
@@ -219,8 +203,6 @@ describe("compareDiagnosticsSeverities", () => {
 
     expect(compareDiagnosticsSeverities("warning", "error")).to.be.lessThan(0);
     expect(compareDiagnosticsSeverities("warning", false)).to.be.lessThan(0);
-    expect(compareDiagnosticsSeverities("warning", undefined)).to.be.lessThan(
-      0
-    );
+    expect(compareDiagnosticsSeverities("warning", undefined)).to.be.lessThan(0);
   });
 });

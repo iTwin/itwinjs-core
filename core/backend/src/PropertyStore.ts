@@ -46,10 +46,7 @@ export interface PropertyStore {
   /** Save a single property in this PropertyStore. If the property already exists, its value is overwritten.
    * @note This will obtain the write lock, save the value, and then release the write lock.
    */
-  saveProperty(
-    name: PropertyStore.PropertyName,
-    value: PropertyStore.PropertyType
-  ): Promise<void>;
+  saveProperty(name: PropertyStore.PropertyName, value: PropertyStore.PropertyType): Promise<void>;
   /** Save an array of properties in this PropertyStore. If a property already exists, its value is overwritten.
    * @note This will obtain the write lock, save the values, and then release the write lock.
    */
@@ -67,17 +64,10 @@ export interface PropertyStore {
 /** @alpha */
 export namespace PropertyStore {
   /** @internal */
-  export let openPropertyStore:
-    | ((props: CloudSqlite.ContainerAccessProps) => PropertyStore)
-    | undefined;
+  export let openPropertyStore: ((props: CloudSqlite.ContainerAccessProps) => PropertyStore) | undefined;
 
   /** The set of valid types for properties in a PropertyStore. */
-  export type PropertyType =
-    | string
-    | number
-    | boolean
-    | Uint8Array
-    | SettingObject;
+  export type PropertyType = string | number | boolean | Uint8Array | SettingObject;
   /** The name of a Property. May not have leading or trailing spaces, and must be between 3 and 2048 characters long. */
   export type PropertyName = string;
   /** An array of PropertyName/PropertyType pairs to be stored in a PropertyStore. */
@@ -92,14 +82,7 @@ export namespace PropertyStore {
     /** A value filter. May include wild cards when used with `GLOB` or `LIKE` */
     readonly value?: string;
     /** The comparison operator for `value`. Default is `=` */
-    readonly valueCompare?:
-      | "GLOB"
-      | "LIKE"
-      | "NOT GLOB"
-      | "NOT LIKE"
-      | "="
-      | "<"
-      | ">";
+    readonly valueCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
     /** Order results ascending or descending. If not supplied, the results are unordered (random). */
     readonly orderBy?: "ASC" | "DESC";
     /** An SQL expression to further filter results. This string is appended to the `WHERE` clause with an `AND` (that should not be part of the sqlExpression) */

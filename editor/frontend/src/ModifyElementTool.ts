@@ -23,10 +23,7 @@ import {
   Viewport,
 } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
-import {
-  computeChordToleranceFromPoint,
-  DynamicGraphicsProvider,
-} from "./CreateElementTool";
+import { computeChordToleranceFromPoint, DynamicGraphicsProvider } from "./CreateElementTool";
 
 /** @alpha Edit tool base class for updating existing elements. */
 export abstract class ModifyElementTool extends ElementSetTool {
@@ -35,24 +32,15 @@ export abstract class ModifyElementTool extends ElementSetTool {
   protected allowView(_vp: Viewport) {
     return true;
   }
-  public override isCompatibleViewport(
-    vp: Viewport | undefined,
-    isSelectedViewChange: boolean
-  ): boolean {
-    return (
-      super.isCompatibleViewport(vp, isSelectedViewChange) &&
-      undefined !== vp &&
-      this.allowView(vp)
-    );
+  public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean {
+    return super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && this.allowView(vp);
   }
 
   protected onGeometryFilterChanged(): void {
     this._checkedIds.clear();
   }
 
-  protected async doAcceptElementForOperation(
-    _id: Id64String
-  ): Promise<boolean> {
+  protected async doAcceptElementForOperation(_id: Id64String): Promise<boolean> {
     return false;
   }
 
@@ -62,8 +50,7 @@ export abstract class ModifyElementTool extends ElementSetTool {
     let accept = this._checkedIds.get(id);
 
     if (undefined === accept) {
-      if (this.agenda.isEmpty && this._checkedIds.size > 1000)
-        this._checkedIds.clear(); // Limit auto-locate cache size to something reasonable...
+      if (this.agenda.isEmpty && this._checkedIds.size > 1000) this._checkedIds.clear(); // Limit auto-locate cache size to something reasonable...
 
       accept = await this.doAcceptElementForOperation(id);
       this._checkedIds.set(id, accept);
@@ -72,10 +59,7 @@ export abstract class ModifyElementTool extends ElementSetTool {
     return accept;
   }
 
-  protected override async isElementValidForOperation(
-    hit: HitDetail,
-    out?: LocateResponse
-  ): Promise<boolean> {
+  protected override async isElementValidForOperation(hit: HitDetail, out?: LocateResponse): Promise<boolean> {
     if (!(await super.isElementValidForOperation(hit, out))) return false;
 
     return this.acceptElementForOperation(hit.sourceId);
@@ -95,9 +79,7 @@ export abstract class ModifyElementTool extends ElementSetTool {
     return this.postFilterIds(await super.getGroupIds(id));
   }
 
-  protected override async getSelectionSetCandidates(
-    ss: SelectionSet
-  ): Promise<Id64Arg> {
+  protected override async getSelectionSetCandidates(ss: SelectionSet): Promise<Id64Arg> {
     return this.postFilterIds(await super.getSelectionSetCandidates(ss));
   }
 
@@ -108,9 +90,7 @@ export abstract class ModifyElementTool extends ElementSetTool {
     method: SelectionMethod,
     overlap: boolean
   ): Promise<Id64Arg> {
-    return this.postFilterIds(
-      await super.getDragSelectCandidates(vp, origin, corner, method, overlap)
-    );
+    return this.postFilterIds(await super.getDragSelectCandidates(vp, origin, corner, method, overlap));
   }
 
   protected setupAccuDraw(): void {}
@@ -124,13 +104,9 @@ export abstract class ModifyElementTool extends ElementSetTool {
     ev: BeButtonEvent,
     isAccept: boolean
   ): JsonGeometryStream | FlatBufferGeometryStream | undefined;
-  protected abstract getElementProps(
-    ev: BeButtonEvent
-  ): GeometricElementProps | undefined;
+  protected abstract getElementProps(ev: BeButtonEvent): GeometricElementProps | undefined;
 
-  protected async doUpdateElement(
-    _props: GeometricElementProps
-  ): Promise<boolean> {
+  protected async doUpdateElement(_props: GeometricElementProps): Promise<boolean> {
     return false;
   }
 
@@ -141,8 +117,7 @@ export abstract class ModifyElementTool extends ElementSetTool {
     const elemProps = this.getElementProps(ev);
     if (undefined === elemProps) return false;
 
-    if ("flatbuffer" === geometry.format)
-      elemProps.elementGeometryBuilderParams = { entryArray: geometry.data };
+    if ("flatbuffer" === geometry.format) elemProps.elementGeometryBuilderParams = { entryArray: geometry.data };
     else elemProps.geom = geometry.data;
 
     return this.doUpdateElement(elemProps);
@@ -154,10 +129,7 @@ export abstract class ModifyElementTool extends ElementSetTool {
 }
 
 /** @alpha Edit tool base class for updating existing elements that use dynamics to show intermediate results. */
-export abstract class ModifyElementWithDynamicsTool
-  extends ModifyElementTool
-  implements FeatureOverrideProvider
-{
+export abstract class ModifyElementWithDynamicsTool extends ModifyElementTool implements FeatureOverrideProvider {
   protected _graphicsProvider?: DynamicGraphicsProvider;
   protected _firstResult = true;
   protected _agendaAppearanceDefault?: FeatureAppearance;
@@ -188,16 +160,11 @@ export abstract class ModifyElementWithDynamicsTool
     return false;
   }
 
-  public addFeatureOverrides(
-    overrides: FeatureSymbology.Overrides,
-    _vp: Viewport
-  ): void {
+  public addFeatureOverrides(overrides: FeatureSymbology.Overrides, _vp: Viewport): void {
     if (this.agenda.isEmpty) return;
 
     const appearance = this.agendaAppearance(false);
-    this.agenda.elements.forEach((elementId) =>
-      overrides.override({ elementId, appearance })
-    );
+    this.agenda.elements.forEach((elementId) => overrides.override({ elementId, appearance }));
   }
 
   protected updateAgendaAppearanceProvider(drop?: true): void {
@@ -207,8 +174,7 @@ export abstract class ModifyElementWithDynamicsTool
       if (!this.allowView(vp)) continue;
 
       if (drop || this.agenda.isEmpty) vp.dropFeatureOverrideProvider(this);
-      else if (!vp.addFeatureOverrideProvider(this))
-        vp.setFeatureOverrideProviderChanged();
+      else if (!vp.addFeatureOverrideProvider(this)) vp.setFeatureOverrideProviderChanged();
     }
   }
 
@@ -238,32 +204,17 @@ export abstract class ModifyElementWithDynamicsTool
         this.updateAgendaAppearanceProvider();
         this._firstResult = false;
       }
-      this._graphicsProvider = new DynamicGraphicsProvider(
-        this.iModel,
-        this.toolId
-      );
+      this._graphicsProvider = new DynamicGraphicsProvider(this.iModel, this.toolId);
     }
 
     // Set chord tolerance for non-linear/non-planar geometry...
-    if (ev.viewport)
-      this._graphicsProvider.chordTolerance = computeChordToleranceFromPoint(
-        ev.viewport,
-        ev.point
-      );
+    if (ev.viewport) this._graphicsProvider.chordTolerance = computeChordToleranceFromPoint(ev.viewport, ev.point);
 
-    await this._graphicsProvider.createGraphic(
-      elemProps.category,
-      elemProps.placement,
-      geometry
-    );
+    await this._graphicsProvider.createGraphic(elemProps.category, elemProps.placement, geometry);
   }
 
-  public override onDynamicFrame(
-    _ev: BeButtonEvent,
-    context: DynamicsContext
-  ): void {
-    if (undefined !== this._graphicsProvider)
-      this._graphicsProvider.addGraphic(context);
+  public override onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void {
+    if (undefined !== this._graphicsProvider) this._graphicsProvider.addGraphic(context);
   }
 
   public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
@@ -282,8 +233,7 @@ export abstract class ModifyElementWithDynamicsTool
 
   public override async onPostInstall(): Promise<void> {
     await super.onPostInstall();
-    if (this.wantAgendaAppearanceOverride)
-      this.agenda.manageHiliteState = false;
+    if (this.wantAgendaAppearanceOverride) this.agenda.manageHiliteState = false;
   }
 
   public override async onCleanup(): Promise<void> {

@@ -121,10 +121,7 @@ export abstract class TileHeader {
 /** Read 3 64-bit floating point numbers at the byte stream's current read position, advance by 24 bytes, and return a Point3d constructed from the 3 numbers.
  * @internal
  */
-export function nextPoint3d64FromByteStream(
-  stream: ByteStream,
-  result?: Point3d
-): Point3d {
+export function nextPoint3d64FromByteStream(stream: ByteStream, result?: Point3d): Point3d {
   const x = stream.readFloat64(),
     y = stream.readFloat64(),
     z = stream.readFloat64();

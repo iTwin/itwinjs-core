@@ -20,12 +20,7 @@ export class RegularizationContext {
   // scale will be either plus or minus one.
   // when it is negative, the node coordinates (both x and y) have been negated.
   // The call is made after full insertion into vertex loop.
-  public static announceEdge?: (
-    graph: HalfEdgeGraph,
-    nodeA: HalfEdge,
-    nodeB: HalfEdge,
-    scale: number
-  ) => void;
+  public static announceEdge?: (graph: HalfEdgeGraph, nodeA: HalfEdge, nodeB: HalfEdge, scale: number) => void;
   public constructor(graph: HalfEdgeGraph) {
     this.graph = graph;
     this.upEdges = [];
@@ -78,16 +73,14 @@ export class RegularizationContext {
       if (abUp) {
         this.upEdges.push(nodeA);
         if (!bcUp) {
-          if (HalfEdgeGraphOps.crossProductToTargets(nodeB, nodeA, nodeC) < 0)
-            this.localMax.push(nodeB);
+          if (HalfEdgeGraphOps.crossProductToTargets(nodeB, nodeA, nodeC) < 0) this.localMax.push(nodeB);
           else this.topPeaks.push(nodeB);
         }
       } else {
         // ab is DOWN
         this.downEdges.push(nodeA);
         if (bcUp) {
-          if (HalfEdgeGraphOps.crossProductToTargets(nodeB, nodeA, nodeC) > 0)
-            this.bottomPeaks.push(nodeB);
+          if (HalfEdgeGraphOps.crossProductToTargets(nodeB, nodeA, nodeC) > 0) this.bottomPeaks.push(nodeB);
           else this.localMin.push(nodeB);
         }
       }
@@ -120,16 +113,14 @@ export class RegularizationContext {
       if (abUp) {
         this.upEdges.push(nodeA);
         if (!bcUp) {
-          if (HalfEdgeGraphOps.crossProductToTargets(nodeB, nodeA, nodeC) < 0)
-            this.localMax.push(nodeB);
+          if (HalfEdgeGraphOps.crossProductToTargets(nodeB, nodeA, nodeC) < 0) this.localMax.push(nodeB);
           else this.topPeaks.push(nodeB);
         }
       } else {
         // ab is DOWN
         this.downEdges.push(nodeA);
         if (bcUp) {
-          if (HalfEdgeGraphOps.crossProductToTargets(nodeB, nodeA, nodeC) > 0)
-            this.bottomPeaks.push(nodeB);
+          if (HalfEdgeGraphOps.crossProductToTargets(nodeB, nodeA, nodeC) > 0) this.bottomPeaks.push(nodeB);
           else this.localMin.push(nodeB);
         }
       }
@@ -157,11 +148,7 @@ export class RegularizationContext {
    * @param candidates Array of nodes to search
    * @param nodeComparisonFunction function for lexical comparison.
    */
-  private findTopVisibleEdge(
-    node: HalfEdge,
-    candidates: HalfEdge[],
-    directionSign: number
-  ) {
+  private findTopVisibleEdge(node: HalfEdge, candidates: HalfEdge[], directionSign: number) {
     const y0 = node.y;
     const x0 = node.x;
     let dx;
@@ -203,11 +190,7 @@ export class RegularizationContext {
       const y0 = upPeak.y;
       const x0 = upPeak.x;
       // is upPeak higher than prior upPeak?
-      if (
-        highestPeak !== undefined &&
-        HalfEdgeGraphOps.compareNodesYXUp(upPeak, highestPeak) < 0
-      )
-        continue;
+      if (highestPeak !== undefined && HalfEdgeGraphOps.compareNodesYXUp(upPeak, highestPeak) < 0) continue;
       // is upPeak BELOW downPeak, ABOVE both limit edges lower node, and between limit edge interiors.
       if (HalfEdgeGraphOps.compareNodesYXUp(upPeak, downPeak) < 0) {
         if (downEdgeStart) {
@@ -243,34 +226,19 @@ export class RegularizationContext {
       node.y *= -1;
     }
   }
-  private downwardConnectionFromBottomPeak(
-    node: HalfEdge
-  ): HalfEdge | undefined {
+  private downwardConnectionFromBottomPeak(node: HalfEdge): HalfEdge | undefined {
     let connectTo;
     const upFunction = HalfEdgeGraphOps.compareNodesYXUp;
     const upEdgeBase = this.findTopVisibleEdge(node, this.upEdges, 1.0)!;
     const downEdgeBase = this.findTopVisibleEdge(node, this.downEdges, -1.0)!;
     connectTo = this.updateMaxNode(connectTo, upEdgeBase, upFunction);
-    if (downEdgeBase)
-      connectTo = this.updateMaxNode(
-        connectTo,
-        downEdgeBase.faceSuccessor,
-        upFunction
-      );
-    const upPeakConnection = this.highestUpPeakConnection(
-      node,
-      downEdgeBase,
-      upEdgeBase
-    );
-    if (upPeakConnection !== undefined)
-      connectTo = this.updateMaxNode(connectTo, upPeakConnection, upFunction);
+    if (downEdgeBase) connectTo = this.updateMaxNode(connectTo, downEdgeBase.faceSuccessor, upFunction);
+    const upPeakConnection = this.highestUpPeakConnection(node, downEdgeBase, upEdgeBase);
+    if (upPeakConnection !== undefined) connectTo = this.updateMaxNode(connectTo, upPeakConnection, upFunction);
     return connectTo;
   }
   /** Search around the vertex of nodeA for a nodeA1 such that nodeB is visible in the sector at nodeA1 */
-  private findVisibleSector(
-    nodeA: HalfEdge,
-    nodeB: HalfEdge
-  ): HalfEdge | undefined {
+  private findVisibleSector(nodeA: HalfEdge, nodeB: HalfEdge): HalfEdge | undefined {
     let nodeA1 = nodeA;
     do {
       if (HalfEdge.isNodeVisibleInSector(nodeB, nodeA1)) return nodeA1;
@@ -284,28 +252,14 @@ export class RegularizationContext {
    * @param nodeA
    * @param nodeB
    */
-  private joinNodes(
-    nodeA: HalfEdge,
-    nodeB: HalfEdge,
-    direction: number
-  ): HalfEdge | undefined {
-    const nodeC = this.graph.createEdgeXYZXYZ(
-      nodeA.x,
-      nodeA.y,
-      nodeA.z,
-      0,
-      nodeB.x,
-      nodeB.y,
-      nodeB.z,
-      0
-    );
+  private joinNodes(nodeA: HalfEdge, nodeB: HalfEdge, direction: number): HalfEdge | undefined {
+    const nodeC = this.graph.createEdgeXYZXYZ(nodeA.x, nodeA.y, nodeA.z, 0, nodeB.x, nodeB.y, nodeB.z, 0);
     const nodeA1 = this.findVisibleSector(nodeA, nodeB);
     const nodeB1 = this.findVisibleSector(nodeB, nodeA);
     if (nodeA1 !== undefined && nodeB1 !== undefined) {
       HalfEdge.pinch(nodeA1, nodeC);
       HalfEdge.pinch(nodeB1, nodeC.edgeMate);
-      if (RegularizationContext.announceEdge)
-        RegularizationContext.announceEdge(this.graph, nodeA, nodeB, direction);
+      if (RegularizationContext.announceEdge) RegularizationContext.announceEdge(this.graph, nodeA, nodeB, direction);
       return nodeC;
     }
     return undefined;
@@ -321,10 +275,7 @@ export class RegularizationContext {
    * @param upSweep true to do the upward sweep.
    * @param downSweep true to do the downward sweep.
    */
-  private runRegularization(
-    upSweep: boolean = true,
-    downSweep: boolean = true
-  ) {
+  private runRegularization(upSweep: boolean = true, downSweep: boolean = true) {
     if (upSweep) {
       this.bottomPeaks.sort(HalfEdgeGraphOps.compareNodesYXUp);
       for (const bottomPeak of this.bottomPeaks) {
@@ -366,11 +317,7 @@ export class RegularizationContext {
    * @param upSweep true to do the upward sweep.
    * @param downSweep true to do the downward sweep.
    */
-  public regularizeFace(
-    faceSeed: HalfEdge,
-    upSweep: boolean = true,
-    downSweep: boolean = true
-  ) {
+  public regularizeFace(faceSeed: HalfEdge, upSweep: boolean = true, downSweep: boolean = true) {
     this.collectVerticalEventsAroundFace(faceSeed);
     this.runRegularization(upSweep, downSweep);
   }

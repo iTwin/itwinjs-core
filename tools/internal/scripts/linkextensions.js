@@ -33,9 +33,7 @@ exports.handler = async (argv) => {
     //get path to test-app directories
     const destRoot = path.resolve(rootDir, "test-apps", testApp);
     if (!fs.existsSync(destRoot)) {
-      console.log(
-        `Cannot find the root directory of the destination: ${destRoot}`
-      );
+      console.log(`Cannot find the root directory of the destination: ${destRoot}`);
       return;
     }
 
@@ -47,21 +45,13 @@ exports.handler = async (argv) => {
 
     //symlink extensions
     for (let extension of argv.extension) {
-      const buildDir = path.resolve(
-        rootDir,
-        "extensions",
-        extension,
-        "lib",
-        "extension"
-      );
+      const buildDir = path.resolve(rootDir, "extensions", extension, "lib", "extension");
       if (!fs.existsSync(buildDir)) {
         console.log(`Cannot find the target path: ${buildDir}`);
       }
       const outDir = path.resolve(extensionDirectory, extension);
       if (fs.existsSync(outDir)) {
-        console.log(
-          `  Extension ${outDir} is already installed to ${extensionDirectory}`
-        );
+        console.log(`  Extension ${outDir} is already installed to ${extensionDirectory}`);
         return;
       }
       fs.symlinkSync(buildDir, outDir, "junction");

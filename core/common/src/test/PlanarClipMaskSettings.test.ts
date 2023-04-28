@@ -4,28 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import {
-  PlanarClipMaskMode,
-  PlanarClipMaskProps,
-  PlanarClipMaskSettings,
-} from "../PlanarClipMask";
+import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from "../PlanarClipMask";
 
-function expectProps(
-  mask: PlanarClipMaskSettings,
-  expected: PlanarClipMaskProps
-): void {
+function expectProps(mask: PlanarClipMaskSettings, expected: PlanarClipMaskProps): void {
   const actual = mask.toJSON();
   expect(actual).to.deep.equal(expected);
 }
 
 describe("PlanarClipMaskSettings", () => {
   it("uses defaults", () => {
-    expect(PlanarClipMaskSettings.fromJSON()).to.equal(
+    expect(PlanarClipMaskSettings.fromJSON()).to.equal(PlanarClipMaskSettings.defaults);
+    expect(PlanarClipMaskSettings.fromJSON({ mode: PlanarClipMaskMode.None })).not.to.equal(
       PlanarClipMaskSettings.defaults
     );
-    expect(
-      PlanarClipMaskSettings.fromJSON({ mode: PlanarClipMaskMode.None })
-    ).not.to.equal(PlanarClipMaskSettings.defaults);
     expect(
       PlanarClipMaskSettings.fromJSON({
         mode: undefined,
@@ -34,30 +25,12 @@ describe("PlanarClipMaskSettings", () => {
   });
 
   it("clamps transparency", () => {
-    expect(
-      PlanarClipMaskSettings.create({ priority: 1, transparency: -0.1 })
-        .transparency
-    ).to.equal(0);
-    expect(
-      PlanarClipMaskSettings.create({ priority: 1, transparency: 0 })
-        .transparency
-    ).to.equal(0);
-    expect(
-      PlanarClipMaskSettings.create({ priority: 1, transparency: 0.1 })
-        .transparency
-    ).to.equal(0.1);
-    expect(
-      PlanarClipMaskSettings.create({ priority: 1, transparency: 0.9 })
-        .transparency
-    ).to.equal(0.9);
-    expect(
-      PlanarClipMaskSettings.create({ priority: 1, transparency: 1 })
-        .transparency
-    ).to.equal(1);
-    expect(
-      PlanarClipMaskSettings.create({ priority: 1, transparency: 1.1 })
-        .transparency
-    ).to.equal(1);
+    expect(PlanarClipMaskSettings.create({ priority: 1, transparency: -0.1 }).transparency).to.equal(0);
+    expect(PlanarClipMaskSettings.create({ priority: 1, transparency: 0 }).transparency).to.equal(0);
+    expect(PlanarClipMaskSettings.create({ priority: 1, transparency: 0.1 }).transparency).to.equal(0.1);
+    expect(PlanarClipMaskSettings.create({ priority: 1, transparency: 0.9 }).transparency).to.equal(0.9);
+    expect(PlanarClipMaskSettings.create({ priority: 1, transparency: 1 }).transparency).to.equal(1);
+    expect(PlanarClipMaskSettings.create({ priority: 1, transparency: 1.1 }).transparency).to.equal(1);
   });
 
   it("creates for models", () => {
@@ -71,10 +44,11 @@ describe("PlanarClipMaskSettings", () => {
       mode: PlanarClipMaskMode.Models,
       modelIds: "+1+2",
     });
-    expectProps(
-      PlanarClipMaskSettings.create({ modelIds: "0xabc", transparency: 0.5 }),
-      { mode: PlanarClipMaskMode.Models, modelIds: "+ABC", transparency: 0.5 }
-    );
+    expectProps(PlanarClipMaskSettings.create({ modelIds: "0xabc", transparency: 0.5 }), {
+      mode: PlanarClipMaskMode.Models,
+      modelIds: "+ABC",
+      transparency: 0.5,
+    });
   });
 
   it("creates for elements or subcategories", () => {
@@ -114,10 +88,11 @@ describe("PlanarClipMaskSettings", () => {
       mode: PlanarClipMaskMode.Priority,
       priority: 1234,
     });
-    expectProps(
-      PlanarClipMaskSettings.create({ priority: -321, transparency: 0.75 }),
-      { mode: PlanarClipMaskMode.Priority, priority: -321, transparency: 0.75 }
-    );
+    expectProps(PlanarClipMaskSettings.create({ priority: -321, transparency: 0.75 }), {
+      mode: PlanarClipMaskMode.Priority,
+      priority: -321,
+      transparency: 0.75,
+    });
   });
 
   it("clones", () => {
@@ -131,10 +106,7 @@ describe("PlanarClipMaskSettings", () => {
 
     expect(src.clone(undefined)).to.equal(src);
 
-    function expectClone(
-      changed: PlanarClipMaskProps,
-      expected: PlanarClipMaskProps
-    ): void {
+    function expectClone(changed: PlanarClipMaskProps, expected: PlanarClipMaskProps): void {
       expect(src.clone(changed).toJSON()).to.deep.equal(expected);
     }
 

@@ -174,14 +174,8 @@ describe("RelatedClassInfoWithOptionalRelationship", () => {
         }),
       });
       const classesMap = {};
-      const json = RelatedClassInfoWithOptionalRelationship.toCompressedJSON(
-        src,
-        classesMap
-      );
-      const res = RelatedClassInfoWithOptionalRelationship.fromCompressedJSON(
-        json,
-        classesMap
-      );
+      const json = RelatedClassInfoWithOptionalRelationship.toCompressedJSON(src, classesMap);
+      const res = RelatedClassInfoWithOptionalRelationship.fromCompressedJSON(json, classesMap);
       expect(res).to.deep.eq(src);
     });
 
@@ -193,10 +187,7 @@ describe("RelatedClassInfoWithOptionalRelationship", () => {
         sourceClassInfo,
         targetClassInfo,
       };
-      const json = RelatedClassInfoWithOptionalRelationship.toCompressedJSON(
-        src,
-        classInfos
-      );
+      const json = RelatedClassInfoWithOptionalRelationship.toCompressedJSON(src, classInfos);
       expect(classInfos).to.deep.eq({
         [sourceClassInfo.id]: {
           name: sourceClassInfo.name,
@@ -227,10 +218,7 @@ describe("RelatedClassInfoWithOptionalRelationship", () => {
         sourceClassInfo: sourceClassInfo.id,
         targetClassInfo: targetClassInfo.id,
       };
-      const res = RelatedClassInfoWithOptionalRelationship.fromCompressedJSON(
-        json,
-        classInfos
-      );
+      const res = RelatedClassInfoWithOptionalRelationship.fromCompressedJSON(json, classInfos);
       expect(res.relationshipInfo).to.be.undefined;
     });
   });

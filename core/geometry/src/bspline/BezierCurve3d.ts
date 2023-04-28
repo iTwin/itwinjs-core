@@ -68,8 +68,7 @@ export class BezierCurve3d extends BezierCurveBase {
   /** Return poles as a linestring */
   public copyPointsAsLineString(): LineString3d {
     const result = LineString3d.create();
-    for (let i = 0; i < this._polygon.order; i++)
-      result.addPoint(this.getPolePoint3d(i)!);
+    for (let i = 0; i < this._polygon.order; i++) result.addPoint(this.getPolePoint3d(i)!);
     return result;
   }
   /** Create a curve with given points.
@@ -115,12 +114,7 @@ export class BezierCurve3d extends BezierCurveBase {
   /** Return a (de-weighted) point on the curve. If de-weight fails, returns 000 */
   public fractionToPoint(fraction: number, result?: Point3d): Point3d {
     this._polygon.evaluate(fraction, this._workData0);
-    return Point3d.create(
-      this._workData0[0],
-      this._workData0[1],
-      this._workData0[2],
-      result
-    );
+    return Point3d.create(this._workData0[0], this._workData0[1], this._workData0[2], result);
   }
   /** Return the cartesian point and derivative vector. */
   public fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d {
@@ -152,21 +146,9 @@ export class BezierCurve3d extends BezierCurveBase {
     const ray = this.fractionToPointAndDerivative(fraction, this._workRay0);
     result.origin.setFrom(ray.origin);
     result.vectorU.setFrom(ray.direction);
-    const ray0 = this.fractionToPointAndDerivative(
-      fraction - epsilon,
-      this._workRay0
-    );
-    const ray1 = this.fractionToPointAndDerivative(
-      fraction + epsilon,
-      this._workRay1
-    );
-    Vector3d.createAdd2Scaled(
-      ray0.direction,
-      -a,
-      ray1.direction,
-      a,
-      result.vectorV
-    );
+    const ray0 = this.fractionToPointAndDerivative(fraction - epsilon, this._workRay0);
+    const ray1 = this.fractionToPointAndDerivative(fraction + epsilon, this._workRay1);
+    Vector3d.createAdd2Scaled(ray0.direction, -a, ray1.direction, a, result.vectorV);
     return result;
   }
   /** Near-equality test on poles. */
@@ -194,13 +176,7 @@ export class BezierCurve3d extends BezierCurveBase {
       this.getPolePoint3d(order - 1, this._workPoint0);
       rangeToExtend.extend(this._workPoint0);
       for (let axisIndex = 0; axisIndex < 3; axisIndex++) {
-        BezierPolynomialAlgebra.componentDifference(
-          bezier.coffs,
-          this._polygon.packedData,
-          3,
-          order,
-          axisIndex
-        );
+        BezierPolynomialAlgebra.componentDifference(bezier.coffs, this._polygon.packedData, 3, order, axisIndex);
         const roots = bezier.roots(0.0, true);
         if (roots) {
           for (const r of roots) {
@@ -222,16 +198,8 @@ export class BezierCurve3d extends BezierCurveBase {
       for (let axisIndex = 0; axisIndex < 3; axisIndex++) {
         // apply one row of the transform to get the transformed coff by itself
         for (let i = 0, k = 0; i < order; i++, k += 3)
-          componentCoffs[i] = transform.multiplyComponentXYZ(
-            axisIndex,
-            data[k],
-            data[k + 1],
-            data[k + 2]
-          );
-        BezierPolynomialAlgebra.univariateDifference(
-          componentCoffs,
-          bezier.coffs
-        );
+          componentCoffs[i] = transform.multiplyComponentXYZ(axisIndex, data[k], data[k + 1], data[k + 2]);
+        BezierPolynomialAlgebra.univariateDifference(componentCoffs, bezier.coffs);
         const roots = bezier.roots(0.0, true);
         if (roots && roots.length > 0) {
           for (const r of roots) {

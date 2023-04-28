@@ -55,12 +55,8 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
   }
 
   /** Return elevation values in a 16x16 grid. */
-  public override async requestMeshData(
-    args: RequestMeshDataArgs
-  ): Promise<number[] | undefined> {
-    const latLongRange = args.tile.quadId.getLatLongRangeDegrees(
-      this.tilingScheme
-    );
+  public override async requestMeshData(args: RequestMeshDataArgs): Promise<number[] | undefined> {
+    const latLongRange = args.tile.quadId.getLatLongRangeDegrees(this.tilingScheme);
 
     // Latitudes outside the range [-85, 85] produce HTTP 400 per the Bing API docs - clamp to that range.
     latLongRange.low.y = Math.max(-85, latLongRange.low.y);
@@ -69,17 +65,14 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
     // Longitudes outside the range [0, 180) produce HTTP 500. Bing API docs don't mention this, but it seems like
     // it would be a client error (400), not server error (500).
     // Wrap them.
-    if (latLongRange.high.x >= 180)
-      latLongRange.high.x = latLongRange.high.x - 360;
+    if (latLongRange.high.x >= 180) latLongRange.high.x = latLongRange.high.x - 360;
 
     const heights = await this._provider.getHeights(latLongRange);
     return heights?.length === 16 * 16 ? heights : undefined;
   }
 
   /** Produce a 3d terrain mesh from the elevation values obtained by `requestMeshData`. */
-  public override async readMesh(
-    args: ReadMeshArgs
-  ): Promise<RealityMeshParams | undefined> {
+  public override async readMesh(args: ReadMeshArgs): Promise<RealityMeshParams | undefined> {
     const heights = args.data as number[];
     assert(heights.length === size * size);
 
@@ -151,20 +144,13 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
       }
     }
 
-    if (this._wantSkirts)
-      this.addSkirts(builder, heights, skirtHeight, projection);
+    if (this._wantSkirts) this.addSkirts(builder, heights, skirtHeight, projection);
 
     assert(builder.positions.length === options.initialVertexCapacity);
     assert(builder.uvs.length === options.initialVertexCapacity);
-    assert(
-      undefined === builder.normals ||
-        builder.normals.capacity === options.initialVertexCapacity
-    );
+    assert(undefined === builder.normals || builder.normals.capacity === options.initialVertexCapacity);
     assert(builder.positions.length === builder.uvs.length);
-    assert(
-      undefined === builder.normals ||
-        builder.normals.length === builder.positions.length
-    );
+    assert(undefined === builder.normals || builder.normals.length === builder.positions.length);
     assert(builder.indices.capacity === options.initialIndexCapacity);
 
     // Extract the completed 3d mesh.
@@ -172,10 +158,7 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
   }
 
   // Compute a normal vector for each vertex.
-  private addNormals(
-    builder: RealityMeshParamsBuilder,
-    numVertices: number
-  ): void {
+  private addNormals(builder: RealityMeshParamsBuilder, numVertices: number): void {
     const scratchP0 = new Point3d();
     const scratchP1 = new Point3d();
     const scratchP2 = new Point3d();
@@ -186,24 +169,8 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
     // p0: The position of the vertex whose normal vector is being computed.
     // r1, c1: The (x, y) offset of the second triangle vertex, relative to p0 - either 0, -1, or 1.
     // r2, c2: The (x, y) offset of the third triangle vertex, relative to p0 - either 0, -1, or 1.
-    const addNormal = (
-      sum: Vector3d,
-      p0: Point3d,
-      r1: number,
-      c1: number,
-      r2: number,
-      c2: number
-    ): void => {
-      if (
-        r1 < 0 ||
-        c1 < 0 ||
-        r2 < 0 ||
-        c2 < 0 ||
-        r1 >= size ||
-        c1 >= size ||
-        r2 >= size ||
-        c2 >= size
-      ) {
+    const addNormal = (sum: Vector3d, p0: Point3d, r1: number, c1: number, r2: number, c2: number): void => {
+      if (r1 < 0 || c1 < 0 || r2 < 0 || c2 < 0 || r1 >= size || c1 >= size || r2 >= size || c2 >= size) {
         // At least one of the adjacent points is outside the boundaries of the tile. We have no elevation data for points outside the tile.
         // Note: to properly compute normals for vertices on the edges of the tile, requestMeshData would need to request additional elevations
         // for points adjacent to the tile. For simplicity, we simply ignore their contribution to the vertex normal.
@@ -215,12 +182,7 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
       const p2 = builder.positions.unquantize(r2 * size + c2, scratchP2);
 
       // Compute the normalized vector perpendicular to the triangle.
-      const faceNormal = Vector3d.createCrossProductToPoints(
-        p0,
-        p1,
-        p2,
-        scratchFaceNormal
-      );
+      const faceNormal = Vector3d.createCrossProductToPoints(p0, p1, p2, scratchFaceNormal);
       faceNormal.normalizeInPlace();
 
       // Add this triangle's normal vector to the vertex normal.
@@ -273,55 +235,27 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
       // top row
       let height = heights[sizeM1 * size + c];
       const u = c * delta;
-      projection.getPoint(
-        u,
-        1,
-        (height - skirtHeight) * this._exaggeration,
-        position
-      );
+      projection.getPoint(u, 1, (height - skirtHeight) * this._exaggeration, position);
       uv.set(u, 1);
       const topIndex = builder.addUnquantizedVertex(position, uv, skirtNormal);
 
       // bottom row
       height = heights[c];
-      projection.getPoint(
-        u,
-        0,
-        (height - skirtHeight) * this._exaggeration,
-        position
-      );
+      projection.getPoint(u, 0, (height - skirtHeight) * this._exaggeration, position);
       uv.set(u, 0);
-      const bottomIndex = builder.addUnquantizedVertex(
-        position,
-        uv,
-        skirtNormal
-      );
+      const bottomIndex = builder.addUnquantizedVertex(position, uv, skirtNormal);
 
       // left side
       height = heights[(sizeM1 - c) * size];
-      projection.getPoint(
-        0,
-        1 - u,
-        (height - skirtHeight) * this._exaggeration,
-        position
-      );
+      projection.getPoint(0, 1 - u, (height - skirtHeight) * this._exaggeration, position);
       uv.set(0, 1 - u);
       const leftIndex = builder.addUnquantizedVertex(position, uv, skirtNormal);
 
       // right side
       height = heights[(sizeM1 - c) * size + sizeM1];
-      projection.getPoint(
-        1,
-        1 - u,
-        (height - skirtHeight) * this._exaggeration,
-        position
-      );
+      projection.getPoint(1, 1 - u, (height - skirtHeight) * this._exaggeration, position);
       uv.set(1, 1 - u);
-      const rightIndex = builder.addUnquantizedVertex(
-        position,
-        uv,
-        skirtNormal
-      );
+      const rightIndex = builder.addUnquantizedVertex(position, uv, skirtNormal);
 
       if (c === sizeM1) {
         // We have added all 16 vertices and all 15 quads along each edge
@@ -360,9 +294,7 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
 
     // Our provider.
     const provider: TerrainProvider = {
-      createTerrainMeshProvider: async (
-        options: TerrainMeshProviderOptions
-      ) => {
+      createTerrainMeshProvider: async (options: TerrainMeshProviderOptions) => {
         return Promise.resolve(new BingTerrainMeshProvider(options));
       },
     };

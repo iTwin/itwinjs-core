@@ -70,11 +70,10 @@ describe("RulesetsFactory", () => {
       typeName: "point3d",
     });
 
-    const createNavigationPropertyTypeDescription =
-      (): PrimitiveTypeDescription => ({
-        valueFormat: PropertyValueFormat.Primitive,
-        typeName: "navigation",
-      });
+    const createNavigationPropertyTypeDescription = (): PrimitiveTypeDescription => ({
+      valueFormat: PropertyValueFormat.Primitive,
+      typeName: "navigation",
+    });
 
     it("creates a valid ruleset for string record", async () => {
       const recordClass: ClassInfo = {
@@ -113,8 +112,7 @@ describe("RulesetsFactory", () => {
           ruleType: RuleTypes.Content,
           specifications: [
             {
-              specType:
-                ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
               classes: { schemaName: "MySchema", classNames: ["MyClass"] },
               handleInstancesPolymorphically: true,
               relatedInstances: [],
@@ -124,9 +122,7 @@ describe("RulesetsFactory", () => {
         },
       ];
       expect(result.ruleset.rules).to.deep.eq(expectedRules);
-      expect(result.description).to.eq(
-        `[My Class].[My Property] = test display value`
-      );
+      expect(result.description).to.eq(`[My Class].[My Property] = test display value`);
     });
 
     it("creates a valid ruleset for boolean `true` record", async () => {
@@ -166,8 +162,7 @@ describe("RulesetsFactory", () => {
           ruleType: RuleTypes.Content,
           specifications: [
             {
-              specType:
-                ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
               classes: { schemaName: "MySchema", classNames: ["MyClass"] },
               handleInstancesPolymorphically: true,
               relatedInstances: [],
@@ -217,8 +212,7 @@ describe("RulesetsFactory", () => {
           ruleType: RuleTypes.Content,
           specifications: [
             {
-              specType:
-                ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
               classes: { schemaName: "MySchema", classNames: ["MyClass"] },
               handleInstancesPolymorphically: true,
               relatedInstances: [],
@@ -268,8 +262,7 @@ describe("RulesetsFactory", () => {
           ruleType: RuleTypes.Content,
           specifications: [
             {
-              specType:
-                ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
               classes: { schemaName: "MySchema", classNames: ["MyClass"] },
               handleInstancesPolymorphically: true,
               relatedInstances: [],
@@ -319,8 +312,7 @@ describe("RulesetsFactory", () => {
           ruleType: RuleTypes.Content,
           specifications: [
             {
-              specType:
-                ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
               classes: { schemaName: "MySchema", classNames: ["MyClass"] },
               handleInstancesPolymorphically: true,
               relatedInstances: [],
@@ -370,8 +362,7 @@ describe("RulesetsFactory", () => {
           ruleType: RuleTypes.Content,
           specifications: [
             {
-              specType:
-                ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
               classes: { schemaName: "MySchema", classNames: ["MyClass"] },
               handleInstancesPolymorphically: true,
               relatedInstances: [],
@@ -381,9 +372,7 @@ describe("RulesetsFactory", () => {
         },
       ];
       expect(result.ruleset.rules).to.deep.eq(expectedRules);
-      expect(result.description).to.eq(
-        `[My Class].[My Property] = 633199078870000000`
-      );
+      expect(result.description).to.eq(`[My Class].[My Property] = 633199078870000000`);
     });
 
     it("creates a valid ruleset for point2d record", async () => {
@@ -423,8 +412,7 @@ describe("RulesetsFactory", () => {
           ruleType: RuleTypes.Content,
           specifications: [
             {
-              specType:
-                ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
               classes: { schemaName: "MySchema", classNames: ["MyClass"] },
               handleInstancesPolymorphically: true,
               relatedInstances: [],
@@ -474,8 +462,7 @@ describe("RulesetsFactory", () => {
           ruleType: RuleTypes.Content,
           specifications: [
             {
-              specType:
-                ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
               classes: { schemaName: "MySchema", classNames: ["MyClass"] },
               handleInstancesPolymorphically: true,
               relatedInstances: [],
@@ -525,8 +512,7 @@ describe("RulesetsFactory", () => {
           ruleType: RuleTypes.Content,
           specifications: [
             {
-              specType:
-                ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
               classes: { schemaName: "MySchema", classNames: ["MyClass"] },
               handleInstancesPolymorphically: true,
               relatedInstances: [],
@@ -576,8 +562,7 @@ describe("RulesetsFactory", () => {
           ruleType: RuleTypes.Content,
           specifications: [
             {
-              specType:
-                ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
               classes: { schemaName: "MySchema", classNames: ["MyClass"] },
               handleInstancesPolymorphically: true,
               relatedInstances: [],
@@ -627,8 +612,7 @@ describe("RulesetsFactory", () => {
           ruleType: RuleTypes.Content,
           specifications: [
             {
-              specType:
-                ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
               classes: { schemaName: "MySchema", classNames: ["MyClass"] },
               handleInstancesPolymorphically: true,
               relatedInstances: [],
@@ -678,8 +662,7 @@ describe("RulesetsFactory", () => {
           ruleType: RuleTypes.Content,
           specifications: [
             {
-              specType:
-                ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
               classes: { schemaName: "MySchema", classNames: ["MyClass"] },
               handleInstancesPolymorphically: true,
               relatedInstances: [],
@@ -689,9 +672,7 @@ describe("RulesetsFactory", () => {
         },
       ];
       expect(result.ruleset.rules).to.deep.eq(expectedRules);
-      expect(result.description).to.eq(
-        `[My Class].[My Property] = test display value`
-      );
+      expect(result.description).to.eq(`[My Class].[My Property] = test display value`);
     });
 
     it("creates a valid ruleset for one-step forward related nested content record", async () => {
@@ -766,23 +747,14 @@ describe("RulesetsFactory", () => {
       const displayValues = {
         [field.name]: undefined,
       };
-      const record = new Item(
-        [],
-        faker.random.words(),
-        "",
-        recordClass,
-        values,
-        displayValues,
-        []
-      );
+      const record = new Item([], faker.random.words(), "", recordClass, values, displayValues, []);
       const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [
         {
           ruleType: RuleTypes.Content,
           specifications: [
             {
-              specType:
-                ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
               classes: { schemaName: "MySchema", classNames: ["PrimaryClass"] },
               handleInstancesPolymorphically: true,
               relatedInstances: [
@@ -810,9 +782,7 @@ describe("RulesetsFactory", () => {
         },
       ];
       expect(result.ruleset.rules).to.deep.eq(expectedRules);
-      expect(result.description).to.eq(
-        `[Related Class].[Related Property] = test display value`
-      );
+      expect(result.description).to.eq(`[Related Class].[Related Property] = test display value`);
     });
 
     it("creates a valid ruleset for one-step backward related nested content record", async () => {
@@ -887,23 +857,14 @@ describe("RulesetsFactory", () => {
       const displayValues = {
         [field.name]: undefined,
       };
-      const record = new Item(
-        [],
-        faker.random.words(),
-        "",
-        recordClass,
-        values,
-        displayValues,
-        []
-      );
+      const record = new Item([], faker.random.words(), "", recordClass, values, displayValues, []);
       const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [
         {
           ruleType: RuleTypes.Content,
           specifications: [
             {
-              specType:
-                ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
               classes: { schemaName: "MySchema", classNames: ["PrimaryClass"] },
               handleInstancesPolymorphically: true,
               relatedInstances: [
@@ -931,9 +892,7 @@ describe("RulesetsFactory", () => {
         },
       ];
       expect(result.ruleset.rules).to.deep.eq(expectedRules);
-      expect(result.description).to.eq(
-        `[Related Class].[Related Property] = test display value`
-      );
+      expect(result.description).to.eq(`[Related Class].[Related Property] = test display value`);
     });
 
     it("creates a valid ruleset for multi-step related nested content record", async () => {
@@ -1025,23 +984,14 @@ describe("RulesetsFactory", () => {
       const displayValues = {
         [field.name]: undefined,
       };
-      const record = new Item(
-        [],
-        faker.random.words(),
-        "",
-        selectClass,
-        values,
-        displayValues,
-        []
-      );
+      const record = new Item([], faker.random.words(), "", selectClass, values, displayValues, []);
       const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [
         {
           ruleType: RuleTypes.Content,
           specifications: [
             {
-              specType:
-                ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
               classes: { schemaName: "MySchema", classNames: ["SelectClass"] },
               handleInstancesPolymorphically: true,
               relatedInstances: [
@@ -1080,9 +1030,7 @@ describe("RulesetsFactory", () => {
         },
       ];
       expect(result.ruleset.rules).to.deep.eq(expectedRules);
-      expect(result.description).to.eq(
-        `[Property Class].[Related Property] = test display value`
-      );
+      expect(result.description).to.eq(`[Property Class].[Related Property] = test display value`);
     });
 
     it("uses supplied `computeDisplayValue` callback to calculate display value for description", async () => {
@@ -1117,16 +1065,8 @@ describe("RulesetsFactory", () => {
         []
       );
       const callback = sinon.fake(() => "TEST");
-      const result = await factory.createSimilarInstancesRuleset(
-        field,
-        record,
-        callback
-      );
-      expect(callback).to.be.calledOnceWithExactly(
-        field.type.typeName,
-        "test value",
-        "test display value"
-      );
+      const result = await factory.createSimilarInstancesRuleset(field, record, callback);
+      expect(callback).to.be.calledOnceWithExactly(field.type.typeName, "test value", "test display value");
       expect(result.description).to.eq(`[My Class].[My Property] = TEST`);
     });
 
@@ -1162,9 +1102,7 @@ describe("RulesetsFactory", () => {
         []
       );
       const result = await factory.createSimilarInstancesRuleset(field, record);
-      expect(result.description).to.eq(
-        `[My Class].[My Property] = test display value`
-      );
+      expect(result.description).to.eq(`[My Class].[My Property] = test display value`);
     });
 
     describe("invalid conditions", () => {
@@ -1200,9 +1138,7 @@ describe("RulesetsFactory", () => {
             { ["MyProperty"]: "" },
             []
           );
-          await expect(
-            factory.createSimilarInstancesRuleset(field, record)
-          ).to.eventually.be.rejectedWith(
+          await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith(
             "Can only create 'similar instances' ruleset for primitive values"
           );
         });
@@ -1232,9 +1168,7 @@ describe("RulesetsFactory", () => {
           { ["MyProperty"]: "test display value" },
           []
         );
-        await expect(
-          factory.createSimilarInstancesRuleset(field, record)
-        ).to.eventually.be.rejectedWith(
+        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith(
           "Invalid properties' field with no properties"
         );
       });
@@ -1300,18 +1234,10 @@ describe("RulesetsFactory", () => {
         const displayValues = {
           [field.name]: undefined,
         };
-        const record = new Item(
-          [],
-          faker.random.words(),
-          "",
-          recordClass,
-          values,
-          displayValues,
-          []
+        const record = new Item([], faker.random.words(), "", recordClass, values, displayValues, []);
+        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith(
+          "Invalid record value"
         );
-        await expect(
-          factory.createSimilarInstancesRuleset(field, record)
-        ).to.eventually.be.rejectedWith("Invalid record value");
       });
 
       it("throws when point2d record has invalid value", async () => {
@@ -1345,9 +1271,7 @@ describe("RulesetsFactory", () => {
           { ["MyProperty"]: "1, 2" },
           []
         );
-        await expect(
-          factory.createSimilarInstancesRuleset(field, record)
-        ).to.eventually.be.rejectedWith(
+        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith(
           "Expecting point values to be supplied as objects"
         );
       });
@@ -1363,18 +1287,8 @@ describe("RulesetsFactory", () => {
           true,
           1
         );
-        const record = new Item(
-          [],
-          faker.random.word(),
-          "",
-          undefined,
-          {},
-          {},
-          []
-        );
-        await expect(
-          factory.createSimilarInstancesRuleset(field, record)
-        ).to.eventually.be.rejectedWith(
+        const record = new Item([], faker.random.word(), "", undefined, {}, {}, []);
+        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith(
           "Can only create 'similar instances' ruleset for properties-based records"
         );
       });
@@ -1407,18 +1321,8 @@ describe("RulesetsFactory", () => {
         const displayValues = {
           [field.name]: ["some display value 1", "some display value 2"],
         };
-        const record = new Item(
-          [],
-          faker.random.word(),
-          "",
-          undefined,
-          values,
-          displayValues,
-          []
-        );
-        await expect(
-          factory.createSimilarInstancesRuleset(field, record)
-        ).to.eventually.be.rejectedWith(
+        const record = new Item([], faker.random.word(), "", undefined, values, displayValues, []);
+        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith(
           "Can only create 'similar instances' ruleset for primitive properties"
         );
       });
@@ -1461,18 +1365,8 @@ describe("RulesetsFactory", () => {
             [typeDescription.members[0].name]: "some display value",
           },
         };
-        const record = new Item(
-          [],
-          faker.random.word(),
-          "",
-          undefined,
-          values,
-          displayValues,
-          []
-        );
-        await expect(
-          factory.createSimilarInstancesRuleset(field, record)
-        ).to.eventually.be.rejectedWith(
+        const record = new Item([], faker.random.word(), "", undefined, values, displayValues, []);
+        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith(
           "Can only create 'similar instances' ruleset for primitive properties"
         );
       });
@@ -1507,9 +1401,7 @@ describe("RulesetsFactory", () => {
           { ["MyProperty"]: "test value" },
           ["MyProperty"]
         );
-        await expect(
-          factory.createSimilarInstancesRuleset(field, record)
-        ).to.eventually.be.rejectedWith(
+        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith(
           "Can't create 'similar instances' ruleset for merged values"
         );
       });
@@ -1544,9 +1436,7 @@ describe("RulesetsFactory", () => {
           { ["MyProperty"]: "test display value" },
           []
         );
-        await expect(
-          factory.createSimilarInstancesRuleset(field, record)
-        ).to.eventually.be.rejectedWith(
+        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith(
           "Can't create 'similar instances' for records based on multiple different ECClass instances"
         );
       });
@@ -1633,17 +1523,8 @@ describe("RulesetsFactory", () => {
         const displayValues = {
           [field.name]: undefined,
         };
-        const record = new Item(
-          [],
-          faker.random.words(),
-          "",
-          recordClass,
-          values,
-          displayValues,
-          []
-        );
-        await expect(factory.createSimilarInstancesRuleset(field, record)).to
-          .eventually.be.rejected;
+        const record = new Item([], faker.random.words(), "", recordClass, values, displayValues, []);
+        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejected;
       });
 
       it("throws when nested content record is merged", async () => {
@@ -1718,18 +1599,8 @@ describe("RulesetsFactory", () => {
         const displayValues = {
           [field.name]: undefined,
         };
-        const record = new Item(
-          [],
-          faker.random.words(),
-          "",
-          recordClass,
-          values,
-          displayValues,
-          []
-        );
-        await expect(
-          factory.createSimilarInstancesRuleset(field, record)
-        ).to.eventually.be.rejectedWith(
+        const record = new Item([], faker.random.words(), "", recordClass, values, displayValues, []);
+        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith(
           "Can't create 'similar instances' ruleset for merged values"
         );
       });

@@ -6,30 +6,15 @@
  * @module Tiles
  */
 
-import {
-  BeDuration,
-  BeTimePoint,
-  dispose,
-  Id64String,
-} from "@itwin/core-bentley";
+import { BeDuration, BeTimePoint, dispose, Id64String } from "@itwin/core-bentley";
 import { Matrix4d, Range3d, Transform } from "@itwin/core-geometry";
-import {
-  ElementAlignedBox3d,
-  FrustumPlanes,
-  ViewFlagOverrides,
-} from "@itwin/core-common";
+import { ElementAlignedBox3d, FrustumPlanes, ViewFlagOverrides } from "@itwin/core-common";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderMemory } from "../render/RenderMemory";
-import {
-  Tile,
-  TileDrawArgs,
-  TileGeometryCollector,
-  TileLoadPriority,
-  TileTreeParams,
-} from "./internal";
+import { Tile, TileDrawArgs, TileGeometryCollector, TileLoadPriority, TileTreeParams } from "./internal";
 
 /** Describes the current state of a [[TileTree]]. TileTrees are loaded asynchronously and may be unloaded after a period of disuse.
  * @see [[TileTreeOwner]].
@@ -162,12 +147,7 @@ export abstract class TileTree {
   public selectTiles(args: TileDrawArgs): Tile[] {
     this._lastSelected = BeTimePoint.now();
     const tiles = this._selectTiles(args);
-    IModelApp.tileAdmin.addTilesForUser(
-      args.context.viewport,
-      tiles,
-      args.readyTiles,
-      args.touchedTiles
-    );
+    IModelApp.tileAdmin.addTilesForUser(args.context.viewport, tiles, args.readyTiles, args.touchedTiles);
     args.processSelectedTiles(tiles);
     return tiles;
   }
@@ -218,10 +198,7 @@ export abstract class TileTree {
     const center = range.localXYZToWorld(0.5, 0.5, 0.5);
     if (center) {
       this.iModelTransform.multiplyPoint3d(center, center);
-      const ecefToDb = await calculateEcefToDbTransformAtLocation(
-        center,
-        this.iModel
-      );
+      const ecefToDb = await calculateEcefToDbTransformAtLocation(center, this.iModel);
       dbToEcef = ecefToDb?.inverse();
     }
     if (!dbToEcef) dbToEcef = this.iModel.ecefLocation.getTransform();

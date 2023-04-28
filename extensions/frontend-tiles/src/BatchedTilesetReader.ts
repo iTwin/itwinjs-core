@@ -3,19 +3,9 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-  Matrix3d,
-  Point3d,
-  Range3d,
-  Transform,
-  Vector3d,
-} from "@itwin/core-geometry";
+import { Matrix3d, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { Tileset3dSchema as schema } from "@itwin/core-common";
-import {
-  IModelConnection,
-  RealityModelTileUtils,
-  TileLoadPriority,
-} from "@itwin/core-frontend";
+import { IModelConnection, RealityModelTileUtils, TileLoadPriority } from "@itwin/core-frontend";
 import { BatchedTileTreeParams } from "./BatchedTileTree";
 import { BatchedTile, BatchedTileParams } from "./BatchedTile";
 
@@ -27,8 +17,7 @@ function isTileset3d(json: unknown): json is schema.Tileset {
   if (!props.root || !props.asset) return false;
 
   // ###TODO spec requires geometricError to be present on tileset and all tiles; exporter is omitting from tileset.
-  if (undefined === props.geometricError)
-    props.geometricError = props.root.geometricError;
+  if (undefined === props.geometricError) props.geometricError = props.root.geometricError;
 
   return true;
 }
@@ -43,8 +32,7 @@ function rangeFromBoundingVolume(vol: schema.BoundingVolume): Range3d {
     const range = Range3d.createNull();
     for (let i = -1; i <= 1; i += 2)
       for (let j = -1; j <= 1; j += 2)
-        for (let k = -1; k <= 1; k += 2)
-          range.extendPoint(center.plus3Scaled(ux, i, uy, j, uz, k));
+        for (let k = -1; k <= 1; k += 2) range.extendPoint(center.plus3Scaled(ux, i, uy, j, uz, k));
 
     return range;
   } else if (vol.sphere) {
@@ -95,10 +83,7 @@ export class BatchedTilesetReader {
     this.baseUrl = baseUrl;
   }
 
-  public readTileParams(
-    json: schema.Tile,
-    parent?: BatchedTile
-  ): BatchedTileParams {
+  public readTileParams(json: schema.Tile, parent?: BatchedTile): BatchedTileParams {
     const content = json.content;
     const geometricError = json.geometricError;
     const range = rangeFromBoundingVolume(json.boundingVolume);
@@ -110,25 +95,16 @@ export class BatchedTilesetReader {
       parent,
       contentId: content?.uri ?? "",
       range,
-      contentRange: content?.boundingVolume
-        ? rangeFromBoundingVolume(content.boundingVolume)
-        : undefined,
+      contentRange: content?.boundingVolume ? rangeFromBoundingVolume(content.boundingVolume) : undefined,
       isLeaf,
-      maximumSize:
-        maximumSizeScale *
-        RealityModelTileUtils.maximumSizeFromGeometricTolerance(
-          range,
-          geometricError
-        ),
+      maximumSize: maximumSizeScale * RealityModelTileUtils.maximumSizeFromGeometricTolerance(range, geometricError),
       childrenProps: isLeaf ? undefined : json.children,
     };
   }
 
   public async readTileTreeParams(): Promise<BatchedTileTreeParams> {
     const root = this._tileset.root;
-    const location = root.transform
-      ? transformFromJSON(root.transform)
-      : Transform.createIdentity();
+    const location = root.transform ? transformFromJSON(root.transform) : Transform.createIdentity();
 
     return {
       id: "spatial-models",

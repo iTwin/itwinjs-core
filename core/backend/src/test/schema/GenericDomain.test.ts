@@ -45,9 +45,7 @@ describe("Generic Domain", () => {
     return iModelDb.withPreparedStatement(
       `SELECT COUNT(*) FROM ${classFullName}`,
       (statement: ECSqlStatement): number => {
-        return DbResult.BE_SQLITE_ROW === statement.step()
-          ? statement.getValue(0).getInteger()
-          : 0;
+        return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
       }
     );
   }
@@ -56,27 +54,22 @@ describe("Generic Domain", () => {
     GenericSchema.registerSchema();
     assert.isTrue(IModelJsFs.existsSync(GenericSchema.schemaFilePath));
     assert.equal(GenericSchema.schemaName, "Generic");
-    assert.isTrue(
-      PhysicalObject.classFullName.startsWith(GenericSchema.schemaName)
-    );
+    assert.isTrue(PhysicalObject.classFullName.startsWith(GenericSchema.schemaName));
 
-    const iModelDb = SnapshotDb.createEmpty(
-      IModelTestUtils.prepareOutputFile("GenericDomain", "GenericTest.bim"),
-      {
-        rootSubject: {
-          name: "GenericTest",
-          description: "Test of the Generic domain schema.",
-        },
-        client: "Generic",
-        globalOrigin: { x: 0, y: 0 },
-        projectExtents: {
-          low: { x: -500, y: -500, z: -50 },
-          high: { x: 500, y: 500, z: 50 },
-        },
-        guid: Guid.createValue(),
-        createClassViews: true,
-      }
-    );
+    const iModelDb = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("GenericDomain", "GenericTest.bim"), {
+      rootSubject: {
+        name: "GenericTest",
+        description: "Test of the Generic domain schema.",
+      },
+      client: "Generic",
+      globalOrigin: { x: 0, y: 0 },
+      projectExtents: {
+        low: { x: -500, y: -500, z: -50 },
+        high: { x: 500, y: 500, z: 50 },
+      },
+      guid: Guid.createValue(),
+      createClassViews: true,
+    });
 
     // Create and populate a DefinitionModel
     const definitionModelId: Id64String = DefinitionModel.insert(
@@ -90,14 +83,9 @@ describe("Generic Domain", () => {
     const spatialCategoryProps: CategoryProps = {
       classFullName: SpatialCategory.classFullName,
       model: definitionModelId,
-      code: SpatialCategory.createCode(
-        iModelDb,
-        definitionModelId,
-        "Test SpatialCategory"
-      ),
+      code: SpatialCategory.createCode(iModelDb, definitionModelId, "Test SpatialCategory"),
     };
-    const spatialCategoryId: Id64String =
-      iModelDb.elements.insertElement(spatialCategoryProps);
+    const spatialCategoryId: Id64String = iModelDb.elements.insertElement(spatialCategoryProps);
     assert.isTrue(Id64.isValidId64(spatialCategoryId));
 
     // Insert a GenericGraphicalType2d
@@ -107,8 +95,7 @@ describe("Generic Domain", () => {
       code: Code.createEmpty(),
       userLabel: `${GenericGraphicalType2d.className}`,
     };
-    const graphicalTypeId: Id64String =
-      iModelDb.elements.insertElement(graphicalTypeProps);
+    const graphicalTypeId: Id64String = iModelDb.elements.insertElement(graphicalTypeProps);
     assert.isTrue(Id64.isValidId64(graphicalTypeId));
 
     // Insert a GenericPhysicalMaterial
@@ -118,9 +105,7 @@ describe("Generic Domain", () => {
       code: Code.createEmpty(),
       userLabel: `${GenericPhysicalMaterial.className}`,
     };
-    const physicalMaterialId: Id64String = iModelDb.elements.insertElement(
-      physicalMaterialProps
-    );
+    const physicalMaterialId: Id64String = iModelDb.elements.insertElement(physicalMaterialProps);
     assert.isTrue(Id64.isValidId64(physicalMaterialId));
 
     // Insert a GenericPhysicalType
@@ -129,20 +114,13 @@ describe("Generic Domain", () => {
       model: definitionModelId,
       code: Code.createEmpty(),
       userLabel: `${GenericPhysicalType.className}`,
-      physicalMaterial: new PhysicalTypeIsOfPhysicalMaterial(
-        physicalMaterialId
-      ),
+      physicalMaterial: new PhysicalTypeIsOfPhysicalMaterial(physicalMaterialId),
     };
-    const physicalTypeId: Id64String =
-      iModelDb.elements.insertElement(physicalTypeProps);
+    const physicalTypeId: Id64String = iModelDb.elements.insertElement(physicalTypeProps);
     assert.isTrue(Id64.isValidId64(physicalTypeId));
 
     // Create and populate a PhysicalModel
-    const physicalModelId: Id64String = PhysicalModel.insert(
-      iModelDb,
-      IModel.rootSubjectId,
-      "Test PhysicalModel"
-    );
+    const physicalModelId: Id64String = PhysicalModel.insert(iModelDb, IModel.rootSubjectId, "Test PhysicalModel");
     assert.isTrue(Id64.isValidId64(physicalModelId));
 
     for (let i = 0; i < 3; i++) {
@@ -152,23 +130,16 @@ describe("Generic Domain", () => {
         category: spatialCategoryId,
         code: Code.createEmpty(),
         userLabel: `${PhysicalObject.className}${i}`,
-        physicalMaterial: new PhysicalElementIsOfPhysicalMaterial(
-          physicalMaterialId
-        ),
+        physicalMaterial: new PhysicalElementIsOfPhysicalMaterial(physicalMaterialId),
         typeDefinition: new PhysicalElementIsOfType(physicalTypeId),
       };
-      const physicalObjectId: Id64String =
-        iModelDb.elements.insertElement(physicalObjectProps);
+      const physicalObjectId: Id64String = iModelDb.elements.insertElement(physicalObjectProps);
       assert.isTrue(Id64.isValidId64(physicalObjectId));
     }
     assert.equal(3, count(iModelDb, PhysicalObject.classFullName));
 
     // Create and populate a Generic:GroupModel
-    const groupModelId: Id64String = GroupModel.insert(
-      iModelDb,
-      IModel.rootSubjectId,
-      "Test GroupModel"
-    );
+    const groupModelId: Id64String = GroupModel.insert(iModelDb, IModel.rootSubjectId, "Test GroupModel");
     assert.isTrue(Id64.isValidId64(groupModelId));
 
     for (let i = 0; i < 4; i++) {
@@ -181,10 +152,7 @@ describe("Generic Domain", () => {
       const groupId: Id64String = iModelDb.elements.insertElement(groupProps);
       assert.isTrue(Id64.isValidId64(groupId));
     }
-    assert.equal(
-      4,
-      count(iModelDb, `${Group.schema.schemaName}:[${Group.className}]`)
-    ); // GROUP is a reserved word in SQL
+    assert.equal(4, count(iModelDb, `${Group.schema.schemaName}:[${Group.className}]`)); // GROUP is a reserved word in SQL
 
     // Create and populate a Generic:GraphicalModel3d
     const graphicalModelId: Id64String = GenericGraphicalModel3d.insert(
@@ -202,8 +170,7 @@ describe("Generic Domain", () => {
         code: Code.createEmpty(),
         userLabel: `${Graphic3d.className}${i}`,
       };
-      const graphicId: Id64String =
-        iModelDb.elements.insertElement(graphicProps);
+      const graphicId: Id64String = iModelDb.elements.insertElement(graphicProps);
       assert.isTrue(Id64.isValidId64(graphicId));
     }
     assert.equal(5, count(iModelDb, Graphic3d.classFullName));
@@ -223,8 +190,7 @@ describe("Generic Domain", () => {
         code: Code.createEmpty(),
         userLabel: `${GenericDocument.className}${i}`,
       };
-      const graphicId: Id64String =
-        iModelDb.elements.insertElement(documentProps);
+      const graphicId: Id64String = iModelDb.elements.insertElement(documentProps);
       assert.isTrue(Id64.isValidId64(graphicId));
     }
     assert.equal(2, count(iModelDb, GenericDocument.classFullName));

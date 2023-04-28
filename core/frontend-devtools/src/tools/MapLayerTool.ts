@@ -8,11 +8,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import {
-  BaseMapLayerSettings,
-  ColorDef,
-  ModelMapLayerSettings,
-} from "@itwin/core-common";
+import { BaseMapLayerSettings, ColorDef, ModelMapLayerSettings } from "@itwin/core-common";
 import {
   IModelApp,
   MapLayerSource,
@@ -67,26 +63,20 @@ class AttachMapLayerBaseTool extends Tool {
               "FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttached",
               { sourceName: source.name, sourceUrl: source.url }
             );
-            IModelApp.notifications.outputMessage(
-              new NotifyMessageDetails(OutputMessagePriority.Info, msg)
-            );
+            IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
           } else if (validation.status === MapLayerSourceStatus.RequireAuth) {
             const msg = IModelApp.localization.getLocalizedString(
               "FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttachedRequiresAuth",
               { sourceName: source.name }
             );
-            IModelApp.notifications.outputMessage(
-              new NotifyMessageDetails(OutputMessagePriority.Warning, msg)
-            );
+            IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
           }
         } else {
           const msg = IModelApp.localization.getLocalizedString(
             "FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerValidationFailed",
             { sourceUrl: source.url }
           );
-          IModelApp.notifications.outputMessage(
-            new NotifyMessageDetails(OutputMessagePriority.Error, msg)
-          );
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
         }
       })
       .catch((error) => {
@@ -94,9 +84,7 @@ class AttachMapLayerBaseTool extends Tool {
           "FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttachError",
           { error, sourceUrl: source.url }
         );
-        IModelApp.notifications.outputMessage(
-          new NotifyMessageDetails(OutputMessagePriority.Error, msg)
-        );
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
       });
   }
 }
@@ -121,9 +109,7 @@ export class AttachModelMapLayerTool extends Tool {
     if (!vp) return false;
 
     const iModel = vp.iModel;
-    const elements = await iModel.elements.getProps(
-      iModel.selectionSet.elements
-    );
+    const elements = await iModel.elements.getProps(iModel.selectionSet.elements);
     const modelIds = new Set<Id64String>();
 
     for (const element of elements) modelIds.add(element.model);
@@ -131,11 +117,7 @@ export class AttachModelMapLayerTool extends Tool {
     for (const modelId of modelIds) {
       const modelProps = await iModel.models.getProps(modelId);
       const modelName = modelProps[0].name ? modelProps[0].name : modelId;
-      const name = nameIn
-        ? modelIds.size > 1
-          ? `${nameIn}: ${modelName}`
-          : nameIn
-        : modelName;
+      const name = nameIn ? (modelIds.size > 1 ? `${nameIn}: ${modelName}` : nameIn) : modelName;
       const settings = ModelMapLayerSettings.fromJSON({ name, modelId });
       vp.displayStyle.attachMapLayer({
         settings,
@@ -162,12 +144,7 @@ class AttachMapLayerByURLBaseTool extends AttachMapLayerBaseTool {
     super();
   }
 
-  public override async run(
-    url: string,
-    name?: string,
-    userName?: string,
-    password?: string
-  ): Promise<boolean> {
+  public override async run(url: string, name?: string, userName?: string, password?: string): Promise<boolean> {
     const source = MapLayerSource.fromJSON({
       url,
       name: name ? name : url,
@@ -199,12 +176,7 @@ export class AttachWmsMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
    * @param args contains url, name, userName, password in array order
    */
   public override async parseAndRun(...args: string[]): Promise<boolean> {
-    return this.run(
-      WmsUtilities.getBaseUrl(args[0]),
-      args[1],
-      args[2],
-      args[3]
-    );
+    return this.run(WmsUtilities.getBaseUrl(args[0]), args[1], args[2], args[3]);
   }
 }
 
@@ -220,12 +192,7 @@ export class AttachWmtsMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
    * @param args contains url, name, userName, password in array order
    */
   public override async parseAndRun(...args: string[]): Promise<boolean> {
-    return this.run(
-      WmsUtilities.getBaseUrl(args[0]),
-      args[1],
-      args[2],
-      args[3]
-    );
+    return this.run(WmsUtilities.getBaseUrl(args[0]), args[1], args[2], args[3]);
   }
 }
 
@@ -365,10 +332,7 @@ export class MapLayerVisibilityTool extends Tool {
    * @param layerIndex the index of the layer to change
    * @param visible a boolean that should be true if the layer should be visible
    */
-  public override async run(
-    layerIndex: number,
-    enable?: boolean
-  ): Promise<boolean> {
+  public override async run(layerIndex: number, enable?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp || !vp.view.isSpatialView()) return false;
 
@@ -380,10 +344,7 @@ export class MapLayerVisibilityTool extends Tool {
 
     const visible = enable === undefined ? !mapLayer.visible : enable;
 
-    vp.displayStyle.changeMapLayerProps(
-      { visible },
-      { index: layerIndex, isOverlay: false }
-    );
+    vp.displayStyle.changeMapLayerProps({ visible }, { index: layerIndex, isOverlay: false });
     vp.invalidateRenderPlan();
 
     return true;
@@ -421,9 +382,7 @@ export class ReorderMapLayers extends Tool {
 
     vp.displayStyle.moveMapLayerToIndex(
       isNaN(from) ? 0 : from,
-      isNaN(to)
-        ? vp.displayStyle.settings.mapImagery.backgroundLayers.length
-        : to,
+      isNaN(to) ? vp.displayStyle.settings.mapImagery.backgroundLayers.length : to,
       false
     );
     vp.invalidateRenderPlan();
@@ -455,17 +414,11 @@ export class MapLayerTransparencyTool extends Tool {
    * @param layerIndex the index of the layer to change
    * @param transparency a numeric value in the range 0.0 (fully opaque) to 1.0 (fully transparent)
    */
-  public override async run(
-    layerIndex: number,
-    transparency: number
-  ): Promise<boolean> {
+  public override async run(layerIndex: number, transparency: number): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp || !vp.view.isSpatialView()) return false;
 
-    vp.displayStyle.changeMapLayerProps(
-      { transparency },
-      { index: layerIndex, isOverlay: false }
-    );
+    vp.displayStyle.changeMapLayerProps({ transparency }, { index: layerIndex, isOverlay: false });
     vp.invalidateRenderPlan();
 
     return true;
@@ -476,8 +429,7 @@ export class MapLayerTransparencyTool extends Tool {
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     const transparency = parseFloat(args[0]);
     const layerIndex = parseLayerIndex(args);
-    if (transparency >= 0 && transparency <= 1)
-      await this.run(layerIndex, transparency);
+    if (transparency >= 0 && transparency <= 1) await this.run(layerIndex, transparency);
 
     return true;
   }
@@ -498,10 +450,7 @@ export class MapLayerSubLayerVisibilityTool extends Tool {
    * @param layerIndex the index of the layer to change
    * @param visible a boolean that should be true if the sublayer should be visible
    */
-  public override async run(
-    layerIndex: number,
-    visible: boolean
-  ): Promise<boolean> {
+  public override async run(layerIndex: number, visible: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp || !vp.view.isSpatialView()) return false;
 
@@ -582,10 +531,7 @@ export class ToggleTerrainTool extends Tool {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp || !vp.view.isSpatialView()) return false;
 
-    const applyTerrain =
-      enable === undefined
-        ? !vp.displayStyle.backgroundMapSettings.applyTerrain
-        : enable;
+    const applyTerrain = enable === undefined ? !vp.displayStyle.backgroundMapSettings.applyTerrain : enable;
     vp.displayStyle.changeBackgroundMapProps({ applyTerrain });
     vp.invalidateRenderPlan();
 
@@ -623,9 +569,7 @@ export class MapBaseColorTool extends Tool {
     if (undefined === vp || !vp.view.isSpatialView()) return false;
 
     const curTransparency =
-      vp.displayStyle.backgroundMapBase instanceof ColorDef
-        ? vp.displayStyle.backgroundMapBase.getTransparency()
-        : 0;
+      vp.displayStyle.backgroundMapBase instanceof ColorDef ? vp.displayStyle.backgroundMapBase.getTransparency() : 0;
     vp.displayStyle.backgroundMapBase = color.withTransparency(curTransparency);
     vp.invalidateRenderPlan();
 
@@ -685,9 +629,7 @@ export class MapBaseTransparencyTool extends Tool {
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     const transparency = parseFloat(args[0]);
 
-    return isNaN(transparency) || transparency < 0 || transparency > 1
-      ? false
-      : this.run(transparency);
+    return isNaN(transparency) || transparency < 0 || transparency > 1 ? false : this.run(transparency);
   }
 }
 
@@ -708,16 +650,10 @@ export class MapBaseVisibilityTool extends Tool {
    */
   public override async run(visible: boolean) {
     const vp = IModelApp.viewManager.selectedView;
-    if (
-      undefined === vp ||
-      !vp.view.isSpatialView() ||
-      vp.displayStyle.backgroundMapBase instanceof ColorDef
-    )
+    if (undefined === vp || !vp.view.isSpatialView() || vp.displayStyle.backgroundMapBase instanceof ColorDef)
       return false;
 
-    vp.displayStyle.backgroundMapBase = vp.displayStyle.backgroundMapBase.clone(
-      { visible }
-    );
+    vp.displayStyle.backgroundMapBase = vp.displayStyle.backgroundMapBase.clone({ visible });
     vp.invalidateRenderPlan();
 
     return true;

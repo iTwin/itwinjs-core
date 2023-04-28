@@ -5,12 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { NewYorkDataset } from "./NewYorkDataset";
-import {
-  ArcGisSymbologyRenderer,
-  EsriPMS,
-  EsriSFS,
-  EsriSLS,
-} from "../../ArcGisFeature/ArcGisSymbologyRenderer";
+import { ArcGisSymbologyRenderer, EsriPMS, EsriSFS, EsriSLS } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
 
 describe("ArcGisSymbologyRenderer", () => {
@@ -46,46 +41,31 @@ describe("ArcGisSymbologyRenderer", () => {
       "esriGeometryPoint",
       NewYorkDataset.incompleteDrawingInfo.drawingInfo.renderer
     );
-    comparePointSymbol(
-      (provider as any)._symbol,
-      EsriPMS.fromJSON((ArcGisSymbologyRenderer as any).defaultPMS)
-    );
+    comparePointSymbol((provider as any)._symbol, EsriPMS.fromJSON((ArcGisSymbologyRenderer as any).defaultPMS));
 
     provider = new ArcGisSymbologyRenderer(
       "esriGeometryMultipoint",
       NewYorkDataset.incompleteDrawingInfo.drawingInfo.renderer
     );
-    comparePointSymbol(
-      (provider as any)._symbol,
-      EsriPMS.fromJSON((ArcGisSymbologyRenderer as any).defaultPMS)
-    );
+    comparePointSymbol((provider as any)._symbol, EsriPMS.fromJSON((ArcGisSymbologyRenderer as any).defaultPMS));
 
     provider = new ArcGisSymbologyRenderer(
       "esriGeometryPolyline",
       NewYorkDataset.incompleteDrawingInfo.drawingInfo.renderer
     );
-    compareLineSymbol(
-      (provider as any)._symbol,
-      EsriSLS.fromJSON((ArcGisSymbologyRenderer as any).defaultSLS)
-    );
+    compareLineSymbol((provider as any)._symbol, EsriSLS.fromJSON((ArcGisSymbologyRenderer as any).defaultSLS));
 
     provider = new ArcGisSymbologyRenderer(
       "esriGeometryLine",
       NewYorkDataset.incompleteDrawingInfo.drawingInfo.renderer
     );
-    compareLineSymbol(
-      (provider as any)._symbol,
-      EsriSLS.fromJSON((ArcGisSymbologyRenderer as any).defaultSLS)
-    );
+    compareLineSymbol((provider as any)._symbol, EsriSLS.fromJSON((ArcGisSymbologyRenderer as any).defaultSLS));
 
     provider = new ArcGisSymbologyRenderer(
       "esriGeometryPolygon",
       NewYorkDataset.incompleteDrawingInfo.drawingInfo.renderer
     );
-    comparePolySymbol(
-      (provider as any)._symbol,
-      EsriSFS.fromJSON((ArcGisSymbologyRenderer as any).defaultSFS)
-    );
+    comparePolySymbol((provider as any)._symbol, EsriSFS.fromJSON((ArcGisSymbologyRenderer as any).defaultSFS));
   });
 
   it("should construct renderer from unique value drawing info", async () => {
@@ -95,8 +75,7 @@ describe("ArcGisSymbologyRenderer", () => {
     );
     comparePointSymbol(
       (provider as any)._symbol,
-      NewYorkDataset.uniqueValueDrawingInfo.drawingInfo.renderer
-        .defaultSymbol as any
+      NewYorkDataset.uniqueValueDrawingInfo.drawingInfo.renderer.defaultSymbol as any
     );
   });
 
@@ -125,8 +104,7 @@ describe("ArcGisSymbologyRenderer", () => {
     );
     comparePointSymbol(
       (provider as any)._symbol,
-      PhillyLandmarksDataset.polygonDrawingInfo.drawingInfo.renderer
-        .symbol as any
+      PhillyLandmarksDataset.polygonDrawingInfo.drawingInfo.renderer.symbol as any
     );
   });
 });

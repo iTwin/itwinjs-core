@@ -34,10 +34,7 @@ export function getLocalizedStringEN(key: string) {
 }
 
 /** @internal */
-export function getElementKey(
-  imodel: IModelDb,
-  id: Id64String
-): InstanceKey | undefined {
+export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined {
   let key: InstanceKey | undefined;
   const query = `SELECT ECClassId FROM ${Element.classFullName} e WHERE ECInstanceId = ?`;
   imodel.withPreparedStatement(query, (stmt) => {
@@ -45,10 +42,7 @@ export function getElementKey(
       stmt.bindId(1, id);
       if (stmt.step() === DbResult.BE_SQLITE_ROW)
         key = {
-          className: stmt
-            .getValue(0)
-            .getClassNameForClassId()
-            .replace(".", ":"),
+          className: stmt.getValue(0).getClassNameForClassId().replace(".", ":"),
           id,
         };
     } catch {}
@@ -60,8 +54,7 @@ export function getElementKey(
 export function normalizeVersion(version?: string) {
   if (version) {
     const parsedVersion = parseVersion(version, true);
-    if (parsedVersion)
-      return `${parsedVersion.major}.${parsedVersion.minor}.${parsedVersion.patch}`;
+    if (parsedVersion) return `${parsedVersion.major}.${parsedVersion.minor}.${parsedVersion.patch}`;
   }
   return "0.0.0";
 }
@@ -70,17 +63,13 @@ export function normalizeVersion(version?: string) {
  * A function that received request diagnostics and, optionally, request context.
  * @beta
  */
-export type BackendDiagnosticsHandler<TContext = any> = (
-  logs: Diagnostics,
-  requestContext?: TContext
-) => void;
+export type BackendDiagnosticsHandler<TContext = any> = (logs: Diagnostics, requestContext?: TContext) => void;
 
 /**
  * Data structure for backend diagnostics options.
  * @beta
  */
-export interface BackendDiagnosticsOptions<TContext = any>
-  extends DiagnosticsOptions {
+export interface BackendDiagnosticsOptions<TContext = any> extends DiagnosticsOptions {
   /**
    * An optional function to supply request context that'll be passed to [[handler]] when
    * it's called after the request is fulfilled.
@@ -118,25 +107,16 @@ export function combineDiagnosticsOptions(
       d.perf === true ||
       (typeof d.perf === "object" &&
         (!combinedOptions.perf ||
-          (typeof combinedOptions.perf === "object" &&
-            d.perf.minimumDuration < combinedOptions.perf.minimumDuration)))
+          (typeof combinedOptions.perf === "object" && d.perf.minimumDuration < combinedOptions.perf.minimumDuration)))
     ) {
       combinedOptions.perf = d.perf;
     }
-    const combinedDev = combineDiagnosticsSeverities(
-      d.dev,
-      combinedOptions.dev
-    );
+    const combinedDev = combineDiagnosticsSeverities(d.dev, combinedOptions.dev);
     if (combinedDev) combinedOptions.dev = combinedDev;
-    const combinedEditor = combineDiagnosticsSeverities(
-      d.editor,
-      combinedOptions.editor
-    );
+    const combinedEditor = combineDiagnosticsSeverities(d.editor, combinedOptions.editor);
     if (combinedEditor) combinedOptions.editor = combinedEditor;
   });
-  return combinedOptions.dev || combinedOptions.editor || combinedOptions.perf
-    ? combinedOptions
-    : undefined;
+  return combinedOptions.dev || combinedOptions.editor || combinedOptions.perf ? combinedOptions : undefined;
 }
 
 /** @internal */
@@ -145,15 +125,10 @@ export function reportDiagnostics<TContext>(
   options: BackendDiagnosticsOptions<TContext>,
   context?: TContext
 ) {
-  const stripped = diagnostics.logs
-    ? stripDiagnostics(options, diagnostics.logs)
-    : undefined;
+  const stripped = diagnostics.logs ? stripDiagnostics(options, diagnostics.logs) : undefined;
   stripped && options.handler({ logs: stripped }, context);
 }
-function stripDiagnostics<TEntry extends DiagnosticsLogEntry>(
-  options: DiagnosticsOptions,
-  diagnostics: TEntry[]
-) {
+function stripDiagnostics<TEntry extends DiagnosticsLogEntry>(options: DiagnosticsOptions, diagnostics: TEntry[]) {
   const stripped: TEntry[] = [];
   diagnostics.forEach((entry) => {
     if (DiagnosticsLogEntry.isScope(entry)) {
@@ -162,9 +137,7 @@ function stripDiagnostics<TEntry extends DiagnosticsLogEntry>(
       if (!strippedScope.logs) delete strippedScope.logs;
       if (
         entry.duration !== undefined &&
-        (options.perf === true ||
-          (typeof options.perf === "object" &&
-            entry.duration >= options.perf.minimumDuration))
+        (options.perf === true || (typeof options.perf === "object" && entry.duration >= options.perf.minimumDuration))
       ) {
         stripped.push(strippedScope);
       } else if (scopeLogs) {
@@ -174,12 +147,9 @@ function stripDiagnostics<TEntry extends DiagnosticsLogEntry>(
       }
     } else {
       const matchesDevSeverity =
-        entry.severity.dev &&
-        compareDiagnosticsSeverities(entry.severity.dev, options.dev) >= 0;
+        entry.severity.dev && compareDiagnosticsSeverities(entry.severity.dev, options.dev) >= 0;
       const matchesEditorSeverity =
-        entry.severity.editor &&
-        compareDiagnosticsSeverities(entry.severity.editor, options.editor) >=
-          0;
+        entry.severity.editor && compareDiagnosticsSeverities(entry.severity.editor, options.editor) >= 0;
       if (matchesDevSeverity || matchesEditorSeverity) {
         stripped.push({ ...entry });
       }

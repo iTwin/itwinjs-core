@@ -40,10 +40,7 @@ class DisjointTimerExtension {
   }
 
   public isResultAvailable(q: WebGLQuery): boolean {
-    return this._context.getQueryParameter(
-      q,
-      this._context.QUERY_RESULT_AVAILABLE
-    );
+    return this._context.getQueryParameter(q, this._context.QUERY_RESULT_AVAILABLE);
   }
   public getResult(q: WebGLQuery): number {
     return this._context.getQueryParameter(q, this._context.QUERY_RESULT);
@@ -93,10 +90,7 @@ export class GLTimer {
 
   public set resultsCallback(callback: GLTimerResultCallback | undefined) {
     if (this._queryStack.length !== 0)
-      throw new IModelError(
-        BentleyStatus.ERROR,
-        "Do not set resultsCallback when a frame is already being drawn"
-      );
+      throw new IModelError(BentleyStatus.ERROR, "Do not set resultsCallback when a frame is already being drawn");
 
     this._resultsCallback = callback;
   }
@@ -110,10 +104,7 @@ export class GLTimer {
   public endOperation() {
     if (!this._resultsCallback) return;
     if (this._queryStack.length === 0)
-      throw new IModelError(
-        BentleyStatus.ERROR,
-        "Mismatched calls to beginOperation/endOperation"
-      );
+      throw new IModelError(BentleyStatus.ERROR, "Mismatched calls to beginOperation/endOperation");
 
     this.popQuery();
   }
@@ -121,10 +112,7 @@ export class GLTimer {
   public beginFrame() {
     if (!this._resultsCallback) return;
     if (this._queryStack.length !== 0)
-      throw new IModelError(
-        BentleyStatus.ERROR,
-        "Already recording timing for a frame"
-      );
+      throw new IModelError(BentleyStatus.ERROR, "Already recording timing for a frame");
 
     const query = this._extension.createQuery();
     this._extension.beginQuery(query);
@@ -134,10 +122,7 @@ export class GLTimer {
   public endFrame() {
     if (!this._resultsCallback) return;
     if (this._queryStack.length !== 1)
-      throw new IModelError(
-        BentleyStatus.ERROR,
-        "Missing at least one endOperation call"
-      );
+      throw new IModelError(BentleyStatus.ERROR, "Missing at least one endOperation call");
 
     this._extension.endQuery();
     const root = this._queryStack.pop()!;
@@ -184,8 +169,7 @@ export class GLTimer {
   private cleanupAfterDisjointEvent(queryEntry: QueryEntry) {
     this._extension.deleteQuery(queryEntry.query);
     if (!queryEntry.children) return;
-    for (const child of queryEntry.children)
-      this.cleanupAfterDisjointEvent(child);
+    for (const child of queryEntry.children) this.cleanupAfterDisjointEvent(child);
   }
 
   private pushQuery(label: string) {

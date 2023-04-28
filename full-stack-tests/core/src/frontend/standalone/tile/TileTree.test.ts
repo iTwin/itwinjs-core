@@ -23,10 +23,7 @@ import { Range3d, Transform } from "@itwin/core-geometry";
 import { TestUtility } from "../../TestUtility";
 
 class MockTile extends Tile {
-  protected _loadChildren(
-    resolve: (children: Tile[] | undefined) => void,
-    _reject: (error: Error) => void
-  ): void {
+  protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
     resolve([]);
   }
 
@@ -35,9 +32,7 @@ class MockTile extends Tile {
     return {} as unknown as TileRequestChannel;
   }
 
-  public async requestContent(
-    _canceled: () => boolean
-  ): Promise<TileRequest.Response> {
+  public async requestContent(_canceled: () => boolean): Promise<TileRequest.Response> {
     return undefined;
   }
 
@@ -126,10 +121,7 @@ describe("TileTreeSupplier", () => {
         return compareStrings(lhs, rhs);
       }
 
-      public async createTileTree(
-        id: string,
-        iModel: IModelConnection
-      ): Promise<TileTree | undefined> {
+      public async createTileTree(id: string, iModel: IModelConnection): Promise<TileTree | undefined> {
         return new MockTree(id, iModel);
       }
     }
@@ -232,13 +224,7 @@ describe("requestTileTreeProps", () => {
       }
     };
 
-    const promises = [
-      getProps("0x1c"),
-      getProps("invalid"),
-      getProps("0x1c"),
-      getProps("notanid"),
-      getProps("0x1c"),
-    ];
+    const promises = [getProps("0x1c"), getProps("invalid"), getProps("0x1c"), getProps("notanid"), getProps("0x1c")];
     await Promise.all(promises);
     expect(fulfilled.length).to.equal(3);
     expect(fulfilled.every((x) => x === "0x1c")).to.be.true;
@@ -251,18 +237,13 @@ describe("requestTileTreeProps", () => {
       const stats = IModelApp.tileAdmin.statistics;
 
       const numRemaining = numRequests - index;
-      const expectedNumActive = Math.min(
-        maxActiveTileTreePropsRequests,
-        numRemaining
-      );
+      const expectedNumActive = Math.min(maxActiveTileTreePropsRequests, numRemaining);
       expect(stats.numActiveTileTreePropsRequests).to.equal(expectedNumActive);
 
       const expectedNumPending = numRemaining - expectedNumActive;
 
       // ###TODO The following occasionally fails with 'expected 1 to equal 0'.
-      expect(stats.numPendingTileTreePropsRequests).to.equal(
-        expectedNumPending
-      );
+      expect(stats.numPendingTileTreePropsRequests).to.equal(expectedNumPending);
     };
 
     const promises = [];

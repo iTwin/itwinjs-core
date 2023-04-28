@@ -4,11 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
-import {
-  FlashMode,
-  FlashSettings,
-  FlashSettingsOptions,
-} from "../FlashSettings";
+import { FlashMode, FlashSettings, FlashSettingsOptions } from "../FlashSettings";
 
 type FlashProps = Pick<FlashSettings, "duration" | "maxIntensity" | "litMode">;
 
@@ -73,11 +69,7 @@ describe("FlashSettings", () => {
   });
 
   it("clones", () => {
-    function clone(
-      input: FlashSettings,
-      options: FlashSettingsOptions,
-      expected: FlashProps
-    ): FlashSettings {
+    function clone(input: FlashSettings, options: FlashSettingsOptions, expected: FlashProps): FlashSettings {
       const output = input.clone(options);
       expectFlash(output, expected);
       return output;

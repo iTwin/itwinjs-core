@@ -124,19 +124,9 @@ import {
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
-import {
-  Animator,
-  MarginOptions,
-  OnViewExtentsError,
-  ViewAnimationOptions,
-  ViewChangeOptions,
-} from "./ViewAnimation";
+import { Animator, MarginOptions, OnViewExtentsError, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import {
-  GlobalLocation,
-  viewGlobalLocation,
-  ViewGlobalLocationConstants,
-} from "./ViewGlobalLocation";
+import { GlobalLocation, viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
 import { ViewPose } from "./ViewPose";
 import { ViewRect } from "./ViewRect";
@@ -249,9 +239,7 @@ export enum ViewUndoEvent {
 }
 
 /** @internal */
-export const ELEMENT_MARKED_FOR_REMOVAL = Symbol.for(
-  "@bentley/imodeljs/Viewport/__element_marked_for_removal__"
-);
+export const ELEMENT_MARKED_FOR_REMOVAL = Symbol.for("@bentley/imodeljs/Viewport/__element_marked_for_removal__");
 
 declare global {
   interface Element {
@@ -368,9 +356,7 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** Event called after reversing the most recent change to the Viewport from the undo stack or reapplying the
    * most recently undone change to the Viewport from the redo stack.
    */
-  public readonly onViewUndoRedo = new BeEvent<
-    (vp: Viewport, event: ViewUndoEvent) => void
-  >();
+  public readonly onViewUndoRedo = new BeEvent<(vp: Viewport, event: ViewUndoEvent) => void>();
   /** Event called on the next frame after this viewport's set of always-drawn elements changes. */
   public readonly onAlwaysDrawnChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's set of never-drawn elements changes. */
@@ -380,33 +366,21 @@ export abstract class Viewport implements IDisposable, TileUser {
    */
   public readonly onDisplayStyleChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's set of displayed categories changes. */
-  public readonly onViewedCategoriesChanged = new BeEvent<
-    (vp: Viewport) => void
-  >();
+  public readonly onViewedCategoriesChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's set of [[PerModelCategoryVisibility.Overrides]] changes. */
-  public readonly onViewedCategoriesPerModelChanged = new BeEvent<
-    (vp: Viewport) => void
-  >();
+  public readonly onViewedCategoriesPerModelChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's set of displayed models changes. */
   public readonly onViewedModelsChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's [[FeatureOverrideProvider]] changes,
    * or the internal state of the provider changes such that the overrides needed to be recomputed.
    */
-  public readonly onFeatureOverrideProviderChanged = new BeEvent<
-    (vp: Viewport) => void
-  >();
+  public readonly onFeatureOverrideProviderChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's [[FeatureSymbology.Overrides]] change. */
-  public readonly onFeatureOverridesChanged = new BeEvent<
-    (vp: Viewport) => void
-  >();
+  public readonly onFeatureOverridesChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after any of the viewport's [[ChangeFlags]] changes. */
-  public readonly onViewportChanged = new BeEvent<
-    (vp: Viewport, changed: ChangeFlags) => void
-  >();
+  public readonly onViewportChanged = new BeEvent<(vp: Viewport, changed: ChangeFlags) => void>();
   /** Event invoked immediately when [[changeView]] is called to replace the current [[ViewState]] with a different one. */
-  public readonly onChangeView = new BeEvent<
-    (vp: Viewport, previousViewState: ViewState) => void
-  >();
+  public readonly onChangeView = new BeEvent<(vp: Viewport, previousViewState: ViewState) => void>();
   /** Event invoked immediately when the viewport is disposed.
    * @see [[Viewport.dispose]].
    */
@@ -417,9 +391,7 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** Event dispatched immediately after [[flashedId]] changes, supplying the Ids of the previously and/or currently-flashed objects.
    * @note Attempting to assign to [[flashedId]] from within the event callback will produce an exception.
    */
-  public readonly onFlashedIdChanged = new BeEvent<
-    (vp: Viewport, args: OnFlashedIdChangedEventArgs) => void
-  >();
+  public readonly onFlashedIdChanged = new BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>();
 
   /** Event indicating when a map-layer scale range visibility change for the current viewport scale.
    * @beta
@@ -623,19 +595,12 @@ export abstract class Viewport implements IDisposable, TileUser {
   private readonly _tiledGraphicsProviders = new Set<TiledGraphicsProvider>();
   private _mapTiledGraphicsProvider?: MapTiledGraphicsProvider;
   private _hilite = new Hilite.Settings();
-  private _emphasis = new Hilite.Settings(
-    ColorDef.black,
-    0,
-    0,
-    Hilite.Silhouette.Thick
-  );
+  private _emphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
   private _flash = new FlashSettings();
 
   /** See [DisplayStyle3dSettings.lights]($common) */
   public get lightSettings(): LightSettings | undefined {
-    return this.displayStyle.is3d()
-      ? this.displayStyle.settings.lights
-      : undefined;
+    return this.displayStyle.is3d() ? this.displayStyle.settings.lights : undefined;
   }
   public setLightSettings(settings: LightSettings) {
     if (this.displayStyle.is3d()) this.displayStyle.settings.lights = settings;
@@ -643,13 +608,10 @@ export abstract class Viewport implements IDisposable, TileUser {
 
   /** See [DisplayStyle3dSettings.solarShadows]($common) */
   public get solarShadowSettings(): SolarShadowSettings | undefined {
-    return this.view.displayStyle.is3d()
-      ? this.view.displayStyle.settings.solarShadows
-      : undefined;
+    return this.view.displayStyle.is3d() ? this.view.displayStyle.settings.solarShadows : undefined;
   }
   public setSolarShadowSettings(settings: SolarShadowSettings) {
-    if (this.view.displayStyle.is3d())
-      this.view.displayStyle.solarShadows = settings;
+    if (this.view.displayStyle.is3d()) this.view.displayStyle.solarShadows = settings;
   }
 
   /** @public */
@@ -706,10 +668,7 @@ export abstract class Viewport implements IDisposable, TileUser {
 
   /** @internal */
   public get target(): RenderTarget {
-    assert(
-      undefined !== this._target,
-      "Accessing RenderTarget of a disposed Viewport"
-    );
+    assert(undefined !== this._target, "Accessing RenderTarget of a disposed Viewport");
     return this._target;
   }
 
@@ -813,9 +772,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     const view = this.view;
     if (!view.is3d()) return false;
 
-    return (
-      this.displayStyle.globeMode === GlobeMode.Ellipsoid && view.isGlobalView
-    );
+    return this.displayStyle.globeMode === GlobeMode.Ellipsoid && view.isGlobalView;
   }
 
   /** Remove any [[SubCategoryOverride]] for the specified subcategory.
@@ -840,9 +797,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @return The symbology overrides applied to all geometry belonging to the specified subcategory, or undefined if no such overrides exist.
    * @see [[overrideSubCategory]]
    */
-  public getSubCategoryOverride(
-    id: Id64String
-  ): SubCategoryOverride | undefined {
+  public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined {
     return this.view.displayStyle.getSubCategoryOverride(id);
   }
 
@@ -898,8 +853,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     // Same occurs when changing feature symbology overrides (e.g., always/never-drawn element sets, transparency override)
     if (!this._sceneValid) return;
 
-    if (this.view.displayStyle.wantShadows || this.view.isSheetView())
-      this.invalidateScene();
+    if (this.view.displayStyle.wantShadows || this.view.isSheetView()) this.invalidateScene();
   }
 
   /** Enable or disable display of elements belonging to a set of categories specified by Id.
@@ -909,11 +863,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param display Whether or not elements on the specified categories should be displayed in the viewport.
    * @param enableAllSubCategories Specifies that when enabling display for a category, all of its subcategories should also be displayed even if they are overridden to be invisible.
    */
-  public changeCategoryDisplay(
-    categories: Id64Arg,
-    display: boolean,
-    enableAllSubCategories: boolean = false
-  ): void {
+  public changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories: boolean = false): void {
     if (!display) {
       this.view.categorySelector.dropCategories(categories);
       return;
@@ -925,10 +875,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.updateSubCategories(categoryIds, enableAllSubCategories);
   }
 
-  private updateSubCategories(
-    categoryIds: Id64Arg,
-    enableAllSubCategories: boolean
-  ): void {
+  private updateSubCategories(categoryIds: Id64Arg, enableAllSubCategories: boolean): void {
     this.subcategories.push(this.iModel.subcategories, categoryIds, () => {
       if (enableAllSubCategories) this.enableAllSubCategories(categoryIds);
 
@@ -937,8 +884,7 @@ export abstract class Viewport implements IDisposable, TileUser {
   }
 
   private enableAllSubCategories(categoryIds: Id64Arg): void {
-    if (this.displayStyle.enableAllLoadedSubCategories(categoryIds))
-      this.maybeInvalidateScene();
+    if (this.displayStyle.enableAllLoadedSubCategories(categoryIds)) this.maybeInvalidateScene();
   }
 
   /** @internal */
@@ -950,12 +896,8 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param subCategoryId The Id of the subcategory
    * @param display: True to make geometry belonging to the subcategory visible within this viewport, false to make it invisible.
    */
-  public changeSubCategoryDisplay(
-    subCategoryId: Id64String,
-    display: boolean
-  ): void {
-    if (this.displayStyle.setSubCategoryVisible(subCategoryId, display))
-      this.maybeInvalidateScene();
+  public changeSubCategoryDisplay(subCategoryId: Id64String, display: boolean): void {
+    if (this.displayStyle.setSubCategoryVisible(subCategoryId, display)) this.maybeInvalidateScene();
   }
 
   /** The settings controlling how a background map is displayed within a view.
@@ -998,12 +940,8 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param mapLayerIndex the [[MapLayerIndex]] of the map layer.
    * @beta
    */
-  public getMapLayerImageryProvider(
-    mapLayerIndex: MapLayerIndex
-  ): MapLayerImageryProvider | undefined {
-    return this._mapTiledGraphicsProvider?.getMapLayerImageryProvider(
-      mapLayerIndex
-    );
+  public getMapLayerImageryProvider(mapLayerIndex: MapLayerIndex): MapLayerImageryProvider | undefined {
+    return this._mapTiledGraphicsProvider?.getMapLayerImageryProvider(mapLayerIndex);
   }
 
   /** Return the map-layer scale range visibility for the provided map-layer index.
@@ -1011,9 +949,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @see [[DisplayStyleState.mapLayerAtIndex]].
    * @beta
    */
-  public getMapLayerScaleRangeVisibility(
-    mapLayerIndex: MapLayerIndex
-  ): MapTileTreeScaleRangeVisibility {
+  public getMapLayerScaleRangeVisibility(mapLayerIndex: MapLayerIndex): MapTileTreeScaleRangeVisibility {
     const treeRef = mapLayerIndex.isOverlay
       ? this._mapTiledGraphicsProvider?.overlayMap
       : this._mapTiledGraphicsProvider?.backgroundMap;
@@ -1027,15 +963,9 @@ export abstract class Viewport implements IDisposable, TileUser {
    * Note: A imagery tree can be shared for multiple map-layers.
    * @internal
    */
-  public getMapLayerIndexesFromIds(
-    mapTreeId: Id64String,
-    layerTreeId: Id64String
-  ): MapLayerIndex[] {
+  public getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[] {
     if (this._mapTiledGraphicsProvider)
-      return this._mapTiledGraphicsProvider?.getMapLayerIndexesFromIds(
-        mapTreeId,
-        layerTreeId
-      );
+      return this._mapTiledGraphicsProvider?.getMapLayerIndexesFromIds(mapTreeId, layerTreeId);
 
     return [];
   }
@@ -1043,11 +973,8 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** Returns the cartographic range of a map layer.
    * @param mapLayerIndex the [[MapLayerIndex]] of the map layer.
    */
-  public async getMapLayerRange(
-    mapLayerIndex: MapLayerIndex
-  ): Promise<MapCartoRectangle | undefined> {
-    const mapLayerSettings =
-      this.view.displayStyle.mapLayerAtIndex(mapLayerIndex);
+  public async getMapLayerRange(mapLayerIndex: MapLayerIndex): Promise<MapCartoRectangle | undefined> {
+    const mapLayerSettings = this.view.displayStyle.mapLayerAtIndex(mapLayerIndex);
     if (undefined === mapLayerSettings) return undefined;
 
     if (mapLayerSettings instanceof ModelMapLayerSettings) {
@@ -1057,28 +984,16 @@ export abstract class Viewport implements IDisposable, TileUser {
       if (!model || !(model instanceof GeometricModelState)) return undefined;
 
       const modelRange = await model.queryModelRange();
-      const cartoRange = new CartographicRange(
-        modelRange,
-        ecefTransform
-      ).getLongitudeLatitudeBoundingBox();
+      const cartoRange = new CartographicRange(modelRange, ecefTransform).getLongitudeLatitudeBoundingBox();
 
-      return MapCartoRectangle.fromRadians(
-        cartoRange.low.x,
-        cartoRange.low.y,
-        cartoRange.high.x,
-        cartoRange.high.y
-      );
+      return MapCartoRectangle.fromRadians(cartoRange.low.x, cartoRange.low.y, cartoRange.high.x, cartoRange.high.y);
     }
 
     const imageryProvider = this.getMapLayerImageryProvider(mapLayerIndex);
     if (undefined === imageryProvider) return undefined;
 
-    const tileTreeRef = mapLayerIndex.isOverlay
-      ? this.overlayMap
-      : this.backgroundMap;
-    const imageryTreeRef = tileTreeRef?.getLayerImageryTreeRef(
-      mapLayerIndex.index
-    );
+    const tileTreeRef = mapLayerIndex.isOverlay ? this.overlayMap : this.backgroundMap;
+    const imageryTreeRef = tileTreeRef?.getLayerImageryTreeRef(mapLayerIndex.index);
 
     if (imageryTreeRef?.treeOwner.loadStatus === TileTreeLoadStatus.Loaded) {
       return imageryProvider.cartoRange;
@@ -1091,23 +1006,13 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param mapLayerIndex the [[MapLayerIndex]] of the map layer.
    * @param vp the viewport.
    */
-  public async viewMapLayerRange(
-    mapLayerIndex: MapLayerIndex,
-    vp: ScreenViewport
-  ): Promise<boolean> {
+  public async viewMapLayerRange(mapLayerIndex: MapLayerIndex, vp: ScreenViewport): Promise<boolean> {
     const range = await this.getMapLayerRange(mapLayerIndex);
     if (!range) return false;
 
     if (range.xLength() > 1.5 * Angle.piRadians)
-      viewGlobalLocation(
-        vp,
-        true,
-        ViewGlobalLocationConstants.satelliteHeightAboveEarthInMeters,
-        undefined,
-        undefined
-      );
-    else
-      viewGlobalLocation(vp, true, undefined, undefined, range.globalLocation);
+      viewGlobalLocation(vp, true, ViewGlobalLocationConstants.satelliteHeightAboveEarthInMeters, undefined, undefined);
+    else viewGlobalLocation(vp, true, undefined, undefined, range.globalLocation);
 
     return true;
   }
@@ -1292,17 +1197,13 @@ export abstract class Viewport implements IDisposable, TileUser {
 
     // Execute 'getMapFeatureInfo' on every tree, and make sure to handle exception for each call,
     // so that we get still get results even though a tree has failed.
-    this.forEachMapTreeRef(async (tree) =>
-      promises.push(tree.getMapFeatureInfo(hit).catch(() => undefined))
-    );
+    this.forEachMapTreeRef(async (tree) => promises.push(tree.getMapFeatureInfo(hit).catch(() => undefined)));
     const featureInfo: MapFeatureInfo = {};
 
     const worldPoint = hit.hitPoint.clone();
-    const backgroundMapGeometry =
-      hit.viewport.displayStyle.getBackgroundMapGeometry();
+    const backgroundMapGeometry = hit.viewport.displayStyle.getBackgroundMapGeometry();
     if (undefined !== backgroundMapGeometry) {
-      featureInfo.hitPoint =
-        await backgroundMapGeometry.dbToCartographicFromGcs(worldPoint);
+      featureInfo.hitPoint = await backgroundMapGeometry.dbToCartographicFromGcs(worldPoint);
     }
 
     const results = await Promise.all(promises);
@@ -1323,9 +1224,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @see [[FrameStats]]
    * @alpha
    */
-  public readonly onFrameStats = new BeEvent<
-    (frameStats: Readonly<FrameStats>) => void
-  >();
+  public readonly onFrameStats = new BeEvent<(frameStats: Readonly<FrameStats>) => void>();
 
   private _frameStatsCollector = new FrameStatsCollector(this.onFrameStats);
 
@@ -1334,8 +1233,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     this._target = target;
     target.assignFrameStatsCollector(this._frameStatsCollector);
     this._viewportId = TileUser.generateId();
-    this._perModelCategoryVisibility =
-      PerModelCategoryVisibility.createOverrides(this);
+    this._perModelCategoryVisibility = PerModelCategoryVisibility.createOverrides(this);
     IModelApp.tileAdmin.registerUser(this);
   }
 
@@ -1352,8 +1250,7 @@ export abstract class Viewport implements IDisposable, TileUser {
   private setView(view: ViewState): void {
     if (view === this._view) return;
 
-    if (this._mapTiledGraphicsProvider)
-      this._mapTiledGraphicsProvider.setView(view);
+    if (this._mapTiledGraphicsProvider) this._mapTiledGraphicsProvider.setView(view);
     this.detachFromView();
     this._view = view;
     this.attachToView();
@@ -1368,10 +1265,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.registerDisplayStyleListeners(this.view.displayStyle);
     this.registerViewListeners();
     this.view.attachToViewport(this);
-    this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(
-      this.viewportId,
-      this.displayStyle
-    );
+    this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this.viewportId, this.displayStyle);
   }
 
   private registerViewListeners(): void {
@@ -1381,16 +1275,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     // When we detach from the view, also unregister display style listeners.
     removals.push(() => this.detachFromDisplayStyle());
 
-    removals.push(
-      view.onModelDisplayTransformProviderChanged.addListener(() =>
-        this.invalidateScene()
-      )
-    );
-    removals.push(
-      view.details.onClipVectorChanged.addListener(() =>
-        this.invalidateRenderPlan()
-      )
-    );
+    removals.push(view.onModelDisplayTransformProviderChanged.addListener(() => this.invalidateScene()));
+    removals.push(view.details.onClipVectorChanged.addListener(() => this.invalidateRenderPlan()));
 
     removals.push(
       view.onViewedCategoriesChanged.addListener(() => {
@@ -1406,10 +1292,7 @@ export abstract class Viewport implements IDisposable, TileUser {
         this.invalidateRenderPlan();
 
         this.detachFromDisplayStyle();
-        this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(
-          this.viewportId,
-          newStyle
-        );
+        this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this.viewportId, newStyle);
         this.registerDisplayStyleListeners(newStyle);
       })
     );
@@ -1432,11 +1315,9 @@ export abstract class Viewport implements IDisposable, TileUser {
       // then the completion of the request will require synching with the view so that the
       // frustum depth is recalculated correctly.  Register this for removal when the view is detached.
       removals.push(
-        this.iModel.onMapElevationLoaded.addListener(
-          (_iModel: IModelConnection) => {
-            this.synchWithView();
-          }
-        )
+        this.iModel.onMapElevationLoaded.addListener((_iModel: IModelConnection) => {
+          this.synchWithView();
+        })
       );
     }
   }
@@ -1455,57 +1336,19 @@ export abstract class Viewport implements IDisposable, TileUser {
       this.setFeatureOverrideProviderChanged();
     };
 
-    removals.push(
-      settings.onSubCategoryOverridesChanged.addListener(
-        styleAndOverridesChanged
-      )
-    );
-    removals.push(
-      settings.onModelAppearanceOverrideChanged.addListener(
-        styleAndOverridesChanged
-      )
-    );
-    removals.push(
-      settings.onBackgroundColorChanged.addListener(displayStyleChanged)
-    );
-    removals.push(
-      settings.onMonochromeColorChanged.addListener(displayStyleChanged)
-    );
-    removals.push(
-      settings.onMonochromeModeChanged.addListener(displayStyleChanged)
-    );
-    removals.push(
-      settings.onClipStyleChanged.addListener(styleAndOverridesChanged)
-    );
-    removals.push(
-      settings.onPlanarClipMaskChanged.addListener(displayStyleChanged)
-    );
-    removals.push(
-      settings.onWhiteOnWhiteReversalChanged.addListener(displayStyleChanged)
-    );
-    removals.push(
-      settings.contextRealityModels.onPlanarClipMaskChanged.addListener(
-        displayStyleChanged
-      )
-    );
-    removals.push(
-      settings.contextRealityModels.onAppearanceOverridesChanged.addListener(
-        displayStyleChanged
-      )
-    );
-    removals.push(
-      settings.contextRealityModels.onDisplaySettingsChanged.addListener(
-        displayStyleChanged
-      )
-    );
-    removals.push(
-      settings.onRealityModelDisplaySettingsChanged.addListener(
-        displayStyleChanged
-      )
-    );
-    removals.push(
-      settings.contextRealityModels.onChanged.addListener(displayStyleChanged)
-    );
+    removals.push(settings.onSubCategoryOverridesChanged.addListener(styleAndOverridesChanged));
+    removals.push(settings.onModelAppearanceOverrideChanged.addListener(styleAndOverridesChanged));
+    removals.push(settings.onBackgroundColorChanged.addListener(displayStyleChanged));
+    removals.push(settings.onMonochromeColorChanged.addListener(displayStyleChanged));
+    removals.push(settings.onMonochromeModeChanged.addListener(displayStyleChanged));
+    removals.push(settings.onClipStyleChanged.addListener(styleAndOverridesChanged));
+    removals.push(settings.onPlanarClipMaskChanged.addListener(displayStyleChanged));
+    removals.push(settings.onWhiteOnWhiteReversalChanged.addListener(displayStyleChanged));
+    removals.push(settings.contextRealityModels.onPlanarClipMaskChanged.addListener(displayStyleChanged));
+    removals.push(settings.contextRealityModels.onAppearanceOverridesChanged.addListener(displayStyleChanged));
+    removals.push(settings.contextRealityModels.onDisplaySettingsChanged.addListener(displayStyleChanged));
+    removals.push(settings.onRealityModelDisplaySettingsChanged.addListener(displayStyleChanged));
+    removals.push(settings.contextRealityModels.onChanged.addListener(displayStyleChanged));
 
     removals.push(
       style.onOSMBuildingDisplayChanged.addListener(() => {
@@ -1523,12 +1366,8 @@ export abstract class Viewport implements IDisposable, TileUser {
       this.invalidateRenderPlan();
       analysisChanged();
     };
-    removals.push(
-      settings.onAnalysisFractionChanged.addListener(analysisChanged)
-    );
-    removals.push(
-      settings.onAnalysisStyleChanged.addListener(analysisStyleChanged)
-    );
+    removals.push(settings.onAnalysisFractionChanged.addListener(analysisChanged));
+    removals.push(settings.onAnalysisStyleChanged.addListener(analysisStyleChanged));
 
     const scheduleChanged = () => {
       this._timePointValid = false;
@@ -1547,8 +1386,7 @@ export abstract class Viewport implements IDisposable, TileUser {
 
     removals.push(
       settings.onViewFlagsChanged.addListener((vf) => {
-        if (vf.backgroundMap !== this.viewFlags.backgroundMap)
-          this.invalidateController();
+        if (vf.backgroundMap !== this.viewFlags.backgroundMap) this.invalidateController();
         else this.invalidateRenderPlan();
 
         this._changeFlags.setDisplayStyle();
@@ -1577,28 +1415,12 @@ export abstract class Viewport implements IDisposable, TileUser {
 
     if (settings.is3d()) {
       removals.push(settings.onLightsChanged.addListener(displayStyleChanged));
-      removals.push(
-        settings.onSolarShadowsChanged.addListener(displayStyleChanged)
-      );
-      removals.push(
-        settings.onThematicChanged.addListener(displayStyleChanged)
-      );
-      removals.push(
-        settings.onHiddenLineSettingsChanged.addListener(displayStyleChanged)
-      );
-      removals.push(
-        settings.onAmbientOcclusionSettingsChanged.addListener(
-          displayStyleChanged
-        )
-      );
-      removals.push(
-        settings.onEnvironmentChanged.addListener(displayStyleChanged)
-      );
-      removals.push(
-        settings.onPlanProjectionSettingsChanged.addListener(
-          displayStyleChanged
-        )
-      );
+      removals.push(settings.onSolarShadowsChanged.addListener(displayStyleChanged));
+      removals.push(settings.onThematicChanged.addListener(displayStyleChanged));
+      removals.push(settings.onHiddenLineSettingsChanged.addListener(displayStyleChanged));
+      removals.push(settings.onAmbientOcclusionSettingsChanged.addListener(displayStyleChanged));
+      removals.push(settings.onEnvironmentChanged.addListener(displayStyleChanged));
+      removals.push(settings.onPlanProjectionSettingsChanged.addListener(displayStyleChanged));
     }
   }
 
@@ -1689,10 +1511,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @see [[alwaysDrawn]]
    */
   public clearAlwaysDrawn(): void {
-    if (
-      (undefined !== this.alwaysDrawn && 0 < this.alwaysDrawn.size) ||
-      this._alwaysDrawnExclusive
-    ) {
+    if ((undefined !== this.alwaysDrawn && 0 < this.alwaysDrawn.size) || this._alwaysDrawnExclusive) {
       if (undefined !== this.alwaysDrawn) this.alwaysDrawn.clear();
 
       this._alwaysDrawnExclusive = false;
@@ -1766,9 +1585,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @see [[findFeatureOverrideProvider]] to find an existing provider.
    * @see [[FeatureSymbology.Overrides]].
    */
-  public addFeatureOverrideProvider(
-    provider: FeatureOverrideProvider
-  ): boolean {
+  public addFeatureOverrideProvider(provider: FeatureOverrideProvider): boolean {
     if (this._featureOverrideProviders.includes(provider)) return false;
 
     this._featureOverrideProviders.push(provider);
@@ -1781,9 +1598,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @returns true if the provider was dropped, or false if it was not registered.
    * @see [[addFeatureOverrideProvider]].
    */
-  public dropFeatureOverrideProvider(
-    provider: FeatureOverrideProvider
-  ): boolean {
+  public dropFeatureOverrideProvider(provider: FeatureOverrideProvider): boolean {
     const index = this._featureOverrideProviders.indexOf(provider);
     if (-1 === index) return false;
 
@@ -1801,8 +1616,7 @@ export abstract class Viewport implements IDisposable, TileUser {
   public findFeatureOverrideProvider(
     predicate: (provider: FeatureOverrideProvider) => boolean
   ): FeatureOverrideProvider | undefined {
-    for (const provider of this._featureOverrideProviders)
-      if (predicate(provider)) return provider;
+    for (const provider of this._featureOverrideProviders) if (predicate(provider)) return provider;
 
     return undefined;
   }
@@ -1822,19 +1636,14 @@ export abstract class Viewport implements IDisposable, TileUser {
    * ```
    * @see [[findFeatureOverrideProvider]] to locate a registered provider matching any arbitrary criterion.
    */
-  public findFeatureOverrideProviderOfType<T>(
-    type: Constructor<T>
-  ): T | undefined {
-    const provider = this.findFeatureOverrideProvider((x) =>
-      isInstanceOf<T>(x, type)
-    );
+  public findFeatureOverrideProviderOfType<T>(type: Constructor<T>): T | undefined {
+    const provider = this.findFeatureOverrideProvider((x) => isInstanceOf<T>(x, type));
     return asInstanceOf<T>(provider, type);
   }
 
   /** @internal */
   public addFeatureOverrides(ovrs: FeatureSymbology.Overrides): void {
-    for (const provider of this._featureOverrideProviders)
-      provider.addFeatureOverrides(ovrs, this);
+    for (const provider of this._featureOverrideProviders) provider.addFeatureOverrides(ovrs, this);
   }
 
   /** Notifies this viewport that the internal state of its [[FeatureOverrideProvider]] has changed such that its
@@ -1858,26 +1667,18 @@ export abstract class Viewport implements IDisposable, TileUser {
   }
 
   /** @internal */
-  public forEachTiledGraphicsProvider(
-    func: (provider: TiledGraphicsProvider) => void
-  ): void {
+  public forEachTiledGraphicsProvider(func: (provider: TiledGraphicsProvider) => void): void {
     for (const provider of this._tiledGraphicsProviders) func(provider);
   }
 
   /** @internal */
-  protected forEachTiledGraphicsProviderTree(
-    func: (ref: TileTreeReference) => void
-  ): void {
-    for (const provider of this._tiledGraphicsProviders)
-      provider.forEachTileTreeRef(this, (ref) => func(ref));
+  protected forEachTiledGraphicsProviderTree(func: (ref: TileTreeReference) => void): void {
+    for (const provider of this._tiledGraphicsProviders) provider.forEachTileTreeRef(this, (ref) => func(ref));
   }
 
   /** @internal */
   public forEachMapTreeRef(func: (ref: TileTreeReference) => void): void {
-    if (this._mapTiledGraphicsProvider)
-      this._mapTiledGraphicsProvider.forEachTileTreeRef(this, (ref) =>
-        func(ref)
-      );
+    if (this._mapTiledGraphicsProvider) this._mapTiledGraphicsProvider.forEachTileTreeRef(this, (ref) => func(ref));
   }
 
   /** Apply a function to every [[TileTreeReference]] displayed by this viewport. */
@@ -1895,16 +1696,12 @@ export abstract class Viewport implements IDisposable, TileUser {
 
     if (
       this._mapTiledGraphicsProvider &&
-      !TiledGraphicsProvider.isLoadingComplete(
-        this._mapTiledGraphicsProvider,
-        this
-      )
+      !TiledGraphicsProvider.isLoadingComplete(this._mapTiledGraphicsProvider, this)
     )
       return false;
 
     for (const provider of this._tiledGraphicsProviders)
-      if (!TiledGraphicsProvider.isLoadingComplete(provider, this))
-        return false;
+      if (!TiledGraphicsProvider.isLoadingComplete(provider, this)) return false;
 
     return true;
   }
@@ -1941,20 +1738,12 @@ export abstract class Viewport implements IDisposable, TileUser {
 
   /** @internal */
   public mapLayerFromHit(hit: HitDetail): MapLayerSettings | undefined {
-    return undefined === hit.modelId
-      ? undefined
-      : this.mapLayerFromIds(hit.modelId, hit.sourceId);
+    return undefined === hit.modelId ? undefined : this.mapLayerFromIds(hit.modelId, hit.sourceId);
   }
 
   /** @internal */
-  public mapLayerFromIds(
-    mapTreeId: Id64String,
-    layerTreeId: Id64String
-  ): MapLayerSettings | undefined {
-    return this._mapTiledGraphicsProvider?.mapLayerFromIds(
-      mapTreeId,
-      layerTreeId
-    );
+  public mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined {
+    return this._mapTiledGraphicsProvider?.mapLayerFromIds(mapTreeId, layerTreeId);
   }
 
   /** @internal */
@@ -2001,9 +1790,7 @@ export abstract class Viewport implements IDisposable, TileUser {
   }
   public set flashedId(id: Id64String | undefined) {
     if (this._assigningFlashedId)
-      throw new Error(
-        "Cannot assign to Viewport.flashedId from within an onFlashedIdChanged event callback."
-      );
+      throw new Error("Cannot assign to Viewport.flashedId from within an onFlashedIdChanged event callback.");
 
     if (id === Id64.invalid) id = undefined;
 
@@ -2048,9 +1835,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    */
   public get numSelectedTiles(): number {
     const tiles = IModelApp.tileAdmin.getTilesForUser(this);
-    return undefined !== tiles
-      ? tiles.selected.size + tiles.external.selected
-      : 0;
+    return undefined !== tiles ? tiles.selected.size + tiles.external.selected : 0;
   }
 
   /** The number of tiles which were ready and met the desired level-of-detail for display in the view as of the most recently-drawn frame.
@@ -2113,12 +1898,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     }
 
     const frustum = this.getFrustum(CoordSystem.View);
-    const screenRangeX = frustum.points[Npc._000].distance(
-      frustum.points[Npc._100]
-    );
-    const screenRangeY = frustum.points[Npc._000].distance(
-      frustum.points[Npc._010]
-    );
+    const screenRangeX = frustum.points[Npc._000].distance(frustum.points[Npc._100]);
+    const screenRangeY = frustum.points[Npc._000].distance(frustum.points[Npc._010]);
     const xBorder = screenRangeX * borderPaddingFactor;
     const yBorder = screenRangeY * borderPaddingFactor;
 
@@ -2135,10 +1916,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param result optional DepthRangeNpc to store the result
    * @returns the minimum and maximum depth values within the region, or undefined.
    */
-  public determineVisibleDepthRange(
-    rect?: ViewRect,
-    result?: DepthRangeNpc
-  ): DepthRangeNpc | undefined {
+  public determineVisibleDepthRange(rect?: ViewRect, result?: DepthRangeNpc): DepthRangeNpc | undefined {
     if (result) {
       // Null result if given
       result.minimum = 1;
@@ -2208,8 +1986,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    */
   public turnCameraOn(lensAngle?: Angle): ViewStatus {
     const view = this.view;
-    if (!view.is3d() || !view.supportsCamera())
-      return ViewStatus.InvalidViewport;
+    if (!view.is3d() || !view.supportsCamera()) return ViewStatus.InvalidViewport;
 
     if (!lensAngle) lensAngle = view.camera.lens;
 
@@ -2227,14 +2004,10 @@ export abstract class Viewport implements IDisposable, TileUser {
       // We need to figure out a new camera target. To do that, we need to know where the geometry is in the view.
       // We use the depth of the center of the view for that.
       let depthRange = this.determineVisibleDepthRange();
-      if (
-        undefined === depthRange ||
-        Geometry.isAlmostEqualNumber(depthRange.minimum, depthRange.maximum)
-      )
+      if (undefined === depthRange || Geometry.isAlmostEqualNumber(depthRange.minimum, depthRange.maximum))
         depthRange = { minimum: 0, maximum: 1 };
 
-      const middle =
-        depthRange.minimum + (depthRange.maximum - depthRange.minimum) / 2.0;
+      const middle = depthRange.minimum + (depthRange.maximum - depthRange.minimum) / 2.0;
       const corners = [
         new Point3d(0.0, 0.0, middle), // lower left, at target depth
         new Point3d(1.0, 1.0, middle), // upper right at target depth
@@ -2413,11 +2186,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @return the view frustum
    * @note The "adjusted" box may be either larger or smaller than the "unadjusted" box.
    */
-  public getFrustum(
-    sys: CoordSystem = CoordSystem.World,
-    adjustedBox: boolean = true,
-    box?: Frustum
-  ): Frustum {
+  public getFrustum(sys: CoordSystem = CoordSystem.World, adjustedBox: boolean = true, box?: Frustum): Frustum {
     return this._viewingSpace.getFrustum(sys, adjustedBox, box);
   }
 
@@ -2473,19 +2242,11 @@ export abstract class Viewport implements IDisposable, TileUser {
         newCenter.plusScaled(dir, 0.5, targetPoint);
       }
 
-      const transform = Transform.createFixedPointAndMatrix(
-        targetPoint,
-        Matrix3d.createScale(factor, factor, factor)
-      );
+      const transform = Transform.createFixedPointAndMatrix(targetPoint, Matrix3d.createScale(factor, factor, factor));
       const zDir = view.getZVector();
 
       transform.multiplyPoint3d(eyePoint, eyePoint);
-      targetPoint.setFrom(
-        eyePoint.plusScaled(
-          zDir,
-          zDir.dotProduct(eyePoint.vectorTo(targetPoint))
-        )
-      );
+      targetPoint.setFrom(eyePoint.plusScaled(zDir, zDir.dotProduct(eyePoint.vectorTo(targetPoint))));
 
       const status = view.lookAt({
         eyePoint,
@@ -2500,25 +2261,15 @@ export abstract class Viewport implements IDisposable, TileUser {
       const delta = view.getExtents().scale(factor);
 
       const rot = view.getRotation();
-      const center = rot.multiplyVector(
-        newCenter ? newCenter : view.getCenter()
-      );
+      const center = rot.multiplyVector(newCenter ? newCenter : view.getCenter());
 
       // fix for min/max delta
-      const stat = view.adjustViewDelta(
-        delta,
-        center,
-        rot,
-        this.viewRect.aspect,
-        options
-      );
+      const stat = view.adjustViewDelta(delta, center, rot, this.viewRect.aspect, options);
       if (ViewStatus.Success !== stat) return stat;
 
       if (!view.allow3dManipulations()) center.z = 0.0;
 
-      view.setOrigin(
-        rot.multiplyTransposeVector(delta.scale(0.5).vectorTo(center))
-      );
+      view.setOrigin(rot.multiplyTransposeVector(delta.scale(0.5).vectorTo(center)));
       view.setExtents(delta);
     }
 
@@ -2532,9 +2283,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     options?: ViewChangeOptions & MarginOptions & ZoomToOptions
   ): void {
     const placements = placementProps.map((props) =>
-      isPlacement2dProps(props)
-        ? Placement2d.fromJSON(props)
-        : Placement3d.fromJSON(props)
+      isPlacement2dProps(props) ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props)
     );
     this.zoomToPlacements(placements, options);
   }
@@ -2546,10 +2295,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @see [[zoomToElements]] to zoom to a set of elements.
    * @see [[IModelConnection.Elements.getPlacements]] to obtain the placements for a set of elements.
    */
-  public zoomToPlacements(
-    placements: Placement[],
-    options?: ViewChangeOptions & MarginOptions & ZoomToOptions
-  ): void {
+  public zoomToPlacements(placements: Placement[], options?: ViewChangeOptions & MarginOptions & ZoomToOptions): void {
     placements = placements.filter((x) => x.isValid);
     if (placements.length === 0) return;
 
@@ -2558,36 +2304,23 @@ export abstract class Viewport implements IDisposable, TileUser {
       if (undefined !== options.standardViewId) {
         view.setStandardRotation(options.standardViewId);
       } else if (undefined !== options.placementRelativeId) {
-        const viewRotation = StandardView.getStandardRotation(
-          options.placementRelativeId
-        ).clone();
-        viewRotation.multiplyMatrixMatrixTranspose(
-          placements[0].transform.matrix,
-          viewRotation
-        );
+        const viewRotation = StandardView.getStandardRotation(options.placementRelativeId).clone();
+        viewRotation.multiplyMatrixMatrixTranspose(placements[0].transform.matrix, viewRotation);
         view.setRotation(viewRotation);
       } else if (undefined !== options.viewRotation) {
         view.setRotation(options.viewRotation);
       }
     }
 
-    const viewTransform = Transform.createOriginAndMatrix(
-      undefined,
-      view.getRotation()
-    );
+    const viewTransform = Transform.createOriginAndMatrix(undefined, view.getRotation());
     const frust = new Frustum();
     const viewRange = new Range3d();
-    for (const placement of placements)
-      viewRange.extendArray(
-        placement.getWorldCorners(frust).points,
-        viewTransform
-      );
+    for (const placement of placements) viewRange.extendArray(placement.getWorldCorners(frust).points, viewTransform);
 
-    const ignoreError: ViewChangeOptions & MarginOptions & OnViewExtentsError =
-      {
-        ...options,
-        onExtentsError: () => ViewStatus.Success,
-      };
+    const ignoreError: ViewChangeOptions & MarginOptions & OnViewExtentsError = {
+      ...options,
+      onExtentsError: () => ViewStatus.Success,
+    };
 
     view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, ignoreError);
     this.synchWithView(options);
@@ -2607,8 +2340,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     const placementProps: PlacementProps[] = [];
     for (const props of elementProps) {
       const placement = (props as any).placement;
-      if (placement !== undefined && this.view.viewsModel(props.model))
-        placementProps.push(placement);
+      if (placement !== undefined && this.view.viewsModel(props.model)) placementProps.push(placement);
     }
 
     this.zoomToPlacementProps(placementProps, options);
@@ -2632,10 +2364,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param volume The low and high corners, in world coordinates.
    * @param options options that control how the view change works
    */
-  public zoomToVolume(
-    volume: LowAndHighXYZ | LowAndHighXY,
-    options?: ViewChangeOptions & MarginOptions
-  ) {
+  public zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, options?: ViewChangeOptions & MarginOptions) {
     this.view.lookAtVolume(volume, this.viewRect.aspect, options);
     this.synchWithView(options);
   }
@@ -2647,10 +2376,7 @@ export abstract class Viewport implements IDisposable, TileUser {
   public setupViewFromFrustum(inFrustum: Frustum): boolean {
     const validSize = this.view.setupFromFrustum(inFrustum);
     // note: always call setupFromView, even if setupFromFrustum failed
-    return (
-      ViewStatus.Success === this.setupFromView() &&
-      ViewStatus.Success === validSize
-    );
+    return ViewStatus.Success === this.setupFromView() && ViewStatus.Success === validSize;
   }
 
   /** Compute the range of all geometry to be displayed in this viewport. */
@@ -2697,16 +2423,9 @@ export abstract class Viewport implements IDisposable, TileUser {
     if (undefined === oldView || oldView === newView) return;
 
     const flags = this._changeFlags;
-    if (
-      !flags.displayStyle &&
-      !oldView.displayStyle.equalState(newView.displayStyle)
-    )
-      flags.setDisplayStyle();
+    if (!flags.displayStyle && !oldView.displayStyle.equalState(newView.displayStyle)) flags.setDisplayStyle();
 
-    if (
-      !flags.viewedCategories &&
-      !oldView.categorySelector.equalState(newView.categorySelector)
-    )
+    if (!flags.viewedCategories && !oldView.categorySelector.equalState(newView.categorySelector))
       flags.setViewedCategories();
 
     if (!flags.neverDrawn) {
@@ -2722,8 +2441,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     if (oldView.is2d() && newView.is2d()) {
       if (oldView.baseModelId !== newView.baseModelId) flags.setViewedModels();
     } else if (oldView.isSpatialView() && newView.isSpatialView()) {
-      if (!oldView.modelSelector.equalState(newView.modelSelector))
-        flags.setViewedModels();
+      if (!oldView.modelSelector.equalState(newView.modelSelector)) flags.setViewedModels();
     } else {
       // switched between 2d and 3d view.
       flags.setViewedModels();
@@ -2753,37 +2471,22 @@ export abstract class Viewport implements IDisposable, TileUser {
         break;
 
       case GridOrientationType.WorldYZ: {
-        Matrix3d.createRows(
-          rMatrix.getRow(1),
-          rMatrix.getRow(2),
-          rMatrix.getRow(0),
-          rMatrix
-        );
+        Matrix3d.createRows(rMatrix.getRow(1), rMatrix.getRow(2), rMatrix.getRow(0), rMatrix);
         break;
       }
 
       case GridOrientationType.WorldXZ: {
-        Matrix3d.createRows(
-          rMatrix.getRow(0),
-          rMatrix.getRow(2),
-          rMatrix.getRow(1),
-          rMatrix
-        );
+        Matrix3d.createRows(rMatrix.getRow(0), rMatrix.getRow(2), rMatrix.getRow(1), rMatrix);
         break;
       }
     }
   }
 
-  private pointToStandardGrid(
-    point: Point3d,
-    rMatrix: Matrix3d,
-    origin: Point3d
-  ): void {
+  private pointToStandardGrid(point: Point3d, rMatrix: Matrix3d, origin: Point3d): void {
     const planeNormal = rMatrix.getRow(2);
 
     let eyeVec: Vector3d;
-    if (this.view.is3d() && this.view.isCameraOn)
-      eyeVec = this.view.camera.eye.vectorTo(point);
+    if (this.view.is3d() && this.view.isCameraOn) eyeVec = this.view.camera.eye.vectorTo(point);
     else eyeVec = this._viewingSpace.rotation.getRow(2);
 
     eyeVec.normalizeInPlace();
@@ -2816,11 +2519,7 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** @internal */
   public pointToGrid(point: Point3d): void {
     if (GridOrientationType.AuxCoord === this.view.getGridOrientation()) {
-      this.pointToStandardGrid(
-        point,
-        this.getAuxCoordRotation(),
-        this.getAuxCoordOrigin()
-      );
+      this.pointToStandardGrid(point, this.getAuxCoordRotation(), this.getAuxCoordOrigin());
       return;
     }
 
@@ -2872,22 +2571,13 @@ export abstract class Viewport implements IDisposable, TileUser {
       needsFlashUpdate = this.flashedId === undefined; // notify render thread that flash has been turned off (signified by undefined elem)
     }
 
-    if (
-      this.flashedId !== undefined &&
-      this._flashIntensity < this.flashSettings.maxIntensity
-    ) {
+    if (this.flashedId !== undefined && this._flashIntensity < this.flashSettings.maxIntensity) {
       assert(undefined !== this._flashUpdateTime);
 
       const flashDuration = this.flashSettings.duration;
-      const flashElapsed =
-        BeTimePoint.now().milliseconds - this._flashUpdateTime.milliseconds;
-      this._flashIntensity =
-        Math.min(flashElapsed, flashDuration.milliseconds) /
-        flashDuration.milliseconds;
-      this._flashIntensity = Math.min(
-        this._flashIntensity,
-        this.flashSettings.maxIntensity
-      );
+      const flashElapsed = BeTimePoint.now().milliseconds - this._flashUpdateTime.milliseconds;
+      this._flashIntensity = Math.min(flashElapsed, flashDuration.milliseconds) / flashDuration.milliseconds;
+      this._flashIntensity = Math.min(this._flashIntensity, this.flashSettings.maxIntensity);
 
       needsFlashUpdate = true;
     }
@@ -2905,11 +2595,9 @@ export abstract class Viewport implements IDisposable, TileUser {
    */
   public createScene(context: SceneContext): void {
     this.view.createScene(context);
-    if (this._mapTiledGraphicsProvider)
-      TiledGraphicsProvider.addToScene(this._mapTiledGraphicsProvider, context);
+    if (this._mapTiledGraphicsProvider) TiledGraphicsProvider.addToScene(this._mapTiledGraphicsProvider, context);
 
-    for (const provider of this._tiledGraphicsProviders)
-      TiledGraphicsProvider.addToScene(provider, context);
+    for (const provider of this._tiledGraphicsProviders) TiledGraphicsProvider.addToScene(provider, context);
   }
 
   /** Called when the visible contents of the viewport are redrawn.
@@ -2935,8 +2623,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     this._frameStatsCollector.beginFrame();
 
     const changeFlags = this._changeFlags;
-    if (changeFlags.hasChanges)
-      this._changeFlags = new MutableChangeFlags(ChangeFlag.None);
+    if (changeFlags.hasChanges) this._changeFlags = new MutableChangeFlags(ChangeFlag.None);
 
     const view = this.view;
     const target = this.target;
@@ -2984,8 +2671,7 @@ export abstract class Viewport implements IDisposable, TileUser {
         );
         if (scheduleScript.containsFeatureOverrides) overridesNeeded = true;
 
-        if (scheduleScript.containsTransform && !this._freezeScene)
-          this.invalidateScene();
+        if (scheduleScript.containsTransform && !this._freezeScene) this.invalidateScene();
       }
 
       this._timePointValid = true;
@@ -3007,8 +2693,7 @@ export abstract class Viewport implements IDisposable, TileUser {
         this.createScene(context);
 
         context.requestMissingTiles();
-        this._hasMissingTiles =
-          context.hasMissingTiles || context.missingTiles.size > 0;
+        this._hasMissingTiles = context.hasMissingTiles || context.missingTiles.size > 0;
         target.changeScene(context.scene);
         isRedrawNeeded = true;
         this._frameStatsCollector.endTime("createChangeSceneTime");
@@ -3036,10 +2721,7 @@ export abstract class Viewport implements IDisposable, TileUser {
 
     let requestNextAnimation = false;
     if (this.processFlash()) {
-      target.setFlashed(
-        undefined !== this.flashedId ? this.flashedId : Id64.invalid,
-        this._flashIntensity
-      );
+      target.setFlashed(undefined !== this.flashedId ? this.flashedId : Id64.invalid, this._flashIntensity);
       isRedrawNeeded = true;
       requestNextAnimation = undefined !== this.flashedId;
     }
@@ -3075,22 +2757,15 @@ export abstract class Viewport implements IDisposable, TileUser {
 
         if (changeFlags.neverDrawn) this.onNeverDrawnChanged.raiseEvent(this);
 
-        if (changeFlags.viewedCategories)
-          this.onViewedCategoriesChanged.raiseEvent(this);
+        if (changeFlags.viewedCategories) this.onViewedCategoriesChanged.raiseEvent(this);
 
-        if (changeFlags.viewedCategoriesPerModel)
-          this.onViewedCategoriesPerModelChanged.raiseEvent(this);
+        if (changeFlags.viewedCategoriesPerModel) this.onViewedCategoriesPerModelChanged.raiseEvent(this);
 
-        if (changeFlags.featureOverrideProvider)
-          this.onFeatureOverrideProviderChanged.raiseEvent(this);
+        if (changeFlags.featureOverrideProvider) this.onFeatureOverrideProviderChanged.raiseEvent(this);
       }
     }
 
-    if (
-      requestNextAnimation ||
-      undefined !== this._animator ||
-      this.continuousRendering
-    )
+    if (requestNextAnimation || undefined !== this._animator || this.continuousRendering)
       IModelApp.requestNextAnimation();
   }
 
@@ -3111,15 +2786,13 @@ export abstract class Viewport implements IDisposable, TileUser {
     excludeNonLocatable = false
   ): void {
     const viewRect = this.viewRect;
-    if (this.isDisposed || rect.isNull || !rect.isContained(viewRect))
-      receiver(undefined);
+    if (this.isDisposed || rect.isNull || !rect.isContained(viewRect)) receiver(undefined);
     else this.target.readPixels(rect, selector, receiver, excludeNonLocatable);
   }
 
   /** @internal */
   public isPixelSelectable(pixel: Pixel.Data) {
-    if (undefined === pixel.modelId || undefined === pixel.elementId)
-      return false;
+    if (undefined === pixel.modelId || undefined === pixel.elementId) return false;
 
     if (pixel.modelId === pixel.elementId) return false; // Reality Models not selectable
 
@@ -3212,12 +2885,7 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** Get the point at the specified x and y location in the pixel buffer in npc coordinates.
    * @see [[getPixelDataWorldPoint]] to obtain the point in [[CoordSystem.World]].
    */
-  public getPixelDataNpcPoint(
-    pixels: Pixel.Buffer,
-    x: number,
-    y: number,
-    out?: Point3d
-  ): Point3d | undefined {
+  public getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
     const z = pixels.getPixel(x, y).distanceFraction;
     if (z <= 0.0) return undefined;
 
@@ -3232,9 +2900,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     result.x = (x + 0.5 - viewRect.left) / viewRect.width;
     result.y = 1.0 - (y + 0.5 - viewRect.top) / viewRect.height;
     if (viewSpace.frustFraction < 1.0)
-      result.z =
-        (z * viewSpace.frustFraction) /
-        (1.0 + z * (viewSpace.frustFraction - 1.0));
+      result.z = (z * viewSpace.frustFraction) / (1.0 + z * (viewSpace.frustFraction - 1.0));
     // correct to npc if camera on.
     else result.z = z;
 
@@ -3244,9 +2910,7 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** Get the point at the specified x and y location in the pixel buffer in world coordinates.
    * @see [[getPixelDataNpcPoint]] to obtain the point in [[CoordSystem.Npc]].
    */
-  public getPixelDataWorldPoint(
-    args: GetPixelDataWorldPointArgs
-  ): Point3d | undefined {
+  public getPixelDataWorldPoint(args: GetPixelDataWorldPointArgs): Point3d | undefined {
     const { pixels, x, y, out, preserveModelDisplayTransforms } = args;
     const npc = this.getPixelDataNpcPoint(pixels, x, y, out);
     if (undefined !== npc) {
@@ -3275,10 +2939,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param callback Callback to invoke with the results.
    * @note This function may be slow, especially if the features are being queried from screen pixels. Avoid calling it repeatedly in rapid succession.
    */
-  public queryVisibleFeatures(
-    options: QueryVisibleFeaturesOptions,
-    callback: QueryVisibleFeaturesCallback
-  ): void {
+  public queryVisibleFeatures(options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void {
     return queryVisibleFeatures(this, options, callback);
   }
 
@@ -3305,9 +2966,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @alpha
    */
   public get tileSizeModifier(): number {
-    return undefined !== this._tileSizeModifier
-      ? this._tileSizeModifier
-      : IModelApp.tileAdmin.defaultTileSizeModifier;
+    return undefined !== this._tileSizeModifier ? this._tileSizeModifier : IModelApp.tileAdmin.defaultTileSizeModifier;
   }
 
   /** Controls this Viewport's [[tileSizeModifier]].
@@ -3317,8 +2976,7 @@ export abstract class Viewport implements IDisposable, TileUser {
   public setTileSizeModifier(modifier: number | undefined) {
     if (modifier === this._tileSizeModifier) return;
 
-    if (undefined !== modifier && (Number.isNaN(modifier) || modifier <= 0))
-      return;
+    if (undefined !== modifier && (Number.isNaN(modifier) || modifier <= 0)) return;
 
     this._tileSizeModifier = modifier;
     this.invalidateScene();
@@ -3343,9 +3001,7 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** See [[ViewState.setModelDisplayTransformProvider]]
    * @internal
    */
-  public setModelDisplayTransformProvider(
-    provider: ModelDisplayTransformProvider
-  ): void {
+  public setModelDisplayTransformProvider(provider: ModelDisplayTransformProvider): void {
     this.view.modelDisplayTransformProvider = provider;
   }
 
@@ -3387,9 +3043,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param listener Callback accepting the new analysis style, or undefined if there is no analysis style.
    * @returns A function that can be invoked to remove the event listener.
    */
-  public addOnAnalysisStyleChangedListener(
-    listener: (newStyle: AnalysisStyle | undefined) => void
-  ): () => void {
+  public addOnAnalysisStyleChangedListener(listener: (newStyle: AnalysisStyle | undefined) => void): () => void {
     const addSettingsListener = (style: DisplayStyleState) =>
       style.settings.onAnalysisStyleChanged.addListener(listener);
     let removeSettingsListener = addSettingsListener(this.displayStyle);
@@ -3530,21 +3184,12 @@ export class ScreenViewport extends Viewport {
    * @note After creating a new ScreenViewport, you must call [[ViewManager.addViewport]] for it to become "live". You must also ensure you dispose of it properly.
    * @throws Error if `parentDiv` has zero width or height.
    */
-  public static create(
-    parentDiv: HTMLDivElement,
-    view: ViewState
-  ): ScreenViewport {
+  public static create(parentDiv: HTMLDivElement, view: ViewState): ScreenViewport {
     if (0 === parentDiv.clientWidth || 0 === parentDiv.clientHeight)
-      throw new Error(
-        "viewport cannot be created from a div with zero width or height"
-      );
+      throw new Error("viewport cannot be created from a div with zero width or height");
 
     const canvas = document.createElement("canvas");
-    const vp = new this(
-      canvas,
-      parentDiv,
-      IModelApp.renderSystem.createTarget(canvas)
-    );
+    const vp = new this(canvas, parentDiv, IModelApp.renderSystem.createTarget(canvas));
     vp.changeView(view);
     return vp;
   }
@@ -3603,22 +3248,14 @@ export class ScreenViewport extends Viewport {
   }
 
   /**  add a child element to this.vpDiv and set its size and position the same as the parent.  */
-  private addChildDiv(
-    parent: HTMLElement,
-    element: HTMLElement,
-    zIndex: number
-  ) {
+  private addChildDiv(parent: HTMLElement, element: HTMLElement, zIndex: number) {
     ScreenViewport.setToParentSize(element);
     element.style.zIndex = zIndex.toString();
     parent.appendChild(element);
   }
 
   /** @internal */
-  public addNewDiv(
-    className: string,
-    overflowHidden: boolean,
-    z: number
-  ): HTMLDivElement {
+  public addNewDiv(className: string, overflowHidden: boolean, z: number): HTMLDivElement {
     const div = document.createElement("div");
     div.className = className;
     div.style.pointerEvents = "none";
@@ -3653,26 +3290,18 @@ export class ScreenViewport extends Viewport {
         parent: aboutBox,
         className: "logo-cards",
       });
-      if (undefined !== IModelApp.applicationLogoCard)
-        logos.appendChild(IModelApp.applicationLogoCard());
+      if (undefined !== IModelApp.applicationLogoCard) logos.appendChild(IModelApp.applicationLogoCard());
       logos.appendChild(IModelApp.makeIModelJsLogoCard());
       this.forEachTileTreeRef((ref) => ref.addLogoCards(logos, this));
       ev.stopPropagation();
     };
     logo.onclick = showLogos;
     logo.addEventListener("touchstart", showLogos);
-    logo.onmousemove =
-      logo.onmousedown =
-      logo.onmouseup =
-        (ev) => ev.stopPropagation();
+    logo.onmousemove = logo.onmousedown = logo.onmouseup = (ev) => ev.stopPropagation();
   }
 
   /** @internal */
-  protected constructor(
-    canvas: HTMLCanvasElement,
-    parentDiv: HTMLDivElement,
-    target: RenderTarget
-  ) {
+  protected constructor(canvas: HTMLCanvasElement, parentDiv: HTMLDivElement, target: RenderTarget) {
     super(target);
     this.canvas = canvas;
     this.parentDiv = parentDiv;
@@ -3702,17 +3331,8 @@ export class ScreenViewport extends Viewport {
    * @param options the ToolTip options
    * @note There is only one ToolTip window, so calling this method more than once will move the toolTip and show the second message.
    */
-  public openToolTip(
-    message: HTMLElement | string,
-    location?: XAndY,
-    options?: ToolTipOptions
-  ) {
-    IModelApp.notifications.openToolTip(
-      this.toolTipDiv,
-      message,
-      location,
-      options
-    );
+  public openToolTip(message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions) {
+    IModelApp.notifications.openToolTip(this.toolTipDiv, message, location, options);
   }
 
   /** @internal */
@@ -3820,17 +3440,13 @@ export class ScreenViewport extends Viewport {
         source: DepthPointSource.ACS,
       };
 
-    if (undefined === radius)
-      radius = this.pixelsFromInches(ToolSettings.viewToolPickRadiusInches);
+    if (undefined === radius) radius = this.pixelsFromInches(ToolSettings.viewToolPickRadiusInches);
 
     this.picker.empty();
     const locateOpts = new LocateOptions();
-    locateOpts.allowNonLocatable =
-      undefined === options || !options.excludeNonLocatable;
-    locateOpts.allowDecorations =
-      undefined === options || !options.excludeDecorations;
-    locateOpts.allowExternalIModels =
-      undefined === options || !options.excludeExternalIModels;
+    locateOpts.allowNonLocatable = undefined === options || !options.excludeNonLocatable;
+    locateOpts.allowDecorations = undefined === options || !options.excludeDecorations;
+    locateOpts.allowExternalIModels = undefined === options || !options.excludeExternalIModels;
     locateOpts.preserveModelDisplayTransforms = true;
 
     if (0 !== this.picker.doPick(this, pickPoint, radius, locateOpts)) {
@@ -3838,27 +3454,18 @@ export class ScreenViewport extends Viewport {
       const hitPoint = hitDetail.getPoint();
       if (hitDetail.isModelHit)
         return {
-          plane: Plane3dByOriginAndUnitNormal.create(
-            hitPoint,
-            this.view.getUpVector(hitPoint)
-          )!,
+          plane: Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getUpVector(hitPoint))!,
           source: DepthPointSource.Model,
           sourceId: hitDetail.sourceId,
         };
       else if (hitDetail.isMapHit)
         return {
-          plane: Plane3dByOriginAndUnitNormal.create(
-            hitPoint,
-            this.view.getUpVector(hitPoint)
-          )!,
+          plane: Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getUpVector(hitPoint))!,
           source: DepthPointSource.Map,
           sourceId: hitDetail.sourceId,
         };
       return {
-        plane: Plane3dByOriginAndUnitNormal.create(
-          hitPoint,
-          this.view.getZVector()
-        )!,
+        plane: Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getZVector())!,
         source: DepthPointSource.Geometry,
         sourceId: hitDetail.sourceId,
       };
@@ -3878,30 +3485,21 @@ export class ScreenViewport extends Viewport {
 
     const backgroundMapGeometry = this.backgroundMapGeometry;
     if (undefined !== backgroundMapGeometry) {
-      const intersect = backgroundMapGeometry.getRayIntersection(
-        boresiteIntersectRay,
-        false
-      );
+      const intersect = backgroundMapGeometry.getRayIntersection(boresiteIntersectRay, false);
 
       if (undefined !== intersect) {
         const npcPt = this.worldToNpc(intersect.origin);
         if (npcPt.z < 1)
           // Only if in front of eye.
           return {
-            plane: Plane3dByOriginAndUnitNormal.create(
-              intersect.origin,
-              intersect.direction
-            )!,
+            plane: Plane3dByOriginAndUnitNormal.create(intersect.origin, intersect.direction)!,
             source: DepthPointSource.BackgroundMap,
           };
       }
     }
     // returns true if there's an intersection that isn't behind the front plane
     const boresiteIntersect = (plane: Plane3dByOriginAndUnitNormal) => {
-      const dist = boresiteIntersectRay.intersectionWithPlane(
-        plane,
-        projectedPt
-      );
+      const dist = boresiteIntersectRay.intersectionWithPlane(plane, projectedPt);
       if (undefined === dist) return false;
       const npcPt = this.worldToNpc(projectedPt);
       return npcPt.z < 1.0;
@@ -3914,10 +3512,7 @@ export class ScreenViewport extends Viewport {
       );
       if (undefined !== groundPlane && boresiteIntersect(groundPlane))
         return {
-          plane: Plane3dByOriginAndUnitNormal.create(
-            projectedPt,
-            groundPlane.getNormalRef()
-          )!,
+          plane: Plane3dByOriginAndUnitNormal.create(projectedPt, groundPlane.getNormalRef())!,
           source: DepthPointSource.GroundPlane,
         };
     }
@@ -3928,29 +3523,21 @@ export class ScreenViewport extends Viewport {
     );
     if (undefined !== acsPlane && boresiteIntersect(acsPlane))
       return {
-        plane: Plane3dByOriginAndUnitNormal.create(
-          projectedPt,
-          acsPlane.getNormalRef()
-        )!,
+        plane: Plane3dByOriginAndUnitNormal.create(projectedPt, acsPlane.getNormalRef())!,
         source:
-          this.isGridOn &&
-          GridOrientationType.AuxCoord === this.view.getGridOrientation()
+          this.isGridOn && GridOrientationType.AuxCoord === this.view.getGridOrientation()
             ? DepthPointSource.Grid
             : DepthPointSource.ACS,
       };
 
     const targetPointNpc = this.worldToNpc(this.view.getTargetPoint());
-    if (targetPointNpc.z < 0.0 || targetPointNpc.z > 1.0)
-      targetPointNpc.z = 0.5;
+    if (targetPointNpc.z < 0.0 || targetPointNpc.z > 1.0) targetPointNpc.z = 0.5;
 
     this.worldToNpc(pickPoint, projectedPt);
     projectedPt.z = targetPointNpc.z;
     this.npcToWorld(projectedPt, projectedPt);
     return {
-      plane: Plane3dByOriginAndUnitNormal.create(
-        projectedPt,
-        this.view.getZVector()
-      )!,
+      plane: Plane3dByOriginAndUnitNormal.create(projectedPt, this.view.getZVector())!,
       source: DepthPointSource.TargetPoint,
     };
   }
@@ -3962,14 +3549,7 @@ export class ScreenViewport extends Viewport {
    */
   public animateFrustumChange(options?: ViewAnimationOptions) {
     if (this._lastPose && this._currentBaseline)
-      this.setAnimator(
-        new FrustumAnimator(
-          options ? options : {},
-          this,
-          this._lastPose,
-          this.view.savePose()
-        )
-      );
+      this.setAnimator(new FrustumAnimator(options ? options : {}, this, this._lastPose, this.view.savePose()));
   }
 
   /** Animate the view frustum from a starting frustum to the current view frustum. In other words,
@@ -4001,12 +3581,7 @@ export class ScreenViewport extends Viewport {
 
   /** The ViewRect for this ScreenViewport. Left and top will be 0, right will be the width, and bottom will be the height. */
   public get viewRect(): ViewRect {
-    this._viewRange.init(
-      0,
-      0,
-      this.canvas.clientWidth,
-      this.canvas.clientHeight
-    );
+    this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
     return this._viewRange;
   }
 
@@ -4015,23 +3590,16 @@ export class ScreenViewport extends Viewport {
     // SEE: decorationDiv doc comment
     // eslint-disable-next-line deprecation/deprecation
     ScreenViewport.markAllChildrenForRemoval(this.decorationDiv);
-    const context = new DecorateContext(
-      this,
-      decorations,
-      this._decorationCache
-    );
+    const context = new DecorateContext(this, decorations, this._decorationCache);
     try {
       // It is an error to try to remove cached decorations while we are decorating.
       // Some naughty decorators unwittingly do so by e.g. invalidating the scene in their decorate method.
       this._decorationCache.prohibitRemoval = true;
 
       context.addFromDecorator(this.view);
-      this.forEachTiledGraphicsProviderTree((ref) =>
-        context.addFromDecorator(ref)
-      );
+      this.forEachTiledGraphicsProviderTree((ref) => context.addFromDecorator(ref));
 
-      for (const decorator of IModelApp.viewManager.decorators)
-        context.addFromDecorator(decorator);
+      for (const decorator of IModelApp.viewManager.decorators) context.addFromDecorator(decorator);
 
       // eslint-disable-next-line deprecation/deprecation
       ScreenViewport.removeMarkedChildren(this.decorationDiv);
@@ -4050,16 +3618,12 @@ export class ScreenViewport extends Viewport {
     options = options ?? {};
 
     if (this.view.is3d() && options?.globalAlignment)
-      this.view.alignToGlobe(
-        options.globalAlignment.target,
-        options.globalAlignment.transition
-      );
+      this.view.alignToGlobe(options.globalAlignment.target, options.globalAlignment.transition);
 
     super.synchWithView(options);
 
     if (true !== options.noSaveInUndo) this.saveViewUndo();
-    if (true === options.animateFrustumChange)
-      this.animateFrustumChange(options);
+    if (true === options.animateFrustumChange) this.animateFrustumChange(options);
   }
 
   /** @internal */
@@ -4084,10 +3648,7 @@ export class ScreenViewport extends Viewport {
     };
 
     // determined whether we can animate this ViewState change
-    const doAnimate =
-      this.view &&
-      this.view.hasSameCoordinates(view) &&
-      false !== opts.animateFrustumChange;
+    const doAnimate = this.view && this.view.hasSameCoordinates(view) && false !== opts.animateFrustumChange;
     if (!doAnimate) this.clearViewUndo(); // if we can animate, don't throw out view undo.
 
     super.changeView(view, opts);
@@ -4145,9 +3706,7 @@ export class ScreenViewport extends Viewport {
     if (
       Viewport.undoDelay.isZero ||
       backStack.length < 1 ||
-      backStack[backStack.length - 1]
-        .undoTime!.plus(Viewport.undoDelay)
-        .before(now)
+      backStack[backStack.length - 1].undoTime!.plus(Viewport.undoDelay).before(now)
     ) {
       this._currentBaseline.undoTime = now; // save time we put this entry in undo buffer
       this._backStack.push(this._currentBaseline); // save previous state
@@ -4159,8 +3718,7 @@ export class ScreenViewport extends Viewport {
 
   /** Reverses the most recent change to the Viewport from the undo stack. */
   public doUndo(animationTime?: BeDuration) {
-    if (0 === this._backStack.length || this._currentBaseline === undefined)
-      return;
+    if (0 === this._backStack.length || this._currentBaseline === undefined) return;
 
     this._forwardStack.push(this._currentBaseline);
     this._currentBaseline = this._backStack.pop()!;
@@ -4171,8 +3729,7 @@ export class ScreenViewport extends Viewport {
 
   /** Re-applies the most recently un-done change to the Viewport from the redo stack. */
   public doRedo(animationTime?: BeDuration) {
-    if (0 === this._forwardStack.length || this._currentBaseline === undefined)
-      return;
+    if (0 === this._forwardStack.length || this._currentBaseline === undefined) return;
 
     this._backStack.push(this._currentBaseline);
     this._currentBaseline = this._forwardStack.pop()!;
@@ -4185,8 +3742,7 @@ export class ScreenViewport extends Viewport {
   private finishUndoRedo(duration?: BeDuration): void {
     this.updateChangeFlags(this.view);
     this.setupFromView();
-    if (undefined !== duration)
-      this.animateFrustumChange({ animationTime: duration.milliseconds });
+    if (undefined !== duration) this.animateFrustumChange({ animationTime: duration.milliseconds });
   }
 
   /** Clear the view undo buffer and establish the current ViewState as the new baseline. */
@@ -4196,15 +3752,10 @@ export class ScreenViewport extends Viewport {
   }
 
   /** Show the surface normal for geometry under the cursor when snapping. */
-  private static drawLocateHitDetail(
-    context: DecorateContext,
-    aperture: number,
-    hit: HitDetail
-  ): void {
+  private static drawLocateHitDetail(context: DecorateContext, aperture: number, hit: HitDetail): void {
     if (!context.viewport.view.is3d()) return; // Not valuable feedback in 2d...
 
-    if (!(hit instanceof SnapDetail) || !hit.normal || hit.isPointAdjusted)
-      return; // AccuSnap will flash edge/segment geometry if not a surface hit or snap location has been adjusted...
+    if (!(hit instanceof SnapDetail) || !hit.normal || hit.isPointAdjusted) return; // AccuSnap will flash edge/segment geometry if not a surface hit or snap location has been adjusted...
 
     const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
     const color = context.viewport.hilite.color.inverse().withTransparency(100); // Invert hilite color for good contrast
@@ -4213,16 +3764,9 @@ export class ScreenViewport extends Viewport {
     builder.setSymbology(color, colorFill, 1);
 
     const skew = context.viewport.view.getAspectRatioSkew();
-    const radius =
-      2.5 * aperture * context.viewport.getPixelSizeAtPoint(hit.snapPoint);
+    const radius = 2.5 * aperture * context.viewport.getPixelSizeAtPoint(hit.snapPoint);
     const rMatrix = Matrix3d.createRigidHeadsUp(hit.normal);
-    const ellipse = Arc3d.createScaledXYColumns(
-      hit.snapPoint,
-      rMatrix,
-      radius,
-      radius / skew,
-      AngleSweep.create360()
-    );
+    const ellipse = Arc3d.createScaledXYColumns(hit.snapPoint, rMatrix, radius, radius / skew, AngleSweep.create360());
 
     builder.addArc(ellipse, true, true);
     builder.addArc(ellipse, false, false);
@@ -4322,8 +3866,7 @@ export class ScreenViewport extends Viewport {
 
   /** @internal override */
   public override async waitForSceneCompletion(): Promise<void> {
-    if (!IModelApp.viewManager.hasViewport(this))
-      return super.waitForSceneCompletion();
+    if (!IModelApp.viewManager.hasViewport(this)) return super.waitForSceneCompletion();
 
     const system = this.target.renderSystem;
 
@@ -4331,16 +3874,14 @@ export class ScreenViewport extends Viewport {
     // We will latch onto the onRender event in order to know when tile requests are finished and the promise is fulfilled.
     const promise = new Promise<void>((resolve, _reject) => {
       const removeOnRender = this.onRender.addListener(() => {
-        const removeOnViewClose = IModelApp.viewManager.onViewClose.addListener(
-          (vp: ScreenViewport) => {
-            if ((vp as Viewport) === this) {
-              removeOnViewClose();
-              removeOnRender();
-              resolve();
-              return;
-            }
+        const removeOnViewClose = IModelApp.viewManager.onViewClose.addListener((vp: ScreenViewport) => {
+          if ((vp as Viewport) === this) {
+            removeOnViewClose();
+            removeOnRender();
+            resolve();
+            return;
           }
-        );
+        });
 
         if (this.isDisposed) {
           removeOnViewClose();
@@ -4425,11 +3966,7 @@ export class OffScreenViewport extends Viewport {
   }
 
   /** @internal because RenderTarget is internal */
-  public static createViewport(
-    view: ViewState,
-    target: RenderTarget,
-    lockAspectRatio = false
-  ): OffScreenViewport {
+  public static createViewport(view: ViewState, target: RenderTarget, lockAspectRatio = false): OffScreenViewport {
     const vp = new this(target);
     vp._isAspectRatioLocked = lockAspectRatio;
     vp.changeView(view);

@@ -80,11 +80,7 @@ export class Environment {
   }
 
   /** Create a copy of this environment, changing the `displayGround`, `displaySky` and/or `displayAtmosphere` flags. */
-  public withDisplay(display: {
-    sky?: boolean;
-    ground?: boolean;
-    atmosphere?: boolean;
-  }): Environment {
+  public withDisplay(display: { sky?: boolean; ground?: boolean; atmosphere?: boolean }): Environment {
     const displaySky = display.sky ?? this.displaySky;
     const displayGround = display.ground ?? this.displayGround;
     const displayAtmosphere = display.atmosphere ?? this.displayAtmosphere;
@@ -122,9 +118,7 @@ export class Environment {
       displayAtmosphere: props?.atmosphere?.display,
       sky: props?.sky ? SkyBox.fromJSON(props.sky) : undefined,
       ground: props?.ground ? GroundPlane.fromJSON(props.ground) : undefined,
-      atmosphere: props?.atmosphere
-        ? Atmosphere.Settings.fromJSON(props.atmosphere)
-        : undefined,
+      atmosphere: props?.atmosphere ? Atmosphere.Settings.fromJSON(props.atmosphere) : undefined,
     });
   }
 

@@ -53,17 +53,10 @@ function computeFrustumPlanes(frustum: Frustum): ClipPlane[] {
     const i0 = indices[0],
       i1 = indices[1],
       i2 = indices[2];
-    normal = Vector3d.createCrossProductToPoints(
-      points[i0],
-      points[i1],
-      points[i2]
-    );
+    normal = Vector3d.createCrossProductToPoints(points[i0], points[i1], points[i2]);
     normal.normalizeInPlace();
 
-    const plane = ClipPlane.createNormalAndDistance(
-      normal,
-      normal.dotProduct(points[i0]) - expandPlaneDistance
-    );
+    const plane = ClipPlane.createNormalAndDistance(normal, normal.dotProduct(points[i0]) - expandPlaneDistance);
     if (!plane) return [];
 
     planes.push(plane);
@@ -74,10 +67,7 @@ function computeFrustumPlanes(frustum: Frustum): ClipPlane[] {
   if (undefined !== normal) {
     normal.negate(normal); // negate the back plane
     // NB: Below, we make sure we calculate the distance based on a point on the front rect, not the rear rect!
-    const plane = ClipPlane.createNormalAndDistance(
-      normal,
-      normal.dotProduct(points[4]) - expandPlaneDistance
-    );
+    const plane = ClipPlane.createNormalAndDistance(normal, normal.dotProduct(points[4]) - expandPlaneDistance);
     if (!plane) return [];
 
     planes.push(plane);
@@ -146,10 +136,7 @@ export class FrustumPlanes {
    * @param sphere An optional spherical bounding volume fully containing `box`. If supplied, this can reduce the amount of computation required.
    * @returns the degree to which `box` is contained within the clipping planes.
    */
-  public computeFrustumContainment(
-    box: Frustum,
-    sphere?: BoundingSphere
-  ): FrustumPlanes.Containment {
+  public computeFrustumContainment(box: Frustum, sphere?: BoundingSphere): FrustumPlanes.Containment {
     return this.computeContainment(box.points, sphere);
   }
 
@@ -159,10 +146,7 @@ export class FrustumPlanes {
    * @returns true if `box` is not entirely outside of the clipping planes.
    */
   public intersectsFrustum(box: Frustum, sphere?: BoundingSphere): boolean {
-    return (
-      FrustumPlanes.Containment.Outside !==
-      this.computeFrustumContainment(box, sphere)
-    );
+    return FrustumPlanes.Containment.Outside !== this.computeFrustumContainment(box, sphere);
   }
 
   /** Determines whether a point is contained within these frustum planes.
@@ -171,10 +155,7 @@ export class FrustumPlanes {
    * @returns true if `point` is no further than `tolerance` meters outside of the clipping planes.
    */
   public containsPoint(point: Point3d, tolerance: number = 1.0e-8): boolean {
-    return (
-      FrustumPlanes.Containment.Outside !==
-      this.computeContainment([point], undefined, tolerance)
-    );
+    return FrustumPlanes.Containment.Outside !== this.computeContainment([point], undefined, tolerance);
   }
 
   /** Compute the degree to which a set of points is contained within these frustum planes.
@@ -196,8 +177,7 @@ export class FrustumPlanes {
         const plane = this._planes[i];
         const centerDistance = plane.altitude(sphere.center);
         const tolerancePlusRadius = tolerance + sphere.radius;
-        if (centerDistance < -tolerancePlusRadius)
-          return FrustumPlanes.Containment.Outside;
+        if (centerDistance < -tolerancePlusRadius) return FrustumPlanes.Containment.Outside;
 
         planesContainingSphere[i] = centerDistance > tolerancePlusRadius;
       }
@@ -220,9 +200,7 @@ export class FrustumPlanes {
       if (nOutside === points.length) return FrustumPlanes.Containment.Outside;
     }
 
-    return allInside
-      ? FrustumPlanes.Containment.Inside
-      : FrustumPlanes.Containment.Partial;
+    return allInside ? FrustumPlanes.Containment.Inside : FrustumPlanes.Containment.Partial;
   }
 
   /** Computes whether a ray intersects these clipping planes.

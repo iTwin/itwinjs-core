@@ -43,10 +43,7 @@ interface InstalledExtension {
  */
 export class ExtensionAdmin {
   /** Defines the set of extensions that are currently known and can be invoked during activation events.  */
-  private _extensions: Map<string, InstalledExtension> = new Map<
-    string,
-    InstalledExtension
-  >();
+  private _extensions: Map<string, InstalledExtension> = new Map<string, InstalledExtension>();
   private _hosts: string[];
 
   /** Fired when an Extension has been added or removed.
@@ -70,9 +67,7 @@ export class ExtensionAdmin {
     if (provider.hostname) {
       const hostName = provider.hostname;
       if (this._hosts.length > 0 && this._hosts.indexOf(hostName) < 0) {
-        throw new Error(
-          `Error loading extension: ${hostName} was not registered.`
-        );
+        throw new Error(`Error loading extension: ${hostName} was not registered.`);
       }
     }
     try {
@@ -84,11 +79,7 @@ export class ExtensionAdmin {
       // TODO - temporary fix to execute the missed startup event
       if (manifest.activationEvents.includes("onStartup")) provider.execute(); // eslint-disable-line @typescript-eslint/no-floating-promises
     } catch (e) {
-      throw new Error(
-        `Failed to get extension manifest ${
-          provider.hostname ? `at ${provider.hostname}` : ""
-        }: ${e}`
-      );
+      throw new Error(`Failed to get extension manifest ${provider.hostname ? `at ${provider.hostname}` : ""}: ${e}`);
     }
   }
 
@@ -98,9 +89,7 @@ export class ExtensionAdmin {
    * @alpha
    */
   public async addExtensions(providers: ExtensionProvider[]): Promise<void[]> {
-    return Promise.all(
-      providers.map(async (provider) => this.addExtension(provider))
-    );
+    return Promise.all(providers.map(async (provider) => this.addExtension(provider)));
   }
 
   /**
@@ -118,9 +107,7 @@ export class ExtensionAdmin {
   /** Returns the hostname of an input string. Throws an error if input is not a valid hostname (or URL). */
   private getHostName(inputUrl: string): string {
     // inputs without a protocol (e.g., http://) will throw an error in URL constructor
-    const inputWithProtocol = /(http|https):\/\//.test(inputUrl)
-      ? inputUrl
-      : `https://${inputUrl}`;
+    const inputWithProtocol = /(http|https):\/\//.test(inputUrl) ? inputUrl : `https://${inputUrl}`;
     try {
       const hostname = new URL(inputWithProtocol).hostname.replace("www.", "");
       return hostname;
@@ -152,10 +139,7 @@ export class ExtensionAdmin {
     try {
       await extension.provider.execute();
     } catch (e) {
-      Logger.logError(
-        FrontendLoggerCategory.Extensions,
-        `Error executing extension ${extension.manifest.name}: ${e}`
-      );
+      Logger.logError(FrontendLoggerCategory.Extensions, `Error executing extension ${extension.manifest.name}: ${e}`);
     }
   }
 }

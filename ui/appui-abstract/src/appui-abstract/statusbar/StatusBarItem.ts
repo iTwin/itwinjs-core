@@ -126,9 +126,7 @@ export type CommonStatusBarItem =
  * @deprecated in 3.6. Use [isStatusBarActionItem]($appui-react) instead.
  * @public
  */
-export const isAbstractStatusBarActionItem = (
-  item: CommonStatusBarItem
-): item is AbstractStatusBarActionItem => {
+export const isAbstractStatusBarActionItem = (item: CommonStatusBarItem): item is AbstractStatusBarActionItem => {
   // eslint-disable-line deprecation/deprecation
   return (item as AbstractStatusBarActionItem).execute !== undefined; // eslint-disable-line deprecation/deprecation
 };
@@ -137,9 +135,7 @@ export const isAbstractStatusBarActionItem = (
  * @deprecated in 3.6. Use [isStatusBarLabelItem]($appui-react) instead.
  * @public
  */
-export const isAbstractStatusBarLabelItem = (
-  item: CommonStatusBarItem
-): item is AbstractStatusBarLabelItem => {
+export const isAbstractStatusBarLabelItem = (item: CommonStatusBarItem): item is AbstractStatusBarLabelItem => {
   // eslint-disable-line deprecation/deprecation
   return (
     (item as AbstractStatusBarLabelItem).label !== undefined &&
@@ -151,9 +147,7 @@ export const isAbstractStatusBarLabelItem = (
  * @deprecated in 3.6. Use [isStatusBarCustomItem]($appui-react) instead.
  * @public
  */
-export const isAbstractStatusBarCustomItem = (
-  item: CommonStatusBarItem
-): item is AbstractStatusBarCustomItem => {
+export const isAbstractStatusBarCustomItem = (item: CommonStatusBarItem): item is AbstractStatusBarCustomItem => {
   // eslint-disable-line deprecation/deprecation
   return !!(item as AbstractStatusBarCustomItem).isCustom; // eslint-disable-line deprecation/deprecation
 };

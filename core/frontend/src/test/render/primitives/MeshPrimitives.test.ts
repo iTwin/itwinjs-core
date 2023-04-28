@@ -133,10 +133,7 @@ describe("MeshPrimitive Tests", () => {
   it("addVertex", () => {
     const displayParams = new FakeDisplayParams();
     const type = Mesh.PrimitiveType.Mesh;
-    const range = Range3d.createArray([
-      new Point3d(),
-      new Point3d(1000, 1000, 1000),
-    ]);
+    const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
     const is2d = false;
     const isPlanar = true;
 

@@ -104,14 +104,7 @@ export class Bounds {
     return this.containsXYZ(c.x, c.y, c.z);
   }
 
-  public hasOverlapXYZ(
-    x1: float64,
-    y1: float64,
-    z1: float64,
-    x2: float64,
-    y2: float64,
-    z2: float64
-  ): boolean {
+  public hasOverlapXYZ(x1: float64, y1: float64, z1: float64, x2: float64, y2: float64, z2: float64): boolean {
     if (this.valid == false) return false;
     let minX: float64 = Math.min(x1, x2);
     let minY: float64 = Math.min(y1, y2);

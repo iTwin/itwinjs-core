@@ -46,11 +46,7 @@ describe("Visible feature query", () => {
     div.style.top = div.style.left = "0px";
     document.body.appendChild(div);
 
-    const view = SpatialViewState.createBlank(
-      imodel,
-      new Point3d(),
-      new Vector3d(1, 1, 1)
-    );
+    const view = SpatialViewState.createBlank(imodel, new Point3d(), new Vector3d(1, 1, 1));
     if (view.viewFlags.acsTriad || view.viewFlags.grid)
       view.viewFlags = view.viewFlags.copy({ acsTriad: false, grid: false });
 

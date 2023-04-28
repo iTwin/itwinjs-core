@@ -20,25 +20,17 @@ export class LoggingDiagnosticReporter extends FormatDiagnosticReporter {
   public reportDiagnostic(diagnostic: AnyDiagnostic, messageText: string) {
     switch (diagnostic.category) {
       case DiagnosticCategory.Error:
-        Logger.logError(loggingCategory, messageText, () =>
-          this.getLogMetaData(diagnostic)
-        );
+        Logger.logError(loggingCategory, messageText, () => this.getLogMetaData(diagnostic));
         return;
       case DiagnosticCategory.Warning:
-        Logger.logWarning(loggingCategory, messageText, () =>
-          this.getLogMetaData(diagnostic)
-        );
+        Logger.logWarning(loggingCategory, messageText, () => this.getLogMetaData(diagnostic));
         return;
       case DiagnosticCategory.Message:
       case DiagnosticCategory.Suggestion:
-        Logger.logInfo(loggingCategory, messageText, () =>
-          this.getLogMetaData(diagnostic)
-        );
+        Logger.logInfo(loggingCategory, messageText, () => this.getLogMetaData(diagnostic));
         return;
       default:
-        Logger.logTrace(loggingCategory, messageText, () =>
-          this.getLogMetaData(diagnostic)
-        );
+        Logger.logTrace(loggingCategory, messageText, () => this.getLogMetaData(diagnostic));
     }
   }
 

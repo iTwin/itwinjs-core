@@ -77,19 +77,9 @@ describe("ViewState", () => {
     await TestUtility.shutdownFrontend();
   });
 
-  const compareView = (
-    v1: SpatialViewState,
-    v2: SpatialViewDefinitionProps,
-    str: string
-  ) => {
+  const compareView = (v1: SpatialViewState, v2: SpatialViewDefinitionProps, str: string) => {
     const compare = new DeepCompare();
-    const v2State = new SpatialViewState(
-      v2,
-      v1.iModel,
-      v1.categorySelector,
-      v1.displayStyle,
-      v1.modelSelector
-    );
+    const v2State = new SpatialViewState(v2, v1.iModel, v1.categorySelector, v1.displayStyle, v1.modelSelector);
     const v1State = new SpatialViewState(
       v1.toJSON(),
       v1.iModel,
@@ -98,50 +88,27 @@ describe("ViewState", () => {
       v1.modelSelector
     );
 
-    const val = compare.compare(
-      JSON.parse(JSON.stringify(v1State)),
-      JSON.parse(JSON.stringify(v2State))
-    );
+    const val = compare.compare(JSON.parse(JSON.stringify(v1State)), JSON.parse(JSON.stringify(v2State)));
     if (!val) assert.isUndefined(compare.errorTracker, str);
     assert.isTrue(val, str);
   };
 
   it("should be able to create ViewState from SpatialViewDefinition", async () => {
-    assert.equal(
-      viewState.code.value,
-      "A Views - View 1",
-      "Code value is A Views - View 1"
-    );
+    assert.equal(viewState.code.value, "A Views - View 1", "Code value is A Views - View 1");
     assert.equal(viewState.displayStyle.id, "0x36", "Display Style Id is 0x36");
     assert.equal(viewState.categorySelector.id, "0x37", "Category Id is 0x37");
     assert.isFalse(viewState.isCameraOn, "The camera is not turned on");
     assert.isTrue(
-      viewState.extents.isAlmostEqual(
-        new Vector3d(429.6229727570776, 232.24786876266097, 0.1017680889917761)
-      ),
+      viewState.extents.isAlmostEqual(new Vector3d(429.6229727570776, 232.24786876266097, 0.1017680889917761)),
       "View extents as expected"
     );
     assert.isTrue(
-      viewState.origin.isAlmostEqual(
-        new Point3d(
-          -87.73958171815832,
-          -108.96514044887601,
-          -0.0853709702222105
-        )
-      ),
+      viewState.origin.isAlmostEqual(new Point3d(-87.73958171815832, -108.96514044887601, -0.0853709702222105)),
       "View origin as expected"
     );
     assert.isTrue(viewState.rotation.isIdentity, "View rotation is identity");
-    assert.equal(
-      viewState.details.gridOrientation,
-      0,
-      "Grid orientation as expected"
-    );
-    assert.equal(
-      viewState.details.gridSpacing.x,
-      0.001,
-      "GridSpaceX as expected"
-    );
+    assert.equal(viewState.details.gridOrientation, 0, "Grid orientation as expected");
+    assert.equal(viewState.details.gridSpacing.x, 0.001, "GridSpaceX as expected");
 
     assert.isDefined(viewState.displayStyle);
     assert.instanceOf(viewState.categorySelector, CategorySelectorState);
@@ -149,13 +116,7 @@ describe("ViewState", () => {
     assert.instanceOf(viewState.modelSelector, ModelSelectorState);
     assert.equal(viewState.modelSelector.models.size, 5);
     assert.isTrue(
-      viewState.origin.isAlmostEqual(
-        new Point3d(
-          -87.73958171815832,
-          -108.96514044887601,
-          -0.0853709702222105
-        )
-      ),
+      viewState.origin.isAlmostEqual(new Point3d(-87.73958171815832, -108.96514044887601, -0.0853709702222105)),
       "View origin as expected"
     );
 
@@ -206,10 +167,7 @@ describe("ViewState", () => {
       materials: !vf.materials,
       monochrome: !vf.monochrome,
       patterns: !vf.patterns,
-      renderMode:
-        vf.renderMode === RenderMode.HiddenLine
-          ? RenderMode.SmoothShade
-          : RenderMode.HiddenLine,
+      renderMode: vf.renderMode === RenderMode.HiddenLine ? RenderMode.SmoothShade : RenderMode.HiddenLine,
       shadows: !vf.shadows,
       styles: !vf.styles,
       textures: !vf.textures,
@@ -235,8 +193,7 @@ describe("ViewState", () => {
     const vs0BackgroundColor = ColorDef.from(32, 1, 99);
     vs0DisplayStyle3d.backgroundColor = vs0BackgroundColor;
 
-    const oldBackgroundMap =
-      vs0DisplayStyle3d.settings.backgroundMap.toPersistentJSON();
+    const oldBackgroundMap = vs0DisplayStyle3d.settings.backgroundMap.toPersistentJSON();
     if (undefined !== oldBackgroundMap) {
       // eslint-disable-next-line deprecation/deprecation
       const mt =
@@ -245,10 +202,7 @@ describe("ViewState", () => {
           : BackgroundMapType.Hybrid;
       vs0DisplayStyle3d.changeBackgroundMapProvider({
         // eslint-disable-next-line deprecation/deprecation
-        name:
-          oldBackgroundMap.providerName === "BingProvider"
-            ? "MapBoxProvider"
-            : "BingProvider",
+        name: oldBackgroundMap.providerName === "BingProvider" ? "MapBoxProvider" : "BingProvider",
         type: mt,
       });
       vs0DisplayStyle3d.changeBackgroundMapProps({
@@ -263,16 +217,10 @@ describe("ViewState", () => {
     }
     const vs0BackgroundMap = vs0DisplayStyle3d.settings.backgroundMap;
 
-    const oldHLSettings =
-      vs0DisplayStyle3d.settings.hiddenLineSettings.toJSON();
-    vs0DisplayStyle3d.settings.hiddenLineSettings =
-      HiddenLine.Settings.fromJSON({
-        transThreshold:
-          oldHLSettings.transThreshold !== undefined &&
-          oldHLSettings.transThreshold > 0.0
-            ? 0.0
-            : 0.2,
-      });
+    const oldHLSettings = vs0DisplayStyle3d.settings.hiddenLineSettings.toJSON();
+    vs0DisplayStyle3d.settings.hiddenLineSettings = HiddenLine.Settings.fromJSON({
+      transThreshold: oldHLSettings.transThreshold !== undefined && oldHLSettings.transThreshold > 0.0 ? 0.0 : 0.2,
+    });
     const vs0HLSettings = vs0DisplayStyle3d.settings.hiddenLineSettings;
 
     const vs0MonochromeColor = ColorDef.from(32, 1, 99);
@@ -289,104 +237,32 @@ describe("ViewState", () => {
     const vs1HLSettings = vs1DisplayStyle3d.settings.hiddenLineSettings;
     const vs1MonochromeColor = vs1DisplayStyle3d.settings.monochromeColor;
 
-    assert.equal(
-      vs0.viewFlags.acsTriad,
-      vs1.viewFlags.acsTriad,
-      "clone should copy viewFlags.acsTriad"
-    );
+    assert.equal(vs0.viewFlags.acsTriad, vs1.viewFlags.acsTriad, "clone should copy viewFlags.acsTriad");
     assert.equal(
       vs0.viewFlags.ambientOcclusion,
       vs1.viewFlags.ambientOcclusion,
       "clone should copy viewFlags.ambientOcclusion"
     );
-    assert.equal(
-      vs0.viewFlags.backgroundMap,
-      vs1.viewFlags.backgroundMap,
-      "clone should copy viewFlags.backgroundMap"
-    );
+    assert.equal(vs0.viewFlags.backgroundMap, vs1.viewFlags.backgroundMap, "clone should copy viewFlags.backgroundMap");
     assert.equal(vs0.viewFlags.lighting, vs1.viewFlags.lighting);
-    assert.equal(
-      vs0.viewFlags.clipVolume,
-      vs1.viewFlags.clipVolume,
-      "clone should copy viewFlags.clipVolume"
-    );
-    assert.equal(
-      vs0.viewFlags.constructions,
-      vs1.viewFlags.constructions,
-      "clone should copy viewFlags.constructions"
-    );
-    assert.equal(
-      vs0.viewFlags.dimensions,
-      vs1.viewFlags.dimensions,
-      "clone should copy viewFlags.dimensions"
-    );
+    assert.equal(vs0.viewFlags.clipVolume, vs1.viewFlags.clipVolume, "clone should copy viewFlags.clipVolume");
+    assert.equal(vs0.viewFlags.constructions, vs1.viewFlags.constructions, "clone should copy viewFlags.constructions");
+    assert.equal(vs0.viewFlags.dimensions, vs1.viewFlags.dimensions, "clone should copy viewFlags.dimensions");
     // This flag is hidden - assert.equal(vs0.viewFlags.edgeMask, vs1.viewFlags.edgeMask, "clone should copy viewFlags.edgeMask"); //
-    assert.equal(
-      vs0.viewFlags.fill,
-      vs1.viewFlags.fill,
-      "clone should copy viewFlags.fill"
-    );
-    assert.equal(
-      vs0.viewFlags.grid,
-      vs1.viewFlags.grid,
-      "clone should copy viewFlags.grid"
-    );
-    assert.equal(
-      vs0.viewFlags.hiddenEdges,
-      vs1.viewFlags.hiddenEdges,
-      "clone should copy viewFlags.hiddenEdges"
-    );
-    assert.equal(
-      vs0.viewFlags.materials,
-      vs1.viewFlags.materials,
-      "clone should copy viewFlags.materials"
-    );
-    assert.equal(
-      vs0.viewFlags.monochrome,
-      vs1.viewFlags.monochrome,
-      "clone should copy viewFlags.monochrome"
-    );
+    assert.equal(vs0.viewFlags.fill, vs1.viewFlags.fill, "clone should copy viewFlags.fill");
+    assert.equal(vs0.viewFlags.grid, vs1.viewFlags.grid, "clone should copy viewFlags.grid");
+    assert.equal(vs0.viewFlags.hiddenEdges, vs1.viewFlags.hiddenEdges, "clone should copy viewFlags.hiddenEdges");
+    assert.equal(vs0.viewFlags.materials, vs1.viewFlags.materials, "clone should copy viewFlags.materials");
+    assert.equal(vs0.viewFlags.monochrome, vs1.viewFlags.monochrome, "clone should copy viewFlags.monochrome");
     // This flag test will fail because the backend doesn't do anything with it - assert.equal(vs0.viewFlags.noGeometryMap, vs1.viewFlags.noGeometryMap, "clone should copy viewFlags.noGeometryMap");
-    assert.equal(
-      vs0.viewFlags.patterns,
-      vs1.viewFlags.patterns,
-      "clone should copy viewFlags.patterns"
-    );
-    assert.equal(
-      vs0.viewFlags.renderMode,
-      vs1.viewFlags.renderMode,
-      "clone should copy viewFlags.renderMode"
-    );
-    assert.equal(
-      vs0.viewFlags.shadows,
-      vs1.viewFlags.shadows,
-      "clone should copy viewFlags.shadows"
-    );
-    assert.equal(
-      vs0.viewFlags.styles,
-      vs1.viewFlags.styles,
-      "clone should copy viewFlags.styles"
-    );
-    assert.equal(
-      vs0.viewFlags.textures,
-      vs1.viewFlags.textures,
-      "clone should copy viewFlags.textures"
-    );
-    assert.equal(
-      vs0.viewFlags.transparency,
-      vs1.viewFlags.transparency,
-      "clone should copy viewFlags.transparency"
-    );
-    assert.equal(
-      vs0.viewFlags.visibleEdges,
-      vs1.viewFlags.visibleEdges,
-      "clone should copy viewFlags.visibleEdges"
-    );
-    assert.equal(
-      vs0.viewFlags.weights,
-      vs1.viewFlags.weights,
-      "clone should copy viewFlags.weights"
-    );
+    assert.equal(vs0.viewFlags.patterns, vs1.viewFlags.patterns, "clone should copy viewFlags.patterns");
+    assert.equal(vs0.viewFlags.renderMode, vs1.viewFlags.renderMode, "clone should copy viewFlags.renderMode");
+    assert.equal(vs0.viewFlags.shadows, vs1.viewFlags.shadows, "clone should copy viewFlags.shadows");
+    assert.equal(vs0.viewFlags.styles, vs1.viewFlags.styles, "clone should copy viewFlags.styles");
+    assert.equal(vs0.viewFlags.textures, vs1.viewFlags.textures, "clone should copy viewFlags.textures");
+    assert.equal(vs0.viewFlags.transparency, vs1.viewFlags.transparency, "clone should copy viewFlags.transparency");
+    assert.equal(vs0.viewFlags.visibleEdges, vs1.viewFlags.visibleEdges, "clone should copy viewFlags.visibleEdges");
+    assert.equal(vs0.viewFlags.weights, vs1.viewFlags.weights, "clone should copy viewFlags.weights");
     assert.equal(
       vs0AOSettings.bias,
       vs1AOSettings.bias,
@@ -422,38 +298,25 @@ describe("ViewState", () => {
       vs1AOSettings.blurTexelStepSize,
       "clone should copy displayStyle.ambientOcclusionSettings.blurTexelStepSize"
     );
-    assert.isTrue(
-      vs0BackgroundColor.equals(vs1BackgroundColor),
-      "clone should copy displayStyle.backgroundColor"
-    );
+    assert.isTrue(vs0BackgroundColor.equals(vs1BackgroundColor), "clone should copy displayStyle.backgroundColor");
 
-    const vs0BackgroundBase = vs0.displayStyle.settings.mapImagery
-      .backgroundBase as BaseMapLayerSettings;
+    const vs0BackgroundBase = vs0.displayStyle.settings.mapImagery.backgroundBase as BaseMapLayerSettings;
     expect(vs0BackgroundBase).instanceof(BaseMapLayerSettings);
-    const vs1BackgroundBase = vs1.displayStyle.settings.mapImagery
-      .backgroundBase as BaseMapLayerSettings;
+    const vs1BackgroundBase = vs1.displayStyle.settings.mapImagery.backgroundBase as BaseMapLayerSettings;
     expect(vs1BackgroundBase).instanceof(BaseMapLayerSettings);
 
     expect(vs0BackgroundBase.provider).not.to.be.undefined;
-    expect(vs1BackgroundBase.provider!.equals(vs0BackgroundBase.provider!)).to
-      .be.true;
+    expect(vs1BackgroundBase.provider!.equals(vs0BackgroundBase.provider!)).to.be.true;
 
-    expect(vs0BackgroundMap.useDepthBuffer).not.to.equal(
-      oldBackgroundMap?.useDepthBuffer ?? false
-    );
-    expect(vs1BackgroundMap.useDepthBuffer).to.equal(
-      vs0BackgroundMap.useDepthBuffer
-    );
+    expect(vs0BackgroundMap.useDepthBuffer).not.to.equal(oldBackgroundMap?.useDepthBuffer ?? false);
+    expect(vs1BackgroundMap.useDepthBuffer).to.equal(vs0BackgroundMap.useDepthBuffer);
 
     assert.equal(
       vs0HLSettings.transparencyThreshold,
       vs1HLSettings.transparencyThreshold,
       "clone should copy displayStyle.hiddenLineSettings.transparencyThreshold"
     );
-    assert.isTrue(
-      vs0MonochromeColor.equals(vs1MonochromeColor),
-      "clone should copy displayStyle.monochromeColor"
-    );
+    assert.isTrue(vs0MonochromeColor.equals(vs1MonochromeColor), "clone should copy displayStyle.monochromeColor");
   });
 
   it("view volume adjustments", async () => {
@@ -484,20 +347,14 @@ describe("ViewState", () => {
     // LookAtVolume test #3
     viewState.setOrigin(Point3d.create(100, 1000, -2));
     viewState.setExtents(Vector3d.create(314, 1, -0.00001));
-    viewState.setRotation(
-      YawPitchRollAngles.createDegrees(25, 25, 0.1).toMatrix3d()
-    );
+    viewState.setRotation(YawPitchRollAngles.createDegrees(25, 25, 0.1).toMatrix3d());
     viewState.setLensAngle(Angle.createDegrees(108));
     viewState.setFocusDistance(89);
     viewState.setEyePoint(Point3d.create(1, 1000, 2));
     testParams.volume = Range3d.createXYZXYZ(1000, -10, 6, -5, 0, 0);
     testParams.margin = new MarginPercent(0.01, 0.02, 0.03, 0.04);
     testParams.aspectRatio = 1.2;
-    cppView = await unitTestRpcImp.executeTest(
-      imodel.getRpcProps(),
-      "lookAtVolume",
-      testParams
-    );
+    cppView = await unitTestRpcImp.executeTest(imodel.getRpcProps(), "lookAtVolume", testParams);
     viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, {
       marginPercent: testParams.margin,
     });
@@ -513,11 +370,7 @@ describe("ViewState", () => {
     testParams.volume = Range3d.createXYZXYZ(10, 20, 0.5, 35, 21, 2);
     testParams.aspectRatio = 1.0;
     testParams.margin = new MarginPercent(0, 0, 0, 0);
-    cppView = await unitTestRpcImp.executeTest(
-      imodel.getRpcProps(),
-      "lookAtVolume",
-      testParams
-    );
+    cppView = await unitTestRpcImp.executeTest(imodel.getRpcProps(), "lookAtVolume", testParams);
     viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, {
       marginPercent: testParams.margin,
     });
@@ -600,17 +453,12 @@ describe("ViewState", () => {
     viewState.setLensAngle(Angle.createDegrees(50));
     viewState.setFocusDistance(49);
     viewState.setEyePoint(Point3d.create(5, 5, 50));
-    const cppView: SpatialViewDefinitionProps =
-      await unitTestRpcImp.executeTest(
-        imodel.getRpcProps(),
-        "rotateCameraLocal",
-        testParams
-      );
-    viewState.rotateCameraLocal(
-      Angle.createRadians(testParams.angle),
-      testParams.axis,
-      testParams.about
+    const cppView: SpatialViewDefinitionProps = await unitTestRpcImp.executeTest(
+      imodel.getRpcProps(),
+      "rotateCameraLocal",
+      testParams
     );
+    viewState.rotateCameraLocal(Angle.createRadians(testParams.angle), testParams.axis, testParams.about);
     compareToCppView(viewState, cppView, 49.5035, "RotateCameraLocal 1");
   });
 
@@ -627,18 +475,15 @@ describe("ViewState", () => {
 
     viewState.setOrigin(Point3d.create(100, 23, -18));
     viewState.setExtents(Vector3d.create(55, 40.01, 23));
-    viewState.setRotation(
-      YawPitchRollAngles.createDegrees(23, 65, 2).toMatrix3d()
-    );
+    viewState.setRotation(YawPitchRollAngles.createDegrees(23, 65, 2).toMatrix3d());
     viewState.setLensAngle(Angle.createDegrees(65));
     viewState.setFocusDistance(191);
     viewState.setEyePoint(Point3d.create(-64, 120, 500));
-    const cppView: SpatialViewDefinitionProps =
-      await unitTestRpcImp.executeTest(
-        imodel.getRpcProps(),
-        "lookAtUsingLensAngle",
-        testParams
-      );
+    const cppView: SpatialViewDefinitionProps = await unitTestRpcImp.executeTest(
+      imodel.getRpcProps(),
+      "lookAtUsingLensAngle",
+      testParams
+    );
     viewState.lookAt({
       eyePoint: testParams.eye,
       targetPoint: testParams.target,
@@ -669,9 +514,7 @@ describe("ViewState", () => {
 
     viewState.setOrigin(Point3d.create(100, 23, -18));
     viewState.setExtents(Vector3d.create(55, 40.01, 23));
-    viewState.setRotation(
-      YawPitchRollAngles.createDegrees(23, 65, 2).toMatrix3d()
-    );
+    viewState.setRotation(YawPitchRollAngles.createDegrees(23, 65, 2).toMatrix3d());
     viewState.setLensAngle(Angle.createDegrees(65));
     viewState.setFocusDistance(117.46063170271135);
     viewState.setEyePoint(Point3d.create(-64, 120, 500));
@@ -696,41 +539,26 @@ describe("ViewState", () => {
       backDistance: testParams.back,
     };
     let status = viewState2.lookAt(perspectiveArgs);
-    expect(
-      ViewStatus.Success === status,
-      "lookAt should return status of Success"
-    ).to.be.true;
+    expect(ViewStatus.Success === status, "lookAt should return status of Success").to.be.true;
     expect(viewState2.isCameraOn, "Camera should be on").to.be.true;
     compareView(viewState, viewState2.toJSON(), "lookAt");
 
     perspectiveArgs.upVector = Vector3d.createZero();
     status = viewState2.lookAt(perspectiveArgs);
-    expect(
-      ViewStatus.InvalidUpVector === status,
-      "lookAt should return status of InvalidUpVector"
-    ).to.be.true;
+    expect(ViewStatus.InvalidUpVector === status, "lookAt should return status of InvalidUpVector").to.be.true;
     perspectiveArgs.upVector = testParams.up;
 
     viewState2.setAllow3dManipulations(false);
     status = viewState2.lookAt(perspectiveArgs);
-    expect(
-      ViewStatus.NotCameraView === status,
-      "lookAt should return status of NotCameraView"
-    ).to.be.true;
+    expect(ViewStatus.NotCameraView === status, "lookAt should return status of NotCameraView").to.be.true;
     viewState2.setAllow3dManipulations(true);
 
     perspectiveArgs.targetPoint = testParams.eye;
     status = viewState2.lookAt(perspectiveArgs);
-    expect(
-      ViewStatus.InvalidTargetPoint === status,
-      "lookAt should return status of InvalidTargetPoint"
-    ).to.be.true;
+    expect(ViewStatus.InvalidTargetPoint === status, "lookAt should return status of InvalidTargetPoint").to.be.true;
     perspectiveArgs.targetPoint = testParams.target;
 
-    const viewDirection = Vector3d.createStartEnd(
-      testParams.eye,
-      testParams.target
-    );
+    const viewDirection = Vector3d.createStartEnd(testParams.eye, testParams.target);
     const orthoArgs: Mutable<LookAtOrthoArgs> = {
       eyePoint: testParams.eye,
       viewDirection,
@@ -740,10 +568,7 @@ describe("ViewState", () => {
       backDistance: testParams.back,
     };
     status = viewState3.lookAt(orthoArgs);
-    expect(
-      ViewStatus.Success === status,
-      "lookAt should return status of Success"
-    ).to.be.true;
+    expect(ViewStatus.Success === status, "lookAt should return status of Success").to.be.true;
     expect(viewState3.isCameraOn, "Camera should not be on").to.be.false;
 
     viewState.turnCameraOff();
@@ -751,10 +576,7 @@ describe("ViewState", () => {
 
     orthoArgs.viewDirection = Vector3d.createZero();
     status = viewState3.lookAt(orthoArgs);
-    expect(
-      ViewStatus.InvalidDirection === status,
-      "lookAt should return status of InvalidDirection"
-    ).to.be.true;
+    expect(ViewStatus.InvalidDirection === status, "lookAt should return status of InvalidDirection").to.be.true;
     orthoArgs.viewDirection = viewDirection;
   });
 
@@ -791,64 +613,38 @@ describe("ViewState", () => {
     const origin = new Point3d(0, 0, 0);
     const rot = Matrix3d.identity;
     // Default limits are accepted
-    const delta = new Vector3d(
-      defaultLimits.min,
-      defaultLimits.min,
-      defaultLimits.min
-    );
-    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(
-      ViewStatus.Success
-    );
+    const delta = new Vector3d(defaultLimits.min, defaultLimits.min, defaultLimits.min);
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.Success);
     delta.set(defaultLimits.max, defaultLimits.max, defaultLimits.max);
-    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(
-      ViewStatus.Success
-    );
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.Success);
     delta.scale(0.5, delta);
-    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(
-      ViewStatus.Success
-    );
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.Success);
 
     // Outside default limits rejected
     delta.scale(5.0, delta);
-    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(
-      ViewStatus.MaxWindow
-    );
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.MaxWindow);
     delta.scale(0.0, delta);
-    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(
-      ViewStatus.MinWindow
-    );
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.MinWindow);
 
     // Override default limits
     view.extentLimits = { min: 20, max: 100 };
     expect(view.extentLimits.min).to.equal(20);
     expect(view.extentLimits.max).to.equal(100);
     delta.set(20, 20, 20);
-    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(
-      ViewStatus.Success
-    );
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.Success);
     delta.set(100, 100, 100);
-    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(
-      ViewStatus.Success
-    );
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.Success);
     delta.set(10, 10, 10);
-    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(
-      ViewStatus.MinWindow
-    );
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.MinWindow);
     delta.set(110, 110, 110);
-    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(
-      ViewStatus.MaxWindow
-    );
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.MaxWindow);
 
     delta.set(0, 21, 50);
-    expect(view.adjustViewDelta(delta, origin, rot, 2)).to.equal(
-      ViewStatus.MinWindow
-    );
+    expect(view.adjustViewDelta(delta, origin, rot, 2)).to.equal(ViewStatus.MinWindow);
     assert.isTrue(delta.isAlmostEqual({ x: 42, y: 21, z: 50 }));
 
     delta.set(0, 0, 50);
-    expect(view.adjustViewDelta(delta, origin, rot, 0.5)).to.equal(
-      ViewStatus.MinWindow
-    );
+    expect(view.adjustViewDelta(delta, origin, rot, 0.5)).to.equal(ViewStatus.MinWindow);
     assert.isTrue(delta.isAlmostEqual({ x: 20, y: 40, z: 50 }));
 
     // Cloning preserved extent overrides
@@ -891,11 +687,7 @@ describe("ViewState", () => {
   });
 
   it("detects if two views share a coordinate system", async () => {
-    function expectCompatibility(
-      view1: ViewState,
-      view2: ViewState,
-      expectCompatible: boolean
-    ): void {
+    function expectCompatibility(view1: ViewState, view2: ViewState, expectCompatible: boolean): void {
       expect(view1.hasSameCoordinates(view1)).to.be.true;
       expect(view2.hasSameCoordinates(view2)).to.be.true;
       expect(view1.hasSameCoordinates(view1.clone())).to.be.true;
@@ -905,15 +697,11 @@ describe("ViewState", () => {
     }
 
     const sheet = await imodel3.views.load("0x1000000002e");
-    const drawing = (await imodel3.views.load(
-      "0x10000000020"
-    )) as DrawingViewState;
+    const drawing = (await imodel3.views.load("0x10000000020")) as DrawingViewState;
     const spatial = viewState.clone();
     const spatialNoModels = viewState.clone();
     spatialNoModels.modelSelector.models.clear();
-    const spatialOtherIModel = (await imodel2.views.load(
-      "0x46"
-    )) as SpatialViewState;
+    const spatialOtherIModel = (await imodel2.views.load("0x46")) as SpatialViewState;
 
     expectCompatibility(sheet, drawing, false);
     expectCompatibility(sheet, spatial, false);
@@ -930,11 +718,7 @@ describe("ViewState", () => {
     spatial.modelSelector.models.add(drawing.baseModelId);
     expectCompatibility(spatial, drawing, false);
 
-    const blank = SpatialViewState.createBlank(
-      imodel3,
-      new Point3d(0, 0, 0),
-      new Point3d(1, 1, 1)
-    );
+    const blank = SpatialViewState.createBlank(imodel3, new Point3d(0, 0, 0), new Point3d(1, 1, 1));
     blank.modelSelector.models.add(drawing.baseModelId);
     expectCompatibility(blank, drawing, false);
   });
@@ -955,30 +739,22 @@ describe("ViewState2d", () => {
   });
 
   it("should have valid viewed extents", async () => {
-    const sheetView = (await imodel.views.load(
-      "0x1000000002e"
-    )) as SheetViewState;
+    const sheetView = (await imodel.views.load("0x1000000002e")) as SheetViewState;
     expect(sheetView).instanceof(SheetViewState);
     const sheetViewExtents = sheetView.getViewedExtents();
     expect(sheetViewExtents.isNull).to.be.false;
 
     // The sheet's viewed extents are based on the *sheet size* property, not the model range.
     // In this case, somebody scribbled outside of the sheet boundaries.
-    const sheetModelExtents = Range3d.fromJSON(
-      (await imodel.models.queryModelRanges(sheetView.baseModelId))[0]
-    );
+    const sheetModelExtents = Range3d.fromJSON((await imodel.models.queryModelRanges(sheetView.baseModelId))[0]);
     expect(sheetViewExtents.containsRange(sheetModelExtents)).to.be.false;
 
-    const drawingView = (await imodel.views.load(
-      "0x10000000020"
-    )) as DrawingViewState;
+    const drawingView = (await imodel.views.load("0x10000000020")) as DrawingViewState;
     expect(drawingView).instanceof(DrawingViewState);
     const drawingViewExtents = drawingView.getViewedExtents();
     expect(drawingViewExtents.isNull).to.be.false;
 
-    const drawingModelExtents = Range3d.fromJSON(
-      (await imodel.models.queryModelRanges(drawingView.baseModelId))[0]
-    );
+    const drawingModelExtents = Range3d.fromJSON((await imodel.models.queryModelRanges(drawingView.baseModelId))[0]);
     expect(drawingModelExtents.isAlmostEqual(drawingViewExtents)).to.be.true;
   });
 });

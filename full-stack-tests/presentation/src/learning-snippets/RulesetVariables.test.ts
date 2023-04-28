@@ -14,9 +14,7 @@ describe("Learning Snippets", () => {
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile(
-      "assets/datasets/Properties_60InstancesWithUrl2.ibim"
-    );
+    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {
@@ -68,9 +66,7 @@ describe("Learning Snippets", () => {
 
       // Set variable to "models" and ensure we get model grouping nodes
       // __PUBLISH_EXTRACT_START__ Presentation.RulesetVariables.InRuleCondition.SetToModels
-      await Presentation.presentation
-        .vars(ruleset.id)
-        .setString("TREE_TYPE", "models");
+      await Presentation.presentation.vars(ruleset.id).setString("TREE_TYPE", "models");
       // __PUBLISH_EXTRACT_END__
       const modelNodes = await Presentation.presentation.getNodes({
         imodel,
@@ -102,9 +98,7 @@ describe("Learning Snippets", () => {
 
       // Set variable to "elements" and ensure we get element grouping nodes
       // __PUBLISH_EXTRACT_START__ Presentation.RulesetVariables.InRuleCondition.SetToElements
-      await Presentation.presentation
-        .vars(ruleset.id)
-        .setString("TREE_TYPE", "elements");
+      await Presentation.presentation.vars(ruleset.id).setString("TREE_TYPE", "elements");
       // __PUBLISH_EXTRACT_END__
       const elementNodes = await Presentation.presentation.getNodes({
         imodel,
@@ -255,9 +249,7 @@ describe("Learning Snippets", () => {
 
       // Set the value to several element IDs and ensure we get their class grouping nodes
       // __PUBLISH_EXTRACT_START__ Presentation.RulesetVariables.InInstanceFilter.SetIds
-      await Presentation.presentation
-        .vars(ruleset.id)
-        .setId64s("ELEMENT_IDS", ["0x1", "0x74", "0x40"]);
+      await Presentation.presentation.vars(ruleset.id).setId64s("ELEMENT_IDS", ["0x1", "0x74", "0x40"]);
       // __PUBLISH_EXTRACT_END__
       nodes = await Presentation.presentation.getNodes({
         imodel,
@@ -276,9 +268,7 @@ describe("Learning Snippets", () => {
       ]);
 
       // Set the value to different element IDs and ensure we get their class grouping nodes
-      await Presentation.presentation
-        .vars(ruleset.id)
-        .setId64s("ELEMENT_IDS", ["0x17", "0x16"]);
+      await Presentation.presentation.vars(ruleset.id).setId64s("ELEMENT_IDS", ["0x17", "0x16"]);
       nodes = await Presentation.presentation.getNodes({
         imodel,
         rulesetOrId: ruleset,
@@ -421,9 +411,7 @@ describe("Learning Snippets", () => {
 
       // Set the prefix to some value and confirm node labels get prefixed
       // __PUBLISH_EXTRACT_START__ Presentation.RulesetVariables.InCustomizationRuleValueExpression.SetValue
-      await Presentation.presentation
-        .vars(ruleset.id)
-        .setString("PREFIX", "test");
+      await Presentation.presentation.vars(ruleset.id).setString("PREFIX", "test");
       // __PUBLISH_EXTRACT_END__
       nodes = await Presentation.presentation.getNodes({
         imodel,

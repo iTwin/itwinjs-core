@@ -66,14 +66,7 @@ export class Line {
    * @param y1 the y of the end point.
    * @param z1 the z of the end point.
    */
-  public static fromXYZ(
-    x0: float64,
-    y0: float64,
-    z0: float64,
-    x1: float64,
-    y1: float64,
-    z1: float64
-  ): Line {
+  public static fromXYZ(x0: float64, y0: float64, z0: float64, x1: float64, y1: float64, z1: float64): Line {
     return new Line(new Coordinate(x0, y0, z0), new Coordinate(x1, y1, z1));
   }
 
@@ -456,12 +449,7 @@ export class Line {
    * @param t the point parameter.
    * @param point the target point.
    */
-  public static interpolate(
-    point1: Coordinate,
-    point2: Coordinate,
-    t: float64,
-    point: Coordinate
-  ): void {
+  public static interpolate(point1: Coordinate, point2: Coordinate, t: float64, point: Coordinate): void {
     let x: float64 = point1.getX() + t * (point2.getX() - point1.getX());
     let y: float64 = point1.getY() + t * (point2.getY() - point1.getY());
     let z: float64 = point1.getZ() + t * (point2.getZ() - point1.getZ());

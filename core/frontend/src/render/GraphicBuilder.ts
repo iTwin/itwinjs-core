@@ -286,17 +286,11 @@ export abstract class GraphicBuilder {
   /** @alpha */
   public readonly analysisStyle?: AnalysisStyle;
 
-  protected readonly _computeChordTolerance: (
-    args: ComputeChordToleranceArgs
-  ) => number;
-  protected readonly _options:
-    | CustomGraphicBuilderOptions
-    | ViewportGraphicBuilderOptions;
+  protected readonly _computeChordTolerance: (args: ComputeChordToleranceArgs) => number;
+  protected readonly _options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions;
 
   /** @internal */
-  protected constructor(
-    options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions
-  ) {
+  protected constructor(options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions) {
     // Stored for potential use later in creating a new GraphicBuilder from this one (see PrimitiveBuilder.finishGraphic).
     this._options = options;
 
@@ -306,14 +300,9 @@ export abstract class GraphicBuilder {
     this.type = options.type;
     this.pickable = options.pickable;
     this.wantEdges =
-      options.generateEdges ??
-      (this.type === GraphicType.Scene &&
-        (!vp || vp.viewFlags.edgesRequired()));
-    this.wantNormals =
-      options.wantNormals ??
-      (this.wantEdges || this.type === GraphicType.Scene);
-    this.preserveOrder =
-      options.preserveOrder ?? (this.isOverlay || this.isViewBackground);
+      options.generateEdges ?? (this.type === GraphicType.Scene && (!vp || vp.viewFlags.edgesRequired()));
+    this.wantNormals = options.wantNormals ?? (this.wantEdges || this.type === GraphicType.Scene);
+    this.preserveOrder = options.preserveOrder ?? (this.isOverlay || this.isViewBackground);
 
     if (!options.viewport) {
       this._computeChordTolerance = options.computeChordTolerance;
@@ -326,15 +315,11 @@ export abstract class GraphicBuilder {
       let pixelSize = 1;
       if (!this.isViewCoordinates) {
         // Compute the horizontal distance in meters between two adjacent pixels at the center of the geometry.
-        pixelSize = options.viewport.getPixelSizeAtPoint(
-          args.computeRange().center
-        );
+        pixelSize = options.viewport.getPixelSizeAtPoint(args.computeRange().center);
         pixelSize = options.viewport.target.adjustPixelSizeForLOD(pixelSize);
 
         // Aspect ratio skew > 1.0 stretches the view in Y. In that case use the smaller vertical pixel distance for our stroke tolerance.
-        const skew = options.applyAspectRatioSkew
-          ? options.viewport.view.getAspectRatioSkew()
-          : 0;
+        const skew = options.applyAspectRatioSkew ? options.viewport.view.getAspectRatioSkew() : 0;
         if (skew > 1) pixelSize /= skew;
       }
 
@@ -354,10 +339,7 @@ export abstract class GraphicBuilder {
    * @see [[isWorldCoordinates]].
    */
   public get isViewCoordinates(): boolean {
-    return (
-      this.type === GraphicType.ViewBackground ||
-      this.type === GraphicType.ViewOverlay
-    );
+    return this.type === GraphicType.ViewBackground || this.type === GraphicType.ViewOverlay;
   }
 
   /** Whether the builder's geometry is defined in [[CoordSystem.World]] coordinates.
@@ -379,10 +361,7 @@ export abstract class GraphicBuilder {
 
   /** True if the builder produces a graphic of [[GraphicType.WorldOverlay]] or [[GraphicType.ViewOerlay]]. */
   public get isOverlay(): boolean {
-    return (
-      this.type === GraphicType.ViewOverlay ||
-      this.type === GraphicType.WorldOverlay
-    );
+    return this.type === GraphicType.ViewOverlay || this.type === GraphicType.WorldOverlay;
   }
 
   /**
@@ -421,9 +400,7 @@ export abstract class GraphicBuilder {
    */
   public activatePickableId(id: Id64String): void {
     const pick = this._options.pickable;
-    this.activateFeature(
-      new Feature(id, pick?.subCategoryId, pick?.geometryClass)
-    );
+    this.activateFeature(new Feature(id, pick?.subCategoryId, pick?.geometryClass));
   }
 
   /**
@@ -480,12 +457,7 @@ export abstract class GraphicBuilder {
    * @param filled If true, and isEllipse is also true, then draw ellipse filled.
    * @param zDepth Z value in local coordinates to use for each point in the arc or ellipse.
    */
-  public abstract addArc2d(
-    ellipse: Arc3d,
-    isEllipse: boolean,
-    filled: boolean,
-    zDepth: number
-  ): void;
+  public abstract addArc2d(ellipse: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void;
 
   /** Append a 3d open path to the builder. */
   public abstract addPath(path: Path): void;
@@ -546,19 +518,10 @@ export abstract class GraphicBuilder {
         this.addShape2d(primitive.points, primitive.zDepth);
         break;
       case "arc":
-        this.addArc(
-          primitive.arc,
-          true === primitive.isEllipse,
-          true === primitive.filled
-        );
+        this.addArc(primitive.arc, true === primitive.isEllipse, true === primitive.filled);
         break;
       case "arc2d":
-        this.addArc2d(
-          primitive.arc,
-          true === primitive.isEllipse,
-          true === primitive.filled,
-          primitive.zDepth
-        );
+        this.addArc2d(primitive.arc, true === primitive.isEllipse, true === primitive.filled, primitive.zDepth);
         break;
       case "path":
         this.addPath(primitive.path);
@@ -609,18 +572,9 @@ export abstract class GraphicBuilder {
       p[Npc.RightBottomFront].clone(),
     ]);
 
-    this.addLineString([
-      p[Npc.LeftTopFront].clone(),
-      p[Npc.LeftTopRear].clone(),
-    ]);
-    this.addLineString([
-      p[Npc.RightTopFront].clone(),
-      p[Npc.RightTopRear].clone(),
-    ]);
-    this.addLineString([
-      p[Npc.LeftBottomRear].clone(),
-      p[Npc.RightBottomRear].clone(),
-    ]);
+    this.addLineString([p[Npc.LeftTopFront].clone(), p[Npc.LeftTopRear].clone()]);
+    this.addLineString([p[Npc.RightTopFront].clone(), p[Npc.RightTopRear].clone()]);
+    this.addLineString([p[Npc.LeftBottomRear].clone(), p[Npc.RightBottomRear].clone()]);
   }
 
   /** Sets the current active symbology for this builder. Any new geometry subsequently added will be drawn using the specified symbology.
@@ -630,15 +584,8 @@ export abstract class GraphicBuilder {
    * @param linePixels The pixel pattern in which to draw lines.
    * @see [[GraphicBuilder.activateGraphicParams]] for additional symbology options.
    */
-  public setSymbology(
-    lineColor: ColorDef,
-    fillColor: ColorDef,
-    lineWidth: number,
-    linePixels = LinePixels.Solid
-  ) {
-    this.activateGraphicParams(
-      GraphicParams.fromSymbology(lineColor, fillColor, lineWidth, linePixels)
-    );
+  public setSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels = LinePixels.Solid) {
+    this.activateGraphicParams(GraphicParams.fromSymbology(lineColor, fillColor, lineWidth, linePixels));
   }
 
   /** Set the current active symbology for this builder to be a blanking fill before adding a planar region.

@@ -36,10 +36,7 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
    * @param result caller-allocated destination
    * @returns undefined if the index is out of bounds
    */
-  public getPoint3dAtCheckedPointIndex(
-    index: number,
-    result?: Point3d
-  ): Point3d | undefined {
+  public getPoint3dAtCheckedPointIndex(index: number, result?: Point3d): Point3d | undefined {
     if (this.isValidIndex(index)) {
       const source = this.data[index];
       return Point3d.create(source.x, source.y, source.z, result);
@@ -52,10 +49,7 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
    * @param index index of point within the array
    * @param result caller-allocated destination
    */
-  public getPoint3dAtUncheckedPointIndex(
-    index: number,
-    result?: Point3d
-  ): Point3d {
+  public getPoint3dAtUncheckedPointIndex(index: number, result?: Point3d): Point3d {
     const source = this.data[index];
     return Point3d.create(source.x, source.y, source.z, result);
   }
@@ -65,10 +59,7 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
    * @param result caller-allocated destination
    * @returns undefined if the index is out of bounds
    */
-  public getVector3dAtCheckedVectorIndex(
-    index: number,
-    result?: Vector3d
-  ): Vector3d | undefined {
+  public getVector3dAtCheckedVectorIndex(index: number, result?: Vector3d): Vector3d | undefined {
     if (this.isValidIndex(index)) {
       const source = this.data[index];
       return Vector3d.create(source.x, source.y, source.z, result);
@@ -103,17 +94,9 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
    * @param result caller-allocated vector.
    * @returns undefined if either index is out of bounds
    */
-  public vectorIndexIndex(
-    indexA: number,
-    indexB: number,
-    result?: Vector3d
-  ): Vector3d | undefined {
+  public vectorIndexIndex(indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined {
     if (this.isValidIndex(indexA) && this.isValidIndex(indexB))
-      return Vector3d.createStartEnd(
-        this.data[indexA],
-        this.data[indexB],
-        result
-      );
+      return Vector3d.createStartEnd(this.data[indexA], this.data[indexB], result);
     return undefined;
   }
   /**
@@ -123,13 +106,8 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
    * @param result caller-allocated vector.
    * @returns undefined if index is out of bounds
    */
-  public vectorXYAndZIndex(
-    origin: XYAndZ,
-    indexB: number,
-    result?: Vector3d
-  ): Vector3d | undefined {
-    if (this.isValidIndex(indexB))
-      return Vector3d.createStartEnd(origin, this.data[indexB], result);
+  public vectorXYAndZIndex(origin: XYAndZ, indexB: number, result?: Vector3d): Vector3d | undefined {
+    if (this.isValidIndex(indexB)) return Vector3d.createStartEnd(origin, this.data[indexB], result);
     return undefined;
   }
   /**
@@ -147,12 +125,7 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
     result?: Vector3d
   ): Vector3d | undefined {
     if (this.isValidIndex(indexA) && this.isValidIndex(indexB))
-      return Vector3d.createCrossProductToPoints(
-        origin,
-        this.data[indexA],
-        this.data[indexB],
-        result
-      );
+      return Vector3d.createCrossProductToPoints(origin, this.data[indexA], this.data[indexB], result);
     return undefined;
   }
   /**
@@ -169,17 +142,8 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
     indexB: number,
     result?: Vector3d
   ): Vector3d | undefined {
-    if (
-      this.isValidIndex(originIndex) &&
-      this.isValidIndex(indexA) &&
-      this.isValidIndex(indexB)
-    )
-      return Vector3d.createCrossProductToPoints(
-        this.data[originIndex],
-        this.data[indexA],
-        this.data[indexB],
-        result
-      );
+    if (this.isValidIndex(originIndex) && this.isValidIndex(indexA) && this.isValidIndex(indexB))
+      return Vector3d.createCrossProductToPoints(this.data[originIndex], this.data[indexA], this.data[indexB], result);
     return undefined;
   }
   /**
@@ -197,11 +161,7 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
     result: Vector3d
   ): void {
     const data = this.data;
-    if (
-      this.isValidIndex(originIndex) &&
-      this.isValidIndex(indexA) &&
-      this.isValidIndex(indexB)
-    )
+    if (this.isValidIndex(originIndex) && this.isValidIndex(indexA) && this.isValidIndex(indexB))
       result.addCrossProductToTargetsInPlace(
         data[originIndex].x,
         data[originIndex].y,
@@ -241,13 +201,7 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
    * @param z z coordinate
    */
   public pushXYZ(x?: number, y?: number, z?: number): void {
-    this.data.push(
-      Point3d.create(
-        x === undefined ? 0.0 : x,
-        y === undefined ? 0.0 : y,
-        z === undefined ? 0.0 : z
-      )
-    );
+    this.data.push(Point3d.create(x === undefined ? 0.0 : x, y === undefined ? 0.0 : y, z === undefined ? 0.0 : z));
   }
   /** Extract (copy) the final point */
   public back(result?: Point3d): Point3d | undefined {
@@ -280,10 +234,7 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
    * @param index0 first point index
    * @param index1 second point index
    */
-  public distanceSquaredIndexIndex(
-    index0: number,
-    index1: number
-  ): number | undefined {
+  public distanceSquaredIndexIndex(index0: number, index1: number): number | undefined {
     const n = this.data.length;
     if (index0 >= 0 && index0 < n && index1 >= 0 && index1 < n) {
       return this.data[index0].distanceSquared(this.data[index1]);
@@ -295,10 +246,7 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
    * @param index0 first point index
    * @param index1 second point index
    */
-  public distanceIndexIndex(
-    index0: number,
-    index1: number
-  ): number | undefined {
+  public distanceIndexIndex(index0: number, index1: number): number | undefined {
     const n = this.data.length;
     if (index0 >= 0 && index0 < n && index1 >= 0 && index1 < n) {
       return this.data[index0].distance(this.data[index1]);

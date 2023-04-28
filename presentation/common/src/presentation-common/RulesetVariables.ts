@@ -36,26 +36,13 @@ export enum VariableValueTypes {
  * Union of all supported variable value types
  * @public
  */
-export type VariableValue =
-  | boolean
-  | string
-  | number
-  | number[]
-  | Id64String
-  | Id64String[];
+export type VariableValue = boolean | string | number | number[] | Id64String | Id64String[];
 
 /**
  * JSON representation of [[VariableValue]]
  * @public
  */
-export type VariableValueJSON =
-  | boolean
-  | string
-  | number
-  | number[]
-  | Id64String
-  | Id64String[]
-  | CompressedId64Set;
+export type VariableValueJSON = boolean | string | number | number[] | Id64String | Id64String[] | CompressedId64Set;
 
 /**
  * Base data structure for representing ruleset variables.

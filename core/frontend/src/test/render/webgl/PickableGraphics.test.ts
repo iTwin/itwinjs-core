@@ -4,13 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Point3d, Vector3d } from "@itwin/core-geometry";
-import {
-  ColorDef,
-  EmptyLocalization,
-  Feature,
-  GeometryClass,
-  RenderMode,
-} from "@itwin/core-common";
+import { ColorDef, EmptyLocalization, Feature, GeometryClass, RenderMode } from "@itwin/core-common";
 import { IModelConnection } from "../../../IModelConnection";
 import { ScreenViewport } from "../../../Viewport";
 import { DecorateContext } from "../../../ViewContext";
@@ -35,11 +29,7 @@ describe("Pickable graphic", () => {
   });
 
   beforeEach(() => {
-    const view = SpatialViewState.createBlank(
-      imodel,
-      new Point3d(),
-      new Vector3d(1, 1, 1)
-    );
+    const view = SpatialViewState.createBlank(imodel, new Point3d(), new Vector3d(1, 1, 1));
     view.viewFlags = view.viewFlags.copy({
       acsTriad: false,
       grid: false,
@@ -79,10 +69,7 @@ describe("Pickable graphic", () => {
       color: ColorDef.red,
       pickable: { id: "0x123", locateOnly: false },
     });
-    expectColors(viewport, [
-      dec.color,
-      viewport.view.displayStyle.backgroundColor,
-    ]);
+    expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]);
     expect(dec.pickable).to.not.be.undefined;
     expectIds([dec.pickable!.id]);
   }).timeout(20000); // macOS is slow.
@@ -123,9 +110,7 @@ describe("Pickable graphic", () => {
         ]);
 
         builder.setSymbology(rightColor, rightColor, 1);
-        builder.activateFeature(
-          new Feature(rightId, undefined, GeometryClass.Construction)
-        );
+        builder.activateFeature(new Feature(rightId, undefined, GeometryClass.Construction));
         builder.addShape([
           new Point3d(0, 0, 0),
           new Point3d(0.5, 0, 0),

@@ -14,9 +14,7 @@ describe("Learning Snippets", () => {
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile(
-      "assets/datasets/Properties_60InstancesWithUrl2.ibim"
-    );
+    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {
@@ -58,9 +56,7 @@ describe("Learning Snippets", () => {
         });
 
         expect(content!.contentSet.length).to.eq(1);
-        expect(content!.contentSet[0].primaryKeys[0].className).to.eq(
-          "BisCore:PhysicalModel"
-        );
+        expect(content!.contentSet[0].primaryKeys[0].className).to.eq("BisCore:PhysicalModel");
       });
 
       it("uses `excludedClasses` attribute", async () => {
@@ -100,9 +96,7 @@ describe("Learning Snippets", () => {
 
         expect(content!.contentSet)
           .to.have.lengthOf(7)
-          .and.not.containSubset([
-            { classInfo: { name: "BisCore:PhysicalModel" } },
-          ]);
+          .and.not.containSubset([{ classInfo: { name: "BisCore:PhysicalModel" } }]);
       });
 
       it("uses `handlePropertiesPolymorphically` attribute", async () => {

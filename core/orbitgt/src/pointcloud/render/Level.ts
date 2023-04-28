@@ -48,12 +48,7 @@ export class Level {
    * @param tileGrid the grid of the tiles.
    * @param blockList the list of blocks.
    */
-  public constructor(
-    index: int32,
-    blockGrid: Grid,
-    tileGrid: Grid,
-    blockList: Array<Block>
-  ) {
+  public constructor(index: int32, blockGrid: Grid, tileGrid: Grid, blockList: Array<Block>) {
     /* Store the parameters */
     this._index = index;
     this._key = "L" + index;
@@ -70,8 +65,7 @@ export class Level {
     this._blockList = blockList;
     /* Map the blocks */
     this._blockMap = new StringMap<Block>();
-    for (let block of this._blockList)
-      this._blockMap.set(block.getBlockIndex().gridIndex.getKey(), block);
+    for (let block of this._blockList) this._blockMap.set(block.getBlockIndex().gridIndex.getKey(), block);
   }
 
   /**
@@ -128,8 +122,7 @@ export class Level {
    * @return the block.
    */
   public findBlock(blockIndex: BlockIndex): Block {
-    for (let block of this._blockList)
-      if (block.getBlockIndex().same(blockIndex)) return block;
+    for (let block of this._blockList) if (block.getBlockIndex().same(blockIndex)) return block;
     return null;
   }
 

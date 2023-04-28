@@ -7,18 +7,8 @@
  */
 
 import { BentleyStatus } from "@itwin/core-bentley";
-import {
-  IModelError,
-  IpcSocket,
-  RpcInterface,
-  RpcInterfaceDefinition,
-  RpcProtocol,
-} from "@itwin/core-common";
-import {
-  ElectronIpcTransport,
-  initializeIpc,
-  IpcTransportMessage,
-} from "./ElectronIpcTransport";
+import { IModelError, IpcSocket, RpcInterface, RpcInterfaceDefinition, RpcProtocol } from "@itwin/core-common";
+import { ElectronIpcTransport, initializeIpc, IpcTransportMessage } from "./ElectronIpcTransport";
 import { ElectronRpcConfiguration } from "./ElectronRpcManager";
 import { ElectronRpcRequest } from "./ElectronRpcRequest";
 
@@ -41,50 +31,32 @@ export class ElectronRpcProtocol extends RpcProtocol {
   public requests: Map<string, ElectronRpcRequest> = new Map();
 
   /** @internal */
-  public readonly transport: ElectronIpcTransport<
-    IpcTransportMessage,
-    IpcTransportMessage
-  >;
+  public readonly transport: ElectronIpcTransport<IpcTransportMessage, IpcTransportMessage>;
 
   /** Constructs an Electron protocol. */
-  public constructor(
-    configuration: ElectronRpcConfiguration,
-    ipcSocket: IpcSocket
-  ) {
+  public constructor(configuration: ElectronRpcConfiguration, ipcSocket: IpcSocket) {
     super(configuration);
     this.ipcSocket = ipcSocket;
     this.transport = initializeIpc(this);
   }
 
   /** @internal */
-  public override onRpcClientInitialized(
-    definition: RpcInterfaceDefinition,
-    _client: RpcInterface
-  ): void {
+  public override onRpcClientInitialized(definition: RpcInterfaceDefinition, _client: RpcInterface): void {
     this.registerInterface(definition);
   }
 
   /** @internal */
-  public override onRpcImplInitialized(
-    definition: RpcInterfaceDefinition,
-    _impl: RpcInterface
-  ): void {
+  public override onRpcImplInitialized(definition: RpcInterfaceDefinition, _impl: RpcInterface): void {
     this.registerInterface(definition);
   }
 
   /** @internal */
-  public override onRpcClientTerminated(
-    definition: RpcInterfaceDefinition,
-    _client: RpcInterface
-  ): void {
+  public override onRpcClientTerminated(definition: RpcInterfaceDefinition, _client: RpcInterface): void {
     this.purgeInterface(definition);
   }
 
   /** @internal */
-  public override onRpcImplTerminated(
-    definition: RpcInterfaceDefinition,
-    _impl: RpcInterface
-  ): void {
+  public override onRpcImplTerminated(definition: RpcInterfaceDefinition, _impl: RpcInterface): void {
     this.purgeInterface(definition);
   }
 

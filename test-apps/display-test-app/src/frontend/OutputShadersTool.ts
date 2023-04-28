@@ -2,13 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import {
-  DebugShaderFile,
-  IModelApp,
-  NotifyMessageDetails,
-  OutputMessagePriority,
-  Tool,
-} from "@itwin/core-frontend";
+import { DebugShaderFile, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 
 // cspell:disable
@@ -292,12 +286,7 @@ echo:
 goto :EOF
 `;
 
-function skipThisShader(
-  entry: DebugShaderFile,
-  usedFlag: string,
-  typeFlag: string,
-  langFlag: string
-): boolean {
+function skipThisShader(entry: DebugShaderFile, usedFlag: string, typeFlag: string, langFlag: string): boolean {
   return (
     ("n" === usedFlag && entry.isUsed) ||
     ("u" === usedFlag && !entry.isUsed) ||
@@ -333,17 +322,12 @@ async function outputShaders(
     if (skipThisShader(entry, usedFlag, typeFlag, langFlag)) continue;
 
     fname = dir + entry.filename;
-    src =
-      (entry.isGL ? "" : `// ${entry.filename}  isUsed: ${entry.isUsed}\n`) +
-      entry.src;
+    src = (entry.isGL ? "" : `// ${entry.filename}  isUsed: ${entry.isUsed}\n`) + entry.src;
     await DtaRpcInterface.getClient().writeExternalFile(fname, src);
   }
 
   IModelApp.notifications.outputMessage(
-    new NotifyMessageDetails(
-      OutputMessagePriority.Info,
-      `Shaders output to directory ${dir}`
-    )
+    new NotifyMessageDetails(OutputMessagePriority.Info, `Shaders output to directory ${dir}`)
   );
 }
 
@@ -373,14 +357,10 @@ export class OutputShadersTool extends Tool {
       );
     }
     const dsf = IModelApp.renderSystem.debugControl?.debugShaderFiles;
-    if (undefined !== dsf && dsf.length > 0)
-      await outputShaders(dsf, usedFlag, typeFlag, langFlag, outputDir);
+    if (undefined !== dsf && dsf.length > 0) await outputShaders(dsf, usedFlag, typeFlag, langFlag, outputDir);
     else
       IModelApp.notifications.outputMessage(
-        new NotifyMessageDetails(
-          OutputMessagePriority.Info,
-          "No shaders (did you define IMJS_DEBUG_SHADERS?)"
-        )
+        new NotifyMessageDetails(OutputMessagePriority.Info, "No shaders (did you define IMJS_DEBUG_SHADERS?)")
       );
 
     return true;
@@ -398,36 +378,16 @@ export class OutputShadersTool extends Tool {
       if (1 === parts.length) {
         const lowerArgs = parts[0].toLowerCase();
         compile = lowerArgs.includes("c");
-        usedFlag = lowerArgs.includes("u")
-          ? "u"
-          : lowerArgs.includes("n")
-          ? "n"
-          : "";
-        typeFlag = lowerArgs.includes("v")
-          ? "v"
-          : lowerArgs.includes("f")
-          ? "f"
-          : "";
-        langFlag = lowerArgs.includes("g")
-          ? "g"
-          : lowerArgs.includes("h")
-          ? "h"
-          : "";
+        usedFlag = lowerArgs.includes("u") ? "u" : lowerArgs.includes("n") ? "n" : "";
+        typeFlag = lowerArgs.includes("v") ? "v" : lowerArgs.includes("f") ? "f" : "";
+        langFlag = lowerArgs.includes("g") ? "g" : lowerArgs.includes("h") ? "h" : "";
       } else if (2 === parts.length && "d" === parts[0].toLowerCase()) {
         outputDir = parts[1];
-        if (-1 !== outputDir.indexOf("\\") && !outputDir.endsWith("\\"))
-          outputDir += "\\";
-        else if (-1 !== outputDir.indexOf("/") && !outputDir.endsWith("/"))
-          outputDir += "/";
+        if (-1 !== outputDir.indexOf("\\") && !outputDir.endsWith("\\")) outputDir += "\\";
+        else if (-1 !== outputDir.indexOf("/") && !outputDir.endsWith("/")) outputDir += "/";
       }
     }
 
-    return this.run(
-      compile,
-      usedFlag ?? "",
-      typeFlag ?? "",
-      langFlag ?? "",
-      outputDir ?? "d:\\temp\\shaders\\"
-    );
+    return this.run(compile, usedFlag ?? "", typeFlag ?? "", langFlag ?? "", outputDir ?? "d:\\temp\\shaders\\");
   }
 }

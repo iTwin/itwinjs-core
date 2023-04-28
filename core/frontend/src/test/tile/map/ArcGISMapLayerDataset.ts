@@ -277,8 +277,7 @@ export class ArcGISMapLayerDataset {
     minScale: 0,
     maxScale: 0,
     units: "esriMeters",
-    supportedImageFormatTypes:
-      "PNG32,PNG24,PNG,JPG,DIB,TIFF,EMF,PS,PDF,GIF,SVG,SVGZ,BMP",
+    supportedImageFormatTypes: "PNG32,PNG24,PNG,JPG,DIB,TIFF,EMF,PS,PDF,GIF,SVG,SVGZ,BMP",
     documentInfo: {
       Title: "USA Topographic Map",
       Author: "Esri",
@@ -522,8 +521,7 @@ export class ArcGISMapLayerDataset {
       },
     },
     units: "esriMeters",
-    supportedImageFormatTypes:
-      "PNG32,PNG24,PNG,JPG,DIB,TIFF,EMF,PS,PDF,GIF,SVG,SVGZ,BMP",
+    supportedImageFormatTypes: "PNG32,PNG24,PNG,JPG,DIB,TIFF,EMF,PS,PDF,GIF,SVG,SVGZ,BMP",
     documentInfo: {
       Title: "P:\\HATCH\\GIS_MTL\\Lily\\PRO\\Lily_366363.aprx",
       Author: "",

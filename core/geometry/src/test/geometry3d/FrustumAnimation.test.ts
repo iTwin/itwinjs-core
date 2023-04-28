@@ -55,13 +55,7 @@ function cornersToLineString(corners: Point3d[]): LineString3d {
  * @param az z axis distance to front plane
  * @param fz frustum contraction from back to front.
  */
-function createFrustumPoints(
-  frame: Transform,
-  ax: number,
-  ay: number,
-  az: number,
-  fz: number
-): Point3d[] {
+function createFrustumPoints(frame: Transform, ax: number, ay: number, az: number, fz: number): Point3d[] {
   return [
     frame.multiplyXYZ(-ax, -ay, 0.0),
     frame.multiplyXYZ(ax, -ay, 0.0),
@@ -104,43 +98,15 @@ describe("FrustumAnimation", () => {
       ]) {
         const cornerA = createFrustumPoints(frame0, 4, 3, 2, 1);
         const cornerB = createFrustumPoints(frame1, 2, 4, 3, 0.5);
-        GeometryCoreTestIO.captureGeometry(
-          allGeometry,
-          cornersToLineString(cornerA).clone(),
-          dx,
-          dy,
-          0
-        );
-        GeometryCoreTestIO.captureGeometry(
-          allGeometry,
-          cornersToLineString(cornerB).clone(),
-          dx,
-          dy,
-          0
-        );
+        GeometryCoreTestIO.captureGeometry(allGeometry, cornersToLineString(cornerA).clone(), dx, dy, 0);
+        GeometryCoreTestIO.captureGeometry(allGeometry, cornersToLineString(cornerB).clone(), dx, dy, 0);
         const context = SmoothTransformBetweenFrusta.create(cornerA, cornerB);
         if (ck.testPointer(context)) {
           const g = 0.05;
           const dy1 = dy + 100;
-          for (const fraction of [
-            0.0,
-            g,
-            2.0 * g,
-            0.25,
-            0.5,
-            0.75,
-            1.0 - 2.0 * g,
-            1.0 - g,
-            1.0,
-          ]) {
+          for (const fraction of [0.0, g, 2.0 * g, 0.25, 0.5, 0.75, 1.0 - 2.0 * g, 1.0 - g, 1.0]) {
             const cornerF = context.fractionToWorldCorners(fraction);
-            GeometryCoreTestIO.captureGeometry(
-              allGeometry,
-              cornersToLineString(cornerF),
-              dx,
-              dy1,
-              0
-            );
+            GeometryCoreTestIO.captureGeometry(allGeometry, cornersToLineString(cornerF), dx, dy1, 0);
           }
         }
         dx += 100.0;
@@ -148,11 +114,7 @@ describe("FrustumAnimation", () => {
       dy += 400.0;
     }
 
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "Geometry3d",
-      "FrustumAnimation.General"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Geometry3d", "FrustumAnimation.General");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -171,10 +133,7 @@ describe("FrustumAnimation", () => {
         Point3d.create(-2, 2, -1),
         YawPitchRollAngles.createDegrees(10, 5, 30).toMatrix3d()
       ),
-      Transform.createOriginAndMatrix(
-        Point3d.create(5, 2, 0),
-        YawPitchRollAngles.createDegrees(2, 5, 5).toMatrix3d()
-      ),
+      Transform.createOriginAndMatrix(Point3d.create(5, 2, 0), YawPitchRollAngles.createDegrees(2, 5, 5).toMatrix3d()),
     ]) {
       dy = 0.0;
       for (const degrees of [10, 50, 80, 110]) {
@@ -183,93 +142,43 @@ describe("FrustumAnimation", () => {
           const e = 25.0;
           const rotation = Transform.createFixedPointAndMatrix(
             primaryOrigin,
-            Matrix3d.createRotationAroundVector(
-              axis,
-              Angle.createDegrees(degrees)
-            )!
+            Matrix3d.createRotationAroundVector(axis, Angle.createDegrees(degrees))!
           );
           for (const frustumScale of [1, 3, 8]) {
             // large scale should get rotation axis inside frustum !!!
-            const cornerA = createFrustumPoints(
-              frame0,
-              frustumScale * 4,
-              frustumScale * 3,
-              frustumScale * 2,
-              1
-            );
+            const cornerA = createFrustumPoints(frame0, frustumScale * 4, frustumScale * 3, frustumScale * 2, 1);
             const cornerB = rotation.multiplyPoint3dArray(cornerA);
             GeometryCoreTestIO.captureGeometry(
               allGeometry,
-              LineSegment3d.create(
-                primaryOrigin,
-                primaryOrigin.plusScaled(axis, axisLineScale)
-              ),
+              LineSegment3d.create(primaryOrigin, primaryOrigin.plusScaled(axis, axisLineScale)),
               dx,
               dy,
               0
             );
-            GeometryCoreTestIO.captureGeometry(
-              allGeometry,
-              cornersToLineString(cornerA).clone(),
-              dx,
-              dy,
-              0
-            );
-            GeometryCoreTestIO.captureGeometry(
-              allGeometry,
-              cornersToLineString(cornerB).clone(),
-              dx,
-              dy,
-              0
-            );
+            GeometryCoreTestIO.captureGeometry(allGeometry, cornersToLineString(cornerA).clone(), dx, dy, 0);
+            GeometryCoreTestIO.captureGeometry(allGeometry, cornersToLineString(cornerB).clone(), dx, dy, 0);
             // we expect that rotationalContext is the true rotation
-            const rotationalContext = SmoothTransformBetweenFrusta.create(
-              cornerA,
-              cornerB,
-              true
-            )!;
+            const rotationalContext = SmoothTransformBetweenFrusta.create(cornerA, cornerB, true)!;
             // this context slides the midpoint on a line (instead of on the simple rotation path)
-            const contextB = SmoothTransformBetweenFrusta.create(
-              cornerA,
-              cornerB,
-              false
-            )!;
+            const contextB = SmoothTransformBetweenFrusta.create(cornerA, cornerB, false)!;
             if (ck.testPointer(rotationalContext)) {
               const originA = rotationalContext.localToWorldA.getOrigin();
               const originB = rotationalContext.localToWorldB.getOrigin();
               const projectionA = ray.projectPointToRay(originA);
               const projectionB = ray.projectPointToRay(originB);
-              ck.testPoint3d(
-                originA,
-                projectionA,
-                "animation start is on true axis"
-              );
-              ck.testPoint3d(
-                originB,
-                projectionB,
-                "animation end is on true axis"
-              );
+              ck.testPoint3d(originA, projectionA, "animation start is on true axis");
+              ck.testPoint3d(originB, projectionB, "animation end is on true axis");
               const dy1 = dy + 500;
               GeometryCoreTestIO.captureGeometry(
                 allGeometry,
-                LineSegment3d.create(
-                  primaryOrigin,
-                  primaryOrigin.plusScaled(axis, axisLineScale)
-                ),
+                LineSegment3d.create(primaryOrigin, primaryOrigin.plusScaled(axis, axisLineScale)),
                 dx,
                 dy1,
                 0
               );
               for (const fraction of [0.0, 0.25, 0.5, 0.75, 1.0]) {
-                const cornerFA =
-                  rotationalContext.fractionToWorldCorners(fraction);
-                GeometryCoreTestIO.captureGeometry(
-                  allGeometry,
-                  cornersToLineString(cornerFA),
-                  dx,
-                  dy1,
-                  0
-                );
+                const cornerFA = rotationalContext.fractionToWorldCorners(fraction);
+                GeometryCoreTestIO.captureGeometry(allGeometry, cornersToLineString(cornerFA), dx, dy1, 0);
                 const cornerFB = contextB.fractionToWorldCorners(fraction);
                 GeometryCoreTestIO.captureGeometry(
                   allGeometry,
@@ -287,11 +196,7 @@ describe("FrustumAnimation", () => {
       dx += 2000.0;
     }
 
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "Geometry3d",
-      "FrustumAnimation.PureRotation"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Geometry3d", "FrustumAnimation.PureRotation");
     expect(ck.getNumErrors()).equals(0);
   });
 });
@@ -335,16 +240,7 @@ describe("FrustumSwing", () => {
     const pointB = Point3d.create(4, 2, 1);
     const a = 10.0;
     for (const f of [0.0, 0.4, 1.0]) {
-      const data = interpolateSwingingEye(
-        identity,
-        pointA,
-        a,
-        identity,
-        pointB,
-        a,
-        f,
-        identity
-      );
+      const data = interpolateSwingingEye(identity, pointA, a, identity, pointB, a, f, identity);
       ck.testPoint3d(pointA.interpolate(f, pointB), data.eye);
     }
     // GeometryCoreTestIO.saveGeometry(allGeometry, "FrustumSwing", "MoveLinear");

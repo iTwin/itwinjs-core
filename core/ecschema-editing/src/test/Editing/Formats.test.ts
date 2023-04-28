@@ -3,12 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  ECClassModifier,
-  Format,
-  SchemaContext,
-  SchemaKey,
-} from "@itwin/ecschema-metadata";
+import { ECClassModifier, Format, SchemaContext, SchemaKey } from "@itwin/ecschema-metadata";
 import { FormatTraits, FormatType } from "@itwin/core-quantity";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
@@ -25,35 +20,18 @@ describe("Formats tests", () => {
   });
 
   it("should create a valid Format", async () => {
-    const result = await testEditor.formats.create(
-      testKey,
-      "testFormat",
-      FormatType.Decimal,
-      "testLabel"
-    );
-    const format = (await testEditor.schemaContext.getSchemaItem(
-      result.itemKey!
-    )) as Format;
+    const result = await testEditor.formats.create(testKey, "testFormat", FormatType.Decimal, "testLabel");
+    const format = (await testEditor.schemaContext.getSchemaItem(result.itemKey!)) as Format;
     expect(format.fullName).to.eql("testSchema.testFormat");
     expect(format.label).to.eql("testLabel");
   });
 
   it("create Format with invalid type for units, throws", async () => {
-    const entityResult = await testEditor.entities.create(
-      testKey,
-      "testEntity",
-      ECClassModifier.None
-    );
-    const result = await testEditor.formats.create(
-      testKey,
-      "testFormat",
-      FormatType.Decimal,
-      "testLabel",
-      [entityResult.itemKey!]
-    );
-    expect(result.errorMessage).to.equal(
-      "testSchema.testEntity is not of type Unit or InvertedUnit."
-    );
+    const entityResult = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None);
+    const result = await testEditor.formats.create(testKey, "testFormat", FormatType.Decimal, "testLabel", [
+      entityResult.itemKey!,
+    ]);
+    expect(result.errorMessage).to.equal("testSchema.testEntity is not of type Unit or InvertedUnit.");
   });
 
   it("should create a valid Format from FormatProps", async () => {
@@ -73,13 +51,8 @@ describe("Formats tests", () => {
       stationSeparator: "",
     };
 
-    const result = await testEditor.formats.createFromProps(
-      testKey,
-      formatProps
-    );
-    const format = (await testEditor.schemaContext.getSchemaItem(
-      result.itemKey!
-    )) as Format;
+    const result = await testEditor.formats.createFromProps(testKey, formatProps);
+    const format = (await testEditor.schemaContext.getSchemaItem(result.itemKey!)) as Format;
     expect(format?.fullName).to.eql("testSchema.testFormat");
     expect(format?.decimalSeparator).to.eql(",");
     expect(format?.stationOffsetSize).to.eql(4);

@@ -3,19 +3,12 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-  Project as ITwin,
-  ProjectsAccessClient,
-  ProjectsSearchableProperty,
-} from "@itwin/projects-client";
+import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { AccessToken } from "@itwin/core-bentley";
 
 /** An implementation of TestITwin backed by an iTwin project */
 export class ITwinAccessClientWrapper {
-  public async getITwinByName(
-    accessToken: AccessToken,
-    name: string
-  ): Promise<ITwin> {
+  public async getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin> {
     const client = new ProjectsAccessClient();
     const iTwinList: ITwin[] = await client.getAll(accessToken, {
       search: {
@@ -25,10 +18,8 @@ export class ITwinAccessClientWrapper {
       },
     });
 
-    if (iTwinList.length === 0)
-      throw new Error(`ITwin ${name} was not found for the user.`);
-    else if (iTwinList.length > 1)
-      throw new Error(`Multiple iTwins named ${name} were found for the user.`);
+    if (iTwinList.length === 0) throw new Error(`ITwin ${name} was not found for the user.`);
+    else if (iTwinList.length > 1) throw new Error(`Multiple iTwins named ${name} were found for the user.`);
 
     return iTwinList[0];
   }

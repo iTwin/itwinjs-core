@@ -13,14 +13,8 @@ import { loggerCategory } from "../appui-abstract/utils/misc";
 import { UiDataProvider } from "../appui-abstract/dialogs/UiDataProvider";
 import { StandardTypeNames } from "../appui-abstract/properties/StandardTypeNames";
 import { DialogLayoutDataProvider } from "../appui-abstract/dialogs/UiLayoutDataProvider";
-import {
-  DialogItem,
-  DialogPropertySyncItem,
-} from "../appui-abstract/dialogs/DialogItem";
-import {
-  DisplayMessageType,
-  MessagePresenter,
-} from "../appui-abstract/notification/MessagePresenter";
+import { DialogItem, DialogPropertySyncItem } from "../appui-abstract/dialogs/DialogItem";
+import { DisplayMessageType, MessagePresenter } from "../appui-abstract/notification/MessagePresenter";
 import { MessageSeverity } from "../appui-abstract/notification/MessageSeverity";
 
 describe("UiAdmin", () => {
@@ -90,13 +84,7 @@ describe("UiAdmin", () => {
     ];
     const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
 
-    expect(
-      uiAdmin.showContextMenu(
-        menuItemProps,
-        uiAdmin.createXAndY(150, 250),
-        doc.documentElement
-      )
-    ).to.be.false;
+    expect(uiAdmin.showContextMenu(menuItemProps, uiAdmin.createXAndY(150, 250), doc.documentElement)).to.be.false;
   });
 
   it("showToolbar should return false by default", () => {
@@ -165,21 +153,9 @@ describe("UiAdmin", () => {
     ];
     const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
 
-    expect(
-      uiAdmin.showMenuButton(
-        "test",
-        menuItemProps,
-        uiAdmin.createXAndY(150, 250),
-        doc.documentElement
-      )
-    ).to.be.false;
-    expect(
-      uiAdmin.showMenuButton(
-        "test",
-        menuItemProps,
-        uiAdmin.createXAndY(150, 250)
-      )
-    ).to.be.false;
+    expect(uiAdmin.showMenuButton("test", menuItemProps, uiAdmin.createXAndY(150, 250), doc.documentElement)).to.be
+      .false;
+    expect(uiAdmin.showMenuButton("test", menuItemProps, uiAdmin.createXAndY(150, 250))).to.be.false;
     expect(uiAdmin.hideMenuButton("test")).to.be.false;
   });
 
@@ -198,15 +174,8 @@ describe("UiAdmin", () => {
         doc.documentElement
       )
     ).to.be.false;
-    expect(
-      uiAdmin.showCalculator(
-        100,
-        "icon-placeholder",
-        uiAdmin.createXAndY(150, 250),
-        spyCommit,
-        spyCancel
-      )
-    ).to.be.false;
+    expect(uiAdmin.showCalculator(100, "icon-placeholder", uiAdmin.createXAndY(150, 250), spyCommit, spyCancel)).to.be
+      .false;
     expect(uiAdmin.hideCalculator()).to.be.false;
   });
 
@@ -215,23 +184,9 @@ describe("UiAdmin", () => {
     const spyCommit = sinon.fake();
     const spyCancel = sinon.fake();
 
-    expect(
-      uiAdmin.showAngleEditor(
-        100,
-        uiAdmin.createXAndY(150, 250),
-        spyCommit,
-        spyCancel,
-        doc.documentElement
-      )
-    ).to.be.false;
-    expect(
-      uiAdmin.showAngleEditor(
-        100,
-        uiAdmin.createXAndY(150, 250),
-        spyCommit,
-        spyCancel
-      )
-    ).to.be.false;
+    expect(uiAdmin.showAngleEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel, doc.documentElement)).to.be
+      .false;
+    expect(uiAdmin.showAngleEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel)).to.be.false;
     expect(uiAdmin.hideInputEditor()).to.be.false;
   });
 
@@ -240,23 +195,9 @@ describe("UiAdmin", () => {
     const spyCommit = sinon.fake();
     const spyCancel = sinon.fake();
 
-    expect(
-      uiAdmin.showLengthEditor(
-        100,
-        uiAdmin.createXAndY(150, 250),
-        spyCommit,
-        spyCancel,
-        doc.documentElement
-      )
-    ).to.be.false;
-    expect(
-      uiAdmin.showLengthEditor(
-        100,
-        uiAdmin.createXAndY(150, 250),
-        spyCommit,
-        spyCancel
-      )
-    ).to.be.false;
+    expect(uiAdmin.showLengthEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel, doc.documentElement)).to
+      .be.false;
+    expect(uiAdmin.showLengthEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel)).to.be.false;
     expect(uiAdmin.hideInputEditor()).to.be.false;
   });
 
@@ -265,23 +206,9 @@ describe("UiAdmin", () => {
     const spyCommit = sinon.fake();
     const spyCancel = sinon.fake();
 
-    expect(
-      uiAdmin.showHeightEditor(
-        100,
-        uiAdmin.createXAndY(150, 250),
-        spyCommit,
-        spyCancel,
-        doc.documentElement
-      )
-    ).to.be.false;
-    expect(
-      uiAdmin.showHeightEditor(
-        100,
-        uiAdmin.createXAndY(150, 250),
-        spyCommit,
-        spyCancel
-      )
-    ).to.be.false;
+    expect(uiAdmin.showHeightEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel, doc.documentElement)).to
+      .be.false;
+    expect(uiAdmin.showHeightEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel)).to.be.false;
     expect(uiAdmin.hideInputEditor()).to.be.false;
   });
 
@@ -305,15 +232,8 @@ describe("UiAdmin", () => {
         doc.documentElement
       )
     ).to.be.false;
-    expect(
-      uiAdmin.showInputEditor(
-        100,
-        propertyDescription,
-        uiAdmin.createXAndY(150, 250),
-        spyCommit,
-        spyCancel
-      )
-    ).to.be.false;
+    expect(uiAdmin.showInputEditor(100, propertyDescription, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel)).to.be
+      .false;
     expect(uiAdmin.hideInputEditor()).to.be.false;
   });
 
@@ -439,9 +359,7 @@ describe("UiAdmin", () => {
   it("openDialog should return false by default", () => {
     class TestDialogDynamicUiDataProvider extends DialogLayoutDataProvider {
       /** Applies change of a single property - this is the default method used when property editors are dynamically generated. */
-      public override applyUiPropertyChange = (
-        _updatedValue: DialogPropertySyncItem
-      ): void => {};
+      public override applyUiPropertyChange = (_updatedValue: DialogPropertySyncItem): void => {};
 
       /** Called by UI to request available properties that can be bound to user supplied UI components (See Tool1UiProvider for example). */
       public override supplyDialogItems(): DialogItem[] | undefined {
@@ -449,14 +367,7 @@ describe("UiAdmin", () => {
       }
     }
 
-    expect(
-      uiAdmin.openDialog(
-        new TestDialogDynamicUiDataProvider(),
-        "test-title",
-        true,
-        "test-modal"
-      )
-    ).to.be.false;
+    expect(uiAdmin.openDialog(new TestDialogDynamicUiDataProvider(), "test-title", true, "test-modal")).to.be.false;
     expect(uiAdmin.closeDialog("test-modal")).to.be.false;
   });
 });

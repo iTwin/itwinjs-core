@@ -3,11 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-  RpcProtocolEvent,
-  RpcRequest,
-  RpcRequestFulfillment,
-} from "@itwin/core-common";
+import { RpcProtocolEvent, RpcRequest, RpcRequestFulfillment } from "@itwin/core-common";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 
 /* eslint-disable deprecation/deprecation */
@@ -18,8 +14,7 @@ export class ElectronRpcRequest extends RpcRequest {
   private _fulfillment: RpcRequestFulfillment | undefined = undefined;
 
   /** Convenience access to the protocol of this request. */
-  public override readonly protocol: ElectronRpcProtocol = this.client
-    .configuration.protocol as any;
+  public override readonly protocol: ElectronRpcProtocol = this.client.configuration.protocol as any;
 
   /** Sends the request. */
   protected async send() {
@@ -28,10 +23,7 @@ export class ElectronRpcRequest extends RpcRequest {
       const request = await this.protocol.serialize(this);
       this.protocol.transport.sendRequest(request);
     } catch (e) {
-      this.protocol.events.raiseEvent(
-        RpcProtocolEvent.ConnectionErrorReceived,
-        this
-      );
+      this.protocol.events.raiseEvent(RpcProtocolEvent.ConnectionErrorReceived, this);
     }
 
     return new Promise<number>((resolve) => {

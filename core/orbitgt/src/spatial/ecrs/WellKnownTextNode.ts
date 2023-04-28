@@ -91,9 +91,7 @@ export class WellKnownTextNode {
    */
   public getArgumentsByName(name: string): AList<WellKnownTextNode> {
     let list: AList<WellKnownTextNode> = new AList<WellKnownTextNode>();
-    for (let argument of this._argumentList)
-      if (Strings.equalsIgnoreCase(argument.getName(), name))
-        list.add(argument);
+    for (let argument of this._argumentList) if (Strings.equalsIgnoreCase(argument.getName(), name)) list.add(argument);
     return list;
   }
 
@@ -114,11 +112,7 @@ export class WellKnownTextNode {
    */
   public static parse(expression: string): WellKnownTextNode {
     /* Literal ? */
-    if (
-      Strings.getLength(expression) >= 2 &&
-      Strings.startsWith(expression, '"') &&
-      Strings.endsWith(expression, '"')
-    )
+    if (Strings.getLength(expression) >= 2 && Strings.startsWith(expression, '"') && Strings.endsWith(expression, '"'))
       return new WellKnownTextNode(expression, null);
     /* Get the start of the argument list */
     let index1: int32 = Strings.indexOf(expression, "[");
@@ -129,20 +123,10 @@ export class WellKnownTextNode {
     let index2: int32 = Strings.lastIndexOf(expression, "]");
     if (index2 < 0) index2 = Strings.lastIndexOf(expression, ")");
     /* Check */
-    ASystem.assertNot(
-      index2 < 0,
-      "Invalid well-known-text '" + expression + "' (missing closing bracket)"
-    );
-    ASystem.assertNot(
-      index2 < index1,
-      "Invalid well-known-text '" + expression + "' (wrong bracket sequence)"
-    );
+    ASystem.assertNot(index2 < 0, "Invalid well-known-text '" + expression + "' (missing closing bracket)");
+    ASystem.assertNot(index2 < index1, "Invalid well-known-text '" + expression + "' (wrong bracket sequence)");
     /* Get the argument list */
-    let argumentList: string = Strings.substring(
-      expression,
-      index1 + 1,
-      index2
-    );
+    let argumentList: string = Strings.substring(expression, index1 + 1, index2);
     let arguments1: AList<string> = Strings.splitAdvanced(
       argumentList,
       "," /*separators*/,

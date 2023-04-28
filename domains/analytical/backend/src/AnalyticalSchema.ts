@@ -7,12 +7,7 @@
  */
 
 import * as path from "path";
-import {
-  ClassRegistry,
-  KnownLocations,
-  Schema,
-  Schemas,
-} from "@itwin/core-backend";
+import { ClassRegistry, KnownLocations, Schema, Schemas } from "@itwin/core-backend";
 import * as elementsModule from "./AnalyticalElements";
 import * as modelsModule from "./AnalyticalModels";
 import * as relationshipsModule from "./AnalyticalRelationships";
@@ -25,12 +20,7 @@ export class AnalyticalSchema extends Schema {
     return "Analytical";
   }
   public static get schemaFilePath(): string {
-    return path.join(
-      KnownLocations.nativeAssetsDir,
-      "ECSchemas",
-      "Domain",
-      "Analytical.ecschema.xml"
-    );
+    return path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Domain", "Analytical.ecschema.xml");
   }
   public static registerSchema() {
     if (this !== Schemas.getRegisteredSchema(this.schemaName)) {

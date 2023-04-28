@@ -7,10 +7,7 @@
  * @module Solid
  */
 
-import {
-  CurveAndSurfaceLocationDetail,
-  UVSurfaceLocationDetail,
-} from "../bspline/SurfaceLocationDetail";
+import { CurveAndSurfaceLocationDetail, UVSurfaceLocationDetail } from "../bspline/SurfaceLocationDetail";
 import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { Geometry } from "../Geometry";
 import { SmallSystem } from "../numerics/Polynomials";
@@ -65,12 +62,7 @@ export class BilinearPatch implements UVSurface {
    * @param point10 Point at uv=0,1
    * @param point11 Point at uv=11
    */
-  public constructor(
-    point00: Point3d,
-    point10: Point3d,
-    point01: Point3d,
-    point11: Point3d
-  ) {
+  public constructor(point00: Point3d, point10: Point3d, point01: Point3d, point11: Point3d) {
     this.point00 = point00;
     this.point10 = point10;
     this.point01 = point01;
@@ -82,18 +74,8 @@ export class BilinearPatch implements UVSurface {
    * @param point10 Point at uv=0,1
    * @param point11 Point at uv=11
    */
-  public static create(
-    point00: Point3d,
-    point10: Point3d,
-    point01: Point3d,
-    point11: Point3d
-  ) {
-    return new BilinearPatch(
-      point00.clone(),
-      point10.clone(),
-      point01.clone(),
-      point11.clone()
-    );
+  public static create(point00: Point3d, point10: Point3d, point01: Point3d, point11: Point3d) {
+    return new BilinearPatch(point00.clone(), point10.clone(), point01.clone(), point11.clone());
   }
 
   /** create a patch with from xyz values of the 4 corners
@@ -122,12 +104,7 @@ export class BilinearPatch implements UVSurface {
 
   /** return a clone with same coordinates */
   public clone(): BilinearPatch {
-    return new BilinearPatch(
-      this.point00.clone(),
-      this.point10.clone(),
-      this.point01.clone(),
-      this.point11.clone()
-    );
+    return new BilinearPatch(this.point00.clone(), this.point10.clone(), this.point01.clone(), this.point11.clone());
   }
   /** test equality of the 4 points */
   public isAlmostEqual(other: BilinearPatch): boolean {
@@ -180,18 +157,9 @@ export class BilinearPatch implements UVSurface {
     const f01 = (1.0 - u) * v;
     const f11 = u * v;
     return Point3d.create(
-      f00 * this.point00.x +
-        f10 * this.point10.x +
-        f01 * this.point01.x +
-        f11 * this.point11.x,
-      f00 * this.point00.y +
-        f10 * this.point10.y +
-        f01 * this.point01.y +
-        f11 * this.point11.y,
-      f00 * this.point00.z +
-        f10 * this.point10.z +
-        f01 * this.point01.z +
-        f11 * this.point11.z,
+      f00 * this.point00.x + f10 * this.point10.x + f01 * this.point01.x + f11 * this.point11.x,
+      f00 * this.point00.y + f10 * this.point10.y + f01 * this.point01.y + f11 * this.point11.y,
+      f00 * this.point00.z + f10 * this.point10.z + f01 * this.point01.z + f11 * this.point11.z,
       result
     );
   }
@@ -211,42 +179,22 @@ export class BilinearPatch implements UVSurface {
     const f01 = u0 * v;
     const f11 = u * v;
     return Plane3dByOriginAndVectors.createOriginAndVectorsXYZ(
-      f00 * this.point00.x +
-        f10 * this.point10.x +
-        f01 * this.point01.x +
-        f11 * this.point11.x,
-      f00 * this.point00.y +
-        f10 * this.point10.y +
-        f01 * this.point01.y +
-        f11 * this.point11.y,
-      f00 * this.point00.z +
-        f10 * this.point10.z +
-        f01 * this.point01.z +
-        f11 * this.point11.z,
+      f00 * this.point00.x + f10 * this.point10.x + f01 * this.point01.x + f11 * this.point11.x,
+      f00 * this.point00.y + f10 * this.point10.y + f01 * this.point01.y + f11 * this.point11.y,
+      f00 * this.point00.z + f10 * this.point10.z + f01 * this.point01.z + f11 * this.point11.z,
       // u derivative ..
-      v0 * (this.point10.x - this.point00.x) +
-        v * (this.point11.x - this.point01.x),
-      v0 * (this.point10.y - this.point00.y) +
-        v * (this.point11.y - this.point01.y),
-      v0 * (this.point10.z - this.point00.z) +
-        v * (this.point11.z - this.point01.z),
+      v0 * (this.point10.x - this.point00.x) + v * (this.point11.x - this.point01.x),
+      v0 * (this.point10.y - this.point00.y) + v * (this.point11.y - this.point01.y),
+      v0 * (this.point10.z - this.point00.z) + v * (this.point11.z - this.point01.z),
       // v derivative ..
-      u0 * (this.point01.x - this.point00.x) +
-        u * (this.point11.x - this.point10.x),
-      u0 * (this.point01.y - this.point00.y) +
-        u * (this.point11.y - this.point10.y),
-      u0 * (this.point01.z - this.point00.z) +
-        u * (this.point11.z - this.point10.z),
+      u0 * (this.point01.x - this.point00.x) + u * (this.point11.x - this.point10.x),
+      u0 * (this.point01.y - this.point00.y) + u * (this.point11.y - this.point10.y),
+      u0 * (this.point01.z - this.point00.z) + u * (this.point11.z - this.point10.z),
       result
     );
   }
   /** if data[ib][pivotColumn] is larger (abs) than data[ia][pivotColumn] swap the iA and iB arrays */
-  private static conditionalPivot(
-    pivotColumn: number,
-    data: Float64Array[],
-    iA: number,
-    iB: number
-  ) {
+  private static conditionalPivot(pivotColumn: number, data: Float64Array[], iA: number, iB: number) {
     if (Math.abs(data[iB][pivotColumn]) > Math.abs(data[iA][pivotColumn])) {
       const q = data[iA];
       data[iA] = data[iB];
@@ -269,27 +217,9 @@ export class BilinearPatch implements UVSurface {
     //    `0 = -ray.origin.x * t + (point00.x - ray.origin.x) + u * vectorU.x + v * vectorV.x + u * v * vectorW.x`
     // (and that particular equation is invoked to isolate t when uv is known)
     const coffs = [
-      new Float64Array([
-        -ray.direction.x,
-        this.point00.x - ray.origin.x,
-        vectorU.x,
-        vectorV.x,
-        vectorW.x,
-      ]),
-      new Float64Array([
-        -ray.direction.y,
-        this.point00.y - ray.origin.y,
-        vectorU.y,
-        vectorV.y,
-        vectorW.y,
-      ]),
-      new Float64Array([
-        -ray.direction.z,
-        this.point00.z - ray.origin.z,
-        vectorU.z,
-        vectorV.z,
-        vectorW.z,
-      ]),
+      new Float64Array([-ray.direction.x, this.point00.x - ray.origin.x, vectorU.x, vectorV.x, vectorW.x]),
+      new Float64Array([-ray.direction.y, this.point00.y - ray.origin.y, vectorU.y, vectorV.y, vectorW.y]),
+      new Float64Array([-ray.direction.z, this.point00.z - ray.origin.z, vectorU.z, vectorV.z, vectorW.z]),
     ];
     // bring the largest ray.direction coefficient to the 0 equation.
     BilinearPatch.conditionalPivot(0, coffs, 0, 1);
@@ -309,12 +239,7 @@ export class BilinearPatch implements UVSurface {
     if (uvArray) {
       const result: CurveAndSurfaceLocationDetail[] = [];
       for (const uv of uvArray) {
-        const t =
-          -(
-            coffs[0][1] +
-            coffs[0][2] * uv.x +
-            (coffs[0][3] + coffs[0][4] * uv.x) * uv.y
-          ) / coffs[0][0];
+        const t = -(coffs[0][1] + coffs[0][2] * uv.x + (coffs[0][3] + coffs[0][4] * uv.x) * uv.y) / coffs[0][0];
         const point = ray.fractionToPoint(t);
         result.push(
           new CurveAndSurfaceLocationDetail(
@@ -331,18 +256,12 @@ export class BilinearPatch implements UVSurface {
    * Returns the larger of the u-direction edge lengths at v=0 and v=1
    */
   public maxUEdgeLength(): number {
-    return Geometry.maxXY(
-      this.point00.distance(this.point10),
-      this.point01.distance(this.point11)
-    );
+    return Geometry.maxXY(this.point00.distance(this.point10), this.point01.distance(this.point11));
   }
   /**
    * Returns the larger of the v-direction edge lengths at u=0 and u=1
    */
   public maxVEdgeLength(): number {
-    return Geometry.maxXY(
-      this.point00.distance(this.point01),
-      this.point10.distance(this.point11)
-    );
+    return Geometry.maxXY(this.point00.distance(this.point01), this.point10.distance(this.point11));
   }
 }

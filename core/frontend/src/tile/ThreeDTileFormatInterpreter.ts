@@ -3,27 +3,11 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-  JsonUtils,
-  Logger,
-  LoggingMetaData,
-  RealityDataStatus,
-} from "@itwin/core-bentley";
+import { JsonUtils, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
 import { Cartographic, EcefLocation } from "@itwin/core-common";
-import {
-  Matrix3d,
-  Point3d,
-  Range3d,
-  Transform,
-  Vector3d,
-  YawPitchRollAngles,
-} from "@itwin/core-geometry";
+import { Matrix3d, Point3d, Range3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
-import {
-  PublisherProductInfo,
-  RealityDataError,
-  SpatialLocationAndExtents,
-} from "../RealityDataSource";
+import { PublisherProductInfo, RealityDataError, SpatialLocationAndExtents } from "../RealityDataSource";
 
 const loggerCategory: string = FrontendLoggerCategory.RealityData;
 /** This interface provides information about 3dTile files for this reality data
@@ -45,18 +29,13 @@ export class ThreeDTileFormatInterpreter {
    * @throws [[RealityDataError]] if source is invalid or cannot be read
    * @internal
    */
-  public static getSpatialLocationAndExtents(
-    json: any
-  ): SpatialLocationAndExtents {
+  public static getSpatialLocationAndExtents(json: any): SpatialLocationAndExtents {
     const worldRange = new Range3d();
     let isGeolocated = true;
     let location: Cartographic | EcefLocation;
     Logger.logTrace(loggerCategory, "RealityData getSpatialLocationAndExtents");
     if (undefined === json?.root) {
-      Logger.logWarning(
-        loggerCategory,
-        `Error getSpatialLocationAndExtents - no root in json`
-      );
+      Logger.logWarning(loggerCategory, `Error getSpatialLocationAndExtents - no root in json`);
       // return first 1024 char from the json
       const getMetaData: LoggingMetaData = () => {
         return { json: JSON.stringify(json).substring(0, 1024) };
@@ -72,19 +51,10 @@ export class ThreeDTileFormatInterpreter {
       if (undefined !== json?.root?.boundingVolume?.region) {
         const region = JsonUtils.asArray(json.root.boundingVolume.region);
 
-        Logger.logTrace(
-          loggerCategory,
-          "RealityData json.root.boundingVolume.region",
-          () => ({ ...region })
-        );
+        Logger.logTrace(loggerCategory, "RealityData json.root.boundingVolume.region", () => ({ ...region }));
         if (undefined === region) {
-          Logger.logError(
-            loggerCategory,
-            `Error getSpatialLocationAndExtents - region undefined`
-          );
-          throw new TypeError(
-            "Unable to determine GeoLocation - no root Transform or Region on root."
-          );
+          Logger.logError(loggerCategory, `Error getSpatialLocationAndExtents - region undefined`);
+          throw new TypeError("Unable to determine GeoLocation - no root Transform or Region on root.");
         }
         const ecefLow = Cartographic.fromRadians({
           longitude: region[0],
@@ -103,27 +73,16 @@ export class ThreeDTileFormatInterpreter {
           height: (region[4] + region[5]) / 2.0,
         });
         location = cartoCenter;
-        const ecefLocation =
-          EcefLocation.createFromCartographicOrigin(cartoCenter);
+        const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter);
         // iModelDb.setEcefLocation(ecefLocation);
         const ecefToWorld = ecefLocation.getTransform().inverse()!;
-        worldRange.extendRange(
-          Range3d.fromJSON(ecefToWorld.multiplyRange(ecefRange))
-        );
+        worldRange.extendRange(Range3d.fromJSON(ecefToWorld.multiplyRange(ecefRange)));
       } else {
-        let worldToEcefTransform =
-          ThreeDTileFormatInterpreter.transformFromJson(json.root.transform);
+        let worldToEcefTransform = ThreeDTileFormatInterpreter.transformFromJson(json.root.transform);
 
-        Logger.logTrace(
-          loggerCategory,
-          "RealityData json.root.transform",
-          () => ({ ...worldToEcefTransform })
-        );
-        const range = ThreeDTileFormatInterpreter.rangeFromBoundingVolume(
-          json.root.boundingVolume
-        )!;
-        if (undefined === worldToEcefTransform)
-          worldToEcefTransform = Transform.createIdentity();
+        Logger.logTrace(loggerCategory, "RealityData json.root.transform", () => ({ ...worldToEcefTransform }));
+        const range = ThreeDTileFormatInterpreter.rangeFromBoundingVolume(json.root.boundingVolume)!;
+        if (undefined === worldToEcefTransform) worldToEcefTransform = Transform.createIdentity();
 
         const ecefRange = worldToEcefTransform.multiplyRange(range); // range in model -> range in ecef
         const ecefCenter = worldToEcefTransform.multiplyPoint3d(range.center); // range center in model -> range center in ecef
@@ -147,8 +106,7 @@ export class ThreeDTileFormatInterpreter {
           }));
         } else {
           let ecefLocation: EcefLocation;
-          const locationOrientation =
-            YawPitchRollAngles.tryFromTransform(worldToEcefTransform);
+          const locationOrientation = YawPitchRollAngles.tryFromTransform(worldToEcefTransform);
           // Fix Bug 445630: [RDV][Regression] Orientation of georeferenced Reality Mesh is wrong.
           // Use json.root.transform only if defined and not identity -> otherwise will use a transform computed from cartographic center.
           if (
@@ -160,40 +118,26 @@ export class ThreeDTileFormatInterpreter {
               origin: locationOrientation.origin,
               orientation: locationOrientation.angles.toJSON(),
             });
-          else
-            ecefLocation = EcefLocation.createFromCartographicOrigin(
-              cartoCenter!
-            );
+          else ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter!);
           location = ecefLocation;
-          Logger.logTrace(
-            loggerCategory,
-            "RealityData is worldToEcefTransform.matrix.isIdentity",
-            () => ({ isIdentity: worldToEcefTransform!.matrix.isIdentity })
-          );
+          Logger.logTrace(loggerCategory, "RealityData is worldToEcefTransform.matrix.isIdentity", () => ({
+            isIdentity: worldToEcefTransform!.matrix.isIdentity,
+          }));
           // iModelDb.setEcefLocation(ecefLocation);
           const ecefToWorld = ecefLocation.getTransform().inverse()!;
-          worldRange.extendRange(
-            Range3d.fromJSON(ecefToWorld.multiplyRange(ecefRange))
-          );
+          worldRange.extendRange(Range3d.fromJSON(ecefToWorld.multiplyRange(ecefRange)));
           Logger.logTrace(loggerCategory, "RealityData ecefToWorld", () => ({
             ...ecefToWorld,
           }));
         }
       }
     } catch (e) {
-      Logger.logWarning(
-        loggerCategory,
-        `Error getSpatialLocationAndExtents - cannot interpret json`
-      );
+      Logger.logWarning(loggerCategory, `Error getSpatialLocationAndExtents - cannot interpret json`);
       // return first 1024 char from the json
       const getMetaData: LoggingMetaData = () => {
         return { json: JSON.stringify(json).substring(0, 1024) };
       };
-      const error = new RealityDataError(
-        RealityDataStatus.InvalidData,
-        "Invalid or unknown data",
-        getMetaData
-      );
+      const error = new RealityDataError(RealityDataStatus.InvalidData, "Invalid or unknown data", getMetaData);
       throw error;
     }
 
@@ -210,18 +154,12 @@ export class ThreeDTileFormatInterpreter {
    * @returns information to identify the product and engine that create this reality data
    * @alpha
    */
-  public static getPublisherProductInfo(
-    rootDocjson: any
-  ): PublisherProductInfo {
+  public static getPublisherProductInfo(rootDocjson: any): PublisherProductInfo {
     const info: PublisherProductInfo = { product: "", engine: "", version: "" };
     if (rootDocjson && rootDocjson.root) {
       if (rootDocjson.root.SMPublisherInfo) {
-        info.product = rootDocjson.root.SMPublisherInfo.Product
-          ? rootDocjson.root.SMPublisherInfo.Product
-          : "";
-        info.engine = rootDocjson.root.SMPublisherInfo.Publisher
-          ? rootDocjson.root.SMPublisherInfo.Publisher
-          : "";
+        info.product = rootDocjson.root.SMPublisherInfo.Product ? rootDocjson.root.SMPublisherInfo.Product : "";
+        info.engine = rootDocjson.root.SMPublisherInfo.Publisher ? rootDocjson.root.SMPublisherInfo.Publisher : "";
         info.version = rootDocjson.root.SMPublisherInfo["Publisher Version"]
           ? rootDocjson.root.SMPublisherInfo["Publisher Version"]
           : "";
@@ -246,9 +184,7 @@ export class ThreeDTileFormatInterpreter {
    * @returns the range or undefined if cannot convert
    * @internal
    */
-  public static rangeFromBoundingVolume(
-    boundingVolume: any
-  ): Range3d | undefined {
+  public static rangeFromBoundingVolume(boundingVolume: any): Range3d | undefined {
     if (undefined === boundingVolume) return undefined;
     if (Array.isArray(boundingVolume.box)) {
       const box: number[] = boundingVolume.box;
@@ -260,16 +196,7 @@ export class ThreeDTileFormatInterpreter {
       for (let j = 0; j < 2; j++) {
         for (let k = 0; k < 2; k++) {
           for (let l = 0; l < 2; l++) {
-            corners.push(
-              center.plus3Scaled(
-                ux,
-                j ? -1.0 : 1.0,
-                uy,
-                k ? -1.0 : 1.0,
-                uz,
-                l ? -1.0 : 1.0
-              )
-            );
+            corners.push(center.plus3Scaled(ux, j ? -1.0 : 1.0, uy, k ? -1.0 : 1.0, uz, l ? -1.0 : 1.0));
           }
         }
       }
@@ -292,19 +219,14 @@ export class ThreeDTileFormatInterpreter {
   /** Convert a boundingVolume into a range
    * @internal
    */
-  public static maximumSizeFromGeometricTolerance(
-    range: Range3d,
-    geometricError: number
-  ): number {
+  public static maximumSizeFromGeometricTolerance(range: Range3d, geometricError: number): number {
     const minToleranceRatio = 0.5; // Nominally the error on screen size of a tile.  Increasing generally increases performance (fewer draw calls) at expense of higher load times.
     return (minToleranceRatio * range.diagonal().magnitude()) / geometricError;
   }
   /** Convert a boundingVolume into a range
    * @internal
    */
-  public static transformFromJson(
-    jTrans: number[] | undefined
-  ): Transform | undefined {
+  public static transformFromJson(jTrans: number[] | undefined): Transform | undefined {
     return jTrans === undefined
       ? undefined
       : Transform.createOriginAndMatrix(

@@ -39,13 +39,9 @@ export class SectionMarker extends Marker {
   /** A description displayed as part of the tooltip when this marker is clustered with other markers. */
   public readonly description: string;
   /** @internal */
-  public readonly onMouseEnterEvent = new BeEvent<
-    (marker: SectionMarker) => void
-  >();
+  public readonly onMouseEnterEvent = new BeEvent<(marker: SectionMarker) => void>();
   /** @internal */
-  public readonly onMouseButtonEvent = new BeEvent<
-    (marker: SectionMarker) => void
-  >();
+  public readonly onMouseButtonEvent = new BeEvent<(marker: SectionMarker) => void>();
   /** @internal */
   private _isActive = false;
 
@@ -102,9 +98,7 @@ export class SectionMarker extends Marker {
   public override onMouseEnter(ev: BeButtonEvent) {
     // Lazily load the tooltip.
     if (undefined === this.title) {
-      IModelReadRpcInterface.getClientForRouting(
-        this.state.iModel.routingContext.token
-      )
+      IModelReadRpcInterface.getClientForRouting(this.state.iModel.routingContext.token)
         .getToolTipMessage(this.state.iModel.getRpcProps(), this.state.id)
         .then((tooltipMsg) => {
           this.title = IModelApp.formatElementToolTip(tooltipMsg);
@@ -120,12 +114,7 @@ export class SectionMarker extends Marker {
 
   /** @internal */
   public override onMouseButton(ev: BeButtonEvent): boolean {
-    if (
-      InputSource.Mouse === ev.inputSource &&
-      BeButton.Data === ev.button &&
-      ev.isDown &&
-      ev.viewport
-    )
+    if (InputSource.Mouse === ev.inputSource && BeButton.Data === ev.button && ev.isDown && ev.viewport)
       this.onMouseButtonEvent.raiseEvent(this);
 
     return true; // Don't allow clicks to be sent to active tool...
@@ -229,11 +218,8 @@ export class SectionMarkerSet extends MarkerSet<SectionMarker> {
   }
 
   /** Find the SectionMarker corresponding to the specified [SectionDrawingLocation]($backend) Id. */
-  public findMarkerById(
-    sectionDrawingLocationId: Id64String
-  ): SectionMarker | undefined {
-    for (const marker of this.markers)
-      if (marker.state.id === sectionDrawingLocationId) return marker;
+  public findMarkerById(sectionDrawingLocationId: Id64String): SectionMarker | undefined {
+    for (const marker of this.markers) if (marker.state.id === sectionDrawingLocationId) return marker;
 
     return undefined;
   }

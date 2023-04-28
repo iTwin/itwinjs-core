@@ -8,13 +8,7 @@
  */
 
 import { Map4d, Point3d } from "@itwin/core-geometry";
-import {
-  ColorByName,
-  ColorDef,
-  Frustum,
-  LinePixels,
-  Npc,
-} from "@itwin/core-common";
+import { ColorByName, ColorDef, Frustum, LinePixels, Npc } from "@itwin/core-common";
 import {
   CoordSystem,
   DecorateContext,
@@ -51,11 +45,7 @@ class FrustumDecoration {
   private readonly _focalPlane: number;
   private readonly _isCameraOn: boolean;
 
-  private constructor(
-    vp: Viewport,
-    view: ViewState3d,
-    private readonly _options?: FrustumDecorationOptions
-  ) {
+  private constructor(vp: Viewport, view: ViewState3d, private readonly _options?: FrustumDecorationOptions) {
     this._worldFrustum = vp.getFrustum(CoordSystem.World, false);
     this._adjustedWorldFrustum = vp.getFrustum(CoordSystem.World, true);
     this._preloadFrustum = vp.viewingSpace.getPreloadFrustum();
@@ -66,14 +56,9 @@ class FrustumDecoration {
     this._isCameraOn = vp.isCameraOn;
   }
 
-  public static create(
-    vp: Viewport,
-    options?: FrustumDecorationOptions
-  ): FrustumDecoration | undefined {
+  public static create(vp: Viewport, options?: FrustumDecorationOptions): FrustumDecoration | undefined {
     const view = vp.view.isSpatialView() ? vp.view : undefined;
-    return undefined !== view
-      ? new FrustumDecoration(vp, view, options)
-      : undefined;
+    return undefined !== view ? new FrustumDecoration(vp, view, options) : undefined;
   }
 
   public decorate(context: DecorateContext): void {
@@ -89,31 +74,15 @@ class FrustumDecoration {
         context.viewport
       );
 
-    FrustumDecoration.drawFrustumBox(
-      builder,
-      this._worldFrustum,
-      false,
-      context.viewport
-    ); // show original frustum...
-    FrustumDecoration.drawFrustumBox(
-      builder,
-      this._adjustedWorldFrustum,
-      true,
-      context.viewport
-    ); // show adjusted frustum...
+    FrustumDecoration.drawFrustumBox(builder, this._worldFrustum, false, context.viewport); // show original frustum...
+    FrustumDecoration.drawFrustumBox(builder, this._adjustedWorldFrustum, true, context.viewport); // show adjusted frustum...
     const options = this._options;
     if (options !== undefined) {
-      if (options.showPreloadFrustum)
-        FrustumDecoration.drawPreloadFrustum(builder, this._preloadFrustum);
+      if (options.showPreloadFrustum) FrustumDecoration.drawPreloadFrustum(builder, this._preloadFrustum);
 
       if (options?.showBackgroundIntersections) {
-        const backgroundMapGeometry =
-          context.viewport.view.displayStyle.getBackgroundMapGeometry();
-        if (backgroundMapGeometry)
-          backgroundMapGeometry.addFrustumDecorations(
-            builder,
-            this._adjustedWorldFrustum
-          );
+        const backgroundMapGeometry = context.viewport.view.displayStyle.getBackgroundMapGeometry();
+        if (backgroundMapGeometry) backgroundMapGeometry.addFrustumDecorations(builder, this._adjustedWorldFrustum);
       }
     }
     context.addDecorationFromBuilder(builder);
@@ -125,12 +94,7 @@ class FrustumDecoration {
     builder.addFrustum(frustum);
   }
 
-  public static drawFrustumBox(
-    builder: GraphicBuilder,
-    frustum: Frustum,
-    adjustedBox: boolean,
-    vp: Viewport
-  ): void {
+  public static drawFrustumBox(builder: GraphicBuilder, frustum: Frustum, adjustedBox: boolean, vp: Viewport): void {
     const backPts = this.getPlanePts(frustum.points, false); // back plane
     const frontPts = this.getPlanePts(frustum.points, true); // front plane
 
@@ -142,55 +106,26 @@ class FrustumDecoration {
     const edgeStyle = adjustedBox ? LinePixels.Solid : LinePixels.Code2;
 
     // Back plane
-    builder.setSymbology(
-      backAndBottomColor,
-      ColorDef.black,
-      edgeWeight,
-      edgeStyle
-    );
+    builder.setSymbology(backAndBottomColor, ColorDef.black, edgeWeight, edgeStyle);
     builder.addLineString(backPts);
 
     // Front plane
-    builder.setSymbology(
-      frontAndTopLeftColor,
-      ColorDef.black,
-      edgeWeight,
-      edgeStyle
-    );
+    builder.setSymbology(frontAndTopLeftColor, ColorDef.black, edgeWeight, edgeStyle);
     builder.addLineString(frontPts);
 
     // Bottom edge
-    builder.setSymbology(
-      backAndBottomColor,
-      ColorDef.black,
-      edgeWeight,
-      edgeStyle
-    );
+    builder.setSymbology(backAndBottomColor, ColorDef.black, edgeWeight, edgeStyle);
     builder.addLineString(this.getEdgePts(backPts, frontPts, 0));
     builder.addLineString(this.getEdgePts(backPts, frontPts, 1));
 
     // Top edge
-    builder.setSymbology(
-      frontAndTopRightColor,
-      ColorDef.black,
-      edgeWeight,
-      edgeStyle
-    );
+    builder.setSymbology(frontAndTopRightColor, ColorDef.black, edgeWeight, edgeStyle);
     builder.addLineString(this.getEdgePts(backPts, frontPts, 2));
-    builder.setSymbology(
-      frontAndTopLeftColor,
-      ColorDef.black,
-      edgeWeight,
-      edgeStyle
-    );
+    builder.setSymbology(frontAndTopLeftColor, ColorDef.black, edgeWeight, edgeStyle);
     builder.addLineString(this.getEdgePts(backPts, frontPts, 3));
   }
 
-  private static getEdgePts(
-    startPts: Point3d[],
-    endPts: Point3d[],
-    index: number
-  ): Point3d[] {
+  private static getEdgePts(startPts: Point3d[], endPts: Point3d[], index: number): Point3d[] {
     return [startPts[index], endPts[index]];
   }
 
@@ -223,8 +158,7 @@ class FrustumDecoration {
     // Focal plane...
     const focalPtsNpc = FrustumDecoration.getPlanePts(npcFrustum.points, false);
     const focalPtsWorld: Point3d[] = [];
-    for (const npcPt of focalPtsNpc)
-      focalPtsWorld.push(Point3d.create(npcPt.x, npcPt.y, focusPlaneNpc));
+    for (const npcPt of focalPtsNpc) focalPtsWorld.push(Point3d.create(npcPt.x, npcPt.y, focusPlaneNpc));
     worldToNpcMap.transform1.multiplyPoint3dArrayQuietNormalize(focalPtsWorld);
 
     const bgColor = vp.view.backgroundColor;
@@ -326,8 +260,7 @@ export class ToggleFrustumSnapshotTool extends Tool {
       else enable = parseToggle(arg);
     }
 
-    if (typeof enable !== "string")
-      await this.run(enable, showPreload, showBackgroundIntersections);
+    if (typeof enable !== "string") await this.run(enable, showPreload, showBackgroundIntersections);
 
     return true;
   }
@@ -346,16 +279,10 @@ class SelectedViewFrustumDecoration {
   /** This will allow the render system to cache and reuse the decorations created by this decorator's decorate() method. */
   public readonly useCachedDecorations = true;
 
-  public constructor(
-    vp: Viewport,
-    private _options?: FrustumDecorationOptions
-  ) {
+  public constructor(vp: Viewport, private _options?: FrustumDecorationOptions) {
     this._targetVp = vp;
     this._removeDecorationListener = IModelApp.viewManager.addDecorator(this);
-    this._removeViewChangedListener = vp.onViewChanged.addListener(
-      this.onViewChanged,
-      this
-    ); // eslint-disable-line @typescript-eslint/unbound-method
+    this._removeViewChangedListener = vp.onViewChanged.addListener(this.onViewChanged, this); // eslint-disable-line @typescript-eslint/unbound-method
     IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
   }
 
@@ -384,20 +311,13 @@ class SelectedViewFrustumDecoration {
 
   public decorate(context: DecorateContext): void {
     const vp = context.viewport;
-    if (
-      !this._targetVp.view.isSpatialView() ||
-      vp === this._targetVp ||
-      !vp.view.isSpatialView()
-    )
-      return;
+    if (!this._targetVp.view.isSpatialView() || vp === this._targetVp || !vp.view.isSpatialView()) return;
 
     const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
 
     if (this._targetVp.isCameraOn) {
       const npcFrustum = this._targetVp.getFrustum(CoordSystem.Npc, true);
-      const focalPlane = this._targetVp.worldToNpc(
-        this._targetVp.view.getTargetPoint()
-      ).z;
+      const focalPlane = this._targetVp.worldToNpc(this._targetVp.view.getTargetPoint()).z;
       FrustumDecoration.drawEyePositionAndFocalPlane(
         builder,
         npcFrustum,
@@ -409,28 +329,12 @@ class SelectedViewFrustumDecoration {
     }
 
     const worldFrustum = this._targetVp.getFrustum(CoordSystem.World, false);
-    const adjustedWorldFrustum = this._targetVp.getFrustum(
-      CoordSystem.World,
-      true
-    );
+    const adjustedWorldFrustum = this._targetVp.getFrustum(CoordSystem.World, true);
 
-    FrustumDecoration.drawFrustumBox(
-      builder,
-      worldFrustum,
-      false,
-      context.viewport
-    ); // show original frustum...
-    FrustumDecoration.drawFrustumBox(
-      builder,
-      adjustedWorldFrustum,
-      true,
-      context.viewport
-    ); // show adjusted frustum...
+    FrustumDecoration.drawFrustumBox(builder, worldFrustum, false, context.viewport); // show original frustum...
+    FrustumDecoration.drawFrustumBox(builder, adjustedWorldFrustum, true, context.viewport); // show adjusted frustum...
     if (this._options && this._options.showPreloadFrustum)
-      FrustumDecoration.drawPreloadFrustum(
-        builder,
-        context.viewport.viewingSpace.getPreloadFrustum()
-      );
+      FrustumDecoration.drawPreloadFrustum(builder, context.viewport.viewingSpace.getPreloadFrustum());
 
     context.addDecorationFromBuilder(builder);
   }
@@ -438,14 +342,12 @@ class SelectedViewFrustumDecoration {
   // Returns true if decoration becomes enabled.
   public static toggle(vp: Viewport, enabled?: boolean): boolean {
     if (undefined !== enabled) {
-      const alreadyEnabled =
-        undefined !== SelectedViewFrustumDecoration._decorator;
+      const alreadyEnabled = undefined !== SelectedViewFrustumDecoration._decorator;
       if (enabled === alreadyEnabled) return alreadyEnabled;
     }
 
     if (undefined === SelectedViewFrustumDecoration._decorator) {
-      SelectedViewFrustumDecoration._decorator =
-        new SelectedViewFrustumDecoration(vp);
+      SelectedViewFrustumDecoration._decorator = new SelectedViewFrustumDecoration(vp);
       return true;
     } else {
       SelectedViewFrustumDecoration._decorator.stop();
@@ -471,14 +373,12 @@ export class ToggleSelectedViewFrustumTool extends Tool {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp || !vp.view.isSpatialView()) return false;
     if (SelectedViewFrustumDecoration.toggle(vp, enable)) {
-      const remove = vp.onChangeView.addListener(
-        (_vp: Viewport, prev: ViewState) => {
-          if (!prev.hasSameCoordinates(vp.view)) {
-            SelectedViewFrustumDecoration.toggle(vp, false);
-            remove();
-          }
+      const remove = vp.onChangeView.addListener((_vp: Viewport, prev: ViewState) => {
+        if (!prev.hasSameCoordinates(vp.view)) {
+          SelectedViewFrustumDecoration.toggle(vp, false);
+          remove();
         }
-      );
+      });
     }
 
     return true;
@@ -572,8 +472,7 @@ export class ToggleShadowFrustumTool extends Tool {
 
   public override async run(enable?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp && vp.view.isSpatialView())
-      ShadowFrustumDecoration.toggle(vp, enable);
+    if (undefined !== vp && vp.view.isSpatialView()) ShadowFrustumDecoration.toggle(vp, enable);
 
     return true;
   }

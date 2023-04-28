@@ -4,19 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import {
-  BeDuration,
-  BeEvent,
-  Guid,
-  Id64,
-  IModelStatus,
-  OpenMode,
-} from "@itwin/core-bentley";
-import {
-  LineSegment3d,
-  Point3d,
-  YawPitchRollAngles,
-} from "@itwin/core-geometry";
+import { BeDuration, BeEvent, Guid, Id64, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   Code,
   ColorByName,
@@ -68,23 +57,16 @@ describe("TxnManager", () => {
   before(async () => {
     IModelTestUtils.registerTestBimSchema();
     // make a unique name for the output file so this test can be run in parallel
-    testFileName = IModelTestUtils.prepareOutputFile(
-      "TxnManager",
-      `${Guid.createValue()}.bim`
-    );
+    testFileName = IModelTestUtils.prepareOutputFile("TxnManager", `${Guid.createValue()}.bim`);
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
-    const schemaFileName = IModelTestUtils.resolveAssetFile(
-      "TestBim.ecschema.xml"
-    );
+    const schemaFileName = IModelTestUtils.resolveAssetFile("TestBim.ecschema.xml");
     IModelJsFs.copySync(seedFileName, testFileName);
     performUpgrade(testFileName);
     imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     await imodel.importSchemas([schemaFileName]); // will throw an exception if import fails
 
     const builder = new GeometryStreamBuilder();
-    builder.appendGeometry(
-      LineSegment3d.create(Point3d.createZero(), Point3d.create(5, 0, 0))
-    );
+    builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(5, 0, 0)));
 
     props = {
       classFullName: "TestBim:TestPhysicalObject",
@@ -129,10 +111,7 @@ describe("TxnManager", () => {
     return makeEntity(id, "BisCore:SpatialCategory");
   }
   function subCategoryEntity(categoryId: string) {
-    return makeEntity(
-      IModel.getDefaultSubCategoryId(categoryId),
-      "BisCore:SubCategory"
-    );
+    return makeEntity(IModel.getDefaultSubCategoryId(categoryId), "BisCore:SubCategory");
   }
 
   it("TxnManager", async () => {
@@ -144,10 +123,7 @@ describe("TxnManager", () => {
     let model = models.getModel<PhysicalModel>(modelId);
     assert.isUndefined(model.geometryGuid, "geometryGuid starts undefined");
 
-    assert.isDefined(
-      imodel.getMetaData("TestBim:TestPhysicalObject"),
-      "TestPhysicalObject is present"
-    );
+    assert.isDefined(imodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");
 
     const txns = imodel.txns;
     assert.isFalse(txns.hasPendingTxns);
@@ -185,16 +161,10 @@ describe("TxnManager", () => {
     assert.isDefined(model.geometryGuid);
 
     txns.reverseSingleTxn();
-    assert.isFalse(
-      txns.hasPendingTxns,
-      "should not have pending txns if they all are reversed"
-    );
+    assert.isFalse(txns.hasPendingTxns, "should not have pending txns if they all are reversed");
     assert.isFalse(txns.hasLocalChanges);
     txns.reinstateTxn();
-    assert.isTrue(
-      txns.hasPendingTxns,
-      "now there should be pending txns again"
-    );
+    assert.isTrue(txns.hasPendingTxns, "now there should be pending txns again");
     assert.isTrue(txns.hasLocalChanges);
     beforeUndo = afterUndo = 0; // reset this for tests below
 
@@ -218,11 +188,7 @@ describe("TxnManager", () => {
     assert.equal(afterUndo, 1);
     assert.equal(undoAction, TxnAction.Reverse);
 
-    assert.throws(
-      () => elements.getElementProps(elementId),
-      IModelError,
-      "reading element"
-    );
+    assert.throws(() => elements.getElementProps(elementId), IModelError, "reading element");
     assert.throws(() => elements.getElement(elementId), IModelError);
     assert.equal(IModelStatus.Success, txns.reinstateTxn());
     model = models.getModel(modelId);
@@ -241,18 +207,11 @@ describe("TxnManager", () => {
     imodel.saveChanges(change2Msg);
 
     model = models.getModel(modelId);
-    assert.equal(
-      model.geometryGuid,
-      guid1,
-      "geometryGuid should not update with no geometry changes"
-    );
+    assert.equal(model.geometryGuid, guid1, "geometryGuid should not update with no geometry changes");
 
     element = elements.getElement(elementId);
     assert.equal(element.intProperty, 200, "int property should be 200");
-    assert.equal(
-      txns.getTxnDescription(txns.queryPreviousTxnId(txns.getCurrentTxnId())),
-      change2Msg
-    );
+    assert.equal(txns.getTxnDescription(txns.queryPreviousTxnId(txns.getCurrentTxnId())), change2Msg);
 
     assert.equal(IModelStatus.Success, txns.reverseSingleTxn());
     element = elements.getElement(elementId);
@@ -268,11 +227,7 @@ describe("TxnManager", () => {
 
     model = models.getModel(modelId);
     assert.isDefined(model.geometryGuid);
-    assert.notEqual(
-      model.geometryGuid,
-      guid1,
-      "geometryGuid should update with adds"
-    );
+    assert.notEqual(model.geometryGuid, guid1, "geometryGuid should update with adds");
 
     elementId = elements.insertElement(props); // create a new element
     assert.isTrue(txns.hasUnsavedChanges);
@@ -314,10 +269,7 @@ describe("TxnManager", () => {
     assert.isFalse(txns.hasLocalChanges);
 
     model = models.getModel(modelId);
-    assert.isUndefined(
-      model.geometryGuid,
-      "undo all, geometryGuid goes back to undefined"
-    );
+    assert.isUndefined(model.geometryGuid, "undo all, geometryGuid goes back to undefined");
 
     const modifyId = elements.insertElement(props);
     imodel.saveChanges("check guid changes");
@@ -331,22 +283,14 @@ describe("TxnManager", () => {
     const saveUpdateMsg = "save update to modify guid";
     imodel.saveChanges(saveUpdateMsg);
     model = models.getModel(modelId);
-    assert.notEqual(
-      guid2,
-      model.geometryGuid,
-      "update placement should change guid"
-    );
+    assert.notEqual(guid2, model.geometryGuid, "update placement should change guid");
 
     const lastMod = models.queryLastModifiedTime(modelId);
     await BeDuration.wait(300); // we update the lastMod below, make sure it will be different by waiting .3 seconds
     const guid3 = model.geometryGuid;
     models.updateGeometryGuid(modelId);
     model = models.getModel(modelId);
-    assert.notEqual(
-      guid3,
-      model.geometryGuid,
-      "update model should change guid"
-    );
+    assert.notEqual(guid3, model.geometryGuid, "update model should change guid");
     const lastMod2 = models.queryLastModifiedTime(modelId);
     assert.notEqual(lastMod, lastMod2);
     // imodel.saveChanges("update geometry guid");
@@ -438,17 +382,11 @@ describe("TxnManager", () => {
       accum.dispose();
     }
 
-    public static testElements(
-      iModel: StandaloneDb,
-      func: (accum: EventAccumulator) => void
-    ): void {
+    public static testElements(iModel: StandaloneDb, func: (accum: EventAccumulator) => void): void {
       this.test(iModel.txns, iModel.txns.onElementsChanged, func);
     }
 
-    public static testModels(
-      iModel: StandaloneDb,
-      func: (accum: EventAccumulator) => void
-    ): void {
+    public static testModels(iModel: StandaloneDb, func: (accum: EventAccumulator) => void): void {
       this.test(iModel.txns, iModel.txns.onModelsChanged, func);
     }
 
@@ -462,10 +400,7 @@ describe("TxnManager", () => {
       );
     }
 
-    private copyArray(
-      changes: TxnChangedEntities,
-      propName: "inserted" | "updated" | "deleted"
-    ): void {
+    private copyArray(changes: TxnChangedEntities, propName: "inserted" | "updated" | "deleted"): void {
       const iterNames = {
         inserted: "inserts",
         updated: "updates",
@@ -501,10 +436,7 @@ describe("TxnManager", () => {
       this.expect(expected.deleted, "deleted");
     }
 
-    private expect(
-      expected: EntityIdAndClassId[] | undefined,
-      propName: "inserted" | "updated" | "deleted"
-    ): void {
+    private expect(expected: EntityIdAndClassId[] | undefined, propName: "inserted" | "updated" | "deleted"): void {
       expect(this[propName]).to.deep.equal(expected ?? []);
     }
 
@@ -669,11 +601,7 @@ describe("TxnManager", () => {
 
     let newModelId: string;
     EventAccumulator.testModels(imodel, (accum) => {
-      newModelId = PhysicalModel.insert(
-        imodel,
-        IModel.rootSubjectId,
-        Guid.createValue()
-      );
+      newModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, Guid.createValue());
       imodel.saveChanges("1 insert");
       accum.expectNumValidations(1);
       accum.expectChanges({ inserted: [physicalModelEntity(newModelId)] });
@@ -758,16 +686,14 @@ describe("TxnManager", () => {
       const prevGuid = model.geometryGuid;
       let newGuid: string | undefined;
       let numEvents = 0;
-      let dropListener = imodel.txns.onModelGeometryChanged.addListener(
-        (changes) => {
-          expect(numEvents).to.equal(0);
-          ++numEvents;
-          expect(changes.length).to.equal(1);
-          expect(changes[0].id).to.equal(modelId);
-          newGuid = changes[0].guid;
-          expect(newGuid).not.to.equal(prevGuid);
-        }
-      );
+      let dropListener = imodel.txns.onModelGeometryChanged.addListener((changes) => {
+        expect(numEvents).to.equal(0);
+        ++numEvents;
+        expect(changes.length).to.equal(1);
+        expect(changes[0].id).to.equal(modelId);
+        newGuid = changes[0].guid;
+        expect(newGuid).not.to.equal(prevGuid);
+      });
 
       const expectEvent = func(model);
 
@@ -777,27 +703,23 @@ describe("TxnManager", () => {
       dropListener();
       if (!expectEvent) return;
 
-      dropListener = imodel.txns.onModelGeometryChanged.addListener(
-        (changes) => {
-          ++numEvents;
-          expect(changes.length).to.equal(1);
-          expect(changes[0].id).to.equal(modelId);
-          expect(changes[0].guid).to.equal(prevGuid);
-        }
-      );
+      dropListener = imodel.txns.onModelGeometryChanged.addListener((changes) => {
+        ++numEvents;
+        expect(changes.length).to.equal(1);
+        expect(changes[0].id).to.equal(modelId);
+        expect(changes[0].guid).to.equal(prevGuid);
+      });
 
       imodel.txns.reverseSingleTxn();
       expect(numEvents).to.equal(2);
       dropListener();
 
-      dropListener = imodel.txns.onModelGeometryChanged.addListener(
-        (changes) => {
-          ++numEvents;
-          expect(changes.length).to.equal(1);
-          expect(changes[0].id).to.equal(modelId);
-          expect(changes[0].guid).to.equal(newGuid);
-        }
-      );
+      dropListener = imodel.txns.onModelGeometryChanged.addListener((changes) => {
+        ++numEvents;
+        expect(changes.length).to.equal(1);
+        expect(changes[0].id).to.equal(modelId);
+        expect(changes[0].guid).to.equal(newGuid);
+      });
 
       imodel.txns.reinstateTxn();
       expect(numEvents).to.equal(3);
@@ -853,17 +775,12 @@ describe("TxnManager", () => {
     const test = (numChangesExpected: number, func: () => void) => {
       const numChanged: number[] = [];
       const prevMax = setMaxEntitiesPerEvent(2);
-      const dropListener = imodel.txns.onElementsChanged.addListener(
-        (changes) => {
-          const numEntities =
-            entityCount(changes.inserts) +
-            entityCount(changes.updates) +
-            entityCount(changes.deletes);
-          numChanged.push(numEntities);
-          expect(numEntities).least(1);
-          expect(numEntities <= 2).to.be.true;
-        }
-      );
+      const dropListener = imodel.txns.onElementsChanged.addListener((changes) => {
+        const numEntities = entityCount(changes.inserts) + entityCount(changes.updates) + entityCount(changes.deletes);
+        numChanged.push(numEntities);
+        expect(numEntities).least(1);
+        expect(numEntities <= 2).to.be.true;
+      });
 
       func();
       imodel.saveChanges("");
@@ -872,13 +789,10 @@ describe("TxnManager", () => {
       setMaxEntitiesPerEvent(prevMax);
 
       expect(numChanged.length).to.equal(Math.ceil(numChangesExpected / 2));
-      for (let i = 0; i < numChanged.length - 1; i++)
-        expect(numChanged[i]).to.equal(2);
+      for (let i = 0; i < numChanged.length - 1; i++) expect(numChanged[i]).to.equal(2);
 
       if (numChangesExpected > 0)
-        expect(numChanged[numChanged.length - 1]).to.equal(
-          0 === numChangesExpected % 2 ? 2 : 1
-        );
+        expect(numChanged[numChanged.length - 1]).to.equal(0 === numChangesExpected % 2 ? 2 : 1);
     };
 
     let elemId1: string;
@@ -918,12 +832,7 @@ describe("TxnManager", () => {
     const rootId = elements.insertElement(rootProps);
     const childProps = { ...props, intProperty: 10 };
     const childId = elements.insertElement(childProps);
-    const relationship =
-      TestElementDrivesElement.create<TestElementDrivesElement>(
-        imodel,
-        rootId,
-        childId
-      );
+    const relationship = TestElementDrivesElement.create<TestElementDrivesElement>(imodel, rootId, childId);
     relationship.property1 = "Root drives child";
     relationship.insert();
     imodel.saveChanges("Inserted root, child element and dependency");
@@ -931,16 +840,14 @@ describe("TxnManager", () => {
 
     // Setup dependency handler to update childElement
     let handlerCalled = false;
-    const dropListener = TestPhysicalObject.allInputsHandled.addListener(
-      (id) => {
-        handlerCalled = true;
-        assert.equal(id, childId);
-        const childEl = elements.getElement<TestPhysicalObject>(childId);
-        assert.equal(childEl.intProperty, 10, "int property should be 10");
-        childEl.intProperty += 10;
-        childEl.update();
-      }
-    );
+    const dropListener = TestPhysicalObject.allInputsHandled.addListener((id) => {
+      handlerCalled = true;
+      assert.equal(id, childId);
+      const childEl = elements.getElement<TestPhysicalObject>(childId);
+      assert.equal(childEl.intProperty, 10, "int property should be 10");
+      childEl.intProperty += 10;
+      childEl.update();
+    });
 
     // Validate state
     const txns = imodel.txns;
@@ -968,11 +875,7 @@ describe("TxnManager", () => {
   it("doesn't crash when reversing a single txn that inserts a model and a contained element while geometric model tracking is enabled", () => {
     imodel.nativeDb.setGeometricModelTrackingEnabled(true);
 
-    const model = PhysicalModel.insert(
-      imodel,
-      IModel.rootSubjectId,
-      Guid.createValue()
-    );
+    const model = PhysicalModel.insert(imodel, IModel.rootSubjectId, Guid.createValue());
     expect(Id64.isValidId64(model)).to.be.true;
     const elem = imodel.elements.insertElement({ ...props, model });
     expect(Id64.isValidId64(elem)).to.be.true;

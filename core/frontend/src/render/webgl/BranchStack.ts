@@ -70,11 +70,7 @@ export class BranchStack {
     }
   }
 
-  public changeRenderPlan(
-    vf: ViewFlags,
-    is3d: boolean,
-    hline: HiddenLine.Settings | undefined
-  ): void {
+  public changeRenderPlan(vf: ViewFlags, is3d: boolean, hline: HiddenLine.Settings | undefined): void {
     assert(1 === this.length);
     this.top.changeRenderPlan(vf, is3d, hline);
   }

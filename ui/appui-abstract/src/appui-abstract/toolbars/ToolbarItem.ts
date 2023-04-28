@@ -111,10 +111,7 @@ export interface CustomButtonDefinition extends ToolbarItem {
 /** Any Button Type that can be inserted into a toolbar.
  * @public
  */
-export type CommonToolbarItem =
-  | ActionButton
-  | GroupButton
-  | CustomButtonDefinition;
+export type CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition;
 
 /** Type for Toolbar Item Id
  * @deprecated in 3.6. Please use `ToolbarItem["id"]` from @itwin/appui-react.
@@ -171,9 +168,7 @@ export class ToolbarItemUtilities {
   }
 
   /** CustomButtonDefinition type guard. */
-  public static isCustomDefinition(
-    item: CommonToolbarItem
-  ): item is CustomButtonDefinition {
+  public static isCustomDefinition(item: CommonToolbarItem): item is CustomButtonDefinition {
     return !!(item as CustomButtonDefinition).isCustom;
   }
 }

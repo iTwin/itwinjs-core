@@ -23,9 +23,7 @@ import {
 /* eslint-disable @typescript-eslint/no-shadow */
 
 /** @alpha */
-export type StatusCategoryHandler = (
-  error: BentleyError
-) => StatusCategory | undefined;
+export type StatusCategoryHandler = (error: BentleyError) => StatusCategory | undefined;
 
 /** A group of related statuses for aggregate reporting purposes.
  * @alpha

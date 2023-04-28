@@ -20,12 +20,8 @@ export class SyncPropertiesChangeEvent extends BeUiEvent<SyncPropertiesChangeEve
 // istanbul ignore next
 export abstract class UiDataProvider {
   /** Called by UI to inform data provider of changes. */
-  public processChangesInUi(
-    _properties: DialogPropertyItem[]
-  ): PropertyChangeResult {
-    throw new Error(
-      "Derived UiDataProvider must implement this method to apply changes to a bulk set of properties."
-    );
+  public processChangesInUi(_properties: DialogPropertyItem[]): PropertyChangeResult {
+    throw new Error("Derived UiDataProvider must implement this method to apply changes to a bulk set of properties.");
   }
 
   /** Get Sync UI Control Properties Event */

@@ -7,13 +7,7 @@
  */
 
 import { compareNumbers } from "@itwin/core-bentley";
-import {
-  Point3d,
-  Range1d,
-  Range1dProps,
-  Vector3d,
-  XYZProps,
-} from "@itwin/core-geometry";
+import { Point3d, Range1d, Range1dProps, Vector3d, XYZProps } from "@itwin/core-geometry";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { Gradient } from "./Gradient";
 
@@ -122,8 +116,7 @@ export class ThematicGradientSettings {
     if (this.colorMix !== other.colorMix) return false;
 
     for (let i = 0; i < this.customKeys.length; i++) {
-      if (!Gradient.keyColorEquals(this.customKeys[i], other.customKeys[i]))
-        return false;
+      if (!Gradient.keyColorEquals(this.customKeys[i], other.customKeys[i])) return false;
     }
 
     return true;
@@ -134,35 +127,17 @@ export class ThematicGradientSettings {
    * @param rhs Second set of thematic gradient settings to compare
    * @returns 0 if lhs is equivalent to rhs, a negative number if lhs compares less than rhs, or a positive number if lhs compares greater than rhs.
    */
-  public static compare(
-    lhs: ThematicGradientSettings,
-    rhs: ThematicGradientSettings
-  ): number {
+  public static compare(lhs: ThematicGradientSettings, rhs: ThematicGradientSettings): number {
     let diff = 0;
     if ((diff = compareNumbers(lhs.mode, rhs.mode)) !== 0) return diff;
-    if ((diff = compareNumbers(lhs.stepCount, rhs.stepCount)) !== 0)
-      return diff;
-    if (
-      (diff = compareNumbers(lhs.marginColor.tbgr, rhs.marginColor.tbgr)) !== 0
-    )
-      return diff;
-    if ((diff = compareNumbers(lhs.colorScheme, rhs.colorScheme)) !== 0)
-      return diff;
+    if ((diff = compareNumbers(lhs.stepCount, rhs.stepCount)) !== 0) return diff;
+    if ((diff = compareNumbers(lhs.marginColor.tbgr, rhs.marginColor.tbgr)) !== 0) return diff;
+    if ((diff = compareNumbers(lhs.colorScheme, rhs.colorScheme)) !== 0) return diff;
     if ((diff = compareNumbers(lhs.colorMix, rhs.colorMix)) !== 0) return diff;
-    if (
-      (diff = compareNumbers(lhs.customKeys.length, rhs.customKeys.length)) !==
-      0
-    )
-      return diff;
+    if ((diff = compareNumbers(lhs.customKeys.length, rhs.customKeys.length)) !== 0) return diff;
 
     for (let i = 0; i < lhs.customKeys.length; i++) {
-      if (
-        (diff = compareNumbers(
-          lhs.customKeys[i].color.tbgr,
-          rhs.customKeys[i].color.tbgr
-        )) !== 0
-      )
-        return diff;
+      if ((diff = compareNumbers(lhs.customKeys[i].color.tbgr, rhs.customKeys[i].color.tbgr)) !== 0) return diff;
     }
 
     return diff;
@@ -177,14 +152,8 @@ export class ThematicGradientSettings {
       this.colorScheme = ThematicGradientColorScheme.BlueRed;
       this.colorMix = 0.0;
     } else {
-      this.mode =
-        json.mode !== undefined && json.mode !== null
-          ? json.mode
-          : ThematicGradientMode.Smooth;
-      if (
-        this.mode < ThematicGradientMode.Smooth ||
-        this.mode > ThematicGradientMode.IsoLines
-      )
+      this.mode = json.mode !== undefined && json.mode !== null ? json.mode : ThematicGradientMode.Smooth;
+      if (this.mode < ThematicGradientMode.Smooth || this.mode > ThematicGradientMode.IsoLines)
         this.mode = ThematicGradientMode.Smooth;
 
       this.stepCount = typeof json.stepCount === "number" ? json.stepCount : 10;
@@ -203,25 +172,16 @@ export class ThematicGradientSettings {
         this.colorScheme = ThematicGradientColorScheme.BlueRed;
 
       if (json.customKeys !== undefined && json.customKeys !== null)
-        json.customKeys.forEach((key) =>
-          this.customKeys.push(new Gradient.KeyColor(key))
-        );
+        json.customKeys.forEach((key) => this.customKeys.push(new Gradient.KeyColor(key)));
 
       // Enforce 2 entries in custom color keys if violated
-      if (
-        this.colorScheme === ThematicGradientColorScheme.Custom &&
-        this.customKeys.length < 2
-      ) {
+      if (this.colorScheme === ThematicGradientColorScheme.Custom && this.customKeys.length < 2) {
         this.customKeys = [];
         for (const keyValue of ThematicGradientSettings._defaultCustomKeys)
           this.customKeys.push(
             new Gradient.KeyColor({
               value: keyValue[0],
-              color: ColorDef.computeTbgrFromComponents(
-                keyValue[1],
-                keyValue[3],
-                keyValue[2]
-              ),
+              color: ColorDef.computeTbgrFromComponents(keyValue[1], keyValue[3], keyValue[2]),
             })
           );
       }
@@ -243,8 +203,7 @@ export class ThematicGradientSettings {
     const marginColor = this.marginColor.toJSON();
     if (0 !== marginColor) props.marginColor = marginColor;
 
-    if (ThematicGradientColorScheme.BlueRed !== this.colorScheme)
-      props.colorScheme = this.colorScheme;
+    if (ThematicGradientColorScheme.BlueRed !== this.colorScheme) props.colorScheme = this.colorScheme;
 
     if (0 !== this.colorMix) props.colorMix = this.colorMix;
 
@@ -260,26 +219,14 @@ export class ThematicGradientSettings {
    * @param changedProps JSON representation of the properties to change.
    * @returns A ThematicGradientSettings with all of its properties set to match those of `this`, except those explicitly defined in `changedProps`.
    */
-  public clone(
-    changedProps?: ThematicGradientSettingsProps
-  ): ThematicGradientSettings {
-    if (undefined === changedProps)
-      return ThematicGradientSettings.fromJSON(this.toJSON());
+  public clone(changedProps?: ThematicGradientSettingsProps): ThematicGradientSettings {
+    if (undefined === changedProps) return ThematicGradientSettings.fromJSON(this.toJSON());
 
     const props: ThematicGradientSettingsProps = {
       mode: undefined !== changedProps.mode ? changedProps.mode : this.mode,
-      stepCount:
-        undefined !== changedProps.stepCount
-          ? changedProps.stepCount
-          : this.stepCount,
-      marginColor:
-        undefined !== changedProps.marginColor
-          ? changedProps.marginColor
-          : this.marginColor.tbgr,
-      colorScheme:
-        undefined !== changedProps.colorScheme
-          ? changedProps.colorScheme
-          : this.colorScheme,
+      stepCount: undefined !== changedProps.stepCount ? changedProps.stepCount : this.stepCount,
+      marginColor: undefined !== changedProps.marginColor ? changedProps.marginColor : this.marginColor.tbgr,
+      colorScheme: undefined !== changedProps.colorScheme ? changedProps.colorScheme : this.colorScheme,
       customKeys:
         undefined !== changedProps.customKeys
           ? changedProps.customKeys
@@ -287,10 +234,7 @@ export class ThematicGradientSettings {
               value: key.value,
               color: key.color.tbgr,
             })),
-      colorMix:
-        undefined !== changedProps.colorMix
-          ? changedProps.colorMix
-          : this.colorMix,
+      colorMix: undefined !== changedProps.colorMix ? changedProps.colorMix : this.colorMix,
     };
 
     return ThematicGradientSettings.fromJSON(props);
@@ -330,9 +274,7 @@ export class ThematicDisplaySensor {
   }
 
   public equals(other: ThematicDisplaySensor): boolean {
-    return (
-      this.value === other.value && this.position.isAlmostEqual(other.position)
-    );
+    return this.value === other.value && this.position.isAlmostEqual(other.position);
   }
 
   public static fromJSON(json?: ThematicDisplaySensorProps) {
@@ -379,12 +321,9 @@ export class ThematicDisplaySensorSettings {
     this.sensors = [];
     if (undefined !== json) {
       if (json.sensors !== undefined && json.sensors !== null) {
-        json.sensors.forEach((sensorJSON) =>
-          this.sensors.push(ThematicDisplaySensor.fromJSON(sensorJSON))
-        );
+        json.sensors.forEach((sensorJSON) => this.sensors.push(ThematicDisplaySensor.fromJSON(sensorJSON)));
       }
-      this.distanceCutoff =
-        typeof json.distanceCutoff === "number" ? json.distanceCutoff : 0;
+      this.distanceCutoff = typeof json.distanceCutoff === "number" ? json.distanceCutoff : 0;
     } else {
       this.distanceCutoff = 0;
     }
@@ -514,23 +453,14 @@ export class ThematicDisplay {
       this.sensorSettings = ThematicDisplaySensorSettings.fromJSON();
     } else {
       this.displayMode =
-        json.displayMode !== undefined && json.displayMode !== null
-          ? json.displayMode
-          : ThematicDisplayMode.Height;
-      if (
-        this.displayMode < ThematicDisplayMode.Height ||
-        this.displayMode > ThematicDisplayMode.HillShade
-      )
+        json.displayMode !== undefined && json.displayMode !== null ? json.displayMode : ThematicDisplayMode.Height;
+      if (this.displayMode < ThematicDisplayMode.Height || this.displayMode > ThematicDisplayMode.HillShade)
         this.displayMode = ThematicDisplayMode.Height;
-      this.gradientSettings = ThematicGradientSettings.fromJSON(
-        json.gradientSettings
-      );
+      this.gradientSettings = ThematicGradientSettings.fromJSON(json.gradientSettings);
       this.axis = Vector3d.fromJSON(json.axis);
       this.range = Range1d.fromJSON(json.range);
       this.sunDirection = Vector3d.fromJSON(json.sunDirection);
-      this.sensorSettings = ThematicDisplaySensorSettings.fromJSON(
-        json.sensorSettings
-      );
+      this.sensorSettings = ThematicDisplaySensorSettings.fromJSON(json.sensorSettings);
     }
     if (ThematicDisplayMode.Height !== this.displayMode) {
       // Disallow isoline and stepped-with-delimiter gradient modes in any mode other than height.
@@ -540,8 +470,7 @@ export class ThematicDisplay {
       ) {
         const gradientSettingsJSON = this.gradientSettings.toJSON();
         gradientSettingsJSON.mode = ThematicGradientMode.Smooth;
-        this.gradientSettings =
-          ThematicGradientSettings.fromJSON(gradientSettingsJSON);
+        this.gradientSettings = ThematicGradientSettings.fromJSON(gradientSettingsJSON);
       }
       if (ThematicDisplayMode.Slope === this.displayMode) {
         if (this.range.low < 0.0) this.range.low = 0.0;
@@ -563,8 +492,7 @@ export class ThematicDisplay {
       range: this.range.toJSON(),
     };
 
-    if (this.sensorSettings.sensors.length > 0)
-      json.sensorSettings = this.sensorSettings.toJSON();
+    if (this.sensorSettings.sensors.length > 0) json.sensorSettings = this.sensorSettings.toJSON();
 
     return json;
   }

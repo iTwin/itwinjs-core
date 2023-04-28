@@ -17,10 +17,7 @@ import { Transform } from "../../geometry3d/Transform";
 import { MomentData } from "../../geometry4d/MomentData";
 import { SortableEdgeCluster } from "../../polyface/IndexedEdgeMatcher";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import {
-  DuplicateFacetClusterSelector,
-  PolyfaceQuery,
-} from "../../polyface/PolyfaceQuery";
+import { DuplicateFacetClusterSelector, PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { LinearSweep } from "../../solid/LinearSweep";
 import { SweepContour } from "../../solid/SweepContour";
@@ -34,28 +31,13 @@ describe("ParityRegionSweep", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const regionC = IModelJson.Reader.parse(
-      JSON.parse(
-        fs.readFileSync(
-          "./src/test/testInputs/curve/parityRegionSweep/ParityRegionC.imjs",
-          "utf8"
-        )
-      )
+      JSON.parse(fs.readFileSync("./src/test/testInputs/curve/parityRegionSweep/ParityRegionC.imjs", "utf8"))
     );
     const regionA = IModelJson.Reader.parse(
-      JSON.parse(
-        fs.readFileSync(
-          "./src/test/testInputs/curve/parityRegionSweep/ParityRegionA.imjs",
-          "utf8"
-        )
-      )
+      JSON.parse(fs.readFileSync("./src/test/testInputs/curve/parityRegionSweep/ParityRegionA.imjs", "utf8"))
     );
     let regionB = IModelJson.Reader.parse(
-      JSON.parse(
-        fs.readFileSync(
-          "./src/test/testInputs/curve/parityRegionSweep/ParityRegionB.imjs",
-          "utf8"
-        )
-      )
+      JSON.parse(fs.readFileSync("./src/test/testInputs/curve/parityRegionSweep/ParityRegionB.imjs", "utf8"))
     );
     if (Array.isArray(regionB)) {
       const regionB1 = ParityRegion.create();
@@ -89,29 +71,14 @@ describe("ParityRegionSweep", () => {
 
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, region, x1, y1);
         for (const sweepDirection of [zColumn, zColumn.negate()]) {
-          const sweepContour1 = SweepContour.createForLinearSweep(
-            region,
-            sweepDirection
-          );
+          const sweepContour1 = SweepContour.createForLinearSweep(region, sweepDirection);
           if (sweepContour1) {
             const builder1 = PolyfaceBuilder.create();
             sweepContour1.emitFacets(builder1, false);
             const mesh1 = builder1.claimPolyface();
             const a = 0.5 * diagonal;
-            GeometryCoreTestIO.captureCloneGeometry(
-              allGeometry,
-              sweepContour1.xyStrokes,
-              (x1 += a),
-              (y1 += a),
-              0
-            );
-            GeometryCoreTestIO.captureCloneGeometry(
-              allGeometry,
-              mesh1,
-              x1,
-              (y1 += a * 0.5),
-              0
-            );
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweepContour1.xyStrokes, (x1 += a), (y1 += a), 0);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh1, x1, (y1 += a * 0.5), 0);
           }
         }
         if (Checker.noisy.buildFacetsFromSweptParityRegions) {
@@ -121,33 +88,20 @@ describe("ParityRegionSweep", () => {
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, slab, x1, y2);
             GeometryCoreTestIO.captureCloneGeometry(
               allGeometry,
-              [
-                rawMomentData.origin,
-                rawMomentData.origin.plusScaled(sweepDirection, 4.0),
-              ],
+              [rawMomentData.origin, rawMomentData.origin.plusScaled(sweepDirection, 4.0)],
               x1,
               y2
             );
             const builder = PolyfaceBuilder.create();
             builder.addGeometryQuery(slab!);
             const polyfaceA = builder.claimPolyface();
-            GeometryCoreTestIO.captureCloneGeometry(
-              allGeometry,
-              polyfaceA,
-              x1,
-              (y2 += diagonal)
-            );
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceA, x1, (y2 += diagonal));
             const polyfaceB = PolyfaceQuery.cloneByFacetDuplication(
               polyfaceA,
               true,
               DuplicateFacetClusterSelector.SelectOneByParity
             );
-            GeometryCoreTestIO.captureCloneGeometry(
-              allGeometry,
-              polyfaceB,
-              x1,
-              (y2 += diagonal)
-            );
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceB, x1, (y2 += diagonal));
             // GeometryCoreTestIO.consoleLog({ rawMoments: principalMomentData });
             // GeometryCoreTestIO.consoleLog({ principalMoments: principalMomentData });
             x1 += diagonal;
@@ -156,11 +110,7 @@ describe("ParityRegionSweep", () => {
         x0 += 3.0 * diagonal;
       }
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "ParityRegionSweep",
-      "ParityRegionSweep"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ParityRegionSweep", "ParityRegionSweep");
     expect(ck.getNumErrors()).equals(0);
   });
   it("TriangulationWithEdgeIncidence2", () => {
@@ -182,10 +132,7 @@ describe("ParityRegionSweep", () => {
         Transform.createIdentity(),
         Transform.createFixedPointAndMatrix(
           Point3d.create(3.24234898, 1.9798789),
-          Matrix3d.createRotationAroundAxisIndex(
-            2,
-            Angle.createDegrees(25.69898234)
-          )
+          Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(25.69898234))
         ),
       ]) {
         let x0 = x0A;
@@ -216,30 +163,17 @@ describe("ParityRegionSweep", () => {
           ]);
           loop1.multiplyTransformInPlace(transform);
           loop2.multiplyTransformInPlace(transform);
-          const graph = Triangulator.createTriangulatedGraphFromLoops([
-            loop1,
-            loop2,
-          ])!;
+          const graph = Triangulator.createTriangulatedGraphFromLoops([loop1, loop2])!;
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop1, x0, y0);
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop2, x0, y0);
           if (graph) {
             GraphChecker.captureAnnotatedGraph(allGeometry, graph, x0, y0 + a);
-            GeometryCoreTestIO.captureCloneGeometry(
-              allGeometry,
-              grid10,
-              x0,
-              y0 + a
-            );
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, grid10, x0, y0 + a);
 
             const builder = PolyfaceBuilder.create();
             builder.addGraph(graph, false);
             const polyfaceA = builder.claimPolyface();
-            GeometryCoreTestIO.captureCloneGeometry(
-              allGeometry,
-              polyfaceA,
-              x0,
-              y0 + 2 * a
-            );
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceA, x0, y0 + 2 * a);
           }
           x0 += a;
         }
@@ -247,22 +181,13 @@ describe("ParityRegionSweep", () => {
       }
       x0A += 40 * a;
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "ParityRegionSweep",
-      "TriangulationWithEdgeIncidence2"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ParityRegionSweep", "TriangulationWithEdgeIncidence2");
     expect(ck.getNumErrors()).equals(0);
   });
 
   it("bowTieTriangulate", () => {
     const ck = new Checker();
-    const points = [
-      Point3d.create(0, 0),
-      Point3d.create(5, 0),
-      Point3d.create(5, 5),
-      Point3d.create(1, -1),
-    ];
+    const points = [Point3d.create(0, 0), Point3d.create(5, 0), Point3d.create(5, 5), Point3d.create(1, -1)];
     const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points);
     ck.testUndefined(graph, "bow tie graph should fail triangulation");
     expect(ck.getNumErrors()).equals(0);
@@ -274,35 +199,18 @@ describe("ParityRegionSweep", () => {
     const a = 10.0;
     let x0 = 0;
     const y0 = 0;
-    const outer = [
-      Point3d.create(0, 0),
-      Point3d.create(5, 0),
-      Point3d.create(5, 5),
-      Point3d.create(0, 5),
-    ];
-    const inner = [
-      Point3d.create(1, 1),
-      Point3d.create(3, 4),
-      Point3d.create(4, 2),
-    ];
-    const outerGraph =
-      Triangulator.createTriangulatedGraphFromSingleLoop(outer);
+    const outer = [Point3d.create(0, 0), Point3d.create(5, 0), Point3d.create(5, 5), Point3d.create(0, 5)];
+    const inner = [Point3d.create(1, 1), Point3d.create(3, 4), Point3d.create(4, 2)];
+    const outerGraph = Triangulator.createTriangulatedGraphFromSingleLoop(outer);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, outer, x0, y0);
     GraphChecker.captureAnnotatedGraph(allGeometry, outerGraph, x0, y0 + a);
     x0 += a;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, outer, x0, y0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, inner, x0, y0);
-    const holeGraph = Triangulator.createTriangulatedGraphFromLoops([
-      outer,
-      inner,
-    ]);
+    const holeGraph = Triangulator.createTriangulatedGraphFromLoops([outer, inner]);
     GraphChecker.captureAnnotatedGraph(allGeometry, holeGraph, x0, y0 + a);
 
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "ParityRegionSweep",
-      "simpleHoleTriangulate"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ParityRegionSweep", "simpleHoleTriangulate");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -314,12 +222,7 @@ describe("ParityRegionSweep", () => {
     let shiftX = 0;
     let shiftY = 0;
     const inputs = IModelJson.Reader.parse(
-      JSON.parse(
-        fs.readFileSync(
-          "./src/test/testInputs/curve/parityRegionSweep/karolisParityRegionSweep.imjs",
-          "utf8"
-        )
-      )
+      JSON.parse(fs.readFileSync("./src/test/testInputs/curve/parityRegionSweep/karolisParityRegionSweep.imjs", "utf8"))
     ) as GeometryQuery[];
     ck.testDefined(inputs, "linearSweep imported");
 
@@ -335,24 +238,14 @@ describe("ParityRegionSweep", () => {
 
     for (const input of inputs) {
       const solid = input as LinearSweep;
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        solid,
-        shiftX,
-        shiftY
-      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, solid, shiftX, shiftY);
       shiftX += dx;
 
       const polyfaceBuilder = PolyfaceBuilder.create();
       polyfaceBuilder.addLinearSweep(solid);
       const facetedSolid = polyfaceBuilder.claimPolyface();
       ck.testDefined(facetedSolid, "polyface built");
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        facetedSolid,
-        shiftX,
-        shiftY
-      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, facetedSolid, shiftX, shiftY);
       shiftX += dx;
 
       const processedFacets = PolyfaceQuery.cloneByFacetDuplication(
@@ -360,12 +253,7 @@ describe("ParityRegionSweep", () => {
         true,
         DuplicateFacetClusterSelector.SelectOneByParity
       );
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        processedFacets,
-        shiftX,
-        shiftY
-      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, processedFacets, shiftX, shiftY);
 
       PolyfaceQuery.createIndexedEdges(processedFacets).sortAndCollectClusters(
         undefined,
@@ -376,11 +264,7 @@ describe("ParityRegionSweep", () => {
       boundaryEdgeCount += boundaryEdges.length;
       nullEdgeCount += nullEdges.length;
       otherClusteredEdgeCount += otherClusteredEdges.length;
-      if (
-        boundaryEdges.length > 0 ||
-        nullEdges.length > 0 ||
-        otherClusteredEdges.length > 0
-      )
+      if (boundaryEdges.length > 0 || nullEdges.length > 0 || otherClusteredEdges.length > 0)
         GeometryCoreTestIO.captureCloneGeometry(
           allGeometry,
           PolyfaceQuery.boundaryEdges(processedFacets),
@@ -391,27 +275,15 @@ describe("ParityRegionSweep", () => {
       shiftX = 0;
       shiftY += dy;
     }
-    ck.testExactNumber(
-      boundaryEdgeCount,
-      expectedBoundaryEdgeCount,
-      "linearSweeps have expected boundary edge count"
-    );
-    ck.testExactNumber(
-      nullEdgeCount,
-      expectedNullEdgeCount,
-      "linearSweeps have expected null edge count"
-    );
+    ck.testExactNumber(boundaryEdgeCount, expectedBoundaryEdgeCount, "linearSweeps have expected boundary edge count");
+    ck.testExactNumber(nullEdgeCount, expectedNullEdgeCount, "linearSweeps have expected null edge count");
     ck.testExactNumber(
       otherClusteredEdgeCount,
       expectedOtherClusteredEdgeCount,
       "linearSweeps have expected other clustered edge count"
     );
 
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "ParityRegionSweep",
-      "KarolisRegion"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ParityRegionSweep", "KarolisRegion");
     expect(ck.getNumErrors()).equals(0);
   });
 });

@@ -51,14 +51,8 @@ export type GenerateKeyFnType = (...args: any[]) => string;
  * @internal
  */
 export class PromiseMemoizer<T> implements IDisposable {
-  private readonly _cachedPromises: Map<string, QueryablePromise<T>> = new Map<
-    string,
-    QueryablePromise<T>
-  >();
-  private readonly _timers: Map<string, NodeJS.Timer> = new Map<
-    string,
-    NodeJS.Timer
-  >();
+  private readonly _cachedPromises: Map<string, QueryablePromise<T>> = new Map<string, QueryablePromise<T>>();
+  private readonly _timers: Map<string, NodeJS.Timer> = new Map<string, NodeJS.Timer>();
   private readonly _memoizeFn: MemoizeFnType<T>;
   private readonly _generateKeyFn: GenerateKeyFnType;
   private readonly _maxCacheSize: number;
@@ -93,10 +87,7 @@ export class PromiseMemoizer<T> implements IDisposable {
 
     if (this._cachedPromises.size >= this._maxCacheSize) {
       if (this._maxCacheSize > 1)
-        Logger.logError(
-          BackendLoggerCategory.PromiseMemoizer,
-          "Cleared too many unresolved entries in memoizer cache"
-        );
+        Logger.logError(BackendLoggerCategory.PromiseMemoizer, "Cleared too many unresolved entries in memoizer cache");
       this.clearCache();
     }
 

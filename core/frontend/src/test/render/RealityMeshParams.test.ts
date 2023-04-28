@@ -10,10 +10,7 @@ import { RealityMeshParamsBuilder } from "../../render/RealityMeshParams";
 
 describe("RealityMeshParamsBuilder", () => {
   it("supports 8-, 16-, and 32-bit indices", () => {
-    function test(
-      numIndices: number,
-      expectedType: typeof Uint8Array | typeof Uint16Array | typeof Uint32Array
-    ): void {
+    function test(numIndices: number, expectedType: typeof Uint8Array | typeof Uint16Array | typeof Uint32Array): void {
       const lastIndex = numIndices - 1;
       const builder = new RealityMeshParamsBuilder({
         positionRange: new Range3d(-1, -2, -3, 1, 2, 3),
@@ -95,8 +92,7 @@ describe("RealityMeshParamsBuilder", () => {
 
       if (addIndices) builder.addIndices([0, 1, 2]);
 
-      if (!addVerts || !addIndices)
-        expect(() => builder.finish()).to.throw("Logic Error");
+      if (!addVerts || !addIndices) expect(() => builder.finish()).to.throw("Logic Error");
       else expect(builder.finish()).not.to.throw;
     }
 
@@ -107,22 +103,14 @@ describe("RealityMeshParamsBuilder", () => {
   });
 
   it("throws on inconsistent normals", () => {
-    function test(
-      wantNormals: boolean,
-      supplyNormals: boolean,
-      expectThrow: boolean
-    ): void {
+    function test(wantNormals: boolean, supplyNormals: boolean, expectThrow: boolean): void {
       const builder = new RealityMeshParamsBuilder({
         positionRange: Range3d.createNull(),
         wantNormals,
       });
 
       const addVertex = () =>
-        builder.addQuantizedVertex(
-          { x: 0, y: 0, z: 0 },
-          { x: 0, y: 0 },
-          supplyNormals ? 100 : undefined
-        );
+        builder.addQuantizedVertex({ x: 0, y: 0, z: 0 }, { x: 0, y: 0 }, supplyNormals ? 100 : undefined);
       if (expectThrow) expect(addVertex).to.throw("Logic Error");
       else expect(addVertex).not.to.throw;
     }

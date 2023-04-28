@@ -27,8 +27,7 @@ class ShadowMapDecoration {
 
   private constructor(vp: Viewport) {
     this._vp = vp;
-    this._target.solarShadowMap.onGraphicsChanged = (gfx) =>
-      this.onGraphicsChanged(gfx);
+    this._target.solarShadowMap.onGraphicsChanged = (gfx) => this.onGraphicsChanged(gfx);
     vp.onChangeView.addOnce(() => ShadowMapDecoration.stop());
     this._removeMe = IModelApp.viewManager.addDecorator(this);
   }
@@ -54,15 +53,9 @@ class ShadowMapDecoration {
 
   public decorate(context: DecorateContext): void {
     const vp = context.viewport;
-    if (
-      this._vp === vp ||
-      !this._vp.view.isSpatialView() ||
-      !vp.view.isSpatialView()
-    )
-      return;
+    if (this._vp === vp || !this._vp.view.isSpatialView() || !vp.view.isSpatialView()) return;
 
-    for (const gf of this._graphics)
-      context.addDecoration(GraphicType.WorldDecoration, gf);
+    for (const gf of this._graphics) context.addDecoration(GraphicType.WorldDecoration, gf);
   }
 
   private onGraphicsChanged(gfx: RenderGraphic[]): void {
@@ -79,10 +72,7 @@ class ShadowMapDecoration {
       copy.symbologyOverrides = this._target.currentFeatureSymbologyOverrides;
       for (const entry of branch.entries) copy.add(entry);
 
-      const copyGf = IModelApp.renderSystem.createBranch(
-        copy,
-        (gf as any).localToWorldTransform
-      );
+      const copyGf = IModelApp.renderSystem.createBranch(copy, (gf as any).localToWorldTransform);
       const owner = IModelApp.renderSystem.createGraphicOwner(copyGf);
       this._graphics.push(owner);
     }
@@ -125,8 +115,7 @@ export class ToggleShadowMapTilesTool extends Tool {
 
   public override async run(enable?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp && vp.view.isSpatialView())
-      ShadowMapDecoration.toggle(vp, enable);
+    if (undefined !== vp && vp.view.isSpatialView()) ShadowMapDecoration.toggle(vp, enable);
 
     return true;
   }

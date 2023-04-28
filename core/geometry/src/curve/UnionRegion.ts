@@ -54,10 +54,7 @@ export class UnionRegion extends CurveCollection {
     return 5;
   }
   /** dispatch to more strongly typed  `processor.announceUnionRegion(this, indexInParent)` */
-  public announceToCurveProcessor(
-    processor: RecursiveCurveProcessor,
-    indexInParent: number = -1
-  ): void {
+  public announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent: number = -1): void {
     return processor.announceUnionRegion(this, indexInParent);
   }
   /** Return structural clone with stroked primitives. */

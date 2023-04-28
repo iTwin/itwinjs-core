@@ -1,10 +1,5 @@
 {
-  "include": [
-    "core/backend/src/**/*",
-    "core/backend/lib/**/*",
-    "core/frontend/src/**/*",
-    "core/frontend/lib/**/*"
-  ],
+  "include": ["core/backend/src/**/*", "core/backend/lib/**/*", "core/frontend/src/**/*", "core/frontend/lib/**/*"],
   "exclude": ["**/*.d.ts", "**/*.d.tsx"],
   "extension": [".ts", ".tsx"],
   "temp-dir": "./full-stack-tests/core/coverage/.nyc_output",

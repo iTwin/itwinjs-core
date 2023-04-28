@@ -7,12 +7,7 @@
  */
 
 import { GuidString, Id64, Id64String } from "@itwin/core-bentley";
-import {
-  Code,
-  ElementProps,
-  EntityProps,
-  RelatedElement,
-} from "@itwin/core-common";
+import { Code, ElementProps, EntityProps, RelatedElement } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 
 /** The "state" of an Entity as represented in a web browser. Every subclass of EntityState handles one BIS class.
@@ -59,19 +54,11 @@ export class EntityState implements EntityProps {
    * @param iModel the iModel from which this EntityState is to be constructed
    * @param _state source EntityState for clone
    */
-  constructor(
-    props: EntityProps,
-    iModel: IModelConnection,
-    _state?: EntityState
-  ) {
-    this.classFullName = props.classFullName
-      ? props.classFullName
-      : this._ctor.classFullName;
+  constructor(props: EntityProps, iModel: IModelConnection, _state?: EntityState) {
+    this.classFullName = props.classFullName ? props.classFullName : this._ctor.classFullName;
     this.iModel = iModel;
     this.id = Id64.fromJSON(props.id);
-    this.jsonProperties = props.jsonProperties
-      ? JSON.parse(JSON.stringify(props.jsonProperties))
-      : {}; // make sure we have our own copy
+    this.jsonProperties = props.jsonProperties ? JSON.parse(JSON.stringify(props.jsonProperties)) : {}; // make sure we have our own copy
   }
 
   /** @internal */
@@ -79,8 +66,7 @@ export class EntityState implements EntityProps {
     const val: any = {};
     val.classFullName = this.classFullName;
     if (Id64.isValid(this.id)) val.id = this.id;
-    if (this.jsonProperties && Object.keys(this.jsonProperties).length > 0)
-      val.jsonProperties = this.jsonProperties;
+    if (this.jsonProperties && Object.keys(this.jsonProperties).length > 0) val.jsonProperties = this.jsonProperties;
     return val;
   }
 
@@ -91,11 +77,7 @@ export class EntityState implements EntityProps {
 
   /** Make an independent copy of this EntityState */
   public clone(iModel?: IModelConnection): this {
-    return new this._ctor(
-      this.toJSON(),
-      iModel ? iModel : this.iModel,
-      this
-    ) as this;
+    return new this._ctor(this.toJSON(), iModel ? iModel : this.iModel, this) as this;
   }
 
   /** Get full BIS class name of this Entity in the form "SchemaName:ClassName".  */
@@ -129,8 +111,7 @@ export class ElementState extends EntityState implements ElementProps {
     this.code = Code.fromJSON(props.code);
     this.model = RelatedElement.idFromJson(props.model);
     this.parent = RelatedElement.fromJSON(props.parent);
-    if (undefined !== props.federationGuid)
-      this.federationGuid = props.federationGuid;
+    if (undefined !== props.federationGuid) this.federationGuid = props.federationGuid;
     if (undefined !== props.userLabel) this.userLabel = props.userLabel;
   }
 

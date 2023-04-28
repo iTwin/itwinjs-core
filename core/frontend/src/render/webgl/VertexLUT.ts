@@ -8,20 +8,11 @@
 
 import { dispose } from "@itwin/core-bentley";
 import { QParams2d, QParams3d } from "@itwin/core-common";
-import {
-  AuxChannel,
-  AuxChannelTable,
-  AuxDisplacementChannel,
-  AuxParamChannel,
-} from "../primitives/AuxChannelTable";
+import { AuxChannel, AuxChannelTable, AuxDisplacementChannel, AuxParamChannel } from "../primitives/AuxChannelTable";
 import { VertexTable } from "../primitives/VertexTable";
 import { ColorInfo } from "./ColorInfo";
 import { WebGLDisposable } from "./Disposable";
-import {
-  qorigin3dToArray,
-  qparams2dToArray,
-  qscale3dToArray,
-} from "./AttributeBuffers";
+import { qorigin3dToArray, qparams2dToArray, qscale3dToArray } from "./AttributeBuffers";
 import { TextureHandle } from "./Texture";
 
 type ChannelPropName = "normals" | "displacements" | "params";
@@ -45,10 +36,7 @@ export class AuxChannelLUT implements WebGLDisposable {
     this.initChannels<AuxParamChannel>(table, "params");
   }
 
-  private initChannels<T extends AuxChannel>(
-    table: AuxChannelTable,
-    name: ChannelPropName
-  ): void {
+  private initChannels<T extends AuxChannel>(table: AuxChannelTable, name: ChannelPropName): void {
     const channels = table[name];
     if (undefined === channels) return;
 
@@ -76,14 +64,8 @@ export class AuxChannelLUT implements WebGLDisposable {
   }
 
   public static create(table: AuxChannelTable): AuxChannelLUT | undefined {
-    const texture = TextureHandle.createForData(
-      table.width,
-      table.height,
-      table.data
-    );
-    return undefined !== texture
-      ? new AuxChannelLUT(texture, table)
-      : undefined;
+    const texture = TextureHandle.createForData(table.width, table.height, table.data);
+    return undefined !== texture ? new AuxChannelLUT(texture, table) : undefined;
   }
 }
 
@@ -105,9 +87,7 @@ export class VertexLUT implements WebGLDisposable {
     return undefined !== this.auxChannels;
   }
   public get hasScalarAnimation() {
-    return (
-      undefined !== this.auxChannels && this.auxChannels.hasScalarAnimation
-    );
+    return undefined !== this.auxChannels && this.auxChannels.hasScalarAnimation;
   }
 
   public get bytesUsed(): number {
@@ -117,10 +97,7 @@ export class VertexLUT implements WebGLDisposable {
     return bytesUsed;
   }
 
-  public static createFromVertexTable(
-    vt: VertexTable,
-    aux?: AuxChannelTable
-  ): VertexLUT | undefined {
+  public static createFromVertexTable(vt: VertexTable, aux?: AuxChannelTable): VertexLUT | undefined {
     const texture = TextureHandle.createForData(vt.width, vt.height, vt.data);
     if (undefined === texture) return undefined;
 

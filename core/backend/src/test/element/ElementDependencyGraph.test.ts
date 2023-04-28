@@ -7,13 +7,7 @@
 import { assert } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import {
-  Guid,
-  Id64Array,
-  Id64String,
-  Logger,
-  OpenMode,
-} from "@itwin/core-bentley";
+import { Guid, Id64Array, Id64String, Logger, OpenMode } from "@itwin/core-bentley";
 import {
   CodeScopeSpec,
   CodeSpec,
@@ -26,11 +20,7 @@ import {
   SubCategoryAppearance,
   UpgradeOptions,
 } from "@itwin/core-common";
-import {
-  LineSegment3d,
-  Point3d,
-  YawPitchRollAngles,
-} from "@itwin/core-geometry";
+import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   ElementDrivesElementProps,
   IModelHost,
@@ -55,10 +45,7 @@ export function copyFile(newName: string, pathToCopy: string): string {
   return newPath;
 }
 
-function assertRels(
-  list: RelationshipProps[],
-  rels: ElementDrivesElementProps[]
-) {
+function assertRels(list: RelationshipProps[], rels: ElementDrivesElementProps[]) {
   assert.equal(list.length, rels.length);
   for (let i = 0; i < rels.length; ++i) {
     assert.equal(list[i].id, rels[i].id);
@@ -98,10 +85,7 @@ class TestHelper {
 
     this.db.nativeDb.enableTxnTesting();
     assert.equal(
-      this.db.nativeDb.addChildPropagatesChangesToParentRelationship(
-        "TestBim",
-        "ChildPropagatesChangesToParent"
-      ),
+      this.db.nativeDb.addChildPropagatesChangesToParentRelationship("TestBim", "ChildPropagatesChangesToParent"),
       0
     );
     this.setElementDependencyGraphCallbacks();
@@ -113,14 +97,9 @@ class TestHelper {
     this.removeElementDependencyGraphCallbacks();
   }
 
-  public makeElement(
-    codeValue: string,
-    parent?: RelatedElementProps
-  ): TestPhysicalObjectProps {
+  public makeElement(codeValue: string, parent?: RelatedElementProps): TestPhysicalObjectProps {
     const builder = new GeometryStreamBuilder();
-    builder.appendGeometry(
-      LineSegment3d.create(Point3d.createZero(), Point3d.create(5, 0, 0))
-    );
+    builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(5, 0, 0)));
 
     return {
       classFullName: "TestBim:TestPhysicalObject",
@@ -141,10 +120,7 @@ class TestHelper {
     };
   }
 
-  public insertElement(
-    codeValue: string,
-    parent?: RelatedElementProps
-  ): Id64String {
+  public insertElement(codeValue: string, parent?: RelatedElementProps): Id64String {
     return this.db.elements.insertElement(this.makeElement(codeValue, parent));
   }
 
@@ -158,9 +134,7 @@ class TestHelper {
     return this.db.elements.getElement(elId).code.value;
   }
   public fmtRel(props: RelationshipProps) {
-    return `${props.classFullName} ${this.fmtElem(
-      props.sourceId
-    )}  -->  ${this.fmtElem(props.targetId)}`;
+    return `${props.classFullName} ${this.fmtElem(props.sourceId)}  -->  ${this.fmtElem(props.targetId)}`;
   }
 
   public resetDependencyResults() {
@@ -170,10 +144,7 @@ class TestHelper {
   public setElementDependencyGraphCallbacks() {
     this.removals.push(
       TestElementDrivesElement.deletedDependency.addListener((evProps) => {
-        Logger.logTrace(
-          "EDGTest",
-          `_onDeletedDependency ${this.fmtRel(evProps)}`
-        );
+        Logger.logTrace("EDGTest", `_onDeletedDependency ${this.fmtRel(evProps)}`);
         this.dres.deletedDependency.push(evProps);
       })
     );
@@ -185,10 +156,7 @@ class TestHelper {
     );
     this.removals.push(
       TestPhysicalObject.beforeOutputsHandled.addListener((elId) => {
-        Logger.logTrace(
-          "EDGTest",
-          `_onBeforeOutputsHandled ${this.fmtElem(elId)}`
-        );
+        Logger.logTrace("EDGTest", `_onBeforeOutputsHandled ${this.fmtElem(elId)}`);
         this.dres.beforeOutputs.push(elId);
       })
     );
@@ -223,26 +191,15 @@ describe("ElementDependencyGraph", () => {
   before(async () => {
     IModelTestUtils.registerTestBimSchema();
     // make a unique name for the output file so this test can be run in parallel
-    testFileName = IModelTestUtils.prepareOutputFile(
-      "ElementDependencyGraph",
-      `${Guid.createValue()}.bim`
-    );
+    testFileName = IModelTestUtils.prepareOutputFile("ElementDependencyGraph", `${Guid.createValue()}.bim`);
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
-    const schemaFileName = IModelTestUtils.resolveAssetFile(
-      "TestBim.ecschema.xml"
-    );
+    const schemaFileName = IModelTestUtils.resolveAssetFile("TestBim.ecschema.xml");
     IModelJsFs.copySync(seedFileName, testFileName);
     performUpgrade(testFileName);
     const imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     await imodel.importSchemas([schemaFileName]); // will throw an exception if import fails
-    const physicalModelId = PhysicalModel.insert(
-      imodel,
-      IModel.rootSubjectId,
-      "EDGTestModel"
-    );
-    const codeSpecId = imodel.codeSpecs.insert(
-      CodeSpec.create(imodel, "EDGTestCodeSpec", CodeScopeSpec.Type.Model)
-    );
+    const physicalModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "EDGTestModel");
+    const codeSpecId = imodel.codeSpecs.insert(CodeSpec.create(imodel, "EDGTestCodeSpec", CodeScopeSpec.Type.Model));
     const spatialCategoryId = SpatialCategory.insert(
       imodel,
       IModel.dictionaryId,
@@ -272,16 +229,8 @@ describe("ElementDependencyGraph", () => {
     const e3id = helper.insertElement("e3");
     helper.db.saveChanges(); // get the elements into the iModel
 
-    const ede_1_2 = TestElementDrivesElement.create<TestElementDrivesElement>(
-      helper.db,
-      e1id,
-      e2id
-    );
-    const ede_2_3 = TestElementDrivesElement.create<TestElementDrivesElement>(
-      helper.db,
-      e2id,
-      e3id
-    );
+    const ede_1_2 = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, e1id, e2id);
+    const ede_2_3 = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, e2id, e3id);
     for (const ede of [ede_1_2, ede_2_3]) {
       ede.insert();
     }
@@ -362,21 +311,9 @@ describe("ElementDependencyGraph", () => {
     const e3id = helper.insertElement("e3");
     helper.db.saveChanges(); // get the elements into the iModel
 
-    const ede_1_2 = TestElementDrivesElement.create<TestElementDrivesElement>(
-      helper.db,
-      e1id,
-      e2id
-    );
-    const ede_2_3 = TestElementDrivesElement.create<TestElementDrivesElement>(
-      helper.db,
-      e2id,
-      e3id
-    );
-    const ede_p2_p3 = TestElementDrivesElement.create<TestElementDrivesElement>(
-      helper.db,
-      p2id,
-      p3id
-    );
+    const ede_1_2 = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, e1id, e2id);
+    const ede_2_3 = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, e2id, e3id);
+    const ede_p2_p3 = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, p2id, p3id);
     for (const ede of [ede_1_2, ede_2_3, ede_p2_p3]) {
       ede.insert();
     }
@@ -392,11 +329,7 @@ describe("ElementDependencyGraph", () => {
     helper.db.saveChanges(); // this will react to EDE inserts only.
     assert.deepEqual(helper.dres.beforeOutputs, []); // only roots get this callback, and only if they have been directly changed.
     assert.deepEqual(helper.dres.allInputsHandled, []); // No input elements have changed
-    assertRels(helper.dres.rootChanged, [
-      ede_1_2.toJSON(),
-      ede_2_3.toJSON(),
-      ede_p2_p3.toJSON(),
-    ]); // we send out this callback even if only the relationship itself is new or changed.
+    assertRels(helper.dres.rootChanged, [ede_1_2.toJSON(), ede_2_3.toJSON(), ede_p2_p3.toJSON()]); // we send out this callback even if only the relationship itself is new or changed.
 
     helper.updateElement(e1id, "change e1");
 
@@ -405,11 +338,7 @@ describe("ElementDependencyGraph", () => {
 
     assert.deepEqual(helper.dres.beforeOutputs, [e1id]); // only called on directly changed root elements.
     assert.deepEqual(helper.dres.allInputsHandled, [e2id, p2id, e3id, p3id]);
-    assertRels(helper.dres.rootChanged, [
-      ede_1_2.toJSON(),
-      ede_2_3.toJSON(),
-      ede_p2_p3.toJSON(),
-    ]);
+    assertRels(helper.dres.rootChanged, [ede_1_2.toJSON(), ede_2_3.toJSON(), ede_p2_p3.toJSON()]);
 
     helper.updateElement(p2id, "change p2");
 
@@ -455,22 +384,17 @@ describe("ElementDependencyGraph", () => {
     const groundGeneration = helper.insertElement("GroundGeneration");
     helper.db.saveChanges(); // get the elements into the iModel
 
-    const ede_material_materialDepthRange =
-      TestElementDrivesElement.create<TestElementDrivesElement>(
-        helper.db,
-        material,
-        materialDepthRange
-      );
-    const ede_boreholeSource_groundGeneration =
-      TestElementDrivesElement.create<TestElementDrivesElement>(
-        helper.db,
-        boreholeSource,
-        groundGeneration
-      );
-    for (const ede of [
-      ede_material_materialDepthRange,
-      ede_boreholeSource_groundGeneration,
-    ]) {
+    const ede_material_materialDepthRange = TestElementDrivesElement.create<TestElementDrivesElement>(
+      helper.db,
+      material,
+      materialDepthRange
+    );
+    const ede_boreholeSource_groundGeneration = TestElementDrivesElement.create<TestElementDrivesElement>(
+      helper.db,
+      boreholeSource,
+      groundGeneration
+    );
+    for (const ede of [ede_material_materialDepthRange, ede_boreholeSource_groundGeneration]) {
       ede.insert();
     }
 
@@ -483,12 +407,7 @@ describe("ElementDependencyGraph", () => {
     helper.db.saveChanges();
 
     assert.deepEqual(helper.dres.beforeOutputs, [material]); // only called on directly changed root elements.
-    assert.deepEqual(helper.dres.allInputsHandled, [
-      materialDepthRange,
-      borehole,
-      boreholeSource,
-      groundGeneration,
-    ]);
+    assert.deepEqual(helper.dres.allInputsHandled, [materialDepthRange, borehole, boreholeSource, groundGeneration]);
     assertRels(helper.dres.rootChanged, [
       ede_material_materialDepthRange.toJSON(),
       ede_boreholeSource_groundGeneration.toJSON(),
@@ -507,31 +426,11 @@ describe("ElementDependencyGraph", () => {
     const e3id = helper.insertElement("e3");
     const e4id = helper.insertElement("e4");
 
-    const ede_1_2 = TestElementDrivesElement.create<TestElementDrivesElement>(
-      helper.db,
-      e1id,
-      e2id
-    );
-    const ede_11_2 = TestElementDrivesElement.create<TestElementDrivesElement>(
-      helper.db,
-      e11id,
-      e2id
-    );
-    const ede_2_3 = TestElementDrivesElement.create<TestElementDrivesElement>(
-      helper.db,
-      e2id,
-      e3id
-    );
-    const ede_21_3 = TestElementDrivesElement.create<TestElementDrivesElement>(
-      helper.db,
-      e21id,
-      e3id
-    );
-    const ede_3_4 = TestElementDrivesElement.create<TestElementDrivesElement>(
-      helper.db,
-      e3id,
-      e4id
-    );
+    const ede_1_2 = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, e1id, e2id);
+    const ede_11_2 = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, e11id, e2id);
+    const ede_2_3 = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, e2id, e3id);
+    const ede_21_3 = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, e21id, e3id);
+    const ede_3_4 = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, e3id, e4id);
     for (const ede of [ede_1_2, ede_11_2, ede_2_3, ede_21_3, ede_3_4]) {
       ede.insert();
     }
@@ -624,11 +523,7 @@ describe("ElementDependencyGraph", () => {
 
     assert.deepEqual(helper.dres.beforeOutputs, [e1id]); // only called on directly changed root elements
     assert.deepEqual(helper.dres.allInputsHandled, [e2id, e3id, e4id]);
-    assertRels(helper.dres.rootChanged, [
-      ede_1_2.toJSON(),
-      ede_2_3.toJSON(),
-      ede_3_4.toJSON(),
-    ]);
+    assertRels(helper.dres.rootChanged, [ede_1_2.toJSON(), ede_2_3.toJSON(), ede_3_4.toJSON()]);
 
     // Modify e11 directly. That should propagate to the rest of the nodes. Each should get an _onAllInputsHandled callback
     // resulting graph:
@@ -647,11 +542,7 @@ describe("ElementDependencyGraph", () => {
     // assert.deepEqual(helper.dres.directChange, []); // only called on directly changed non-root elements that have no directly changed inputs
     assert.deepEqual(helper.dres.beforeOutputs, [e11id]); // only called on directly changed root elements
     assert.deepEqual(helper.dres.allInputsHandled, [e2id, e3id, e4id]);
-    assertRels(helper.dres.rootChanged, [
-      ede_11_2.toJSON(),
-      ede_2_3.toJSON(),
-      ede_3_4.toJSON(),
-    ]);
+    assertRels(helper.dres.rootChanged, [ede_11_2.toJSON(), ede_2_3.toJSON(), ede_3_4.toJSON()]);
     // assertRels(helper.dres.validateOutput, [ede_1_2, ede_21_3]); // this callback is made only on rels that not in the graph but share an output with another rel or have an output that was directly changed
 
     helper.terminate();

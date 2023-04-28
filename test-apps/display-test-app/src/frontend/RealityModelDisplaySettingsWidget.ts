@@ -45,11 +45,7 @@ class ContextModel implements RealityModel {
   }
 
   public get name() {
-    return (
-      this._state.name ||
-      this._state.orbitGtBlob?.blobFileName ||
-      this._state.url
-    );
+    return this._state.name || this._state.orbitGtBlob?.blobFileName || this._state.url;
   }
 
   public get settings() {
@@ -81,10 +77,7 @@ class PersistentModel implements RealityModel {
   }
 
   public get settings() {
-    return (
-      this._settings.getRealityModelDisplaySettings(this._model.id) ??
-      RealityModelDisplaySettings.defaults
-    );
+    return this._settings.getRealityModelDisplaySettings(this._model.id) ?? RealityModelDisplaySettings.defaults;
   }
   public set settings(value: RealityModelDisplaySettings) {
     this._settings.setRealityModelDisplaySettings(this._model.id, value);
@@ -99,16 +92,11 @@ class PersistentModel implements RealityModel {
   }
 }
 
-function createRealityModelSettingsPanel(
-  model: RealityModel,
-  element: HTMLElement
-) {
-  const updateSettings = (props: RealityModelDisplayProps) =>
-    (model.settings = model.settings.clone(props));
+function createRealityModelSettingsPanel(model: RealityModel, element: HTMLElement) {
+  const updateSettings = (props: RealityModelDisplayProps) => (model.settings = model.settings.clone(props));
   const updateAppearance = (props: FeatureAppearanceProps | undefined) => {
     if (!props) model.appearance = undefined;
-    else if (!model.appearance)
-      model.appearance = FeatureAppearance.fromJSON(props);
+    else if (!model.appearance) model.appearance = FeatureAppearance.fromJSON(props);
     else model.appearance = model.appearance.clone(props);
   };
 
@@ -121,10 +109,7 @@ function createRealityModelSettingsPanel(
   colorCb.id = "rms_cbColor";
   colorDiv.appendChild(colorCb);
 
-  const updateColor = () =>
-    updateAppearance(
-      colorCb.checked ? { rgb: convertHexToRgb(colorInput.value) } : undefined
-    );
+  const updateColor = () => updateAppearance(colorCb.checked ? { rgb: convertHexToRgb(colorInput.value) } : undefined);
   const colorInput = createColorInput({
     parent: colorDiv,
     id: "rms_color",
@@ -154,8 +139,7 @@ function createRealityModelSettingsPanel(
     textAlign: false,
     handler: (slider) => {
       const overrideColorRatio = Number.parseFloat(slider.value);
-      if (!Number.isNaN(overrideColorRatio))
-        updateSettings({ overrideColorRatio });
+      if (!Number.isNaN(overrideColorRatio)) updateSettings({ overrideColorRatio });
     },
   });
   colorRatio.div.style.display = "inline";
@@ -169,8 +153,7 @@ function createRealityModelSettingsPanel(
     id: "rms_square",
     parent: element,
     isChecked: model.settings.pointCloud.shape === "square",
-    handler: (cb) =>
-      updatePointCloud({ shape: cb.checked ? "square" : "round" }),
+    handler: (cb) => updatePointCloud({ shape: cb.checked ? "square" : "round" }),
   });
 
   // Point size mode
@@ -434,10 +417,7 @@ export class OpenRealityModelSettingsTool extends Tool {
     return 1;
   }
 
-  public override async run(
-    vp?: Viewport,
-    model?: RealityModel
-  ): Promise<boolean> {
+  public override async run(vp?: Viewport, model?: RealityModel): Promise<boolean> {
     if (!vp || !model) return false;
 
     const win = new RealityModelSettingsWidget(vp, model);
@@ -464,10 +444,7 @@ export class OpenRealityModelSettingsTool extends Tool {
       for (const modelId of vp.view.modelSelector.models) {
         const model = vp.iModel.models.getLoaded(modelId);
         if (model instanceof SpatialModelState && model.isRealityModel) {
-          realityModel = new PersistentModel(
-            model,
-            vp.view.displayStyle.settings
-          );
+          realityModel = new PersistentModel(model, vp.view.displayStyle.settings);
           break;
         }
       }
@@ -516,8 +493,7 @@ export class RealityModelSettingsPanel extends ToolBarDropDown {
   }
 
   private async remakePanelWithSelection(ndx: number) {
-    while (this._element.hasChildNodes())
-      this._element.removeChild(this._element.firstChild!);
+    while (this._element.hasChildNodes()) this._element.removeChild(this._element.firstChild!);
     this._selectedRealityModelIndex = ndx;
     this._realityModelListDiv = document.createElement("div");
     this._realityModelListDiv.style.display = "block";
@@ -535,10 +511,7 @@ export class RealityModelSettingsPanel extends ToolBarDropDown {
       for (const modelId of this._vp.view.modelSelector.models) {
         const model = this._vp.iModel.models.getLoaded(modelId);
         if (model instanceof SpatialModelState && model.isRealityModel) {
-          const realityModel = new PersistentModel(
-            model,
-            this._vp.view.displayStyle.settings
-          );
+          const realityModel = new PersistentModel(model, this._vp.view.displayStyle.settings);
           this._realityModels.push({
             realityModel,
             modelName: realityModel.name,
@@ -569,9 +542,7 @@ export class RealityModelSettingsPanel extends ToolBarDropDown {
   public async populate(): Promise<void> {
     if (!this._vp || !this._vp.view.isSpatialView()) return;
     this.populateRealityModelList();
-    const realityModel = this._realityModels.at(
-      this._selectedRealityModelIndex
-    )?.realityModel;
+    const realityModel = this._realityModels.at(this._selectedRealityModelIndex)?.realityModel;
     if (undefined === realityModel) return;
 
     createRealityModelSettingsPanel(realityModel, this._element);

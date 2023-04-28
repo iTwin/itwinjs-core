@@ -13,19 +13,11 @@ import {
   GeometryClass,
   ModelExtentsProps,
 } from "@itwin/core-common";
-import {
-  AttachToViewportArgs,
-  SpatialViewState,
-  TileTreeOwner,
-  TileTreeReference,
-} from "@itwin/core-frontend";
+import { AttachToViewportArgs, SpatialViewState, TileTreeOwner, TileTreeReference } from "@itwin/core-frontend";
 import { getBatchedTileTreeOwner } from "./BatchedTileTreeSupplier";
 
 /** @internal */
-export class BatchedTileTreeReference
-  extends TileTreeReference
-  implements FeatureAppearanceProvider
-{
+export class BatchedTileTreeReference extends TileTreeReference implements FeatureAppearanceProvider {
   private readonly _treeOwner: TileTreeOwner;
   private readonly _view: SpatialViewState;
   private readonly _viewedModels = new Id64.Uint32Set();
@@ -39,10 +31,7 @@ export class BatchedTileTreeReference
     this._view = view;
   }
 
-  public static create(
-    view: SpatialViewState,
-    baseUrl: URL
-  ): BatchedTileTreeReference {
+  public static create(view: SpatialViewState, baseUrl: URL): BatchedTileTreeReference {
     const owner = getBatchedTileTreeOwner(view.iModel, baseUrl);
     return new BatchedTileTreeReference(owner, view);
   }
@@ -71,22 +60,18 @@ export class BatchedTileTreeReference
     this._onModelSelectorChanged();
 
     this._modelRangePromise = undefined;
-    const modelIds = Array.from(this._view.modelSelector.models).filter(
-      (modelId) => !this._modelRanges.has(modelId)
-    );
+    const modelIds = Array.from(this._view.modelSelector.models).filter((modelId) => !this._modelRanges.has(modelId));
     if (modelIds.length === 0) return;
 
-    const modelRangePromise = (this._modelRangePromise =
-      this._treeOwner.iModel.models
-        .queryExtents(modelIds)
-        .then((extents: ModelExtentsProps[]) => {
-          if (modelRangePromise !== this._modelRangePromise) return;
+    const modelRangePromise = (this._modelRangePromise = this._treeOwner.iModel.models
+      .queryExtents(modelIds)
+      .then((extents: ModelExtentsProps[]) => {
+        if (modelRangePromise !== this._modelRangePromise) return;
 
-          this._modelRangePromise = undefined;
-          for (const extent of extents)
-            this._modelRanges.set(extent.id, Range3d.fromJSON(extent.extents));
-        })
-        .catch(() => {}));
+        this._modelRangePromise = undefined;
+        for (const extent of extents) this._modelRanges.set(extent.id, Range3d.fromJSON(extent.extents));
+      })
+      .catch(() => {}));
   }
 
   public override unionFitRange(union: Range3d): void {
@@ -97,9 +82,7 @@ export class BatchedTileTreeReference
     });
   }
 
-  public override getAppearanceProvider():
-    | FeatureAppearanceProvider
-    | undefined {
+  public override getAppearanceProvider(): FeatureAppearanceProvider | undefined {
     return this._onModelSelectorChanged ? this : undefined;
   }
 
@@ -116,19 +99,8 @@ export class BatchedTileTreeReference
     animationNodeId: number
   ): FeatureAppearance | undefined {
     // ###TODO: Until MultiModelPackedFeatureTable is hooked up we'll always get the transient model Id - remove check after that.
-    if (modelHi !== 0xffffff00 && !this._viewedModels.has(modelLo, modelHi))
-      return undefined;
+    if (modelHi !== 0xffffff00 && !this._viewedModels.has(modelLo, modelHi)) return undefined;
 
-    return source.getAppearance(
-      elemLo,
-      elemHi,
-      subcatLo,
-      subcatHi,
-      geomClass,
-      modelLo,
-      modelHi,
-      type,
-      animationNodeId
-    );
+    return source.getAppearance(elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
   }
 }

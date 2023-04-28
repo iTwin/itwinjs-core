@@ -6,11 +6,7 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import {
-  BooleanClipNodeIntersection,
-  BooleanClipNodeParity,
-  BooleanClipNodeUnion,
-} from "./BooleanClipNode";
+import { BooleanClipNodeIntersection, BooleanClipNodeParity, BooleanClipNodeUnion } from "./BooleanClipNode";
 import { ClipPlane } from "./ClipPlane";
 import { Clipper, ClipUtilities } from "./ClipUtils";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
@@ -37,10 +33,7 @@ export class BooleanClipFactory {
    * @param clippers clip objects to capture
    * @param keepInside flag to select results inside or outside the clippers.
    */
-  public static createCaptureUnion(
-    clippers: Clipper | Clipper[],
-    keepInside: boolean
-  ): Clipper {
+  public static createCaptureUnion(clippers: Clipper | Clipper[], keepInside: boolean): Clipper {
     const result = new BooleanClipNodeUnion(keepInside);
     result.captureChild(clippers);
     return result;
@@ -52,10 +45,7 @@ export class BooleanClipFactory {
    * @param clippers clip objects to capture
    * @param keepInside flag to select results inside or outside the clippers.
    */
-  public static createCaptureIntersection(
-    clippers: Clipper | Clipper[],
-    keepInside: boolean
-  ): Clipper {
+  public static createCaptureIntersection(clippers: Clipper | Clipper[], keepInside: boolean): Clipper {
     const result = new BooleanClipNodeIntersection(keepInside);
     result.captureChild(clippers);
     return result;
@@ -67,10 +57,7 @@ export class BooleanClipFactory {
    * @param clippers clip objects to capture
    * @param keepInside flag to select results inside or outside the clippers.
    */
-  public static createCaptureParity(
-    clippers: Clipper | Clipper[],
-    keepInside: boolean
-  ): Clipper {
+  public static createCaptureParity(clippers: Clipper | Clipper[], keepInside: boolean): Clipper {
     const result = new BooleanClipNodeParity(keepInside);
     result.captureChild(clippers);
     return result;
@@ -159,9 +146,7 @@ export class BooleanClipFactory {
         // array of planes is a convex clip plane set.
         return ConvexClipPlaneSet.createPlanes(clippers as ClipPlane[]);
       } else if (numConvexSets === source.length) {
-        return UnionOfConvexClipPlaneSets.createConvexSets(
-          clippers as ConvexClipPlaneSet[]
-        );
+        return UnionOfConvexClipPlaneSets.createConvexSets(clippers as ConvexClipPlaneSet[]);
       }
       // array of mixed types should not occur.  fall out to undefined.
     } else if (source.hasOwnProperty("OR")) {

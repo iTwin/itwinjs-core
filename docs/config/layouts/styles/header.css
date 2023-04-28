@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 :root {
   --flex-column: 7%;
@@ -12,11 +12,7 @@
 
   --header-nav-height: 54px;
 
-  --itwin-gradient: linear-gradient(
-    90deg,
-    #32b1d1 4.349046015712743%,
-    #30f1cf 92.31200897867573%
-  );
+  --itwin-gradient: linear-gradient(90deg, #32b1d1 4.349046015712743%, #30f1cf 92.31200897867573%);
   --itwin-shadow: 0px 1px 10px 0px rgba(0, 0, 0, 0.2);
 
   /* colors */

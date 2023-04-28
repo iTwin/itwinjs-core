@@ -6,11 +6,7 @@
  * @module DisplayStyles
  */
 
-import {
-  CompressedId64Set,
-  Id64String,
-  OrderedId64Iterable,
-} from "@itwin/core-bentley";
+import { CompressedId64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 
 /** The different modes by which a [[PlanarClipMaskSettings]] collects the geometry used to mask a model.
  * @public
@@ -201,9 +197,7 @@ export class PlanarClipMaskSettings {
       | SubCategoryPlanarClipMaskArgs
       | PriorityPlanarClipMaskArgs
   ): PlanarClipMaskSettings {
-    const modelIds = args.modelIds
-      ? CompressedId64Set.sortAndCompress(args.modelIds)
-      : undefined;
+    const modelIds = args.modelIds ? CompressedId64Set.sortAndCompress(args.modelIds) : undefined;
     if (undefined !== args.priority)
       return new PlanarClipMaskSettings(
         PlanarClipMaskMode.Priority,
@@ -224,9 +218,7 @@ export class PlanarClipMaskSettings {
       );
     else if (undefined !== args.elementIds)
       return new PlanarClipMaskSettings(
-        args.exclude
-          ? PlanarClipMaskMode.ExcludeElements
-          : PlanarClipMaskMode.IncludeElements,
+        args.exclude ? PlanarClipMaskMode.ExcludeElements : PlanarClipMaskMode.IncludeElements,
         args.transparency,
         modelIds,
         CompressedId64Set.sortAndCompress(args.elementIds),
@@ -249,8 +241,7 @@ export class PlanarClipMaskSettings {
     const props: PlanarClipMaskProps = { mode: this.mode };
     if (undefined !== this._modelIds) props.modelIds = this._modelIds;
 
-    if (undefined !== this._subCategoryOrElementIds)
-      props.subCategoryOrElementIds = this._subCategoryOrElementIds;
+    if (undefined !== this._subCategoryOrElementIds) props.subCategoryOrElementIds = this._subCategoryOrElementIds;
 
     if (undefined !== this.priority) props.priority = this.priority;
 
@@ -303,17 +294,11 @@ export class PlanarClipMaskSettings {
     this._subCategoryOrElementIds = subCategoryOrElementIds;
     this.priority = priority;
     this.invert = true === invert;
-    this.transparency =
-      undefined !== transparency
-        ? Math.max(0, Math.min(1, transparency))
-        : undefined;
+    this.transparency = undefined !== transparency ? Math.max(0, Math.min(1, transparency)) : undefined;
 
     if (modelIds) this.modelIds = CompressedId64Set.iterable(modelIds);
 
-    if (subCategoryOrElementIds)
-      this.subCategoryOrElementIds = CompressedId64Set.iterable(
-        subCategoryOrElementIds
-      );
+    if (subCategoryOrElementIds) this.subCategoryOrElementIds = CompressedId64Set.iterable(subCategoryOrElementIds);
   }
 
   /** A default PlanarClipMask which masks nothing. */

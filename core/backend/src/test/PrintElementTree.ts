@@ -24,19 +24,13 @@ export function printElementTree(
   indent: number
 ) {
   if (seen.has(elementId)) {
-    Logger.logTrace(
-      loggerCategory,
-      `${"\t".repeat(indent)}${fmtElement(iModel, elementId)} (SEEN)`
-    );
+    Logger.logTrace(loggerCategory, `${"\t".repeat(indent)}${fmtElement(iModel, elementId)} (SEEN)`);
     return;
   }
 
   seen.add(elementId);
 
-  Logger.logTrace(
-    loggerCategory,
-    `${"\t".repeat(indent)}${fmtElement(iModel, elementId)}`
-  );
+  Logger.logTrace(loggerCategory, `${"\t".repeat(indent)}${fmtElement(iModel, elementId)}`);
 
   for (const child of iModel.elements.queryChildren(elementId)) {
     printElementTree(loggerCategory, seen, iModel, child, indent + 1);
@@ -44,25 +38,13 @@ export function printElementTree(
 
   const subModel = iModel.models.tryGetModel<Model>(elementId);
   if (subModel !== undefined) {
-    Logger.logTrace(
-      loggerCategory,
-      `${"\t".repeat(indent)} subModel ${fmtModel(subModel)}:`
-    );
+    Logger.logTrace(loggerCategory, `${"\t".repeat(indent)} subModel ${fmtModel(subModel)}:`);
 
-    iModel.withPreparedStatement(
-      `select ecinstanceid from ${Element.classFullName} where Model.Id = ?`,
-      (stmt) => {
-        stmt.bindId(1, subModel.id);
-        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-          printElementTree(
-            loggerCategory,
-            seen,
-            iModel,
-            stmt.getValue(0).getId(),
-            indent + 1
-          );
-        }
+    iModel.withPreparedStatement(`select ecinstanceid from ${Element.classFullName} where Model.Id = ?`, (stmt) => {
+      stmt.bindId(1, subModel.id);
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        printElementTree(loggerCategory, seen, iModel, stmt.getValue(0).getId(), indent + 1);
       }
-    );
+    });
   }
 }

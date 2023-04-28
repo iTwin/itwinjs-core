@@ -8,11 +8,7 @@
 
 import { Arc3d } from "../curve/Arc3d";
 import { CurveFactory } from "../curve/CurveFactory";
-import {
-  AnnounceNumberNumber,
-  AnnounceNumberNumberCurvePrimitive,
-  CurvePrimitive,
-} from "../curve/CurvePrimitive";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
@@ -101,10 +97,7 @@ export interface Clipper {
    * @param announce function to be called to announce a fraction interval that is within the convex clip volume.
    * @returns true if one or more arcs portions were announced, false if entirely outside.
    */
-  announceClippedArcIntervals(
-    arc: Arc3d,
-    announce?: AnnounceNumberNumberCurvePrimitive
-  ): boolean;
+  announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
   /** Optional polygon clip method.
    * * This is  expected to be implemented by planar clip structures.
    * * This is  unimplemented for curve clippers (e.g. sphere) for which polygon clip result has
@@ -204,20 +197,14 @@ export class ClipUtilities {
   /** Find portions of the curve that are within the clipper.
    * Collect them into an array of curve primitives.
    */
-  public static collectClippedCurves(
-    curve: CurvePrimitive,
-    clipper: Clipper
-  ): CurvePrimitive[] {
+  public static collectClippedCurves(curve: CurvePrimitive, clipper: Clipper): CurvePrimitive[] {
     const result: CurvePrimitive[] = [];
-    curve.announceClipIntervals(
-      clipper,
-      (fraction0: number, fraction1: number, curveA: CurvePrimitive) => {
-        if (fraction1 !== fraction0) {
-          const partialCurve = curveA.clonePartialCurve(fraction0, fraction1);
-          if (partialCurve) result.push(partialCurve);
-        }
+    curve.announceClipIntervals(clipper, (fraction0: number, fraction1: number, curveA: CurvePrimitive) => {
+      if (fraction1 !== fraction0) {
+        const partialCurve = curveA.clonePartialCurve(fraction0, fraction1);
+        if (partialCurve) result.push(partialCurve);
       }
-    );
+    });
     return result;
   }
 
@@ -225,14 +212,8 @@ export class ClipUtilities {
    * Clip a polygon down to regions defined by each shape of a ClipShape.
    * @return An multidimensional array of points, where each array is the boundary of part of the remaining polygon.
    */
-  public static clipPolygonToClipShape(
-    polygon: Point3d[],
-    clipShape: ClipPrimitive
-  ): Point3d[][] {
-    const outputA = this.clipPolygonToClipShapeReturnGrowableXYZArrays(
-      polygon,
-      clipShape
-    );
+  public static clipPolygonToClipShape(polygon: Point3d[], clipShape: ClipPrimitive): Point3d[][] {
+    const outputA = this.clipPolygonToClipShapeReturnGrowableXYZArrays(polygon, clipShape);
     const output = [];
     for (const g of outputA) output.push(g.getPoint3dArray());
     return output;
@@ -281,9 +262,7 @@ export class ClipUtilities {
         for (let i = 0; i < points.length; i++) {
           points.getPoint3dAtUncheckedPointIndex(i, currPt);
           currVec.setFrom(currPt);
-          currVec.dotProduct(plane.inwardNormalRef) > planeDistance
-            ? numInside++
-            : numOutside++;
+          currVec.dotProduct(plane.inwardNormalRef) > planeDistance ? numInside++ : numOutside++;
         }
 
         anyOutside = numOutside !== 0 ? true : anyOutside;
@@ -326,12 +305,7 @@ export class ClipUtilities {
           const pointsClippedToRange = plane.intersectRange(range, true);
           const finalPoints = new GrowableXYZArray();
           if (pointsClippedToRange) {
-            convexSet.polygonClip(
-              pointsClippedToRange,
-              finalPoints,
-              work,
-              plane
-            );
+            convexSet.polygonClip(pointsClippedToRange, finalPoints, work, plane);
             if (finalPoints.length > 0) loopFunction(finalPoints);
           }
         }
@@ -358,8 +332,7 @@ export class ClipUtilities {
           if (finalPoints.length > 0) loopFunction(finalPoints);
         } else {
           convexSet.clipConvexPolygonInPlace(lineString.packedPoints, work);
-          if (lineString.packedPoints.length > 0)
-            loopFunction(lineString.packedPoints);
+          if (lineString.packedPoints.length > 0) loopFunction(lineString.packedPoints);
         }
       }
     }
@@ -395,10 +368,7 @@ export class ClipUtilities {
           ignoreInvisiblePlanes
         );
       }
-    } else if (
-      allClippers instanceof ConvexClipPlaneSet ||
-      allClippers instanceof ClipPlane
-    ) {
+    } else if (allClippers instanceof ConvexClipPlaneSet || allClippers instanceof ClipPlane) {
       this.announceLoopsOfConvexClipPlaneSetIntersectRange(
         allClippers,
         range,
@@ -418,10 +388,7 @@ export class ClipUtilities {
    * @param convexSet convex set for intersection.
    * @param range range to intersect
    */
-  public static rangeOfConvexClipPlaneSetIntersectionWithRange(
-    convexSet: ConvexClipPlaneSet,
-    range: Range3d
-  ): Range3d {
+  public static rangeOfConvexClipPlaneSetIntersectionWithRange(convexSet: ConvexClipPlaneSet, range: Range3d): Range3d {
     const result = Range3d.createNull();
     this.announceLoopsOfConvexClipPlaneSetIntersectRange(
       convexSet,
@@ -449,38 +416,24 @@ export class ClipUtilities {
    * @param observeInvisibleFlag indicates how "invisible" bit is applied for ClipPrimitive.
    */
   public static rangeOfClipperIntersectionWithRange(
-    clipper:
-      | ConvexClipPlaneSet
-      | UnionOfConvexClipPlaneSets
-      | ClipPrimitive
-      | ClipVector
-      | undefined,
+    clipper: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPrimitive | ClipVector | undefined,
     range: Range3d,
     observeInvisibleFlag: boolean = true
   ): Range3d {
     if (clipper === undefined) return range.clone();
     if (clipper instanceof ConvexClipPlaneSet)
-      return this.rangeOfConvexClipPlaneSetIntersectionWithRange(
-        clipper,
-        range
-      );
+      return this.rangeOfConvexClipPlaneSetIntersectionWithRange(clipper, range);
     if (clipper instanceof UnionOfConvexClipPlaneSets) {
       const rangeUnion = Range3d.createNull();
       for (const c of clipper.convexSets) {
-        const rangeC = this.rangeOfConvexClipPlaneSetIntersectionWithRange(
-          c,
-          range
-        );
+        const rangeC = this.rangeOfConvexClipPlaneSetIntersectionWithRange(c, range);
         rangeUnion.extendRange(rangeC);
       }
       return rangeUnion;
     }
     if (clipper instanceof ClipPrimitive) {
       if (observeInvisibleFlag && clipper.invisible) return range.clone();
-      return this.rangeOfClipperIntersectionWithRange(
-        clipper.fetchClipPlanesRef(),
-        range
-      );
+      return this.rangeOfClipperIntersectionWithRange(clipper.fetchClipPlanesRef(), range);
     }
     if (clipper instanceof ClipVector) {
       const rangeIntersection = range.clone();
@@ -488,11 +441,7 @@ export class ClipUtilities {
         if (observeInvisibleFlag && c.invisible) {
           // trivial range tests do not expose the effects.   Assume the hole allows everything.
         } else {
-          const rangeC = this.rangeOfClipperIntersectionWithRange(
-            c,
-            range,
-            observeInvisibleFlag
-          );
+          const rangeC = this.rangeOfClipperIntersectionWithRange(c, range, observeInvisibleFlag);
           rangeIntersection.intersect(rangeC, rangeIntersection);
         }
       }
@@ -515,19 +464,13 @@ export class ClipUtilities {
    * @param observeInvisibleFlag indicates how "invisible" bit is applied for ClipPrimitive.
    */
   public static doesClipperIntersectRange(
-    clipper:
-      | ConvexClipPlaneSet
-      | UnionOfConvexClipPlaneSets
-      | ClipPrimitive
-      | ClipVector
-      | undefined,
+    clipper: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPrimitive | ClipVector | undefined,
     range: Range3d,
     observeInvisibleFlag: boolean = true
   ): boolean {
     if (clipper === undefined) return true;
 
-    if (clipper instanceof ConvexClipPlaneSet)
-      return this.doesConvexClipPlaneSetIntersectRange(clipper, range);
+    if (clipper instanceof ConvexClipPlaneSet) return this.doesConvexClipPlaneSetIntersectRange(clipper, range);
 
     if (clipper instanceof UnionOfConvexClipPlaneSets) {
       for (const c of clipper.convexSets) {
@@ -540,10 +483,7 @@ export class ClipUtilities {
       if (observeInvisibleFlag && clipper.invisible)
         // um is there an easy way to detect range-completely-inside?
         return true;
-      return this.doesClipperIntersectRange(
-        clipper.fetchClipPlanesRef(),
-        range
-      );
+      return this.doesClipperIntersectRange(clipper.fetchClipPlanesRef(), range);
     }
 
     if (clipper instanceof ClipVector) {
@@ -552,11 +492,7 @@ export class ClipUtilities {
         if (observeInvisibleFlag && c.invisible) {
           // trivial range tests do not expose the effects.   Assume the hole allows everything.
         } else {
-          const rangeC = this.rangeOfClipperIntersectionWithRange(
-            c,
-            range,
-            observeInvisibleFlag
-          );
+          const rangeC = this.rangeOfClipperIntersectionWithRange(c, range, observeInvisibleFlag);
           rangeIntersection.intersect(rangeC, rangeIntersection);
         }
       }
@@ -624,30 +560,22 @@ export class ClipUtilities {
     local1ToWorld: Transform,
     range1Margin?: number
   ): boolean {
-    const worldToLocal1 = (ClipUtilities._workTransform = local1ToWorld.inverse(
-      ClipUtilities._workTransform
-    ));
+    const worldToLocal1 = (ClipUtilities._workTransform = local1ToWorld.inverse(ClipUtilities._workTransform));
     if (!worldToLocal1) return false;
     let myRange1 = range1;
     if (range1Margin) {
-      myRange1 = ClipUtilities._workRange = range1.clone(
-        ClipUtilities._workRange
-      );
+      myRange1 = ClipUtilities._workRange = range1.clone(ClipUtilities._workRange);
       myRange1.expandInPlace(range1Margin);
     }
     // convert range0 into a clipper in local1 coordinates, then intersect with range1
-    const local0ToLocal1 = worldToLocal1.multiplyTransformTransform(
-      local0ToWorld,
-      worldToLocal1
-    );
+    const local0ToLocal1 = worldToLocal1.multiplyTransformTransform(local0ToWorld, worldToLocal1);
     const builder = PolyfaceBuilder.create();
     builder.addTransformedRangeMesh(local0ToLocal1, range0);
     const mesh0 = builder.claimPolyface();
-    const clipper = (ClipUtilities._workClipper =
-      ConvexClipPlaneSet.createConvexPolyface(
-        mesh0,
-        ClipUtilities._workClipper
-      ).clipper);
+    const clipper = (ClipUtilities._workClipper = ConvexClipPlaneSet.createConvexPolyface(
+      mesh0,
+      ClipUtilities._workClipper
+    ).clipper);
     return ClipUtilities.doesClipperIntersectRange(clipper, myRange1);
   }
 
@@ -657,12 +585,7 @@ export class ClipUtilities {
    */
   public static isClipper(obj: any): boolean {
     if (obj) {
-      if (
-        obj.isPointOnOrInside &&
-        obj.announceClippedSegmentIntervals &&
-        obj.announceClippedArcIntervals
-      )
-        return true;
+      if (obj.isPointOnOrInside && obj.announceClippedSegmentIntervals && obj.announceClippedArcIntervals) return true;
     }
     return false;
   }
@@ -722,13 +645,7 @@ export class ClipUtilities {
         z1
       );
     }
-    return LineStringOffsetClipperContext.createClipBetweenOffsets(
-      points,
-      leftOffset,
-      rightOffset,
-      z0,
-      z1
-    );
+    return LineStringOffsetClipperContext.createClipBetweenOffsets(points, leftOffset, rightOffset, z0, z1);
   }
   /** if data.length >= minLength threshold, push it to destination; if smaller drop it back to the cache.
    */
@@ -766,14 +683,8 @@ export class ClipUtilities {
     const ux = linePointB.x - linePointA.x;
     const uy = linePointB.y - linePointA.y;
     // negative is in positive is out ...
-    const h0 = -(
-      ux * (segmentPoint0.y - linePointA.y) -
-      uy * (segmentPoint0.x - linePointA.x)
-    );
-    const h1 = -(
-      ux * (segmentPoint1.y - linePointA.y) -
-      uy * (segmentPoint1.x - linePointA.x)
-    );
+    const h0 = -(ux * (segmentPoint0.y - linePointA.y) - uy * (segmentPoint0.x - linePointA.x));
+    const h1 = -(ux * (segmentPoint1.y - linePointA.y) - uy * (segmentPoint1.x - linePointA.x));
     if (h0 < absoluteTolerance && h1 < absoluteTolerance) {
       // The entire segment is in .....
       return;
@@ -819,32 +730,11 @@ export class ClipUtilities {
     absoluteTolerance: number = 1.0e-14
   ) {
     if (!interval.isNull) {
-      this.clipSegmentToLLeftOfLineXY(
-        pointA,
-        pointB,
-        segment0,
-        segment1,
-        interval,
-        absoluteTolerance
-      );
+      this.clipSegmentToLLeftOfLineXY(pointA, pointB, segment0, segment1, interval, absoluteTolerance);
       if (!interval.isNull) {
-        this.clipSegmentToLLeftOfLineXY(
-          pointB,
-          pointC,
-          segment0,
-          segment1,
-          interval,
-          absoluteTolerance
-        );
+        this.clipSegmentToLLeftOfLineXY(pointB, pointC, segment0, segment1, interval, absoluteTolerance);
         if (!interval.isNull) {
-          this.clipSegmentToLLeftOfLineXY(
-            pointC,
-            pointA,
-            segment0,
-            segment1,
-            interval,
-            absoluteTolerance
-          );
+          this.clipSegmentToLLeftOfLineXY(pointC, pointA, segment0, segment1, interval, absoluteTolerance);
         }
       }
     }
@@ -918,13 +808,7 @@ export class ClipUtilities {
   ) {
     const numPlanes = planes.length;
     for (let i = 0; !interval.isNull && i < numPlanes; i++) {
-      this.clipSegmentBelowPlaneXY(
-        planes[i],
-        segment0,
-        segment1,
-        interval,
-        signedAltitude
-      );
+      this.clipSegmentBelowPlaneXY(planes[i], segment0, segment1, interval, signedAltitude);
     }
   }
   /**
@@ -939,18 +823,9 @@ export class ClipUtilities {
     announce: (point0: Point3d, point1: Point3d) => void
   ) {
     for (let i = 0; i + 1 < points.length; i++) {
-      clipper.announceClippedSegmentIntervals(
-        0,
-        1,
-        points[i],
-        points[i + 1],
-        (f0: number, f1: number) => {
-          announce(
-            points[i].interpolate(f0, points[i + 1]),
-            points[i].interpolate(f1, points[i + 1])
-          );
-        }
-      );
+      clipper.announceClippedSegmentIntervals(0, 1, points[i], points[i + 1], (f0: number, f1: number) => {
+        announce(points[i].interpolate(f0, points[i + 1]), points[i].interpolate(f1, points[i + 1]));
+      });
     }
   }
   /**
@@ -962,15 +837,9 @@ export class ClipUtilities {
     let s = 0;
     for (let i = 0; i + 1 < points.length; i++) {
       const a = points[i].distance(points[i + 1]);
-      clipper.announceClippedSegmentIntervals(
-        0,
-        1,
-        points[i],
-        points[i + 1],
-        (f0: number, f1: number) => {
-          s += Math.abs(f1 - f0) * a;
-        }
-      );
+      clipper.announceClippedSegmentIntervals(0, 1, points[i], points[i + 1], (f0: number, f1: number) => {
+        s += Math.abs(f1 - f0) * a;
+      });
     }
     return s;
   }
@@ -1017,28 +886,9 @@ export class ClipUtilities {
     for (const c of clippers) {
       if (c.appendPolygonClip) {
         while (undefined !== (shard = candidates.pop())) {
-          c.appendPolygonClip(
-            shard,
-            intermediateIn,
-            intermediateOut,
-            arrayCache
-          );
-          distributeFragments(
-            inAction,
-            intermediateIn,
-            acceptedIn,
-            acceptedOut,
-            nextCandidates,
-            arrayCache
-          );
-          distributeFragments(
-            outAction,
-            intermediateOut,
-            acceptedIn,
-            acceptedOut,
-            nextCandidates,
-            arrayCache
-          );
+          c.appendPolygonClip(shard, intermediateIn, intermediateOut, arrayCache);
+          distributeFragments(inAction, intermediateIn, acceptedIn, acceptedOut, nextCandidates, arrayCache);
+          distributeFragments(outAction, intermediateOut, acceptedIn, acceptedOut, nextCandidates, arrayCache);
           arrayCache.dropToCache(shard);
         }
         // candidates is empty !!
@@ -1047,31 +897,14 @@ export class ClipUtilities {
         nextCandidates = temp;
       }
     }
-    distributeFragments(
-      finalFragmentAction,
-      candidates,
-      acceptedIn,
-      acceptedOut,
-      finalCandidates,
-      arrayCache
-    );
+    distributeFragments(finalFragmentAction, candidates, acceptedIn, acceptedOut, finalCandidates, arrayCache);
     // Note: The following assumes that there were no residual candidates ... need to track if that happened?
     // If nothing was out, the inside fragments can be replaced by the original.
     if (acceptedOut?.length === oldOutsideCount)
-      ClipUtilities.restoreSingletonInPlaceOfMultipleShards(
-        acceptedIn,
-        oldInsideCount,
-        xyz,
-        arrayCache
-      );
+      ClipUtilities.restoreSingletonInPlaceOfMultipleShards(acceptedIn, oldInsideCount, xyz, arrayCache);
     // If nothing was in, the outside fragments can be replaced by the original.
     if (acceptedIn?.length === oldInsideCount)
-      ClipUtilities.restoreSingletonInPlaceOfMultipleShards(
-        acceptedOut,
-        oldOutsideCount,
-        xyz,
-        arrayCache
-      );
+      ClipUtilities.restoreSingletonInPlaceOfMultipleShards(acceptedOut, oldOutsideCount, xyz, arrayCache);
   }
   /**
    * Pass polygon `xyz` through a sequence of PolygonClip steps with "parity" rules
@@ -1098,12 +931,7 @@ export class ClipUtilities {
       if (c.appendPolygonClip) {
         // (IN,OUT) parts of IN parts distribute to (OUT,IN)
         while (undefined !== (shard = candidatesIn.pop())) {
-          c.appendPolygonClip(
-            shard,
-            intermediateIn,
-            intermediateOut,
-            arrayCache
-          );
+          c.appendPolygonClip(shard, intermediateIn, intermediateOut, arrayCache);
           distributeFragments(
             ClipStepAction.acceptOut,
             intermediateIn,
@@ -1124,12 +952,7 @@ export class ClipUtilities {
         }
         // (IN,OUT) parts of IN parts distribute to (OUT,IN)
         while (undefined !== (shard = candidatesOut.pop())) {
-          c.appendPolygonClip(
-            shard,
-            intermediateIn,
-            intermediateOut,
-            arrayCache
-          );
+          c.appendPolygonClip(shard, intermediateIn, intermediateOut, arrayCache);
           distributeFragments(
             ClipStepAction.acceptIn,
             intermediateIn,
@@ -1158,10 +981,8 @@ export class ClipUtilities {
       }
     }
     // candidatesIn and candidatesOut are final ....
-    if (candidatesOut.length === 0)
-      acceptedIn?.push(arrayCache.grabAndFill(xyz));
-    else if (candidatesOut.length === 0)
-      acceptedOut?.push(arrayCache.grabAndFill(xyz));
+    if (candidatesOut.length === 0) acceptedIn?.push(arrayCache.grabAndFill(xyz));
+    else if (candidatesOut.length === 0) acceptedOut?.push(arrayCache.grabAndFill(xyz));
     else {
       moveFragments(candidatesIn, acceptedIn, arrayCache);
       moveFragments(candidatesOut, acceptedOut, arrayCache);
@@ -1171,9 +992,7 @@ export class ClipUtilities {
    * abuts the outer volume of the neighbor faces.
    *
    */
-  public static createComplementaryClips(
-    clipper: ConvexClipPlaneSet
-  ): UnionOfConvexClipPlaneSets {
+  public static createComplementaryClips(clipper: ConvexClipPlaneSet): UnionOfConvexClipPlaneSets {
     const planes = clipper.planes;
     const interval = Range1d.createNull();
     const n = planes.length;
@@ -1185,20 +1004,12 @@ export class ClipUtilities {
     }
     for (let i = 0; i < n; i++) {
       for (let j = i + 1; j < n; j++) {
-        const ray = CurveFactory.planePlaneIntersectionRay(
-          planes[i],
-          planes[j]
-        );
+        const ray = CurveFactory.planePlaneIntersectionRay(planes[i], planes[j]);
         if (ray) {
           if (clipper.hasIntersectionWithRay(ray, interval)) {
             // the normal-to-normal vector is bisector (or close to bisector?)
-            const newNormal = planes[j].inwardNormalRef.minus(
-              planes[i].inwardNormalRef
-            );
-            const plane1 = ClipPlane.createNormalAndPoint(
-              newNormal,
-              ray.origin
-            );
+            const newNormal = planes[j].inwardNormalRef.minus(planes[i].inwardNormalRef);
+            const plane1 = ClipPlane.createNormalAndPoint(newNormal, ray.origin);
             if (plane1) {
               const plane2 = plane1.cloneNegated();
               newClippers[i].addPlaneToConvexSet(plane1);
@@ -1243,8 +1054,7 @@ function distributeFragments(
   let destination;
   if (action === ClipStepAction.acceptIn) destination = acceptedIn;
   else if (action === ClipStepAction.acceptOut) destination = acceptedOut;
-  else if (action === ClipStepAction.passToNextStep)
-    destination = passToNextStep;
+  else if (action === ClipStepAction.passToNextStep) destination = passToNextStep;
   // remark: if action is other than the enum values, destination is undefined
   if (destination === undefined) arrayCache.dropAllToCache(fragments);
   else {

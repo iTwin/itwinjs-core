@@ -35,9 +35,7 @@ export class RobotWorldApp {
 
   // __PUBLISH_EXTRACT_START__ IModelConnection.Views.load
   /** Stub for a real UI that would present the user with the list and choose one entry */
-  public static async pickView(
-    views: IModelConnection.ViewSpec[]
-  ): Promise<string> {
+  public static async pickView(views: IModelConnection.ViewSpec[]): Promise<string> {
     // ...real ui code here showing view[].name list, returning chosenView...
     const chosenView = 0;
 
@@ -73,8 +71,7 @@ export class RobotWorldApp {
    */
   public static async change2dModel(newModelId: Id64String): Promise<void> {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp)
-      return vp.changeViewedModel2d(newModelId, { doFit: true });
+    if (undefined !== vp) return vp.changeViewedModel2d(newModelId, { doFit: true });
   }
   // __PUBLISH_EXTRACT_END__
 

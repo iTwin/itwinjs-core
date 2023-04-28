@@ -18,9 +18,7 @@ const usedDeps = new Set();
 // given the name of a module, and the directory of the module which referenced
 //  it, resolve to the module base directory
 function moduleDirectory(name, dir) {
-  return resolve(`${name}/package.json`, { basedir: dir }).then(function (
-    filePath
-  ) {
+  return resolve(`${name}/package.json`, { basedir: dir }).then(function (filePath) {
     return findup(path.dirname(filePath), "package.json");
   });
 }
@@ -39,9 +37,7 @@ function mergeDefaultOptions(options) {
   let modulePromise;
   let modulePath;
   if (options.path) {
-    modulePath = options.relative
-      ? path.dirname(options.relative)
-      : path.dirname(module.parent.filename);
+    modulePath = options.relative ? path.dirname(options.relative) : path.dirname(module.parent.filename);
     modulePromise = moduleDirectory(options.path, modulePath);
   } else {
     modulePromise = moduleDirectory(module.parent.filename, ".");

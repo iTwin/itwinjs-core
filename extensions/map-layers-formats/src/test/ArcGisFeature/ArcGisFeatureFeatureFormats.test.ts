@@ -35,13 +35,9 @@ describe("ArcGisFeaturePBF", () => {
     ) => {
       return { status: MapLayerSourceStatus.Valid };
     };
-    const validateSourceStub = sinon
-      .stub(ArcGisUtilities, "validateSource")
-      .callsFake(fakeMethod);
+    const validateSourceStub = sinon.stub(ArcGisUtilities, "validateSource").callsFake(fakeMethod);
 
-    await ArcGisFeatureMapLayerFormat.validateSource(
-      esriFeatureSampleSource.url
-    );
+    await ArcGisFeatureMapLayerFormat.validateSource(esriFeatureSampleSource.url);
 
     expect(validateSourceStub.calledOnce).to.be.true;
     const firstCall = validateSourceStub.getCalls()[0];

@@ -80,15 +80,6 @@ export class BlockIndex {
    * @return the unique key (combines level and grid index).
    */
   public getKey(): string {
-    return (
-      "B" +
-      this.level +
-      "/" +
-      this.gridIndex.x +
-      "/" +
-      this.gridIndex.y +
-      "/" +
-      this.gridIndex.z
-    );
+    return "B" + this.level + "/" + this.gridIndex.x + "/" + this.gridIndex.y + "/" + this.gridIndex.z;
   }
 }

@@ -22,10 +22,7 @@ describe("Code", () => {
     assert.equal(value, new Code({ spec, scope, value: "\nValue" }).value);
     assert.equal(value, new Code({ spec, scope, value: "Value\n" }).value);
     assert.equal(value, new Code({ spec, scope, value: "\nValue\n" }).value);
-    assert.equal(
-      value,
-      new Code({ spec, scope, value: "  \t\n  Value  \n\t  " }).value
-    );
+    assert.equal(value, new Code({ spec, scope, value: "  \t\n  Value  \n\t  " }).value);
     assert.isTrue(
       Code.equalCodes(
         new Code({ spec, scope, value: "  \t\n  Value  \n\t  " }),

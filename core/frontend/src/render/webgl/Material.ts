@@ -7,10 +7,7 @@
  */
 
 import { ColorDef, RenderMaterial } from "@itwin/core-common";
-import {
-  SurfaceMaterial,
-  SurfaceMaterialAtlas,
-} from "../primitives/SurfaceParams";
+import { SurfaceMaterial, SurfaceMaterialAtlas } from "../primitives/SurfaceParams";
 import { FloatRgb } from "./FloatRGBA";
 
 /** Parameters describing a single material. The parameters used are:
@@ -43,9 +40,7 @@ import { FloatRgb } from "./FloatRGBA";
  */
 export class Material extends RenderMaterial {
   // eslint-disable-next-line deprecation/deprecation
-  public static readonly default: Material = new Material(
-    RenderMaterial.Params.defaults
-  );
+  public static readonly default: Material = new Material(RenderMaterial.Params.defaults);
 
   // Used for type-switching vs MaterialAtlas
   public readonly isAtlas = false as const;
@@ -81,14 +76,8 @@ export class Material extends RenderMaterial {
     const scale = (value: number) => Math.floor(value * 255 + 0.5);
     this.setInteger(scale(params.diffuse), scale(params.specular), 0);
 
-    const textureWeight =
-      undefined !== this.textureMapping
-        ? this.textureMapping.params.weight
-        : 1.0;
-    const specularRgb =
-      undefined !== params.specularColor
-        ? params.specularColor
-        : ColorDef.white;
+    const textureWeight = undefined !== this.textureMapping ? this.textureMapping.params.weight : 1.0;
+    const specularRgb = undefined !== params.specularColor ? params.specularColor : ColorDef.white;
     const specularColors = specularRgb.colors;
     this.setInteger(scale(textureWeight), specularColors.r, 1);
     this.setInteger(specularColors.g, specularColors.b, 2);
@@ -114,9 +103,7 @@ Object.freeze(Material.default);
 export type MaterialInfo = Material | SurfaceMaterialAtlas;
 
 /** @internal */
-export function createMaterialInfo(
-  source: SurfaceMaterial | undefined
-): MaterialInfo | undefined {
+export function createMaterialInfo(source: SurfaceMaterial | undefined): MaterialInfo | undefined {
   if (undefined === source) return undefined;
   else if (source.isAtlas) return source;
   else return source.material as Material;

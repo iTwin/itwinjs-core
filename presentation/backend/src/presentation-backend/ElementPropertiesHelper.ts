@@ -34,9 +34,7 @@ import {
 } from "@itwin/presentation-common";
 
 /** @internal */
-export const buildElementsProperties = (
-  content: Content | undefined
-): ElementProperties[] => {
+export const buildElementsProperties = (content: Content | undefined): ElementProperties[] => {
   if (!content || content.contentSet.length === 0) return [];
 
   const builder = new ElementPropertiesBuilder();
@@ -54,18 +52,12 @@ export function getElementsCount(db: IModelDb, classNames?: string[]) {
   `;
 
   return db.withPreparedStatement(query, (stmt: ECSqlStatement) => {
-    return stmt.step() === DbResult.BE_SQLITE_ROW
-      ? stmt.getValue(0).getInteger()
-      : 0;
+    return stmt.step() === DbResult.BE_SQLITE_ROW ? stmt.getValue(0).getInteger() : 0;
   });
 }
 
 /** @internal */
-export function* iterateElementIds(
-  db: IModelDb,
-  classNames?: string[],
-  limit?: number
-) {
+export function* iterateElementIds(db: IModelDb, classNames?: string[], limit?: number) {
   let lastElementId;
   while (true) {
     const result = queryElementIds(db, classNames, limit, lastElementId);
@@ -75,18 +67,12 @@ export function* iterateElementIds(
   }
 }
 
-function queryElementIds(
-  db: IModelDb,
-  classNames?: string[],
-  limit?: number,
-  lastElementId?: Id64String
-) {
+function queryElementIds(db: IModelDb, classNames?: string[], limit?: number, lastElementId?: Id64String) {
   function createWhereClause() {
     const classFilter = createElementsFilter("e", classNames);
     const elementFilter = lastElementId ? `e.ECInstanceId > ?` : undefined;
     if (!classFilter && !elementFilter) return "";
-    if (classFilter && elementFilter)
-      return `WHERE ${classFilter} AND ${elementFilter}`;
+    if (classFilter && elementFilter) return `WHERE ${classFilter} AND ${elementFilter}`;
     return `WHERE ${classFilter ?? ""} ${elementFilter ?? ""}`;
   }
 
@@ -155,10 +141,7 @@ class ElementPropertiesAppender implements IPropertiesAppender {
   private _categoryItemAppenders: {
     [categoryName: string]: IPropertiesAppender;
   } = {};
-  constructor(
-    private _item: Item,
-    private _onItemFinished: (item: ElementProperties) => void
-  ) {}
+  constructor(private _item: Item, private _onItemFinished: (item: ElementProperties) => void) {}
 
   public append(label: string, item: ElementPropertiesItem): void {
     this._propertyItems[label] = item;
@@ -179,10 +162,7 @@ class ElementPropertiesAppender implements IPropertiesAppender {
     });
   }
 
-  public getCategoryAppender(
-    parentAppender: IPropertiesAppender,
-    category: CategoryDescription
-  ): IPropertiesAppender {
+  public getCategoryAppender(parentAppender: IPropertiesAppender, category: CategoryDescription): IPropertiesAppender {
     let appender = this._categoryItemAppenders[category.name];
     if (!appender) {
       appender = new CategoryItemAppender(parentAppender, category);
@@ -194,10 +174,7 @@ class ElementPropertiesAppender implements IPropertiesAppender {
 
 class CategoryItemAppender implements IPropertiesAppender {
   private _items: { [label: string]: ElementPropertiesItem } = {};
-  constructor(
-    private _parentAppender: IPropertiesAppender,
-    private _category: CategoryDescription
-  ) {}
+  constructor(private _parentAppender: IPropertiesAppender, private _category: CategoryDescription) {}
   public append(label: string, item: ElementPropertiesItem): void {
     this._items[label] = item;
   }
@@ -213,29 +190,16 @@ class CategoryItemAppender implements IPropertiesAppender {
 
 class ArrayItemAppender implements IPropertiesAppender {
   private _items: ElementPropertiesPropertyItem[] = [];
-  constructor(
-    private _parentAppender: IPropertiesAppender,
-    private _props: StartArrayProps
-  ) {}
+  constructor(private _parentAppender: IPropertiesAppender, private _props: StartArrayProps) {}
   public append(_label: string, item: ElementPropertiesItem): void {
     assert(item.type !== "category");
     this._items.push(item);
   }
   public finish(): void {
     assert(this._props.valueType.valueFormat === PropertyValueFormat.Array);
-    if (
-      this._props.valueType.memberType.valueFormat ===
-      PropertyValueFormat.Primitive
-    )
-      this._parentAppender.append(
-        this._props.hierarchy.field.label,
-        this.createPrimitivesArray()
-      );
-    else
-      this._parentAppender.append(
-        this._props.hierarchy.field.label,
-        this.createStructsArray()
-      );
+    if (this._props.valueType.memberType.valueFormat === PropertyValueFormat.Primitive)
+      this._parentAppender.append(this._props.hierarchy.field.label, this.createPrimitivesArray());
+    else this._parentAppender.append(this._props.hierarchy.field.label, this.createStructsArray());
   }
   private createPrimitivesArray(): ElementPropertiesPrimitiveArrayPropertyItem {
     return {
@@ -261,10 +225,7 @@ class ArrayItemAppender implements IPropertiesAppender {
 
 class StructItemAppender implements IPropertiesAppender {
   private _members: { [label: string]: ElementPropertiesPropertyItem } = {};
-  constructor(
-    private _parentAppender: IPropertiesAppender,
-    private _props: StartStructProps
-  ) {}
+  constructor(private _parentAppender: IPropertiesAppender, private _props: StartStructProps) {}
   public append(label: string, item: ElementPropertiesItem): void {
     assert(item.type !== "category");
     this._members[label] = item;
@@ -301,10 +262,7 @@ class ElementPropertiesBuilder implements IContentVisitor {
   public processFieldHierarchies(_props: ProcessFieldHierarchiesProps): void {}
 
   public startItem(props: StartItemProps): boolean {
-    this._elementPropertiesAppender = new ElementPropertiesAppender(
-      props.item,
-      (item) => this._items.push(item)
-    );
+    this._elementPropertiesAppender = new ElementPropertiesAppender(props.item, (item) => this._items.push(item));
     this._appendersStack.push(this._elementPropertiesAppender);
     return true;
   }
@@ -318,10 +276,7 @@ class ElementPropertiesBuilder implements IContentVisitor {
   public startCategory(props: StartCategoryProps): boolean {
     assert(this._elementPropertiesAppender !== undefined);
     this._appendersStack.push(
-      this._elementPropertiesAppender.getCategoryAppender(
-        this._currentAppender,
-        props.category
-      )
+      this._elementPropertiesAppender.getCategoryAppender(this._currentAppender, props.category)
     );
     return true;
   }
@@ -335,9 +290,7 @@ class ElementPropertiesBuilder implements IContentVisitor {
   public finishField(): void {}
 
   public startStruct(props: StartStructProps): boolean {
-    this._appendersStack.push(
-      new StructItemAppender(this._currentAppender, props)
-    );
+    this._appendersStack.push(new StructItemAppender(this._currentAppender, props));
     return true;
   }
   public finishStruct(): void {
@@ -345,9 +298,7 @@ class ElementPropertiesBuilder implements IContentVisitor {
   }
 
   public startArray(props: StartArrayProps): boolean {
-    this._appendersStack.push(
-      new ArrayItemAppender(this._currentAppender, props)
-    );
+    this._appendersStack.push(new ArrayItemAppender(this._currentAppender, props));
     return true;
   }
   public finishArray(): void {

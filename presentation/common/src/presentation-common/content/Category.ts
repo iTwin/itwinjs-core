@@ -31,9 +31,7 @@ export interface CategoryDescription {
 /** @public */
 export namespace CategoryDescription {
   /** Serialize given category to JSON */
-  export function toJSON(
-    category: CategoryDescription
-  ): CategoryDescriptionJSON {
+  export function toJSON(category: CategoryDescription): CategoryDescriptionJSON {
     const { parent, ...rest } = category;
     return {
       ...rest,
@@ -64,19 +62,10 @@ export namespace CategoryDescription {
   }
 
   /** Deserialize a list of [[CategoryDescription]] from JSON. */
-  export function listFromJSON(
-    json: CategoryDescriptionJSON[]
-  ): CategoryDescription[] {
+  export function listFromJSON(json: CategoryDescriptionJSON[]): CategoryDescription[] {
     const categoriesMap = new Map<string, CategoryDescription>();
-    json.forEach((categoryJson) =>
-      categoriesMap.set(
-        categoryJson.name,
-        CategoryDescription.fromJSON(categoryJson)
-      )
-    );
-    return json.map((categoryJson) =>
-      createCategoriesHierarchy(categoryJson, categoriesMap)
-    );
+    json.forEach((categoryJson) => categoriesMap.set(categoryJson.name, CategoryDescription.fromJSON(categoryJson)));
+    return json.map((categoryJson) => createCategoriesHierarchy(categoryJson, categoriesMap));
   }
 }
 

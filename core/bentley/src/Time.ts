@@ -70,10 +70,7 @@ export class BeDuration {
    * @param promise A pending promise to wait for
    * @return Promise that resolves after the specified wait period or the provided promise resolves, whichever comes first
    */
-  public static async race<T>(
-    ms: number,
-    promise: PromiseLike<T>
-  ): Promise<T | void> {
+  public static async race<T>(ms: number, promise: PromiseLike<T>): Promise<T | void> {
     let timeout: any;
     const waitPromise = new Promise<void>((resolve) => {
       timeout = setTimeout(resolve, ms);
@@ -87,9 +84,7 @@ export class BeDuration {
    * @return Promise that resolves after the specified wait period
    */
   public async wait(): Promise<void> {
-    return new Promise<void>((resolve: any) =>
-      setTimeout(resolve, this._milliseconds)
-    );
+    return new Promise<void>((resolve: any) => setTimeout(resolve, this._milliseconds));
   }
 
   /** Execute a function after delaying by this duration.
@@ -98,14 +93,8 @@ export class BeDuration {
    * @param args optional arguments to `fn`
    * @return Promise resolved by `fn`
    */
-  public async executeAfter<T>(
-    fn: (...args: any[]) => T,
-    scope?: any,
-    ...args: any[]
-  ): Promise<T> {
-    return new Promise<T>((resolve: any) =>
-      setTimeout(() => resolve(fn.apply(scope, args)), this._milliseconds)
-    );
+  public async executeAfter<T>(fn: (...args: any[]) => T, scope?: any, ...args: any[]): Promise<T> {
+    return new Promise<T>((resolve: any) => setTimeout(() => resolve(fn.apply(scope, args)), this._milliseconds));
   }
 }
 
@@ -190,10 +179,7 @@ export class StopWatch {
   private _stop?: BeTimePoint;
   /** Get the elapsed time since start() on a running timer. */
   public get current(): BeDuration {
-    return BeDuration.fromMilliseconds(
-      BeTimePoint.now().milliseconds -
-        (!!this._start ? this._start.milliseconds : 0)
-    );
+    return BeDuration.fromMilliseconds(BeTimePoint.now().milliseconds - (!!this._start ? this._start.milliseconds : 0));
   }
   /** Get the elapsed time, in seconds, since start() on a running timer. */
   public get currentSeconds(): number {
@@ -202,9 +188,7 @@ export class StopWatch {
   /** Get the elapsed time between start() and stop() on this timer in milliseconds. */
   public get elapsed(): BeDuration {
     return BeDuration.fromMilliseconds(
-      (!!this._stop
-        ? this._stop.milliseconds
-        : BeTimePoint.now().milliseconds) -
+      (!!this._stop ? this._stop.milliseconds : BeTimePoint.now().milliseconds) -
         (!!this._start ? this._start.milliseconds : 0)
     );
   }

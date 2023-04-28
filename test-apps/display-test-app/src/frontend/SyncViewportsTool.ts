@@ -3,13 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-  connectViewportFrusta,
-  connectViewportViews,
-  IModelApp,
-  Tool,
-  Viewport,
-} from "@itwin/core-frontend";
+import { connectViewportFrusta, connectViewportViews, IModelApp, Tool, Viewport } from "@itwin/core-frontend";
 
 class State {
   private readonly _viewportIds: number[];
@@ -59,8 +53,7 @@ export class SyncViewportsTool extends Tool {
     if (args.length === 0) return this.run();
 
     const allVps = Array.from(IModelApp.viewManager);
-    if (args.length === 1)
-      return args[0].toLowerCase() === "all" ? this.run(allVps) : false;
+    if (args.length === 1) return args[0].toLowerCase() === "all" ? this.run(allVps) : false;
 
     const vps: Viewport[] = [];
     for (const arg of args) {
@@ -78,12 +71,9 @@ export class SyncViewportsTool extends Tool {
 
   private static connect(vps: Viewport[], syncType: "view" | "frustum"): void {
     this.disconnect();
-    const connect =
-      "view" === syncType ? connectViewportViews : connectViewportFrusta;
+    const connect = "view" === syncType ? connectViewportViews : connectViewportFrusta;
     this._state = new State(vps, connect(vps));
-    const dispose = vps.map((x) =>
-      x.onDisposed.addOnce(() => this.disconnect())
-    );
+    const dispose = vps.map((x) => x.onDisposed.addOnce(() => this.disconnect()));
     this._removeListeners = () => dispose.forEach((x) => x());
   }
 

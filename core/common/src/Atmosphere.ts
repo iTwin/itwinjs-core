@@ -135,14 +135,10 @@ export namespace Atmosphere {
     public readonly wavelengths: Wavelengths;
 
     public equals(other: Settings): boolean {
-      if (this.atmosphereHeightAboveEarth !== other.atmosphereHeightAboveEarth)
-        return false;
+      if (this.atmosphereHeightAboveEarth !== other.atmosphereHeightAboveEarth) return false;
       if (this.exposure !== other.exposure) return false;
       if (this.densityFalloff !== other.densityFalloff) return false;
-      if (
-        this.depthBelowEarthForMaxDensity !== other.depthBelowEarthForMaxDensity
-      )
-        return false;
+      if (this.depthBelowEarthForMaxDensity !== other.depthBelowEarthForMaxDensity) return false;
       if (this.numViewRaySamples !== other.numViewRaySamples) return false;
       if (this.numSunRaySamples !== other.numSunRaySamples) return false;
       if (this.scatteringStrength !== other.scatteringStrength) return false;
@@ -155,33 +151,16 @@ export namespace Atmosphere {
         json.atmosphereHeightAboveEarth,
         Settings._defaultAtmosphereHeightAboveEarth
       );
-      this.exposure = JsonUtils.asDouble(
-        json.exposure,
-        Settings._defaultExposure
-      );
-      this.densityFalloff = JsonUtils.asDouble(
-        json.densityFalloff,
-        Settings._defaultDensityFalloff
-      );
+      this.exposure = JsonUtils.asDouble(json.exposure, Settings._defaultExposure);
+      this.densityFalloff = JsonUtils.asDouble(json.densityFalloff, Settings._defaultDensityFalloff);
       this.depthBelowEarthForMaxDensity = JsonUtils.asDouble(
         json.depthBelowEarthForMaxDensity,
         Settings._defaultMinDensityHeightBelowEarth
       );
-      this.numViewRaySamples = JsonUtils.asDouble(
-        json.numViewRaySamples,
-        Settings._defaultNumViewRaySamples
-      );
-      this.numSunRaySamples = JsonUtils.asDouble(
-        json.numSunRaySamples,
-        Settings._defaultNumSunRaySamples
-      );
-      this.scatteringStrength = JsonUtils.asDouble(
-        json.scatteringStrength,
-        Settings._defaultScatteringStrength
-      );
-      this.wavelengths = Wavelengths.fromJSON(
-        JsonUtils.asObject(json.wavelengths) ?? Settings._defaultWavelengths
-      );
+      this.numViewRaySamples = JsonUtils.asDouble(json.numViewRaySamples, Settings._defaultNumViewRaySamples);
+      this.numSunRaySamples = JsonUtils.asDouble(json.numSunRaySamples, Settings._defaultNumSunRaySamples);
+      this.scatteringStrength = JsonUtils.asDouble(json.scatteringStrength, Settings._defaultScatteringStrength);
+      this.wavelengths = Wavelengths.fromJSON(JsonUtils.asObject(json.wavelengths) ?? Settings._defaultWavelengths);
     }
 
     public static fromJSON(json?: Props) {

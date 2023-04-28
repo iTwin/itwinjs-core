@@ -25,14 +25,7 @@ export namespace esriPBuffer {
           }
     ) {
       super();
-      pb_1.Message.initialize(
-        this,
-        Array.isArray(data) ? data : [],
-        0,
-        -1,
-        [],
-        this.#one_of_decls
-      );
+      pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
       if (!Array.isArray(data) && typeof data == "object") {
         if ("version" in data && data.version != undefined) {
           this.version = data.version;
@@ -63,27 +56,21 @@ export namespace esriPBuffer {
     }
     static fromObject(data: {
       version?: string;
-      queryResult?: ReturnType<
-        typeof FeatureCollectionPBuffer.QueryResult.prototype.toObject
-      >;
+      queryResult?: ReturnType<typeof FeatureCollectionPBuffer.QueryResult.prototype.toObject>;
     }): FeatureCollectionPBuffer {
       const message = new FeatureCollectionPBuffer({});
       if (data.version != null) {
         message.version = data.version;
       }
       if (data.queryResult != null) {
-        message.queryResult = FeatureCollectionPBuffer.QueryResult.fromObject(
-          data.queryResult
-        );
+        message.queryResult = FeatureCollectionPBuffer.QueryResult.fromObject(data.queryResult);
       }
       return message;
     }
     toObject() {
       const data: {
         version?: string;
-        queryResult?: ReturnType<
-          typeof FeatureCollectionPBuffer.QueryResult.prototype.toObject
-        >;
+        queryResult?: ReturnType<typeof FeatureCollectionPBuffer.QueryResult.prototype.toObject>;
       } = {};
       if (this.version != null) {
         data.version = this.version;
@@ -98,19 +85,11 @@ export namespace esriPBuffer {
     serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
       const writer = w || new pb_1.BinaryWriter();
       if (this.version.length) writer.writeString(1, this.version);
-      if (this.has_queryResult)
-        writer.writeMessage(2, this.queryResult, () =>
-          this.queryResult.serialize(writer)
-        );
+      if (this.has_queryResult) writer.writeMessage(2, this.queryResult, () => this.queryResult.serialize(writer));
       if (!w) return writer.getResultBuffer();
     }
-    static deserialize(
-      bytes: Uint8Array | pb_1.BinaryReader
-    ): FeatureCollectionPBuffer {
-      const reader =
-          bytes instanceof pb_1.BinaryReader
-            ? bytes
-            : new pb_1.BinaryReader(bytes),
+    static deserialize(bytes: Uint8Array | pb_1.BinaryReader): FeatureCollectionPBuffer {
+      const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes),
         message = new FeatureCollectionPBuffer();
       while (reader.nextField()) {
         if (reader.isEndGroup()) break;
@@ -121,9 +100,7 @@ export namespace esriPBuffer {
           case 2:
             reader.readMessage(
               message.queryResult,
-              () =>
-                (message.queryResult =
-                  FeatureCollectionPBuffer.QueryResult.deserialize(reader))
+              () => (message.queryResult = FeatureCollectionPBuffer.QueryResult.deserialize(reader))
             );
             break;
           default:
@@ -135,9 +112,7 @@ export namespace esriPBuffer {
     serializeBinary(): Uint8Array {
       return this.serialize();
     }
-    static override deserializeBinary(
-      bytes: Uint8Array
-    ): FeatureCollectionPBuffer {
+    static override deserializeBinary(bytes: Uint8Array): FeatureCollectionPBuffer {
       return FeatureCollectionPBuffer.deserialize(bytes);
     }
   }
@@ -211,14 +186,7 @@ export namespace esriPBuffer {
             }
       ) {
         super();
-        pb_1.Message.initialize(
-          this,
-          Array.isArray(data) ? data : [],
-          0,
-          -1,
-          [],
-          this.#one_of_decls
-        );
+        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
         if (!Array.isArray(data) && typeof data == "object") {
           if ("wkid" in data && data.wkid != undefined) {
             this.wkid = data.wkid;
@@ -328,13 +296,8 @@ export namespace esriPBuffer {
         if (this.wkt.length) writer.writeString(5, this.wkt);
         if (!w) return writer.getResultBuffer();
       }
-      static deserialize(
-        bytes: Uint8Array | pb_1.BinaryReader
-      ): SpatialReference {
-        const reader =
-            bytes instanceof pb_1.BinaryReader
-              ? bytes
-              : new pb_1.BinaryReader(bytes),
+      static deserialize(bytes: Uint8Array | pb_1.BinaryReader): SpatialReference {
+        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes),
           message = new SpatialReference();
         while (reader.nextField()) {
           if (reader.isEndGroup()) break;
@@ -382,14 +345,7 @@ export namespace esriPBuffer {
             }
       ) {
         super();
-        pb_1.Message.initialize(
-          this,
-          Array.isArray(data) ? data : [],
-          0,
-          -1,
-          [],
-          this.#one_of_decls
-        );
+        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
         if (!Array.isArray(data) && typeof data == "object") {
           if ("name" in data && data.name != undefined) {
             this.name = data.name;
@@ -518,23 +474,16 @@ export namespace esriPBuffer {
       serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
         const writer = w || new pb_1.BinaryWriter();
         if (this.name.length) writer.writeString(1, this.name);
-        if (
-          this.fieldType !=
-          FeatureCollectionPBuffer.FieldType.esriFieldTypeSmallInteger
-        )
+        if (this.fieldType != FeatureCollectionPBuffer.FieldType.esriFieldTypeSmallInteger)
           writer.writeEnum(2, this.fieldType);
         if (this.alias.length) writer.writeString(3, this.alias);
-        if (this.sqlType != FeatureCollectionPBuffer.SQLType.sqlTypeBigInt)
-          writer.writeEnum(4, this.sqlType);
+        if (this.sqlType != FeatureCollectionPBuffer.SQLType.sqlTypeBigInt) writer.writeEnum(4, this.sqlType);
         if (this.domain.length) writer.writeString(5, this.domain);
         if (this.defaultValue.length) writer.writeString(6, this.defaultValue);
         if (!w) return writer.getResultBuffer();
       }
       static deserialize(bytes: Uint8Array | pb_1.BinaryReader): Field {
-        const reader =
-            bytes instanceof pb_1.BinaryReader
-              ? bytes
-              : new pb_1.BinaryReader(bytes),
+        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes),
           message = new Field();
         while (reader.nextField()) {
           if (reader.isEndGroup()) break;
@@ -678,14 +627,7 @@ export namespace esriPBuffer {
             ))
       ) {
         super();
-        pb_1.Message.initialize(
-          this,
-          Array.isArray(data) ? data : [],
-          0,
-          -1,
-          [],
-          this.#one_of_decls
-        );
+        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
         if (!Array.isArray(data) && typeof data == "object") {
           if ("string_value" in data && data.string_value != undefined) {
             this.string_value = data.string_value;
@@ -822,9 +764,7 @@ export namespace esriPBuffer {
           8: "sint64_value",
           9: "bool_value",
         };
-        return cases[
-          pb_1.Message.computeOneofCase(this, [1, 2, 3, 4, 5, 6, 7, 8, 9])
-        ];
+        return cases[pb_1.Message.computeOneofCase(this, [1, 2, 3, 4, 5, 6, 7, 8, 9])];
       }
       static fromObject(data: {
         string_value?: string;
@@ -924,10 +864,7 @@ export namespace esriPBuffer {
         if (!w) return writer.getResultBuffer();
       }
       static deserialize(bytes: Uint8Array | pb_1.BinaryReader): Value {
-        const reader =
-            bytes instanceof pb_1.BinaryReader
-              ? bytes
-              : new pb_1.BinaryReader(bytes),
+        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes),
           message = new Value();
         while (reader.nextField()) {
           if (reader.isEndGroup()) break;
@@ -983,14 +920,7 @@ export namespace esriPBuffer {
             }
       ) {
         super();
-        pb_1.Message.initialize(
-          this,
-          Array.isArray(data) ? data : [],
-          0,
-          -1,
-          [2, 3],
-          this.#one_of_decls
-        );
+        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [2, 3], this.#one_of_decls);
         if (!Array.isArray(data) && typeof data == "object") {
           if ("lengths" in data && data.lengths != undefined) {
             this.lengths = data.lengths;
@@ -1012,10 +942,7 @@ export namespace esriPBuffer {
       set coords(value: number[]) {
         pb_1.Message.setField(this, 3, value);
       }
-      static fromObject(data: {
-        lengths?: number[];
-        coords?: number[];
-      }): Geometry {
+      static fromObject(data: { lengths?: number[]; coords?: number[] }): Geometry {
         const message = new Geometry({});
         if (data.lengths != null) {
           message.lengths = data.lengths;
@@ -1047,10 +974,7 @@ export namespace esriPBuffer {
         if (!w) return writer.getResultBuffer();
       }
       static deserialize(bytes: Uint8Array | pb_1.BinaryReader): Geometry {
-        const reader =
-            bytes instanceof pb_1.BinaryReader
-              ? bytes
-              : new pb_1.BinaryReader(bytes),
+        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes),
           message = new Geometry();
         while (reader.nextField()) {
           if (reader.isEndGroup()) break;
@@ -1084,14 +1008,7 @@ export namespace esriPBuffer {
             }
       ) {
         super();
-        pb_1.Message.initialize(
-          this,
-          Array.isArray(data) ? data : [],
-          0,
-          -1,
-          [],
-          this.#one_of_decls
-        );
+        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
         if (!Array.isArray(data) && typeof data == "object") {
           if ("bytes" in data && data.bytes != undefined) {
             this.bytes = data.bytes;
@@ -1099,11 +1016,7 @@ export namespace esriPBuffer {
         }
       }
       get bytes() {
-        return pb_1.Message.getFieldWithDefault(
-          this,
-          1,
-          new Uint8Array()
-        ) as Uint8Array;
+        return pb_1.Message.getFieldWithDefault(this, 1, new Uint8Array()) as Uint8Array;
       }
       set bytes(value: Uint8Array) {
         pb_1.Message.setField(this, 1, value);
@@ -1131,13 +1044,8 @@ export namespace esriPBuffer {
         if (this.bytes.length) writer.writeBytes(1, this.bytes);
         if (!w) return writer.getResultBuffer();
       }
-      static deserialize(
-        bytes: Uint8Array | pb_1.BinaryReader
-      ): esriShapeBuffer {
-        const reader =
-            bytes instanceof pb_1.BinaryReader
-              ? bytes
-              : new pb_1.BinaryReader(bytes),
+      static deserialize(bytes: Uint8Array | pb_1.BinaryReader): esriShapeBuffer {
+        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes),
           message = new esriShapeBuffer();
         while (reader.nextField()) {
           if (reader.isEndGroup()) break;
@@ -1178,14 +1086,7 @@ export namespace esriPBuffer {
             ))
       ) {
         super();
-        pb_1.Message.initialize(
-          this,
-          Array.isArray(data) ? data : [],
-          0,
-          -1,
-          [1],
-          this.#one_of_decls
-        );
+        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [1], this.#one_of_decls);
         if (!Array.isArray(data) && typeof data == "object") {
           if ("attributes" in data && data.attributes != undefined) {
             this.attributes = data.attributes;
@@ -1219,12 +1120,7 @@ export namespace esriPBuffer {
         ) as FeatureCollectionPBuffer.Geometry;
       }
       set geometry(value: FeatureCollectionPBuffer.Geometry) {
-        pb_1.Message.setOneofWrapperField(
-          this,
-          2,
-          this.#one_of_decls[0],
-          value
-        );
+        pb_1.Message.setOneofWrapperField(this, 2, this.#one_of_decls[0], value);
       }
       get has_geometry() {
         return pb_1.Message.getField(this, 2) != null;
@@ -1237,12 +1133,7 @@ export namespace esriPBuffer {
         ) as FeatureCollectionPBuffer.esriShapeBuffer;
       }
       set shapeBuffer(value: FeatureCollectionPBuffer.esriShapeBuffer) {
-        pb_1.Message.setOneofWrapperField(
-          this,
-          3,
-          this.#one_of_decls[0],
-          value
-        );
+        pb_1.Message.setOneofWrapperField(this, 3, this.#one_of_decls[0], value);
       }
       get has_shapeBuffer() {
         return pb_1.Message.getField(this, 3) != null;
@@ -1271,62 +1162,35 @@ export namespace esriPBuffer {
         return cases[pb_1.Message.computeOneofCase(this, [2, 3])];
       }
       static fromObject(data: {
-        attributes?: ReturnType<
-          typeof FeatureCollectionPBuffer.Value.prototype.toObject
-        >[];
-        geometry?: ReturnType<
-          typeof FeatureCollectionPBuffer.Geometry.prototype.toObject
-        >;
-        shapeBuffer?: ReturnType<
-          typeof FeatureCollectionPBuffer.esriShapeBuffer.prototype.toObject
-        >;
-        centroid?: ReturnType<
-          typeof FeatureCollectionPBuffer.Geometry.prototype.toObject
-        >;
+        attributes?: ReturnType<typeof FeatureCollectionPBuffer.Value.prototype.toObject>[];
+        geometry?: ReturnType<typeof FeatureCollectionPBuffer.Geometry.prototype.toObject>;
+        shapeBuffer?: ReturnType<typeof FeatureCollectionPBuffer.esriShapeBuffer.prototype.toObject>;
+        centroid?: ReturnType<typeof FeatureCollectionPBuffer.Geometry.prototype.toObject>;
       }): Feature {
         const message = new Feature({});
         if (data.attributes != null) {
-          message.attributes = data.attributes.map((item) =>
-            FeatureCollectionPBuffer.Value.fromObject(item)
-          );
+          message.attributes = data.attributes.map((item) => FeatureCollectionPBuffer.Value.fromObject(item));
         }
         if (data.geometry != null) {
-          message.geometry = FeatureCollectionPBuffer.Geometry.fromObject(
-            data.geometry
-          );
+          message.geometry = FeatureCollectionPBuffer.Geometry.fromObject(data.geometry);
         }
         if (data.shapeBuffer != null) {
-          message.shapeBuffer =
-            FeatureCollectionPBuffer.esriShapeBuffer.fromObject(
-              data.shapeBuffer
-            );
+          message.shapeBuffer = FeatureCollectionPBuffer.esriShapeBuffer.fromObject(data.shapeBuffer);
         }
         if (data.centroid != null) {
-          message.centroid = FeatureCollectionPBuffer.Geometry.fromObject(
-            data.centroid
-          );
+          message.centroid = FeatureCollectionPBuffer.Geometry.fromObject(data.centroid);
         }
         return message;
       }
       toObject() {
         const data: {
-          attributes?: ReturnType<
-            typeof FeatureCollectionPBuffer.Value.prototype.toObject
-          >[];
-          geometry?: ReturnType<
-            typeof FeatureCollectionPBuffer.Geometry.prototype.toObject
-          >;
-          shapeBuffer?: ReturnType<
-            typeof FeatureCollectionPBuffer.esriShapeBuffer.prototype.toObject
-          >;
-          centroid?: ReturnType<
-            typeof FeatureCollectionPBuffer.Geometry.prototype.toObject
-          >;
+          attributes?: ReturnType<typeof FeatureCollectionPBuffer.Value.prototype.toObject>[];
+          geometry?: ReturnType<typeof FeatureCollectionPBuffer.Geometry.prototype.toObject>;
+          shapeBuffer?: ReturnType<typeof FeatureCollectionPBuffer.esriShapeBuffer.prototype.toObject>;
+          centroid?: ReturnType<typeof FeatureCollectionPBuffer.Geometry.prototype.toObject>;
         } = {};
         if (this.attributes != null) {
-          data.attributes = this.attributes.map(
-            (item: FeatureCollectionPBuffer.Value) => item.toObject()
-          );
+          data.attributes = this.attributes.map((item: FeatureCollectionPBuffer.Value) => item.toObject());
         }
         if (this.geometry != null) {
           data.geometry = this.geometry.toObject();
@@ -1344,30 +1208,16 @@ export namespace esriPBuffer {
       serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
         const writer = w || new pb_1.BinaryWriter();
         if (this.attributes.length)
-          writer.writeRepeatedMessage(
-            1,
-            this.attributes,
-            (item: FeatureCollectionPBuffer.Value) => item.serialize(writer)
+          writer.writeRepeatedMessage(1, this.attributes, (item: FeatureCollectionPBuffer.Value) =>
+            item.serialize(writer)
           );
-        if (this.has_geometry)
-          writer.writeMessage(2, this.geometry, () =>
-            this.geometry.serialize(writer)
-          );
-        if (this.has_shapeBuffer)
-          writer.writeMessage(3, this.shapeBuffer, () =>
-            this.shapeBuffer.serialize(writer)
-          );
-        if (this.has_centroid)
-          writer.writeMessage(4, this.centroid, () =>
-            this.centroid.serialize(writer)
-          );
+        if (this.has_geometry) writer.writeMessage(2, this.geometry, () => this.geometry.serialize(writer));
+        if (this.has_shapeBuffer) writer.writeMessage(3, this.shapeBuffer, () => this.shapeBuffer.serialize(writer));
+        if (this.has_centroid) writer.writeMessage(4, this.centroid, () => this.centroid.serialize(writer));
         if (!w) return writer.getResultBuffer();
       }
       static deserialize(bytes: Uint8Array | pb_1.BinaryReader): Feature {
-        const reader =
-            bytes instanceof pb_1.BinaryReader
-              ? bytes
-              : new pb_1.BinaryReader(bytes),
+        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes),
           message = new Feature();
         while (reader.nextField()) {
           if (reader.isEndGroup()) break;
@@ -1385,27 +1235,19 @@ export namespace esriPBuffer {
             case 2:
               reader.readMessage(
                 message.geometry,
-                () =>
-                  (message.geometry =
-                    FeatureCollectionPBuffer.Geometry.deserialize(reader))
+                () => (message.geometry = FeatureCollectionPBuffer.Geometry.deserialize(reader))
               );
               break;
             case 3:
               reader.readMessage(
                 message.shapeBuffer,
-                () =>
-                  (message.shapeBuffer =
-                    FeatureCollectionPBuffer.esriShapeBuffer.deserialize(
-                      reader
-                    ))
+                () => (message.shapeBuffer = FeatureCollectionPBuffer.esriShapeBuffer.deserialize(reader))
               );
               break;
             case 4:
               reader.readMessage(
                 message.centroid,
-                () =>
-                  (message.centroid =
-                    FeatureCollectionPBuffer.Geometry.deserialize(reader))
+                () => (message.centroid = FeatureCollectionPBuffer.Geometry.deserialize(reader))
               );
               break;
             default:
@@ -1432,22 +1274,12 @@ export namespace esriPBuffer {
             }
       ) {
         super();
-        pb_1.Message.initialize(
-          this,
-          Array.isArray(data) ? data : [],
-          0,
-          -1,
-          [],
-          this.#one_of_decls
-        );
+        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
         if (!Array.isArray(data) && typeof data == "object") {
           if ("name" in data && data.name != undefined) {
             this.name = data.name;
           }
-          if (
-            "isSystemMaintained" in data &&
-            data.isSystemMaintained != undefined
-          ) {
+          if ("isSystemMaintained" in data && data.isSystemMaintained != undefined) {
             this.isSystemMaintained = data.isSystemMaintained;
           }
         }
@@ -1464,10 +1296,7 @@ export namespace esriPBuffer {
       set isSystemMaintained(value: boolean) {
         pb_1.Message.setField(this, 2, value);
       }
-      static fromObject(data: {
-        name?: string;
-        isSystemMaintained?: boolean;
-      }): UniqueIdField {
+      static fromObject(data: { name?: string; isSystemMaintained?: boolean }): UniqueIdField {
         const message = new UniqueIdField({});
         if (data.name != null) {
           message.name = data.name;
@@ -1495,15 +1324,11 @@ export namespace esriPBuffer {
       serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
         const writer = w || new pb_1.BinaryWriter();
         if (this.name.length) writer.writeString(1, this.name);
-        if (this.isSystemMaintained != false)
-          writer.writeBool(2, this.isSystemMaintained);
+        if (this.isSystemMaintained != false) writer.writeBool(2, this.isSystemMaintained);
         if (!w) return writer.getResultBuffer();
       }
       static deserialize(bytes: Uint8Array | pb_1.BinaryReader): UniqueIdField {
-        const reader =
-            bytes instanceof pb_1.BinaryReader
-              ? bytes
-              : new pb_1.BinaryReader(bytes),
+        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes),
           message = new UniqueIdField();
         while (reader.nextField()) {
           if (reader.isEndGroup()) break;
@@ -1539,25 +1364,12 @@ export namespace esriPBuffer {
             }
       ) {
         super();
-        pb_1.Message.initialize(
-          this,
-          Array.isArray(data) ? data : [],
-          0,
-          -1,
-          [],
-          this.#one_of_decls
-        );
+        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
         if (!Array.isArray(data) && typeof data == "object") {
-          if (
-            "shapeAreaFieldName" in data &&
-            data.shapeAreaFieldName != undefined
-          ) {
+          if ("shapeAreaFieldName" in data && data.shapeAreaFieldName != undefined) {
             this.shapeAreaFieldName = data.shapeAreaFieldName;
           }
-          if (
-            "shapeLengthFieldName" in data &&
-            data.shapeLengthFieldName != undefined
-          ) {
+          if ("shapeLengthFieldName" in data && data.shapeLengthFieldName != undefined) {
             this.shapeLengthFieldName = data.shapeLengthFieldName;
           }
           if ("units" in data && data.units != undefined) {
@@ -1621,20 +1433,13 @@ export namespace esriPBuffer {
       serialize(w: pb_1.BinaryWriter): void;
       serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
         const writer = w || new pb_1.BinaryWriter();
-        if (this.shapeAreaFieldName.length)
-          writer.writeString(1, this.shapeAreaFieldName);
-        if (this.shapeLengthFieldName.length)
-          writer.writeString(2, this.shapeLengthFieldName);
+        if (this.shapeAreaFieldName.length) writer.writeString(1, this.shapeAreaFieldName);
+        if (this.shapeLengthFieldName.length) writer.writeString(2, this.shapeLengthFieldName);
         if (this.units.length) writer.writeString(3, this.units);
         if (!w) return writer.getResultBuffer();
       }
-      static deserialize(
-        bytes: Uint8Array | pb_1.BinaryReader
-      ): GeometryProperties {
-        const reader =
-            bytes instanceof pb_1.BinaryReader
-              ? bytes
-              : new pb_1.BinaryReader(bytes),
+      static deserialize(bytes: Uint8Array | pb_1.BinaryReader): GeometryProperties {
+        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes),
           message = new GeometryProperties();
         while (reader.nextField()) {
           if (reader.isEndGroup()) break;
@@ -1672,14 +1477,7 @@ export namespace esriPBuffer {
             }
       ) {
         super();
-        pb_1.Message.initialize(
-          this,
-          Array.isArray(data) ? data : [],
-          0,
-          -1,
-          [],
-          this.#one_of_decls
-        );
+        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
         if (!Array.isArray(data) && typeof data == "object") {
           if ("minServerGen" in data && data.minServerGen != undefined) {
             this.minServerGen = data.minServerGen;
@@ -1701,10 +1499,7 @@ export namespace esriPBuffer {
       set serverGen(value: number) {
         pb_1.Message.setField(this, 2, value);
       }
-      static fromObject(data: {
-        minServerGen?: number;
-        serverGen?: number;
-      }): ServerGens {
+      static fromObject(data: { minServerGen?: number; serverGen?: number }): ServerGens {
         const message = new ServerGens({});
         if (data.minServerGen != null) {
           message.minServerGen = data.minServerGen;
@@ -1736,10 +1531,7 @@ export namespace esriPBuffer {
         if (!w) return writer.getResultBuffer();
       }
       static deserialize(bytes: Uint8Array | pb_1.BinaryReader): ServerGens {
-        const reader =
-            bytes instanceof pb_1.BinaryReader
-              ? bytes
-              : new pb_1.BinaryReader(bytes),
+        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes),
           message = new ServerGens();
         while (reader.nextField()) {
           if (reader.isEndGroup()) break;
@@ -1776,14 +1568,7 @@ export namespace esriPBuffer {
             }
       ) {
         super();
-        pb_1.Message.initialize(
-          this,
-          Array.isArray(data) ? data : [],
-          0,
-          -1,
-          [],
-          this.#one_of_decls
-        );
+        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
         if (!Array.isArray(data) && typeof data == "object") {
           if ("xScale" in data && data.xScale != undefined) {
             this.xScale = data.xScale;
@@ -1823,12 +1608,7 @@ export namespace esriPBuffer {
       set zScale(value: number) {
         pb_1.Message.setField(this, 4, value);
       }
-      static fromObject(data: {
-        xScale?: number;
-        yScale?: number;
-        mScale?: number;
-        zScale?: number;
-      }): Scale {
+      static fromObject(data: { xScale?: number; yScale?: number; mScale?: number; zScale?: number }): Scale {
         const message = new Scale({});
         if (data.xScale != null) {
           message.xScale = data.xScale;
@@ -1876,10 +1656,7 @@ export namespace esriPBuffer {
         if (!w) return writer.getResultBuffer();
       }
       static deserialize(bytes: Uint8Array | pb_1.BinaryReader): Scale {
-        const reader =
-            bytes instanceof pb_1.BinaryReader
-              ? bytes
-              : new pb_1.BinaryReader(bytes),
+        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes),
           message = new Scale();
         while (reader.nextField()) {
           if (reader.isEndGroup()) break;
@@ -1922,14 +1699,7 @@ export namespace esriPBuffer {
             }
       ) {
         super();
-        pb_1.Message.initialize(
-          this,
-          Array.isArray(data) ? data : [],
-          0,
-          -1,
-          [],
-          this.#one_of_decls
-        );
+        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
         if (!Array.isArray(data) && typeof data == "object") {
           if ("xTranslate" in data && data.xTranslate != undefined) {
             this.xTranslate = data.xTranslate;
@@ -2022,10 +1792,7 @@ export namespace esriPBuffer {
         if (!w) return writer.getResultBuffer();
       }
       static deserialize(bytes: Uint8Array | pb_1.BinaryReader): Translate {
-        const reader =
-            bytes instanceof pb_1.BinaryReader
-              ? bytes
-              : new pb_1.BinaryReader(bytes),
+        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes),
           message = new Translate();
         while (reader.nextField()) {
           if (reader.isEndGroup()) break;
@@ -2067,19 +1834,9 @@ export namespace esriPBuffer {
             }
       ) {
         super();
-        pb_1.Message.initialize(
-          this,
-          Array.isArray(data) ? data : [],
-          0,
-          -1,
-          [],
-          this.#one_of_decls
-        );
+        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
         if (!Array.isArray(data) && typeof data == "object") {
-          if (
-            "quantizeOriginPostion" in data &&
-            data.quantizeOriginPostion != undefined
-          ) {
+          if ("quantizeOriginPostion" in data && data.quantizeOriginPostion != undefined) {
             this.quantizeOriginPostion = data.quantizeOriginPostion;
           }
           if ("scale" in data && data.scale != undefined) {
@@ -2097,17 +1854,11 @@ export namespace esriPBuffer {
           FeatureCollectionPBuffer.QuantizeOriginPostion.upperLeft
         ) as FeatureCollectionPBuffer.QuantizeOriginPostion;
       }
-      set quantizeOriginPostion(
-        value: FeatureCollectionPBuffer.QuantizeOriginPostion
-      ) {
+      set quantizeOriginPostion(value: FeatureCollectionPBuffer.QuantizeOriginPostion) {
         pb_1.Message.setField(this, 1, value);
       }
       get scale() {
-        return pb_1.Message.getWrapperField(
-          this,
-          FeatureCollectionPBuffer.Scale,
-          2
-        ) as FeatureCollectionPBuffer.Scale;
+        return pb_1.Message.getWrapperField(this, FeatureCollectionPBuffer.Scale, 2) as FeatureCollectionPBuffer.Scale;
       }
       set scale(value: FeatureCollectionPBuffer.Scale) {
         pb_1.Message.setWrapperField(this, 2, value);
@@ -2130,12 +1881,8 @@ export namespace esriPBuffer {
       }
       static fromObject(data: {
         quantizeOriginPostion?: FeatureCollectionPBuffer.QuantizeOriginPostion;
-        scale?: ReturnType<
-          typeof FeatureCollectionPBuffer.Scale.prototype.toObject
-        >;
-        translate?: ReturnType<
-          typeof FeatureCollectionPBuffer.Translate.prototype.toObject
-        >;
+        scale?: ReturnType<typeof FeatureCollectionPBuffer.Scale.prototype.toObject>;
+        translate?: ReturnType<typeof FeatureCollectionPBuffer.Translate.prototype.toObject>;
       }): Transform {
         const message = new Transform({});
         if (data.quantizeOriginPostion != null) {
@@ -2145,21 +1892,15 @@ export namespace esriPBuffer {
           message.scale = FeatureCollectionPBuffer.Scale.fromObject(data.scale);
         }
         if (data.translate != null) {
-          message.translate = FeatureCollectionPBuffer.Translate.fromObject(
-            data.translate
-          );
+          message.translate = FeatureCollectionPBuffer.Translate.fromObject(data.translate);
         }
         return message;
       }
       toObject() {
         const data: {
           quantizeOriginPostion?: FeatureCollectionPBuffer.QuantizeOriginPostion;
-          scale?: ReturnType<
-            typeof FeatureCollectionPBuffer.Scale.prototype.toObject
-          >;
-          translate?: ReturnType<
-            typeof FeatureCollectionPBuffer.Translate.prototype.toObject
-          >;
+          scale?: ReturnType<typeof FeatureCollectionPBuffer.Scale.prototype.toObject>;
+          translate?: ReturnType<typeof FeatureCollectionPBuffer.Translate.prototype.toObject>;
         } = {};
         if (this.quantizeOriginPostion != null) {
           data.quantizeOriginPostion = this.quantizeOriginPostion;
@@ -2176,26 +1917,14 @@ export namespace esriPBuffer {
       serialize(w: pb_1.BinaryWriter): void;
       serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
         const writer = w || new pb_1.BinaryWriter();
-        if (
-          this.quantizeOriginPostion !=
-          FeatureCollectionPBuffer.QuantizeOriginPostion.upperLeft
-        )
+        if (this.quantizeOriginPostion != FeatureCollectionPBuffer.QuantizeOriginPostion.upperLeft)
           writer.writeEnum(1, this.quantizeOriginPostion);
-        if (this.has_scale)
-          writer.writeMessage(2, this.scale, () =>
-            this.scale.serialize(writer)
-          );
-        if (this.has_translate)
-          writer.writeMessage(3, this.translate, () =>
-            this.translate.serialize(writer)
-          );
+        if (this.has_scale) writer.writeMessage(2, this.scale, () => this.scale.serialize(writer));
+        if (this.has_translate) writer.writeMessage(3, this.translate, () => this.translate.serialize(writer));
         if (!w) return writer.getResultBuffer();
       }
       static deserialize(bytes: Uint8Array | pb_1.BinaryReader): Transform {
-        const reader =
-            bytes instanceof pb_1.BinaryReader
-              ? bytes
-              : new pb_1.BinaryReader(bytes),
+        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes),
           message = new Transform();
         while (reader.nextField()) {
           if (reader.isEndGroup()) break;
@@ -2206,17 +1935,13 @@ export namespace esriPBuffer {
             case 2:
               reader.readMessage(
                 message.scale,
-                () =>
-                  (message.scale =
-                    FeatureCollectionPBuffer.Scale.deserialize(reader))
+                () => (message.scale = FeatureCollectionPBuffer.Scale.deserialize(reader))
               );
               break;
             case 3:
               reader.readMessage(
                 message.translate,
-                () =>
-                  (message.translate =
-                    FeatureCollectionPBuffer.Translate.deserialize(reader))
+                () => (message.translate = FeatureCollectionPBuffer.Translate.deserialize(reader))
               );
               break;
             default:
@@ -2256,40 +1981,21 @@ export namespace esriPBuffer {
             }
       ) {
         super();
-        pb_1.Message.initialize(
-          this,
-          Array.isArray(data) ? data : [],
-          0,
-          -1,
-          [13, 14, 15],
-          this.#one_of_decls
-        );
+        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [13, 14, 15], this.#one_of_decls);
         if (!Array.isArray(data) && typeof data == "object") {
-          if (
-            "objectIdFieldName" in data &&
-            data.objectIdFieldName != undefined
-          ) {
+          if ("objectIdFieldName" in data && data.objectIdFieldName != undefined) {
             this.objectIdFieldName = data.objectIdFieldName;
           }
           if ("uniqueIdField" in data && data.uniqueIdField != undefined) {
             this.uniqueIdField = data.uniqueIdField;
           }
-          if (
-            "globalIdFieldName" in data &&
-            data.globalIdFieldName != undefined
-          ) {
+          if ("globalIdFieldName" in data && data.globalIdFieldName != undefined) {
             this.globalIdFieldName = data.globalIdFieldName;
           }
-          if (
-            "geohashFieldName" in data &&
-            data.geohashFieldName != undefined
-          ) {
+          if ("geohashFieldName" in data && data.geohashFieldName != undefined) {
             this.geohashFieldName = data.geohashFieldName;
           }
-          if (
-            "geometryProperties" in data &&
-            data.geometryProperties != undefined
-          ) {
+          if ("geometryProperties" in data && data.geometryProperties != undefined) {
             this.geometryProperties = data.geometryProperties;
           }
           if ("serverGens" in data && data.serverGens != undefined) {
@@ -2298,16 +2004,10 @@ export namespace esriPBuffer {
           if ("geometryType" in data && data.geometryType != undefined) {
             this.geometryType = data.geometryType;
           }
-          if (
-            "spatialReference" in data &&
-            data.spatialReference != undefined
-          ) {
+          if ("spatialReference" in data && data.spatialReference != undefined) {
             this.spatialReference = data.spatialReference;
           }
-          if (
-            "exceededTransferLimit" in data &&
-            data.exceededTransferLimit != undefined
-          ) {
+          if ("exceededTransferLimit" in data && data.exceededTransferLimit != undefined) {
             this.exceededTransferLimit = data.exceededTransferLimit;
           }
           if ("hasZ" in data && data.hasZ != undefined) {
@@ -2368,9 +2068,7 @@ export namespace esriPBuffer {
           5
         ) as FeatureCollectionPBuffer.GeometryProperties;
       }
-      set geometryProperties(
-        value: FeatureCollectionPBuffer.GeometryProperties
-      ) {
+      set geometryProperties(value: FeatureCollectionPBuffer.GeometryProperties) {
         pb_1.Message.setWrapperField(this, 5, value);
       }
       get has_geometryProperties() {
@@ -2475,46 +2173,27 @@ export namespace esriPBuffer {
       }
       static fromObject(data: {
         objectIdFieldName?: string;
-        uniqueIdField?: ReturnType<
-          typeof FeatureCollectionPBuffer.UniqueIdField.prototype.toObject
-        >;
+        uniqueIdField?: ReturnType<typeof FeatureCollectionPBuffer.UniqueIdField.prototype.toObject>;
         globalIdFieldName?: string;
         geohashFieldName?: string;
-        geometryProperties?: ReturnType<
-          typeof FeatureCollectionPBuffer.GeometryProperties.prototype.toObject
-        >;
-        serverGens?: ReturnType<
-          typeof FeatureCollectionPBuffer.ServerGens.prototype.toObject
-        >;
+        geometryProperties?: ReturnType<typeof FeatureCollectionPBuffer.GeometryProperties.prototype.toObject>;
+        serverGens?: ReturnType<typeof FeatureCollectionPBuffer.ServerGens.prototype.toObject>;
         geometryType?: FeatureCollectionPBuffer.GeometryType;
-        spatialReference?: ReturnType<
-          typeof FeatureCollectionPBuffer.SpatialReference.prototype.toObject
-        >;
+        spatialReference?: ReturnType<typeof FeatureCollectionPBuffer.SpatialReference.prototype.toObject>;
         exceededTransferLimit?: boolean;
         hasZ?: boolean;
         hasM?: boolean;
-        transform?: ReturnType<
-          typeof FeatureCollectionPBuffer.Transform.prototype.toObject
-        >;
-        fields?: ReturnType<
-          typeof FeatureCollectionPBuffer.Field.prototype.toObject
-        >[];
-        values?: ReturnType<
-          typeof FeatureCollectionPBuffer.Value.prototype.toObject
-        >[];
-        features?: ReturnType<
-          typeof FeatureCollectionPBuffer.Feature.prototype.toObject
-        >[];
+        transform?: ReturnType<typeof FeatureCollectionPBuffer.Transform.prototype.toObject>;
+        fields?: ReturnType<typeof FeatureCollectionPBuffer.Field.prototype.toObject>[];
+        values?: ReturnType<typeof FeatureCollectionPBuffer.Value.prototype.toObject>[];
+        features?: ReturnType<typeof FeatureCollectionPBuffer.Feature.prototype.toObject>[];
       }): FeatureResult {
         const message = new FeatureResult({});
         if (data.objectIdFieldName != null) {
           message.objectIdFieldName = data.objectIdFieldName;
         }
         if (data.uniqueIdField != null) {
-          message.uniqueIdField =
-            FeatureCollectionPBuffer.UniqueIdField.fromObject(
-              data.uniqueIdField
-            );
+          message.uniqueIdField = FeatureCollectionPBuffer.UniqueIdField.fromObject(data.uniqueIdField);
         }
         if (data.globalIdFieldName != null) {
           message.globalIdFieldName = data.globalIdFieldName;
@@ -2523,24 +2202,16 @@ export namespace esriPBuffer {
           message.geohashFieldName = data.geohashFieldName;
         }
         if (data.geometryProperties != null) {
-          message.geometryProperties =
-            FeatureCollectionPBuffer.GeometryProperties.fromObject(
-              data.geometryProperties
-            );
+          message.geometryProperties = FeatureCollectionPBuffer.GeometryProperties.fromObject(data.geometryProperties);
         }
         if (data.serverGens != null) {
-          message.serverGens = FeatureCollectionPBuffer.ServerGens.fromObject(
-            data.serverGens
-          );
+          message.serverGens = FeatureCollectionPBuffer.ServerGens.fromObject(data.serverGens);
         }
         if (data.geometryType != null) {
           message.geometryType = data.geometryType;
         }
         if (data.spatialReference != null) {
-          message.spatialReference =
-            FeatureCollectionPBuffer.SpatialReference.fromObject(
-              data.spatialReference
-            );
+          message.spatialReference = FeatureCollectionPBuffer.SpatialReference.fromObject(data.spatialReference);
         }
         if (data.exceededTransferLimit != null) {
           message.exceededTransferLimit = data.exceededTransferLimit;
@@ -2552,60 +2223,36 @@ export namespace esriPBuffer {
           message.hasM = data.hasM;
         }
         if (data.transform != null) {
-          message.transform = FeatureCollectionPBuffer.Transform.fromObject(
-            data.transform
-          );
+          message.transform = FeatureCollectionPBuffer.Transform.fromObject(data.transform);
         }
         if (data.fields != null) {
-          message.fields = data.fields.map((item) =>
-            FeatureCollectionPBuffer.Field.fromObject(item)
-          );
+          message.fields = data.fields.map((item) => FeatureCollectionPBuffer.Field.fromObject(item));
         }
         if (data.values != null) {
-          message.values = data.values.map((item) =>
-            FeatureCollectionPBuffer.Value.fromObject(item)
-          );
+          message.values = data.values.map((item) => FeatureCollectionPBuffer.Value.fromObject(item));
         }
         if (data.features != null) {
-          message.features = data.features.map((item) =>
-            FeatureCollectionPBuffer.Feature.fromObject(item)
-          );
+          message.features = data.features.map((item) => FeatureCollectionPBuffer.Feature.fromObject(item));
         }
         return message;
       }
       toObject() {
         const data: {
           objectIdFieldName?: string;
-          uniqueIdField?: ReturnType<
-            typeof FeatureCollectionPBuffer.UniqueIdField.prototype.toObject
-          >;
+          uniqueIdField?: ReturnType<typeof FeatureCollectionPBuffer.UniqueIdField.prototype.toObject>;
           globalIdFieldName?: string;
           geohashFieldName?: string;
-          geometryProperties?: ReturnType<
-            typeof FeatureCollectionPBuffer.GeometryProperties.prototype.toObject
-          >;
-          serverGens?: ReturnType<
-            typeof FeatureCollectionPBuffer.ServerGens.prototype.toObject
-          >;
+          geometryProperties?: ReturnType<typeof FeatureCollectionPBuffer.GeometryProperties.prototype.toObject>;
+          serverGens?: ReturnType<typeof FeatureCollectionPBuffer.ServerGens.prototype.toObject>;
           geometryType?: FeatureCollectionPBuffer.GeometryType;
-          spatialReference?: ReturnType<
-            typeof FeatureCollectionPBuffer.SpatialReference.prototype.toObject
-          >;
+          spatialReference?: ReturnType<typeof FeatureCollectionPBuffer.SpatialReference.prototype.toObject>;
           exceededTransferLimit?: boolean;
           hasZ?: boolean;
           hasM?: boolean;
-          transform?: ReturnType<
-            typeof FeatureCollectionPBuffer.Transform.prototype.toObject
-          >;
-          fields?: ReturnType<
-            typeof FeatureCollectionPBuffer.Field.prototype.toObject
-          >[];
-          values?: ReturnType<
-            typeof FeatureCollectionPBuffer.Value.prototype.toObject
-          >[];
-          features?: ReturnType<
-            typeof FeatureCollectionPBuffer.Feature.prototype.toObject
-          >[];
+          transform?: ReturnType<typeof FeatureCollectionPBuffer.Transform.prototype.toObject>;
+          fields?: ReturnType<typeof FeatureCollectionPBuffer.Field.prototype.toObject>[];
+          values?: ReturnType<typeof FeatureCollectionPBuffer.Value.prototype.toObject>[];
+          features?: ReturnType<typeof FeatureCollectionPBuffer.Feature.prototype.toObject>[];
         } = {};
         if (this.objectIdFieldName != null) {
           data.objectIdFieldName = this.objectIdFieldName;
@@ -2644,19 +2291,13 @@ export namespace esriPBuffer {
           data.transform = this.transform.toObject();
         }
         if (this.fields != null) {
-          data.fields = this.fields.map(
-            (item: FeatureCollectionPBuffer.Field) => item.toObject()
-          );
+          data.fields = this.fields.map((item: FeatureCollectionPBuffer.Field) => item.toObject());
         }
         if (this.values != null) {
-          data.values = this.values.map(
-            (item: FeatureCollectionPBuffer.Value) => item.toObject()
-          );
+          data.values = this.values.map((item: FeatureCollectionPBuffer.Value) => item.toObject());
         }
         if (this.features != null) {
-          data.features = this.features.map(
-            (item: FeatureCollectionPBuffer.Feature) => item.toObject()
-          );
+          data.features = this.features.map((item: FeatureCollectionPBuffer.Feature) => item.toObject());
         }
         return data;
       }
@@ -2664,66 +2305,38 @@ export namespace esriPBuffer {
       serialize(w: pb_1.BinaryWriter): void;
       serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
         const writer = w || new pb_1.BinaryWriter();
-        if (this.objectIdFieldName.length)
-          writer.writeString(1, this.objectIdFieldName);
+        if (this.objectIdFieldName.length) writer.writeString(1, this.objectIdFieldName);
         if (this.has_uniqueIdField)
-          writer.writeMessage(2, this.uniqueIdField, () =>
-            this.uniqueIdField.serialize(writer)
-          );
-        if (this.globalIdFieldName.length)
-          writer.writeString(3, this.globalIdFieldName);
-        if (this.geohashFieldName.length)
-          writer.writeString(4, this.geohashFieldName);
+          writer.writeMessage(2, this.uniqueIdField, () => this.uniqueIdField.serialize(writer));
+        if (this.globalIdFieldName.length) writer.writeString(3, this.globalIdFieldName);
+        if (this.geohashFieldName.length) writer.writeString(4, this.geohashFieldName);
         if (this.has_geometryProperties)
-          writer.writeMessage(5, this.geometryProperties, () =>
-            this.geometryProperties.serialize(writer)
-          );
-        if (this.has_serverGens)
-          writer.writeMessage(6, this.serverGens, () =>
-            this.serverGens.serialize(writer)
-          );
-        if (
-          this.geometryType !=
-          FeatureCollectionPBuffer.GeometryType.esriGeometryTypePoint
-        )
+          writer.writeMessage(5, this.geometryProperties, () => this.geometryProperties.serialize(writer));
+        if (this.has_serverGens) writer.writeMessage(6, this.serverGens, () => this.serverGens.serialize(writer));
+        if (this.geometryType != FeatureCollectionPBuffer.GeometryType.esriGeometryTypePoint)
           writer.writeEnum(7, this.geometryType);
         if (this.has_spatialReference)
-          writer.writeMessage(8, this.spatialReference, () =>
-            this.spatialReference.serialize(writer)
-          );
-        if (this.exceededTransferLimit != false)
-          writer.writeBool(9, this.exceededTransferLimit);
+          writer.writeMessage(8, this.spatialReference, () => this.spatialReference.serialize(writer));
+        if (this.exceededTransferLimit != false) writer.writeBool(9, this.exceededTransferLimit);
         if (this.hasZ != false) writer.writeBool(10, this.hasZ);
         if (this.hasM != false) writer.writeBool(11, this.hasM);
-        if (this.has_transform)
-          writer.writeMessage(12, this.transform, () =>
-            this.transform.serialize(writer)
-          );
+        if (this.has_transform) writer.writeMessage(12, this.transform, () => this.transform.serialize(writer));
         if (this.fields.length)
-          writer.writeRepeatedMessage(
-            13,
-            this.fields,
-            (item: FeatureCollectionPBuffer.Field) => item.serialize(writer)
+          writer.writeRepeatedMessage(13, this.fields, (item: FeatureCollectionPBuffer.Field) =>
+            item.serialize(writer)
           );
         if (this.values.length)
-          writer.writeRepeatedMessage(
-            14,
-            this.values,
-            (item: FeatureCollectionPBuffer.Value) => item.serialize(writer)
+          writer.writeRepeatedMessage(14, this.values, (item: FeatureCollectionPBuffer.Value) =>
+            item.serialize(writer)
           );
         if (this.features.length)
-          writer.writeRepeatedMessage(
-            15,
-            this.features,
-            (item: FeatureCollectionPBuffer.Feature) => item.serialize(writer)
+          writer.writeRepeatedMessage(15, this.features, (item: FeatureCollectionPBuffer.Feature) =>
+            item.serialize(writer)
           );
         if (!w) return writer.getResultBuffer();
       }
       static deserialize(bytes: Uint8Array | pb_1.BinaryReader): FeatureResult {
-        const reader =
-            bytes instanceof pb_1.BinaryReader
-              ? bytes
-              : new pb_1.BinaryReader(bytes),
+        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes),
           message = new FeatureResult();
         while (reader.nextField()) {
           if (reader.isEndGroup()) break;
@@ -2734,9 +2347,7 @@ export namespace esriPBuffer {
             case 2:
               reader.readMessage(
                 message.uniqueIdField,
-                () =>
-                  (message.uniqueIdField =
-                    FeatureCollectionPBuffer.UniqueIdField.deserialize(reader))
+                () => (message.uniqueIdField = FeatureCollectionPBuffer.UniqueIdField.deserialize(reader))
               );
               break;
             case 3:
@@ -2748,19 +2359,13 @@ export namespace esriPBuffer {
             case 5:
               reader.readMessage(
                 message.geometryProperties,
-                () =>
-                  (message.geometryProperties =
-                    FeatureCollectionPBuffer.GeometryProperties.deserialize(
-                      reader
-                    ))
+                () => (message.geometryProperties = FeatureCollectionPBuffer.GeometryProperties.deserialize(reader))
               );
               break;
             case 6:
               reader.readMessage(
                 message.serverGens,
-                () =>
-                  (message.serverGens =
-                    FeatureCollectionPBuffer.ServerGens.deserialize(reader))
+                () => (message.serverGens = FeatureCollectionPBuffer.ServerGens.deserialize(reader))
               );
               break;
             case 7:
@@ -2769,11 +2374,7 @@ export namespace esriPBuffer {
             case 8:
               reader.readMessage(
                 message.spatialReference,
-                () =>
-                  (message.spatialReference =
-                    FeatureCollectionPBuffer.SpatialReference.deserialize(
-                      reader
-                    ))
+                () => (message.spatialReference = FeatureCollectionPBuffer.SpatialReference.deserialize(reader))
               );
               break;
             case 9:
@@ -2788,9 +2389,7 @@ export namespace esriPBuffer {
             case 12:
               reader.readMessage(
                 message.transform,
-                () =>
-                  (message.transform =
-                    FeatureCollectionPBuffer.Transform.deserialize(reader))
+                () => (message.transform = FeatureCollectionPBuffer.Transform.deserialize(reader))
               );
               break;
             case 13:
@@ -2846,14 +2445,7 @@ export namespace esriPBuffer {
             }
       ) {
         super();
-        pb_1.Message.initialize(
-          this,
-          Array.isArray(data) ? data : [],
-          0,
-          -1,
-          [],
-          this.#one_of_decls
-        );
+        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
         if (!Array.isArray(data) && typeof data == "object") {
           if ("count" in data && data.count != undefined) {
             this.count = data.count;
@@ -2890,10 +2482,7 @@ export namespace esriPBuffer {
         if (!w) return writer.getResultBuffer();
       }
       static deserialize(bytes: Uint8Array | pb_1.BinaryReader): CountResult {
-        const reader =
-            bytes instanceof pb_1.BinaryReader
-              ? bytes
-              : new pb_1.BinaryReader(bytes),
+        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes),
           message = new CountResult();
         while (reader.nextField()) {
           if (reader.isEndGroup()) break;
@@ -2926,19 +2515,9 @@ export namespace esriPBuffer {
             }
       ) {
         super();
-        pb_1.Message.initialize(
-          this,
-          Array.isArray(data) ? data : [],
-          0,
-          -1,
-          [3],
-          this.#one_of_decls
-        );
+        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [3], this.#one_of_decls);
         if (!Array.isArray(data) && typeof data == "object") {
-          if (
-            "objectIdFieldName" in data &&
-            data.objectIdFieldName != undefined
-          ) {
+          if ("objectIdFieldName" in data && data.objectIdFieldName != undefined) {
             this.objectIdFieldName = data.objectIdFieldName;
           }
           if ("serverGens" in data && data.serverGens != undefined) {
@@ -2976,9 +2555,7 @@ export namespace esriPBuffer {
       }
       static fromObject(data: {
         objectIdFieldName?: string;
-        serverGens?: ReturnType<
-          typeof FeatureCollectionPBuffer.ServerGens.prototype.toObject
-        >;
+        serverGens?: ReturnType<typeof FeatureCollectionPBuffer.ServerGens.prototype.toObject>;
         objectIds?: number[];
       }): ObjectIdsResult {
         const message = new ObjectIdsResult({});
@@ -2986,9 +2563,7 @@ export namespace esriPBuffer {
           message.objectIdFieldName = data.objectIdFieldName;
         }
         if (data.serverGens != null) {
-          message.serverGens = FeatureCollectionPBuffer.ServerGens.fromObject(
-            data.serverGens
-          );
+          message.serverGens = FeatureCollectionPBuffer.ServerGens.fromObject(data.serverGens);
         }
         if (data.objectIds != null) {
           message.objectIds = data.objectIds;
@@ -2998,9 +2573,7 @@ export namespace esriPBuffer {
       toObject() {
         const data: {
           objectIdFieldName?: string;
-          serverGens?: ReturnType<
-            typeof FeatureCollectionPBuffer.ServerGens.prototype.toObject
-          >;
+          serverGens?: ReturnType<typeof FeatureCollectionPBuffer.ServerGens.prototype.toObject>;
           objectIds?: number[];
         } = {};
         if (this.objectIdFieldName != null) {
@@ -3018,22 +2591,13 @@ export namespace esriPBuffer {
       serialize(w: pb_1.BinaryWriter): void;
       serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
         const writer = w || new pb_1.BinaryWriter();
-        if (this.objectIdFieldName.length)
-          writer.writeString(1, this.objectIdFieldName);
-        if (this.has_serverGens)
-          writer.writeMessage(2, this.serverGens, () =>
-            this.serverGens.serialize(writer)
-          );
+        if (this.objectIdFieldName.length) writer.writeString(1, this.objectIdFieldName);
+        if (this.has_serverGens) writer.writeMessage(2, this.serverGens, () => this.serverGens.serialize(writer));
         if (this.objectIds.length) writer.writePackedUint64(3, this.objectIds);
         if (!w) return writer.getResultBuffer();
       }
-      static deserialize(
-        bytes: Uint8Array | pb_1.BinaryReader
-      ): ObjectIdsResult {
-        const reader =
-            bytes instanceof pb_1.BinaryReader
-              ? bytes
-              : new pb_1.BinaryReader(bytes),
+      static deserialize(bytes: Uint8Array | pb_1.BinaryReader): ObjectIdsResult {
+        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes),
           message = new ObjectIdsResult();
         while (reader.nextField()) {
           if (reader.isEndGroup()) break;
@@ -3044,9 +2608,7 @@ export namespace esriPBuffer {
             case 2:
               reader.readMessage(
                 message.serverGens,
-                () =>
-                  (message.serverGens =
-                    FeatureCollectionPBuffer.ServerGens.deserialize(reader))
+                () => (message.serverGens = FeatureCollectionPBuffer.ServerGens.deserialize(reader))
               );
               break;
             case 3:
@@ -3089,14 +2651,7 @@ export namespace esriPBuffer {
             ))
       ) {
         super();
-        pb_1.Message.initialize(
-          this,
-          Array.isArray(data) ? data : [],
-          0,
-          -1,
-          [],
-          this.#one_of_decls
-        );
+        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
         if (!Array.isArray(data) && typeof data == "object") {
           if ("featureResult" in data && data.featureResult != undefined) {
             this.featureResult = data.featureResult;
@@ -3117,12 +2672,7 @@ export namespace esriPBuffer {
         ) as FeatureCollectionPBuffer.FeatureResult;
       }
       set featureResult(value: FeatureCollectionPBuffer.FeatureResult) {
-        pb_1.Message.setOneofWrapperField(
-          this,
-          1,
-          this.#one_of_decls[0],
-          value
-        );
+        pb_1.Message.setOneofWrapperField(this, 1, this.#one_of_decls[0], value);
       }
       get has_featureResult() {
         return pb_1.Message.getField(this, 1) != null;
@@ -3135,12 +2685,7 @@ export namespace esriPBuffer {
         ) as FeatureCollectionPBuffer.CountResult;
       }
       set countResult(value: FeatureCollectionPBuffer.CountResult) {
-        pb_1.Message.setOneofWrapperField(
-          this,
-          2,
-          this.#one_of_decls[0],
-          value
-        );
+        pb_1.Message.setOneofWrapperField(this, 2, this.#one_of_decls[0], value);
       }
       get has_countResult() {
         return pb_1.Message.getField(this, 2) != null;
@@ -3153,23 +2698,14 @@ export namespace esriPBuffer {
         ) as FeatureCollectionPBuffer.ObjectIdsResult;
       }
       set idsResult(value: FeatureCollectionPBuffer.ObjectIdsResult) {
-        pb_1.Message.setOneofWrapperField(
-          this,
-          3,
-          this.#one_of_decls[0],
-          value
-        );
+        pb_1.Message.setOneofWrapperField(this, 3, this.#one_of_decls[0], value);
       }
       get has_idsResult() {
         return pb_1.Message.getField(this, 3) != null;
       }
       get Results() {
         const cases: {
-          [index: number]:
-            | "none"
-            | "featureResult"
-            | "countResult"
-            | "idsResult";
+          [index: number]: "none" | "featureResult" | "countResult" | "idsResult";
         } = {
           0: "none",
           1: "featureResult",
@@ -3179,45 +2715,27 @@ export namespace esriPBuffer {
         return cases[pb_1.Message.computeOneofCase(this, [1, 2, 3])];
       }
       static fromObject(data: {
-        featureResult?: ReturnType<
-          typeof FeatureCollectionPBuffer.FeatureResult.prototype.toObject
-        >;
-        countResult?: ReturnType<
-          typeof FeatureCollectionPBuffer.CountResult.prototype.toObject
-        >;
-        idsResult?: ReturnType<
-          typeof FeatureCollectionPBuffer.ObjectIdsResult.prototype.toObject
-        >;
+        featureResult?: ReturnType<typeof FeatureCollectionPBuffer.FeatureResult.prototype.toObject>;
+        countResult?: ReturnType<typeof FeatureCollectionPBuffer.CountResult.prototype.toObject>;
+        idsResult?: ReturnType<typeof FeatureCollectionPBuffer.ObjectIdsResult.prototype.toObject>;
       }): QueryResult {
         const message = new QueryResult({});
         if (data.featureResult != null) {
-          message.featureResult =
-            FeatureCollectionPBuffer.FeatureResult.fromObject(
-              data.featureResult
-            );
+          message.featureResult = FeatureCollectionPBuffer.FeatureResult.fromObject(data.featureResult);
         }
         if (data.countResult != null) {
-          message.countResult = FeatureCollectionPBuffer.CountResult.fromObject(
-            data.countResult
-          );
+          message.countResult = FeatureCollectionPBuffer.CountResult.fromObject(data.countResult);
         }
         if (data.idsResult != null) {
-          message.idsResult =
-            FeatureCollectionPBuffer.ObjectIdsResult.fromObject(data.idsResult);
+          message.idsResult = FeatureCollectionPBuffer.ObjectIdsResult.fromObject(data.idsResult);
         }
         return message;
       }
       toObject() {
         const data: {
-          featureResult?: ReturnType<
-            typeof FeatureCollectionPBuffer.FeatureResult.prototype.toObject
-          >;
-          countResult?: ReturnType<
-            typeof FeatureCollectionPBuffer.CountResult.prototype.toObject
-          >;
-          idsResult?: ReturnType<
-            typeof FeatureCollectionPBuffer.ObjectIdsResult.prototype.toObject
-          >;
+          featureResult?: ReturnType<typeof FeatureCollectionPBuffer.FeatureResult.prototype.toObject>;
+          countResult?: ReturnType<typeof FeatureCollectionPBuffer.CountResult.prototype.toObject>;
+          idsResult?: ReturnType<typeof FeatureCollectionPBuffer.ObjectIdsResult.prototype.toObject>;
         } = {};
         if (this.featureResult != null) {
           data.featureResult = this.featureResult.toObject();
@@ -3235,24 +2753,13 @@ export namespace esriPBuffer {
       serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
         const writer = w || new pb_1.BinaryWriter();
         if (this.has_featureResult)
-          writer.writeMessage(1, this.featureResult, () =>
-            this.featureResult.serialize(writer)
-          );
-        if (this.has_countResult)
-          writer.writeMessage(2, this.countResult, () =>
-            this.countResult.serialize(writer)
-          );
-        if (this.has_idsResult)
-          writer.writeMessage(3, this.idsResult, () =>
-            this.idsResult.serialize(writer)
-          );
+          writer.writeMessage(1, this.featureResult, () => this.featureResult.serialize(writer));
+        if (this.has_countResult) writer.writeMessage(2, this.countResult, () => this.countResult.serialize(writer));
+        if (this.has_idsResult) writer.writeMessage(3, this.idsResult, () => this.idsResult.serialize(writer));
         if (!w) return writer.getResultBuffer();
       }
       static deserialize(bytes: Uint8Array | pb_1.BinaryReader): QueryResult {
-        const reader =
-            bytes instanceof pb_1.BinaryReader
-              ? bytes
-              : new pb_1.BinaryReader(bytes),
+        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes),
           message = new QueryResult();
         while (reader.nextField()) {
           if (reader.isEndGroup()) break;
@@ -3260,27 +2767,19 @@ export namespace esriPBuffer {
             case 1:
               reader.readMessage(
                 message.featureResult,
-                () =>
-                  (message.featureResult =
-                    FeatureCollectionPBuffer.FeatureResult.deserialize(reader))
+                () => (message.featureResult = FeatureCollectionPBuffer.FeatureResult.deserialize(reader))
               );
               break;
             case 2:
               reader.readMessage(
                 message.countResult,
-                () =>
-                  (message.countResult =
-                    FeatureCollectionPBuffer.CountResult.deserialize(reader))
+                () => (message.countResult = FeatureCollectionPBuffer.CountResult.deserialize(reader))
               );
               break;
             case 3:
               reader.readMessage(
                 message.idsResult,
-                () =>
-                  (message.idsResult =
-                    FeatureCollectionPBuffer.ObjectIdsResult.deserialize(
-                      reader
-                    ))
+                () => (message.idsResult = FeatureCollectionPBuffer.ObjectIdsResult.deserialize(reader))
               );
               break;
             default:

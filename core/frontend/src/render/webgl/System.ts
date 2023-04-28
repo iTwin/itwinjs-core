@@ -6,14 +6,7 @@
  * @module WebGL
  */
 
-import {
-  assert,
-  BentleyStatus,
-  Dictionary,
-  dispose,
-  Id64,
-  Id64String,
-} from "@itwin/core-bentley";
+import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@itwin/core-bentley";
 import {
   ColorDef,
   ElementAlignedBox3d,
@@ -44,10 +37,7 @@ import {
   GraphicBuilder,
   ViewportGraphicBuilderOptions,
 } from "../GraphicBuilder";
-import {
-  InstancedGraphicParams,
-  PatternGraphicParams,
-} from "../InstancedGraphicParams";
+import { InstancedGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { RealityMeshGraphicParams } from "../RealityMeshGraphicParams";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
@@ -71,34 +61,17 @@ import {
   RenderSystemDebugControl,
 } from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
-import {
-  CreateTextureArgs,
-  CreateTextureFromSourceArgs,
-  TextureCacheKey,
-} from "../RenderTexture";
-import {
-  ScreenSpaceEffectBuilder,
-  ScreenSpaceEffectBuilderParams,
-} from "../ScreenSpaceEffectBuilder";
+import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey } from "../RenderTexture";
+import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../ScreenSpaceEffectBuilder";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
-import {
-  SkyBoxQuadsGeometry,
-  SkySphereViewportQuadGeometry,
-} from "./CachedGeometry";
+import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { ClipVolume } from "./ClipVolume";
 import { Debug } from "./Diagnostics";
 import { WebGLDisposable } from "./Disposable";
 import { DepthBuffer, FrameBufferStack } from "./FrameBuffer";
 import { GL } from "./GL";
 import { GLTimer } from "./GLTimer";
-import {
-  AnimationTransformBranch,
-  Batch,
-  Branch,
-  Graphic,
-  GraphicOwner,
-  GraphicsArray,
-} from "./Graphic";
+import { AnimationTransformBranch, Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
 import { isInstancedGraphicParams, PatternBuffers } from "./InstancedGeometry";
 import { Layer, LayerContainer } from "./Layer";
 import { LineCode } from "./LineCode";
@@ -113,10 +86,7 @@ import { RealityMeshGeometry } from "./RealityMesh";
 import { RenderBufferMultiSample } from "./RenderBuffer";
 import { TextureUnit } from "./RenderFlags";
 import { RenderState } from "./RenderState";
-import {
-  createScreenSpaceEffectBuilder,
-  ScreenSpaceEffects,
-} from "./ScreenSpaceEffect";
+import { createScreenSpaceEffectBuilder, ScreenSpaceEffects } from "./ScreenSpaceEffect";
 import { OffScreenTarget, OnScreenTarget } from "./Target";
 import { Techniques } from "./Technique";
 import { ExternalTextureLoader, Texture, TextureHandle } from "./Texture";
@@ -141,14 +111,9 @@ export class IdMap implements WebGLDisposable {
   /** Mapping of textures by their key values. */
   public readonly textures = new Map<string, RenderTexture>();
   /** Mapping of textures using gradient symbology. */
-  public readonly gradients = new Dictionary<Gradient.Symb, RenderTexture>(
-    Gradient.Symb.compareSymb
-  );
+  public readonly gradients = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
   /** Pending promises to create a texture from an ImageSource. This prevents us from decoding the same ImageSource multiple times */
-  public readonly texturesFromImageSources = new Map<
-    string,
-    Promise<RenderTexture | undefined>
-  >();
+  public readonly texturesFromImageSources = new Map<string, Promise<RenderTexture | undefined>>();
 
   public constructor(iModel: IModelConnection) {
     this._iModel = iModel;
@@ -231,18 +196,12 @@ export class IdMap implements WebGLDisposable {
     let tex = this.findTexture(params.key);
     if (tex) return tex;
 
-    const handle = TextureHandle.createForElement(
-      key,
-      iModel,
-      params.type,
-      format,
-      (_, data) => {
-        if (tex) {
-          assert(tex instanceof Texture);
-          tex.transparency = data.transparency ?? TextureTransparency.Mixed;
-        }
+    const handle = TextureHandle.createForElement(key, iModel, params.type, format, (_, data) => {
+      if (tex) {
+        assert(tex instanceof Texture);
+        tex.transparency = data.transparency ?? TextureTransparency.Mixed;
       }
-    );
+    });
 
     if (!handle) return undefined;
 
@@ -313,21 +272,10 @@ export class IdMap implements WebGLDisposable {
     let tex = this.findTexture(params.key);
     if (tex) return tex;
 
-    const handle = TextureHandle.createForCubeImages(
-      posX,
-      negX,
-      posY,
-      negY,
-      posZ,
-      negZ
-    );
+    const handle = TextureHandle.createForCubeImages(posX, negX, posY, negY, posZ, negZ);
     if (!handle) return undefined;
 
-    const ownership = params.key
-      ? { key: params.key, iModel: this._iModel }
-      : params.isOwned
-      ? "external"
-      : undefined;
+    const ownership = params.key ? { key: params.key, iModel: this._iModel } : params.isOwned ? "external" : undefined;
     tex = new Texture({
       handle,
       ownership,
@@ -339,11 +287,9 @@ export class IdMap implements WebGLDisposable {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    for (const texture of this.textures.values())
-      if (texture instanceof Texture) stats.addTexture(texture.bytesUsed);
+    for (const texture of this.textures.values()) if (texture instanceof Texture) stats.addTexture(texture.bytesUsed);
 
-    for (const gradient of this.gradients)
-      if (gradient instanceof Texture) stats.addTexture(gradient.bytesUsed);
+    for (const gradient of this.gradients) if (gradient instanceof Texture) stats.addTexture(gradient.bytesUsed);
   }
 }
 
@@ -361,19 +307,14 @@ interface TextureCacheInfo {
   key: TextureCacheKey;
 }
 
-function getMaterialColor(
-  color: ColorDef | RgbColorProps | undefined
-): ColorDef | undefined {
+function getMaterialColor(color: ColorDef | RgbColorProps | undefined): ColorDef | undefined {
   if (color instanceof ColorDef) return color;
 
   return color ? ColorDef.from(color.r, color.g, color.b) : undefined;
 }
 
 /** @internal */
-export class System
-  extends RenderSystem
-  implements RenderSystemDebugControl, RenderMemory.Consumer, WebGLDisposable
-{
+export class System extends RenderSystem implements RenderSystemDebugControl, RenderMemory.Consumer, WebGLDisposable {
   public readonly canvas: HTMLCanvasElement;
   public readonly currentRenderState = new RenderState();
   public readonly context: WebGL2RenderingContext;
@@ -467,13 +408,8 @@ export class System
     return this._capabilities.maxTexSizeAllow;
   }
   public get disjointTimerQuery() {
-    const ext = this._capabilities.queryExtensionObject<any>(
-      "EXT_disjoint_timer_query_webgl2"
-    );
-    return (
-      ext ??
-      this._capabilities.queryExtensionObject<any>("EXT_disjoint_timer_query")
-    );
+    const ext = this._capabilities.queryExtensionObject<any>("EXT_disjoint_timer_query_webgl2");
+    return ext ?? this._capabilities.queryExtensionObject<any>("EXT_disjoint_timer_query");
   }
 
   public override get isMobile(): boolean {
@@ -491,11 +427,7 @@ export class System
   /** Return a Promise which when resolved indicates that all pending external textures have finished loading from the backend. */
   public override async waitForAllExternalTextures(): Promise<void> {
     const extTexLoader = ExternalTextureLoader.instance;
-    if (
-      extTexLoader.numActiveRequests < 1 &&
-      extTexLoader.numPendingRequests < 1
-    )
-      return Promise.resolve();
+    if (extTexLoader.numActiveRequests < 1 && extTexLoader.numPendingRequests < 1) return Promise.resolve();
     const promise = new Promise<void>((resolve: any) => {
       extTexLoader.onTexturesLoaded.addOnce(() => {
         resolve();
@@ -530,38 +462,19 @@ export class System
   }
 
   public static create(optionsIn?: RenderSystem.Options): System {
-    const options: RenderSystem.Options =
-      undefined !== optionsIn ? optionsIn : {};
+    const options: RenderSystem.Options = undefined !== optionsIn ? optionsIn : {};
     const canvas = document.createElement("canvas");
-    if (null === canvas)
-      throw new IModelError(
-        BentleyStatus.ERROR,
-        "Failed to obtain HTMLCanvasElement"
-      );
+    if (null === canvas) throw new IModelError(BentleyStatus.ERROR, "Failed to obtain HTMLCanvasElement");
 
-    const context = this.createContext(
-      canvas,
-      true,
-      optionsIn?.contextAttributes
-    );
-    if (undefined === context)
-      throw new IModelError(
-        BentleyStatus.ERROR,
-        "Failed to obtain WebGL context"
-      );
+    const context = this.createContext(canvas, true, optionsIn?.contextAttributes);
+    if (undefined === context) throw new IModelError(BentleyStatus.ERROR, "Failed to obtain WebGL context");
 
     if (!(context instanceof WebGL2RenderingContext))
       throw new IModelError(BentleyStatus.ERROR, "WebGL 2 support is required");
 
-    const capabilities = Capabilities.create(
-      context,
-      options.disabledExtensions
-    );
+    const capabilities = Capabilities.create(context, options.disabledExtensions);
     if (undefined === capabilities)
-      throw new IModelError(
-        BentleyStatus.ERROR,
-        "Failed to initialize rendering capabilities"
-      );
+      throw new IModelError(BentleyStatus.ERROR, "Failed to initialize rendering capabilities");
 
     // set actual gl state to match desired state defaults
     context.depthFunc(GL.DepthFunc.Default); // LessOrEqual
@@ -601,9 +514,7 @@ export class System
     this._techniques = Techniques.create(this.context);
 
     const noiseDim = 4;
-    const noiseArr = new Uint8Array([
-      152, 235, 94, 173, 219, 215, 115, 176, 73, 205, 43, 201, 10, 81, 205, 198,
-    ]);
+    const noiseArr = new Uint8Array([152, 235, 94, 173, 219, 215, 115, 176, 73, 205, 43, 201, 10, 81, 205, 198]);
     this._noiseTexture = TextureHandle.createForData(
       noiseDim,
       noiseDim,
@@ -612,10 +523,7 @@ export class System
       GL.Texture.WrapMode.Repeat,
       GL.Texture.Format.Luminance
     );
-    assert(
-      undefined !== this._noiseTexture,
-      "System.noiseTexture not created."
-    );
+    assert(undefined !== this._noiseTexture, "System.noiseTexture not created.");
 
     this._lineCodeTexture = TextureHandle.createForData(
       LineCode.size,
@@ -625,10 +533,7 @@ export class System
       GL.Texture.WrapMode.Repeat,
       GL.Texture.Format.Luminance
     );
-    assert(
-      undefined !== this._lineCodeTexture,
-      "System.lineCodeTexture not created."
-    );
+    assert(undefined !== this._lineCodeTexture, "System.lineCodeTexture not created.");
 
     this._screenSpaceEffects = new ScreenSpaceEffects();
   }
@@ -641,16 +546,11 @@ export class System
     return new OffScreenTarget(rect);
   }
 
-  public createGraphic(
-    options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions
-  ): GraphicBuilder {
+  public createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder {
     return new PrimitiveBuilder(this, options);
   }
 
-  public override createPlanarGrid(
-    frustum: Frustum,
-    grid: PlanarGridProps
-  ): RenderGraphic | undefined {
+  public override createPlanarGrid(frustum: Frustum, grid: PlanarGridProps): RenderGraphic | undefined {
     return PlanarGridGeometry.create(frustum, grid, this);
   }
 
@@ -659,45 +559,28 @@ export class System
     transform?: Transform,
     disableTextureDisposal = false
   ): RealityMeshGeometry | undefined {
-    return RealityMeshGeometry.createForTerrain(
-      params,
-      transform,
-      disableTextureDisposal
-    );
+    return RealityMeshGeometry.createForTerrain(params, transform, disableTextureDisposal);
   }
 
   public override createRealityMeshGraphic(
     params: RealityMeshGraphicParams,
     disableTextureDisposal = false
   ): RenderGraphic | undefined {
-    return RealityMeshGeometry.createGraphic(
-      this,
-      params,
-      disableTextureDisposal
-    );
+    return RealityMeshGeometry.createGraphic(this, params, disableTextureDisposal);
   }
   public override createRealityMesh(
     realityMesh: RealityMeshParams,
     disableTextureDisposal = false
   ): RenderGraphic | undefined {
-    const geom = RealityMeshGeometry.createFromRealityMesh(
-      realityMesh,
-      disableTextureDisposal
-    );
+    const geom = RealityMeshGeometry.createFromRealityMesh(realityMesh, disableTextureDisposal);
     return geom ? Primitive.create(geom) : undefined;
   }
 
-  public override createMeshGeometry(
-    params: MeshParams,
-    viOrigin?: Point3d
-  ): MeshRenderGeometry | undefined {
+  public override createMeshGeometry(params: MeshParams, viOrigin?: Point3d): MeshRenderGeometry | undefined {
     return MeshRenderGeometry.create(params, viOrigin);
   }
 
-  public override createPolylineGeometry(
-    params: PolylineParams,
-    viOrigin?: Point3d
-  ): PolylineGeometry | undefined {
+  public override createPolylineGeometry(params: PolylineParams, viOrigin?: Point3d): PolylineGeometry | undefined {
     return PolylineGeometry.create(params, viOrigin);
   }
 
@@ -708,9 +591,7 @@ export class System
     return PointStringGeometry.create(params, viOrigin);
   }
 
-  public override createAreaPattern(
-    params: PatternGraphicParams
-  ): PatternBuffers | undefined {
+  public override createAreaPattern(params: PatternGraphicParams): PatternBuffers | undefined {
     return PatternBuffers.create(params);
   }
 
@@ -719,27 +600,18 @@ export class System
     instances?: InstancedGraphicParams | RenderAreaPattern
   ): RenderGraphic | undefined {
     if (!(geometry instanceof MeshRenderGeometry)) {
-      if (
-        geometry instanceof PolylineGeometry ||
-        geometry instanceof PointStringGeometry
-      )
+      if (geometry instanceof PolylineGeometry || geometry instanceof PointStringGeometry)
         return Primitive.create(geometry, instances);
 
       assert(false, "Invalid RenderGeometry for System.createRenderGraphic");
       return undefined;
     }
 
-    assert(
-      !instances ||
-        instances instanceof PatternBuffers ||
-        isInstancedGraphicParams(instances)
-    );
+    assert(!instances || instances instanceof PatternBuffers || isInstancedGraphicParams(instances));
     return MeshGraphic.create(geometry, instances);
   }
 
-  public override createPointCloud(
-    args: PointCloudArgs
-  ): RenderGraphic | undefined {
+  public override createPointCloud(args: PointCloudArgs): RenderGraphic | undefined {
     return Primitive.create(new PointCloudGeometry(args));
   }
 
@@ -755,10 +627,7 @@ export class System
     return new Branch(branch, transform, undefined, options);
   }
 
-  public override createAnimationTransformNode(
-    graphic: RenderGraphic,
-    nodeId: number
-  ): RenderGraphic {
+  public override createAnimationTransformNode(graphic: RenderGraphic, nodeId: number): RenderGraphic {
     return new AnimationTransformBranch(graphic, nodeId);
   }
 
@@ -785,30 +654,16 @@ export class System
     transparency: number,
     elevation: number
   ) {
-    return new LayerContainer(
-      graphic as Graphic,
-      drawAsOverlay,
-      transparency,
-      elevation
-    );
+    return new LayerContainer(graphic as Graphic, drawAsOverlay, transparency, elevation);
   }
 
-  public override createSkyBox(
-    params: RenderSkyBoxParams
-  ): RenderGraphic | undefined {
-    if ("cube" === params.type)
-      return SkyCubePrimitive.create(
-        SkyBoxQuadsGeometry.create(params.texture)
-      );
+  public override createSkyBox(params: RenderSkyBoxParams): RenderGraphic | undefined {
+    if ("cube" === params.type) return SkyCubePrimitive.create(SkyBoxQuadsGeometry.create(params.texture));
 
-    return SkySpherePrimitive.create(
-      SkySphereViewportQuadGeometry.createGeometry(params)
-    );
+    return SkySpherePrimitive.create(SkySphereViewportQuadGeometry.createGeometry(params));
   }
 
-  public override createScreenSpaceEffectBuilder(
-    params: ScreenSpaceEffectBuilderParams
-  ): ScreenSpaceEffectBuilder {
+  public override createScreenSpaceEffectBuilder(params: ScreenSpaceEffectBuilderParams): ScreenSpaceEffectBuilder {
     return createScreenSpaceEffectBuilder(params);
   }
 
@@ -817,19 +672,10 @@ export class System
     this.currentRenderState.copyFrom(newState);
   }
 
-  public createDepthBuffer(
-    width: number,
-    height: number,
-    numSamples: number = 1
-  ): DepthBuffer | undefined {
+  public createDepthBuffer(width: number, height: number, numSamples: number = 1): DepthBuffer | undefined {
     // Note: The buffer/texture created here have ownership passed to the caller (system will not dispose of these)
     if (numSamples > 1)
-      return RenderBufferMultiSample.create(
-        width,
-        height,
-        WebGL2RenderingContext.DEPTH24_STENCIL8,
-        numSamples
-      );
+      return RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.DEPTH24_STENCIL8, numSamples);
     else
       return TextureHandle.createForAttachment(
         width,
@@ -859,18 +705,13 @@ export class System
 
   /** Attempt to create a material for the given iModel using a set of material parameters. */
   // eslint-disable-next-line deprecation/deprecation
-  public override createMaterial(
-    params: RenderMaterial.Params,
-    imodel: IModelConnection
-  ): RenderMaterial | undefined {
+  public override createMaterial(params: RenderMaterial.Params, imodel: IModelConnection): RenderMaterial | undefined {
     const idMap = this.getIdMap(imodel);
     const material = idMap.getMaterial(params);
     return material;
   }
 
-  public override createRenderMaterial(
-    args: CreateRenderMaterialArgs
-  ): RenderMaterial | undefined {
+  public override createRenderMaterial(args: CreateRenderMaterialArgs): RenderMaterial | undefined {
     if (args.source) {
       const cached = this.findMaterial(args.source.id, args.source.iModel);
       if (cached) return cached;
@@ -879,18 +720,15 @@ export class System
     // eslint-disable-next-line deprecation/deprecation
     const params = new RenderMaterial.Params();
     params.alpha = args.alpha;
-    if (undefined !== args.diffuse?.weight)
-      params.diffuse = args.diffuse.weight;
+    if (undefined !== args.diffuse?.weight) params.diffuse = args.diffuse.weight;
 
     params.diffuseColor = getMaterialColor(args.diffuse?.color);
 
     if (args.specular) {
       params.specularColor = getMaterialColor(args.specular?.color);
-      if (undefined !== args.specular.weight)
-        params.specular = args.specular.weight;
+      if (undefined !== args.specular.weight) params.specular = args.specular.weight;
 
-      if (undefined !== args.specular.exponent)
-        params.specularExponent = args.specular.exponent;
+      if (undefined !== args.specular.exponent) params.specularExponent = args.specular.exponent;
     }
 
     if (args.textureMapping) {
@@ -905,8 +743,7 @@ export class System
           constantLodProps: args.textureMapping.constantLodProps,
         })
       );
-      params.textureMapping.normalMapParams =
-        args.textureMapping.normalMapParams;
+      params.textureMapping.normalMapParams = args.textureMapping.normalMapParams;
     }
 
     if (args.source) {
@@ -918,30 +755,18 @@ export class System
   }
 
   /** Using its key, search for an existing material of an open iModel. */
-  public override findMaterial(
-    key: string,
-    imodel: IModelConnection
-  ): RenderMaterial | undefined {
+  public override findMaterial(key: string, imodel: IModelConnection): RenderMaterial | undefined {
     const idMap = this.resourceCache.get(imodel);
     if (!idMap) return undefined;
     return idMap.findMaterial(key);
   }
 
-  private getTextureCacheInfo(
-    args: CreateTextureArgs
-  ): TextureCacheInfo | undefined {
-    const owner =
-      undefined !== args.ownership && args.ownership !== "external"
-        ? args.ownership
-        : undefined;
-    return owner
-      ? { idMap: this.getIdMap(owner.iModel), key: owner.key }
-      : undefined;
+  private getTextureCacheInfo(args: CreateTextureArgs): TextureCacheInfo | undefined {
+    const owner = undefined !== args.ownership && args.ownership !== "external" ? args.ownership : undefined;
+    return owner ? { idMap: this.getIdMap(owner.iModel), key: owner.key } : undefined;
   }
 
-  public override createTexture(
-    args: CreateTextureArgs
-  ): RenderTexture | undefined {
+  public override createTexture(args: CreateTextureArgs): RenderTexture | undefined {
     const info = this.getTextureCacheInfo(args);
     const existing = info?.idMap.findTexture(info?.key);
     if (existing) return existing;
@@ -950,12 +775,9 @@ export class System
     const source = args.image.source;
 
     let handle;
-    if (source instanceof ImageBuffer)
-      handle = TextureHandle.createForImageBuffer(source, type);
-    else if (source instanceof ImageBitmap)
-      handle = TextureHandle.createForImageBitmap(source, type);
-    else if (source instanceof HTMLImageElement)
-      handle = TextureHandle.createForImage(source, type);
+    if (source instanceof ImageBuffer) handle = TextureHandle.createForImageBuffer(source, type);
+    else if (source instanceof ImageBitmap) handle = TextureHandle.createForImageBitmap(source, type);
+    else if (source instanceof HTMLImageElement) handle = TextureHandle.createForImage(source, type);
     else assert(false);
 
     if (!handle) return undefined;
@@ -971,16 +793,10 @@ export class System
     return texture;
   }
 
-  public override async createTextureFromSource(
-    args: CreateTextureFromSourceArgs
-  ): Promise<RenderTexture | undefined> {
-    if (typeof args.ownership !== "object")
-      return super.createTextureFromSource(args);
+  public override async createTextureFromSource(args: CreateTextureFromSourceArgs): Promise<RenderTexture | undefined> {
+    if (typeof args.ownership !== "object") return super.createTextureFromSource(args);
 
-    return this.getIdMap(args.ownership.iModel).getTextureFromImageSource(
-      args,
-      args.ownership.key
-    );
+    return this.getIdMap(args.ownership.iModel).getTextureFromImageSource(args, args.ownership.key);
   }
 
   // eslint-disable-next-line deprecation/deprecation
@@ -990,12 +806,7 @@ export class System
     params: RenderTexture.Params,
     format: ImageSourceFormat
   ): RenderTexture | undefined {
-    return this.getIdMap(imodel).getTextureFromElement(
-      id,
-      imodel,
-      params,
-      format
-    );
+    return this.getIdMap(imodel).getTextureFromElement(id, imodel, params, format);
   }
 
   // eslint-disable-next-line deprecation/deprecation
@@ -1009,22 +820,11 @@ export class System
     imodel: IModelConnection,
     params: RenderTexture.Params
   ): RenderTexture | undefined {
-    return this.getIdMap(imodel).getTextureFromCubeImages(
-      posX,
-      negX,
-      posY,
-      negY,
-      posZ,
-      negZ,
-      params
-    );
+    return this.getIdMap(imodel).getTextureFromCubeImages(posX, negX, posY, negY, posZ, negZ, params);
   }
 
   /** Attempt to create a texture using gradient symbology. */
-  public override getGradientTexture(
-    symb: Gradient.Symb,
-    iModel?: IModelConnection
-  ): RenderTexture | undefined {
+  public override getGradientTexture(symb: Gradient.Symb, iModel?: IModelConnection): RenderTexture | undefined {
     let width = 0x100;
     let height = 0x100;
     if (symb.mode === Gradient.Mode.Thematic) {
@@ -1042,10 +842,7 @@ export class System
     return this.createTexture({
       image: {
         source,
-        transparency:
-          ImageBufferFormat.Rgba === source.format
-            ? TextureTransparency.Mixed
-            : TextureTransparency.Opaque,
+        transparency: ImageBufferFormat.Rgba === source.format ? TextureTransparency.Mixed : TextureTransparency.Opaque,
       },
       ownership: iModel ? { iModel, key: symb } : undefined,
       type: RenderTexture.Type.Normal,
@@ -1053,25 +850,17 @@ export class System
   }
 
   /** Using its key, search for an existing texture of an open iModel. */
-  public override findTexture(
-    key: TextureCacheKey,
-    imodel: IModelConnection
-  ): RenderTexture | undefined {
+  public override findTexture(key: TextureCacheKey, imodel: IModelConnection): RenderTexture | undefined {
     const idMap = this.resourceCache.get(imodel);
     if (!idMap) return undefined;
 
     return idMap.findTexture(key);
   }
 
-  public override createClipVolume(
-    clipVector: ClipVector
-  ): RenderClipVolume | undefined {
+  public override createClipVolume(clipVector: ClipVector): RenderClipVolume | undefined {
     return ClipVolume.create(clipVector);
   }
-  public override createBackgroundMapDrape(
-    drapedTree: TileTreeReference,
-    mapTree: MapTileTreeReference
-  ) {
+  public override createBackgroundMapDrape(drapedTree: TileTreeReference, mapTree: MapTileTreeReference) {
     return BackgroundMapDrape.create(drapedTree, mapTree);
   }
 
@@ -1089,15 +878,9 @@ export class System
     this.glTimer = GLTimer.create(this);
 
     // Make this System a subscriber to the the IModelConnection onClose event
-    this._removeEventListener = IModelConnection.onClose.addListener((imodel) =>
-      this.removeIModelMap(imodel)
-    );
+    this._removeEventListener = IModelConnection.onClose.addListener((imodel) => this.removeIModelMap(imodel));
 
-    canvas.addEventListener(
-      "webglcontextlost",
-      async () => RenderSystem.contextLossHandler(),
-      false
-    );
+    canvas.addEventListener("webglcontextlost", async () => RenderSystem.contextLossHandler(), false);
   }
 
   /** Exposed strictly for tests. */
@@ -1164,18 +947,10 @@ export class System
   // This prevents errors caused by leaving a vertex attrib array enabled after disposing of the buffer bound to it;
   // also prevents unnecessarily 'updating' the enabled state of a vertex attrib array when it hasn't actually changed.
   public enableVertexAttribArray(id: number, instanced: boolean): void {
-    assert(
-      id < this._nextVertexAttribStates.length,
-      "if you add new vertex attributes you must update array length"
-    );
-    assert(
-      id < this._curVertexAttribStates.length,
-      "if you add new vertex attributes you must update array length"
-    );
+    assert(id < this._nextVertexAttribStates.length, "if you add new vertex attributes you must update array length");
+    assert(id < this._curVertexAttribStates.length, "if you add new vertex attributes you must update array length");
 
-    this._nextVertexAttribStates[id] = instanced
-      ? VertexAttribState.InstancedEnabled
-      : VertexAttribState.Enabled;
+    this._nextVertexAttribStates[id] = instanced ? VertexAttribState.InstancedEnabled : VertexAttribState.Enabled;
   }
 
   public updateVertexAttribArrays(): void {
@@ -1219,12 +994,7 @@ export class System
     this.context.vertexAttribDivisor(index, divisor);
   }
 
-  public drawArrays(
-    type: GL.PrimitiveType,
-    first: number,
-    count: number,
-    numInstances: number
-  ): void {
+  public drawArrays(type: GL.PrimitiveType, first: number, count: number, numInstances: number): void {
     if (0 !== numInstances) {
       this.context.drawArraysInstanced(type, first, count, numInstances);
     } else {
@@ -1237,10 +1007,8 @@ export class System
   }
 
   public override enableDiagnostics(enable: RenderDiagnostics): void {
-    Debug.printEnabled =
-      RenderDiagnostics.None !== (enable & RenderDiagnostics.DebugOutput);
-    Debug.evaluateEnabled =
-      RenderDiagnostics.None !== (enable & RenderDiagnostics.WebGL);
+    Debug.printEnabled = RenderDiagnostics.None !== (enable & RenderDiagnostics.DebugOutput);
+    Debug.evaluateEnabled = RenderDiagnostics.None !== (enable & RenderDiagnostics.WebGL);
   }
 
   // RenderSystemDebugControl
@@ -1257,10 +1025,7 @@ export class System
   }
 
   public loseContext(): boolean {
-    const ext =
-      this._capabilities.queryExtensionObject<WEBGL_lose_context>(
-        "WEBGL_lose_context"
-      );
+    const ext = this._capabilities.queryExtensionObject<WEBGL_lose_context>("WEBGL_lose_context");
     if (undefined === ext) return false;
 
     ext.loseContext();
@@ -1279,14 +1044,11 @@ export class System
   }
 
   public override collectStatistics(stats: RenderMemory.Statistics): void {
-    if (undefined !== this._lineCodeTexture)
-      stats.addTexture(this._lineCodeTexture.bytesUsed);
+    if (undefined !== this._lineCodeTexture) stats.addTexture(this._lineCodeTexture.bytesUsed);
 
-    if (undefined !== this._noiseTexture)
-      stats.addTexture(this._noiseTexture.bytesUsed);
+    if (undefined !== this._noiseTexture) stats.addTexture(this._noiseTexture.bytesUsed);
 
-    for (const idMap of this.resourceCache.values())
-      idMap.collectStatistics(stats);
+    for (const idMap of this.resourceCache.values()) idMap.collectStatistics(stats);
   }
 
   public setMaxAnisotropy(max: number | undefined): void {

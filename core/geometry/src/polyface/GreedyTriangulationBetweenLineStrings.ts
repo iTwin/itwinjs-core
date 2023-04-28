@@ -33,11 +33,7 @@ export class GreedyTriangulationBetweenLineStrings {
 
   private _turnRadians: number;
 
-  private isForwardVector(
-    candidate: Vector3d,
-    forward: Vector3d,
-    perp: Vector3d
-  ): boolean {
+  private isForwardVector(candidate: Vector3d, forward: Vector3d, perp: Vector3d): boolean {
     if (candidate.dotProduct(forward) <= 0.0) return false;
     const theta = candidate.angleFromPerpendicular(perp);
     if (Math.abs(theta.radians) > this._turnRadians) return false;
@@ -63,11 +59,7 @@ export class GreedyTriangulationBetweenLineStrings {
       Vector3d.createStartEnd(xyzA, xyzB, this._vector1);
       this._vector1.crossProduct(forwardA, crossA);
       this._vector1.crossProduct(forwardB, crossB);
-      if (
-        !xyzA.isAlmostEqual(xyzB) &&
-        crossA.angleTo(crossB).radians < this._turnRadians
-      )
-        return true;
+      if (!xyzA.isAlmostEqual(xyzB) && crossA.angleTo(crossB).radians < this._turnRadians) return true;
     }
     return false;
   }
@@ -201,10 +193,7 @@ export class GreedyTriangulationBetweenLineStrings {
         this._triangleA3,
         this._workTriangle
       );
-      TriangleCandidate.updateIfOtherHasHigherQuality(
-        this._bestTriangle,
-        this._workTriangle
-      );
+      TriangleCandidate.updateIfOtherHasHigherQuality(this._bestTriangle, this._workTriangle);
       // TestTriangle::UpdateIfOtherHasLargerAspectRatio (bestTriangle, TestTriangle::MergeAspectRatio (triangleB1, triangleB2));
       // TestTriangle::UpdateIfOtherHasLargerAspectRatio (bestTriangle, TestTriangle::MergeAspectRatio (triangleA1, triangleA2));
 
@@ -275,11 +264,7 @@ export class GreedyTriangulationBetweenLineStrings {
     handler: (triangle: BarycentricTriangle) => void
   ) {
     /** Clean up duplicates for the real logic . . . */
-    this.emitTrianglesGo(
-      resolveToNoDuplicates(pointsA),
-      resolveToNoDuplicates(pointsB),
-      handler
-    );
+    this.emitTrianglesGo(resolveToNoDuplicates(pointsA), resolveToNoDuplicates(pointsB), handler);
   }
   /**
    * Run triangle logic on inputs with no duplicates.
@@ -296,11 +281,7 @@ export class GreedyTriangulationBetweenLineStrings {
     const intervalB = IndexedXYZCollectionInterval.createComplete(pointsB);
     const childA = IndexedXYZCollectionInterval.createComplete(pointsA);
     const childB = IndexedXYZCollectionInterval.createComplete(pointsB);
-    while (
-      intervalA.length > 0 &&
-      intervalB.length > 0 &&
-      (intervalA.length > 1 || intervalB.length > 1)
-    ) {
+    while (intervalA.length > 0 && intervalB.length > 0 && (intervalA.length > 1 || intervalB.length > 1)) {
       // const lA = intervalA.length;
       // const lB = intervalB.length;
       if (
@@ -409,9 +390,7 @@ export class GreedyTriangulationBetweenLineStrings {
   }
   /** Default angle for considering two vectors to be colinear */
   public static defaultNearColinearAngle = Angle.createDegrees(15);
-  public static createContext(
-    planarTurnAngle: Angle = this.defaultNearColinearAngle
-  ) {
+  public static createContext(planarTurnAngle: Angle = this.defaultNearColinearAngle) {
     return new GreedyTriangulationBetweenLineStrings(planarTurnAngle.radians);
   }
 }

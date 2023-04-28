@@ -85,9 +85,7 @@ export function mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus {
     case GeoCoordStatus.Pending:
       return GeoServiceStatus.Pending;
     default:
-      throw new Error(
-        "GeoCoordStatus -> GeoServiceStatus - Missing enum conversion"
-      );
+      throw new Error("GeoCoordStatus -> GeoServiceStatus - Missing enum conversion");
   }
 }
 

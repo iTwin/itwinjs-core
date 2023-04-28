@@ -99,9 +99,7 @@ export interface GltfStringMap<T> {
 /** Iterate the contents of a [[GltfDictionary]].
  * @internal
  */
-export function* gltfDictionaryIterator<T extends GltfChildOfRootProperty>(
-  dict: GltfDictionary<T>
-): Iterable<T> {
+export function* gltfDictionaryIterator<T extends GltfChildOfRootProperty>(dict: GltfDictionary<T>): Iterable<T> {
   if (Array.isArray(dict)) {
     for (const elem of dict) yield elem;
   } else {
@@ -257,8 +255,7 @@ export type GltfNode = Gltf1Node | Gltf2Node;
  * @internal
  */
 export function getGltfNodeMeshIds(node: GltfNode): GltfId[] {
-  if (undefined !== node.meshes)
-    return typeof node.meshes === "string" ? [node.meshes] : node.meshes;
+  if (undefined !== node.meshes) return typeof node.meshes === "string" ? [node.meshes] : node.meshes;
   else if (undefined !== node.mesh) return [node.mesh];
 
   return [];
@@ -271,17 +268,14 @@ export function* traverseGltfNodes(
   traversed: Set<GltfId>
 ): Iterable<GltfNode> {
   for (const id of ids) {
-    if (traversed.has(id))
-      throw new Error("Cycle detected while traversing glTF nodes");
+    if (traversed.has(id)) throw new Error("Cycle detected while traversing glTF nodes");
 
     const node = nodes[id];
     if (!node) continue;
 
     traversed.add(id);
     yield node;
-    if (node.children)
-      for (const child of traverseGltfNodes(node.children, nodes, traversed))
-        yield child;
+    if (node.children) for (const child of traverseGltfNodes(node.children, nodes, traversed)) yield child;
   }
 }
 
@@ -474,9 +468,7 @@ export interface Gltf2Material extends GltfChildOfRootProperty {
 export type GltfMaterial = Gltf1Material | Gltf2Material;
 
 /** @internal */
-export function isGltf1Material(
-  material: GltfMaterial
-): material is Gltf1Material {
+export function isGltf1Material(material: GltfMaterial): material is Gltf1Material {
   const mat1 = material as Gltf1Material;
   return undefined !== mat1.technique || undefined !== mat1.values;
 }
@@ -581,16 +573,7 @@ export namespace GltfStructuralMetadata {
   export interface Enum extends GltfProperty {
     values: EnumValue[];
     // Default: UINT16
-    valueType?:
-      | "INT8"
-      | "UINT8"
-      | "INT16"
-      | "UINT16"
-      | "INT32"
-      | "UINT32"
-      | "INT64"
-      | "UINT64"
-      | string;
+    valueType?: "INT8" | "UINT8" | "INT16" | "UINT16" | "INT32" | "UINT32" | "INT64" | "UINT64" | string;
     name?: string;
     description?: string;
   }

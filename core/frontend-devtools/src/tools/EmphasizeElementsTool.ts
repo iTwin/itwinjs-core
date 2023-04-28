@@ -8,13 +8,7 @@
 
 import { Id64 } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
-import {
-  EmphasizeElements,
-  IModelApp,
-  QueryVisibleFeaturesOptions,
-  ScreenViewport,
-  Tool,
-} from "@itwin/core-frontend";
+import { EmphasizeElements, IModelApp, QueryVisibleFeaturesOptions, ScreenViewport, Tool } from "@itwin/core-frontend";
 import { parseArgs } from "./parseArgs";
 
 /** Applies the `EmphasizeElements` API in some way to the selected Viewport.
@@ -35,9 +29,7 @@ export abstract class EmphasizeElementsTool extends Tool {
 
     if (this._wantClear) EmphasizeElements.clear(vp);
 
-    const emph = this._wantCreate
-      ? EmphasizeElements.getOrCreate(vp)
-      : EmphasizeElements.get(vp);
+    const emph = this._wantCreate ? EmphasizeElements.getOrCreate(vp) : EmphasizeElements.get(vp);
     if (undefined !== emph) this.execute(emph, vp);
 
     return true;
@@ -69,8 +61,7 @@ export class EmphasizeSelectedElementsTool extends EmphasizeElementsTool {
       OverrideType.None === (this._type & OverrideType.Color) ||
       emph.overrideSelectedElements(vp, ColorDef.white, undefined, true, false)
     ) {
-      emph.wantEmphasis =
-        OverrideType.None !== (this._type & OverrideType.Emphasis);
+      emph.wantEmphasis = OverrideType.None !== (this._type & OverrideType.Emphasis);
       if (emph.emphasizeSelectedElements(vp, undefined, true)) {
         vp.isFadeOutActive = true;
         return;
@@ -184,8 +175,7 @@ export class EmphasizeVisibleElementsTool extends EmphasizeElementsTool {
     const elementIds = new Set<string>();
     vp.queryVisibleFeatures(this._options, (features) => {
       for (const feature of features) {
-        if (feature.iModel === vp.iModel && Id64.isValid(feature.elementId))
-          elementIds.add(feature.elementId);
+        if (feature.iModel === vp.iModel && Id64.isValid(feature.elementId)) elementIds.add(feature.elementId);
       }
     });
 

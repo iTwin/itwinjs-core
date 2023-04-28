@@ -5,12 +5,7 @@
 
 import * as nock from "nock";
 import * as path from "path";
-import {
-  IModelDb,
-  IModelHost,
-  IModelJsFs,
-  NativeHost,
-} from "@itwin/core-backend";
+import { IModelDb, IModelHost, IModelJsFs, NativeHost } from "@itwin/core-backend";
 import { V1CheckpointManager } from "@itwin/core-backend/lib/cjs/CheckpointManager";
 import { IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
 import { TestRpcInterface } from "../common/RpcInterfaces";
@@ -26,17 +21,8 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
   }
 
-  public async executeTest(
-    tokenProps: IModelRpcProps,
-    testName: string,
-    params: any
-  ): Promise<any> {
-    return JSON.parse(
-      IModelDb.findByKey(tokenProps.key).nativeDb.executeTest(
-        testName,
-        JSON.stringify(params)
-      )
-    );
+  public async executeTest(tokenProps: IModelRpcProps, testName: string, params: any): Promise<any> {
+    return JSON.parse(IModelDb.findByKey(tokenProps.key).nativeDb.executeTest(testName, JSON.stringify(params)));
   }
 
   public async purgeCheckpoints(iModelId: string): Promise<void> {

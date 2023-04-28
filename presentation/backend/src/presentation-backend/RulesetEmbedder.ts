@@ -71,11 +71,7 @@ export interface RulesetInsertOptions {
    *
    * Defaults to `same-id-and-version-eq`.
    */
-  skip?:
-    | "never"
-    | "same-id"
-    | "same-id-and-version-eq"
-    | "same-id-and-version-gte";
+  skip?: "never" | "same-id" | "same-id-and-version-eq" | "same-id-and-version-gte";
 
   /**
    * Which existing versions of rulesets with same id should be replaced when we insert a new one:
@@ -134,10 +130,7 @@ export class RulesetEmbedder {
    * @param options Options for inserting a ruleset.
    * @returns ID of inserted ruleset element or, if insertion was skipped, ID of existing ruleset with the same ID and highest version.
    */
-  public async insertRuleset(
-    ruleset: Ruleset,
-    options?: RulesetInsertOptions
-  ): Promise<Id64String> {
+  public async insertRuleset(ruleset: Ruleset, options?: RulesetInsertOptions): Promise<Id64String> {
     const normalizedOptions = normalizeRulesetInsertOptions(options);
     const rulesetVersion = normalizeVersion(ruleset.version);
 
@@ -154,17 +147,13 @@ export class RulesetEmbedder {
       SELECT ECInstanceId, JsonProperties
       FROM ${RulesetElements.Ruleset.schema.name}.${RulesetElements.Ruleset.className}
       WHERE json_extract(JsonProperties, '$.jsonProperties.id') = :rulesetId`;
-    const reader = this._imodel.createQueryReader(
-      query,
-      QueryBinder.from({ rulesetId: ruleset.id }),
-      { rowFormat: QueryRowFormat.UseJsPropertyNames }
-    );
+    const reader = this._imodel.createQueryReader(query, QueryBinder.from({ rulesetId: ruleset.id }), {
+      rowFormat: QueryRowFormat.UseJsPropertyNames,
+    });
     while (await reader.step()) {
       const row = reader.current.toRow();
       const existingRulesetElementId: Id64String = row.id;
-      const existingRuleset: Ruleset = JSON.parse(
-        row.jsonProperties
-      ).jsonProperties;
+      const existingRuleset: Ruleset = JSON.parse(row.jsonProperties).jsonProperties;
       rulesetsWithSameId.push({
         id: existingRulesetElementId,
         ruleset: existingRuleset,
@@ -176,27 +165,19 @@ export class RulesetEmbedder {
     const shouldSkip =
       (normalizedOptions.skip === "same-id" && rulesetsWithSameId.length > 0) ||
       (normalizedOptions.skip === "same-id-and-version-eq" &&
-        rulesetsWithSameId.some(
-          (entry) => entry.normalizedVersion === rulesetVersion
-        )) ||
+        rulesetsWithSameId.some((entry) => entry.normalizedVersion === rulesetVersion)) ||
       (normalizedOptions.skip === "same-id-and-version-gte" &&
-        rulesetsWithSameId.some((entry) =>
-          versionGte(entry.normalizedVersion, rulesetVersion)
-        ));
+        rulesetsWithSameId.some((entry) => versionGte(entry.normalizedVersion, rulesetVersion)));
     if (shouldSkip) {
       // we're not inserting anything - return ID of the ruleset element with the highest version
-      const rulesetEntryWithHighestVersion = rulesetsWithSameId.reduce(
-        (highest, curr) => {
-          if (
-            !highest.ruleset.version ||
-            (curr.ruleset.version &&
-              versionGt(curr.ruleset.version, highest.ruleset.version))
-          )
-            return curr;
-          return highest;
-        },
-        rulesetsWithSameId[0]
-      );
+      const rulesetEntryWithHighestVersion = rulesetsWithSameId.reduce((highest, curr) => {
+        if (
+          !highest.ruleset.version ||
+          (curr.ruleset.version && versionGt(curr.ruleset.version, highest.ruleset.version))
+        )
+          return curr;
+        return highest;
+      }, rulesetsWithSameId[0]);
       return rulesetEntryWithHighestVersion.id;
     }
 
@@ -207,55 +188,29 @@ export class RulesetEmbedder {
         case "all":
           return normalizedVersion !== rulesetVersion;
         case "all-lower":
-          return (
-            normalizedVersion !== rulesetVersion &&
-            versionLt(normalizedVersion, rulesetVersion)
-          );
+          return normalizedVersion !== rulesetVersion && versionLt(normalizedVersion, rulesetVersion);
       }
       return false;
     };
     rulesetsWithSameId.forEach((entry) => {
-      if (shouldRemove(entry.ruleset, entry.normalizedVersion))
-        rulesetsToRemove.push(entry.id);
+      if (shouldRemove(entry.ruleset, entry.normalizedVersion)) rulesetsToRemove.push(entry.id);
     });
     this._imodel.elements.deleteElement(rulesetsToRemove);
 
     // attempt to update ruleset with same ID and version
-    const exactMatch = rulesetsWithSameId.find(
-      (curr) => curr.normalizedVersion === rulesetVersion
-    );
+    const exactMatch = rulesetsWithSameId.find((curr) => curr.normalizedVersion === rulesetVersion);
     if (exactMatch !== undefined) {
-      return this.updateRuleset(
-        exactMatch.id,
-        ruleset,
-        normalizedOptions.onEntityUpdate
-      );
+      return this.updateRuleset(exactMatch.id, ruleset, normalizedOptions.onEntityUpdate);
     }
 
     // no exact match found - insert a new ruleset element
-    const model = await this.getOrCreateRulesetModel(
-      normalizedOptions.onEntityInsert
-    );
-    const rulesetCode = RulesetElements.Ruleset.createRulesetCode(
-      this._imodel,
-      model.id,
-      ruleset
-    );
-    return this.insertNewRuleset(
-      ruleset,
-      model,
-      rulesetCode,
-      normalizedOptions.onEntityInsert
-    );
+    const model = await this.getOrCreateRulesetModel(normalizedOptions.onEntityInsert);
+    const rulesetCode = RulesetElements.Ruleset.createRulesetCode(this._imodel, model.id, ruleset);
+    return this.insertNewRuleset(ruleset, model, rulesetCode, normalizedOptions.onEntityInsert);
   }
 
-  private async updateRuleset(
-    elementId: Id64String,
-    ruleset: Ruleset,
-    callbacks?: UpdateCallbacks
-  ) {
-    const existingRulesetElement =
-      this._imodel.elements.tryGetElement<DefinitionElement>(elementId);
+  private async updateRuleset(elementId: Id64String, ruleset: Ruleset, callbacks?: UpdateCallbacks) {
+    const existingRulesetElement = this._imodel.elements.tryGetElement<DefinitionElement>(elementId);
     assert(existingRulesetElement !== undefined);
     existingRulesetElement.jsonProperties.jsonProperties = ruleset;
 
@@ -287,8 +242,7 @@ export class RulesetEmbedder {
    * Get all rulesets embedded in the iModel.
    */
   public async getRulesets(): Promise<Ruleset[]> {
-    if (!this._imodel.containsClass(RulesetElements.Ruleset.classFullName))
-      return [];
+    if (!this._imodel.containsClass(RulesetElements.Ruleset.classFullName)) return [];
 
     const rulesetList: Ruleset[] = [];
     this._imodel.withPreparedStatement(
@@ -307,17 +261,12 @@ export class RulesetEmbedder {
     return rulesetList;
   }
 
-  private async getOrCreateRulesetModel(
-    callbacks?: InsertCallbacks
-  ): Promise<DefinitionModel> {
+  private async getOrCreateRulesetModel(callbacks?: InsertCallbacks): Promise<DefinitionModel> {
     const rulesetModel = this.queryRulesetModel();
     if (undefined !== rulesetModel) return rulesetModel;
 
     const rulesetSubject = await this.insertSubject(callbacks);
-    const definitionPartition = await this.insertDefinitionPartition(
-      rulesetSubject,
-      callbacks
-    );
+    const definitionPartition = await this.insertDefinitionPartition(rulesetSubject, callbacks);
     return this.insertDefinitionModel(definitionPartition, callbacks);
   }
 
@@ -333,19 +282,13 @@ export class RulesetEmbedder {
     if (undefined === subject) return undefined;
 
     return this._imodel.elements.tryGetElement<DefinitionPartition>(
-      DefinitionPartition.createCode(
-        this._imodel,
-        subject.id,
-        this._rulesetModelName
-      )
+      DefinitionPartition.createCode(this._imodel, subject.id, this._rulesetModelName)
     );
   }
 
   private querySubject(): DefinitionPartition | undefined {
     const root = this._imodel.elements.getRootSubject();
-    const codeSpec: CodeSpec = this._imodel.codeSpecs.getByName(
-      BisCodeSpec.subject
-    );
+    const codeSpec: CodeSpec = this._imodel.codeSpecs.getByName(BisCodeSpec.subject);
     const code = new Code({
       spec: codeSpec.id,
       scope: root.id,
@@ -373,11 +316,7 @@ export class RulesetEmbedder {
     rulesetSubject: Subject,
     callbacks?: InsertCallbacks
   ): Promise<DefinitionPartition> {
-    const partitionCode = DefinitionPartition.createCode(
-      this._imodel,
-      rulesetSubject.id,
-      this._rulesetModelName
-    );
+    const partitionCode = DefinitionPartition.createCode(this._imodel, rulesetSubject.id, this._rulesetModelName);
     const definitionPartitionProps: InformationPartitionElementProps = {
       parent: {
         id: rulesetSubject.id,
@@ -393,9 +332,7 @@ export class RulesetEmbedder {
 
   private async insertSubject(callbacks?: InsertCallbacks): Promise<Subject> {
     const root = this._imodel.elements.getRootSubject();
-    const codeSpec: CodeSpec = this._imodel.codeSpecs.getByName(
-      BisCodeSpec.subject
-    );
+    const codeSpec: CodeSpec = this._imodel.codeSpecs.getByName(BisCodeSpec.subject);
     const subjectCode = new Code({
       spec: codeSpec.id,
       scope: root.id,
@@ -415,19 +352,14 @@ export class RulesetEmbedder {
   }
 
   private async handleElementOperationPrerequisites(): Promise<void> {
-    if (this._imodel.containsClass(RulesetElements.Ruleset.classFullName))
-      return;
+    if (this._imodel.containsClass(RulesetElements.Ruleset.classFullName)) return;
 
     // import PresentationRules ECSchema
     await this._imodel.importSchemas([this._schemaPath]);
 
     // insert CodeSpec for ruleset elements
     this._imodel.codeSpecs.insert(
-      CodeSpec.create(
-        this._imodel,
-        PresentationRules.CodeSpec.Ruleset,
-        CodeScopeSpec.Type.Model
-      )
+      CodeSpec.create(this._imodel, PresentationRules.CodeSpec.Ruleset, CodeScopeSpec.Type.Model)
     );
 
     this._imodel.saveChanges();
@@ -448,10 +380,7 @@ export class RulesetEmbedder {
     }
   }
 
-  private async insertModel(
-    props: ModelProps,
-    callbacks?: InsertCallbacks
-  ): Promise<Model> {
+  private async insertModel(props: ModelProps, callbacks?: InsertCallbacks): Promise<Model> {
     const model = this._imodel.models.createModel(props);
     // istanbul ignore next
     await callbacks?.onBeforeInsert(model);
@@ -476,11 +405,8 @@ export class RulesetEmbedder {
   }
 }
 
-function normalizeRulesetInsertOptions(
-  options?: RulesetInsertOptions
-): RulesetInsertOptions {
-  if (options === undefined)
-    return { skip: "same-id-and-version-eq", replaceVersions: "exact" };
+function normalizeRulesetInsertOptions(options?: RulesetInsertOptions): RulesetInsertOptions {
+  if (options === undefined) return { skip: "same-id-and-version-eq", replaceVersions: "exact" };
 
   return {
     skip: options.skip ?? "same-id-and-version-eq",

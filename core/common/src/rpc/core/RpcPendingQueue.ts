@@ -32,10 +32,7 @@ export class RpcPendingQueue {
     RpcRequest.events.addListener(this.requestEventHandler, this);
   }
 
-  private requestEventHandler(
-    type: RpcRequestEvent,
-    request: RpcRequest
-  ): void {
+  private requestEventHandler(type: RpcRequestEvent, request: RpcRequest): void {
     if (type !== RpcRequestEvent.StatusChanged) return;
 
     switch (request.status) {
@@ -91,10 +88,7 @@ export class RpcPendingQueue {
 
     let i = this._pending.length;
     while (i--) {
-      if (
-        !this._pending[i].pending &&
-        !RpcRequestStatus.isTransientError(this._pending[i].status)
-      ) {
+      if (!this._pending[i].pending && !RpcRequestStatus.isTransientError(this._pending[i].status)) {
         this._pending.splice(i, 1);
       }
     }

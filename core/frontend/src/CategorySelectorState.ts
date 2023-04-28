@@ -29,8 +29,7 @@ export class CategorySelectorState extends ElementState {
 
   constructor(props: CategorySelectorProps, iModel: IModelConnection) {
     super(props, iModel);
-    if (props.categories)
-      props.categories.forEach((cat) => this.categories.add(cat));
+    if (props.categories) props.categories.forEach((cat) => this.categories.add(cat));
   }
 
   public get categories(): Set<string> {
@@ -58,15 +57,10 @@ export class CategorySelectorState extends ElementState {
    * Two category selectors are logically equivalent if they have the same name and Id and contain the same set of category Ids.
    */
   public equalState(other: CategorySelectorState): boolean {
-    if (
-      this.categories.size !== other.categories.size ||
-      this.name !== other.name ||
-      this.id !== other.id
-    )
+    if (this.categories.size !== other.categories.size || this.name !== other.name || this.id !== other.id)
       return false;
 
-    for (const cat of this.categories)
-      if (!other.categories.has(cat)) return false;
+    for (const cat of this.categories) if (!other.categories.has(cat)) return false;
 
     return true;
   }

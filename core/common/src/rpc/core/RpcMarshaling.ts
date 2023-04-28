@@ -50,10 +50,7 @@ export interface RpcSerializedValue {
 
 /** @internal */
 export namespace RpcSerializedValue {
-  export function create(
-    objects = "",
-    data: Uint8Array[] = []
-  ): RpcSerializedValue {
+  export function create(objects = "", data: Uint8Array[] = []): RpcSerializedValue {
     return { objects, data };
   }
 }
@@ -63,10 +60,7 @@ export class RpcMarshaling {
   private constructor() {}
 
   /** Serializes a value. */
-  public static async serialize(
-    protocol: RpcProtocol | undefined,
-    value: any
-  ): Promise<RpcSerializedValue> {
+  public static async serialize(protocol: RpcProtocol | undefined, value: any): Promise<RpcSerializedValue> {
     const serialized = RpcSerializedValue.create();
 
     if (typeof value === "undefined") {
@@ -83,10 +77,7 @@ export class RpcMarshaling {
   }
 
   /** Deserializes a value. */
-  public static deserialize(
-    protocol: RpcProtocol | undefined,
-    value: RpcSerializedValue
-  ): any {
+  public static deserialize(protocol: RpcProtocol | undefined, value: RpcSerializedValue): any {
     if (value.objects === "") {
       return undefined;
     }
@@ -97,11 +88,7 @@ export class RpcMarshaling {
     try {
       result = JSON.parse(value.objects, WireFormat.unmarshal);
     } catch (error) {
-      if (error instanceof SyntaxError)
-        throw new IModelError(
-          BentleyStatus.ERROR,
-          `Invalid JSON: "${value.objects}"`
-        );
+      if (error instanceof SyntaxError) throw new IModelError(BentleyStatus.ERROR, `Invalid JSON: "${value.objects}"`);
       throw error;
     }
     marshalingTarget = undefined as any;
@@ -129,12 +116,7 @@ class WireFormat {
 
   /** JSON.parse reviver callback. */
   public static unmarshal(_key: string, value: any) {
-    if (
-      typeof value === "object" &&
-      value !== null &&
-      value.hasOwnProperty("isBinary") &&
-      value.isBinary
-    ) {
+    if (typeof value === "object" && value !== null && value.hasOwnProperty("isBinary") && value.isBinary) {
       return WireFormat.unmarshalBinary(value);
     }
 
@@ -163,9 +145,7 @@ class WireFormat {
             break;
           }
 
-          marshalingTarget.data.push(
-            new Uint8Array(value.buffer, cursor, chunk)
-          );
+          marshalingTarget.data.push(new Uint8Array(value.buffer, cursor, chunk));
           ++marker.chunks;
           cursor += chunk;
 
@@ -185,10 +165,7 @@ class WireFormat {
 
   private static unmarshalBinary(value: MarshalingBinaryMarker): any {
     if (value.index >= marshalingTarget.data.length) {
-      throw new IModelError(
-        BentleyStatus.ERROR,
-        `Cannot unmarshal missing binary value.`
-      );
+      throw new IModelError(BentleyStatus.ERROR, `Cannot unmarshal missing binary value.`);
     }
 
     if (value.chunks === 0) {

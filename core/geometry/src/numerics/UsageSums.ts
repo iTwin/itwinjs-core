@@ -80,9 +80,7 @@ export class UsageSums {
     const xBar = this.mean;
     const sumXX = this._sumXX;
     const sumX = this._sumX;
-    return Math.sqrt(
-      (sumXX - 2 * xBar * sumX + this._count * xBar * xBar) / this._count
-    );
+    return Math.sqrt((sumXX - 2 * xBar * sumX + this._count * xBar * xBar) / this._count);
   }
   /** Reinitialize all sums.
    * * origin is unchanged
@@ -113,8 +111,7 @@ export class UsageSums {
     const delta = origin - this._origin;
     this._origin = origin;
     // adjust sumXX first to get old sumX value before it is modified.
-    this._sumXX =
-      this._sumXX - 2 * delta * this._sumX + this._count * delta * delta;
+    this._sumXX = this._sumXX - 2 * delta * this._sumX + this._count * delta * delta;
     this._sumX = this._sumX - this._count * delta;
     this._minMax.cloneTranslated(-delta, this._minMax);
   }

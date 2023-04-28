@@ -101,16 +101,8 @@ import {
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import {
-  BriefcaseManager,
-  PullChangesArgs,
-  PushChangesArgs,
-} from "./BriefcaseManager";
-import {
-  CheckpointManager,
-  CheckpointProps,
-  V2CheckpointManager,
-} from "./CheckpointManager";
+import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
+import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { CloudSqlite } from "./CloudSqlite";
 import { CodeService } from "./CodeService";
@@ -118,17 +110,10 @@ import { CodeSpecs } from "./CodeSpecs";
 import { ConcurrentQuery } from "./ConcurrentQuery";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Element, SectionDrawing, Subject } from "./Element";
-import {
-  ElementAspect,
-  ElementMultiAspect,
-  ElementUniqueAspect,
-} from "./ElementAspect";
+import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { generateElementGraphics } from "./ElementGraphics";
 import { Entity, EntityClassType } from "./Entity";
-import {
-  ExportGraphicsOptions,
-  ExportPartGraphicsOptions,
-} from "./ExportGraphics";
+import { ExportGraphicsOptions, ExportPartGraphicsOptions } from "./ExportGraphics";
 import { GeoCoordConfig } from "./GeoCoordConfig";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -138,11 +123,7 @@ import { Relationships } from "./Relationship";
 import { ServerBasedLocks } from "./ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
-import {
-  DrawingViewDefinition,
-  SheetViewDefinition,
-  ViewDefinition,
-} from "./ViewDefinition";
+import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import {
   BaseSettings,
   SettingDictionary,
@@ -290,10 +271,7 @@ export enum BriefcaseLocalValue {
 }
 
 // function to open an briefcaseDb, perform an operation, and then close it.
-const withBriefcaseDb = async (
-  briefcase: OpenBriefcaseArgs,
-  fn: (_db: BriefcaseDb) => Promise<any>
-) => {
+const withBriefcaseDb = async (briefcase: OpenBriefcaseArgs, fn: (_db: BriefcaseDb) => Promise<any>) => {
   const db = await BriefcaseDb.open(briefcase);
   try {
     return await fn(db);
@@ -308,8 +286,7 @@ const withBriefcaseDb = async (
  */
 class IModelSettings extends BaseSettings {
   protected override verifyPriority(priority: SettingsPriority) {
-    if (priority <= SettingsPriority.application)
-      throw new Error("Use IModelHost.appSettings");
+    if (priority <= SettingsPriority.application) throw new Error("Use IModelHost.appSettings");
   }
 
   // attempt to resolve a setting from this iModel's settings, otherwise use appWorkspace's settings, otherwise defaultValue.
@@ -320,11 +297,7 @@ class IModelSettings extends BaseSettings {
   ): T | undefined {
     return (
       super.resolveSetting(name, resolver) ??
-      IModelHost.appWorkspace.settings.resolveSetting(
-        name,
-        resolver,
-        defaultValue
-      )
+      IModelHost.appWorkspace.settings.resolveSetting(name, resolver, defaultValue)
     );
   }
 }
@@ -348,8 +321,7 @@ export abstract class IModelDb extends IModel {
   public readonly channels: ChannelControl = new ChannelAdmin(this);
   private _relationships?: Relationships;
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
-  private readonly _sqliteStatementCache =
-    new StatementCache<SqliteStatement>();
+  private readonly _sqliteStatementCache = new StatementCache<SqliteStatement>();
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
   protected _fontMap?: FontMap;
@@ -382,8 +354,7 @@ export abstract class IModelDb extends IModel {
    * @beta
    */
   public get workspace(): Workspace {
-    if (undefined === this._workspace)
-      this._workspace = new ITwinWorkspace(new IModelSettings());
+    if (undefined === this._workspace) this._workspace = new ITwinWorkspace(new IModelSettings());
     return this._workspace;
   }
 
@@ -408,10 +379,7 @@ export abstract class IModelDb extends IModel {
   }
 
   public get fontMap(): FontMap {
-    return (
-      this._fontMap ??
-      (this._fontMap = new FontMap(this.nativeDb.readFontMap()))
-    );
+    return this._fontMap ?? (this._fontMap = new FontMap(this.nativeDb.readFontMap()));
   }
 
   /** @internal */
@@ -428,11 +396,7 @@ export abstract class IModelDb extends IModel {
    * @beta
    */
   public addNewFont(name: string, type?: FontType): FontId {
-    this.locks.checkExclusiveLock(
-      IModel.repositoryModelId,
-      "schema",
-      "addNewFont"
-    );
+    this.locks.checkExclusiveLock(IModel.repositoryModelId, "schema", "addNewFont");
     this.clearFontMap();
     return this.nativeDb.addNewFont({ name, type: type ?? FontType.TrueType });
   }
@@ -462,11 +426,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  protected constructor(args: {
-    nativeDb: IModelJsNative.DgnDb;
-    key: string;
-    changeset?: ChangesetIdWithIndex;
-  }) {
+  protected constructor(args: { nativeDb: IModelJsNative.DgnDb; key: string; changeset?: ChangesetIdWithIndex }) {
     super({
       ...args,
       iTwinId: args.nativeDb.getITwinId(),
@@ -483,17 +443,15 @@ export abstract class IModelDb extends IModel {
 
     if (undefined === IModelDb._shutdownListener) {
       // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
-      IModelDb._shutdownListener = IModelHost.onBeforeShutdown.addListener(
-        () => {
-          IModelDb._openDbs.forEach((db) => {
-            // N.B.: db.close() removes from _openedDbs
-            try {
-              db.abandonChanges();
-              db.close();
-            } catch {}
-          });
-        }
-      );
+      IModelDb._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => {
+        IModelDb._openDbs.forEach((db) => {
+          // N.B.: db.close() removes from _openedDbs
+          try {
+            db.abandonChanges();
+            db.close();
+          } catch {}
+        });
+      });
     }
   }
 
@@ -513,9 +471,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public async refreshContainerSas(
-    _userAccessToken: AccessToken
-  ): Promise<void> {}
+  public async refreshContainerSas(_userAccessToken: AccessToken): Promise<void> {}
 
   /** Event called when the iModel is about to be closed. */
   public readonly onBeforeClose = new BeEvent<() => void>();
@@ -539,40 +495,20 @@ export abstract class IModelDb extends IModel {
     const db = this.isBriefcaseDb() ? this : undefined;
     if (!db || !IpcHost.isValid) return;
 
-    db.onNameChanged.addListener(() =>
-      IpcHost.notifyTxns(db, "notifyIModelNameChanged", db.name)
-    );
-    db.onRootSubjectChanged.addListener(() =>
-      IpcHost.notifyTxns(db, "notifyRootSubjectChanged", db.rootSubject)
-    );
+    db.onNameChanged.addListener(() => IpcHost.notifyTxns(db, "notifyIModelNameChanged", db.name));
+    db.onRootSubjectChanged.addListener(() => IpcHost.notifyTxns(db, "notifyRootSubjectChanged", db.rootSubject));
 
     db.onProjectExtentsChanged.addListener(() =>
-      IpcHost.notifyTxns(
-        db,
-        "notifyProjectExtentsChanged",
-        db.projectExtents.toJSON()
-      )
+      IpcHost.notifyTxns(db, "notifyProjectExtentsChanged", db.projectExtents.toJSON())
     );
     db.onGlobalOriginChanged.addListener(() =>
-      IpcHost.notifyTxns(
-        db,
-        "notifyGlobalOriginChanged",
-        db.globalOrigin.toJSON()
-      )
+      IpcHost.notifyTxns(db, "notifyGlobalOriginChanged", db.globalOrigin.toJSON())
     );
     db.onEcefLocationChanged.addListener(() =>
-      IpcHost.notifyTxns(
-        db,
-        "notifyEcefLocationChanged",
-        db.ecefLocation?.toJSON()
-      )
+      IpcHost.notifyTxns(db, "notifyEcefLocationChanged", db.ecefLocation?.toJSON())
     );
     db.onGeographicCoordinateSystemChanged.addListener(() =>
-      IpcHost.notifyTxns(
-        db,
-        "notifyGeographicCoordinateSystemChanged",
-        db.geographicCoordinateSystem?.toJSON()
-      )
+      IpcHost.notifyTxns(db, "notifyGeographicCoordinateSystemChanged", db.geographicCoordinateSystem?.toJSON())
     );
   }
 
@@ -621,9 +557,7 @@ export abstract class IModelDb extends IModel {
 
   /** Get the briefcase Id of this iModel */
   public getBriefcaseId(): BriefcaseId {
-    return this.isOpen
-      ? this.nativeDb.getBriefcaseId()
-      : BriefcaseIdValue.Illegal;
+    return this.isOpen ? this.nativeDb.getBriefcaseId() : BriefcaseIdValue.Illegal;
   }
 
   /**
@@ -639,14 +573,8 @@ export abstract class IModelDb extends IModel {
    * @see [[withStatement]]
    * @public
    */
-  public withPreparedStatement<T>(
-    ecsql: string,
-    callback: (stmt: ECSqlStatement) => T,
-    logErrors = true
-  ): T {
-    const stmt =
-      this._statementCache.findAndRemove(ecsql) ??
-      this.prepareStatement(ecsql, logErrors);
+  public withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
+    const stmt = this._statementCache.findAndRemove(ecsql) ?? this.prepareStatement(ecsql, logErrors);
     const release = () => this._statementCache.addOrDispose(stmt);
     try {
       const val = callback(stmt);
@@ -673,11 +601,7 @@ export abstract class IModelDb extends IModel {
    * @see [[withPreparedStatement]]
    * @public
    */
-  public withStatement<T>(
-    ecsql: string,
-    callback: (stmt: ECSqlStatement) => T,
-    logErrors = true
-  ): T {
+  public withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
     const stmt = this.prepareStatement(ecsql, logErrors);
     const release = () => stmt.dispose();
     try {
@@ -699,11 +623,7 @@ export abstract class IModelDb extends IModel {
    * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
    * @beta
    * */
-  public createQueryReader(
-    ecsql: string,
-    params?: QueryBinder,
-    config?: QueryOptions
-  ): ECSqlReader {
+  public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
     if (!this._nativeDb || !this._nativeDb.isOpen()) {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
     }
@@ -730,11 +650,7 @@ export abstract class IModelDb extends IModel {
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    * @deprecated in 3.7. Use [[createQueryReader]] instead; it accepts the same parameters.
    */
-  public async *query(
-    ecsql: string,
-    params?: QueryBinder,
-    options?: QueryOptions
-  ): AsyncIterableIterator<any> {
+  public async *query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
     const builder = new QueryOptionsBuilder(options);
     const reader = this.createQueryReader(ecsql, params, builder.getOptions());
     while (await reader.step()) yield reader.formatCurrentRow();
@@ -753,14 +669,8 @@ export abstract class IModelDb extends IModel {
    * @throws [IModelError]($common) If the statement is invalid
    * @deprecated in 3.7. Count the number of results using `count(*)` where the original query is a subquery instead. E.g., `SELECT count(*) FROM (<query-whose-rows-to-count>)`.
    */
-  public async queryRowCount(
-    ecsql: string,
-    params?: QueryBinder
-  ): Promise<number> {
-    for await (const row of this.createQueryReader(
-      `SELECT count(*) FROM (${ecsql})`,
-      params
-    )) {
+  public async queryRowCount(ecsql: string, params?: QueryBinder): Promise<number> {
+    for await (const row of this.createQueryReader(`SELECT count(*) FROM (${ecsql})`, params)) {
       return row[0] as number;
     }
     throw new IModelError(DbResult.BE_SQLITE_ERROR, "Failed to get row count");
@@ -812,14 +722,8 @@ export abstract class IModelDb extends IModel {
    * @see [[withPreparedStatement]]
    * @public
    */
-  public withPreparedSqliteStatement<T>(
-    sql: string,
-    callback: (stmt: SqliteStatement) => T,
-    logErrors = true
-  ): T {
-    const stmt =
-      this._sqliteStatementCache.findAndRemove(sql) ??
-      this.prepareSqliteStatement(sql, logErrors);
+  public withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors = true): T {
+    const stmt = this._sqliteStatementCache.findAndRemove(sql) ?? this.prepareSqliteStatement(sql, logErrors);
     const release = () => this._sqliteStatementCache.addOrDispose(stmt);
     try {
       const val: T = callback(stmt);
@@ -845,11 +749,7 @@ export abstract class IModelDb extends IModel {
    * @returns the value returned by `callback`.
    * @public
    */
-  public withSqliteStatement<T>(
-    sql: string,
-    callback: (stmt: SqliteStatement) => T,
-    logErrors = true
-  ): T {
+  public withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors = true): T {
     const stmt = this.prepareSqliteStatement(sql, logErrors);
     const release = () => stmt.dispose();
     try {
@@ -871,10 +771,7 @@ export abstract class IModelDb extends IModel {
    * @throws [[IModelError]] if there is a problem preparing the statement.
    * @internal
    */
-  public prepareSqliteStatement(
-    sql: string,
-    logErrors = true
-  ): SqliteStatement {
+  public prepareSqliteStatement(sql: string, logErrors = true): SqliteStatement {
     const stmt = new SqliteStatement(sql);
     stmt.prepare(this.nativeDb, logErrors);
     return stmt;
@@ -886,9 +783,7 @@ export abstract class IModelDb extends IModel {
    * @returns array of SubCategoryResultRow
    * @internal
    */
-  public async querySubCategories(
-    categoryIds: Iterable<Id64String>
-  ): Promise<SubCategoryResultRow[]> {
+  public async querySubCategories(categoryIds: Iterable<Id64String>): Promise<SubCategoryResultRow[]> {
     const result: SubCategoryResultRow[] = [];
 
     const where = [...categoryIds].join(",");
@@ -923,11 +818,9 @@ export abstract class IModelDb extends IModel {
 
     if (params.orderBy) sql += ` ORDER BY ${params.orderBy}`;
 
-    if (typeof params.limit === "number" && params.limit > 0)
-      sql += ` LIMIT ${params.limit}`;
+    if (typeof params.limit === "number" && params.limit > 0) sql += ` LIMIT ${params.limit}`;
 
-    if (typeof params.offset === "number" && params.offset > 0)
-      sql += ` OFFSET ${params.offset}`;
+    if (typeof params.offset === "number" && params.offset > 0) sql += ` OFFSET ${params.offset}`;
 
     const ids = new Set<string>();
     this.withPreparedStatement(sql, (stmt) => {
@@ -936,10 +829,7 @@ export abstract class IModelDb extends IModel {
         if (row.id !== undefined) {
           ids.add(row.id);
           if (ids.size > IModelDb.maxLimit) {
-            throw new IModelError(
-              IModelStatus.BadRequest,
-              "Max LIMIT exceeded in SELECT statement"
-            );
+            throw new IModelError(IModelStatus.BadRequest, "Max LIMIT exceeded in SELECT statement");
           }
         }
       }
@@ -972,20 +862,13 @@ export abstract class IModelDb extends IModel {
    * @returns the computed extents.
    * @note This method does not modify the IModel's stored project extents. @see [[updateProjectExtents]].
    */
-  public computeProjectExtents(
-    options?: ComputeProjectExtentsOptions
-  ): ComputedProjectExtents {
+  public computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents {
     const wantFullExtents = true === options?.reportExtentsWithOutliers;
     const wantOutliers = true === options?.reportOutliers;
-    const result = this.nativeDb.computeProjectExtents(
-      wantFullExtents,
-      wantOutliers
-    );
+    const result = this.nativeDb.computeProjectExtents(wantFullExtents, wantOutliers);
     return {
       extents: Range3d.fromJSON(result.extents),
-      extentsWithOutliers: result.fullExtents
-        ? Range3d.fromJSON(result.fullExtents)
-        : undefined,
+      extentsWithOutliers: result.fullExtents ? Range3d.fromJSON(result.fullExtents) : undefined,
       outliers: result.outliers,
     };
   }
@@ -1007,14 +890,10 @@ export abstract class IModelDb extends IModel {
    */
   public saveChanges(description?: string): void {
     if (this.openMode === OpenMode.Readonly)
-      throw new IModelError(
-        IModelStatus.ReadOnly,
-        "IModelDb was opened read-only"
-      );
+      throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only");
 
     const stat = this.nativeDb.saveChanges(description);
-    if (DbResult.BE_SQLITE_OK !== stat)
-      throw new IModelError(stat, `Could not save changes (${description})`);
+    if (DbResult.BE_SQLITE_OK !== stat) throw new IModelError(stat, `Could not save changes (${description})`);
   }
 
   /** Abandon pending changes in this iModel. */
@@ -1061,10 +940,7 @@ export abstract class IModelDb extends IModel {
    * @note Changes are saved if importSchemas is successful and abandoned if not successful.
    * @see querySchemaVersion
    */
-  public async importSchemas(
-    schemaFileNames: LocalFileName[],
-    options?: SchemaImportOptions
-  ): Promise<void> {
+  public async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
     if (this.nativeDb.getITwinId() !== Guid.empty)
       // if this iModel is associated with an iTwin, importing schema requires the schema lock
       await this.acquireSchemaLock();
@@ -1075,10 +951,7 @@ export abstract class IModelDb extends IModel {
       ecSchemaXmlContext: maybeCustomNativeContext,
     };
 
-    const stat = this.nativeDb.importSchemas(
-      schemaFileNames,
-      nativeImportOptions
-    );
+    const stat = this.nativeDb.importSchemas(schemaFileNames, nativeImportOptions);
     if (DbResult.BE_SQLITE_OK !== stat) {
       throw new IModelError(stat, "Error importing schema");
     }
@@ -1095,9 +968,7 @@ export abstract class IModelDb extends IModel {
    * @see querySchemaVersion
    * @alpha
    */
-  public async importSchemaStrings(
-    serializedXmlSchemas: string[]
-  ): Promise<void> {
+  public async importSchemaStrings(serializedXmlSchemas: string[]): Promise<void> {
     if (this.iTwinId && this.iTwinId !== Guid.empty)
       // if this iModel is associated with an iTwin, importing schema requires the schema lock
       await this.acquireSchemaLock();
@@ -1105,8 +976,7 @@ export abstract class IModelDb extends IModel {
     const stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, {
       schemaLockHeld: true,
     });
-    if (DbResult.BE_SQLITE_OK !== stat)
-      throw new IModelError(stat, "Error importing schema");
+    if (DbResult.BE_SQLITE_OK !== stat) throw new IModelError(stat, "Error importing schema");
 
     this.clearCaches();
   }
@@ -1149,29 +1019,16 @@ export abstract class IModelDb extends IModel {
   ): IModelJsNative.DgnDb {
     file.key = file.key ?? Guid.createValue();
     if (this.tryFindByKey(file.key))
-      throw new IModelError(
-        IModelStatus.AlreadyOpen,
-        `key [${file.key}] for file [${file.path}] is already in use`
-      );
+      throw new IModelError(IModelStatus.AlreadyOpen, `key [${file.key}] for file [${file.path}] is already in use`);
 
     const isUpgradeRequested =
-      upgradeOptions?.domain === DomainOptions.Upgrade ||
-      upgradeOptions?.profile === ProfileOptions.Upgrade;
+      upgradeOptions?.domain === DomainOptions.Upgrade || upgradeOptions?.profile === ProfileOptions.Upgrade;
     if (isUpgradeRequested && openMode !== OpenMode.ReadWrite)
-      throw new IModelError(
-        IModelStatus.UpgradeFailed,
-        "Cannot upgrade a Readonly Db"
-      );
+      throw new IModelError(IModelStatus.UpgradeFailed, "Cannot upgrade a Readonly Db");
 
     try {
       const nativeDb = new IModelHost.platform.DgnDb();
-      nativeDb.openIModel(
-        file.path,
-        openMode,
-        upgradeOptions,
-        props,
-        props?.container
-      );
+      nativeDb.openIModel(file.path, openMode, upgradeOptions, props, props?.container);
       return nativeDb;
     } catch (err: any) {
       throw new IModelError(err.errorNumber, `${err.message}, ${file.path}`);
@@ -1188,10 +1045,7 @@ export abstract class IModelDb extends IModel {
    * @see [[BriefcaseDb.upgradeSchemas]] or [[StandaloneDb.upgradeSchemas]]
    * @see ($docs/learning/backend/IModelDb.md#upgrading-schemas-in-an-imodel)
    */
-  public static validateSchemas(
-    filePath: LocalFileName,
-    forReadWrite: boolean
-  ): SchemaState {
+  public static validateSchemas(filePath: LocalFileName, forReadWrite: boolean): SchemaState {
     const openMode = forReadWrite ? OpenMode.ReadWrite : OpenMode.Readonly;
     const file = { path: filePath };
     let result = DbResult.BE_SQLITE_OK;
@@ -1232,10 +1086,7 @@ export abstract class IModelDb extends IModel {
           "The profile of the Db is invalid. Cannot upgrade or open the Db."
         );
       default:
-        throw new IModelError(
-          DbResult.BE_SQLITE_ERROR,
-          "Error validating schemas. Cannot upgrade or open the Db."
-        );
+        throw new IModelError(DbResult.BE_SQLITE_ERROR, "Error validating schemas. Cannot upgrade or open the Db.");
     }
     return schemaState;
   }
@@ -1244,24 +1095,19 @@ export abstract class IModelDb extends IModel {
    * @internal
    */
   public get classMetaDataRegistry(): MetaDataRegistry {
-    if (this._classMetaDataRegistry === undefined)
-      this._classMetaDataRegistry = new MetaDataRegistry();
+    if (this._classMetaDataRegistry === undefined) this._classMetaDataRegistry = new MetaDataRegistry();
 
     return this._classMetaDataRegistry;
   }
 
   /** Get the linkTableRelationships for this IModel */
   public get relationships(): Relationships {
-    return (
-      this._relationships || (this._relationships = new Relationships(this))
-    );
+    return this._relationships || (this._relationships = new Relationships(this));
   }
 
   /** Get the CodeSpecs in this IModel. */
   public get codeSpecs(): CodeSpecs {
-    return this._codeSpecs !== undefined
-      ? this._codeSpecs
-      : (this._codeSpecs = new CodeSpecs(this));
+    return this._codeSpecs !== undefined ? this._codeSpecs : (this._codeSpecs = new CodeSpecs(this));
   }
   /** Prepare an ECSQL statement.
    * @param sql The ECSQL statement to prepare
@@ -1314,8 +1160,7 @@ export abstract class IModelDb extends IModel {
     if (metadata === undefined) {
       this.loadMetaData(classFullName);
       metadata = this.classMetaDataRegistry.find(classFullName);
-      if (metadata === undefined)
-        throw ClassRegistry.makeMetaDataNotFoundError(classFullName); // do not log
+      if (metadata === undefined) throw ClassRegistry.makeMetaDataNotFoundError(classFullName); // do not log
     }
     return metadata;
   }
@@ -1355,18 +1200,11 @@ export abstract class IModelDb extends IModel {
     for (const propName in meta.properties) {
       // eslint-disable-line guard-for-in
       const propMeta = meta.properties[propName];
-      if (
-        includeCustom ||
-        !propMeta.isCustomHandled ||
-        propMeta.isCustomHandledOrphan
-      )
-        func(propName, propMeta);
+      if (includeCustom || !propMeta.isCustomHandled || propMeta.isCustomHandledOrphan) func(propName, propMeta);
     }
 
     if (wantSuper && meta.baseClasses && meta.baseClasses.length > 0)
-      meta.baseClasses.forEach((baseClass) =>
-        this.forEachMetaData(baseClass, true, func, includeCustom)
-      );
+      meta.baseClasses.forEach((baseClass) => this.forEachMetaData(baseClass, true, func, includeCustom));
   }
 
   /** @internal */
@@ -1374,18 +1212,10 @@ export abstract class IModelDb extends IModel {
     if (this.classMetaDataRegistry.find(classFullName)) return;
 
     const className = classFullName.split(":");
-    if (className.length !== 2)
-      throw new IModelError(
-        IModelStatus.BadArg,
-        `Invalid classFullName: ${classFullName}`
-      );
+    if (className.length !== 2) throw new IModelError(IModelStatus.BadArg, `Invalid classFullName: ${classFullName}`);
 
     const val = this.nativeDb.getECClassMetaData(className[0], className[1]);
-    if (val.error)
-      throw new IModelError(
-        val.error.status,
-        `Error getting class meta data for: ${classFullName}`
-      );
+    if (val.error) throw new IModelError(val.error.status, `Error getting class meta data for: ${classFullName}`);
 
     assert(undefined !== val.result);
     const metaData = new EntityMetaData(JSON.parse(val.result));
@@ -1393,9 +1223,7 @@ export abstract class IModelDb extends IModel {
 
     // Recursive, to make sure that base classes are cached.
     if (metaData.baseClasses !== undefined && metaData.baseClasses.length > 0)
-      metaData.baseClasses.forEach((baseClassName: string) =>
-        this.loadMetaData(baseClassName)
-      );
+      metaData.baseClasses.forEach((baseClassName: string) => this.loadMetaData(baseClassName));
   }
 
   /** Returns the full schema for the input name.
@@ -1417,8 +1245,7 @@ export abstract class IModelDb extends IModel {
     const classNameParts = classFullName.replace(".", ":").split(":");
     return (
       classNameParts.length === 2 &&
-      this.nativeDb.getECClassMetaData(classNameParts[0], classNameParts[1])
-        .error === undefined
+      this.nativeDb.getECClassMetaData(classNameParts[0], classNameParts[1]).error === undefined
     );
   }
 
@@ -1427,19 +1254,16 @@ export abstract class IModelDb extends IModel {
    */
   public querySchemaVersion(schemaName: string): string | undefined {
     const sql = `SELECT VersionMajor,VersionWrite,VersionMinor FROM ECDbMeta.ECSchemaDef WHERE Name=:schemaName LIMIT 1`;
-    return this.withPreparedStatement(
-      sql,
-      (statement: ECSqlStatement): string | undefined => {
-        statement.bindString("schemaName", schemaName);
-        if (DbResult.BE_SQLITE_ROW === statement.step()) {
-          const versionMajor: number = statement.getValue(0).getInteger(); // ECSchemaDef.VersionMajor --> semver.major
-          const versionWrite: number = statement.getValue(1).getInteger(); // ECSchemaDef.VersionWrite --> semver.minor
-          const versionMinor: number = statement.getValue(2).getInteger(); // ECSchemaDef.VersionMinor --> semver.patch
-          return `${versionMajor}.${versionWrite}.${versionMinor}`;
-        }
-        return undefined;
+    return this.withPreparedStatement(sql, (statement: ECSqlStatement): string | undefined => {
+      statement.bindString("schemaName", schemaName);
+      if (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const versionMajor: number = statement.getValue(0).getInteger(); // ECSchemaDef.VersionMajor --> semver.major
+        const versionWrite: number = statement.getValue(1).getInteger(); // ECSchemaDef.VersionWrite --> semver.minor
+        const versionMinor: number = statement.getValue(2).getInteger(); // ECSchemaDef.VersionMinor --> semver.patch
+        return `${versionMajor}.${versionWrite}.${versionMinor}`;
       }
-    );
+      return undefined;
+    });
   }
 
   /** Retrieve a named texture image from this iModel, as a TextureData.
@@ -1447,9 +1271,7 @@ export abstract class IModelDb extends IModel {
    * @returns the TextureData or undefined if the texture image is not present.
    * @alpha
    */
-  public async queryTextureData(
-    props: TextureLoadProps
-  ): Promise<TextureData | undefined> {
+  public async queryTextureData(props: TextureLoadProps): Promise<TextureData | undefined> {
     return this.nativeDb.queryTextureData(props);
   }
 
@@ -1463,23 +1285,15 @@ export abstract class IModelDb extends IModel {
   /** Query a "file property" from this iModel, as a blob.
    * @returns the property blob or undefined if the property is not present.
    */
-  public queryFilePropertyBlob(
-    prop: FilePropertyProps
-  ): Uint8Array | undefined {
-    return this.nativeDb.queryFileProperty(prop, false) as
-      | Uint8Array
-      | undefined;
+  public queryFilePropertyBlob(prop: FilePropertyProps): Uint8Array | undefined {
+    return this.nativeDb.queryFileProperty(prop, false) as Uint8Array | undefined;
   }
 
   /** Save a "file property" to this iModel
    * @param prop the FilePropertyProps that describes the new property
    * @param value either a string or a blob to save as the file property
    */
-  public saveFileProperty(
-    prop: FilePropertyProps,
-    strValue: string | undefined,
-    blobVal?: Uint8Array
-  ): void {
+  public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void {
     this.nativeDb.saveFileProperty(prop, strValue, blobVal);
   }
 
@@ -1499,10 +1313,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public async requestSnap(
-    sessionId: string,
-    props: SnapRequestProps
-  ): Promise<SnapResponseProps> {
+  public async requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
     let request = this._snaps.get(sessionId);
     if (undefined === request) {
       request = new IModelHost.platform.SnapRequest();
@@ -1535,9 +1346,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Get the mass properties for the supplied elements. */
-  public async getMassProperties(
-    props: MassPropertiesRequestProps
-  ): Promise<MassPropertiesResponseProps> {
+  public async getMassProperties(props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
     return this.nativeDb.getMassProperties(JsonUtils.toObject(props));
   }
 
@@ -1611,9 +1420,7 @@ export abstract class IModelDb extends IModel {
    * @returns IModelStatus.Success if successful
    * @alpha
    */
-  public elementGeometryRequest(
-    requestProps: ElementGeometryRequest
-  ): IModelStatus {
+  public elementGeometryRequest(requestProps: ElementGeometryRequest): IModelStatus {
     return this.nativeDb.processGeometryStream(requestProps);
   }
 
@@ -1629,9 +1436,7 @@ export abstract class IModelDb extends IModel {
   /** Generate graphics for an element or geometry stream.
    * @see [readElementGraphics]($frontend) to convert the result to a [RenderGraphic]($frontend) for display.
    */
-  public async generateElementGraphics(
-    request: ElementGraphicsRequestProps
-  ): Promise<Uint8Array | undefined> {
+  public async generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
     return generateElementGraphics(request, this);
   }
 
@@ -1651,8 +1456,7 @@ export abstract class IModelDb extends IModel {
         stmt.bindString(2, name);
         stmt.bindString(3, JSON.stringify(dict));
         const rc = stmt.step();
-        if (rc !== DbResult.BE_SQLITE_DONE)
-          throw new IModelError(rc, "cannot save setting");
+        if (rc !== DbResult.BE_SQLITE_DONE) throw new IModelError(rc, "cannot save setting");
       }
     );
     this.saveChanges("add settings");
@@ -1663,16 +1467,12 @@ export abstract class IModelDb extends IModel {
    * @beta
    */
   public deleteSettingDictionary(name: string) {
-    this.withSqliteStatement(
-      "DELETE FROM be_Prop WHERE Namespace=? AND Name=?",
-      (stmt) => {
-        stmt.bindString(1, IModelDb._settingPropNamespace);
-        stmt.bindString(2, name);
-        const rc = stmt.step();
-        if (rc !== DbResult.BE_SQLITE_DONE)
-          throw new IModelError(rc, "cannot delete setting");
-      }
-    );
+    this.withSqliteStatement("DELETE FROM be_Prop WHERE Namespace=? AND Name=?", (stmt) => {
+      stmt.bindString(1, IModelDb._settingPropNamespace);
+      stmt.bindString(2, name);
+      const rc = stmt.step();
+      if (rc !== DbResult.BE_SQLITE_DONE) throw new IModelError(rc, "cannot delete setting");
+    });
     this.saveChanges("delete settings");
   }
 
@@ -1680,24 +1480,17 @@ export abstract class IModelDb extends IModel {
   private loadSettingDictionaries() {
     if (!this.nativeDb.isOpen()) return;
 
-    this.withSqliteStatement(
-      "SELECT Name,StrData FROM be_Prop WHERE Namespace=?",
-      (stmt) => {
-        stmt.bindString(1, IModelDb._settingPropNamespace);
-        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-          try {
-            const dict = JSON.parse(stmt.getValueString(1));
-            this.workspace.settings.addDictionary(
-              stmt.getValueString(0),
-              SettingsPriority.iModel,
-              dict
-            );
-          } catch (e) {
-            UnexpectedErrors.handle(e);
-          }
+    this.withSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace=?", (stmt) => {
+      stmt.bindString(1, IModelDb._settingPropNamespace);
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        try {
+          const dict = JSON.parse(stmt.getValueString(1));
+          this.workspace.settings.addDictionary(stmt.getValueString(0), SettingsPriority.iModel, dict);
+        } catch (e) {
+          UnexpectedErrors.handle(e);
         }
       }
-    );
+    });
   }
 }
 
@@ -1728,9 +1521,7 @@ export namespace IModelDb {
      * @note Useful for cases when a model may or may not exist and throwing an `Error` would be overkill.
      * @see getModelProps
      */
-    public tryGetModelProps<T extends ModelProps>(
-      id: Id64String
-    ): T | undefined {
+    public tryGetModelProps<T extends ModelProps>(id: Id64String): T | undefined {
       return this.tryGetModelJson({ id });
     }
 
@@ -1744,10 +1535,7 @@ export namespace IModelDb {
         if (DbResult.BE_SQLITE_ROW === statement.step()) {
           return statement.getValue(0).getDateTime();
         }
-        throw new IModelError(
-          IModelStatus.InvalidId,
-          `Can't get lastMod time for Model ${modelId}`
-        );
+        throw new IModelError(IModelStatus.InvalidId, `Can't get lastMod time for Model ${modelId}`);
       });
     }
 
@@ -1757,10 +1545,7 @@ export namespace IModelDb {
      * @throws [[IModelError]] if the model is not found, cannot be loaded, or fails validation when `modelClass` is specified.
      * @see tryGetModel
      */
-    public getModel<T extends Model>(
-      modelId: Id64String,
-      modelClass?: EntityClassType<Model>
-    ): T {
+    public getModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T {
       const model: T | undefined = this.tryGetModel(modelId, modelClass);
       if (undefined === model) {
         throw new IModelError(IModelStatus.NotFound, `Model=${modelId}`);
@@ -1776,10 +1561,7 @@ export namespace IModelDb {
      * @note Useful for cases when a model may or may not exist and throwing an `Error` would be overkill.
      * @see getModel
      */
-    public tryGetModel<T extends Model>(
-      modelId: Id64String,
-      modelClass?: EntityClassType<Model>
-    ): T | undefined {
+    public tryGetModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T | undefined {
       const modelProps = this.tryGetModelProps<ModelProps>(modelId);
       if (undefined === modelProps) return undefined; // no Model with that modelId found
 
@@ -1809,9 +1591,7 @@ export namespace IModelDb {
      * @returns a json string with the properties of the model or `undefined` if the model is not found.
      * @see getModelJson
      */
-    private tryGetModelJson<T extends ModelProps>(
-      modelIdArg: ModelLoadProps
-    ): T | undefined {
+    private tryGetModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T | undefined {
       try {
         return this._iModel.nativeDb.getModel(modelIdArg) as T;
       } catch (err: any) {
@@ -1830,16 +1610,9 @@ export namespace IModelDb {
       modeledElementId: Id64String | GuidString | Code,
       modelClass?: EntityClassType<Model>
     ): T {
-      const modeledElementProps =
-        this._iModel.elements.getElementProps<ElementProps>(modeledElementId);
-      if (
-        undefined === modeledElementProps.id ||
-        modeledElementProps.id === IModel.rootSubjectId
-      )
-        throw new IModelError(
-          IModelStatus.NotFound,
-          "Root subject does not have a sub-model"
-        );
+      const modeledElementProps = this._iModel.elements.getElementProps<ElementProps>(modeledElementId);
+      if (undefined === modeledElementProps.id || modeledElementProps.id === IModel.rootSubjectId)
+        throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model");
       return this.getModel<T>(modeledElementProps.id, modelClass);
     }
 
@@ -1854,13 +1627,8 @@ export namespace IModelDb {
       modeledElementId: Id64String | GuidString | Code,
       modelClass?: EntityClassType<Model>
     ): T | undefined {
-      const modeledElementProps =
-        this._iModel.elements.tryGetElementProps(modeledElementId);
-      if (
-        undefined === modeledElementProps?.id ||
-        IModel.rootSubjectId === modeledElementProps.id
-      )
-        return undefined;
+      const modeledElementProps = this._iModel.elements.tryGetElementProps(modeledElementId);
+      if (undefined === modeledElementProps?.id || IModel.rootSubjectId === modeledElementProps.id) return undefined;
 
       return this.tryGetModel<T>(modeledElementProps.id, modelClass);
     }
@@ -1883,10 +1651,7 @@ export namespace IModelDb {
       try {
         return (props.id = this._iModel.nativeDb.insertModel(props));
       } catch (err: any) {
-        throw new IModelError(
-          err.errorNumber,
-          `Error inserting model [${err.message}], class=${props.classFullName}`
-        );
+        throw new IModelError(err.errorNumber, `Error inserting model [${err.message}], class=${props.classFullName}`);
       }
     }
 
@@ -1898,10 +1663,7 @@ export namespace IModelDb {
       try {
         this._iModel.nativeDb.updateModel(props);
       } catch (err: any) {
-        throw new IModelError(
-          err.errorNumber,
-          `error updating model [${err.message}] id=${props.id}`
-        );
+        throw new IModelError(err.errorNumber, `error updating model [${err.message}] id=${props.id}`);
       }
     }
     /** Mark the geometry of [[GeometricModel]] as having changed, by recording an indirect change to its GeometryGuid property.
@@ -1915,11 +1677,7 @@ export namespace IModelDb {
      */
     public updateGeometryGuid(modelId: Id64String): void {
       const error = this._iModel.nativeDb.updateModelGeometryGuid(modelId);
-      if (error !== IModelStatus.Success)
-        throw new IModelError(
-          error,
-          `updating geometry guid for model ${modelId}`
-        );
+      if (error !== IModelStatus.Success) throw new IModelError(error, `updating geometry guid for model ${modelId}`);
     }
 
     /** Delete one or more existing models.
@@ -1931,10 +1689,7 @@ export namespace IModelDb {
         try {
           this._iModel.nativeDb.deleteModel(id);
         } catch (err: any) {
-          throw new IModelError(
-            err.errorNumber,
-            `error deleting model [${err.message}] id ${id}`
-          );
+          throw new IModelError(err.errorNumber, `error deleting model [${err.message}] id ${id}`);
         }
       });
     }
@@ -1946,9 +1701,7 @@ export namespace IModelDb {
      * why the extents could not be obtained (e.g., because the Id did not identify a [[GeometricModel]]).
      * @see [[queryRange]] to obtain the union of all of the models' extents.
      */
-    public async queryExtents(
-      ids: Id64String | Id64String[]
-    ): Promise<ModelExtentsProps[]> {
+    public async queryExtents(ids: Id64String | Id64String[]): Promise<ModelExtentsProps[]> {
       ids = typeof ids === "string" ? [ids] : ids;
       if (ids.length === 0) return [];
 
@@ -1958,13 +1711,10 @@ export namespace IModelDb {
     /** Computes the union of the volumes of all geometric elements within one or more [[GeometricModel]]s, specified by model Id.
      * @see [[queryExtents]] to obtain discrete volumes for each model.
      */
-    public async queryRange(
-      ids: Id64String | Id64String[]
-    ): Promise<AxisAlignedBox3d> {
+    public async queryRange(ids: Id64String | Id64String[]): Promise<AxisAlignedBox3d> {
       const results = await this.queryExtents(ids);
       const range = new Range3d();
-      for (const result of results)
-        range.union(Range3d.fromJSON(result.extents), range);
+      for (const result of results) range.union(Range3d.fromJSON(result.extents), range);
 
       return range;
     }
@@ -1984,15 +1734,9 @@ export namespace IModelDb {
      * @see tryGetElementJson
      * @internal
      */
-    public getElementJson<T extends ElementProps>(
-      elementId: ElementLoadProps
-    ): T {
+    public getElementJson<T extends ElementProps>(elementId: ElementLoadProps): T {
       const elementProps = this.tryGetElementJson<T>(elementId);
-      if (undefined === elementProps)
-        throw new IModelError(
-          IModelStatus.NotFound,
-          `reading element=${elementId}`
-        );
+      if (undefined === elementProps) throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`);
       return elementProps;
     }
 
@@ -2002,9 +1746,7 @@ export namespace IModelDb {
      * @throws [[IModelError]] if the element exists, but cannot be loaded.
      * @see getElementJson
      */
-    private tryGetElementJson<T extends ElementProps>(
-      loadProps: ElementLoadProps
-    ): T | undefined {
+    private tryGetElementJson<T extends ElementProps>(loadProps: ElementLoadProps): T | undefined {
       try {
         return this._iModel.nativeDb.getElement(loadProps) as T;
       } catch (err: any) {
@@ -2016,9 +1758,7 @@ export namespace IModelDb {
      * @throws [[IModelError]] if the element is not found or cannot be loaded.
      * @see tryGetElementProps
      */
-    public getElementProps<T extends ElementProps>(
-      props: Id64String | GuidString | Code | ElementLoadProps
-    ): T {
+    public getElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T {
       if (typeof props === "string") {
         props = Id64.isId64(props) ? { id: props } : { federationGuid: props };
       } else if (props instanceof Code) {
@@ -2041,9 +1781,7 @@ export namespace IModelDb {
       elementId: Id64String | GuidString | Code | ElementLoadProps
     ): T | undefined {
       if (typeof elementId === "string") {
-        elementId = Id64.isId64(elementId)
-          ? { id: elementId }
-          : { federationGuid: elementId };
+        elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
       } else if (elementId instanceof Code) {
         elementId = { code: elementId };
       }
@@ -2061,8 +1799,7 @@ export namespace IModelDb {
       elementClass?: EntityClassType<Element>
     ): T {
       const element = this.tryGetElement<T>(elementId, elementClass);
-      if (undefined === element)
-        throw new IModelError(IModelStatus.NotFound, `Element=${elementId}`);
+      if (undefined === element) throw new IModelError(IModelStatus.NotFound, `Element=${elementId}`);
       return element;
     }
 
@@ -2079,9 +1816,7 @@ export namespace IModelDb {
       elementClass?: EntityClassType<Element>
     ): T | undefined {
       if (typeof elementId === "string")
-        elementId = Id64.isId64(elementId)
-          ? { id: elementId }
-          : { federationGuid: elementId };
+        elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
       else if (elementId instanceof Code) elementId = { code: elementId };
       else elementId.onlyBaseProperties = false; // we must load all properties to construct the element.
 
@@ -2105,14 +1840,10 @@ export namespace IModelDb {
      * @returns The element that uses the code or undefined if the code is not used.
      * @throws IModelError if the code is invalid
      */
-    public queryElementIdByCode(
-      code: Required<CodeProps>
-    ): Id64String | undefined {
-      if (Id64.isInvalid(code.spec))
-        throw new IModelError(IModelStatus.InvalidCodeSpec, "Invalid CodeSpec");
+    public queryElementIdByCode(code: Required<CodeProps>): Id64String | undefined {
+      if (Id64.isInvalid(code.spec)) throw new IModelError(IModelStatus.InvalidCodeSpec, "Invalid CodeSpec");
 
-      if (code.value === undefined)
-        throw new IModelError(IModelStatus.InvalidCode, "Invalid Code");
+      if (code.value === undefined) throw new IModelError(IModelStatus.InvalidCode, "Invalid Code");
 
       return this._iModel.withPreparedStatement(
         "SELECT ECInstanceId FROM BisCore:Element WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?",
@@ -2131,20 +1862,12 @@ export namespace IModelDb {
      * @internal
      */
     public queryLastModifiedTime(elementId: Id64String): string {
-      const sql =
-        "SELECT LastMod FROM BisCore:Element WHERE ECInstanceId=:elementId";
-      return this._iModel.withPreparedStatement<string>(
-        sql,
-        (statement: ECSqlStatement): string => {
-          statement.bindId("elementId", elementId);
-          if (DbResult.BE_SQLITE_ROW === statement.step())
-            return statement.getValue(0).getDateTime();
-          throw new IModelError(
-            IModelStatus.InvalidId,
-            `Can't get lastMod time for Element ${elementId}`
-          );
-        }
-      );
+      const sql = "SELECT LastMod FROM BisCore:Element WHERE ECInstanceId=:elementId";
+      return this._iModel.withPreparedStatement<string>(sql, (statement: ECSqlStatement): string => {
+        statement.bindId("elementId", elementId);
+        if (DbResult.BE_SQLITE_ROW === statement.step()) return statement.getValue(0).getDateTime();
+        throw new IModelError(IModelStatus.InvalidId, `Can't get lastMod time for Element ${elementId}`);
+      });
     }
 
     /** Create a new instance of an element.
@@ -2217,22 +1940,13 @@ export namespace IModelDb {
      * @beta
      */
     public deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set {
-      const usageInfo =
-        this._iModel.nativeDb.queryDefinitionElementUsage(definitionElementIds);
+      const usageInfo = this._iModel.nativeDb.queryDefinitionElementUsage(definitionElementIds);
       if (!usageInfo) {
-        throw new IModelError(
-          IModelStatus.BadRequest,
-          "Error querying for DefinitionElement usage"
-        );
+        throw new IModelError(IModelStatus.BadRequest, "Error querying for DefinitionElement usage");
       }
 
-      const usedIdSet = usageInfo.usedIds
-        ? Id64.toIdSet(usageInfo.usedIds)
-        : new Set<Id64String>();
-      const deleteIfUnused = (
-        ids: Id64Array | undefined,
-        used: Id64Set
-      ): void => {
+      const usedIdSet = usageInfo.usedIds ? Id64.toIdSet(usageInfo.usedIds) : new Set<Id64String>();
+      const deleteIfUnused = (ids: Id64Array | undefined, used: Id64Set): void => {
         if (ids) {
           ids.forEach((id) => {
             if (!used.has(id)) this._iModel.elements.deleteElement(id);
@@ -2254,9 +1968,7 @@ export namespace IModelDb {
         deleteIfUnused(usageInfo.categorySelectorIds, usedIdSet);
         deleteIfUnused(usageInfo.modelSelectorIds, usedIdSet);
         if (usageInfo.otherDefinitionElementIds) {
-          this._iModel.elements.deleteElement(
-            usageInfo.otherDefinitionElementIds
-          );
+          this._iModel.elements.deleteElement(usageInfo.otherDefinitionElementIds);
         }
       } finally {
         this._iModel.nativeDb.endPurgeOperation();
@@ -2266,41 +1978,25 @@ export namespace IModelDb {
         // take another pass in case a deleted ViewDefinition was the only usage of these view-related DefinitionElements
         let viewRelatedIds: Id64Array = [];
         if (usageInfo.displayStyleIds)
-          viewRelatedIds = viewRelatedIds.concat(
-            usageInfo.displayStyleIds.filter((id) => usedIdSet.has(id))
-          );
+          viewRelatedIds = viewRelatedIds.concat(usageInfo.displayStyleIds.filter((id) => usedIdSet.has(id)));
 
         if (usageInfo.categorySelectorIds)
-          viewRelatedIds = viewRelatedIds.concat(
-            usageInfo.categorySelectorIds.filter((id) => usedIdSet.has(id))
-          );
+          viewRelatedIds = viewRelatedIds.concat(usageInfo.categorySelectorIds.filter((id) => usedIdSet.has(id)));
 
         if (usageInfo.modelSelectorIds)
-          viewRelatedIds = viewRelatedIds.concat(
-            usageInfo.modelSelectorIds.filter((id) => usedIdSet.has(id))
-          );
+          viewRelatedIds = viewRelatedIds.concat(usageInfo.modelSelectorIds.filter((id) => usedIdSet.has(id)));
 
         if (viewRelatedIds.length > 0) {
-          const viewRelatedUsageInfo =
-            this._iModel.nativeDb.queryDefinitionElementUsage(viewRelatedIds);
+          const viewRelatedUsageInfo = this._iModel.nativeDb.queryDefinitionElementUsage(viewRelatedIds);
           if (viewRelatedUsageInfo) {
             const usedViewRelatedIdSet: Id64Set = viewRelatedUsageInfo.usedIds
               ? Id64.toIdSet(viewRelatedUsageInfo.usedIds)
               : new Set<Id64String>();
             try {
               this._iModel.nativeDb.beginPurgeOperation();
-              deleteIfUnused(
-                viewRelatedUsageInfo.displayStyleIds,
-                usedViewRelatedIdSet
-              );
-              deleteIfUnused(
-                viewRelatedUsageInfo.categorySelectorIds,
-                usedViewRelatedIdSet
-              );
-              deleteIfUnused(
-                viewRelatedUsageInfo.modelSelectorIds,
-                usedViewRelatedIdSet
-              );
+              deleteIfUnused(viewRelatedUsageInfo.displayStyleIds, usedViewRelatedIdSet);
+              deleteIfUnused(viewRelatedUsageInfo.categorySelectorIds, usedViewRelatedIdSet);
+              deleteIfUnused(viewRelatedUsageInfo.modelSelectorIds, usedViewRelatedIdSet);
             } finally {
               this._iModel.nativeDb.endPurgeOperation();
             }
@@ -2320,19 +2016,15 @@ export namespace IModelDb {
      * @throws [[IModelError]]
      */
     public queryChildren(elementId: Id64String): Id64String[] {
-      const sql =
-        "SELECT ECInstanceId FROM BisCore:Element WHERE Parent.Id=:elementId";
-      return this._iModel.withPreparedStatement(
-        sql,
-        (statement: ECSqlStatement): Id64String[] => {
-          statement.bindId("elementId", elementId);
-          const childIds: Id64String[] = [];
-          while (DbResult.BE_SQLITE_ROW === statement.step()) {
-            childIds.push(statement.getValue(0).getId());
-          }
-          return childIds;
+      const sql = "SELECT ECInstanceId FROM BisCore:Element WHERE Parent.Id=:elementId";
+      return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String[] => {
+        statement.bindId("elementId", elementId);
+        const childIds: Id64String[] = [];
+        while (DbResult.BE_SQLITE_ROW === statement.step()) {
+          childIds.push(statement.getValue(0).getId());
         }
-      );
+        return childIds;
+      });
     }
 
     /** Query for the parent of the specified element.
@@ -2346,10 +2038,7 @@ export namespace IModelDb {
         (stmt) => {
           stmt.bindId(1, elementId);
           if (stmt.step() !== DbResult.BE_SQLITE_ROW)
-            throw new IModelError(
-              IModelStatus.NotFound,
-              `Element=${elementId}`
-            );
+            throw new IModelError(IModelStatus.NotFound, `Element=${elementId}`);
           const value = stmt.getValue(0);
           return value.isNull ? undefined : value.getId();
         }
@@ -2363,15 +2052,11 @@ export namespace IModelDb {
       if (IModel.rootSubjectId === elementId) return false; // Special case since the RepositoryModel does not sub-model the root Subject
 
       // A sub-model will have the same Id value as the element it is describing
-      const sql =
-        "SELECT ECInstanceId FROM BisCore:Model WHERE ECInstanceId=:elementId";
-      return this._iModel.withPreparedStatement(
-        sql,
-        (statement: ECSqlStatement): boolean => {
-          statement.bindId("elementId", elementId);
-          return DbResult.BE_SQLITE_ROW === statement.step();
-        }
-      );
+      const sql = "SELECT ECInstanceId FROM BisCore:Model WHERE ECInstanceId=:elementId";
+      return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): boolean => {
+        statement.bindId("elementId", elementId);
+        return DbResult.BE_SQLITE_ROW === statement.step();
+      });
     }
 
     /** Get the root subject element. */
@@ -2391,60 +2076,40 @@ export namespace IModelDb {
     ): ElementAspect[] {
       // eslint-disable-line @typescript-eslint/naming-convention
       const sql = `SELECT ECInstanceId,ECClassId FROM ${fromClassFullName} WHERE Element.Id=:elementId ORDER BY ECClassId,ECInstanceId`; // ORDER BY to maximize statement reuse
-      return this._iModel.withPreparedStatement(
-        sql,
-        (statement: ECSqlStatement): ElementAspect[] => {
-          statement.bindId("elementId", elementId);
-          const aspects: ElementAspect[] = [];
-          while (DbResult.BE_SQLITE_ROW === statement.step()) {
-            const aspectInstanceId: Id64String = statement.getValue(0).getId();
-            const aspectClassFullName: string = statement
-              .getValue(1)
-              .getClassNameForClassId()
-              .replace(".", ":");
-            if (
-              undefined === excludedClassFullNames ||
-              !excludedClassFullNames.has(aspectClassFullName)
-            ) {
-              aspects.push(
-                this._queryAspect(aspectInstanceId, aspectClassFullName)
-              );
-            }
+      return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): ElementAspect[] => {
+        statement.bindId("elementId", elementId);
+        const aspects: ElementAspect[] = [];
+        while (DbResult.BE_SQLITE_ROW === statement.step()) {
+          const aspectInstanceId: Id64String = statement.getValue(0).getId();
+          const aspectClassFullName: string = statement.getValue(1).getClassNameForClassId().replace(".", ":");
+          if (undefined === excludedClassFullNames || !excludedClassFullNames.has(aspectClassFullName)) {
+            aspects.push(this._queryAspect(aspectInstanceId, aspectClassFullName));
           }
-          return aspects;
         }
-      );
+        return aspects;
+      });
     }
 
     /** Query for aspect by ECInstanceId
      * @throws [[IModelError]]
      */
-    private _queryAspect(
-      aspectInstanceId: Id64String,
-      aspectClassName: string
-    ): ElementAspect {
+    private _queryAspect(aspectInstanceId: Id64String, aspectClassName: string): ElementAspect {
       const sql = `SELECT * FROM ${aspectClassName} WHERE ECInstanceId=:aspectInstanceId`;
-      const aspect: ElementAspectProps | undefined =
-        this._iModel.withPreparedStatement(
-          sql,
-          (statement: ECSqlStatement): ElementAspectProps | undefined => {
-            statement.bindId("aspectInstanceId", aspectInstanceId);
-            if (DbResult.BE_SQLITE_ROW === statement.step()) {
-              const aspectProps: ElementAspectProps = statement.getRow(); // start with everything that SELECT * returned
-              aspectProps.classFullName = (
-                aspectProps as any
-              ).className.replace(".", ":"); // add in property required by EntityProps
-              (aspectProps as any).className = undefined; // clear property from SELECT * that we don't want in the final instance
-              return aspectProps;
-            }
-            return undefined;
+      const aspect: ElementAspectProps | undefined = this._iModel.withPreparedStatement(
+        sql,
+        (statement: ECSqlStatement): ElementAspectProps | undefined => {
+          statement.bindId("aspectInstanceId", aspectInstanceId);
+          if (DbResult.BE_SQLITE_ROW === statement.step()) {
+            const aspectProps: ElementAspectProps = statement.getRow(); // start with everything that SELECT * returned
+            aspectProps.classFullName = (aspectProps as any).className.replace(".", ":"); // add in property required by EntityProps
+            (aspectProps as any).className = undefined; // clear property from SELECT * that we don't want in the final instance
+            return aspectProps;
           }
-        );
+          return undefined;
+        }
+      );
       if (undefined === aspect) {
-        throw new IModelError(
-          IModelStatus.NotFound,
-          `ElementAspect not found ${aspectInstanceId}, ${aspectClassName}`
-        );
+        throw new IModelError(IModelStatus.NotFound, `ElementAspect not found ${aspectInstanceId}, ${aspectClassName}`);
       }
       return this._iModel.constructEntity<ElementAspect>(aspect);
     }
@@ -2453,8 +2118,7 @@ export namespace IModelDb {
      * @throws [[IModelError]]
      */
     public getAspect(aspectInstanceId: Id64String): ElementAspect {
-      const sql =
-        "SELECT ECClassId FROM BisCore:ElementAspect WHERE ECInstanceId=:aspectInstanceId";
+      const sql = "SELECT ECClassId FROM BisCore:ElementAspect WHERE ECInstanceId=:aspectInstanceId";
       const aspectClassFullName = this._iModel.withPreparedStatement(
         sql,
         (statement: ECSqlStatement): string | undefined => {
@@ -2465,10 +2129,7 @@ export namespace IModelDb {
         }
       );
       if (undefined === aspectClassFullName) {
-        throw new IModelError(
-          IModelStatus.NotFound,
-          `ElementAspect not found ${aspectInstanceId}`
-        );
+        throw new IModelError(IModelStatus.NotFound, `ElementAspect not found ${aspectInstanceId}`);
       }
       return this._queryAspect(aspectInstanceId, aspectClassFullName);
     }
@@ -2478,25 +2139,13 @@ export namespace IModelDb {
      * @param aspectClassFullName Optionally filter ElementAspects polymorphically by this class name
      * @throws [[IModelError]]
      */
-    public getAspects(
-      elementId: Id64String,
-      aspectClassFullName?: string
-    ): ElementAspect[] {
+    public getAspects(elementId: Id64String, aspectClassFullName?: string): ElementAspect[] {
       if (undefined === aspectClassFullName) {
-        const uniqueAspects: ElementAspect[] = this._queryAspects(
-          elementId,
-          ElementUniqueAspect.classFullName
-        );
-        const multiAspects: ElementAspect[] = this._queryAspects(
-          elementId,
-          ElementMultiAspect.classFullName
-        );
+        const uniqueAspects: ElementAspect[] = this._queryAspects(elementId, ElementUniqueAspect.classFullName);
+        const multiAspects: ElementAspect[] = this._queryAspects(elementId, ElementMultiAspect.classFullName);
         return uniqueAspects.concat(multiAspects);
       }
-      const aspects: ElementAspect[] = this._queryAspects(
-        elementId,
-        aspectClassFullName
-      );
+      const aspects: ElementAspect[] = this._queryAspects(elementId, aspectClassFullName);
       return aspects;
     }
 
@@ -2526,10 +2175,7 @@ export namespace IModelDb {
       try {
         this._iModel.nativeDb.updateElementAspect(aspectProps);
       } catch (err: any) {
-        throw new IModelError(
-          err.errorNumber,
-          `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`
-        );
+        throw new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`);
       }
     }
 
@@ -2604,10 +2250,7 @@ export namespace IModelDb {
      * [[include:IModelDb.Views.iterateViews]]
      * ```
      */
-    public iterateViews(
-      params: ViewQueryParams,
-      callback: (view: ViewDefinition) => boolean
-    ): boolean {
+    public iterateViews(params: ViewQueryParams, callback: (view: ViewDefinition) => boolean): boolean {
       const ids = this._iModel.queryEntityIds(params);
       let finished = true;
       for (const id of ids) {
@@ -2630,10 +2273,9 @@ export namespace IModelDb {
     ): ViewStateProps {
       const elements = this._iModel.elements;
       const viewDefinitionProps = viewDefinitionElement.toJSON();
-      const categorySelectorProps =
-        elements.getElementProps<CategorySelectorProps>(
-          viewDefinitionProps.categorySelectorId
-        );
+      const categorySelectorProps = elements.getElementProps<CategorySelectorProps>(
+        viewDefinitionProps.categorySelectorId
+      );
 
       const displayStyleProps = elements.getElementProps<DisplayStyleProps>({
         id: viewDefinitionProps.displayStyleId,
@@ -2646,16 +2288,11 @@ export namespace IModelDb {
         categorySelectorProps,
       };
 
-      const modelSelectorId = (
-        viewDefinitionProps as SpatialViewDefinitionProps
-      ).modelSelectorId;
+      const modelSelectorId = (viewDefinitionProps as SpatialViewDefinitionProps).modelSelectorId;
       if (modelSelectorId !== undefined) {
-        viewStateData.modelSelectorProps =
-          elements.getElementProps<ModelSelectorProps>(modelSelectorId);
+        viewStateData.modelSelectorProps = elements.getElementProps<ModelSelectorProps>(modelSelectorId);
       } else if (viewDefinitionElement instanceof SheetViewDefinition) {
-        viewStateData.sheetProps = elements.getElementProps<SheetProps>(
-          viewDefinitionElement.baseModelId
-        );
+        viewStateData.sheetProps = elements.getElementProps<SheetProps>(viewDefinitionElement.baseModelId);
         viewStateData.sheetAttachments = Array.from(
           this._iModel.queryEntityIds({
             from: "BisCore.ViewAttachment",
@@ -2664,27 +2301,17 @@ export namespace IModelDb {
         );
       } else if (viewDefinitionElement instanceof DrawingViewDefinition) {
         // Ensure view has known extents
-        if (drawingExtents && !drawingExtents.isNull)
-          viewStateData.modelExtents = drawingExtents.toJSON();
+        if (drawingExtents && !drawingExtents.isNull) viewStateData.modelExtents = drawingExtents.toJSON();
 
         // Include information about the associated [[SectionDrawing]], if any.
         // NB: The SectionDrawing ECClass may not exist in the iModel's version of the BisCore ECSchema.
         try {
-          const sectionDrawing =
-            this._iModel.elements.tryGetElement<SectionDrawing>(
-              viewDefinitionElement.baseModelId
-            );
-          if (
-            sectionDrawing &&
-            sectionDrawing.spatialView &&
-            Id64.isValidId64(sectionDrawing.spatialView.id)
-          ) {
+          const sectionDrawing = this._iModel.elements.tryGetElement<SectionDrawing>(viewDefinitionElement.baseModelId);
+          if (sectionDrawing && sectionDrawing.spatialView && Id64.isValidId64(sectionDrawing.spatialView.id)) {
             viewStateData.sectionDrawing = {
               spatialView: sectionDrawing.spatialView.id,
-              displaySpatialView:
-                true === sectionDrawing.jsonProperties.displaySpatialView,
-              drawingToSpatialTransform:
-                sectionDrawing.jsonProperties.drawingToSpatialTransform,
+              displaySpatialView: true === sectionDrawing.jsonProperties.displaySpatialView,
+              drawingToSpatialTransform: sectionDrawing.jsonProperties.drawingToSpatialTransform,
             };
           }
         } catch {
@@ -2696,18 +2323,13 @@ export namespace IModelDb {
     }
 
     /** @deprecated in 3.x. use [[getViewStateProps]]. */
-    public getViewStateData(
-      viewDefinitionId: string,
-      options?: ViewStateLoadProps
-    ): ViewStateProps {
-      const view =
-        this._iModel.elements.getElement<ViewDefinition>(viewDefinitionId);
+    public getViewStateData(viewDefinitionId: string, options?: ViewStateLoadProps): ViewStateProps {
+      const view = this._iModel.elements.getElement<ViewDefinition>(viewDefinitionId);
       let drawingExtents;
       if (view instanceof DrawingViewDefinition) {
         try {
           drawingExtents = Range3d.fromJSON(
-            this._iModel.nativeDb.queryModelExtents({ id: view.baseModelId })
-              .modelExtents
+            this._iModel.nativeDb.queryModelExtents({ id: view.baseModelId }).modelExtents
           );
         } catch {
           //
@@ -2718,12 +2340,8 @@ export namespace IModelDb {
     }
 
     /** Obtain a [ViewStateProps]($common) for a [[ViewDefinition]] specified by element Id. */
-    public async getViewStateProps(
-      viewDefinitionId: string,
-      options?: ViewStateLoadProps
-    ): Promise<ViewStateProps> {
-      const view =
-        this._iModel.elements.getElement<ViewDefinition>(viewDefinitionId);
+    public async getViewStateProps(viewDefinitionId: string, options?: ViewStateLoadProps): Promise<ViewStateProps> {
+      const view = this._iModel.elements.getElement<ViewDefinition>(viewDefinitionId);
       let drawingExtents;
       if (view instanceof DrawingViewDefinition)
         drawingExtents = await this._iModel.models.queryRange(view.baseModelId);
@@ -2731,9 +2349,7 @@ export namespace IModelDb {
       return this.loadViewStateProps(view, options, drawingExtents);
     }
 
-    private getViewThumbnailArg(
-      viewDefinitionId: Id64String
-    ): FilePropertyProps {
+    private getViewThumbnailArg(viewDefinitionId: Id64String): FilePropertyProps {
       return { namespace: "dgn_View", name: "Thumbnail", id: viewDefinitionId };
     }
 
@@ -2741,21 +2357,13 @@ export namespace IModelDb {
      * @param viewDefinitionId The Id of the view for thumbnail
      * @returns the ThumbnailProps, or undefined if no thumbnail exists.
      */
-    public getThumbnail(
-      viewDefinitionId: Id64String
-    ): ThumbnailProps | undefined {
+    public getThumbnail(viewDefinitionId: Id64String): ThumbnailProps | undefined {
       const viewArg = this.getViewThumbnailArg(viewDefinitionId);
-      const sizeProps = this._iModel.nativeDb.queryFileProperty(
-        viewArg,
-        true
-      ) as string;
+      const sizeProps = this._iModel.nativeDb.queryFileProperty(viewArg, true) as string;
       if (undefined === sizeProps) return undefined;
 
       const out = JSON.parse(sizeProps) as ThumbnailProps;
-      out.image = this._iModel.nativeDb.queryFileProperty(
-        viewArg,
-        false
-      ) as Uint8Array;
+      out.image = this._iModel.nativeDb.queryFileProperty(viewArg, false) as Uint8Array;
       return out;
     }
 
@@ -2764,21 +2372,14 @@ export namespace IModelDb {
      * @param thumbnail The thumbnail data.
      * @returns 0 if successful
      */
-    public saveThumbnail(
-      viewDefinitionId: Id64String,
-      thumbnail: ThumbnailProps
-    ): number {
+    public saveThumbnail(viewDefinitionId: Id64String, thumbnail: ThumbnailProps): number {
       const viewArg = this.getViewThumbnailArg(viewDefinitionId);
       const props = {
         format: thumbnail.format,
         height: thumbnail.height,
         width: thumbnail.width,
       };
-      this._iModel.nativeDb.saveFileProperty(
-        viewArg,
-        JSON.stringify(props),
-        thumbnail.image
-      );
+      this._iModel.nativeDb.saveFileProperty(viewArg, JSON.stringify(props), thumbnail.image);
       return 0;
     }
 
@@ -2811,18 +2412,12 @@ export namespace IModelDb {
     public constructor(private _iModel: IModelDb) {}
 
     /** @internal */
-    public async requestTileTreeProps(
-      id: string
-    ): Promise<IModelTileTreeProps> {
+    public async requestTileTreeProps(id: string): Promise<IModelTileTreeProps> {
       return new Promise<IModelTileTreeProps>((resolve, reject) => {
-        this._iModel.nativeDb.getTileTree(
-          id,
-          (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, any>) => {
-            if (undefined !== ret.error)
-              reject(new IModelError(ret.error.status, `TreeId=${id}`));
-            else resolve(ret.result as IModelTileTreeProps);
-          }
-        );
+        this._iModel.nativeDb.getTileTree(id, (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, any>) => {
+          if (undefined !== ret.error) reject(new IModelError(ret.error.status, `TreeId=${id}`));
+          else resolve(ret.result as IModelTileTreeProps);
+        });
       });
     }
 
@@ -2842,9 +2437,7 @@ export namespace IModelDb {
       }
 
       if (ret.error) {
-        reject(
-          new IModelError(ret.error.status, `TreeId=${treeId} TileId=${tileId}`)
-        );
+        reject(new IModelError(ret.error.status, `TreeId=${treeId} TileId=${tileId}`));
       } else if (ret.result && typeof ret.result !== "number") {
         // if type is not a number, it's the TileContent interface
         const res = ret.result;
@@ -2853,60 +2446,50 @@ export namespace IModelDb {
         const tileSizeThreshold = IModelHost.logTileSizeThreshold;
         const tileSize = res.content.length;
         if (tileSize > tileSizeThreshold) {
-          Logger.logWarning(
-            loggerCategory,
-            "Tile size (in bytes) larger than specified threshold",
-            () => ({ tileSize, tileSizeThreshold, treeId, tileId, iModelId })
-          );
+          Logger.logWarning(loggerCategory, "Tile size (in bytes) larger than specified threshold", () => ({
+            tileSize,
+            tileSizeThreshold,
+            treeId,
+            tileId,
+            iModelId,
+          }));
         }
 
         const loadTimeThreshold = IModelHost.logTileLoadTimeThreshold;
         const loadTime = res.elapsedSeconds;
         if (loadTime > loadTimeThreshold) {
-          Logger.logWarning(
-            loggerCategory,
-            "Tile load time (in seconds) greater than specified threshold",
-            () => ({ loadTime, loadTimeThreshold, treeId, tileId, iModelId })
-          );
+          Logger.logWarning(loggerCategory, "Tile load time (in seconds) greater than specified threshold", () => ({
+            loadTime,
+            loadTimeThreshold,
+            treeId,
+            tileId,
+            iModelId,
+          }));
         }
 
         resolve(res);
       } else {
         // if the type is a number, it's the TileContentState enum
         // ###TODO: Decide appropriate timeout interval. May want to switch on state (new vs loading vs pending)
-        setTimeout(
-          () => this.pollTileContent(resolve, reject, treeId, tileId),
-          10
-        );
+        setTimeout(() => this.pollTileContent(resolve, reject, treeId, tileId), 10);
       }
     }
 
     /** @internal */
-    public async requestTileContent(
-      treeId: string,
-      tileId: string
-    ): Promise<IModelJsNative.TileContent> {
+    public async requestTileContent(treeId: string, tileId: string): Promise<IModelJsNative.TileContent> {
       return new Promise<IModelJsNative.TileContent>((resolve, reject) => {
         this.pollTileContent(resolve, reject, treeId, tileId);
       });
     }
 
     /** @internal */
-    public async getTileContent(
-      treeId: string,
-      tileId: string
-    ): Promise<Uint8Array> {
-      const ret = await new Promise<
-        IModelJsNative.ErrorStatusOrResult<any, Uint8Array>
-      >((resolve) => {
+    public async getTileContent(treeId: string, tileId: string): Promise<Uint8Array> {
+      const ret = await new Promise<IModelJsNative.ErrorStatusOrResult<any, Uint8Array>>((resolve) => {
         this._iModel.nativeDb.getTileContent(treeId, tileId, resolve);
       });
 
       if (undefined !== ret.error) {
-        throw new IModelError(
-          ret.error.status,
-          `TreeId=${treeId} TileId=${tileId}`
-        );
+        throw new IModelError(ret.error.status, `TreeId=${treeId} TileId=${tileId}`);
       }
 
       assert(undefined !== ret.result);
@@ -2970,9 +2553,7 @@ export class BriefcaseDb extends IModelDb {
    * [[include:BriefcaseDb.onOpen]]
    * ```
    */
-  public static readonly onOpen = new BeEvent<
-    (_args: OpenBriefcaseArgs) => void
-  >();
+  public static readonly onOpen = new BeEvent<(_args: OpenBriefcaseArgs) => void>();
 
   /**
    * Event raised just after a BriefcaseDb is opened. Supplies the newly opened BriefcaseDb and the arguments that were used to open it.
@@ -2982,14 +2563,10 @@ export class BriefcaseDb extends IModelDb {
    * [[include:BriefcaseDb.onOpened]]
    * ```
    */
-  public static readonly onOpened = new BeEvent<
-    (_iModelDb: BriefcaseDb, _args: OpenBriefcaseArgs) => void
-  >();
+  public static readonly onOpened = new BeEvent<(_iModelDb: BriefcaseDb, _args: OpenBriefcaseArgs) => void>();
 
   /** @alpha */
-  public static readonly onCodeServiceCreated = new BeEvent<
-    (briefcase: BriefcaseDb) => void
-  >();
+  public static readonly onCodeServiceCreated = new BeEvent<(briefcase: BriefcaseDb) => void>();
 
   public static override findByKey(key: string): BriefcaseDb {
     return super.findByKey(key) as BriefcaseDb;
@@ -3044,18 +2621,12 @@ export class BriefcaseDb extends IModelDb {
     upgradeOptions: UpgradeOptions,
     description: string
   ): Promise<void> {
-    const nativeDb = this.openDgnDb(
-      { path: briefcase.fileName },
-      OpenMode.ReadWrite,
-      upgradeOptions
-    ); // performs the upgrade
+    const nativeDb = this.openDgnDb({ path: briefcase.fileName }, OpenMode.ReadWrite, upgradeOptions); // performs the upgrade
     const wasChanges = nativeDb.hasPendingTxns();
     nativeDb.closeIModel();
 
     if (wasChanges)
-      await withBriefcaseDb(briefcase, async (db) =>
-        db.pushChanges({ ...briefcase, description, retainLocks: true })
-      );
+      await withBriefcaseDb(briefcase, async (db) => db.pushChanges({ ...briefcase, description, retainLocks: true }));
   }
 
   /** Upgrades the schemas in the iModel based on the current version of the software. Follows a sequence of operations -
@@ -3066,9 +2637,7 @@ export class BriefcaseDb extends IModelDb {
    * profile and domain schemas need to get upgraded.
    * @see ($docs/learning/backend/IModelDb.md#upgrading-schemas-in-an-imodel)
    */
-  public static async upgradeSchemas(
-    briefcase: OpenBriefcaseArgs
-  ): Promise<void> {
+  public static async upgradeSchemas(briefcase: OpenBriefcaseArgs): Promise<void> {
     // upgrading schemas involves closing and reopening the file repeatedly. That's because the process of upgrading
     // happens on a file open. We have to open-and-close the file at *each* of these steps:
     // - acquire schema lock
@@ -3080,20 +2649,14 @@ export class BriefcaseDb extends IModelDb {
     // good thing computers are fast. Fortunately upgrading should be rare (and the push time will dominate anyway.) Don't try to optimize any of this away.
     await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
     try {
-      await this.doUpgrade(
-        briefcase,
-        { profile: ProfileOptions.Upgrade, schemaLockHeld: true },
-        "Upgraded profile"
-      );
+      await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade, schemaLockHeld: true }, "Upgraded profile");
       await this.doUpgrade(
         briefcase,
         { domain: DomainOptions.Upgrade, schemaLockHeld: true },
         "Upgraded domain schemas"
       );
     } finally {
-      await withBriefcaseDb(briefcase, async (db) =>
-        db.locks.releaseAllLocks()
-      );
+      await withBriefcaseDb(briefcase, async (db) => db.locks.releaseAllLocks());
     }
   }
 
@@ -3115,9 +2678,7 @@ export class BriefcaseDb extends IModelDb {
 
     if (openMode === OpenMode.ReadWrite && CodeService.createForIModel) {
       try {
-        briefcaseDb._codeService = await CodeService.createForIModel(
-          briefcaseDb
-        );
+        briefcaseDb._codeService = await CodeService.createForIModel(briefcaseDb);
         this.onCodeServiceCreated.raiseEvent(briefcaseDb);
       } catch (e: any) {
         if ((e as CodeService.Error).errorId !== "NoCodeIndex")
@@ -3151,11 +2712,7 @@ export class BriefcaseDb extends IModelDb {
         this.closeAndReopen(OpenMode.Readonly);
     }
 
-    IpcHost.notifyTxns(
-      this,
-      "notifyPulledChanges",
-      this.changeset as ChangesetIndexAndId
-    );
+    IpcHost.notifyTxns(this, "notifyPulledChanges", this.changeset as ChangesetIndexAndId);
   }
 
   /** Push changes to iModelHub. */
@@ -3163,10 +2720,7 @@ export class BriefcaseDb extends IModelDb {
     if (this.briefcaseId === BriefcaseIdValue.Unassigned) return;
 
     if (this.nativeDb.hasUnsavedChanges())
-      throw new IModelError(
-        ChangeSetStatus.HasUncommittedChanges,
-        "Cannot push with unsaved changes"
-      );
+      throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot push with unsaved changes");
     if (!this.nativeDb.hasPendingTxns()) return; // nothing to push
 
     await BriefcaseManager.pullMergePush(this, arg);
@@ -3193,22 +2747,15 @@ class RefreshV2CheckpointSas {
     this.setTimestamp(sasToken);
   }
 
-  private async performRefresh(
-    accessToken: AccessToken,
-    iModel: IModelDb
-  ): Promise<void> {
+  private async performRefresh(accessToken: AccessToken, iModel: IModelDb): Promise<void> {
     this._timestamp = 0; // everyone needs to wait until token is valid
 
     // we're going to request that the checkpoint manager use this user's accessToken to obtain a new access token for this checkpoint's storage account.
-    Logger.logInfo(
-      BackendLoggerCategory.Authorization,
-      "attempting to refresh sasToken for checkpoint"
-    );
+    Logger.logInfo(BackendLoggerCategory.Authorization, "attempting to refresh sasToken for checkpoint");
     try {
       // this exchanges the supplied user accessToken for an expiring blob-store token to read the checkpoint.
       const container = iModel.nativeDb.cloudContainer;
-      if (!container)
-        throw new Error("checkpoint is not from a cloud container");
+      if (!container) throw new Error("checkpoint is not from a cloud container");
 
       assert(undefined !== iModel.iTwinId);
       const props = await IModelHost.hubAccess.queryV2Checkpoint({
@@ -3222,10 +2769,7 @@ class RefreshV2CheckpointSas {
       container.accessToken = props.sasToken;
       this.setTimestamp(props.sasToken);
 
-      Logger.logInfo(
-        BackendLoggerCategory.Authorization,
-        "refreshed checkpoint sasToken successfully"
-      );
+      Logger.logInfo(BackendLoggerCategory.Authorization, "refreshed checkpoint sasToken successfully");
     } finally {
       this._promise = undefined;
     }
@@ -3242,10 +2786,7 @@ class RefreshV2CheckpointSas {
       );
   }
 
-  public async refreshSas(
-    accessToken: AccessToken,
-    iModel: IModelDb
-  ): Promise<void> {
+  public async refreshSas(accessToken: AccessToken, iModel: IModelDb): Promise<void> {
     if (this._timestamp > Date.now()) return; // current token is fine
 
     if (undefined === this._promise)
@@ -3269,9 +2810,7 @@ export class SnapshotDb extends IModelDb {
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
     super({ nativeDb, key, changeset: nativeDb.getCurrentChangeset() });
-    this._openMode = nativeDb.isReadonly()
-      ? OpenMode.Readonly
-      : OpenMode.ReadWrite;
+    this._openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;
   }
 
   public static override findByKey(key: string): SnapshotDb {
@@ -3291,10 +2830,7 @@ export class SnapshotDb extends IModelDb {
    * @returns A writeable SnapshotDb
    * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
    */
-  public static createEmpty(
-    filePath: LocalFileName,
-    options: CreateEmptySnapshotIModelProps
-  ): SnapshotDb {
+  public static createEmpty(filePath: LocalFileName, options: CreateEmptySnapshotIModelProps): SnapshotDb {
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.createIModel(filePath, options);
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
@@ -3313,11 +2849,7 @@ export class SnapshotDb extends IModelDb {
    * @returns A writeable SnapshotDb
    * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
    */
-  public static createFrom(
-    iModelDb: IModelDb,
-    snapshotFile: string,
-    options?: CreateSnapshotIModelProps
-  ): SnapshotDb {
+  public static createFrom(iModelDb: IModelDb, snapshotFile: string, options?: CreateSnapshotIModelProps): SnapshotDb {
     iModelDb.performCheckpoint();
     IModelJsFs.copySync(iModelDb.pathName, snapshotFile);
 
@@ -3326,8 +2858,7 @@ export class SnapshotDb extends IModelDb {
     nativeDb.vacuum();
 
     // Replace iModelId if seedFile is a snapshot, preserve iModelId if seedFile is an iModelHub-managed briefcase
-    if (!BriefcaseManager.isValidBriefcaseId(nativeDb.getBriefcaseId()))
-      nativeDb.setIModelId(Guid.createValue());
+    if (!BriefcaseManager.isValidBriefcaseId(nativeDb.getBriefcaseId())) nativeDb.setIModelId(Guid.createValue());
 
     nativeDb.deleteLocalValue(BriefcaseLocalValue.StandaloneEdit);
     nativeDb.saveChanges();
@@ -3343,10 +2874,7 @@ export class SnapshotDb extends IModelDb {
   /** open this SnapshotDb read/write, strictly to apply incoming changesets. Used for creating new checkpoints.
    * @internal
    */
-  public static openForApplyChangesets(
-    path: LocalFileName,
-    props?: SnapshotDbOpenArgs
-  ): SnapshotDb {
+  public static openForApplyChangesets(path: LocalFileName, props?: SnapshotDbOpenArgs): SnapshotDb {
     const file = { path, key: props?.key };
     const nativeDb = this.openDgnDb(file, OpenMode.ReadWrite, undefined, props);
     assert(undefined !== file.key);
@@ -3359,10 +2887,7 @@ export class SnapshotDb extends IModelDb {
    * @see [[close]]
    * @throws [[IModelError]] If the file is not found or is not a valid *snapshot*.
    */
-  public static openFile(
-    path: LocalFileName,
-    opts?: SnapshotDbOpenArgs
-  ): SnapshotDb {
+  public static openFile(path: LocalFileName, opts?: SnapshotDbOpenArgs): SnapshotDb {
     const file = { path, key: opts?.key };
     const nativeDb = this.openDgnDb(file, OpenMode.Readonly, undefined, opts);
     assert(undefined !== file.key);
@@ -3375,10 +2900,7 @@ export class SnapshotDb extends IModelDb {
    * servicing the same checkpoint.
    * @internal
    */
-  public static openCheckpointV1(
-    fileName: LocalFileName,
-    checkpoint: CheckpointProps
-  ) {
+  public static openCheckpointV1(fileName: LocalFileName, checkpoint: CheckpointProps) {
     const snapshot = this.openFile(fileName, {
       key: CheckpointManager.getKey(checkpoint),
     });
@@ -3395,15 +2917,10 @@ export class SnapshotDb extends IModelDb {
    * @throws [[IModelError]] If the checkpoint is not found in iModelHub or the checkpoint daemon is not supported in the current environment.
    * @internal
    */
-  public static async openCheckpointV2(
-    checkpoint: CheckpointProps
-  ): Promise<SnapshotDb> {
+  public static async openCheckpointV2(checkpoint: CheckpointProps): Promise<SnapshotDb> {
     const { dbName, container } = await V2CheckpointManager.attach(checkpoint);
     const key = CheckpointManager.getKey(checkpoint);
-    const tempFileBase = join(
-      IModelHost.cacheDir,
-      `${checkpoint.iModelId}\$${checkpoint.changeset.id}`
-    ); // temp files for this checkpoint should go in the cacheDir.
+    const tempFileBase = join(IModelHost.cacheDir, `${checkpoint.iModelId}\$${checkpoint.changeset.id}`); // temp files for this checkpoint should go in the cacheDir.
     const snapshot = SnapshotDb.openFile(dbName, {
       key,
       tempFileBase,
@@ -3417,19 +2934,14 @@ export class SnapshotDb extends IModelDb {
       throw err;
     }
 
-    snapshot._refreshSas = new RefreshV2CheckpointSas(
-      container.accessToken,
-      checkpoint.reattachSafetySeconds
-    );
+    snapshot._refreshSas = new RefreshV2CheckpointSas(container.accessToken, checkpoint.reattachSafetySeconds);
     return snapshot;
   }
 
   /** Used to refresh the container sasToken using the current user's accessToken
    * @internal
    */
-  public override async refreshContainerSas(
-    userAccessToken: AccessToken
-  ): Promise<void> {
+  public override async refreshContainerSas(userAccessToken: AccessToken): Promise<void> {
     return this._refreshSas?.refreshSas(userAccessToken, this);
   }
 
@@ -3440,10 +2952,7 @@ export class SnapshotDb extends IModelDb {
     if (this._createClassViewsOnClose) {
       // check for flag set during create
       if (BentleyStatus.SUCCESS !== this.nativeDb.createClassViewsInDb()) {
-        throw new IModelError(
-          IModelStatus.SQLiteError,
-          "Error creating class views"
-        );
+        throw new IModelError(IModelStatus.SQLiteError, "Error creating class views");
       } else {
         this.saveChanges();
       }
@@ -3488,10 +2997,7 @@ export class StandaloneDb extends BriefcaseDb {
    * @param filePath The file path for the iModel
    * @param args The parameters that define the new iModel
    */
-  public static createEmpty(
-    filePath: LocalFileName,
-    args: CreateEmptyStandaloneIModelProps
-  ): StandaloneDb {
+  public static createEmpty(filePath: LocalFileName, args: CreateEmptyStandaloneIModelProps): StandaloneDb {
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.createIModel(filePath, args);
     nativeDb.saveLocalValue(BriefcaseLocalValue.StandaloneEdit, args.allowEdit);
@@ -3544,10 +3050,7 @@ export class StandaloneDb extends BriefcaseDb {
       const iTwinId = nativeDb.getITwinId();
       if (iTwinId !== Guid.empty)
         // a "standalone" iModel means it is not associated with an iTwin
-        throw new IModelError(
-          IModelStatus.WrongIModel,
-          `${filePath} is not a Standalone iModel. iTwinId=${iTwinId}`
-        );
+        throw new IModelError(IModelStatus.WrongIModel, `${filePath} is not a Standalone iModel. iTwinId=${iTwinId}`);
       assert(undefined !== file.key);
       return new StandaloneDb({
         nativeDb,

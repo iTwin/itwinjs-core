@@ -71,12 +71,8 @@ export class CutStyle {
   public static fromJSON(props?: CutStyleProps): CutStyle {
     if (JsonUtils.isNonEmptyObject(props)) {
       const viewflags = { ...props?.viewflags };
-      const hiddenLine = props?.hiddenLine
-        ? HiddenLine.Settings.fromJSON(props.hiddenLine)
-        : undefined;
-      const appearance = props?.appearance
-        ? FeatureAppearance.fromJSON(props.appearance)
-        : undefined;
+      const hiddenLine = props?.hiddenLine ? HiddenLine.Settings.fromJSON(props.hiddenLine) : undefined;
+      const appearance = props?.appearance ? FeatureAppearance.fromJSON(props.appearance) : undefined;
 
       return this.create(viewflags, hiddenLine, appearance);
     } else {
@@ -89,14 +85,11 @@ export class CutStyle {
     if (this.matchesDefaults) return undefined;
 
     const props: CutStyleProps = {};
-    if (JsonUtils.isNonEmptyObject(this.viewflags))
-      props.viewflags = this.viewflags;
+    if (JsonUtils.isNonEmptyObject(this.viewflags)) props.viewflags = this.viewflags;
 
-    if (this.hiddenLine && !this.hiddenLine.matchesDefaults)
-      props.hiddenLine = this.hiddenLine?.toJSON();
+    if (this.hiddenLine && !this.hiddenLine.matchesDefaults) props.hiddenLine = this.hiddenLine?.toJSON();
 
-    if (this.appearance && !this.appearance.matchesDefaults)
-      props.appearance = this.appearance.toJSON();
+    if (this.appearance && !this.appearance.matchesDefaults) props.appearance = this.appearance.toJSON();
 
     return props;
   }
@@ -152,12 +145,7 @@ export class ClipStyle {
   public readonly outsideColor?: RgbColor;
 
   /** The default style, which overrides none of the view's settings. */
-  public static readonly defaults = new ClipStyle(
-    false,
-    CutStyle.defaults,
-    undefined,
-    undefined
-  );
+  public static readonly defaults = new ClipStyle(false, CutStyle.defaults, undefined, undefined);
 
   private constructor(
     produceCutGeometry: boolean,
@@ -178,32 +166,17 @@ export class ClipStyle {
     insideColor?: RgbColor,
     outsideColor?: RgbColor
   ): ClipStyle {
-    if (
-      !produceCutGeometry &&
-      cutStyle.matchesDefaults &&
-      !insideColor &&
-      !outsideColor
-    )
-      return this.defaults;
+    if (!produceCutGeometry && cutStyle.matchesDefaults && !insideColor && !outsideColor) return this.defaults;
 
-    return new ClipStyle(
-      produceCutGeometry,
-      cutStyle,
-      insideColor,
-      outsideColor
-    );
+    return new ClipStyle(produceCutGeometry, cutStyle, insideColor, outsideColor);
   }
 
   public static fromJSON(props?: ClipStyleProps): ClipStyle {
     if (JsonUtils.isNonEmptyObject(props)) {
       const produceCutGeometry = props.produceCutGeometry ?? false;
       const cutStyle = CutStyle.fromJSON(props.cutStyle);
-      const inside = props.insideColor
-        ? RgbColor.fromJSON(props.insideColor)
-        : undefined;
-      const outside = props.outsideColor
-        ? RgbColor.fromJSON(props.outsideColor)
-        : undefined;
+      const inside = props.insideColor ? RgbColor.fromJSON(props.insideColor) : undefined;
+      const outside = props.outsideColor ? RgbColor.fromJSON(props.outsideColor) : undefined;
 
       return this.create(produceCutGeometry, cutStyle, inside, outside);
     }
@@ -235,11 +208,6 @@ export class ClipStyle {
   public get matchesDefaults(): boolean {
     if (this === ClipStyle.defaults) return true;
 
-    return (
-      !this.produceCutGeometry &&
-      !this.insideColor &&
-      !this.outsideColor &&
-      this.cutStyle.matchesDefaults
-    );
+    return !this.produceCutGeometry && !this.insideColor && !this.outsideColor && this.cutStyle.matchesDefaults;
   }
 }

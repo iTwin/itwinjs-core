@@ -45,9 +45,7 @@ export class Content {
   }
 
   /** Deserialize [[Content]] from JSON */
-  public static fromJSON(
-    json: ContentJSON | string | undefined
-  ): Content | undefined {
+  public static fromJSON(json: ContentJSON | string | undefined): Content | undefined {
     if (!json) return undefined;
 
     if (typeof json === "string") return JSON.parse(json, Content.reviver);

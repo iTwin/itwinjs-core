@@ -30,9 +30,7 @@ export interface BlankViewportOptions {
 /** Open a viewport for a blank spatial view.
  * @internal
  */
-export function openBlankViewport(
-  options?: BlankViewportOptions
-): ScreenViewport {
+export function openBlankViewport(options?: BlankViewportOptions): ScreenViewport {
   const height = options?.height ?? 100;
   const width = options?.width ?? 100;
   const iModel = options?.iModel ?? createBlankConnection();
@@ -50,11 +48,7 @@ export function openBlankViewport(
 
   document.body.appendChild(parentDiv);
 
-  const view = SpatialViewState.createBlank(
-    iModel,
-    { x: 0, y: 0, z: 0 },
-    { x: 1, y: 1, z: 1 }
-  );
+  const view = SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
 
   class BlankViewport extends ScreenViewport {
     public ownedIModel?: BlankConnection;
@@ -79,9 +73,7 @@ export type TestBlankViewportOptions = BlankViewportOptions & {
 /** Open a viewport for a blank spatial view, invoke a test function, then dispose of the viewport and remove it from the DOM.
  * @internal
  */
-export function testBlankViewport(
-  args: TestBlankViewportOptions | ((vp: ScreenViewport) => void)
-): void {
+export function testBlankViewport(args: TestBlankViewportOptions | ((vp: ScreenViewport) => void)): void {
   const vp = openBlankViewport(typeof args === "function" ? undefined : args);
   try {
     if (typeof args === "function") args(vp);
@@ -94,9 +86,7 @@ export function testBlankViewport(
 /** Open a viewport for a blank spatial view, invoke a test function, then dispose of the viewport and remove it from the DOM.
  * @internal
  */
-export async function testBlankViewportAsync(
-  args: (vp: ScreenViewport) => Promise<void>
-): Promise<void> {
+export async function testBlankViewportAsync(args: (vp: ScreenViewport) => Promise<void>): Promise<void> {
   const vp = openBlankViewport(typeof args === "function" ? undefined : args);
   try {
     await args(vp);
@@ -139,11 +129,7 @@ export class PixelDataSet extends SortedArray<Pixel.Data> {
     return this._array;
   }
 
-  public containsFeature(
-    elemId?: Id64String,
-    subcatId?: Id64String,
-    geomClass?: GeometryClass
-  ) {
+  public containsFeature(elemId?: Id64String, subcatId?: Id64String, geomClass?: GeometryClass) {
     return this.containsWhere(
       (pxl) =>
         (undefined === elemId || pxl.elementId === elemId) &&
@@ -160,13 +146,8 @@ export class PixelDataSet extends SortedArray<Pixel.Data> {
   public containsGeometryType(type: Pixel.GeometryType) {
     return this.containsWhere((pxl) => pxl.type === type);
   }
-  public containsGeometry(
-    type: Pixel.GeometryType,
-    planarity: Pixel.Planarity
-  ) {
-    return this.containsWhere(
-      (pxl) => pxl.type === type && pxl.planarity === planarity
-    );
+  public containsGeometry(type: Pixel.GeometryType, planarity: Pixel.Planarity) {
+    return this.containsWhere((pxl) => pxl.type === type && pxl.planarity === planarity);
   }
   public containsWhere(criterion: (pxl: Pixel.Data) => boolean) {
     for (const pixel of this.array) if (criterion(pixel)) return true;
@@ -215,12 +196,7 @@ export class Color {
 
   public equalsColorDef(def: ColorDef): boolean {
     const colors = def.colors;
-    return (
-      colors.r === this.r &&
-      colors.g === this.g &&
-      colors.b === this.b &&
-      colors.t === 0xff - this.a
-    );
+    return colors.r === this.r && colors.g === this.g && colors.b === this.b && colors.t === 0xff - this.a;
   }
 }
 
@@ -240,11 +216,7 @@ export class ColorSet extends SortedArray<Color> {
  * Omit `readRect` to read the contents of the entire viewport.
  * @internal
  */
-export function readUniquePixelData(
-  vp: Viewport,
-  readRect?: ViewRect,
-  excludeNonLocatable = false
-): PixelDataSet {
+export function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false): PixelDataSet {
   const rect = undefined !== readRect ? readRect : vp.viewRect;
   const set = new PixelDataSet();
   vp.readPixels(
@@ -260,8 +232,7 @@ export function readUniquePixelData(
       sRect.top = vp.cssPixelsToDevicePixels(sRect.top);
 
       for (let x = sRect.left; x < sRect.right; x++)
-        for (let y = sRect.top; y < sRect.bottom; y++)
-          set.insert(pixels.getPixel(x, y));
+        for (let y = sRect.top; y < sRect.bottom; y++) set.insert(pixels.getPixel(x, y));
     },
     excludeNonLocatable
   );
@@ -270,17 +241,8 @@ export function readUniquePixelData(
 }
 
 /** Read a specific pixel. @internal */
-export function readPixel(
-  vp: Viewport,
-  x: number,
-  y: number,
-  excludeNonLocatable?: boolean
-): Pixel.Data {
-  const pixels = readUniquePixelData(
-    vp,
-    new ViewRect(x, y, x + 1, y + 1),
-    excludeNonLocatable
-  );
+export function readPixel(vp: Viewport, x: number, y: number, excludeNonLocatable?: boolean): Pixel.Data {
+  const pixels = readUniquePixelData(vp, new ViewRect(x, y, x + 1, y + 1), excludeNonLocatable);
   expect(pixels.length).to.equal(1);
   return pixels.array[0];
 }

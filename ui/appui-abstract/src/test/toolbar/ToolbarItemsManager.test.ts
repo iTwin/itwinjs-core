@@ -35,22 +35,12 @@ describe("ToolbarItemsManager", () => {
   };
   const syncId = "test-on-display-changed";
   const childSyncId = "child-test-on-display-changed";
-  const hiddenCondition = () =>
-    new ConditionalBooleanValue(() => !isVisible, [syncId]);
-  const childHiddenCondition = () =>
-    new ConditionalBooleanValue(() => !isChildVisible, [childSyncId]);
-  const nestChildHiddenCondition = () =>
-    new ConditionalBooleanValue(() => !isChildVisible, [childSyncId]);
-  const disabledCondition = () =>
-    new ConditionalBooleanValue(() => !isEnabled, [syncId]);
-  const conditionalLabel = new ConditionalStringValue(
-    () => (isVisible ? "Hello" : "Goodbye"),
-    [syncId]
-  );
-  const conditionalIcon = new ConditionalStringValue(
-    () => (isVisible ? "icon-developer" : "icon-home"),
-    [syncId]
-  );
+  const hiddenCondition = () => new ConditionalBooleanValue(() => !isVisible, [syncId]);
+  const childHiddenCondition = () => new ConditionalBooleanValue(() => !isChildVisible, [childSyncId]);
+  const nestChildHiddenCondition = () => new ConditionalBooleanValue(() => !isChildVisible, [childSyncId]);
+  const disabledCondition = () => new ConditionalBooleanValue(() => !isEnabled, [syncId]);
+  const conditionalLabel = new ConditionalStringValue(() => (isVisible ? "Hello" : "Goodbye"), [syncId]);
+  const conditionalIcon = new ConditionalStringValue(() => (isVisible ? "icon-developer" : "icon-home"), [syncId]);
   const nestedConditionalLabel = new ConditionalStringValue(
     () => (isVisible ? "nested-Hello" : "nested-Goodbye"),
     [syncId]
@@ -142,8 +132,7 @@ describe("ToolbarItemsManager", () => {
     it("should identify action item", () => {
       expect(ToolbarItemUtilities.isActionButton(simpleActionSpec)).to.be.true;
       expect(ToolbarItemUtilities.isGroupButton(simpleActionSpec)).to.be.false;
-      expect(ToolbarItemUtilities.isCustomDefinition(simpleActionSpec)).to.be
-        .false;
+      expect(ToolbarItemUtilities.isCustomDefinition(simpleActionSpec)).to.be.false;
     });
 
     it("should identify custom item", () => {
@@ -223,11 +212,7 @@ describe("ToolbarItemsManager", () => {
     it("add via load should not trigger listener", () => {
       const sut = new ToolbarItemsManager();
 
-      const items: CommonToolbarItem[] = [
-        simpleActionSpec,
-        groupItem,
-        customSpec,
-      ];
+      const items: CommonToolbarItem[] = [simpleActionSpec, groupItem, customSpec];
 
       const spy = sinon.spy();
       sut.onItemsChanged.addListener(spy);
@@ -244,38 +229,24 @@ describe("ToolbarItemsManager", () => {
   });
 
   describe("uisync", () => {
-    const sut = new ToolbarItemsManager([
-      simpleActionSpec,
-      simpleAction2Spec,
-      groupItem,
-    ]);
+    const sut = new ToolbarItemsManager([simpleActionSpec, simpleAction2Spec, groupItem]);
     const syncIds = ToolbarItemsManager.getSyncIdsOfInterest(sut.items);
     expect(syncIds.length).to.be.eq(2);
     expect(syncIds[0]).to.be.eq(syncId);
     expect(syncIds[1]).to.be.eq(childSyncId);
 
-    let locatedAction2Item = sut.items.find(
-      (i) => i.id === simpleAction2Spec.id
-    );
+    let locatedAction2Item = sut.items.find((i) => i.id === simpleAction2Spec.id);
     if (ToolbarItemUtilities.isActionButton(locatedAction2Item!)) {
-      expect(
-        ConditionalStringValue.getValue(locatedAction2Item.label)
-      ).to.be.equal("Hello");
-      expect(
-        ConditionalStringValue.getValue(locatedAction2Item.icon)
-      ).to.be.equal("icon-developer");
+      expect(ConditionalStringValue.getValue(locatedAction2Item.label)).to.be.equal("Hello");
+      expect(ConditionalStringValue.getValue(locatedAction2Item.icon)).to.be.equal("icon-developer");
     } else {
       throw new Error(`Error locating Action2`);
     }
 
     let locatedGroupItem = sut.items.find((i) => i.id === groupItem.id);
     if (ToolbarItemUtilities.isGroupButton(locatedGroupItem!)) {
-      expect(
-        ConditionalBooleanValue.getValue(locatedGroupItem.items[0].isHidden)
-      ).to.be.false;
-      expect(
-        ConditionalBooleanValue.getValue(locatedGroupItem.items[1].isDisabled)
-      ).to.be.false;
+      expect(ConditionalBooleanValue.getValue(locatedGroupItem.items[0].isHidden)).to.be.false;
+      expect(ConditionalBooleanValue.getValue(locatedGroupItem.items[1].isDisabled)).to.be.false;
     } else {
       throw new Error(`Error locating group`);
     }
@@ -289,24 +260,16 @@ describe("ToolbarItemsManager", () => {
 
     locatedAction2Item = sut.items.find((i) => i.id === simpleAction2Spec.id);
     if (ToolbarItemUtilities.isActionButton(locatedAction2Item!)) {
-      expect(
-        ConditionalStringValue.getValue(locatedAction2Item.label)
-      ).to.be.equal("Goodbye");
-      expect(
-        ConditionalStringValue.getValue(locatedAction2Item.icon)
-      ).to.be.equal("icon-home");
+      expect(ConditionalStringValue.getValue(locatedAction2Item.label)).to.be.equal("Goodbye");
+      expect(ConditionalStringValue.getValue(locatedAction2Item.icon)).to.be.equal("icon-home");
     } else {
       throw new Error(`Error locating Action2`);
     }
 
     locatedGroupItem = sut.items.find((i) => i.id === groupItem.id);
     if (ToolbarItemUtilities.isGroupButton(locatedGroupItem!)) {
-      expect(
-        ConditionalBooleanValue.getValue(locatedGroupItem.items[0].isHidden)
-      ).to.be.true;
-      expect(
-        ConditionalBooleanValue.getValue(locatedGroupItem.items[1].isDisabled)
-      ).to.be.true;
+      expect(ConditionalBooleanValue.getValue(locatedGroupItem.items[0].isHidden)).to.be.true;
+      expect(ConditionalBooleanValue.getValue(locatedGroupItem.items[1].isDisabled)).to.be.true;
     } else {
       throw new Error(`Error locating group`);
     }
@@ -322,12 +285,7 @@ describe("ToolbarItemsManager", () => {
         (): void => {},
         { isActive: true }
       );
-      const sut = new ToolbarItemsManager([
-        simpleActionSpec,
-        simpleAction2Spec,
-        groupItem,
-        initiallyActiveSpec,
-      ]);
+      const sut = new ToolbarItemsManager([simpleActionSpec, simpleAction2Spec, groupItem, initiallyActiveSpec]);
 
       const items = sut.items;
       sut.setActiveToolId("simple-test-action-tool-active");
@@ -335,11 +293,7 @@ describe("ToolbarItemsManager", () => {
     });
 
     it("misc tools activate properly", () => {
-      const sut = new ToolbarItemsManager([
-        simpleActionSpec,
-        simpleAction2Spec,
-        groupItem,
-      ]);
+      const sut = new ToolbarItemsManager([simpleActionSpec, simpleAction2Spec, groupItem]);
 
       let items = sut.items;
       sut.setActiveToolId(nestedChild1ActionSpec.id);

@@ -61,11 +61,7 @@ export class ShadowUniforms {
       desync(this);
       this._color = settings.color;
       this._colorAndBias.setTbgr(
-        ColorDef.computeTbgrFromComponents(
-          settings.color.r,
-          settings.color.g,
-          settings.color.b
-        )
+        ColorDef.computeTbgrFromComponents(settings.color.r, settings.color.g, settings.color.b)
       );
       this._colorAndBias.alpha = this._bias;
     }
@@ -86,14 +82,8 @@ export class ShadowUniforms {
     desync(this);
 
     const proj = this._target.solarShadowMap.projectionMatrix;
-    const model = Matrix4d.createTransform(
-      this._target.currentTransform,
-      this._scratchModel
-    );
-    const modelProj = proj.multiplyMatrixMatrix(
-      model,
-      this._scratchModelProjection
-    );
+    const model = Matrix4d.createTransform(this._target.currentTransform, this._scratchModel);
+    const modelProj = proj.multiplyMatrixMatrix(model, this._scratchModelProjection);
     this._projection32.initFromMatrix4d(modelProj);
   }
 

@@ -87,11 +87,7 @@ export class DirectoryRecord {
    * @param size the file size to the record.
    * @return the record.
    */
-  public static readNew(
-    offset: ALong,
-    size: ALong,
-    contentLoader: ContentLoader
-  ): DirectoryRecord {
+  public static readNew(offset: ALong, size: ALong, contentLoader: ContentLoader): DirectoryRecord {
     /* Request the data? */
     if (contentLoader.isLoaded() == false) {
       /* Add the range */

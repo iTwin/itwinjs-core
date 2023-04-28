@@ -9,10 +9,7 @@
 import { DelayedPromise } from "./DelayedPromise";
 import { ECClass, StructClass } from "./Metadata/Class";
 import { Constant } from "./Metadata/Constant";
-import {
-  CustomAttribute,
-  CustomAttributeContainerProps,
-} from "./Metadata/CustomAttribute";
+import { CustomAttribute, CustomAttributeContainerProps } from "./Metadata/CustomAttribute";
 import { CustomAttributeClass } from "./Metadata/CustomAttributeClass";
 import { EntityClass } from "./Metadata/EntityClass";
 import { AnyEnumerator, Enumeration } from "./Metadata/Enumeration";
@@ -24,10 +21,7 @@ import { OverrideFormat } from "./Metadata/OverrideFormat";
 import { Phenomenon } from "./Metadata/Phenomenon";
 import { AnyProperty } from "./Metadata/Property";
 import { PropertyCategory } from "./Metadata/PropertyCategory";
-import {
-  RelationshipClass,
-  RelationshipConstraint,
-} from "./Metadata/RelationshipClass";
+import { RelationshipClass, RelationshipConstraint } from "./Metadata/RelationshipClass";
 import { Schema } from "./Metadata/Schema";
 import { SchemaItem } from "./Metadata/SchemaItem";
 import { Unit } from "./Metadata/Unit";
@@ -35,13 +29,10 @@ import { UnitSystem } from "./Metadata/UnitSystem";
 import { SchemaItemKey, SchemaKey } from "./SchemaKey";
 
 /** @beta */
-export type LazyLoadedSchema = Readonly<SchemaKey> &
-  DelayedPromise<Schema> &
-  Promise<Schema>;
+export type LazyLoadedSchema = Readonly<SchemaKey> & DelayedPromise<Schema> & Promise<Schema>;
 
 /** @beta */
-export type LazyLoadedSchemaItem<T extends SchemaItem> =
-  Readonly<SchemaItemKey> & DelayedPromise<T> & Promise<T>;
+export type LazyLoadedSchemaItem<T extends SchemaItem> = Readonly<SchemaItemKey> & DelayedPromise<T> & Promise<T>;
 /** @beta */
 export type LazyLoadedECClass = LazyLoadedSchemaItem<ECClass>;
 /** @beta */
@@ -51,11 +42,9 @@ export type LazyLoadedMixin = LazyLoadedSchemaItem<Mixin>;
 /** @beta */
 export type LazyLoadedStructClass = LazyLoadedSchemaItem<StructClass>;
 /** @beta */
-export type LazyLoadedCustomAttributeClass =
-  LazyLoadedSchemaItem<CustomAttributeClass>;
+export type LazyLoadedCustomAttributeClass = LazyLoadedSchemaItem<CustomAttributeClass>;
 /** @beta */
-export type LazyLoadedRelationshipClass =
-  LazyLoadedSchemaItem<RelationshipClass>;
+export type LazyLoadedRelationshipClass = LazyLoadedSchemaItem<RelationshipClass>;
 /** @beta */
 export type LazyLoadedEnumeration = LazyLoadedSchemaItem<Enumeration>;
 /** @beta */
@@ -63,9 +52,7 @@ export type LazyLoadedKindOfQuantity = LazyLoadedSchemaItem<KindOfQuantity>;
 /** @beta */
 export type LazyLoadedPropertyCategory = LazyLoadedSchemaItem<PropertyCategory>;
 /** @beta */
-export type LazyLoadedRelationshipConstraintClass = LazyLoadedSchemaItem<
-  EntityClass | Mixin | RelationshipClass
->;
+export type LazyLoadedRelationshipConstraintClass = LazyLoadedSchemaItem<EntityClass | Mixin | RelationshipClass>;
 /** @beta */
 export type LazyLoadedUnit = LazyLoadedSchemaItem<Unit>;
 /** @beta */
@@ -80,12 +67,7 @@ export type LazyLoadedUnitSystem = LazyLoadedSchemaItem<UnitSystem>;
 export type LazyLoadedFormat = LazyLoadedSchemaItem<Format>;
 
 /** @beta */
-export type AnyClass =
-  | EntityClass
-  | Mixin
-  | StructClass
-  | CustomAttributeClass
-  | RelationshipClass;
+export type AnyClass = EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass;
 /** @beta */
 export type AnySchemaItem =
   | AnyClass

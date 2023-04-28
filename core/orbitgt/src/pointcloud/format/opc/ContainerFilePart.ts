@@ -41,12 +41,7 @@ export class ContainerFilePart {
    * @param offset the offset of the part.
    * @param size the size of the part.
    */
-  public constructor(
-    name: string,
-    fileAccess: FileAccess,
-    offset: ALong,
-    size: ALong
-  ) {
+  public constructor(name: string, fileAccess: FileAccess, offset: ALong, size: ALong) {
     this._fileAccess = fileAccess;
     this._offset = offset;
     this._size = size;
@@ -111,10 +106,7 @@ export class ContainerFilePart {
         ".." +
         extent.toString()
     );
-    ASystem.assertNot(
-      checkSize.isNegative(),
-      "Range size " + checkSize.toString() + " is negative"
-    );
+    ASystem.assertNot(checkSize.isNegative(), "Range size " + checkSize.toString() + " is negative");
     ASystem.assertNot(
       extent.sub(checkExtent).isNegative(),
       "Range extent " +

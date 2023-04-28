@@ -53,25 +53,19 @@ export class BatchUniforms {
     this._batchId[2] = this._scratchBytes[2];
     this._batchId[3] = this._scratchBytes[3];
 
-    const overrides =
-      undefined !== batch ? batch.getOverrides(this._target) : undefined;
-    this._overrides =
-      undefined !== overrides && overrides.anyOverridden
-        ? overrides
-        : undefined;
+    const overrides = undefined !== batch ? batch.getOverrides(this._target) : undefined;
+    this._overrides = undefined !== overrides && overrides.anyOverridden ? overrides : undefined;
 
     let sensors: ThematicSensors | undefined;
     if (undefined !== batch && this._target.wantThematicSensors) {
-      const distanceCutoff =
-        this._target.plan.thematic!.sensorSettings.distanceCutoff;
+      const distanceCutoff = this._target.plan.thematic!.sensorSettings.distanceCutoff;
       if (distanceCutoff > 0)
         // if we have a distance cutoff, we want to create per-batch sensor textures
         sensors = batch.getThematicSensors(this._target);
     }
     this._sensors = sensors;
 
-    if (undefined !== this._overrides)
-      this._featureMode = FeatureMode.Overrides;
+    if (undefined !== this._overrides) this._featureMode = FeatureMode.Overrides;
     else if (0 !== batchId) this._featureMode = FeatureMode.Pick;
     else this._featureMode = FeatureMode.None;
   }
@@ -98,15 +92,13 @@ export class BatchUniforms {
   }
 
   public bindLUTParams(uniform: UniformHandle): void {
-    if (undefined !== this._overrides && !sync(this, uniform))
-      this._overrides.bindLUTParams(uniform);
+    if (undefined !== this._overrides && !sync(this, uniform)) this._overrides.bindLUTParams(uniform);
   }
 
   public bindUniformSymbologyFlags(uniform: UniformHandle): void {
     if (sync(this, uniform)) return;
 
-    if (undefined !== this._overrides)
-      this._overrides.bindUniformSymbologyFlags(uniform);
+    if (undefined !== this._overrides) this._overrides.bindUniformSymbologyFlags(uniform);
     else uniform.setUniform1f(0);
   }
 
@@ -147,10 +139,7 @@ export class BatchUniforms {
     }
   }
 
-  public bindUniformNonLocatable(
-    uniform: UniformHandle,
-    ignoreNonLocatable: boolean
-  ): void {
+  public bindUniformNonLocatable(uniform: UniformHandle, ignoreNonLocatable: boolean): void {
     if (sync(this, uniform)) return;
 
     let nonLocatable = 0;

@@ -110,11 +110,7 @@ import {
 /* eslint-disable no-restricted-syntax */
 
 /** @internal */
-export type GltfDataBuffer =
-  | Uint8Array
-  | Uint16Array
-  | Uint32Array
-  | Float32Array;
+export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array;
 
 /**
  * A chunk of binary data exposed as a typed array.
@@ -152,11 +148,7 @@ export class GltfBufferData {
           if (GltfDataType.UnsignedByte !== actualType) return undefined;
           break;
         case GltfDataType.UInt32:
-          if (
-            GltfDataType.UnsignedByte !== actualType &&
-            GltfDataType.UnsignedShort !== actualType
-          )
-            return undefined;
+          if (GltfDataType.UnsignedByte !== actualType && GltfDataType.UnsignedShort !== actualType) return undefined;
           break;
       }
     }
@@ -165,33 +157,18 @@ export class GltfBufferData {
     return undefined !== data ? new GltfBufferData(data, count) : undefined;
   }
 
-  private static createDataBuffer(
-    bytes: Uint8Array,
-    actualType: GltfDataType
-  ): GltfDataBuffer | undefined {
+  private static createDataBuffer(bytes: Uint8Array, actualType: GltfDataType): GltfDataBuffer | undefined {
     // NB: Endianness of typed array data is determined by the 'platform byte order'. Actual data is always little-endian.
     // We are assuming little-endian platform. If we find a big-endian platform, we'll need to use a DataView instead.
     switch (actualType) {
       case GltfDataType.UnsignedByte:
         return bytes;
       case GltfDataType.UnsignedShort:
-        return new Uint16Array(
-          bytes.buffer,
-          bytes.byteOffset,
-          bytes.byteLength / 2
-        );
+        return new Uint16Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 2);
       case GltfDataType.UInt32:
-        return new Uint32Array(
-          bytes.buffer,
-          bytes.byteOffset,
-          bytes.byteLength / 4
-        );
+        return new Uint32Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 4);
       case GltfDataType.Float:
-        return new Float32Array(
-          bytes.buffer,
-          bytes.byteOffset,
-          bytes.byteLength / 4
-        );
+        return new Float32Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 4);
       default:
         return undefined;
     }
@@ -218,13 +195,7 @@ class GltfBufferView {
     return this.data.length;
   }
 
-  public constructor(
-    data: Uint8Array,
-    count: number,
-    type: GltfDataType,
-    accessor: GltfAccessor,
-    stride: number
-  ) {
+  public constructor(data: Uint8Array, count: number, type: GltfDataType, accessor: GltfAccessor, stride: number) {
     this.data = data;
     this.count = count;
     this.type = type;
@@ -352,9 +323,7 @@ export class GltfReaderProps {
       techniques: JsonUtils.asObject(json.techniques),
     };
 
-    return glTF.meshes
-      ? new GltfReaderProps(glTF, version, yAxisUp, binaryData, baseUrl)
-      : undefined;
+    return glTF.meshes ? new GltfReaderProps(glTF, version, yAxisUp, binaryData, baseUrl) : undefined;
   }
 }
 
@@ -399,26 +368,15 @@ export type ShouldAbortReadGltf = (reader: GltfReader) => boolean;
 const emptyDict = {};
 
 function colorFromJson(values: number[]): ColorDef {
-  return ColorDef.from(
-    values[0] * 255,
-    values[1] * 255,
-    values[2] * 255,
-    (1.0 - values[3]) * 255
-  );
+  return ColorDef.from(values[0] * 255, values[1] * 255, values[2] * 255, (1.0 - values[3]) * 255);
 }
 
-function colorFromMaterial(
-  material: GltfMaterial,
-  isTransparent: boolean
-): ColorDef {
+function colorFromMaterial(material: GltfMaterial, isTransparent: boolean): ColorDef {
   let color = ColorDef.white;
   if (isGltf1Material(material)) {
-    if (material.values?.color && Array.isArray(material.values.color))
-      color = colorFromJson(material.values.color);
+    if (material.values?.color && Array.isArray(material.values.color)) color = colorFromJson(material.values.color);
   } else if (material.extensions?.KHR_techniques_webgl?.values?.u_color) {
-    color = colorFromJson(
-      material.extensions.KHR_techniques_webgl.values.u_color
-    );
+    color = colorFromJson(material.extensions.KHR_techniques_webgl.values.u_color);
   } else if (material.pbrMetallicRoughness?.baseColorFactor) {
     color = colorFromJson(material.pbrMetallicRoughness.baseColorFactor);
   }
@@ -437,9 +395,7 @@ class TransformStack {
   }
 
   public get transform(): Transform | undefined {
-    return this._stack.length > 0
-      ? this._stack[this._stack.length - 1]
-      : undefined;
+    return this._stack.length > 0 ? this._stack[this._stack.length - 1] : undefined;
   }
 
   public get isEmpty(): boolean {
@@ -449,11 +405,7 @@ class TransformStack {
   public push(node: GltfNode): void {
     let nodeTransform;
     if (node.matrix) {
-      const origin = Point3d.create(
-        node.matrix[12],
-        node.matrix[13],
-        node.matrix[14]
-      );
+      const origin = Point3d.create(node.matrix[12], node.matrix[13], node.matrix[14]);
       const matrix = Matrix3d.createRowValues(
         node.matrix[0],
         node.matrix[4],
@@ -472,31 +424,20 @@ class TransformStack {
       // first the scale is applied to the vertices, then the rotation, and then the translation.
       const scale = Transform.createRefs(
         undefined,
-        node.scale
-          ? Matrix3d.createScale(node.scale[0], node.scale[1], node.scale[2])
-          : Matrix3d.identity
+        node.scale ? Matrix3d.createScale(node.scale[0], node.scale[1], node.scale[2]) : Matrix3d.identity
       );
       const rot = Transform.createRefs(
         undefined,
         node.rotation
           ? Matrix3d.createFromQuaternion(
-              Point4d.create(
-                node.rotation[0],
-                node.rotation[1],
-                node.rotation[2],
-                node.rotation[3]
-              )
+              Point4d.create(node.rotation[0], node.rotation[1], node.rotation[2], node.rotation[3])
             )
           : Matrix3d.identity
       );
       rot.matrix.transposeInPlace(); // See comment on Matrix3d.createFromQuaternion
       const trans = Transform.createTranslation(
         node.translation
-          ? new Point3d(
-              node.translation[0],
-              node.translation[1],
-              node.translation[2]
-            )
+          ? new Point3d(node.translation[0], node.translation[1], node.translation[2])
           : Point3d.createZero()
       );
 
@@ -506,10 +447,7 @@ class TransformStack {
 
     const top = this.transform;
     if (!top) this._stack.push(nodeTransform);
-    else
-      this._stack.push(
-        nodeTransform ? top.multiplyTransformTransform(nodeTransform) : top
-      );
+    else this._stack.push(nodeTransform ? top.multiplyTransformTransform(nodeTransform) : top);
   }
 
   public pop(): void {
@@ -583,10 +521,9 @@ export abstract class GltfReader {
   private readonly _canceled?: ShouldAbortReadGltf;
   protected readonly _sceneNodes: GltfId[];
   protected _computedContentRange?: ElementAlignedBox3d;
-  private readonly _resolvedTextures = new Dictionary<
-    TextureKey,
-    RenderTexture | false
-  >((lhs, rhs) => compareTextureKeys(lhs, rhs));
+  private readonly _resolvedTextures = new Dictionary<TextureKey, RenderTexture | false>((lhs, rhs) =>
+    compareTextureKeys(lhs, rhs)
+  );
   private readonly _dracoMeshes = new Map<DracoMeshCompression, DracoMesh>();
 
   protected get _nodes(): GltfDictionary<GltfNode> {
@@ -611,14 +548,10 @@ export abstract class GltfReader {
     return this._glTF.textures ?? emptyDict;
   }
 
-  protected get _images(): GltfDictionary<
-    GltfImage & { resolvedImage?: TextureImageSource }
-  > {
+  protected get _images(): GltfDictionary<GltfImage & { resolvedImage?: TextureImageSource }> {
     return this._glTF.images ?? emptyDict;
   }
-  protected get _buffers(): GltfDictionary<
-    GltfBuffer & { resolvedBuffer?: Uint8Array }
-  > {
+  protected get _buffers(): GltfDictionary<GltfBuffer & { resolvedBuffer?: Uint8Array }> {
     return this._glTF.buffers ?? emptyDict;
   }
 
@@ -658,26 +591,13 @@ export abstract class GltfReader {
     return this.traverseNodes(this._sceneNodes);
   }
 
-  private getTileTransform(
-    transformToRoot?: Transform,
-    pseudoRtcBias?: Vector3d
-  ): Transform | undefined {
+  private getTileTransform(transformToRoot?: Transform, pseudoRtcBias?: Vector3d): Transform | undefined {
     let transform;
 
-    if (
-      this._returnToCenter ||
-      pseudoRtcBias ||
-      this._yAxisUp ||
-      transformToRoot
-    ) {
-      if (this._returnToCenter)
-        transform = Transform.createTranslation(this._returnToCenter.clone());
+    if (this._returnToCenter || pseudoRtcBias || this._yAxisUp || transformToRoot) {
+      if (this._returnToCenter) transform = Transform.createTranslation(this._returnToCenter.clone());
       else if (pseudoRtcBias)
-        transform = Transform.createTranslationXYZ(
-          pseudoRtcBias.x,
-          pseudoRtcBias.y,
-          pseudoRtcBias.z
-        );
+        transform = Transform.createTranslationXYZ(pseudoRtcBias.x, pseudoRtcBias.y, pseudoRtcBias.z);
       else transform = Transform.createIdentity();
 
       if (this._yAxisUp)
@@ -688,8 +608,7 @@ export abstract class GltfReader {
           ) as Matrix3d
         );
 
-      if (transformToRoot)
-        transform = transformToRoot.multiplyTransformTransform(transform);
+      if (transformToRoot) transform = transformToRoot.multiplyTransformTransform(transform);
     }
 
     return transform;
@@ -703,20 +622,14 @@ export abstract class GltfReader {
     pseudoRtcBias?: Vector3d,
     instances?: InstancedGraphicParams
   ): GltfReaderResult {
-    if (this._isCanceled)
-      return { readStatus: TileReadStatus.Canceled, isLeaf };
+    if (this._isCanceled) return { readStatus: TileReadStatus.Canceled, isLeaf };
 
     // If contentRange was not supplied, we will compute it as we read the meshes.
-    if (!contentRange)
-      this._computedContentRange = contentRange = Range3d.createNull();
+    if (!contentRange) this._computedContentRange = contentRange = Range3d.createNull();
     else this._computedContentRange = undefined;
 
     // ###TODO this looks like a hack? Why does it assume the first node's transform is special, or that the transform will be specified as a matrix instead of translation+rot+scale?
-    if (
-      this._returnToCenter ||
-      this._nodes[0]?.matrix ||
-      (pseudoRtcBias && pseudoRtcBias.magnitude() < 1.0e5)
-    )
+    if (this._returnToCenter || this._nodes[0]?.matrix || (pseudoRtcBias && pseudoRtcBias.magnitude() < 1.0e5))
       pseudoRtcBias = undefined;
 
     const transformStack = new TransformStack();
@@ -740,8 +653,7 @@ export abstract class GltfReader {
         return { readStatus, isLeaf };
     }
 
-    if (0 === renderGraphicList.length)
-      return { readStatus: TileReadStatus.InvalidTileData, isLeaf };
+    if (0 === renderGraphicList.length) return { readStatus: TileReadStatus.InvalidTileData, isLeaf };
 
     let renderGraphic: RenderGraphic | undefined;
     if (1 === renderGraphicList.length) renderGraphic = renderGraphicList[0];
@@ -753,11 +665,7 @@ export abstract class GltfReader {
     if (invTransform) range = invTransform.multiplyRange(contentRange);
 
     if (featureTable)
-      renderGraphic = this._system.createBatch(
-        renderGraphic,
-        PackedFeatureTable.pack(featureTable),
-        range
-      );
+      renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), range);
 
     if (transform) {
       const branch = new GraphicBranch(true);
@@ -779,36 +687,21 @@ export abstract class GltfReader {
     needNormals = false,
     needParams = false
   ): RealityTileGeometry {
-    const transformStack = new TransformStack(
-      this.getTileTransform(transformToRoot)
-    );
+    const transformStack = new TransformStack(this.getTileTransform(transformToRoot));
     const polyfaces: Polyface[] = [];
     for (const nodeKey of this._sceneNodes) {
       const node = this._nodes[nodeKey];
-      if (node)
-        this.readNodeAndCreatePolyfaces(
-          polyfaces,
-          node,
-          transformStack,
-          needNormals,
-          needParams
-        );
+      if (node) this.readNodeAndCreatePolyfaces(polyfaces, node, transformStack, needNormals, needParams);
     }
 
     return { polyfaces };
   }
 
-  private graphicFromMeshData(
-    gltfMesh: GltfMeshData,
-    instances?: InstancedGraphicParams
-  ): RenderGraphic | undefined {
-    if (!gltfMesh.points || !gltfMesh.pointRange)
-      return gltfMesh.primitive.getGraphics(this._system, instances);
+  private graphicFromMeshData(gltfMesh: GltfMeshData, instances?: InstancedGraphicParams): RenderGraphic | undefined {
+    if (!gltfMesh.points || !gltfMesh.pointRange) return gltfMesh.primitive.getGraphics(this._system, instances);
 
     const realityMeshPrimitive =
-      this._vertexTableRequired || instances
-        ? undefined
-        : RealityMeshParams.fromGltfMesh(gltfMesh);
+      this._vertexTableRequired || instances ? undefined : RealityMeshParams.fromGltfMesh(gltfMesh);
     if (realityMeshPrimitive) {
       const realityMesh = this._system.createRealityMesh(realityMeshPrimitive);
       if (realityMesh) return realityMesh;
@@ -818,20 +711,15 @@ export abstract class GltfReader {
     const pointCount = gltfMesh.points.length / 3;
     assert(mesh.points instanceof QPoint3dList);
     mesh.points.fromTypedArray(gltfMesh.pointRange, gltfMesh.points);
-    if (mesh.triangles && gltfMesh.indices)
-      mesh.triangles.addFromTypedArray(gltfMesh.indices);
+    if (mesh.triangles && gltfMesh.indices) mesh.triangles.addFromTypedArray(gltfMesh.indices);
 
     if (gltfMesh.uvs && gltfMesh.uvRange && gltfMesh.uvQParams) {
       /** This is ugly and inefficient... unnecessary if Mesh stored uvs as QPoint2dList */
       for (let i = 0, j = 0; i < pointCount; i++)
-        mesh.uvParams.push(
-          gltfMesh.uvQParams.unquantize(gltfMesh.uvs[j++], gltfMesh.uvs[j++])
-        );
+        mesh.uvParams.push(gltfMesh.uvQParams.unquantize(gltfMesh.uvs[j++], gltfMesh.uvs[j++]));
     }
 
-    if (gltfMesh.normals)
-      for (const normal of gltfMesh.normals)
-        mesh.normals.push(new OctEncodedNormal(normal));
+    if (gltfMesh.normals) for (const normal of gltfMesh.normals) mesh.normals.push(new OctEncodedNormal(normal));
 
     return mesh.getGraphics(this._system, instances);
   }
@@ -860,20 +748,12 @@ export abstract class GltfReader {
      */
     let thisBias;
     if (undefined !== pseudoRtcBias)
-      thisBias =
-        undefined === thisTransform
-          ? pseudoRtcBias
-          : thisTransform.matrix.multiplyInverse(pseudoRtcBias);
+      thisBias = undefined === thisTransform ? pseudoRtcBias : thisTransform.matrix.multiplyInverse(pseudoRtcBias);
 
     for (const meshKey of getGltfNodeMeshIds(node)) {
       const nodeMesh = this._meshes[meshKey];
       if (nodeMesh?.primitives) {
-        const meshes = this.readMeshPrimitives(
-          node,
-          featureTable,
-          thisTransform,
-          thisBias
-        );
+        const meshes = this.readMeshPrimitives(node, featureTable, thisTransform, thisBias);
 
         let renderGraphic: RenderGraphic | undefined;
         if (0 !== meshes.length) {
@@ -886,8 +766,7 @@ export abstract class GltfReader {
               if (undefined !== renderGraphic) thisList.push(renderGraphic);
             }
 
-            if (0 !== thisList.length)
-              renderGraphic = this._system.createGraphicList(thisList);
+            if (0 !== thisList.length) renderGraphic = this._system.createGraphicList(thisList);
           }
 
           if (renderGraphic) {
@@ -906,14 +785,7 @@ export abstract class GltfReader {
     if (node.children) {
       for (const childId of node.children) {
         const child = this._nodes[childId];
-        if (child)
-          this.readNodeAndCreateGraphics(
-            renderGraphicList,
-            child,
-            featureTable,
-            transformStack,
-            instances
-          );
+        if (child) this.readNodeAndCreateGraphics(renderGraphicList, child, featureTable, transformStack, instances);
       }
     }
 
@@ -933,26 +805,14 @@ export abstract class GltfReader {
     const meshes = this.readMeshPrimitives(node);
 
     for (const mesh of meshes) {
-      const polyface = this.polyfaceFromGltfMesh(
-        mesh,
-        transformStack.transform,
-        needNormals,
-        needParams
-      );
+      const polyface = this.polyfaceFromGltfMesh(mesh, transformStack.transform, needNormals, needParams);
       if (polyface) polyfaces.push(polyface);
     }
 
     if (node.children) {
       for (const childId of node.children) {
         const child = this._nodes[childId];
-        if (child)
-          this.readNodeAndCreatePolyfaces(
-            polyfaces,
-            child,
-            transformStack,
-            needNormals,
-            needParams
-          );
+        if (child) this.readNodeAndCreatePolyfaces(polyfaces, child, transformStack, needNormals, needParams);
       }
     }
   }
@@ -968,28 +828,21 @@ export abstract class GltfReader {
     const { points, pointQParams, normals, uvs, uvQParams, indices } = mesh;
 
     const includeNormals = needNormals && undefined !== normals;
-    const includeParams =
-      needParams && undefined !== uvQParams && undefined !== uvs;
+    const includeParams = needParams && undefined !== uvQParams && undefined !== uvs;
 
     const polyface = IndexedPolyface.create(includeNormals, includeParams);
     for (let i = 0; i < points.length; ) {
-      const point = pointQParams.unquantize(
-        points[i++],
-        points[i++],
-        points[i++]
-      );
+      const point = pointQParams.unquantize(points[i++], points[i++], points[i++]);
       if (transform) transform.multiplyPoint3d(point, point);
 
       polyface.addPoint(point);
     }
 
     if (includeNormals && normals)
-      for (let i = 0; i < normals.length; )
-        polyface.addNormal(OctEncodedNormal.decodeValue(normals[i++]));
+      for (let i = 0; i < normals.length; ) polyface.addNormal(OctEncodedNormal.decodeValue(normals[i++]));
 
     if (includeParams && uvs && uvQParams)
-      for (let i = 0; i < uvs.length; )
-        polyface.addParam(uvQParams.unquantize(uvs[i++], uvs[i++]));
+      for (let i = 0; i < uvs.length; ) polyface.addParam(uvQParams.unquantize(uvs[i++], uvs[i++]));
 
     let j = 0;
     for (const index of indices) {
@@ -1005,22 +858,14 @@ export abstract class GltfReader {
   }
 
   // ###TODO what is the actual type of `json`?
-  public getBufferView(
-    json: { [k: string]: any },
-    accessorName: string
-  ): GltfBufferView | undefined {
+  public getBufferView(json: { [k: string]: any }, accessorName: string): GltfBufferView | undefined {
     try {
       const accessorValue = JsonUtils.asString(json[accessorName]);
-      const accessor = accessorValue
-        ? this._accessors[accessorValue]
-        : undefined;
+      const accessor = accessorValue ? this._accessors[accessorValue] : undefined;
       if (!accessor) return undefined;
 
       const bufferViewAccessorValue = accessor.bufferView;
-      const bufferView =
-        undefined !== bufferViewAccessorValue
-          ? this._bufferViews[bufferViewAccessorValue]
-          : undefined;
+      const bufferView = undefined !== bufferViewAccessorValue ? this._bufferViews[bufferViewAccessorValue] : undefined;
       if (!bufferView || undefined === bufferView.buffer) return undefined;
 
       const buffer = this._buffers[bufferView.buffer];
@@ -1053,9 +898,7 @@ export abstract class GltfReader {
           break;
       }
 
-      const byteStride = bufferView.byteStride
-        ? bufferView.byteStride
-        : componentCount * dataSize;
+      const byteStride = bufferView.byteStride ? bufferView.byteStride : componentCount * dataSize;
       const offset =
         (bufferView && bufferView.byteOffset ? bufferView.byteOffset : 0) +
         (accessor.byteOffset ? accessor.byteOffset : 0);
@@ -1063,43 +906,23 @@ export abstract class GltfReader {
 
       // If the data is misaligned (Scalable mesh tile publisher) use slice to copy -- else use subarray.
       const aligned = 0 === (bufferData.byteOffset + offset) % dataSize;
-      const bytes = aligned
-        ? bufferData.subarray(offset, offset + length)
-        : bufferData.slice(offset, offset + length);
-      return new GltfBufferView(
-        bytes,
-        accessor.count,
-        type,
-        accessor,
-        byteStride / dataSize
-      );
+      const bytes = aligned ? bufferData.subarray(offset, offset + length) : bufferData.slice(offset, offset + length);
+      return new GltfBufferView(bytes, accessor.count, type, accessor, byteStride / dataSize);
     } catch (e) {
       return undefined;
     }
   }
 
-  public readBufferData32(
-    json: { [k: string]: any },
-    accessorName: string
-  ): GltfBufferData | undefined {
+  public readBufferData32(json: { [k: string]: any }, accessorName: string): GltfBufferData | undefined {
     return this.readBufferData(json, accessorName, GltfDataType.UInt32);
   }
-  public readBufferData16(
-    json: { [k: string]: any },
-    accessorName: string
-  ): GltfBufferData | undefined {
+  public readBufferData16(json: { [k: string]: any }, accessorName: string): GltfBufferData | undefined {
     return this.readBufferData(json, accessorName, GltfDataType.UnsignedShort);
   }
-  public readBufferData8(
-    json: { [k: string]: any },
-    accessorName: string
-  ): GltfBufferData | undefined {
+  public readBufferData8(json: { [k: string]: any }, accessorName: string): GltfBufferData | undefined {
     return this.readBufferData(json, accessorName, GltfDataType.UnsignedByte);
   }
-  public readBufferDataFloat(
-    json: { [k: string]: any },
-    accessorName: string
-  ): GltfBufferData | undefined {
+  public readBufferDataFloat(json: { [k: string]: any }, accessorName: string): GltfBufferData | undefined {
     return this.readBufferData(json, accessorName, GltfDataType.Float);
   }
 
@@ -1125,8 +948,7 @@ export abstract class GltfReader {
     const binaryData = args.props.binaryData;
     if (binaryData) {
       const buffer = this._buffers[this._version === 2 ? 0 : "binary_glTF"];
-      if (buffer && undefined === buffer.uri)
-        buffer.resolvedBuffer = binaryData;
+      if (buffer && undefined === buffer.uri) buffer.resolvedBuffer = binaryData;
     }
 
     // The original implementation of GltfReader would process and produce graphics for every node in glTF.nodes.
@@ -1134,8 +956,7 @@ export abstract class GltfReader {
     // Some nodes may not be referenced by the configured scene, or only indirectly via GltfNode.children.
     // Perhaps some faulty tiles existed that didn't define their scenes properly?
     let sceneNodes;
-    if (this._glTF.scenes && undefined !== this._glTF.scene)
-      sceneNodes = this._glTF.scenes[this._glTF.scene]?.nodes;
+    if (this._glTF.scenes && undefined !== this._glTF.scene) sceneNodes = this._glTF.scenes[this._glTF.scene]?.nodes;
 
     if (!sceneNodes) sceneNodes = Object.keys(this._nodes);
 
@@ -1170,34 +991,23 @@ export abstract class GltfReader {
     if (typeof material !== "object") return undefined;
 
     // Bimium's shader value...almost certainly obsolete at this point.
-    if (isGltf1Material(material))
-      return material.diffuse ?? this.extractId(material.values?.tex);
+    if (isGltf1Material(material)) return material.diffuse ?? this.extractId(material.values?.tex);
 
     // KHR_techniques_webgl extension
     const techniques = this._glTF.extensions?.KHR_techniques_webgl?.techniques;
-    const ext = Array.isArray(techniques)
-      ? material.extensions?.KHR_techniques_webgl
-      : undefined;
+    const ext = Array.isArray(techniques) ? material.extensions?.KHR_techniques_webgl : undefined;
     if (techniques && undefined !== ext && typeof ext.values === "object") {
-      const uniforms =
-        typeof ext.technique === "number"
-          ? techniques[ext.technique].uniforms
-          : undefined;
+      const uniforms = typeof ext.technique === "number" ? techniques[ext.technique].uniforms : undefined;
       if (typeof uniforms === "object") {
         for (const uniformName of Object.keys(uniforms)) {
           const uniform = uniforms[uniformName];
-          if (
-            typeof uniform === "object" &&
-            uniform.type === GltfDataType.Sampler2d
-          )
+          if (typeof uniform === "object" && uniform.type === GltfDataType.Sampler2d)
             return this.extractId((ext.values[uniformName] as any)?.index);
         }
       }
     }
 
-    const id = this.extractId(
-      material.pbrMetallicRoughness?.baseColorTexture?.index
-    );
+    const id = this.extractId(material.pbrMetallicRoughness?.baseColorTexture?.index);
     return id ?? this.extractId(material.emissiveTexture?.index);
   }
 
@@ -1213,11 +1023,7 @@ export abstract class GltfReader {
     if (isGltf1Material(material)) {
       if (this._glTF.techniques && undefined !== material.technique) {
         const technique = this._glTF.techniques[material.technique];
-        if (
-          technique?.states?.enable?.some(
-            (state: GltfTechniqueState) => state === GltfTechniqueState.Blend
-          )
-        )
+        if (technique?.states?.enable?.some((state: GltfTechniqueState) => state === GltfTechniqueState.Blend))
           return true;
       }
 
@@ -1229,10 +1035,7 @@ export abstract class GltfReader {
     }
   }
 
-  protected createDisplayParams(
-    material: GltfMaterial,
-    hasBakedLighting: boolean
-  ): DisplayParams | undefined {
+  protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean): DisplayParams | undefined {
     const isTransparent = this.isMaterialTransparent(material);
     const textureId = this.extractTextureId(material);
     const normalMapId = this.extractNormalMapId(material);
@@ -1242,10 +1045,7 @@ export abstract class GltfReader {
         : undefined;
     const color = colorFromMaterial(material, isTransparent);
     let renderMaterial: RenderMaterial | undefined;
-    if (
-      undefined !== textureMapping &&
-      undefined !== textureMapping.normalMapParams
-    ) {
+    if (undefined !== textureMapping && undefined !== textureMapping.normalMapParams) {
       const args: CreateRenderMaterialArgs = {
         diffuse: { color },
         specular: { color: ColorDef.white },
@@ -1278,18 +1078,12 @@ export abstract class GltfReader {
       const nodeMesh = this._meshes[meshKey];
       if (nodeMesh?.primitives) {
         for (const primitive of nodeMesh.primitives) {
-          const mesh = this.readMeshPrimitive(
-            primitive,
-            featureTable,
-            thisBias
-          );
+          const mesh = this.readMeshPrimitive(primitive, featureTable, thisBias);
           if (mesh) {
             meshes.push(mesh);
             if (this._computedContentRange && mesh.pointRange) {
               const invTransform = thisTransform?.inverse();
-              const meshRange = invTransform
-                ? invTransform.multiplyRange(mesh.pointRange)
-                : mesh.pointRange;
+              const meshRange = invTransform ? invTransform.multiplyRange(mesh.pointRange) : mesh.pointRange;
               this._computedContentRange.extendRange(meshRange);
             }
           }
@@ -1306,16 +1100,12 @@ export abstract class GltfReader {
     pseudoRtcBias?: Vector3d
   ): GltfMeshData | undefined {
     const materialName = JsonUtils.asString(primitive.material);
-    const material =
-      0 < materialName.length ? this._materials[materialName] : {};
+    const material = 0 < materialName.length ? this._materials[materialName] : {};
     if (!material) return undefined;
 
     const hasBakedLighting =
-      undefined === primitive.attributes.NORMAL ||
-      undefined !== material.extensions?.KHR_materials_unlit;
-    const displayParams = material
-      ? this.createDisplayParams(material, hasBakedLighting)
-      : undefined;
+      undefined === primitive.attributes.NORMAL || undefined !== material.extensions?.KHR_materials_unlit;
+    const displayParams = material ? this.createDisplayParams(material, hasBakedLighting) : undefined;
     if (!displayParams) return undefined;
 
     let primitiveType: number = -1;
@@ -1360,23 +1150,16 @@ export abstract class GltfReader {
       // uv parameters to pick the colors out of the color map texture.
       meshPrimitive.colorMap.insert(displayParams.fillColor.tbgr); // White...
       // _COLORINDEX is an ancient holdover from glTF 1.0 and Bimium...unlikely to actually encounter it in the wild.
-      const colorIndices = this.readBufferData16(
-        primitive.attributes,
-        "_COLORINDEX"
-      );
+      const colorIndices = this.readBufferData16(primitive.attributes, "_COLORINDEX");
       if (undefined !== colorIndices && material) {
         let texStep;
         if (isGltf1Material(material)) texStep = material.values?.texStep;
-        else
-          texStep =
-            material.extensions?.KHR_techniques_webgl?.values?.u_texStep;
+        else texStep = material.extensions?.KHR_techniques_webgl?.values?.u_texStep;
 
         if (texStep) {
           const uvParams = [];
           for (let i = 0; i < colorIndices.count; i++)
-            uvParams.push(
-              new Point2d(texStep[1] + texStep[0] * colorIndices.buffer[i], 0.5)
-            );
+            uvParams.push(new Point2d(texStep[1] + texStep[0] * colorIndices.buffer[i], 0.5));
 
           const paramList = QPoint2dList.fromPoints(uvParams);
           mesh.uvs = paramList.toTypedArray();
@@ -1386,17 +1169,13 @@ export abstract class GltfReader {
     }
 
     const draco = primitive.extensions?.KHR_draco_mesh_compression;
-    if (draco)
-      return this.readDracoMeshPrimitive(mesh.primitive, draco)
-        ? mesh
-        : undefined;
+    if (draco) return this.readDracoMeshPrimitive(mesh.primitive, draco) ? mesh : undefined;
 
     this.readBatchTable(mesh.primitive, primitive);
     if (mesh.primitive.features) {
       const features = this.readPrimitiveFeatures(primitive);
       if (features) {
-        if (features instanceof Feature)
-          mesh.primitive.features.add(features, 1);
+        if (features instanceof Feature) mesh.primitive.features.add(features, 1);
         else mesh.primitive.features.setIndices(features);
       }
     }
@@ -1407,32 +1186,17 @@ export abstract class GltfReader {
       case Mesh.PrimitiveType.Mesh: {
         if (!this.readMeshIndices(mesh, primitive)) return undefined;
 
-        if (
-          !displayParams.ignoreLighting &&
-          !this.readNormals(mesh, primitive.attributes, "NORMAL")
-        )
-          return undefined;
+        if (!displayParams.ignoreLighting && !this.readNormals(mesh, primitive.attributes, "NORMAL")) return undefined;
 
         if (!mesh.uvs) {
           let texCoordIndex = 0;
-          if (
-            !isGltf1Material(material) &&
-            undefined !==
-              material.pbrMetallicRoughness?.baseColorTexture?.texCoord
-          )
-            texCoordIndex = JsonUtils.asInt(
-              material.pbrMetallicRoughness.baseColorTexture.texCoord
-            );
+          if (!isGltf1Material(material) && undefined !== material.pbrMetallicRoughness?.baseColorTexture?.texCoord)
+            texCoordIndex = JsonUtils.asInt(material.pbrMetallicRoughness.baseColorTexture.texCoord);
 
-          this.readUVParams(
-            mesh,
-            primitive.attributes,
-            `TEXCOORD_${texCoordIndex}`
-          );
+          this.readUVParams(mesh, primitive.attributes, `TEXCOORD_${texCoordIndex}`);
         }
 
-        if (this._deduplicateVertices && !this.deduplicateVertices(mesh))
-          return undefined;
+        if (this._deduplicateVertices && !this.deduplicateVertices(mesh)) return undefined;
 
         break;
       }
@@ -1460,27 +1224,19 @@ export abstract class GltfReader {
     if (displayParams.textureMapping && !mesh.uvs) return undefined;
 
     if (primitive.extensions?.CESIUM_primitive_outline) {
-      const data = this.readBufferData32(
-        primitive.extensions.CESIUM_primitive_outline,
-        "indices"
-      );
+      const data = this.readBufferData32(primitive.extensions.CESIUM_primitive_outline, "indices");
       if (data !== undefined) {
         assert(0 === data.count % 2);
         mesh.primitive.edges = new MeshEdges();
         for (let i = 0; i < data.count; )
-          mesh.primitive.edges.visible.push(
-            new MeshEdge(data.buffer[i++], data.buffer[i++])
-          );
+          mesh.primitive.edges.visible.push(new MeshEdge(data.buffer[i++], data.buffer[i++]));
       }
     }
 
     return mesh;
   }
 
-  private readDracoMeshPrimitive(
-    mesh: Mesh,
-    ext: DracoMeshCompression
-  ): boolean {
+  private readDracoMeshPrimitive(mesh: Mesh, ext: DracoMeshCompression): boolean {
     const draco = this._dracoMeshes.get(ext);
     if (!draco || "triangle-list" !== draco.topology) return false;
 
@@ -1500,18 +1256,10 @@ export abstract class GltfReader {
     let posRange: Range3d;
     const bbox = draco.header?.boundingBox;
     if (bbox) {
-      posRange = Range3d.createXYZXYZ(
-        bbox[0][0],
-        bbox[0][1],
-        bbox[0][2],
-        bbox[1][0],
-        bbox[1][1],
-        bbox[1][2]
-      );
+      posRange = Range3d.createXYZXYZ(bbox[0][0], bbox[0][1], bbox[0][2], bbox[1][0], bbox[1][1], bbox[1][2]);
     } else {
       posRange = Range3d.createNull();
-      for (let i = 0; i < pos.length; i += 3)
-        posRange.extendXYZ(pos[i], pos[i + 1], pos[i + 2]);
+      for (let i = 0; i < pos.length; i += 3) posRange.extendXYZ(pos[i], pos[i + 1], pos[i + 2]);
     }
 
     assert(mesh.points instanceof QPoint3dList);
@@ -1533,8 +1281,7 @@ export abstract class GltfReader {
 
     const uvs = draco.attributes.TEXCOORD_0?.value;
     if (uvs && (uvs.length & 2) === 0)
-      for (let i = 0; i < uvs.length; i += 2)
-        mesh.uvParams.push(new Point2d(uvs[i], uvs[i + 1]));
+      for (let i = 0; i < uvs.length; i += 2) mesh.uvParams.push(new Point2d(uvs[i], uvs[i + 1]));
 
     const batchIds = draco.attributes._BATCHID?.value;
     if (batchIds && mesh.features) {
@@ -1554,10 +1301,8 @@ export abstract class GltfReader {
     assert(0 === numPoints % 3);
 
     const indices = mesh.indices;
-    if (indices instanceof Uint16Array && numPoints > 0xffff)
-      mesh.indices = new Uint32Array(numPoints);
-    else if (indices instanceof Uint8Array && numPoints > 0xff)
-      mesh.indices = new Uint32Array(numPoints);
+    if (indices instanceof Uint16Array && numPoints > 0xffff) mesh.indices = new Uint32Array(numPoints);
+    else if (indices instanceof Uint8Array && numPoints > 0xff) mesh.indices = new Uint32Array(numPoints);
 
     const points = new Uint16Array(3 * numPoints);
     const normals = mesh.normals ? new Uint16Array(numPoints) : undefined;
@@ -1594,11 +1339,7 @@ export abstract class GltfReader {
    * context capture which have a large offset from the tileset origin that exceeds the
    * capacity of 32 bit integers. This is essentially an ad hoc RTC applied at read time.
    */
-  private readVertices(
-    mesh: GltfMeshData,
-    primitive: GltfMeshPrimitive,
-    pseudoRtcBias?: Vector3d
-  ): boolean {
+  private readVertices(mesh: GltfMeshData, primitive: GltfMeshPrimitive, pseudoRtcBias?: Vector3d): boolean {
     const view = this.getBufferView(primitive.attributes, "POSITION");
     if (undefined === view) return false;
 
@@ -1609,22 +1350,13 @@ export abstract class GltfReader {
       const strideSkip = view.stride - 3;
       mesh.pointRange = Range3d.createNull();
       for (let i = 0; i < buffer.buffer.length; i += strideSkip)
-        mesh.pointRange.extendXYZ(
-          buffer.buffer[i++],
-          buffer.buffer[i++],
-          buffer.buffer[i++]
-        );
+        mesh.pointRange.extendXYZ(buffer.buffer[i++], buffer.buffer[i++], buffer.buffer[i++]);
 
       const positions = new QPoint3dList(QParams3d.fromRange(mesh.pointRange));
       const scratchPoint = new Point3d();
       for (let i = 0, j = 0; i < buffer.count; i++, j += strideSkip) {
-        scratchPoint.set(
-          buffer.buffer[j++],
-          buffer.buffer[j++],
-          buffer.buffer[j++]
-        );
-        if (undefined !== pseudoRtcBias)
-          scratchPoint.subtractInPlace(pseudoRtcBias);
+        scratchPoint.set(buffer.buffer[j++], buffer.buffer[j++], buffer.buffer[j++]);
+        if (undefined !== pseudoRtcBias) scratchPoint.subtractInPlace(pseudoRtcBias);
 
         positions.add(scratchPoint);
       }
@@ -1642,8 +1374,7 @@ export abstract class GltfReader {
 
       // ###TODO apply WEB3D_quantized_attributes.decodeMatrix? Have not encountered in the wild; glTF 1.0 only.
       const buffer = view.toBufferData(GltfDataType.UnsignedShort);
-      if (undefined === buffer || !(buffer.buffer instanceof Uint16Array))
-        return false;
+      if (undefined === buffer || !(buffer.buffer instanceof Uint16Array)) return false;
 
       assert(buffer.buffer instanceof Uint16Array);
       mesh.pointRange = Range3d.createXYZXYZ(
@@ -1675,10 +1406,7 @@ export abstract class GltfReader {
     return true;
   }
 
-  protected readIndices(
-    json: { [k: string]: any },
-    accessorName: string
-  ): number[] | undefined {
+  protected readIndices(json: { [k: string]: any }, accessorName: string): number[] | undefined {
     const data = this.readBufferData32(json, accessorName);
     if (undefined === data) return undefined;
 
@@ -1690,25 +1418,16 @@ export abstract class GltfReader {
 
   protected readBatchTable(_mesh: Mesh, _json: GltfMeshPrimitive) {}
 
-  protected readPrimitiveFeatures(
-    _primitive: GltfMeshPrimitive
-  ): Feature | number[] | undefined {
+  protected readPrimitiveFeatures(_primitive: GltfMeshPrimitive): Feature | number[] | undefined {
     return undefined;
   }
 
-  protected readMeshIndices(
-    mesh: GltfMeshData,
-    json: { [k: string]: any }
-  ): boolean {
+  protected readMeshIndices(mesh: GltfMeshData, json: { [k: string]: any }): boolean {
     if (undefined !== json.indices) {
-      const data =
-        this.readBufferData16(json, "indices") ||
-        this.readBufferData32(json, "indices");
+      const data = this.readBufferData16(json, "indices") || this.readBufferData32(json, "indices");
       if (
         data &&
-        (data.buffer instanceof Uint8Array ||
-          data.buffer instanceof Uint16Array ||
-          data.buffer instanceof Uint32Array)
+        (data.buffer instanceof Uint8Array || data.buffer instanceof Uint16Array || data.buffer instanceof Uint32Array)
       ) {
         mesh.indices = data.buffer;
         return true;
@@ -1732,11 +1451,7 @@ export abstract class GltfReader {
     return true;
   }
 
-  protected readNormals(
-    mesh: GltfMeshData,
-    json: { [k: string]: any },
-    accessorName: string
-  ): boolean {
+  protected readNormals(mesh: GltfMeshData, json: { [k: string]: any }, accessorName: string): boolean {
     const view = this.getBufferView(json, accessorName);
     if (undefined === view) return false;
 
@@ -1749,11 +1464,7 @@ export abstract class GltfReader {
         const scratchNormal = new Vector3d();
         const strideSkip = view.stride - 3;
         for (let i = 0, j = 0; i < data.count; i++, j += strideSkip) {
-          scratchNormal.set(
-            data.buffer[j++],
-            data.buffer[j++],
-            data.buffer[j++]
-          );
+          scratchNormal.set(data.buffer[j++], data.buffer[j++], data.buffer[j++]);
           mesh.normals[i] = OctEncodedNormal.encode(scratchNormal);
         }
         return true;
@@ -1778,11 +1489,7 @@ export abstract class GltfReader {
     }
   }
 
-  protected readColors(
-    mesh: GltfMeshData,
-    attribute: { [k: string]: any },
-    accessorName: string
-  ): boolean {
+  protected readColors(mesh: GltfMeshData, attribute: { [k: string]: any }, accessorName: string): boolean {
     const view = this.getBufferView(attribute, accessorName);
     if (
       !view ||
@@ -1811,11 +1518,7 @@ export abstract class GltfReader {
     return true;
   }
 
-  private readUVParams(
-    mesh: GltfMeshData,
-    json: { [k: string]: any },
-    accessorName: string
-  ): boolean {
+  private readUVParams(mesh: GltfMeshData, json: { [k: string]: any }, accessorName: string): boolean {
     const view = this.getBufferView(json, accessorName);
 
     if (view === undefined) return false;
@@ -1835,11 +1538,7 @@ export abstract class GltfReader {
         mesh.uvs = new Uint16Array(data.count * 2);
         for (let i = 0, j = 0; i < data.count; i++) {
           const index = view.stride * i; // 2 float per param...
-          mesh.uvs[j++] = Quantization.quantize(
-            data.buffer[index],
-            mesh.uvQParams.origin.x,
-            mesh.uvQParams.scale.x
-          );
+          mesh.uvs[j++] = Quantization.quantize(data.buffer[index], mesh.uvQParams.origin.x, mesh.uvQParams.scale.x);
           mesh.uvs[j++] = Quantization.quantize(
             data.buffer[index + 1],
             mesh.uvQParams.origin.y,
@@ -1856,15 +1555,9 @@ export abstract class GltfReader {
         if (undefined === rangeMin || undefined === rangeMax) return false;
 
         const qData = view.toBufferData(GltfDataType.UnsignedShort);
-        if (undefined === qData || !(qData.buffer instanceof Uint16Array))
-          return false;
+        if (undefined === qData || !(qData.buffer instanceof Uint16Array)) return false;
 
-        mesh.uvRange = Range2d.createXYXY(
-          rangeMin[0],
-          rangeMin[1],
-          rangeMax[0],
-          rangeMax[1]
-        );
+        mesh.uvRange = Range2d.createXYXY(rangeMin[0], rangeMin[1], rangeMax[0], rangeMax[1]);
         mesh.uvQParams = QParams2d.fromRange(mesh.uvRange);
         if (2 === view.stride) {
           mesh.uvs = qData.buffer;
@@ -1938,14 +1631,9 @@ export abstract class GltfReader {
 
     try {
       const dracoLoader = (await import("@loaders.gl/draco")).DracoLoader;
-      await Promise.all(
-        dracoMeshes.map(async (x) => this.decodeDracoMesh(x, dracoLoader))
-      );
+      await Promise.all(dracoMeshes.map(async (x) => this.decodeDracoMesh(x, dracoLoader)));
     } catch (err) {
-      Logger.logWarning(
-        FrontendLoggerCategory.Render,
-        "Failed to decode draco-encoded glTF mesh"
-      );
+      Logger.logWarning(FrontendLoggerCategory.Render, "Failed to decode draco-encoded glTF mesh");
       Logger.logException(FrontendLoggerCategory.Render, err);
     }
   }
@@ -1969,10 +1657,7 @@ export abstract class GltfReader {
     } catch (_) {}
   }
 
-  private async decodeDracoMesh(
-    ext: DracoMeshCompression,
-    loader: typeof DracoLoader
-  ): Promise<void> {
+  private async decodeDracoMesh(ext: DracoMeshCompression, loader: typeof DracoLoader): Promise<void> {
     const bv = this._bufferViews[ext.bufferView];
     if (!bv || !bv.byteLength) return;
 
@@ -1995,9 +1680,7 @@ export abstract class GltfReader {
     }
   }
 
-  private async resolveBuffer(
-    buffer: GltfBuffer & { resolvedBuffer?: Uint8Array }
-  ): Promise<void> {
+  private async resolveBuffer(buffer: GltfBuffer & { resolvedBuffer?: Uint8Array }): Promise<void> {
     if (buffer.resolvedBuffer || undefined === buffer.uri) return;
 
     try {
@@ -2014,9 +1697,7 @@ export abstract class GltfReader {
     }
   }
 
-  private async resolveImage(
-    image: GltfImage & { resolvedImage?: TextureImageSource }
-  ): Promise<void> {
+  private async resolveImage(image: GltfImage & { resolvedImage?: TextureImageSource }): Promise<void> {
     if (image.resolvedImage) return;
 
     interface BufferViewSource {
@@ -2024,22 +1705,11 @@ export abstract class GltfReader {
       mimeType?: string;
     }
     const bvSrc: BufferViewSource | undefined =
-      undefined !== image.bufferView
-        ? image
-        : image.extensions?.KHR_binary_glTF;
+      undefined !== image.bufferView ? image : image.extensions?.KHR_binary_glTF;
     if (undefined !== bvSrc?.bufferView) {
-      const format =
-        undefined !== bvSrc.mimeType
-          ? getImageSourceFormatForMimeType(bvSrc.mimeType)
-          : undefined;
+      const format = undefined !== bvSrc.mimeType ? getImageSourceFormatForMimeType(bvSrc.mimeType) : undefined;
       const bufferView = this._bufferViews[bvSrc.bufferView];
-      if (
-        undefined === format ||
-        !bufferView ||
-        !bufferView.byteLength ||
-        bufferView.byteLength < 0
-      )
-        return;
+      if (undefined === format || !bufferView || !bufferView.byteLength || bufferView.byteLength < 0) return;
 
       const bufferData = this._buffers[bufferView.buffer]?.resolvedBuffer;
       if (!bufferData) return;
@@ -2048,10 +1718,8 @@ export abstract class GltfReader {
       const bytes = bufferData.subarray(offset, offset + bufferView.byteLength);
       try {
         const imageSource = new ImageSource(bytes, format);
-        if (this._system.supportsCreateImageBitmap)
-          image.resolvedImage = await imageBitmapFromImageSource(imageSource);
-        else
-          image.resolvedImage = await imageElementFromImageSource(imageSource);
+        if (this._system.supportsCreateImageBitmap) image.resolvedImage = await imageBitmapFromImageSource(imageSource);
+        else image.resolvedImage = await imageElementFromImageSource(imageSource);
       } catch (_) {
         //
       }
@@ -2059,10 +1727,8 @@ export abstract class GltfReader {
       return;
     }
 
-    const url =
-      undefined !== image.uri ? this.resolveUrl(image.uri) : undefined;
-    if (undefined !== url)
-      image.resolvedImage = await tryImageElementFromUrl(url);
+    const url = undefined !== image.uri ? this.resolveUrl(image.uri) : undefined;
+    if (undefined !== url) image.resolvedImage = await tryImageElementFromUrl(url);
   }
 
   /** The glTF spec says that if GltfSampler.wrapS/T are omitted, they default to Repeat.
@@ -2077,22 +1743,14 @@ export abstract class GltfReader {
     // ###TODO: RenderTexture currently does not support different wrapping behavior for U vs V, nor does it support mirrored repeat.
     let wrapS = sampler?.wrapS;
     let wrapT = sampler?.wrapT;
-    if (undefined === wrapS && undefined === wrapT)
-      wrapS = wrapT = this.defaultWrapMode;
+    if (undefined === wrapS && undefined === wrapT) wrapS = wrapT = this.defaultWrapMode;
 
-    if (
-      GltfWrapMode.ClampToEdge === wrapS ||
-      GltfWrapMode.ClampToEdge === wrapT
-    )
-      return RenderTexture.Type.TileSection;
+    if (GltfWrapMode.ClampToEdge === wrapS || GltfWrapMode.ClampToEdge === wrapT) return RenderTexture.Type.TileSection;
 
     return RenderTexture.Type.Normal;
   }
 
-  private resolveTexture(
-    textureId: string,
-    isTransparent: boolean
-  ): RenderTexture | false {
+  private resolveTexture(textureId: string, isTransparent: boolean): RenderTexture | false {
     const texture = this._textures[textureId];
     if (!texture || undefined === texture.source) return false;
 
@@ -2100,16 +1758,13 @@ export abstract class GltfReader {
     if (!image) return false;
 
     const samplerId = texture.sampler;
-    const sampler =
-      undefined !== samplerId ? this._samplers[samplerId] : undefined;
+    const sampler = undefined !== samplerId ? this._samplers[samplerId] : undefined;
     const textureType = this.getTextureType(sampler);
     const renderTexture = this._system.createTexture({
       type: textureType,
       image: {
         source: image,
-        transparency: isTransparent
-          ? TextureTransparency.Mixed
-          : TextureTransparency.Opaque,
+        transparency: isTransparent ? TextureTransparency.Mixed : TextureTransparency.Opaque,
       },
     });
 
@@ -2127,10 +1782,7 @@ export abstract class GltfReader {
     if (undefined !== id) {
       texture = this._resolvedTextures.get({ id, isTransparent });
       if (undefined === texture)
-        this._resolvedTextures.set(
-          { id, isTransparent },
-          (texture = this.resolveTexture(id, isTransparent))
-        );
+        this._resolvedTextures.set({ id, isTransparent }, (texture = this.resolveTexture(id, isTransparent)));
     }
 
     let normalMap;
@@ -2162,10 +1814,7 @@ export abstract class GltfReader {
 
     if (!texture) return undefined;
 
-    const textureMapping = new TextureMapping(
-      texture,
-      new TextureMapping.Params()
-    );
+    const textureMapping = new TextureMapping(texture, new TextureMapping.Params());
     textureMapping.normalMapParams = nMap;
     return textureMapping;
   }
@@ -2223,9 +1872,7 @@ export interface GltfGraphic {
  * @public
  * @extensions
  */
-export async function readGltfGraphics(
-  args: ReadGltfGraphicsArgs
-): Promise<RenderGraphic | undefined> {
+export async function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<RenderGraphic | undefined> {
   const result = await readGltf(args);
   return result?.graphic;
 }
@@ -2239,11 +1886,8 @@ export async function readGltfGraphics(
  * @see [Example decorator]($docs/learning/frontend/ViewDecorations#gltf-decorations) for an example of a decorator that reads and displays a glTF asset.
  * @public
  */
-export async function readGltf(
-  args: ReadGltfGraphicsArgs
-): Promise<GltfGraphic | undefined> {
-  const baseUrl =
-    typeof args.baseUrl === "string" ? new URL(args.baseUrl) : args.baseUrl;
+export async function readGltf(args: ReadGltfGraphicsArgs): Promise<GltfGraphic | undefined> {
+  const baseUrl = typeof args.baseUrl === "string" ? new URL(args.baseUrl) : args.baseUrl;
   const props = GltfReaderProps.create(args.gltf, true, baseUrl); // glTF supports exactly one coordinate system with y axis up.
   const reader = props ? new GltfGraphicsReader(props, args) : undefined;
   if (!reader) return undefined;
@@ -2251,10 +1895,7 @@ export async function readGltf(
   const result = await reader.read();
   if (!result.graphic) return undefined;
 
-  assert(
-    result.contentRange !== undefined,
-    "readGltf always computes content range"
-  );
+  assert(result.contentRange !== undefined, "readGltf always computes content range");
   assert(result.range !== undefined, "readGltf always computes world range");
 
   return {
@@ -2288,23 +1929,14 @@ export class GltfGraphicsReader extends GltfReader {
     this.binaryData = props.binaryData;
     const pickableId = args.pickableOptions?.id;
     if (pickableId) {
-      this._featureTable = new FeatureTable(
-        1,
-        args.pickableOptions?.modelId ?? pickableId,
-        BatchType.Primary
-      );
+      this._featureTable = new FeatureTable(1, args.pickableOptions?.modelId ?? pickableId, BatchType.Primary);
       this._featureTable.insert(new Feature(pickableId));
     }
   }
 
   public async read(): Promise<GltfReaderResult> {
     await this.resolveResources();
-    return this.readGltfAndCreateGraphics(
-      this._isLeaf,
-      this._featureTable,
-      this._contentRange,
-      this._transform
-    );
+    return this.readGltfAndCreateGraphics(this._isLeaf, this._featureTable, this._contentRange, this._transform);
   }
 
   public get nodes(): GltfDictionary<GltfNode> {

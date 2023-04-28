@@ -20,10 +20,7 @@ import { TechniqueId } from "./TechniqueId";
 import { ProgramBuilder, VariableType } from "./ShaderBuilder";
 import { CompileStatus, ShaderProgram } from "./ShaderProgram";
 import { RenderState } from "./RenderState";
-import {
-  SingleTexturedViewportQuadGeometry,
-  ViewportQuadGeometry,
-} from "./CachedGeometry";
+import { SingleTexturedViewportQuadGeometry, ViewportQuadGeometry } from "./CachedGeometry";
 import { FrameBuffer } from "./FrameBuffer";
 import { getDrawParams } from "./ScratchDrawParams";
 import { SingularTechnique } from "./Technique";
@@ -111,22 +108,12 @@ class Builder {
 
     // NB: compile() will throw with WebGL error log if compile/link fails.
     if (CompileStatus.Success !== program.compile())
-      throw new Error(
-        `Failed to produce shader program for screen-space effect "${this._name}"`
-      );
+      throw new Error(`Failed to produce shader program for screen-space effect "${this._name}"`);
 
     const technique = new SingularTechnique(program);
-    const techniqueId = System.instance.techniques.addDynamicTechnique(
-      technique,
-      this._name
-    );
+    const techniqueId = System.instance.techniques.addDynamicTechnique(technique, this._name);
 
-    const effect = new ScreenSpaceEffect(
-      techniqueId,
-      this._name,
-      this._shiftsPixels,
-      this.shouldApply
-    );
+    const effect = new ScreenSpaceEffect(techniqueId, this._name, this._shiftsPixels, this.shouldApply);
     System.instance.screenSpaceEffects.add(effect);
   }
 }
@@ -137,12 +124,7 @@ class ScreenSpaceEffect {
   private readonly _shouldApply?: ShouldApply;
   private readonly _shiftsPixels: boolean;
 
-  public constructor(
-    techniqueId: TechniqueId,
-    name: string,
-    shiftsPixels: boolean,
-    shouldApply?: ShouldApply
-  ) {
+  public constructor(techniqueId: TechniqueId, name: string, shiftsPixels: boolean, shouldApply?: ShouldApply) {
     this.techniqueId = techniqueId;
     this.name = name;
     this._shouldApply = shouldApply;
@@ -153,10 +135,7 @@ class ScreenSpaceEffect {
     // Effects only apply during readPixels() if they move pixels around (we need to move pixels in the pick buffers correspondingly).
     if (target.isReadPixelsInProgress && !this._shiftsPixels) return false;
 
-    return (
-      undefined === this._shouldApply ||
-      this._shouldApply(target.screenSpaceEffectContext)
-    );
+    return undefined === this._shouldApply || this._shouldApply(target.screenSpaceEffectContext);
   }
 }
 
@@ -195,9 +174,7 @@ export class ScreenSpaceEffects {
 
   public add(effect: ScreenSpaceEffect): void {
     if (undefined !== this._effects.get(effect.name))
-      throw new Error(
-        `Screen-space effect "${effect.name}" is already registered.`
-      );
+      throw new Error(`Screen-space effect "${effect.name}" is already registered.`);
 
     this._effects.set(effect.name, effect);
   }
@@ -238,8 +215,7 @@ export class ScreenSpaceEffects {
     const copyFbo = target.compositor.screenSpaceEffectFbo;
     for (const effect of effects) {
       // Copy the rendered image to texture as input to the effect shader.
-      this._copyGeometry.texture =
-        system.frameBufferStack.currentColorBuffer!.getHandle()!;
+      this._copyGeometry.texture = system.frameBufferStack.currentColorBuffer!.getHandle()!;
       system.frameBufferStack.execute(copyFbo, true, false, () => {
         const copyParams = getDrawParams(target, this._copyGeometry);
         system.techniques.draw(copyParams);
@@ -252,10 +228,7 @@ export class ScreenSpaceEffects {
     }
   }
 
-  private applyForReadPixels(
-    effects: ScreenSpaceEffect[],
-    target: Target
-  ): void {
+  private applyForReadPixels(effects: ScreenSpaceEffect[], target: Target): void {
     const system = System.instance;
     system.applyRenderState(RenderState.defaults);
 
@@ -265,10 +238,7 @@ export class ScreenSpaceEffects {
       this._effectGeometry.setTechniqueId(effect.techniqueId);
       for (let i = 0; i <= 1; i++) {
         // Copy the pick buffer as input to the effect shader.
-        const buffer =
-          0 === i
-            ? target.compositor.featureIds
-            : target.compositor.depthAndOrder;
+        const buffer = 0 === i ? target.compositor.featureIds : target.compositor.depthAndOrder;
         this._copyGeometry.texture = buffer.getHandle()!;
         system.frameBufferStack.execute(copyFbo, true, false, () => {
           const copyParams = getDrawParams(target, this._copyGeometry);
@@ -290,8 +260,6 @@ export class ScreenSpaceEffects {
   }
 }
 
-export function createScreenSpaceEffectBuilder(
-  params: ScreenSpaceEffectBuilderParams
-): ScreenSpaceEffectBuilder {
+export function createScreenSpaceEffectBuilder(params: ScreenSpaceEffectBuilderParams): ScreenSpaceEffectBuilder {
   return new Builder(params);
 }

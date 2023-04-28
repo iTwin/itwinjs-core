@@ -9,10 +9,7 @@
 import { SectionType } from "@itwin/core-common";
 import { IModelApp, ScreenViewport, Tool } from "@itwin/core-frontend";
 import { HyperModeling } from "./HyperModeling";
-import {
-  SectionGraphicsConfig,
-  SectionMarkerConfig,
-} from "./HyperModelingConfig";
+import { SectionGraphicsConfig, SectionMarkerConfig } from "./HyperModelingConfig";
 import { HyperModelingDecorator } from "./HyperModelingDecorator";
 
 /** Parses a string case-insensitively returning true for "ON", false for "OFF", undefined for "TOGGLE" or undefined, and the input string for anything else. */
@@ -40,10 +37,7 @@ class HyperModelingTool extends Tool {
     return 1;
   }
 
-  public override async run(
-    enable?: boolean,
-    vp?: ScreenViewport
-  ): Promise<boolean> {
+  public override async run(enable?: boolean, vp?: ScreenViewport): Promise<boolean> {
     vp = vp ?? IModelApp.viewManager.selectedView;
     if (vp) await HyperModeling.startOrStop(vp, enable);
 
@@ -200,17 +194,14 @@ class SectionMarkerDecoratorConfigTool extends SectionMarkerConfigTool {
 
   protected update(config: SectionMarkerConfig): void {
     const vp = IModelApp.viewManager.selectedView;
-    const decorator = vp
-      ? HyperModelingDecorator.getForViewport(vp)
-      : undefined;
+    const decorator = vp ? HyperModelingDecorator.getForViewport(vp) : undefined;
     if (decorator) decorator.updateConfiguration(config);
   }
 }
 
 /** @internal */
 export function registerTools(namespace: string): void {
-  const register = (tool: typeof Tool) =>
-    IModelApp.tools.register(tool, namespace);
+  const register = (tool: typeof Tool) => IModelApp.tools.register(tool, namespace);
   register(HyperModelingTool);
   register(SectionGraphicsConfigTool);
   register(SectionMarkerDecoratorConfigTool);

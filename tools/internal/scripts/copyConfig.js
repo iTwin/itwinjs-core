@@ -20,9 +20,7 @@ exports.builder = (yargs) =>
 exports.handler = async (argv) => {
   const rootDir = __dirname.split("tools")[0];
 
-  let envFile = process.env.IMJS_CONFIG_FILE
-    ? process.env.IMJS_CONFIG_FILE
-    : "";
+  let envFile = process.env.IMJS_CONFIG_FILE ? process.env.IMJS_CONFIG_FILE : "";
 
   if (!envFile) {
     const pathDir = path.dirname(rootDir);
@@ -38,9 +36,7 @@ exports.handler = async (argv) => {
   for (const destination of argv.out) {
     const destRoot = path.resolve(rootDir, destination);
     if (!fs.existsSync(destRoot)) {
-      console.log(
-        `Cannot find the root directory of the destination: ${destRoot}`
-      );
+      console.log(`Cannot find the root directory of the destination: ${destRoot}`);
       return;
     }
 

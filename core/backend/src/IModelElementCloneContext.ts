@@ -40,10 +40,7 @@ export class IModelElementCloneContext {
   public constructor(sourceDb: IModelDb, targetDb?: IModelDb) {
     this.sourceDb = sourceDb;
     this.targetDb = undefined !== targetDb ? targetDb : sourceDb;
-    this._nativeContext = new IModelHost.platform.ImportContext(
-      this.sourceDb.nativeDb,
-      this.targetDb.nativeDb
-    );
+    this._nativeContext = new IModelHost.platform.ImportContext(this.sourceDb.nativeDb, this.targetDb.nativeDb);
   }
 
   /** perform necessary initialization to use a clone context, namely caching the reference types in the source's schemas */
@@ -80,22 +77,14 @@ export class IModelElementCloneContext {
    * @param targetCodeSpecName The name of the CodeSpec from the target iModel.
    * @throws [[IModelError]] if either CodeSpec could not be found.
    */
-  public remapCodeSpec(
-    sourceCodeSpecName: string,
-    targetCodeSpecName: string
-  ): void {
-    const sourceCodeSpec: CodeSpec =
-      this.sourceDb.codeSpecs.getByName(sourceCodeSpecName);
-    const targetCodeSpec: CodeSpec =
-      this.targetDb.codeSpecs.getByName(targetCodeSpecName);
+  public remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void {
+    const sourceCodeSpec: CodeSpec = this.sourceDb.codeSpecs.getByName(sourceCodeSpecName);
+    const targetCodeSpec: CodeSpec = this.targetDb.codeSpecs.getByName(targetCodeSpecName);
     this._nativeContext.addCodeSpecId(sourceCodeSpec.id, targetCodeSpec.id);
   }
 
   /** Add a rule that remaps the specified source class to the specified target class. */
-  public remapElementClass(
-    sourceClassFullName: string,
-    targetClassFullName: string
-  ): void {
+  public remapElementClass(sourceClassFullName: string, targetClassFullName: string): void {
     this._nativeContext.addClass(sourceClassFullName, targetClassFullName);
   }
 
@@ -134,10 +123,7 @@ export class IModelElementCloneContext {
    * @see [SubCategory.isDefaultSubCategory]($backend)
    */
   public filterSubCategory(sourceSubCategoryId: Id64String): void {
-    const sourceSubCategory = this.sourceDb.elements.tryGetElement<SubCategory>(
-      sourceSubCategoryId,
-      SubCategory
-    );
+    const sourceSubCategory = this.sourceDb.elements.tryGetElement<SubCategory>(sourceSubCategoryId, SubCategory);
     if (sourceSubCategory && !sourceSubCategory.isDefaultSubCategory) {
       this._nativeContext.filterSubCategoryId(sourceSubCategoryId);
     }
@@ -171,46 +157,26 @@ export class IModelElementCloneContext {
   /** Clone the specified source Element into ElementProps for the target iModel.
    * @internal
    */
-  public cloneElement(
-    sourceElement: Element,
-    cloneOptions?: IModelJsNative.CloneElementOptions
-  ): ElementProps {
-    const targetElementProps: ElementProps = this._nativeContext.cloneElement(
-      sourceElement.id,
-      cloneOptions
-    );
+  public cloneElement(sourceElement: Element, cloneOptions?: IModelJsNative.CloneElementOptions): ElementProps {
+    const targetElementProps: ElementProps = this._nativeContext.cloneElement(sourceElement.id, cloneOptions);
     // Ensure that all NavigationProperties in targetElementProps have a defined value so "clearing" changes will be part of the JSON used for update
-    sourceElement.forEachProperty(
-      (propertyName: string, meta: PropertyMetaData) => {
-        if (
-          meta.isNavigation &&
-          undefined === (sourceElement as any)[propertyName]
-        ) {
-          (targetElementProps as any)[propertyName] = RelatedElement.none;
-        }
-      },
-      false
-    ); // exclude custom because C++ has already handled them
+    sourceElement.forEachProperty((propertyName: string, meta: PropertyMetaData) => {
+      if (meta.isNavigation && undefined === (sourceElement as any)[propertyName]) {
+        (targetElementProps as any)[propertyName] = RelatedElement.none;
+      }
+    }, false); // exclude custom because C++ has already handled them
     if (this.isBetweenIModels) {
       // The native C++ cloneElement strips off federationGuid, want to put it back if transformation is between iModels
       targetElementProps.federationGuid = sourceElement.federationGuid;
-      if (
-        CodeScopeSpec.Type.Repository ===
-        this.targetDb.codeSpecs.getById(targetElementProps.code.spec).scopeType
-      ) {
+      if (CodeScopeSpec.Type.Repository === this.targetDb.codeSpecs.getById(targetElementProps.code.spec).scopeType) {
         targetElementProps.code.scope = IModel.rootSubjectId;
       }
     }
     // unlike other references, code cannot be null. If it is null, use an empty code instead
-    if (
-      targetElementProps.code.scope === Id64.invalid ||
-      targetElementProps.code.spec === Id64.invalid
-    ) {
+    if (targetElementProps.code.scope === Id64.invalid || targetElementProps.code.spec === Id64.invalid) {
       targetElementProps.code = Code.createEmpty();
     }
-    const jsClass = this.sourceDb.getJsClass<typeof Element>(
-      sourceElement.classFullName
-    );
+    const jsClass = this.sourceDb.getJsClass<typeof Element>(sourceElement.classFullName);
     // eslint-disable-next-line @typescript-eslint/dot-notation
     jsClass["onCloned"](this, sourceElement.toJSON(), targetElementProps);
     return targetElementProps;

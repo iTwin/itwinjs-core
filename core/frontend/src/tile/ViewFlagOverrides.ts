@@ -18,8 +18,7 @@ export function createDefaultViewFlagOverrides(options: {
   lighting?: boolean;
   thematic?: false;
 }): ViewFlagOverrides {
-  const noLights =
-    undefined !== options.lighting ? !options.lighting : undefined;
+  const noLights = undefined !== options.lighting ? !options.lighting : undefined;
   const viewflags = ViewFlags.fromJSON({
     renderMode: RenderMode.SmoothShade,
     noCameraLights: noLights,

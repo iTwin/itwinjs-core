@@ -3,11 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { ProcessDetector } from "@itwin/core-bentley";
-import {
-  createButton,
-  createTextBox,
-  TextBoxProps,
-} from "@itwin/frontend-devtools";
+import { createButton, createTextBox, TextBoxProps } from "@itwin/frontend-devtools";
 import { getConfigurationString } from "./DisplayTestApp";
 import { ToolBarDropDown } from "./ToolBar";
 
@@ -22,10 +18,7 @@ export class HubPicker extends ToolBarDropDown {
   private _inputWidth = 300;
   private _totalWidth = this._inputWidth + 95;
 
-  public constructor(
-    parent: HTMLElement,
-    onOpenIModel: (iModelId: string, iTwinId: string) => void
-  ) {
+  public constructor(parent: HTMLElement, onOpenIModel: (iModelId: string, iTwinId: string) => void) {
     super();
     if (ProcessDetector.isIOSAppFrontend) {
       this._inputWidth = 255;
@@ -55,10 +48,7 @@ export class HubPicker extends ToolBarDropDown {
     return "none" !== this._element.style.display;
   }
 
-  private _createTextBox(
-    props: TextBoxProps,
-    defaultValue: string | undefined
-  ) {
+  private _createTextBox(props: TextBoxProps, defaultValue: string | undefined) {
     const div = this._element.appendChild(document.createElement("div"));
     div.className = "inputDiv";
     const textbox = createTextBox({
@@ -102,9 +92,7 @@ export class HubPicker extends ToolBarDropDown {
       },
       HubPicker._lastIModelId
     );
-    const openIModelDiv = this._element.appendChild(
-      document.createElement("div")
-    );
+    const openIModelDiv = this._element.appendChild(document.createElement("div"));
     openIModelDiv.className = "inputDiv";
     createButton({
       parent: openIModelDiv,

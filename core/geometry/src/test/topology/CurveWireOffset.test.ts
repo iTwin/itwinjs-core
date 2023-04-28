@@ -30,12 +30,7 @@ import { Matrix3d } from "../../geometry3d/Matrix3d";
  * @param distances offset distances
  * @param distanceFactor factor to apply to distances.
  */
-function testCurveOffset(
-  allPaths: AnyCurve[],
-  caseName: string,
-  distances: number[],
-  distanceFactor: number
-) {
+function testCurveOffset(allPaths: AnyCurve[], caseName: string, distances: number[], distanceFactor: number) {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
   let x0 = 0;
@@ -60,14 +55,7 @@ function testCurveOffset(
           dMax = Math.max(dMax, offsetDistance);
           options.leftOffsetDistance = offsetDistance * distanceFactor;
           const stickA = RegionOps.constructCurveXYOffset(path, options);
-          if (stickA)
-            GeometryCoreTestIO.captureCloneGeometry(
-              allGeometry,
-              stickA,
-              x0,
-              y0,
-              0
-            );
+          if (stickA) GeometryCoreTestIO.captureCloneGeometry(allGeometry, stickA, x0, y0, 0);
         }
         y0 += yStep + 4 * dMax + 2;
       }
@@ -81,10 +69,7 @@ function testCurveOffset(
 describe("CurveOffset", () => {
   it("SimplePaths", () => {
     let counter = 0;
-    for (const paths of [
-      Sample.createSimplePaths(false),
-      Sample.createLineArcPaths(),
-    ]) {
+    for (const paths of [Sample.createSimplePaths(false), Sample.createLineArcPaths()]) {
       const a = paths[0].range().xLength() * 0.02;
       const offsetDistances = [2 * a, a, -a, -2 * a];
       testCurveOffset(paths, `SimplePaths ${counter++}`, offsetDistances, 1.0);
@@ -175,12 +160,7 @@ describe("CurveOffset", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const path = IModelJson.Reader.parse(
-      JSON.parse(
-        fs.readFileSync(
-          "./src/test/testInputs/ChainCollector/gapAtSmallShift.imjs",
-          "utf8"
-        )
-      )
+      JSON.parse(fs.readFileSync("./src/test/testInputs/ChainCollector/gapAtSmallShift.imjs", "utf8"))
     )!;
     if (ck.testDefined(path) && path instanceof CurveChain) {
       const x0 = 0;
@@ -188,16 +168,8 @@ describe("CurveOffset", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0, 0.1);
       for (const offset of [1, 2, 2.4]) {
         const options = new JointOptions(offset, 80, 135);
-        const offsetCurves = RegionOps.constructCurveXYOffset(
-          path as Path,
-          options
-        );
-        GeometryCoreTestIO.captureCloneGeometry(
-          allGeometry,
-          offsetCurves,
-          x0,
-          y0
-        );
+        const offsetCurves = RegionOps.constructCurveXYOffset(path as Path, options);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsetCurves, x0, y0);
       }
     }
 
@@ -215,26 +187,11 @@ describe("CurveOffset", () => {
     const e = 0.1;
     const f = 0.02;
     const sC = 0.98;
-    const path1 = Loop.create(
-      LineString3d.create(pointA, pointB, [2, -e], pointA)
-    );
-    const arcA = Arc3d.createCircularStartMiddleEnd(
-      pointA,
-      Point3d.create(2, 0.5),
-      pointB
-    ) as Arc3d;
-    const arcB = Arc3d.createCircularStartMiddleEnd(
-      pointB,
-      Point3d.create(2, 0.25),
-      pointA
-    ) as Arc3d;
+    const path1 = Loop.create(LineString3d.create(pointA, pointB, [2, -e], pointA));
+    const arcA = Arc3d.createCircularStartMiddleEnd(pointA, Point3d.create(2, 0.5), pointB) as Arc3d;
+    const arcB = Arc3d.createCircularStartMiddleEnd(pointB, Point3d.create(2, 0.25), pointA) as Arc3d;
     const arcC = arcA.clonePartialCurve(1.0, 0.0)!;
-    arcC.tryTransformInPlace(
-      Transform.createFixedPointAndMatrix(
-        arcA.center,
-        Matrix3d.createScale(sC, sC, sC)
-      )
-    );
+    arcC.tryTransformInPlace(Transform.createFixedPointAndMatrix(arcA.center, Matrix3d.createScale(sC, sC, sC)));
     const path2 = Loop.create(arcA, arcB);
     const path3 = Loop.create(
       LineString3d.create(
@@ -260,12 +217,7 @@ describe("CurveOffset", () => {
         const options = new JointOptions(offset, minArcDegrees, 135);
         const offsetCurves = RegionOps.constructCurveXYOffset(path, options);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0, z1);
-        GeometryCoreTestIO.captureCloneGeometry(
-          allGeometry,
-          offsetCurves,
-          x0,
-          y0
-        );
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsetCurves, x0, y0);
         y0 += 5;
       }
       x0 += 10;

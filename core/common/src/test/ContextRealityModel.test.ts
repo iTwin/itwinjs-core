@@ -23,10 +23,7 @@ describe("ContextRealityModel", () => {
     return new ContextRealityModel(props);
   }
 
-  function expectProps(
-    actual: ContextRealityModelProps,
-    expected: ContextRealityModelProps
-  ): void {
+  function expectProps(actual: ContextRealityModelProps, expected: ContextRealityModelProps): void {
     expect(actual).to.deep.equal(expected);
   }
 
@@ -211,15 +208,11 @@ describe("ContextRealityModel", () => {
     expect(clone.planarClipMask).not.to.equal(props.planarClipMask);
 
     expect(clone.appearanceOverrides).not.to.equal(props.appearanceOverrides);
-    expect(clone.appearanceOverrides!.rgb).not.to.equal(
-      props.appearanceOverrides.rgb
-    );
+    expect(clone.appearanceOverrides!.rgb).not.to.equal(props.appearanceOverrides.rgb);
 
     expect(clone.classifiers).not.to.equal(props.classifiers);
     expect(clone.classifiers![0]).not.to.equal(props.classifiers[0]);
-    expect(clone.classifiers![0].flags).not.to.equal(
-      props.classifiers[0].flags
-    );
+    expect(clone.classifiers![0].flags).not.to.equal(props.classifiers[0].flags);
   });
 
   it("dispatches events", () => {
@@ -236,8 +229,7 @@ describe("ContextRealityModel", () => {
       app = x;
     });
 
-    const newMask = (model.planarClipMaskSettings =
-      PlanarClipMaskSettings.create({ priority: 1234 }));
+    const newMask = (model.planarClipMaskSettings = PlanarClipMaskSettings.create({ priority: 1234 }));
     expect(mask).to.equal(newMask);
     expect(model.planarClipMaskSettings).to.equal(newMask);
 
@@ -314,11 +306,7 @@ describe("ContextRealityModels", () => {
 
   it("deletes models", () => {
     const container = {
-      contextRealityModels: [
-        { tilesetUrl: "a" },
-        { tilesetUrl: "b" },
-        { tilesetUrl: "c" },
-      ],
+      contextRealityModels: [{ tilesetUrl: "a" }, { tilesetUrl: "b" }, { tilesetUrl: "c" }],
     };
 
     const models = new ContextRealityModels(container);
@@ -334,10 +322,7 @@ describe("ContextRealityModels", () => {
     expect(models.delete(b)).to.be.true;
     expect(models.models.length).to.equal(2);
     expect(models.models.indexOf(b)).to.equal(-1);
-    expectProps(container.contextRealityModels, [
-      { tilesetUrl: "a" },
-      { tilesetUrl: "c" },
-    ]);
+    expectProps(container.contextRealityModels, [{ tilesetUrl: "a" }, { tilesetUrl: "c" }]);
     expect(models.delete(b)).to.be.false;
 
     expect(models.delete(c)).to.be.true;
@@ -377,20 +362,14 @@ describe("ContextRealityModels", () => {
     expect(models.models.indexOf(a)).to.equal(-1);
     expect(models.models.indexOf(a1)).to.equal(0);
     expect(models.models.length).to.equal(2);
-    expectProps(container.contextRealityModels, [
-      { tilesetUrl: "aa", name: "newA" },
-      { tilesetUrl: "b" },
-    ]);
+    expectProps(container.contextRealityModels, [{ tilesetUrl: "aa", name: "newA" }, { tilesetUrl: "b" }]);
 
     expect(() => models.replace(a, { tilesetUrl: "aaa" })).to.throw(Error);
 
     const b = models.models[1];
     expect(models.replace(b, { tilesetUrl: "b" })).not.to.equal(b);
     expect(models.models.indexOf(b)).to.equal(-1);
-    expectProps(container.contextRealityModels, [
-      { tilesetUrl: "aa", name: "newA" },
-      { tilesetUrl: "b" },
-    ]);
+    expectProps(container.contextRealityModels, [{ tilesetUrl: "aa", name: "newA" }, { tilesetUrl: "b" }]);
   });
 
   it("updates models", () => {
@@ -414,17 +393,11 @@ describe("ContextRealityModels", () => {
     expect(a2.url).to.equal("a2");
     expect(a2.name).to.be.equal("");
     expect(a2.description).to.equal("aaa");
-    expectProps(container.contextRealityModels, [
-      { tilesetUrl: "a2", description: "aaa" },
-      { tilesetUrl: "b" },
-    ]);
+    expectProps(container.contextRealityModels, [{ tilesetUrl: "a2", description: "aaa" }, { tilesetUrl: "b" }]);
 
     const a3 = models.update(a2, { tilesetUrl: undefined });
     expect(a3.url).to.equal("a2");
-    expectProps(container.contextRealityModels, [
-      { tilesetUrl: "a2", description: "aaa" },
-      { tilesetUrl: "b" },
-    ]);
+    expectProps(container.contextRealityModels, [{ tilesetUrl: "a2", description: "aaa" }, { tilesetUrl: "b" }]);
   });
 
   it("instantiates correct type", () => {
@@ -438,10 +411,7 @@ describe("ContextRealityModels", () => {
       expect(model instanceof MyRealityModel).to.be.false;
     }
 
-    models = new ContextRealityModels(
-      container,
-      (props) => new MyRealityModel(props)
-    );
+    models = new ContextRealityModels(container, (props) => new MyRealityModel(props));
     models.add({ tilesetUrl: "b" });
     models.add({ tilesetUrl: "c" });
     models.update(models.models[2], { name: "cc" });
@@ -499,12 +469,8 @@ describe("ContextRealityModels", () => {
       models = new ContextRealityModels({
         contextRealityModels: [{ tilesetUrl: "a" }, { tilesetUrl: "b" }],
       });
-      models.onPlanarClipMaskChanged.addListener((model) =>
-        events.push([model.url, "mask"])
-      );
-      models.onAppearanceOverridesChanged.addListener((model) =>
-        events.push([model.url, "appearance"])
-      );
+      models.onPlanarClipMaskChanged.addListener((model) => events.push([model.url, "mask"]));
+      models.onAppearanceOverridesChanged.addListener((model) => events.push([model.url, "appearance"]));
     });
 
     function expectEvents(expected: ModelChangeEvent[]): void {

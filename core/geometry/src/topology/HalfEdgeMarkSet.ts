@@ -166,9 +166,7 @@ export abstract class AbstractHalfEdgeGraphMarkSet {
    * * This is always 1 for HalfEdgeMarkSet
    * @param candidate
    */
-  public abstract countHalfEdgesAroundCandidate(
-    candidate: HalfEdge | undefined
-  ): number;
+  public abstract countHalfEdgesAroundCandidate(candidate: HalfEdge | undefined): number;
   /** Create an iterator over member HalfEdges */
   public [Symbol.iterator](): IterableIterator<HalfEdge> {
     return new IterableHalfEdgeMarkSetIterator(this);
@@ -237,9 +235,7 @@ export class MarkedHalfEdgeSt extends AbstractHalfEdgeGraphMarkSet {
    * * return 0 for undefined candidate
    * @param candidate
    */
-  public countHalfEdgesAroundCandidate(
-    candidate: HalfEdge | undefined
-  ): number {
+  public countHalfEdgesAroundCandidate(candidate: HalfEdge | undefined): number {
     if (!candidate) return 0;
     return 1;
   }
@@ -283,9 +279,7 @@ export class MarkedEdgeSet extends AbstractHalfEdgeGraphMarkSet {
    * * This is always 2 for EdgeMarkSet
    * @param candidate
    */
-  public countHalfEdgesAroundCandidate(
-    candidate: HalfEdge | undefined
-  ): number {
+  public countHalfEdgesAroundCandidate(candidate: HalfEdge | undefined): number {
     if (!candidate) return 0;
     return 2;
   }
@@ -329,9 +323,7 @@ export class MarkedFaceSet extends AbstractHalfEdgeGraphMarkSet {
    * * This is the "aroundFace" count.
    * @param candidate
    */
-  public countHalfEdgesAroundCandidate(
-    candidate: HalfEdge | undefined
-  ): number {
+  public countHalfEdgesAroundCandidate(candidate: HalfEdge | undefined): number {
     if (!candidate) return 0;
     return candidate.countEdgesAroundFace();
   }
@@ -374,9 +366,7 @@ export class MarkedVertexSet extends AbstractHalfEdgeGraphMarkSet {
    * * This is the "aroundVertex" count.
    * @param candidate
    */
-  public countHalfEdgesAroundCandidate(
-    candidate: HalfEdge | undefined
-  ): number {
+  public countHalfEdgesAroundCandidate(candidate: HalfEdge | undefined): number {
     if (!candidate) return 0;
     return candidate.countEdgesAroundVertex();
   }

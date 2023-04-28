@@ -31,10 +31,7 @@ class ElementGraphicsChannel extends TileRequestChannel {
   public override processCancellations(): void {
     for (const [imodel, requestIds] of this._canceled) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      IpcApp.appFunctionIpc.cancelElementGraphicsRequests(
-        imodel.key,
-        requestIds
-      );
+      IpcApp.appFunctionIpc.cancelElementGraphicsRequests(imodel.key, requestIds);
       this._statistics.totalAbortedRequests += requestIds.length;
     }
 
@@ -67,23 +64,13 @@ export class TileRequestChannels {
   /** `rpcConcurrency` is defined if [[IpcApp.isValid]]; otherwise RPC requests are made over HTTP and use the same limits.
    * @internal
    */
-  public constructor(
-    rpcConcurrency: number | undefined,
-    cacheMetadata: boolean
-  ) {
+  public constructor(rpcConcurrency: number | undefined, cacheMetadata: boolean) {
     this._rpcConcurrency = rpcConcurrency ?? this.httpConcurrency;
 
     const elementGraphicsChannelName = "itwinjs-elem-rpc";
     if (undefined !== rpcConcurrency)
-      this.elementGraphicsRpc = new ElementGraphicsChannel(
-        elementGraphicsChannelName,
-        rpcConcurrency
-      );
-    else
-      this.elementGraphicsRpc = new TileRequestChannel(
-        elementGraphicsChannelName,
-        this.rpcConcurrency
-      );
+      this.elementGraphicsRpc = new ElementGraphicsChannel(elementGraphicsChannelName, rpcConcurrency);
+    else this.elementGraphicsRpc = new TileRequestChannel(elementGraphicsChannelName, this.rpcConcurrency);
 
     this.add(this.elementGraphicsRpc);
 
@@ -117,10 +104,7 @@ export class TileRequestChannels {
    * @throws Error if a channel by the same name has already been registered.
    */
   public add(channel: TileRequestChannel): void {
-    if (this.get(channel.name))
-      throw new Error(
-        `Tile request channel ${channel.name} is already registered.`
-      );
+    if (this.get(channel.name)) throw new Error(`Tile request channel ${channel.name} is already registered.`);
 
     this._channels.set(channel.name, channel);
   }
@@ -141,8 +125,7 @@ export class TileRequestChannels {
    */
   public getForHttp(name: string): TileRequestChannel {
     let channel = this.get(name);
-    if (!channel)
-      this.add((channel = new TileRequestChannel(name, this.httpConcurrency)));
+    if (!channel) this.add((channel = new TileRequestChannel(name, this.httpConcurrency)));
 
     return channel;
   }

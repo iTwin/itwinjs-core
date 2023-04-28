@@ -20,29 +20,16 @@ import {
   StructTypeDescription,
   TypeDescription,
 } from "./TypeDescription";
-import {
-  DisplayValue,
-  DisplayValuesMap,
-  NestedContentValue,
-  Value,
-} from "./Value";
+import { DisplayValue, DisplayValuesMap, NestedContentValue, Value } from "./Value";
 
 /** @alpha */
 export class ContentFormatter {
-  constructor(
-    private _propertyValueFormatter: ContentPropertyValueFormatter,
-    private _unitSystem?: UnitSystemKey
-  ) {}
+  constructor(private _propertyValueFormatter: ContentPropertyValueFormatter, private _unitSystem?: UnitSystemKey) {}
 
   public async formatContent(content: Content) {
     const descriptor = content.descriptor;
     for (const item of content.contentSet) {
-      await this.formatValues(
-        item.values,
-        item.displayValues,
-        descriptor.fields,
-        item.mergedFieldNames
-      );
+      await this.formatValues(item.values, item.displayValues, descriptor.fields, item.mergedFieldNames);
     }
     return content;
   }
@@ -69,26 +56,17 @@ export class ContentFormatter {
         continue;
       }
 
-      displayValues[field.name] =
-        await this._propertyValueFormatter.formatPropertyValue(
-          field,
-          value,
-          this._unitSystem
-        );
+      displayValues[field.name] = await this._propertyValueFormatter.formatPropertyValue(
+        field,
+        value,
+        this._unitSystem
+      );
     }
   }
 
-  private async formatNestedContentDisplayValues(
-    nestedValues: NestedContentValue[],
-    fields: Field[]
-  ) {
+  private async formatNestedContentDisplayValues(nestedValues: NestedContentValue[], fields: Field[]) {
     for (const nestedValue of nestedValues) {
-      await this.formatValues(
-        nestedValue.values,
-        nestedValue.displayValues,
-        fields,
-        nestedValue.mergedFieldNames
-      );
+      await this.formatValues(nestedValue.values, nestedValue.displayValues, fields, nestedValue.mergedFieldNames);
     }
   }
 }
@@ -97,11 +75,7 @@ export class ContentFormatter {
 export class ContentPropertyValueFormatter {
   constructor(private _koqValueFormatter: KoqPropertyValueFormatter) {}
 
-  public async formatPropertyValue(
-    field: Field,
-    value: Value,
-    unitSystem?: UnitSystemKey
-  ): Promise<DisplayValue> {
+  public async formatPropertyValue(field: Field, value: Value, unitSystem?: UnitSystemKey): Promise<DisplayValue> {
     if (isFieldWithKoq(field) && typeof value === "number") {
       const koq = field.properties[0].property.kindOfQuantity;
       const formattedValue = await this._koqValueFormatter.format(value, {
@@ -132,9 +106,7 @@ export class ContentPropertyValueFormatter {
       return `X: ${formatDouble(value.x)} Y: ${formatDouble(value.y)}`;
     }
     if (type.typeName === "point3d" && isPoint3d(value)) {
-      return `X: ${formatDouble(value.x)} Y: ${formatDouble(
-        value.y
-      )} Z: ${formatDouble(value.z)}`;
+      return `X: ${formatDouble(value.x)} Y: ${formatDouble(value.y)} Z: ${formatDouble(value.z)}`;
     }
     if (type.typeName === "dateTime") {
       assert(typeof value === "string");
@@ -165,10 +137,7 @@ export class ContentPropertyValueFormatter {
 
     const formattedMember: DisplayValuesMap = {};
     for (const member of type.members) {
-      formattedMember[member.name] = this.formatValue(
-        member.type,
-        value[member.name]
-      );
+      formattedMember[member.name] = this.formatValue(member.type, value[member.name]);
     }
     return formattedMember;
   }
@@ -203,9 +172,7 @@ function isFieldWithKoq(field: Field): field is FieldWithKoq {
 }
 
 function isPoint2d(obj: Value): obj is { x: number; y: number } {
-  return (
-    obj !== undefined && isNumber((obj as any).x) && isNumber((obj as any).y)
-  );
+  return obj !== undefined && isNumber((obj as any).x) && isNumber((obj as any).y);
 }
 
 function isPoint3d(obj: Value): obj is { x: number; y: number; z: number } {

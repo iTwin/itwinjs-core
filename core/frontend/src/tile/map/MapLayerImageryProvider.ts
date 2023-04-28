@@ -16,10 +16,7 @@ import {
 } from "@itwin/core-common";
 import { Angle } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
-import {
-  NotifyMessageDetails,
-  OutputMessagePriority,
-} from "../../NotificationManager";
+import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
 import { ScreenViewport } from "../../Viewport";
 import {
   GeographicTilingScheme,
@@ -52,9 +49,7 @@ export enum MapLayerImageryProviderStatus {
  */
 export abstract class MapLayerImageryProvider {
   protected _hasSuccessfullyFetchedTile = false;
-  public readonly onStatusChanged = new BeEvent<
-    (provider: MapLayerImageryProvider) => void
-  >();
+  public readonly onStatusChanged = new BeEvent<(provider: MapLayerImageryProvider) => void>();
 
   /** @internal */
   private readonly _mercatorTilingScheme = new WebMercatorTilingScheme();
@@ -120,42 +115,27 @@ export abstract class MapLayerImageryProvider {
     return true;
   }
 
-  constructor(
-    protected readonly _settings: ImageMapLayerSettings,
-    protected _usesCachedTiles: boolean
-  ) {
+  constructor(protected readonly _settings: ImageMapLayerSettings, protected _usesCachedTiles: boolean) {
     this._mercatorTilingScheme = new WebMercatorTilingScheme();
     this._geographicTilingScheme = new GeographicTilingScheme(2, 1, true);
   }
 
   /** @internal */
   public async initialize(): Promise<void> {
-    this.loadTile(0, 0, this.defaultMaximumZoomLevel).then(
-      (tileData: ImageSource | undefined) => {
-        // eslint-disable-line @typescript-eslint/no-floating-promises
-        if (tileData !== undefined)
-          this._missingTileData = tileData.data as Uint8Array;
-      }
-    );
+    this.loadTile(0, 0, this.defaultMaximumZoomLevel).then((tileData: ImageSource | undefined) => {
+      // eslint-disable-line @typescript-eslint/no-floating-promises
+      if (tileData !== undefined) this._missingTileData = tileData.data as Uint8Array;
+    });
   }
 
-  public abstract constructUrl(
-    row: number,
-    column: number,
-    zoomLevel: number
-  ): Promise<string>;
+  public abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
 
   public get tilingScheme(): MapTilingScheme {
-    return this.useGeographicTilingScheme
-      ? this._geographicTilingScheme
-      : this._mercatorTilingScheme;
+    return this.useGeographicTilingScheme ? this._geographicTilingScheme : this._mercatorTilingScheme;
   }
 
   /** @internal */
-  public addLogoCards(
-    _cards: HTMLTableElement,
-    _viewport: ScreenViewport
-  ): void {}
+  public addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void {}
 
   /** @internal */
   protected _missingTileData?: Uint8Array;
@@ -166,9 +146,7 @@ export abstract class MapLayerImageryProvider {
   }
 
   /** @internal */
-  protected async _areChildrenAvailable(
-    _tile: ImageryMapTile
-  ): Promise<boolean> {
+  protected async _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean> {
     return true;
   }
 
@@ -182,23 +160,15 @@ export abstract class MapLayerImageryProvider {
   }
 
   /** @internal */
-  protected _generateChildIds(
-    tile: ImageryMapTile,
-    resolveChildren: (childIds: QuadId[]) => void
-  ) {
+  protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) {
     resolveChildren(this.getPotentialChildIds(tile));
   }
 
   /** @internal */
-  public generateChildIds(
-    tile: ImageryMapTile,
-    resolveChildren: (childIds: QuadId[]) => void
-  ) {
+  public generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) {
     if (
       tile.depth >= this.maximumZoomLevel ||
-      (undefined !== this.cartoRange &&
-        this._filterByCartoRange &&
-        !this.cartoRange.intersectsRange(tile.rectangle))
+      (undefined !== this.cartoRange && this._filterByCartoRange && !this.cartoRange.intersectsRange(tile.rectangle))
     ) {
       tile.setLeaf();
       return;
@@ -233,10 +203,7 @@ export abstract class MapLayerImageryProvider {
   }
 
   /** @internal */
-  protected async getImageFromTileResponse(
-    tileResponse: Response,
-    zoomLevel: number
-  ) {
+  protected async getImageFromTileResponse(tileResponse: Response, zoomLevel: number) {
     const arrayBuffer = await tileResponse.arrayBuffer();
     const byteArray: Uint8Array = new Uint8Array(arrayBuffer);
     if (!byteArray || byteArray.length === 0) return undefined;
@@ -247,14 +214,11 @@ export abstract class MapLayerImageryProvider {
     if (contentType) {
       // Note: 'includes' is used here instead of exact comparison because we encountered
       // some servers that would give content type such as 'image/png;charset=UTF-8'.
-      if (contentType.includes("image/jpeg"))
-        imageFormat = ImageSourceFormat.Jpeg;
-      else if (contentType.includes("image/png"))
-        imageFormat = ImageSourceFormat.Png;
+      if (contentType.includes("image/jpeg")) imageFormat = ImageSourceFormat.Jpeg;
+      else if (contentType.includes("image/png")) imageFormat = ImageSourceFormat.Png;
     }
 
-    if (imageFormat !== undefined)
-      return new ImageSource(byteArray, imageFormat);
+    if (imageFormat !== undefined) return new ImageSource(byteArray, imageFormat);
 
     assert(false, "Invalid tile content type");
     return undefined;
@@ -282,9 +246,7 @@ export abstract class MapLayerImageryProvider {
     if (this._settings.userName && this._settings.password) {
       headers.set(
         "Authorization",
-        `Basic ${Base64EncodedString.encode(
-          `${this._settings.userName}:${this._settings.password}`
-        )}`
+        `Basic ${Base64EncodedString.encode(`${this._settings.userName}:${this._settings.password}`)}`
       );
     }
   }
@@ -300,11 +262,7 @@ export abstract class MapLayerImageryProvider {
   }
 
   /** Returns a map layer tile at the specified settings. */
-  public async loadTile(
-    row: number,
-    column: number,
-    zoomLevel: number
-  ): Promise<ImageSource | undefined> {
+  public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
     try {
       const tileUrl: string = await this.constructUrl(row, column, zoomLevel);
       if (tileUrl.length === 0) return undefined;
@@ -324,13 +282,10 @@ export abstract class MapLayerImageryProvider {
         // and then encountered an error, otherwise I assume an error was already reported
         // through the source validation process.
         if (this._hasSuccessfullyFetchedTile) {
-          const msg = IModelApp.localization.getLocalizedString(
-            "iModelJs:MapLayers.Messages.LoadTileTokenError",
-            { layerName: this._settings.name }
-          );
-          IModelApp.notifications.outputMessage(
-            new NotifyMessageDetails(OutputMessagePriority.Warning, msg)
-          );
+          const msg = IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Messages.LoadTileTokenError", {
+            layerName: this._settings.name,
+          });
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
         }
       }
       return undefined;
@@ -338,10 +293,7 @@ export abstract class MapLayerImageryProvider {
   }
 
   /** @internal */
-  protected async toolTipFromUrl(
-    strings: string[],
-    url: string
-  ): Promise<void> {
+  protected async toolTipFromUrl(strings: string[], url: string): Promise<void> {
     const headers = new Headers();
     this.setRequestAuthorization(headers);
 
@@ -375,9 +327,7 @@ export abstract class MapLayerImageryProvider {
   /** @internal */
   // calculates the projected y cartesian coordinate in EPSG:3857from the latitude in EPSG:4326 (WGS84)
   public getEPSG3857Y(latitude: number): number {
-    const y =
-      Math.log(Math.tan(((90.0 + latitude) * Math.PI) / 360.0)) /
-      (Math.PI / 180.0);
+    const y = Math.log(Math.tan(((90.0 + latitude) * Math.PI) / 360.0)) / (Math.PI / 180.0);
     return (y * 20037508.34) / 180.0;
   }
 
@@ -415,13 +365,11 @@ export abstract class MapLayerImageryProvider {
 
     const longitudeLeft = 360 * (leftGrid / mapSize - 0.5);
     const y0 = 0.5 - (topGrid + this.tileSize) / mapSize;
-    const latitudeBottom =
-      90.0 - (360.0 * Math.atan(Math.exp(-y0 * 2 * Math.PI))) / Math.PI;
+    const latitudeBottom = 90.0 - (360.0 * Math.atan(Math.exp(-y0 * 2 * Math.PI))) / Math.PI;
 
     const longitudeRight = 360 * ((leftGrid + this.tileSize) / mapSize - 0.5);
     const y1 = 0.5 - topGrid / mapSize;
-    const latitudeTop =
-      90.0 - (360.0 * Math.atan(Math.exp(-y1 * 2 * Math.PI))) / Math.PI;
+    const latitudeTop = 90.0 - (360.0 * Math.atan(Math.exp(-y1 * 2 * Math.PI))) / Math.PI;
 
     return { longitudeLeft, longitudeRight, latitudeTop, latitudeBottom };
   }
@@ -443,39 +391,22 @@ export abstract class MapLayerImageryProvider {
   }
 
   /** @internal */
-  public getEPSG3857ExtentString(
-    row: number,
-    column: number,
-    zoomLevel: number
-  ) {
+  public getEPSG3857ExtentString(row: number, column: number, zoomLevel: number) {
     const tileExtent = this.getEPSG3857Extent(row, column, zoomLevel);
-    return `${tileExtent.left.toFixed(2)},${tileExtent.bottom.toFixed(
+    return `${tileExtent.left.toFixed(2)},${tileExtent.bottom.toFixed(2)},${tileExtent.right.toFixed(
       2
-    )},${tileExtent.right.toFixed(2)},${tileExtent.top.toFixed(2)}`;
+    )},${tileExtent.top.toFixed(2)}`;
   }
 
   /** @internal */
-  public getEPSG4326ExtentString(
-    row: number,
-    column: number,
-    zoomLevel: number,
-    latLongAxisOrdering: boolean
-  ) {
+  public getEPSG4326ExtentString(row: number, column: number, zoomLevel: number, latLongAxisOrdering: boolean) {
     const tileExtent = this.getEPSG4326Extent(row, column, zoomLevel);
     if (latLongAxisOrdering) {
-      return `${tileExtent.latitudeBottom.toFixed(
-        8
-      )},${tileExtent.longitudeLeft.toFixed(8)},
-              ${tileExtent.latitudeTop.toFixed(
-                8
-              )},${tileExtent.longitudeRight.toFixed(8)}`;
+      return `${tileExtent.latitudeBottom.toFixed(8)},${tileExtent.longitudeLeft.toFixed(8)},
+              ${tileExtent.latitudeTop.toFixed(8)},${tileExtent.longitudeRight.toFixed(8)}`;
     } else {
-      return `${tileExtent.longitudeLeft.toFixed(
-        8
-      )},${tileExtent.latitudeBottom.toFixed(8)},
-              ${tileExtent.longitudeRight.toFixed(
-                8
-              )},${tileExtent.latitudeTop.toFixed(8)}`;
+      return `${tileExtent.longitudeLeft.toFixed(8)},${tileExtent.latitudeBottom.toFixed(8)},
+              ${tileExtent.longitudeRight.toFixed(8)},${tileExtent.latitudeTop.toFixed(8)}`;
     }
   }
 }

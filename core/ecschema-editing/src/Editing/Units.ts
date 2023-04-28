@@ -37,17 +37,13 @@ export class Units {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       return {
-        errorMessage: `Schema Key ${schemaKey.toString(
-          true
-        )} not found in context`,
+        errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context`,
       };
 
     const newUnit = (await schema.createUnit(name)) as MutableUnit;
     if (newUnit === undefined)
       return {
-        errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(
-          true
-        )}.`,
+        errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.`,
       };
 
     const phenomenonItem = await schema.lookupItem<Phenomenon>(phenomenon);
@@ -62,10 +58,7 @@ export class Units {
       };
 
     await newUnit.setPhenomenon(
-      new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(
-        phenomenon,
-        async () => phenomenonItem
-      )
+      new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(phenomenon, async () => phenomenonItem)
     );
 
     const unitSystemItem = await schema.lookupItem<UnitSystem>(unitSystem);
@@ -80,10 +73,7 @@ export class Units {
       };
 
     await newUnit.setUnitSystem(
-      new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(
-        unitSystem,
-        async () => unitSystemItem
-      )
+      new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystem, async () => unitSystemItem)
     );
 
     await newUnit.setDefinition(definition);
@@ -93,27 +83,19 @@ export class Units {
     return { itemKey: newUnit.key };
   }
 
-  public async createFromProps(
-    schemaKey: SchemaKey,
-    unitProps: SchemaItemUnitProps
-  ): Promise<SchemaItemEditResults> {
+  public async createFromProps(schemaKey: SchemaKey, unitProps: SchemaItemUnitProps): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       return {
-        errorMessage: `Schema Key ${schemaKey.toString(
-          true
-        )} not found in context`,
+        errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context`,
       };
 
-    if (unitProps.name === undefined)
-      return { errorMessage: `No name was supplied within props.` };
+    if (unitProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
 
     const newUnit = await schema.createUnit(unitProps.name);
     if (newUnit === undefined)
       return {
-        errorMessage: `Failed to create class ${
-          unitProps.name
-        } in schema ${schemaKey.toString(true)}.`,
+        errorMessage: `Failed to create class ${unitProps.name} in schema ${schemaKey.toString(true)}.`,
       };
 
     await newUnit.fromJSON(unitProps);

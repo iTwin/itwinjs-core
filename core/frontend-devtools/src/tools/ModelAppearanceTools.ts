@@ -7,12 +7,7 @@
  * @module Tools
  */
 
-import {
-  FeatureAppearance,
-  FeatureAppearanceProps,
-  LinePixels,
-  RgbColorProps,
-} from "@itwin/core-common";
+import { FeatureAppearance, FeatureAppearanceProps, LinePixels, RgbColorProps } from "@itwin/core-common";
 import {
   IModelApp,
   NotifyMessageDetails,
@@ -33,13 +28,10 @@ function changeModelAppearanceOverrides(
     vp.view.forEachModel((model) => {
       if (name === undefined || model.name === name) {
         changed = true;
-        const existingOverrides =
-          vp.displayStyle.settings.getModelAppearanceOverride(model.id);
+        const existingOverrides = vp.displayStyle.settings.getModelAppearanceOverride(model.id);
         vp.overrideModelAppearance(
           model.id,
-          existingOverrides
-            ? existingOverrides.clone(overrides)
-            : FeatureAppearance.fromJSON(overrides)
+          existingOverrides ? existingOverrides.clone(overrides) : FeatureAppearance.fromJSON(overrides)
         );
       }
     });
@@ -63,15 +55,8 @@ export class SetModelTransparencyTool extends Tool {
     return 2;
   }
 
-  public override async run(
-    transparency: number,
-    name: string
-  ): Promise<boolean> {
-    const changed = changeModelAppearanceOverrides(
-      IModelApp.viewManager.selectedView,
-      { transparency },
-      name
-    );
+  public override async run(transparency: number, name: string): Promise<boolean> {
+    const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { transparency }, name);
 
     if (changed)
       IModelApp.notifications.outputMessage(
@@ -102,11 +87,7 @@ export class SetModelLineWeightTool extends Tool {
   }
 
   public override async run(weight: number, name: string): Promise<boolean> {
-    const changed = changeModelAppearanceOverrides(
-      IModelApp.viewManager.selectedView,
-      { weight },
-      name
-    );
+    const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { weight }, name);
 
     if (changed)
       IModelApp.notifications.outputMessage(
@@ -147,8 +128,7 @@ export class SetModelLineCodeTool extends Tool {
   ];
 
   public override async run(lineCode: number, name: string): Promise<boolean> {
-    if (lineCode < 0 || lineCode >= SetModelLineCodeTool.linePixels.length)
-      return false;
+    if (lineCode < 0 || lineCode >= SetModelLineCodeTool.linePixels.length) return false;
 
     const changed = changeModelAppearanceOverrides(
       IModelApp.viewManager.selectedView,
@@ -186,18 +166,11 @@ export class SetModelLocateTool extends Tool {
 
   public override async run(locate: boolean, name: string): Promise<boolean> {
     const nonLocatable = locate ? undefined : true;
-    const changed = changeModelAppearanceOverrides(
-      IModelApp.viewManager.selectedView,
-      { nonLocatable },
-      name
-    );
+    const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { nonLocatable }, name);
 
     if (changed)
       IModelApp.notifications.outputMessage(
-        new NotifyMessageDetails(
-          OutputMessagePriority.Info,
-          `${modelChangedString(name)} set to locate: ${locate}`
-        )
+        new NotifyMessageDetails(OutputMessagePriority.Info, `${modelChangedString(name)} set to locate: ${locate}`)
       );
 
     return changed;
@@ -221,22 +194,12 @@ export class SetModelEmphasizedTool extends Tool {
     return 2;
   }
 
-  public override async run(
-    emphasized: true | undefined,
-    name: string
-  ): Promise<boolean> {
-    const changed = changeModelAppearanceOverrides(
-      IModelApp.viewManager.selectedView,
-      { emphasized },
-      name
-    );
+  public override async run(emphasized: true | undefined, name: string): Promise<boolean> {
+    const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { emphasized }, name);
 
     if (changed)
       IModelApp.notifications.outputMessage(
-        new NotifyMessageDetails(
-          OutputMessagePriority.Info,
-          `Mode: ${name} set to emphasized: ${emphasized}`
-        )
+        new NotifyMessageDetails(OutputMessagePriority.Info, `Mode: ${name} set to emphasized: ${emphasized}`)
       );
 
     return changed;
@@ -244,9 +207,7 @@ export class SetModelEmphasizedTool extends Tool {
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     const emphasized = parseBoolean(args[0]);
-    return emphasized === undefined
-      ? false
-      : this.run(emphasized ? true : undefined, args[1]);
+    return emphasized === undefined ? false : this.run(emphasized ? true : undefined, args[1]);
   }
 }
 
@@ -262,15 +223,8 @@ export class SetModelIgnoresMaterialsTool extends Tool {
     return 2;
   }
 
-  public override async run(
-    ignoresMaterial: true | undefined,
-    name: string
-  ): Promise<boolean> {
-    const changed = changeModelAppearanceOverrides(
-      IModelApp.viewManager.selectedView,
-      { ignoresMaterial },
-      name
-    );
+  public override async run(ignoresMaterial: true | undefined, name: string): Promise<boolean> {
+    const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { ignoresMaterial }, name);
 
     if (changed)
       IModelApp.notifications.outputMessage(
@@ -285,9 +239,7 @@ export class SetModelIgnoresMaterialsTool extends Tool {
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     const ignoresMaterial = parseBoolean(args[0]);
-    return ignoresMaterial === undefined
-      ? false
-      : this.run(ignoresMaterial ? true : undefined, args[1]);
+    return ignoresMaterial === undefined ? false : this.run(ignoresMaterial ? true : undefined, args[1]);
   }
 }
 
@@ -303,23 +255,14 @@ export class SetModelColorTool extends Tool {
     return 4;
   }
 
-  public override async run(
-    rgb: RgbColorProps,
-    name: string
-  ): Promise<boolean> {
-    const changed = changeModelAppearanceOverrides(
-      IModelApp.viewManager.selectedView,
-      { rgb },
-      name
-    );
+  public override async run(rgb: RgbColorProps, name: string): Promise<boolean> {
+    const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { rgb }, name);
 
     if (changed)
       IModelApp.notifications.outputMessage(
         new NotifyMessageDetails(
           OutputMessagePriority.Info,
-          `${modelChangedString(name)} set to RGB color: (${rgb.r}, ${rgb.g}, ${
-            rgb.b
-          })`
+          `${modelChangedString(name)} set to RGB color: (${rgb.r}, ${rgb.g}, ${rgb.b})`
         )
       );
 
@@ -354,8 +297,7 @@ export class ClearModelAppearanceOverrides extends Tool {
     const vp = IModelApp.viewManager.selectedView;
     if (vp !== undefined && vp.view instanceof SpatialViewState) {
       vp.view.forEachModel((model) => {
-        if (name === undefined || model.name === name)
-          vp.dropModelAppearanceOverride(model.id);
+        if (name === undefined || model.name === name) vp.dropModelAppearanceOverride(model.id);
       });
     }
 

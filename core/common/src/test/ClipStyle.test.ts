@@ -4,17 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ClipStyle, ClipStyleProps, CutStyle } from "../ClipStyle";
-import {
-  DisplayStyleSettings,
-  DisplayStyleSettingsProps,
-} from "../DisplayStyleSettings";
+import { DisplayStyleSettings, DisplayStyleSettingsProps } from "../DisplayStyleSettings";
 
 describe("ClipStyle", () => {
   it("should round-trip through JSON", () => {
-    const roundTrip = (
-      props: ClipStyleProps | undefined,
-      expected: ClipStyleProps | undefined | "input"
-    ) => {
+    const roundTrip = (props: ClipStyleProps | undefined, expected: ClipStyleProps | undefined | "input") => {
       if ("input" === expected) expected = props;
 
       const style = ClipStyle.fromJSON(props);
@@ -39,10 +33,7 @@ describe("ClipStyle", () => {
 
     roundTrip({ produceCutGeometry: true }, "input");
     roundTrip({ cutStyle: { appearance: { weight: 5 } } }, "input");
-    roundTrip(
-      { produceCutGeometry: true, cutStyle: { appearance: { weight: 5 } } },
-      "input"
-    );
+    roundTrip({ produceCutGeometry: true, cutStyle: { appearance: { weight: 5 } } }, "input");
 
     roundTrip({ insideColor: { r: 0, g: 127, b: 255 } }, "input");
     roundTrip({ outsideColor: { r: 255, g: 127, b: 0 } }, "input");

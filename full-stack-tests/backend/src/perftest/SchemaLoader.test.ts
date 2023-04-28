@@ -4,31 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { Reporter } from "@itwin/perf-tools";
-import {
-  IModelHost,
-  IModelJsFs,
-  KnownLocations,
-  StandaloneDb,
-} from "@itwin/core-backend";
-import {
-  IModelTestUtils,
-  KnownTestLocations,
-} from "@itwin/core-backend/lib/cjs/test";
+import { IModelHost, IModelJsFs, KnownLocations, StandaloneDb } from "@itwin/core-backend";
+import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import * as fs from "fs";
 import { OpenMode } from "@itwin/core-bentley";
 
 describe("SchemaLoaderPerformance", () => {
   let iModelFilepath: string;
-  const outDir: string = path.join(
-    KnownTestLocations.outputDir,
-    "SchemaLoaderPerformance"
-  );
+  const outDir: string = path.join(KnownTestLocations.outputDir, "SchemaLoaderPerformance");
   const assetDir: string = path.join(__dirname, "..", "..", "..", "assets");
   const reporter = new Reporter();
 
   before(async () => {
-    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
-      IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
+    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir)) IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
     if (!IModelJsFs.existsSync(outDir)) IModelJsFs.mkdirSync(outDir);
 
     if (!IModelJsFs.existsSync(assetDir)) IModelJsFs.mkdirSync(assetDir);
@@ -41,10 +29,7 @@ describe("SchemaLoaderPerformance", () => {
       name: "Performance tests",
       description: "Performance tests",
     };
-    const snapshotFile: string = IModelTestUtils.prepareOutputFile(
-      "Performance",
-      "Performance.bim"
-    );
+    const snapshotFile: string = IModelTestUtils.prepareOutputFile("Performance", "Performance.bim");
     const iModelDb = StandaloneDb.createEmpty(snapshotFile, { rootSubject });
     iModelFilepath = iModelDb.pathName;
 
@@ -66,28 +51,11 @@ describe("SchemaLoaderPerformance", () => {
   });
 
   function getSchemaPath(domain: string, schemaFileName: string): string {
-    return path.join(
-      KnownLocations.nativeAssetsDir,
-      "ECSchemas",
-      domain,
-      schemaFileName
-    );
+    return path.join(KnownLocations.nativeAssetsDir, "ECSchemas", domain, schemaFileName);
   }
 
-  function getSchemaPathFromPackage(
-    packageName: string,
-    schemaFileName: string
-  ): string {
-    const schemaFile = path.join(
-      __dirname,
-      "..",
-      "..",
-      "..",
-      "node_modules",
-      "@bentley",
-      packageName,
-      schemaFileName
-    );
+  function getSchemaPathFromPackage(packageName: string, schemaFileName: string): string {
+    const schemaFile = path.join(__dirname, "..", "..", "..", "node_modules", "@bentley", packageName, schemaFileName);
     return schemaFile;
   }
 
@@ -105,21 +73,13 @@ describe("SchemaLoaderPerformance", () => {
     bisSchemaPaths.push(path.join(assetDir, "CifBridge.ecschema.xml"));
     bisSchemaPaths.push(path.join(assetDir, "CifCommon.ecschema.xml"));
     bisSchemaPaths.push(path.join(assetDir, "CifGeometricRules.ecschema.xml"));
-    bisSchemaPaths.push(
-      path.join(assetDir, "CifHydraulicAnalysis.ecschema.xml")
-    );
-    bisSchemaPaths.push(
-      path.join(assetDir, "CifHydraulicResults.ecschema.xml")
-    );
-    bisSchemaPaths.push(
-      path.join(assetDir, "CifQuantityTakeoffs.ecschema.xml")
-    );
+    bisSchemaPaths.push(path.join(assetDir, "CifHydraulicAnalysis.ecschema.xml"));
+    bisSchemaPaths.push(path.join(assetDir, "CifHydraulicResults.ecschema.xml"));
+    bisSchemaPaths.push(path.join(assetDir, "CifQuantityTakeoffs.ecschema.xml"));
     bisSchemaPaths.push(path.join(assetDir, "CifRail.ecschema.xml"));
     bisSchemaPaths.push(path.join(assetDir, "CifRoads.ecschema.xml"));
     bisSchemaPaths.push(path.join(assetDir, "CifSubsurface.ecschema.xml"));
-    bisSchemaPaths.push(
-      path.join(assetDir, "CifSubsurfaceConflictAnalysis.ecschema.xml")
-    );
+    bisSchemaPaths.push(path.join(assetDir, "CifSubsurfaceConflictAnalysis.ecschema.xml"));
     bisSchemaPaths.push(path.join(assetDir, "CifUnits.ecschema.xml"));
 
     return bisSchemaPaths;
@@ -136,23 +96,14 @@ describe("SchemaLoaderPerformance", () => {
       path.join(assetDir, "Formats.01.00.00.ecschema.xml")
     );
 
-    fs.copyFileSync(
-      getSchemaPath("Dgn", "BisCore.ecschema.xml"),
-      path.join(assetDir, "BisCore.ecschema.xml")
-    );
+    fs.copyFileSync(getSchemaPath("Dgn", "BisCore.ecschema.xml"), path.join(assetDir, "BisCore.ecschema.xml"));
 
     fs.copyFileSync(
-      getSchemaPathFromPackage(
-        "process-functional-schema",
-        "ProcessFunctional.ecschema.xml"
-      ),
+      getSchemaPathFromPackage("process-functional-schema", "ProcessFunctional.ecschema.xml"),
       path.join(assetDir, "ProcessFunctional.ecschema.xml")
     );
     fs.copyFileSync(
-      getSchemaPathFromPackage(
-        "process-physical-schema",
-        "ProcessPhysical.ecschema.xml"
-      ),
+      getSchemaPathFromPackage("process-physical-schema", "ProcessPhysical.ecschema.xml"),
       path.join(assetDir, "ProcessPhysical.ecschema.xml")
     );
 
@@ -165,31 +116,19 @@ describe("SchemaLoaderPerformance", () => {
       path.join(assetDir, "CifCommon.ecschema.xml")
     );
     fs.copyFileSync(
-      getSchemaPathFromPackage(
-        "cif-geometric-rules-schema",
-        "CifGeometricRules.ecschema.xml"
-      ),
+      getSchemaPathFromPackage("cif-geometric-rules-schema", "CifGeometricRules.ecschema.xml"),
       path.join(assetDir, "CifGeometricRules.ecschema.xml")
     );
     fs.copyFileSync(
-      getSchemaPathFromPackage(
-        "cif-hydraulic-analysis-schema",
-        "CifHydraulicAnalysis.ecschema.xml"
-      ),
+      getSchemaPathFromPackage("cif-hydraulic-analysis-schema", "CifHydraulicAnalysis.ecschema.xml"),
       path.join(assetDir, "CifHydraulicAnalysis.ecschema.xml")
     );
     fs.copyFileSync(
-      getSchemaPathFromPackage(
-        "cif-hydraulic-results-schema",
-        "CifHydraulicResults.ecschema.xml"
-      ),
+      getSchemaPathFromPackage("cif-hydraulic-results-schema", "CifHydraulicResults.ecschema.xml"),
       path.join(assetDir, "CifHydraulicResults.ecschema.xml")
     );
     fs.copyFileSync(
-      getSchemaPathFromPackage(
-        "cif-quantity-takeoffs-schema",
-        "CifQuantityTakeoffs.ecschema.xml"
-      ),
+      getSchemaPathFromPackage("cif-quantity-takeoffs-schema", "CifQuantityTakeoffs.ecschema.xml"),
       path.join(assetDir, "CifQuantityTakeoffs.ecschema.xml")
     );
     fs.copyFileSync(
@@ -201,17 +140,11 @@ describe("SchemaLoaderPerformance", () => {
       path.join(assetDir, "CifRoads.ecschema.xml")
     );
     fs.copyFileSync(
-      getSchemaPathFromPackage(
-        "cif-subsurface-schema",
-        "CifSubsurface.ecschema.xml"
-      ),
+      getSchemaPathFromPackage("cif-subsurface-schema", "CifSubsurface.ecschema.xml"),
       path.join(assetDir, "CifSubsurface.ecschema.xml")
     );
     fs.copyFileSync(
-      getSchemaPathFromPackage(
-        "cif-subsurface-conflict-analysis-schema",
-        "CifSubsurfaceConflictAnalysis.ecschema.xml"
-      ),
+      getSchemaPathFromPackage("cif-subsurface-conflict-analysis-schema", "CifSubsurfaceConflictAnalysis.ecschema.xml"),
       path.join(assetDir, "CifSubsurfaceConflictAnalysis.ecschema.xml")
     );
     fs.copyFileSync(
@@ -220,22 +153,13 @@ describe("SchemaLoaderPerformance", () => {
     );
 
     // Copy the required reference schemas
+    fs.copyFileSync(getSchemaPath("Domain", "Functional.ecschema.xml"), path.join(assetDir, "Functional.ecschema.xml"));
     fs.copyFileSync(
-      getSchemaPath("Domain", "Functional.ecschema.xml"),
-      path.join(assetDir, "Functional.ecschema.xml")
-    );
-    fs.copyFileSync(
-      getSchemaPathFromPackage(
-        "plant-custom-attributes-schema",
-        "PlantCustomAttributes.ecschema.xml"
-      ),
+      getSchemaPathFromPackage("plant-custom-attributes-schema", "PlantCustomAttributes.ecschema.xml"),
       path.join(assetDir, "PlantCustomAttributes.ecschema.xml")
     );
     fs.copyFileSync(
-      getSchemaPathFromPackage(
-        "quantity-takeoffs-aspects-schema",
-        "QuantityTakeoffsAspects.ecschema.xml"
-      ),
+      getSchemaPathFromPackage("quantity-takeoffs-aspects-schema", "QuantityTakeoffsAspects.ecschema.xml"),
       path.join(assetDir, "QuantityTakeoffsAspects.ecschema.xml")
     );
     fs.copyFileSync(
@@ -243,19 +167,13 @@ describe("SchemaLoaderPerformance", () => {
       path.join(assetDir, "AecUnits.ecschema.xml")
     );
     fs.copyFileSync(
-      getSchemaPathFromPackage(
-        "road-rail-units-schema",
-        "RoadRailUnits.ecschema.xml"
-      ),
+      getSchemaPathFromPackage("road-rail-units-schema", "RoadRailUnits.ecschema.xml"),
       path.join(assetDir, "RoadRailUnits.ecschema.xml")
     );
   }
 
   function timeBisSchemasLoading(schemaName: string) {
-    const imodel: StandaloneDb = StandaloneDb.openFile(
-      iModelFilepath,
-      OpenMode.Readonly
-    );
+    const imodel: StandaloneDb = StandaloneDb.openFile(iModelFilepath, OpenMode.Readonly);
 
     const startTime: number = new Date().getTime();
     imodel.nativeDb.getSchemaProps(schemaName);
@@ -273,10 +191,7 @@ describe("SchemaLoaderPerformance", () => {
   }
 
   async function timeBisSchemasLoadingAsync(schemaName: string) {
-    const imodel: StandaloneDb = StandaloneDb.openFile(
-      iModelFilepath,
-      OpenMode.Readonly
-    );
+    const imodel: StandaloneDb = StandaloneDb.openFile(iModelFilepath, OpenMode.Readonly);
 
     const startTime: number = new Date().getTime();
     const schemaResult = await imodel.nativeDb.getSchemaPropsAsync(schemaName);

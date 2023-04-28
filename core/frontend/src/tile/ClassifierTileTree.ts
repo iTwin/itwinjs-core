@@ -48,11 +48,7 @@ function compareIds(lhs: ClassifierTreeId, rhs: ClassifierTreeId): number {
   return (
     compareStrings(lhs.modelId, rhs.modelId) ||
     compareStringsOrUndefined(lhs.animationId, rhs.animationId) ||
-    comparePossiblyUndefined(
-      (x, y) => x.compareTo(y),
-      lhs.timeline,
-      rhs.timeline
-    )
+    comparePossiblyUndefined((x, y) => x.compareTo(y), lhs.timeline, rhs.timeline)
   );
 }
 
@@ -66,21 +62,14 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
     iModel: undefined as unknown as IModelConnection,
   };
 
-  public compareTileTreeIds(
-    lhs: ClassifierTreeId,
-    rhs: ClassifierTreeId
-  ): number {
+  public compareTileTreeIds(lhs: ClassifierTreeId, rhs: ClassifierTreeId): number {
     return compareIds(lhs, rhs);
   }
 
-  public async createTileTree(
-    id: ClassifierTreeId,
-    iModel: IModelConnection
-  ): Promise<TileTree | undefined> {
+  public async createTileTree(id: ClassifierTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
     await iModel.models.load(id.modelId);
     const model = iModel.models.getLoaded(id.modelId);
-    if (undefined === model || !(model instanceof GeometricModelState))
-      return undefined;
+    if (undefined === model || !(model instanceof GeometricModelState)) return undefined;
 
     const idStr = iModelTileTreeIdToString(id.modelId, id, IModelApp.tileAdmin);
     const props = await IModelApp.tileAdmin.requestTileTreeProps(iModel, idStr);
@@ -96,13 +85,8 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
     return new IModelTileTree(params, id);
   }
 
-  public getOwner(
-    id: ClassifierTreeId,
-    iModel: IModelConnection
-  ): TileTreeOwner {
-    return Id64.isValid(id.modelId)
-      ? iModel.tiles.getTileTreeOwner(id, this)
-      : this._nonexistentTreeOwner;
+  public getOwner(id: ClassifierTreeId, iModel: IModelConnection): TileTreeOwner {
+    return Id64.isValid(id.modelId) ? iModel.tiles.getTileTreeOwner(id, this) : this._nonexistentTreeOwner;
   }
 
   public addModelsAnimatedByScript(
@@ -111,8 +95,7 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
     trees: Iterable<{ id: ClassifierTreeId; owner: TileTreeOwner }>
   ): void {
     // Note: This is invoked when an element hosting a schedule script is updated - it doesn't care about frontend schedule scripts.
-    for (const tree of trees)
-      if (scriptSourceId === tree.id.animationId) modelIds.add(tree.id.modelId);
+    for (const tree of trees) if (scriptSourceId === tree.id.animationId) modelIds.add(tree.id.modelId);
   }
 
   public addSpatialModels(
@@ -188,8 +171,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     trees.disclose(this._classifiedTree);
 
     const classifier = this.activeClassifier;
-    const classifierTree =
-      undefined !== classifier ? this.treeOwner.tileTree : undefined;
+    const classifierTree = undefined !== classifier ? this.treeOwner.tileTree : undefined;
     if (undefined !== classifierTree) trees.add(classifierTree);
   }
   public get isPlanar() {
@@ -236,12 +218,7 @@ export function createClassifierTileTreeReference(
   iModel: IModelConnection,
   source: ViewState | DisplayStyleState
 ): SpatialClassifierTileTreeReference {
-  return new ClassifierTreeReference(
-    classifiers,
-    classifiedTree,
-    iModel,
-    source
-  );
+  return new ClassifierTreeReference(classifiers, classifiedTree, iModel, source);
 }
 
 function createClassifierId(
@@ -256,13 +233,8 @@ function createClassifierId(
       animationId: undefined,
     };
 
-  const type = classifier.flags.isVolumeClassifier
-    ? BatchType.VolumeClassifier
-    : BatchType.PlanarClassifier;
-  const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(
-    classifier.modelId,
-    source?.scheduleScriptReference
-  ); // eslint-disable-line deprecation/deprecation
+  const type = classifier.flags.isVolumeClassifier ? BatchType.VolumeClassifier : BatchType.PlanarClassifier;
+  const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(classifier.modelId, source?.scheduleScriptReference); // eslint-disable-line deprecation/deprecation
   return {
     modelId: classifier.modelId,
     type,

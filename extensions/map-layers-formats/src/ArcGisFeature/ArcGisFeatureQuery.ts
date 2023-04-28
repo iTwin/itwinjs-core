@@ -182,10 +182,7 @@ export class ArcGisFeatureQuery {
     }
 
     if (this.returnGeometry !== undefined) {
-      url.searchParams.append(
-        "returnGeometry",
-        this.returnGeometry ? "true" : "false"
-      );
+      url.searchParams.append("returnGeometry", this.returnGeometry ? "true" : "false");
     }
 
     if (this.resultType !== undefined) {
@@ -193,17 +190,11 @@ export class ArcGisFeatureQuery {
     }
 
     if (this.maxRecordCountFactor !== undefined) {
-      url.searchParams.append(
-        "maxRecordCountFactor",
-        `${this.maxRecordCountFactor}`
-      );
+      url.searchParams.append("maxRecordCountFactor", `${this.maxRecordCountFactor}`);
     }
 
     if (this.returnExceededLimitFeatures !== undefined) {
-      url.searchParams.append(
-        "returnExceededLimitFeatures",
-        this.returnExceededLimitFeatures ? "true" : "false"
-      );
+      url.searchParams.append("returnExceededLimitFeatures", this.returnExceededLimitFeatures ? "true" : "false");
     }
 
     url.searchParams.append("outSR", `${this.outSR}`);
@@ -220,10 +211,7 @@ export class ArcGisFeatureQuery {
         url.searchParams.append("geometry", geomStr);
         url.searchParams.append("units", "esriSRUnit_Meter"); // required on older server for get feature info
 
-        url.searchParams.append(
-          "inSR",
-          `${this.geometry.geom.spatialReference.wkid}`
-        );
+        url.searchParams.append("inSR", `${this.geometry.geom.spatialReference.wkid}`);
       }
     } else {
       // No custom params, fetch all geometries

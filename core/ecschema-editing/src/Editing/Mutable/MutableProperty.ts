@@ -9,7 +9,5 @@ import { CustomAttribute, Property } from "@itwin/ecschema-metadata";
  * An abstract class used for schema editing.
  */
 export abstract class MutableProperty extends Property {
-  public abstract override addCustomAttribute(
-    customAttribute: CustomAttribute
-  ): void;
+  public abstract override addCustomAttribute(customAttribute: CustomAttribute): void;
 }

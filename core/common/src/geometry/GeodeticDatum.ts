@@ -141,9 +141,7 @@ export interface PositionalVectorTransformProps {
  *  from the Coordinate Frame operation (epsg 9607).
  *  @public
  */
-export class PositionalVectorTransform
-  implements PositionalVectorTransformProps
-{
+export class PositionalVectorTransform implements PositionalVectorTransformProps {
   /** The frame translation components in meters */
   public readonly delta!: Vector3d;
   /** The frame rotation components in arc seconds. The rotation sign convention is the one associated with
@@ -155,18 +153,14 @@ export class PositionalVectorTransform
   public constructor(data?: PositionalVectorTransformProps) {
     if (data) {
       this.delta = data.delta ? Vector3d.fromJSON(data.delta) : new Vector3d();
-      this.rotation = data.rotation
-        ? XyzRotation.fromJSON(data.rotation)
-        : new XyzRotation();
+      this.rotation = data.rotation ? XyzRotation.fromJSON(data.rotation) : new XyzRotation();
       this.scalePPM = data.scalePPM;
     }
   }
 
   /** Creates a Positional Vector Transform from JSON representation.
    * @public */
-  public static fromJSON(
-    data: PositionalVectorTransformProps
-  ): PositionalVectorTransform {
+  public static fromJSON(data: PositionalVectorTransformProps): PositionalVectorTransform {
     return new PositionalVectorTransform(data);
   }
 
@@ -282,11 +276,7 @@ export class GridFileDefinition implements GridFileDefinitionProps {
   /** Compares two grid file definition. It is a strict compare operation not an equivalence test.
    *  @public */
   public equals(other: GridFileDefinition): boolean {
-    return (
-      this.fileName === other.fileName &&
-      this.direction === other.direction &&
-      this.format === other.format
-    );
+    return this.fileName === other.fileName && this.direction === other.direction && this.format === other.format;
   }
 }
 
@@ -315,13 +305,10 @@ export class GridFileTransform implements GridFileTransformProps {
   public constructor(data?: GridFileTransformProps) {
     this.files = [];
     if (data) {
-      this.fallback = data.fallback
-        ? PositionalVectorTransform.fromJSON(data.fallback)
-        : undefined;
+      this.fallback = data.fallback ? PositionalVectorTransform.fromJSON(data.fallback) : undefined;
       if (Array.isArray(data.files)) {
         this.files = [];
-        for (const item of data.files)
-          this.files.push(GridFileDefinition.fromJSON(item));
+        for (const item of data.files) this.files.push(GridFileDefinition.fromJSON(item));
       }
     }
   }
@@ -348,11 +335,9 @@ export class GridFileTransform implements GridFileTransformProps {
   public equals(other: GridFileTransform): boolean {
     if (this.files.length !== other.files.length) return false;
 
-    for (let idx = 0; idx < this.files.length; ++idx)
-      if (!this.files[idx].equals(other.files[idx])) return false;
+    for (let idx = 0; idx < this.files.length; ++idx) if (!this.files[idx].equals(other.files[idx])) return false;
 
-    if ((this.fallback === undefined) !== (other.fallback === undefined))
-      return false;
+    if ((this.fallback === undefined) !== (other.fallback === undefined)) return false;
 
     if (this.fallback && !this.fallback.equals(other.fallback!)) return false;
 
@@ -423,23 +408,15 @@ export class GeodeticTransform implements GeodeticTransformProps {
     this.method = "None";
     if (data) {
       this.method = data.method;
-      this.sourceEllipsoid = data.sourceEllipsoid
-        ? GeodeticEllipsoid.fromJSON(data.sourceEllipsoid)
-        : undefined;
-      this.targetEllipsoid = data.targetEllipsoid
-        ? GeodeticEllipsoid.fromJSON(data.targetEllipsoid)
-        : undefined;
+      this.sourceEllipsoid = data.sourceEllipsoid ? GeodeticEllipsoid.fromJSON(data.sourceEllipsoid) : undefined;
+      this.targetEllipsoid = data.targetEllipsoid ? GeodeticEllipsoid.fromJSON(data.targetEllipsoid) : undefined;
       this.sourceDatumId = data.sourceDatumId;
       this.targetDatumId = data.targetDatumId;
-      this.geocentric = data.geocentric
-        ? GeocentricTransform.fromJSON(data.geocentric)
-        : undefined;
+      this.geocentric = data.geocentric ? GeocentricTransform.fromJSON(data.geocentric) : undefined;
       this.positionalVector = data.positionalVector
         ? PositionalVectorTransform.fromJSON(data.positionalVector)
         : undefined;
-      this.gridFile = data.gridFile
-        ? GridFileTransform.fromJSON(data.gridFile)
-        : undefined;
+      this.gridFile = data.gridFile ? GridFileTransform.fromJSON(data.gridFile) : undefined;
     }
   }
 
@@ -453,18 +430,12 @@ export class GeodeticTransform implements GeodeticTransformProps {
    * @public */
   public toJSON(): GeodeticTransformProps {
     const data: GeodeticTransformProps = { method: this.method };
-    data.sourceEllipsoid = this.sourceEllipsoid
-      ? this.sourceEllipsoid.toJSON()
-      : undefined;
-    data.targetEllipsoid = this.targetEllipsoid
-      ? this.targetEllipsoid.toJSON()
-      : undefined;
+    data.sourceEllipsoid = this.sourceEllipsoid ? this.sourceEllipsoid.toJSON() : undefined;
+    data.targetEllipsoid = this.targetEllipsoid ? this.targetEllipsoid.toJSON() : undefined;
     data.sourceDatumId = this.sourceDatumId;
     data.targetDatumId = this.targetDatumId;
     data.geocentric = this.geocentric ? this.geocentric.toJSON() : undefined;
-    data.positionalVector = this.positionalVector
-      ? this.positionalVector.toJSON()
-      : undefined;
+    data.positionalVector = this.positionalVector ? this.positionalVector.toJSON() : undefined;
     data.gridFile = this.gridFile ? this.gridFile.toJSON() : undefined;
     return data;
   }
@@ -475,52 +446,21 @@ export class GeodeticTransform implements GeodeticTransformProps {
   public equals(other: GeodeticTransform): boolean {
     if (this.method !== other.method) return false;
 
-    if (
-      this.sourceDatumId !== other.sourceDatumId ||
-      this.targetDatumId !== other.targetDatumId
-    )
-      return false;
+    if (this.sourceDatumId !== other.sourceDatumId || this.targetDatumId !== other.targetDatumId) return false;
 
-    if (
-      (this.sourceEllipsoid === undefined) !==
-      (other.sourceEllipsoid === undefined)
-    )
-      return false;
-    if (
-      this.sourceEllipsoid &&
-      !this.sourceEllipsoid.equals(other.sourceEllipsoid!)
-    )
-      return false;
+    if ((this.sourceEllipsoid === undefined) !== (other.sourceEllipsoid === undefined)) return false;
+    if (this.sourceEllipsoid && !this.sourceEllipsoid.equals(other.sourceEllipsoid!)) return false;
 
-    if (
-      (this.targetEllipsoid === undefined) !==
-      (other.targetEllipsoid === undefined)
-    )
-      return false;
-    if (
-      this.targetEllipsoid &&
-      !this.targetEllipsoid.equals(other.targetEllipsoid!)
-    )
-      return false;
+    if ((this.targetEllipsoid === undefined) !== (other.targetEllipsoid === undefined)) return false;
+    if (this.targetEllipsoid && !this.targetEllipsoid.equals(other.targetEllipsoid!)) return false;
 
-    if ((this.geocentric === undefined) !== (other.geocentric === undefined))
-      return false;
-    if (this.geocentric && !this.geocentric.equals(other.geocentric!))
-      return false;
+    if ((this.geocentric === undefined) !== (other.geocentric === undefined)) return false;
+    if (this.geocentric && !this.geocentric.equals(other.geocentric!)) return false;
 
-    if (
-      (this.positionalVector === undefined) !==
-      (other.positionalVector === undefined)
-    )
-      return false;
-    if (
-      this.positionalVector &&
-      !this.positionalVector.equals(other.positionalVector!)
-    )
-      return false;
+    if ((this.positionalVector === undefined) !== (other.positionalVector === undefined)) return false;
+    if (this.positionalVector && !this.positionalVector.equals(other.positionalVector!)) return false;
 
-    if ((this.gridFile === undefined) !== (other.gridFile === undefined))
-      return false;
+    if ((this.gridFile === undefined) !== (other.gridFile === undefined)) return false;
     if (this.gridFile && !this.gridFile.equals(other.gridFile!)) return false;
 
     return true;
@@ -560,17 +500,14 @@ export class GeodeticTransformPath implements GeodeticTransformPathProps {
       this.targetDatumId = _data.targetDatumId;
       if (Array.isArray(_data.transforms)) {
         this.transforms = [];
-        for (const item of _data.transforms)
-          this.transforms.push(GeodeticTransform.fromJSON(item));
+        for (const item of _data.transforms) this.transforms.push(GeodeticTransform.fromJSON(item));
       }
     }
   }
 
   /** Creates a Geodetic transform path from JSON representation.
    * @public */
-  public static fromJSON(
-    data: GeodeticTransformPathProps
-  ): GeodeticTransformPath {
+  public static fromJSON(data: GeodeticTransformPathProps): GeodeticTransformPath {
     return new GeodeticTransformPath(data);
   }
 
@@ -591,14 +528,9 @@ export class GeodeticTransformPath implements GeodeticTransformPathProps {
    * It takes into account descriptive properties not only mathematical definition properties.
    *  @public */
   public equals(other: GeodeticTransformPath): boolean {
-    if (
-      this.sourceDatumId !== other.sourceDatumId ||
-      this.targetDatumId !== other.targetDatumId
-    )
-      return false;
+    if (this.sourceDatumId !== other.sourceDatumId || this.targetDatumId !== other.targetDatumId) return false;
 
-    if ((this.transforms === undefined) !== (other.transforms === undefined))
-      return false;
+    if ((this.transforms === undefined) !== (other.transforms === undefined)) return false;
 
     if (this.transforms && other.transforms) {
       if (this.transforms.length !== other.transforms.length) return false;
@@ -715,20 +647,15 @@ export class GeodeticDatum implements GeodeticDatumProps {
       this.source = _data.source;
       this.epsg = _data.epsg;
       this.ellipsoidId = _data.ellipsoidId;
-      this.ellipsoid = _data.ellipsoid
-        ? GeodeticEllipsoid.fromJSON(_data.ellipsoid)
-        : undefined;
+      this.ellipsoid = _data.ellipsoid ? GeodeticEllipsoid.fromJSON(_data.ellipsoid) : undefined;
       if (Array.isArray(_data.transforms)) {
         this.transforms = [];
-        for (const item of _data.transforms)
-          this.transforms.push(GeodeticTransform.fromJSON(item));
+        for (const item of _data.transforms) this.transforms.push(GeodeticTransform.fromJSON(item));
       }
       if (Array.isArray(_data.additionalTransformPaths)) {
         this.additionalTransformPaths = [];
         for (const item of _data.additionalTransformPaths)
-          this.additionalTransformPaths.push(
-            GeodeticTransformPath.fromJSON(item)
-          );
+          this.additionalTransformPaths.push(GeodeticTransformPath.fromJSON(item));
       }
     }
   }
@@ -757,8 +684,7 @@ export class GeodeticDatum implements GeodeticDatumProps {
     }
     if (Array.isArray(this.additionalTransformPaths)) {
       data.additionalTransformPaths = [];
-      for (const item of this.additionalTransformPaths)
-        data.additionalTransformPaths.push(item.toJSON());
+      for (const item of this.additionalTransformPaths) data.additionalTransformPaths.push(item.toJSON());
     }
     return data;
   }
@@ -777,14 +703,11 @@ export class GeodeticDatum implements GeodeticDatumProps {
     )
       return false;
 
-    if ((this.ellipsoid === undefined) !== (other.ellipsoid === undefined))
-      return false;
+    if ((this.ellipsoid === undefined) !== (other.ellipsoid === undefined)) return false;
 
-    if (this.ellipsoid && !this.ellipsoid.equals(other.ellipsoid!))
-      return false;
+    if (this.ellipsoid && !this.ellipsoid.equals(other.ellipsoid!)) return false;
 
-    if ((this.transforms === undefined) !== (other.transforms === undefined))
-      return false;
+    if ((this.transforms === undefined) !== (other.transforms === undefined)) return false;
 
     if (this.transforms && other.transforms) {
       if (this.transforms.length !== other.transforms.length) return false;
@@ -793,26 +716,13 @@ export class GeodeticDatum implements GeodeticDatumProps {
         if (!this.transforms[idx].equals(other.transforms[idx])) return false;
     }
 
-    if (
-      (this.additionalTransformPaths === undefined) !==
-      (other.additionalTransformPaths === undefined)
-    )
-      return false;
+    if ((this.additionalTransformPaths === undefined) !== (other.additionalTransformPaths === undefined)) return false;
 
     if (this.additionalTransformPaths && other.additionalTransformPaths) {
-      if (
-        this.additionalTransformPaths.length !==
-        other.additionalTransformPaths.length
-      )
-        return false;
+      if (this.additionalTransformPaths.length !== other.additionalTransformPaths.length) return false;
 
       for (let idx = 0; idx < this.additionalTransformPaths.length; ++idx)
-        if (
-          !this.additionalTransformPaths[idx].equals(
-            other.additionalTransformPaths[idx]
-          )
-        )
-          return false;
+        if (!this.additionalTransformPaths[idx].equals(other.additionalTransformPaths[idx])) return false;
     }
     return true;
   }

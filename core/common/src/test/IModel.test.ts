@@ -4,13 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Point3d, Range3d } from "@itwin/core-geometry";
-import {
-  EcefLocation,
-  EcefLocationProps,
-  IModel,
-  IModelProps,
-  RootSubjectProps,
-} from "../IModel";
+import { EcefLocation, EcefLocationProps, IModel, IModelProps, RootSubjectProps } from "../IModel";
 import { GeographicCRS } from "../geometry/CoordinateReferenceSystem";
 
 interface TestIModelProps extends IModelProps {
@@ -65,11 +59,7 @@ describe("IModel", () => {
       gcs?: ChangedProp<GeographicCRS | undefined>;
     }
 
-    function expectChange(
-      imodel: IModel,
-      func: () => void,
-      expected: IModelChangedProps
-    ): void {
+    function expectChange(imodel: IModel, func: () => void, expected: IModelChangedProps): void {
       const actual: IModelChangedProps = {};
 
       imodel.onNameChanged.addOnce((prev) => {
@@ -209,22 +199,10 @@ describe("IModel", () => {
       const imodel = new TestIModel(props);
 
       expectNoChange(imodel, () => (imodel.name = imodel.name));
-      expectNoChange(
-        imodel,
-        () => (imodel.rootSubject = { ...imodel.rootSubject })
-      );
-      expectNoChange(
-        imodel,
-        () => (imodel.projectExtents = imodel.projectExtents.clone())
-      );
-      expectNoChange(
-        imodel,
-        () => (imodel.globalOrigin = imodel.globalOrigin.clone())
-      );
-      expectNoChange(
-        imodel,
-        () => (imodel.geographicCoordinateSystem = undefined)
-      );
+      expectNoChange(imodel, () => (imodel.rootSubject = { ...imodel.rootSubject }));
+      expectNoChange(imodel, () => (imodel.projectExtents = imodel.projectExtents.clone()));
+      expectNoChange(imodel, () => (imodel.globalOrigin = imodel.globalOrigin.clone()));
+      expectNoChange(imodel, () => (imodel.geographicCoordinateSystem = undefined));
       expectNoChange(imodel, () => imodel.setEcefLocation({ ...ecefLocation }));
 
       expectNoChange(imodel, () => imodel.initFromProps({ ...props }));

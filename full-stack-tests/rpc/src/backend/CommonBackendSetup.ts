@@ -24,47 +24,32 @@ export async function commonSetup(): Promise<void> {
     });
   } else await IModelHost.startup({ cacheDir });
 
-  registerBackendCallback(
-    BackendTestCallbacks.registerTestRpcImpl2Class,
-    () => {
-      TestRpcImpl2.register();
-      TestRpcImpl2.instantiate();
-      return true;
-    }
-  );
+  registerBackendCallback(BackendTestCallbacks.registerTestRpcImpl2Class, () => {
+    TestRpcImpl2.register();
+    TestRpcImpl2.instantiate();
+    return true;
+  });
 
-  registerBackendCallback(
-    BackendTestCallbacks.replaceTestRpcImpl2Instance,
-    () => {
-      TestRpcImpl2.instantiate();
-      return true;
-    }
-  );
+  registerBackendCallback(BackendTestCallbacks.replaceTestRpcImpl2Instance, () => {
+    TestRpcImpl2.instantiate();
+    return true;
+  });
 
-  registerBackendCallback(
-    BackendTestCallbacks.unregisterTestRpcImpl2Class,
-    () => {
-      TestRpcImpl2.unregister();
-      return true;
-    }
-  );
+  registerBackendCallback(BackendTestCallbacks.unregisterTestRpcImpl2Class, () => {
+    TestRpcImpl2.unregister();
+    return true;
+  });
 
-  registerBackendCallback(
-    BackendTestCallbacks.setIncompatibleInterfaceVersion,
-    () => {
-      IModelReadRpcInterface.interfaceVersion = "0.0.0";
-      return true;
-    }
-  );
+  registerBackendCallback(BackendTestCallbacks.setIncompatibleInterfaceVersion, () => {
+    IModelReadRpcInterface.interfaceVersion = "0.0.0";
+    return true;
+  });
 
   const compatibleVersion = IModelReadRpcInterface.interfaceVersion;
-  registerBackendCallback(
-    BackendTestCallbacks.restoreIncompatibleInterfaceVersion,
-    () => {
-      IModelReadRpcInterface.interfaceVersion = compatibleVersion;
-      return true;
-    }
-  );
+  registerBackendCallback(BackendTestCallbacks.restoreIncompatibleInterfaceVersion, () => {
+    IModelReadRpcInterface.interfaceVersion = compatibleVersion;
+    return true;
+  });
 
   registerBackendCallback(BackendTestCallbacks.resetOp8Initializer, () => {
     resetOp8Initializer();

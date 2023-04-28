@@ -9,22 +9,10 @@
 // adapted from https://github.com/microsoft/vscode Copyright (c) 2015 - present Microsoft Corporation
 
 /** @public */
-export type JSONSchemaTypeName =
-  | "string"
-  | "number"
-  | "integer"
-  | "boolean"
-  | "null"
-  | "array"
-  | "object";
+export type JSONSchemaTypeName = "string" | "number" | "integer" | "boolean" | "null" | "array" | "object";
 
 /** @public */
-export type JSONSchemaType =
-  | string
-  | number
-  | boolean
-  | object
-  | JSONSchemaType[];
+export type JSONSchemaType = string | number | boolean | object | JSONSchemaType[];
 
 /** @public */
 export interface JSONSchema {

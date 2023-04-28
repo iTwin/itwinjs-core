@@ -20,12 +20,7 @@ import { Geometry } from "@itwin/core-geometry";
  * @extensions
  */
 export class MarginPercent {
-  constructor(
-    public left: number,
-    public top: number,
-    public right: number,
-    public bottom: number
-  ) {
+  constructor(public left: number, public top: number, public right: number, public bottom: number) {
     const limitMargin = (val: number) => Geometry.clamp(val, 0.0, 0.25);
     this.left = limitMargin(left);
     this.top = limitMargin(top);

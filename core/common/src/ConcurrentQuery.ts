@@ -5,14 +5,7 @@
 /** @packageDocumentation
  * @module iModels
  */
-import {
-  BentleyError,
-  CompressedId64Set,
-  DbResult,
-  Id64,
-  Id64String,
-  OrderedId64Iterable,
-} from "@itwin/core-bentley";
+import { BentleyError, CompressedId64Set, DbResult, Id64, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
 import { Base64 } from "js-base64";
 
@@ -331,9 +324,7 @@ export class QueryBinder {
     }
     if (typeof indexOrName === "string") {
       if (!/^[a-zA-Z_]+\w*$/i.test(indexOrName)) {
-        throw new Error(
-          "expect named parameter to meet identifier specification"
-        );
+        throw new Error("expect named parameter to meet identifier specification");
       }
     }
   }
@@ -424,9 +415,7 @@ export class QueryBinder {
       enumerable: true,
       value: {
         type: QueryParamType.IdSet,
-        value: CompressedId64Set.sortAndCompress(
-          OrderedId64Iterable.uniqueIterator(val)
-        ),
+        value: CompressedId64Set.sortAndCompress(OrderedId64Iterable.uniqueIterator(val)),
       },
     });
     return this;
@@ -556,11 +545,7 @@ export class QueryBinder {
     });
     return this;
   }
-  private static bind(
-    params: QueryBinder,
-    nameOrId: string | number,
-    val: any
-  ) {
+  private static bind(params: QueryBinder, nameOrId: string | number, val: any) {
     if (typeof val === "boolean") {
       params.bindBoolean(nameOrId, val);
     } else if (typeof val === "number") {
@@ -573,12 +558,7 @@ export class QueryBinder {
       params.bindPoint2d(nameOrId, val);
     } else if (val instanceof Point3d) {
       params.bindPoint3d(nameOrId, val);
-    } else if (
-      val instanceof Array &&
-      val.length > 0 &&
-      typeof val[0] === "string" &&
-      Id64.isValidId64(val[0])
-    ) {
+    } else if (val instanceof Array && val.length > 0 && typeof val[0] === "string" && Id64.isValidId64(val[0])) {
       params.bindIdSet(nameOrId, val);
     } else if (typeof val === "object" && !Array.isArray(val)) {
       params.bindStruct(nameOrId, val);
@@ -635,13 +615,11 @@ export enum DbResponseStatus {
   Error = 100 /*  generic error*/,
   Error_ECSql_PreparedFailed = Error + 1 /*  ecsql prepared failed*/,
   Error_ECSql_StepFailed = Error + 2 /*  ecsql step failed*/,
-  Error_ECSql_RowToJsonFailed = Error +
-    3 /*  ecsql failed to serialized row to json.*/,
+  Error_ECSql_RowToJsonFailed = Error + 3 /*  ecsql failed to serialized row to json.*/,
   Error_ECSql_BindingFailed = Error + 4 /*  ecsql binding failed.*/,
   Error_BlobIO_OpenFailed = Error +
     5 /*  class or property or instance specified was not found or property as not of type blob.*/,
-  Error_BlobIO_OutOfRange = Error +
-    6 /*  range specified is invalid based on size of blob.*/,
+  Error_BlobIO_OutOfRange = Error + 6 /*  range specified is invalid based on size of blob.*/,
 }
 /** @internal */
 export enum DbValueFormat {
@@ -684,11 +662,7 @@ export interface DbBlobResponse extends DbResponse {
 }
 /** @public */
 export class DbQueryError extends BentleyError {
-  public constructor(
-    public readonly response: any,
-    public readonly request?: any,
-    rc?: DbResult
-  ) {
+  public constructor(public readonly response: any, public readonly request?: any, rc?: DbResult) {
     super(rc ?? DbResult.BE_SQLITE_ERROR, response.error, {
       response,
       request,
@@ -704,10 +678,7 @@ export class DbQueryError extends BentleyError {
   }
 }
 /** @internal */
-export interface DbRequestExecutor<
-  TRequest extends DbRequest,
-  TResponse extends DbResponse
-> {
+export interface DbRequestExecutor<TRequest extends DbRequest, TResponse extends DbResponse> {
   execute(request: TRequest): Promise<TResponse>;
 }
 

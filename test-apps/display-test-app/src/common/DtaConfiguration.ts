@@ -98,75 +98,51 @@ export const getConfig = (): DtaConfiguration => {
   configuration.viewName = process.env.IMJS_STANDALONE_VIEWNAME; // optional
   configuration.startupMacro = process.env.IMJS_STARTUP_MACRO;
 
-  if (undefined !== process.env.IMJS_DISABLE_DIAGNOSTICS)
-    configuration.enableDiagnostics = false;
+  if (undefined !== process.env.IMJS_DISABLE_DIAGNOSTICS) configuration.enableDiagnostics = false;
 
-  if (undefined !== process.env.IMJS_STANDALONE_SIGNIN)
-    configuration.signInForStandalone = true;
+  if (undefined !== process.env.IMJS_STANDALONE_SIGNIN) configuration.signInForStandalone = true;
 
-  if (undefined !== process.env.IMJS_READ_WRITE)
-    configuration.openReadWrite = true;
+  if (undefined !== process.env.IMJS_READ_WRITE) configuration.openReadWrite = true;
 
-  if (undefined !== process.env.IMJS_DISABLE_INSTANCING)
-    configuration.disableInstancing = true;
+  if (undefined !== process.env.IMJS_DISABLE_INSTANCING) configuration.disableInstancing = true;
 
-  if (undefined !== process.env.IMJS_DISABLE_INDEXED_EDGES)
-    configuration.disableIndexedEdges = true;
+  if (undefined !== process.env.IMJS_DISABLE_INDEXED_EDGES) configuration.disableIndexedEdges = true;
 
-  if (undefined !== process.env.IMJS_NO_IMPROVED_ELISION)
-    configuration.enableImprovedElision = false;
+  if (undefined !== process.env.IMJS_NO_IMPROVED_ELISION) configuration.enableImprovedElision = false;
 
-  if (undefined !== process.env.IMJS_IGNORE_AREA_PATTERNS)
-    configuration.ignoreAreaPatterns = true;
+  if (undefined !== process.env.IMJS_IGNORE_AREA_PATTERNS) configuration.ignoreAreaPatterns = true;
 
-  if (undefined !== process.env.IMJS_NO_EXTERNAL_TEXTURES)
-    configuration.enableExternalTextures = false;
+  if (undefined !== process.env.IMJS_NO_EXTERNAL_TEXTURES) configuration.enableExternalTextures = false;
 
-  if (undefined !== process.env.IMJS_NO_FRONTEND_SCHEDULE_SCRIPTS)
-    configuration.enableFrontendScheduleScripts = false;
+  if (undefined !== process.env.IMJS_NO_FRONTEND_SCHEDULE_SCRIPTS) configuration.enableFrontendScheduleScripts = false;
 
-  if (undefined !== process.env.IMJS_DISABLE_MAGNIFICATION)
-    configuration.disableMagnification = true;
+  if (undefined !== process.env.IMJS_DISABLE_MAGNIFICATION) configuration.disableMagnification = true;
 
-  if (undefined !== process.env.IMJS_DISABLE_BREP_CACHE)
-    configuration.disableBRepCache = true;
+  if (undefined !== process.env.IMJS_DISABLE_BREP_CACHE) configuration.disableBRepCache = true;
 
-  if (undefined !== process.env.IMJS_DISABLE_UNIFORM_ERRORS)
-    configuration.errorOnMissingUniform = false;
+  if (undefined !== process.env.IMJS_DISABLE_UNIFORM_ERRORS) configuration.errorOnMissingUniform = false;
 
-  if (undefined !== process.env.IMJS_DEBUG_SHADERS)
-    configuration.debugShaders = true;
+  if (undefined !== process.env.IMJS_DEBUG_SHADERS) configuration.debugShaders = true;
 
-  if (undefined !== process.env.IMJS_BING_MAPS_KEY)
-    configuration.bingMapsKey = process.env.IMJS_BING_MAPS_KEY;
+  if (undefined !== process.env.IMJS_BING_MAPS_KEY) configuration.bingMapsKey = process.env.IMJS_BING_MAPS_KEY;
 
-  if (undefined !== process.env.IMJS_MAPBOX_KEY)
-    configuration.mapBoxKey = process.env.IMJS_MAPBOX_KEY;
+  if (undefined !== process.env.IMJS_MAPBOX_KEY) configuration.mapBoxKey = process.env.IMJS_MAPBOX_KEY;
 
-  if (undefined !== process.env.IMJS_CESIUM_ION_KEY)
-    configuration.cesiumIonKey = process.env.IMJS_CESIUM_ION_KEY;
+  if (undefined !== process.env.IMJS_CESIUM_ION_KEY) configuration.cesiumIonKey = process.env.IMJS_CESIUM_ION_KEY;
 
-  if (undefined !== process.env.IMJS_LOG_LEVEL)
-    configuration.logLevel = process.env.IMJS_LOG_LEVEL;
+  if (undefined !== process.env.IMJS_LOG_LEVEL) configuration.logLevel = process.env.IMJS_LOG_LEVEL;
 
-  if (undefined !== process.env.IMJS_WINDOW_SIZE)
-    configuration.windowSize = process.env.IMJS_WINDOW_SIZE;
+  if (undefined !== process.env.IMJS_WINDOW_SIZE) configuration.windowSize = process.env.IMJS_WINDOW_SIZE;
 
   configuration.devTools = undefined === process.env.IMJS_NO_DEV_TOOLS;
-  configuration.cacheTileMetadata =
-    undefined !== process.env.IMJS_CACHE_TILE_METADATA;
-  configuration.useProjectExtents =
-    undefined === process.env.IMJS_NO_USE_PROJECT_EXTENTS;
-  configuration.noElectronAuth =
-    undefined !== process.env.IMJS_NO_ELECTRON_AUTH;
-  configuration.useFrontendTiles =
-    undefined !== process.env.IMJS_USE_FRONTEND_TILES;
+  configuration.cacheTileMetadata = undefined !== process.env.IMJS_CACHE_TILE_METADATA;
+  configuration.useProjectExtents = undefined === process.env.IMJS_NO_USE_PROJECT_EXTENTS;
+  configuration.noElectronAuth = undefined !== process.env.IMJS_NO_ELECTRON_AUTH;
+  configuration.useFrontendTiles = undefined !== process.env.IMJS_USE_FRONTEND_TILES;
   const gpuMemoryLimit = process.env.IMJS_GPU_MEMORY_LIMIT;
   if (undefined !== gpuMemoryLimit) {
     const gpuByteLimit = Number.parseInt(gpuMemoryLimit, 10);
-    configuration.gpuMemoryLimit = Number.isNaN(gpuByteLimit)
-      ? gpuMemoryLimit
-      : gpuByteLimit;
+    configuration.gpuMemoryLimit = Number.isNaN(gpuByteLimit) ? gpuMemoryLimit : gpuByteLimit;
   }
 
   const parseSeconds = (key: string) => {
@@ -177,12 +153,8 @@ export const getConfig = (): DtaConfiguration => {
     return Number.isNaN(val) ? undefined : val;
   };
 
-  configuration.tileTreeExpirationSeconds = parseSeconds(
-    "IMJS_TILETREE_EXPIRATION_SECONDS"
-  );
-  configuration.tileExpirationSeconds = parseSeconds(
-    "IMJS_TILE_EXPIRATION_SECONDS"
-  );
+  configuration.tileTreeExpirationSeconds = parseSeconds("IMJS_TILETREE_EXPIRATION_SECONDS");
+  configuration.tileExpirationSeconds = parseSeconds("IMJS_TILE_EXPIRATION_SECONDS");
 
   const maxToSkipVar = process.env.IMJS_MAX_TILES_TO_SKIP;
   if (undefined !== maxToSkipVar) {
@@ -193,58 +165,39 @@ export const getConfig = (): DtaConfiguration => {
   const minSpatialTolEnv = process.env.IMJS_MIN_SPATIAL_TOLERANCE;
   if (undefined !== minSpatialTolEnv) {
     const minSpatialTol = Number.parseFloat(minSpatialTolEnv);
-    if (!Number.isNaN(minSpatialTol))
-      configuration.minimumSpatialTolerance = minSpatialTol;
+    if (!Number.isNaN(minSpatialTol)) configuration.minimumSpatialTolerance = minSpatialTol;
   }
 
-  if (undefined !== process.env.IMJS_DISABLE_LOG_Z)
-    configuration.logarithmicZBuffer = false;
+  if (undefined !== process.env.IMJS_DISABLE_LOG_Z) configuration.logarithmicZBuffer = false;
 
-  if (undefined !== process.env.IMJS_PRESERVE_SHADER_SOURCE_CODE)
-    configuration.preserveShaderSourceCode = true;
+  if (undefined !== process.env.IMJS_PRESERVE_SHADER_SOURCE_CODE) configuration.preserveShaderSourceCode = true;
 
-  if (undefined !== process.env.IMJS_DISABLE_DPI_AWARE_VIEWPORTS)
-    configuration.dpiAwareViewports = false;
+  if (undefined !== process.env.IMJS_DISABLE_DPI_AWARE_VIEWPORTS) configuration.dpiAwareViewports = false;
 
-  const devicePixelRatioOverrideVar =
-    process.env.IMJS_DEVICE_PIXEL_RATIO_OVERRIDE;
+  const devicePixelRatioOverrideVar = process.env.IMJS_DEVICE_PIXEL_RATIO_OVERRIDE;
   if (undefined !== devicePixelRatioOverrideVar) {
-    const devicePixelRatioOverride = Number.parseFloat(
-      devicePixelRatioOverrideVar
-    );
-    if (!Number.isNaN(devicePixelRatioOverride))
-      configuration.devicePixelRatioOverride = devicePixelRatioOverride;
+    const devicePixelRatioOverride = Number.parseFloat(devicePixelRatioOverrideVar);
+    if (!Number.isNaN(devicePixelRatioOverride)) configuration.devicePixelRatioOverride = devicePixelRatioOverride;
   }
 
   if (undefined !== process.env.IMJS_DPI_LOD) configuration.dpiAwareLOD = true;
 
   const aaSamplesVar = process.env.IMJS_AASAMPLES;
-  if (
-    undefined !== aaSamplesVar &&
-    "0" !== aaSamplesVar &&
-    "false" !== aaSamplesVar.toLowerCase()
-  ) {
+  if (undefined !== aaSamplesVar && "0" !== aaSamplesVar && "false" !== aaSamplesVar.toLowerCase()) {
     const aaSamples = Number.parseInt(aaSamplesVar, 10);
     if (!Number.isNaN(aaSamples)) configuration.antialiasSamples = aaSamples;
   }
 
   const useWebGL2Var = process.env.IMJS_USE_WEBGL2;
-  if (
-    undefined !== useWebGL2Var &&
-    ("0" === useWebGL2Var || "false" === useWebGL2Var.toLowerCase())
-  )
+  if (undefined !== useWebGL2Var && ("0" === useWebGL2Var || "false" === useWebGL2Var.toLowerCase()))
     configuration.useWebGL2 = false;
 
   const extensions = process.env.IMJS_DISABLED_EXTENSIONS;
-  if (undefined !== extensions)
-    configuration.disabledExtensions = extensions.split(";");
+  if (undefined !== extensions) configuration.disabledExtensions = extensions.split(";");
 
-  configuration.disableEdges =
-    undefined !== process.env.IMJS_DISABLE_EDGE_DISPLAY;
-  configuration.alwaysLoadEdges =
-    undefined !== process.env.IMJS_ALWAYS_LOAD_EDGES;
-  configuration.alwaysSubdivideIncompleteTiles =
-    undefined !== process.env.IMJS_SUBDIVIDE_INCOMPLETE;
+  configuration.disableEdges = undefined !== process.env.IMJS_DISABLE_EDGE_DISPLAY;
+  configuration.alwaysLoadEdges = undefined !== process.env.IMJS_ALWAYS_LOAD_EDGES;
+  configuration.alwaysSubdivideIncompleteTiles = undefined !== process.env.IMJS_SUBDIVIDE_INCOMPLETE;
 
   configuration.iTwinId = process.env.IMJS_ITWIN_ID;
 

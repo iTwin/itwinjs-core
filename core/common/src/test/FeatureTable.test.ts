@@ -17,8 +17,7 @@ import { GeometryClass } from "../GeometryParams";
 
 function makeFeatureTable(numFeatures: number): FeatureTable {
   const table = new FeatureTable(numFeatures);
-  for (let i = 1; i <= numFeatures; i++)
-    table.insertWithIndex(new Feature(`0x${i.toString(16)}`), i - 1);
+  for (let i = 1; i <= numFeatures; i++) table.insertWithIndex(new Feature(`0x${i.toString(16)}`), i - 1);
 
   return table;
 }
@@ -45,10 +44,7 @@ describe("PackedFeatureTable", () => {
     });
 
     it("minimizes allocation", () => {
-      function expectType(
-        maxNodeId: number,
-        type: typeof Uint8Array | typeof Uint16Array | typeof Uint32Array
-      ) {
+      function expectType(maxNodeId: number, type: typeof Uint8Array | typeof Uint16Array | typeof Uint32Array) {
         const table = makePackedFeatureTable(1);
         const nodeId = Math.ceil(maxNodeId / 2);
         table.populateAnimationNodeIds(() => nodeId, maxNodeId);
@@ -73,9 +69,7 @@ describe("PackedFeatureTable", () => {
 });
 
 // models is [modelId, indexOfLastFeatureInModel] where modelId and indexOfLastFeatureInModel are both strictly increasing.
-function makeModelTable(
-  models: Array<[string, number]>
-): PackedFeatureModelTable {
+function makeModelTable(models: Array<[string, number]>): PackedFeatureModelTable {
   const data = new Uint32Array(3 * models.length);
   for (let i = 0; i < models.length; i++) {
     const model = models[i];
@@ -133,9 +127,7 @@ describe("PackedFeatureModelTable", () => {
       ["0xffffffffffff", 13],
     ]);
 
-    expect(Id64.fromUint32PairObject(table.getModelIdPair(13))).to.equal(
-      "0xffffffffffff"
-    );
+    expect(Id64.fromUint32PairObject(table.getModelIdPair(13))).to.equal("0xffffffffffff");
     for (let i = 14; i < 20; i++) {
       const pair = table.getModelIdPair(i);
       expect(pair.lower).to.equal(0);
@@ -145,16 +137,10 @@ describe("PackedFeatureModelTable", () => {
 });
 
 describe("MultiModelPackedFeatureTable", () => {
-  function makeTable(
-    numFeatures: number,
-    models: Array<[string, number]>
-  ): MultiModelPackedFeatureTable {
+  function makeTable(numFeatures: number, models: Array<[string, number]>): MultiModelPackedFeatureTable {
     const featureTable = makeFeatureTable(numFeatures);
     const modelTable = makeModelTable(models);
-    return new MultiModelPackedFeatureTable(
-      PackedFeatureTable.pack(featureTable),
-      modelTable
-    );
+    return new MultiModelPackedFeatureTable(PackedFeatureTable.pack(featureTable), modelTable);
   }
 
   it("accesses features by index", () => {

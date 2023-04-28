@@ -50,11 +50,7 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
   }
   private static flattenArray(arr: any): any {
     return arr.reduce((flat: any, toFlatten: any) => {
-      return flat.concat(
-        Array.isArray(toFlatten)
-          ? PointString3d.flattenArray(toFlatten)
-          : toFlatten
-      );
+      return flat.concat(Array.isArray(toFlatten) ? PointString3d.flattenArray(toFlatten) : toFlatten);
     }, []);
   }
   /** Create a PointString3d from points. */
@@ -94,9 +90,7 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
   public static createFloat64Array(xyzData: Float64Array): PointString3d {
     const ps = new PointString3d();
     for (let i = 0; i + 3 <= xyzData.length; i += 3)
-      ps._points.push(
-        Point3d.create(xyzData[i], xyzData[i + 1], xyzData[i + 2])
-      );
+      ps._points.push(Point3d.create(xyzData[i], xyzData[i + 1], xyzData[i + 2]));
     return ps;
   }
   /** Return a deep clone. */
@@ -175,11 +169,7 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
   }
   /** Return true if all points are in the given plane. */
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
-    return Point3dArray.isCloseToPlane(
-      this._points,
-      plane,
-      Geometry.smallMetricDistance
-    );
+    return Point3dArray.isCloseToPlane(this._points, plane, Geometry.smallMetricDistance);
   }
   /** Extend a range to include the points in this PointString3d. */
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {

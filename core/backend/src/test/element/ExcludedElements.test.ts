@@ -4,13 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import {
-  BisCodeSpec,
-  DisplayStyleProps,
-  IModel,
-  QueryBinder,
-  QueryRowFormat,
-} from "@itwin/core-common";
+import { BisCodeSpec, DisplayStyleProps, IModel, QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { DisplayStyle3d, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -41,9 +35,7 @@ describe("ExcludedElements", () => {
         isPrivate: false,
         jsonProperties: {
           styles: {
-            excludedElements: compressed
-              ? excludedElements
-              : excludedElementIds,
+            excludedElements: compressed ? excludedElements : excludedElementIds,
           },
         },
       };
@@ -74,15 +66,9 @@ describe("ExcludedElements", () => {
 
       // Unless compressed Ids explicitly requested, the Ids are always decompressed regardless of how they are stored.
       // This is to preserve compatibility with older front-ends that don't understand the compressed Ids; it's an unfortunate default.
-      expect(getStyle().jsonProperties.styles.excludedElements).to.deep.equal(
-        excludedElementIds
-      );
-      expect(
-        getStyle(false).jsonProperties.styles.excludedElements
-      ).to.deep.equal(excludedElementIds);
-      expect(getStyle(true).jsonProperties.styles.excludedElements).to.equal(
-        excludedElements
-      );
+      expect(getStyle().jsonProperties.styles.excludedElements).to.deep.equal(excludedElementIds);
+      expect(getStyle(false).jsonProperties.styles.excludedElements).to.deep.equal(excludedElementIds);
+      expect(getStyle(true).jsonProperties.styles.excludedElements).to.equal(excludedElements);
     };
 
     await test(true);

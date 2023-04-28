@@ -18,16 +18,8 @@ import {
   UrlFS,
 } from "@itwin/core-orbitgt";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
-import {
-  BentleyError,
-  Logger,
-  LoggingMetaData,
-  RealityDataStatus,
-} from "@itwin/core-bentley";
-import {
-  RealityDataError,
-  SpatialLocationAndExtents,
-} from "../RealityDataSource";
+import { BentleyError, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
+import { RealityDataError, SpatialLocationAndExtents } from "../RealityDataSource";
 
 const loggerCategory: string = FrontendLoggerCategory.RealityData;
 
@@ -41,12 +33,9 @@ export class OPCFormatInterpreter {
    * @returns return a file reader open to read provided blob file
    * @internal
    */
-  public static async getFileReaderFromBlobFileURL(
-    blobFileURL: string
-  ): Promise<PointCloudReader> {
+  public static async getFileReaderFromBlobFileURL(blobFileURL: string): Promise<PointCloudReader> {
     if (Downloader.INSTANCE == null) Downloader.INSTANCE = new DownloaderXhr();
-    if (CRSManager.ENGINE == null)
-      CRSManager.ENGINE = await OnlineEngine.create();
+    if (CRSManager.ENGINE == null) CRSManager.ENGINE = await OnlineEngine.create();
 
     // let blobFileURL: string = rdUrl;
     // if (accountName.length > 0) blobFileURL = UrlFS.getAzureBlobSasUrl(opcConfig.accountName, opcConfig.containerName, opcConfig.blobFileName, opcConfig.sasToken);
@@ -61,11 +50,7 @@ export class OPCFormatInterpreter {
       128 * 1024 /* pageSize */,
       128 /* maxPageCount */
     );
-    const fileReader: PointCloudReader = await OPCReader.openFile(
-      blobFile,
-      blobFileURL,
-      true /* lazyLoading */
-    );
+    const fileReader: PointCloudReader = await OPCReader.openFile(blobFile, blobFileURL, true /* lazyLoading */);
     return fileReader;
   }
 
@@ -75,9 +60,7 @@ export class OPCFormatInterpreter {
    * @throws [[RealityDataError]] if source is invalid or cannot be read
    * @internal
    */
-  public static async getSpatialLocationAndExtents(
-    fileReader: PointCloudReader
-  ): Promise<SpatialLocationAndExtents> {
+  public static async getSpatialLocationAndExtents(fileReader: PointCloudReader): Promise<SpatialLocationAndExtents> {
     let worldRange = new Range3d();
     let location: Cartographic | EcefLocation;
     let isGeolocated = true;
@@ -97,16 +80,9 @@ export class OPCFormatInterpreter {
       try {
         await CRSManager.ENGINE.prepareForArea(fileCrs, bounds);
         const wgs84ECEFCrs = "4978";
-        await CRSManager.ENGINE.prepareForArea(
-          wgs84ECEFCrs,
-          new OrbitGtBounds()
-        );
+        await CRSManager.ENGINE.prepareForArea(wgs84ECEFCrs, new OrbitGtBounds());
 
-        const ecefBounds = CRSManager.transformBounds(
-          bounds,
-          fileCrs,
-          wgs84ECEFCrs
-        );
+        const ecefBounds = CRSManager.transformBounds(bounds, fileCrs, wgs84ECEFCrs);
         const ecefRange = Range3d.createXYZXYZ(
           ecefBounds.getMinX(),
           ecefBounds.getMinY(),
@@ -118,27 +94,19 @@ export class OPCFormatInterpreter {
         const ecefCenter = ecefRange.localXYZToWorld(0.5, 0.5, 0.5)!;
         const cartoCenter = Cartographic.fromEcef(ecefCenter)!;
         cartoCenter.height = 0;
-        const ecefLocation =
-          EcefLocation.createFromCartographicOrigin(cartoCenter);
+        const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter);
         location = ecefLocation;
         // this.iModelDb.setEcefLocation(ecefLocation);
         const ecefToWorld = ecefLocation.getTransform().inverse()!;
         worldRange = ecefToWorld.multiplyRange(ecefRange);
         isGeolocated = true;
       } catch (e) {
-        Logger.logWarning(
-          loggerCategory,
-          `Error getSpatialLocationAndExtents - cannot interpret point cloud`
-        );
+        Logger.logWarning(loggerCategory, `Error getSpatialLocationAndExtents - cannot interpret point cloud`);
         const errorProps = BentleyError.getErrorProps(e);
         const getMetaData: LoggingMetaData = () => {
           return { errorProps };
         };
-        const error = new RealityDataError(
-          RealityDataStatus.InvalidData,
-          "Invalid or unknown data",
-          getMetaData
-        );
+        const error = new RealityDataError(RealityDataStatus.InvalidData, "Invalid or unknown data", getMetaData);
         throw error;
       }
     } else {

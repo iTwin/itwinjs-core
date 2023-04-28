@@ -6,17 +6,10 @@ import * as fs from "fs";
 import * as path from "path";
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
-import {
-  ElectronHost,
-  ElectronHostOptions,
-} from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import {
-  IModelHost,
-  IModelHostOptions,
-  LocalhostIpcHost,
-} from "@itwin/core-backend";
+import { IModelHost, IModelHostOptions, LocalhostIpcHost } from "@itwin/core-backend";
 import {
   IModelReadRpcInterface,
   IModelTileRpcInterface,
@@ -24,10 +17,7 @@ import {
   RpcManager,
   SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
-import {
-  MobileHost,
-  MobileHostOpts,
-} from "@itwin/core-mobile/lib/cjs/MobileBackend";
+import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { EditCommandAdmin } from "@itwin/editor-backend";
@@ -48,9 +38,7 @@ function loadEnv(envFile: string) {
 }
 
 class DisplayTestAppRpc extends DtaRpcInterface {
-  public override async readExternalSavedViews(
-    bimFileName: string
-  ): Promise<string> {
+  public override async readExternalSavedViews(bimFileName: string): Promise<string> {
     if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
       const docPath = process.env.DOCS;
       bimFileName = path.join(docPath, bimFileName);
@@ -63,10 +51,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return jsonStr ?? "";
   }
 
-  public override async writeExternalSavedViews(
-    bimFileName: string,
-    namedViews: string
-  ): Promise<void> {
+  public override async writeExternalSavedViews(bimFileName: string, namedViews: string): Promise<void> {
     if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
       // Used to set a writeable directory on an iOS or Android device.
       const docPath = process.env.DOCS;
@@ -77,9 +62,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return this.writeExternalFile(esvFileName, namedViews);
   }
 
-  public override async readExternalCameraPaths(
-    bimFileName: string
-  ): Promise<string> {
+  public override async readExternalCameraPaths(bimFileName: string): Promise<string> {
     if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
       const docPath = process.env.DOCS;
       bimFileName = path.join(docPath, bimFileName);
@@ -92,10 +75,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return jsonStr ?? "";
   }
 
-  public override async writeExternalCameraPaths(
-    bimFileName: string,
-    cameraPaths: string
-  ): Promise<void> {
+  public override async writeExternalCameraPaths(bimFileName: string, cameraPaths: string): Promise<void> {
     if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
       // Used to set a writeable directory on an iOS or Android device.
       const docPath = process.env.DOCS;
@@ -119,10 +99,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return contents ?? "";
   }
 
-  public override async writeExternalFile(
-    fileName: string,
-    content: string
-  ): Promise<void> {
+  public override async writeExternalFile(fileName: string, content: string): Promise<void> {
     const filePath = this.getFilePath(fileName);
     if (!fs.existsSync(filePath)) this.createFilePath(filePath);
 
@@ -157,8 +134,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
 
   private createCameraPathsFilename(fileName: string): string {
     const dotIndex = fileName.lastIndexOf(".");
-    if (-1 !== dotIndex)
-      return `${fileName.substring(0, dotIndex)}_cameraPaths.json`;
+    if (-1 !== dotIndex) return `${fileName.substring(0, dotIndex)}_cameraPaths.json`;
     return `${fileName}.cameraPaths.json`;
   }
 
@@ -209,14 +185,11 @@ export const loadBackendConfig = (): DtaConfiguration => {
   return getConfig();
 };
 
-export const initializeDtaBackend = async (
-  hostOpts?: ElectronHostOptions & MobileHostOpts
-) => {
+export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & MobileHostOpts) => {
   const dtaConfig = loadBackendConfig();
 
   let logLevel = LogLevel.None;
-  if (undefined !== dtaConfig.logLevel)
-    logLevel = Logger.parseLogLevel(dtaConfig.logLevel);
+  if (undefined !== dtaConfig.logLevel) logLevel = Logger.parseLogLevel(dtaConfig.logLevel);
 
   // Set up logging (by default, no logging is enabled)
   Logger.initializeToConsole();
@@ -225,9 +198,7 @@ export const initializeDtaBackend = async (
 
   const iModelClient = new IModelsClient({
     api: {
-      baseUrl: `https://${
-        process.env.IMJS_URL_PREFIX ?? ""
-      }api.bentley.com/imodels`,
+      baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`,
     },
   });
   const hubAccess = new BackendIModelsAccess(iModelClient);
@@ -267,22 +238,15 @@ export const initializeDtaBackend = async (
   }
 };
 
-async function initializeAuthorizationClient(): Promise<
-  ElectronMainAuthorization | undefined
-> {
+async function initializeAuthorizationClient(): Promise<ElectronMainAuthorization | undefined> {
   if (
     ProcessDetector.isElectronAppBackend &&
-    checkEnvVars(
-      "IMJS_OIDC_ELECTRON_TEST_CLIENT_ID",
-      "IMJS_OIDC_ELECTRON_TEST_SCOPES"
-    )
+    checkEnvVars("IMJS_OIDC_ELECTRON_TEST_CLIENT_ID", "IMJS_OIDC_ELECTRON_TEST_SCOPES")
   ) {
     return new ElectronMainAuthorization({
       clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID!,
       scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES!,
-      redirectUri:
-        process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ??
-        "http://localhost:3000/signin-callback",
+      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "http://localhost:3000/signin-callback",
       issuerUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}ims.bentley.com`,
     });
   }

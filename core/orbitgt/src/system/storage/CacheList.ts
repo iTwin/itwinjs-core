@@ -93,7 +93,6 @@ export class CacheList<T> {
   public addEntry(key: string, element: T): void {
     /* Add a new entry to the back of the list */
     this._entries.add(new CachedItem<T>(key, element, ASystem.time()));
-    if (this._maxEntries > 0 && this._entries.size() > this._maxEntries)
-      this._entries.remove(0);
+    if (this._maxEntries > 0 && this._entries.size() > this._maxEntries) this._entries.remove(0);
   }
 }

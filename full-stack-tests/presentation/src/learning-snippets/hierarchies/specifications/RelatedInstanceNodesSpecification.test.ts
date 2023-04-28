@@ -14,9 +14,7 @@ describe("Learning Snippets", () => {
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile(
-      "assets/datasets/Properties_60InstancesWithUrl2.ibim"
-    );
+    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {
@@ -87,12 +85,11 @@ describe("Learning Snippets", () => {
             },
           ]);
 
-        const elementClassGroupingNodes =
-          await Presentation.presentation.getNodes({
-            imodel,
-            rulesetOrId: ruleset,
-            parentKey: modelNodes[0].key,
-          });
+        const elementClassGroupingNodes = await Presentation.presentation.getNodes({
+          imodel,
+          rulesetOrId: ruleset,
+          parentKey: modelNodes[0].key,
+        });
         expect(elementClassGroupingNodes)
           .to.have.lengthOf(2)
           .and.to.containSubset([

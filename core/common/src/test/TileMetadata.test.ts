@@ -23,12 +23,7 @@ import {
 
 describe("TileMetadata", () => {
   it("computes chord tolerance", () => {
-    const expectTolerance = (
-      expectedTolerance: number,
-      range: Range3d,
-      is3d: boolean,
-      sizeMultiplier?: number
-    ) => {
+    const expectTolerance = (expectedTolerance: number, range: Range3d, is3d: boolean, sizeMultiplier?: number) => {
       const metadata: TileMetadata = {
         contentRange: range,
         isLeaf: false,
@@ -41,9 +36,7 @@ describe("TileMetadata", () => {
       const epsilon = 0.00001;
       const actualTolerance = computeTileChordTolerance(metadata, is3d, 512);
       expect(Math.abs(expectedTolerance - actualTolerance)).most(epsilon);
-      expect(actualTolerance).least(
-        computeTileChordTolerance(metadata, is3d, 2048)
-      );
+      expect(actualTolerance).least(computeTileChordTolerance(metadata, is3d, 2048));
     };
 
     const toleranceFromDiagonal = (diagonal: number) => diagonal / 1024;
@@ -63,38 +56,11 @@ describe("TileMetadata", () => {
     // zero length in at least one axis
     const tolerance5 = toleranceFromDiagonal(5);
     const tolerance25 = toleranceFromDiagonal(25);
-    expectTolerance(
-      tolerance25,
-      Range3d.create(
-        Point3d.create(100, -100, 0),
-        Point3d.create(100, -100, 25)
-      ),
-      true
-    );
-    expectTolerance(
-      0,
-      Range3d.create(
-        Point3d.create(100, -100, 0),
-        Point3d.create(100, -100, 25)
-      ),
-      false
-    );
-    expectTolerance(
-      tolerance5,
-      Range3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 3, 4)),
-      true
-    );
-    expectTolerance(
-      toleranceFromDiagonal(3),
-      Range3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 3, 4)),
-      false
-    );
-    expectTolerance(
-      tolerance5 / 3,
-      Range3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 3, 4)),
-      true,
-      3
-    );
+    expectTolerance(tolerance25, Range3d.create(Point3d.create(100, -100, 0), Point3d.create(100, -100, 25)), true);
+    expectTolerance(0, Range3d.create(Point3d.create(100, -100, 0), Point3d.create(100, -100, 25)), false);
+    expectTolerance(tolerance5, Range3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 3, 4)), true);
+    expectTolerance(toleranceFromDiagonal(3), Range3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 3, 4)), false);
+    expectTolerance(tolerance5 / 3, Range3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 3, 4)), true, 3);
     expectTolerance(
       toleranceFromDiagonal(3) / 3,
       Range3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 3, 4)),
@@ -102,17 +68,8 @@ describe("TileMetadata", () => {
       3
     );
 
-    expectTolerance(
-      tolerance5,
-      Range3d.create(Point3d.create(0, 0, 0), Point3d.create(3, 4, 5)),
-      false
-    );
-    expectTolerance(
-      tolerance5 / 2,
-      Range3d.create(Point3d.create(0, 0, 0), Point3d.create(3, 4, 5)),
-      false,
-      2
-    );
+    expectTolerance(tolerance5, Range3d.create(Point3d.create(0, 0, 0), Point3d.create(3, 4, 5)), false);
+    expectTolerance(tolerance5 / 2, Range3d.create(Point3d.create(0, 0, 0), Point3d.create(3, 4, 5)), false, 2);
     expectTolerance(
       toleranceFromDiagonal(Math.sqrt(4 + 9 + 16)),
       Range3d.create(Point3d.create(0, 0, 0), Point3d.create(2, 3, 4)),
@@ -142,11 +99,7 @@ describe("TileMetadata", () => {
       };
     };
 
-    const classifierId = (
-      expansion = 1,
-      planar = true,
-      animationId?: string
-    ): IModelTileTreeId => {
+    const classifierId = (expansion = 1, planar = true, animationId?: string): IModelTileTreeId => {
       return {
         type: planar ? BatchType.PlanarClassifier : BatchType.VolumeClassifier,
         expansion,
@@ -329,15 +282,14 @@ describe("TileMetadata", () => {
         optimizeBRepProcessing: true !== test.noOptimizeBReps,
       };
 
-      if (undefined !== test.maxVersion)
-        options.maximumMajorTileFormatVersion = test.maxVersion;
+      if (undefined !== test.maxVersion) options.maximumMajorTileFormatVersion = test.maxVersion;
 
       const modelId = "0x1c";
       const actual = iModelTileTreeIdToString(modelId, test.id, options);
 
-      const expected = `${options.maximumMajorTileFormatVersion.toString(
-        16
-      )}_${test.flags.toString(16)}-${test.baseId}${modelId}`;
+      const expected = `${options.maximumMajorTileFormatVersion.toString(16)}_${test.flags.toString(16)}-${
+        test.baseId
+      }${modelId}`;
       expect(actual).to.equal(expected);
     }
   });
@@ -356,15 +308,9 @@ describe("TileMetadata", () => {
       allPolyfaceEdges?: boolean;
     }
 
-    function test(
-      treeId: string,
-      contentId: string,
-      expected: Options | "content" | "tree"
-    ): void {
+    function test(treeId: string, contentId: string, expected: Options | "content" | "tree"): void {
       if (typeof expected === "string") {
-        expect(() =>
-          TileOptions.fromTreeIdAndContentId(treeId, contentId)
-        ).to.throw(`Invalid ${expected} Id`);
+        expect(() => TileOptions.fromTreeIdAndContentId(treeId, contentId)).to.throw(`Invalid ${expected} Id`);
       } else {
         const options: TileOptions = {
           maximumMajorTileFormatVersion: expected.version,
@@ -381,9 +327,7 @@ describe("TileMetadata", () => {
           generateAllPolyfaceEdges: true === expected.allPolyfaceEdges,
         };
 
-        expect(
-          TileOptions.fromTreeIdAndContentId(treeId, contentId)
-        ).to.deep.equal(options);
+        expect(TileOptions.fromTreeIdAndContentId(treeId, contentId)).to.deep.equal(options);
       }
     }
 
@@ -427,10 +371,7 @@ describe("TileMetadata", () => {
       tileOptions: TileOptions
     ) {
       const treeIdStr = iModelTileTreeIdToString(modelId, treeId, tileOptions);
-      const contentIdStr = ContentIdProvider.create(
-        true,
-        tileOptions
-      ).idFromSpec(contentId);
+      const contentIdStr = ContentIdProvider.create(true, tileOptions).idFromSpec(contentId);
       const parsed = parseTileTreeIdAndContentId(treeIdStr, contentIdStr);
 
       expect(parsed.modelId).to.equal(modelId);
@@ -438,14 +379,8 @@ describe("TileMetadata", () => {
 
       // Sometimes ContentIdSpec and IModelTileTreeId will be slightly different due to "undefined" properties being included. However, this has no effect on further processing.
       // Strings are compared here because the parsed values will typically be used to generate them.
-      expect(
-        iModelTileTreeIdToString(parsed.modelId, parsed.treeId, parsed.options)
-      ).to.equal(treeIdStr);
-      expect(
-        ContentIdProvider.create(true, parsed.options).idFromSpec(
-          parsed.contentId
-        )
-      ).to.equal(contentIdStr);
+      expect(iModelTileTreeIdToString(parsed.modelId, parsed.treeId, parsed.options)).to.equal(treeIdStr);
+      expect(ContentIdProvider.create(true, parsed.options).idFromSpec(parsed.contentId)).to.equal(contentIdStr);
     }
 
     const defaultNoIndexedEdges = {
@@ -776,19 +711,12 @@ describe("TileMetadata", () => {
       };
     }
 
-    function test(
-      treeId: string,
-      contentId: string,
-      expected: Options | string
-    ) {
+    function test(treeId: string, contentId: string, expected: Options | string) {
       if (typeof expected === "string") {
-        expect(() => parseTileTreeIdAndContentId(treeId, contentId)).to.throw(
-          `Invalid ${expected} Id`
-        );
+        expect(() => parseTileTreeIdAndContentId(treeId, contentId)).to.throw(`Invalid ${expected} Id`);
       } else {
         const edges =
-          BatchType.Primary === expected.treeId.type &&
-          false !== expected.treeId.edges
+          BatchType.Primary === expected.treeId.type && false !== expected.treeId.edges
             ? expected.treeId.edges
             : undefined;
         const options: TileOptions = {
@@ -796,8 +724,7 @@ describe("TileMetadata", () => {
           enableInstancing: true === expected.tileOptions.instancing,
           enableImprovedElision: true === expected.tileOptions.elision,
           ignoreAreaPatterns: true === expected.tileOptions.noPatterns,
-          enableExternalTextures:
-            true === expected.tileOptions.externalTextures,
+          enableExternalTextures: true === expected.tileOptions.externalTextures,
           useProjectExtents: true === expected.tileOptions.projectExtents,
           disableMagnification: false,
           alwaysSubdivideIncompleteTiles: false,
@@ -893,45 +820,13 @@ describe("TileMetadata", () => {
     });
 
     test("19_1-S010_1_0_-5_30_0_-1_5e-11____0x1d", "-b-14-32-4-1-1", "tree"); // removed 's' after sectionCut
-    test(
-      "19_1-C50.000000_A:0x50000001_#1f4_0x1000000d",
-      "-b-14-32-4-1-1",
-      "tree"
-    ); // removed ':' after C (VolumeClassifier)
-    test(
-      "19_1-C:50.000000-A:0x50000001_#1f4_0x1000000d",
-      "-b-14-32-4-1-1",
-      "tree"
-    ); // replaced '_' with '-'
-    test(
-      "19_1-C:50.000000A:0x50000001_#1f4_0x1000000d",
-      "-b-14-32-4-1-1",
-      "tree"
-    ); // removed '_'
-    test(
-      "19_1-C:50.000000_AB:0x50000001_#1f4_0x1000000d",
-      "-b-14-32-4-1-1",
-      "tree"
-    ); // added 'B'
-    test(
-      "19_1-C:50.000000_A:0x050000001_#1f4_0x1000000d",
-      "-b-14-32-4-1-1",
-      "tree"
-    ); // invalid Id64
-    test(
-      "19_1-C:50.000000_A:0x50000001_1f4_0x1000000d",
-      "-b-14-32-4-1-1",
-      "tree"
-    ); // removed '#'
-    test(
-      "19_1-C:50.000000_A:0x50000001_#1fg4_0x1000000d",
-      "-b-14-32-4-1-1",
-      "tree"
-    ); // invalid hexadecimal number (1fg4)
-    test(
-      "19_1-C:50.000000_A:0x50000001_#ggg_0x1000000d",
-      "-b-14-32-4-1-1",
-      "tree"
-    ); // invalid hexadecimal number (ggg)
+    test("19_1-C50.000000_A:0x50000001_#1f4_0x1000000d", "-b-14-32-4-1-1", "tree"); // removed ':' after C (VolumeClassifier)
+    test("19_1-C:50.000000-A:0x50000001_#1f4_0x1000000d", "-b-14-32-4-1-1", "tree"); // replaced '_' with '-'
+    test("19_1-C:50.000000A:0x50000001_#1f4_0x1000000d", "-b-14-32-4-1-1", "tree"); // removed '_'
+    test("19_1-C:50.000000_AB:0x50000001_#1f4_0x1000000d", "-b-14-32-4-1-1", "tree"); // added 'B'
+    test("19_1-C:50.000000_A:0x050000001_#1f4_0x1000000d", "-b-14-32-4-1-1", "tree"); // invalid Id64
+    test("19_1-C:50.000000_A:0x50000001_1f4_0x1000000d", "-b-14-32-4-1-1", "tree"); // removed '#'
+    test("19_1-C:50.000000_A:0x50000001_#1fg4_0x1000000d", "-b-14-32-4-1-1", "tree"); // invalid hexadecimal number (1fg4)
+    test("19_1-C:50.000000_A:0x50000001_#ggg_0x1000000d", "-b-14-32-4-1-1", "tree"); // invalid hexadecimal number (ggg)
   });
 });

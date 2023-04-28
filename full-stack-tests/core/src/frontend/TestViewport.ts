@@ -48,11 +48,7 @@ export class PixelDataSet extends SortedArray<Pixel.Data> {
     return this._array;
   }
 
-  public containsFeature(
-    elemId?: Id64String,
-    subcatId?: Id64String,
-    geomClass?: GeometryClass
-  ) {
+  public containsFeature(elemId?: Id64String, subcatId?: Id64String, geomClass?: GeometryClass) {
     return this.containsWhere(
       (pxl) =>
         (undefined === elemId || pxl.elementId === elemId) &&
@@ -69,13 +65,8 @@ export class PixelDataSet extends SortedArray<Pixel.Data> {
   public containsGeometryType(type: Pixel.GeometryType) {
     return this.containsWhere((pxl) => pxl.type === type);
   }
-  public containsGeometry(
-    type: Pixel.GeometryType,
-    planarity: Pixel.Planarity
-  ) {
-    return this.containsWhere(
-      (pxl) => pxl.type === type && pxl.planarity === planarity
-    );
+  public containsGeometry(type: Pixel.GeometryType, planarity: Pixel.Planarity) {
+    return this.containsWhere((pxl) => pxl.type === type && pxl.planarity === planarity);
   }
   public containsWhere(criterion: (pxl: Pixel.Data) => boolean) {
     for (const pixel of this.array) if (criterion(pixel)) return true;
@@ -121,12 +112,7 @@ export class Color {
 
   public equalsColorDef(def: ColorDef): boolean {
     const colors = def.colors;
-    return (
-      colors.r === this.r &&
-      colors.g === this.g &&
-      colors.b === this.b &&
-      colors.t === 0xff - this.a
-    );
+    return colors.r === this.r && colors.g === this.g && colors.b === this.b && colors.t === 0xff - this.a;
   }
 }
 
@@ -140,11 +126,7 @@ export class ColorSet extends SortedArray<Color> {
 }
 
 // Read depth, geometry type, and feature for each pixel. Return only the unique ones.
-function readUniquePixelData(
-  vp: Viewport,
-  readRect?: ViewRect,
-  excludeNonLocatable = false
-): PixelDataSet {
+function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false): PixelDataSet {
   const rect = undefined !== readRect ? readRect : vp.viewRect;
   const set = new PixelDataSet();
   vp.readPixels(
@@ -160,8 +142,7 @@ function readUniquePixelData(
       sRect.top = vp.cssPixelsToDevicePixels(sRect.top);
 
       for (let x = sRect.left; x < sRect.right; x++)
-        for (let y = sRect.top; y < sRect.bottom; y++)
-          set.insert(pixels.getPixel(x, y));
+        for (let y = sRect.top; y < sRect.bottom; y++) set.insert(pixels.getPixel(x, y));
     },
     excludeNonLocatable
   );
@@ -169,17 +150,8 @@ function readUniquePixelData(
   return set;
 }
 
-function readPixel(
-  vp: Viewport,
-  x: number,
-  y: number,
-  excludeNonLocatable?: boolean
-): Pixel.Data {
-  const pixels = readUniquePixelData(
-    vp,
-    new ViewRect(x, y, x + 1, y + 1),
-    excludeNonLocatable
-  );
+function readPixel(vp: Viewport, x: number, y: number, excludeNonLocatable?: boolean): Pixel.Data {
+  const pixels = readUniquePixelData(vp, new ViewRect(x, y, x + 1, y + 1), excludeNonLocatable);
   expect(pixels.length).to.equal(1);
   return pixels.array[0];
 }
@@ -204,8 +176,7 @@ function readColor(vp: Viewport, x: number, y: number): Color {
 
 function areAllChildTilesLoaded(parent?: Tile): boolean {
   if (!parent) return true;
-  else if (TileTreeLoadStatus.Loading === (parent as any)._childrenLoadStatus)
-    return false;
+  else if (TileTreeLoadStatus.Loading === (parent as any)._childrenLoadStatus) return false;
 
   const kids = parent.children;
   if (!kids) return true;
@@ -221,10 +192,7 @@ function areAllTilesLoaded(vp: Viewport): boolean {
   // In addition to ViewState.areAllTileTreesLoaded, ensure all child tiles are loaded (for map tiles).
   let allLoaded = true;
   vp.forEachTileTreeRef((ref) => {
-    allLoaded =
-      allLoaded &&
-      ref.isLoadingComplete &&
-      areAllChildTilesLoaded(ref.treeOwner.tileTree?.rootTile);
+    allLoaded = allLoaded && ref.isLoadingComplete && areAllChildTilesLoaded(ref.treeOwner.tileTree?.rootTile);
   });
 
   return allLoaded;
@@ -237,10 +205,7 @@ export interface TestableViewport {
   // Asynchronously draw one frame. In the case of an on-screen viewport, this blocks until the next tick of the ViewManager's render loop.
   drawFrame(): Promise<void>;
   // Read pixel data within rectangular region and return unique pixels.
-  readUniquePixelData(
-    readRect?: ViewRect,
-    excludeNonLocatable?: boolean
-  ): PixelDataSet;
+  readUniquePixelData(readRect?: ViewRect, excludeNonLocatable?: boolean): PixelDataSet;
   // Read pixel colors within rectangular region and return unique colors.
   readUniqueColors(readRect?: ViewRect): ColorSet;
   // Return the color of the pixel at (x, y).
@@ -251,14 +216,8 @@ export interface TestableViewport {
   areAllTilesLoaded: boolean;
 }
 
-class OffScreenTestViewport
-  extends OffScreenViewport
-  implements TestableViewport
-{
-  public readUniquePixelData(
-    readRect?: ViewRect,
-    excludeNonLocatable = false
-  ): PixelDataSet {
+class OffScreenTestViewport extends OffScreenViewport implements TestableViewport {
+  public readUniquePixelData(readRect?: ViewRect, excludeNonLocatable = false): PixelDataSet {
     return readUniquePixelData(this, readRect, excludeNonLocatable);
   }
   public readUniqueColors(readRect?: ViewRect): ColorSet {
@@ -267,11 +226,7 @@ class OffScreenTestViewport
   public readColor(x: number, y: number): Color {
     return readColor(this, x, y);
   }
-  public readPixel(
-    x: number,
-    y: number,
-    excludeNonLocatable?: boolean
-  ): Pixel.Data {
+  public readPixel(x: number, y: number, excludeNonLocatable?: boolean): Pixel.Data {
     return readPixel(this, x, y, excludeNonLocatable);
   }
   public get areAllTilesLoaded(): boolean {
@@ -314,16 +269,10 @@ class OffScreenTestViewport
   }
 }
 
-export class ScreenTestViewport
-  extends ScreenViewport
-  implements TestableViewport
-{
+export class ScreenTestViewport extends ScreenViewport implements TestableViewport {
   private _frameRendered: boolean = false;
 
-  public readUniquePixelData(
-    readRect?: ViewRect,
-    excludeNonLocatable = false
-  ): PixelDataSet {
+  public readUniquePixelData(readRect?: ViewRect, excludeNonLocatable = false): PixelDataSet {
     return readUniquePixelData(this, readRect, excludeNonLocatable);
   }
   public readUniqueColors(readRect?: ViewRect): ColorSet {
@@ -332,11 +281,7 @@ export class ScreenTestViewport
   public readColor(x: number, y: number): Color {
     return readColor(this, x, y);
   }
-  public readPixel(
-    x: number,
-    y: number,
-    excludeNonLocatable?: boolean
-  ): Pixel.Data {
+  public readPixel(x: number, y: number, excludeNonLocatable?: boolean): Pixel.Data {
     return readPixel(this, x, y, excludeNonLocatable);
   }
   public get areAllTilesLoaded(): boolean {
@@ -414,12 +359,7 @@ export async function createOffScreenTestViewport(
   width: number,
   height: number
 ): Promise<TestViewport> {
-  return OffScreenTestViewport.createTestViewport(
-    viewId,
-    imodel,
-    width,
-    height
-  );
+  return OffScreenTestViewport.createTestViewport(viewId, imodel, width, height);
 }
 
 // Create an on-screen viewport for tests. The viewport is added to the ViewManager on construction, and dropped on disposal.
@@ -430,16 +370,10 @@ export async function createOnScreenTestViewport(
   height: number,
   devicePixelRatio?: number
 ): Promise<ScreenTestViewport> {
-  const vp = await ScreenTestViewport.createTestViewport(
-    viewId,
-    imodel,
-    width,
-    height
-  );
+  const vp = await ScreenTestViewport.createTestViewport(viewId, imodel, width, height);
   if (undefined !== devicePixelRatio) {
     const debugControl = vp.target.debugControl;
-    if (undefined !== debugControl)
-      debugControl.devicePixelRatioOverride = devicePixelRatio;
+    if (undefined !== debugControl) debugControl.devicePixelRatioOverride = devicePixelRatio;
   }
 
   return vp;
@@ -456,13 +390,7 @@ export async function testOnScreenViewport(
   if (!IModelApp.initialized) return;
 
   // ###TODO: Make ScreenTestViewport integrate properly with the (non-continuous) render loop...
-  const onscreen = await createOnScreenTestViewport(
-    viewId,
-    imodel,
-    width,
-    height,
-    devicePixelRatio
-  );
+  const onscreen = await createOnScreenTestViewport(viewId, imodel, width, height, devicePixelRatio);
   onscreen.continuousRendering = true;
   try {
     await test(onscreen);
@@ -481,12 +409,7 @@ export async function testOffScreenViewport(
 ): Promise<void> {
   if (!IModelApp.initialized) return;
 
-  const offscreen = await createOffScreenTestViewport(
-    viewId,
-    imodel,
-    width,
-    height
-  );
+  const offscreen = await createOffScreenTestViewport(viewId, imodel, width, height);
   try {
     await test(offscreen);
   } finally {
@@ -505,14 +428,7 @@ export async function testViewports(
 ): Promise<void> {
   if (!IModelApp.initialized) return;
 
-  await testOnScreenViewport(
-    viewId,
-    imodel,
-    width,
-    height,
-    test,
-    devicePixelRatio
-  );
+  await testOnScreenViewport(viewId, imodel, width, height, test, devicePixelRatio);
   await testOffScreenViewport(viewId, imodel, width, height, test);
 }
 
@@ -523,6 +439,5 @@ export async function testViewportsWithDpr(
   test: (vp: TestViewport) => Promise<void>
 ): Promise<void> {
   const devicePixelRatios = [1.0, 1.25, 1.5, 2.0];
-  for (const dpr of devicePixelRatios)
-    await testViewports("0x24", imodel, rect.width, rect.height, test, dpr);
+  for (const dpr of devicePixelRatios) await testViewports("0x24", imodel, rect.width, rect.height, test, dpr);
 }

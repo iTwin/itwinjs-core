@@ -25,18 +25,12 @@ import {
   ValuesMap,
 } from "../../presentation-common";
 import { RelationshipMeaning } from "../../presentation-common/rules/content/modifiers/RelatedPropertiesSpecification";
-import {
-  createTestECClassInfo,
-  createTestECInstanceKey,
-  createTestRelationshipPath,
-} from "./EC";
+import { createTestECClassInfo, createTestECInstanceKey, createTestRelationshipPath } from "./EC";
 
 /**
  * @internal Used for testing only.
  */
-export const createTestCategoryDescription = (
-  props?: Partial<CategoryDescription>
-) => ({
+export const createTestCategoryDescription = (props?: Partial<CategoryDescription>) => ({
   name: "test-category",
   label: "Test Category",
   description: "Test category description",
@@ -48,9 +42,7 @@ export const createTestCategoryDescription = (
 /**
  * @internal Used for testing only.
  */
-export const createTestSelectClassInfo = (
-  props?: Partial<SelectClassInfo>
-) => ({
+export const createTestSelectClassInfo = (props?: Partial<SelectClassInfo>) => ({
   selectClassInfo: createTestECClassInfo(),
   isSelectPolymorphic: false,
   ...props,
@@ -154,8 +146,7 @@ export function createTestNestedContentField(props: {
     !!props.autoExpand,
     props.renderer
   );
-  if (props.relationshipMeaning)
-    field.relationshipMeaning = props.relationshipMeaning;
+  if (props.relationshipMeaning) field.relationshipMeaning = props.relationshipMeaning;
   field.rebuildParentship();
   return field;
 }
@@ -163,9 +154,7 @@ export function createTestNestedContentField(props: {
 /**
  * @internal Used for testing only.
  */
-export function createTestContentDescriptor(
-  props: Partial<DescriptorSource> & { fields: Field[] }
-) {
+export function createTestContentDescriptor(props: Partial<DescriptorSource> & { fields: Field[] }) {
   return new Descriptor({
     connectionId: "",
     displayType: "",

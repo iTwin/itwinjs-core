@@ -34,24 +34,12 @@ describe("Editor tests", () => {
       });
 
       it("should create a new schema and return a SchemaEditResults", async () => {
-        const result = await testEditor.createSchema(
-          "testSchema",
-          "test",
-          1,
-          0,
-          0
-        );
+        const result = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
         expect(result).to.not.eql(undefined);
       });
 
       it("upon schema creation, return a defined SchemaKey from SchemaEditResults", async () => {
-        const result = await testEditor.createSchema(
-          "testSchema",
-          "test",
-          1,
-          0,
-          0
-        );
+        const result = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
         expect(result.schemaKey?.name).to.eql("testSchema");
         expect(result.schemaKey?.version).to.eql(new ECVersion(1, 0, 0));
       });
@@ -82,10 +70,7 @@ describe("Editor tests", () => {
         });
 
         expect(result).to.eql({});
-        expect(
-          testSchema.customAttributes &&
-            testSchema.customAttributes.has("TestCustomAttribute")
-        ).to.be.true;
+        expect(testSchema.customAttributes && testSchema.customAttributes.has("TestCustomAttribute")).to.be.true;
       });
 
       it("CustomAttribute defined in different schema, instance added successfully.", async () => {
@@ -125,10 +110,7 @@ describe("Editor tests", () => {
         });
 
         expect(result).to.eql({});
-        expect(
-          schemaA.customAttributes &&
-            schemaA.customAttributes.has("SchemaB.TestCustomAttribute")
-        ).to.be.true;
+        expect(schemaA.customAttributes && schemaA.customAttributes.has("SchemaB.TestCustomAttribute")).to.be.true;
       });
 
       it("CustomAttribute class not found, error reported successfully.", async () => {
@@ -165,10 +147,7 @@ describe("Editor tests", () => {
         expect(result.errorMessage).to.eql(
           "ECObjects-502: The CustomAttribute container 'SchemaA' has a CustomAttribute with the class 'SchemaB.TestCustomAttribute' which cannot be found.\r\n"
         );
-        expect(
-          schemaA.customAttributes &&
-            schemaA.customAttributes.has("SchemaB.TestCustomAttribute")
-        ).to.be.false;
+        expect(schemaA.customAttributes && schemaA.customAttributes.has("SchemaB.TestCustomAttribute")).to.be.false;
       });
     });
 
@@ -198,9 +177,7 @@ describe("Editor tests", () => {
 
         expect(result).to.eql({});
         expect(testSchema.getReferenceNameByAlias("rs")).to.equal("RefSchema");
-        expect(
-          await testEditor.schemaContext.getCachedSchema(refSchema.schemaKey)
-        ).to.eql(refSchema);
+        expect(await testEditor.schemaContext.getCachedSchema(refSchema.schemaKey)).to.eql(refSchema);
       });
 
       it("Multiple validation errors, results formatted properly.", async () => {
@@ -242,10 +219,7 @@ describe("Editor tests", () => {
         testEditor = new SchemaContextEditor(context);
         testKey = schemaA.schemaKey;
 
-        const result = await testEditor.addSchemaReference(
-          schemaA.schemaKey,
-          schemaC
-        );
+        const result = await testEditor.addSchemaReference(schemaA.schemaKey, schemaC);
 
         expect(result.errorMessage).not.undefined;
         expect(normalizeLineEnds(result.errorMessage!)).to.equal(
@@ -270,12 +244,7 @@ describe("Editor tests", () => {
         testSchema = await Schema.fromJson(schemaJson, context);
         testEditor = new SchemaContextEditor(context);
 
-        const result = await testEditor.setVersion(
-          testSchema.schemaKey,
-          2,
-          3,
-          4
-        );
+        const result = await testEditor.setVersion(testSchema.schemaKey, 2, 3, 4);
 
         expect(result).to.eql({});
         expect(testSchema.readVersion).to.equal(2);
@@ -295,12 +264,7 @@ describe("Editor tests", () => {
         testSchema = await Schema.fromJson(schemaJson, context);
         testEditor = new SchemaContextEditor(context);
 
-        const result = await testEditor.setVersion(
-          testSchema.schemaKey,
-          undefined,
-          3,
-          4
-        );
+        const result = await testEditor.setVersion(testSchema.schemaKey, undefined, 3, 4);
 
         expect(result).to.eql({});
         expect(testSchema.readVersion).to.equal(1);
@@ -320,12 +284,7 @@ describe("Editor tests", () => {
         testSchema = await Schema.fromJson(schemaJson, context);
         testEditor = new SchemaContextEditor(context);
 
-        const result = await testEditor.setVersion(
-          testSchema.schemaKey,
-          2,
-          undefined,
-          4
-        );
+        const result = await testEditor.setVersion(testSchema.schemaKey, 2, undefined, 4);
 
         expect(result).to.eql({});
         expect(testSchema.readVersion).to.equal(2);
@@ -345,12 +304,7 @@ describe("Editor tests", () => {
         testSchema = await Schema.fromJson(schemaJson, context);
         testEditor = new SchemaContextEditor(context);
 
-        const result = await testEditor.setVersion(
-          testSchema.schemaKey,
-          2,
-          3,
-          undefined
-        );
+        const result = await testEditor.setVersion(testSchema.schemaKey, 2, 3, undefined);
 
         expect(result).to.eql({});
         expect(testSchema.readVersion).to.equal(2);
@@ -370,9 +324,7 @@ describe("Editor tests", () => {
         testSchema = await Schema.fromJson(schemaJson, context);
         testEditor = new SchemaContextEditor(context);
 
-        const result = await testEditor.incrementMinorVersion(
-          testSchema.schemaKey
-        );
+        const result = await testEditor.incrementMinorVersion(testSchema.schemaKey);
 
         expect(result).to.eql({});
         expect(testSchema.minorVersion).to.equal(4);
@@ -430,49 +382,29 @@ describe("Editor tests", () => {
       });
 
       it("should get the correct Schema", async () => {
-        expect(await testEditor.schemaContext.getSchema(testKey)).to.eql(
-          testSchema
-        );
+        expect(await testEditor.schemaContext.getSchema(testKey)).to.eql(testSchema);
       });
 
       it("upon manual key creation, still create a valid property to an existing entity", async () => {
         const schemaKey = new SchemaKey("TestSchema");
         const entityKey = new SchemaItemKey("testClass", schemaKey);
-        await testEditor.entities.createPrimitiveProperty(
-          entityKey,
-          "testProperty",
-          PrimitiveType.Integer
-        );
-        const testEntity = (await testEditor.schemaContext.getSchemaItem(
-          entityKey
-        )) as EntityClass;
-        expect(await testEntity.getProperty("testProperty")).to.not.eql(
-          undefined
-        );
+        await testEditor.entities.createPrimitiveProperty(entityKey, "testProperty", PrimitiveType.Integer);
+        const testEntity = (await testEditor.schemaContext.getSchemaItem(entityKey)) as EntityClass;
+        expect(await testEntity.getProperty("testProperty")).to.not.eql(undefined);
       });
 
       it("should get the right entity class from existing schema", async () => {
         const createdKey = new SchemaKey("TestSchema");
-        const cachedSchema = await testEditor.schemaContext.getCachedSchema(
-          createdKey
-        );
+        const cachedSchema = await testEditor.schemaContext.getCachedSchema(createdKey);
         const testEntity = await cachedSchema!.getItem("testClass");
         expect(testEntity?.label).to.eql("ExampleEntity");
       });
 
       it("should add a property to existing entity", async () => {
         const entityKey = new SchemaItemKey("testClass", testKey);
-        await testEditor.entities.createPrimitiveProperty(
-          entityKey,
-          "testProperty",
-          PrimitiveType.Integer
-        );
-        const testEntity = (await testSchema.getItem(
-          "testClass"
-        )) as EntityClass;
-        expect(await testEntity.getProperty("testProperty")).to.not.eql(
-          undefined
-        );
+        await testEditor.entities.createPrimitiveProperty(entityKey, "testProperty", PrimitiveType.Integer);
+        const testEntity = (await testSchema.getItem("testClass")) as EntityClass;
+        expect(await testEntity.getProperty("testProperty")).to.not.eql(undefined);
       });
     });
 

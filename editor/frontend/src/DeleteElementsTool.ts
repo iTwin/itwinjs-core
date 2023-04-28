@@ -4,12 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { BentleyError, IModelStatus } from "@itwin/core-bentley";
-import {
-  ElementSetTool,
-  IModelApp,
-  NotifyMessageDetails,
-  OutputMessagePriority,
-} from "@itwin/core-frontend";
+import { ElementSetTool, IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { EditTools } from "./EditTool";
 import { basicManipulationIpc } from "./EditToolIpc";
@@ -41,10 +36,7 @@ export class DeleteElementsTool extends ElementSetTool {
         commandId: editorBuiltInCmdIds.cmdBasicManipulation,
         iModelKey: this.iModel.key,
       });
-      if (
-        IModelStatus.Success ===
-        (await basicManipulationIpc.deleteElements(this.agenda.compressIds()))
-      )
+      if (IModelStatus.Success === (await basicManipulationIpc.deleteElements(this.agenda.compressIds())))
         await this.saveChanges();
     } catch (err) {
       IModelApp.notifications.outputMessage(

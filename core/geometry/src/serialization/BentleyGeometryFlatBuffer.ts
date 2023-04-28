@@ -23,10 +23,7 @@ export class BentleyGeometryFlatBuffer {
     data: GeometryQuery | GeometryQuery[],
     addVersionSignature: boolean = false
   ): Uint8Array | undefined {
-    return BGFBWriter.geometryToBytes(
-      data,
-      addVersionSignature ? signatureBytes : undefined
-    );
+    return BGFBWriter.geometryToBytes(data, addVersionSignature ? signatureBytes : undefined);
   }
 
   /**
@@ -38,10 +35,7 @@ export class BentleyGeometryFlatBuffer {
     justTheBytes: Uint8Array,
     hasVersionSignature: boolean = false
   ): GeometryQuery | GeometryQuery[] | undefined {
-    return BGFBReader.bytesToGeometry(
-      justTheBytes,
-      hasVersionSignature ? signatureBytes : undefined
-    );
+    return BGFBReader.bytesToGeometry(justTheBytes, hasVersionSignature ? signatureBytes : undefined);
   }
 }
 

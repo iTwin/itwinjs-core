@@ -76,8 +76,7 @@ export class ContentLoader {
    */
   public getTotalRequestSize(): int32 {
     let totalSize: int32 = 0;
-    for (let i: number = 0; i < this._requests.size(); i++)
-      totalSize += this._requests.get(i).size;
+    for (let i: number = 0; i < this._requests.size(); i++) totalSize += this._requests.get(i).size;
     return totalSize;
   }
 
@@ -116,10 +115,7 @@ export class ContentLoader {
   public async load(): Promise<ContentLoader> {
     this._loading = true;
     this.printInfo();
-    this._responses = await this._fileStorage.readFileParts(
-      this._fileName,
-      this._requests
-    );
+    this._responses = await this._fileStorage.readFileParts(this._fileName, this._requests);
     this._loaded = true;
     return this;
   }

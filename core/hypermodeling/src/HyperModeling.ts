@@ -8,20 +8,10 @@
 
 import { assert } from "@itwin/core-bentley";
 import { SectionType } from "@itwin/core-common";
-import {
-  IModelApp,
-  IModelConnection,
-  ScreenViewport,
-  tryImageElementFromUrl,
-  ViewManip,
-} from "@itwin/core-frontend";
+import { IModelApp, IModelConnection, ScreenViewport, tryImageElementFromUrl, ViewManip } from "@itwin/core-frontend";
 import { registerTools } from "./Tools";
 import { HyperModelingDecorator } from "./HyperModelingDecorator";
-import {
-  HyperModelingConfig,
-  SectionGraphicsConfig,
-  SectionMarkerConfig,
-} from "./HyperModelingConfig";
+import { HyperModelingConfig, SectionGraphicsConfig, SectionMarkerConfig } from "./HyperModelingConfig";
 import { SectionMarkerHandler } from "./SectionMarkerHandler";
 
 /** @internal */
@@ -48,13 +38,9 @@ interface Initialized {
   resources: Resources;
 }
 
-function assertInitialized(
-  maybe: MaybeInitialized
-): asserts maybe is Initialized {
+function assertInitialized(maybe: MaybeInitialized): asserts maybe is Initialized {
   if (undefined === maybe.resources)
-    throw new Error(
-      "You must call HyperModeling.initialize before using the hypermodeling package"
-    );
+    throw new Error("You must call HyperModeling.initialize before using the hypermodeling package");
 }
 
 /** The API entry point for the hypermodeling package. Applications must call [[initialize]] and await the result before using the package.
@@ -119,27 +105,19 @@ export class HyperModeling {
       markers: {
         section: {
           image: images[0],
-          label: IModelApp.localization.getLocalizedString(
-            "HyperModeling:Message.SectionCallout"
-          ),
+          label: IModelApp.localization.getLocalizedString("HyperModeling:Message.SectionCallout"),
         },
         detail: {
           image: images[1],
-          label: IModelApp.localization.getLocalizedString(
-            "HyperModeling:Message.DetailCallout"
-          ),
+          label: IModelApp.localization.getLocalizedString("HyperModeling:Message.DetailCallout"),
         },
         elevation: {
           image: images[2],
-          label: IModelApp.localization.getLocalizedString(
-            "HyperModeling:Message.ElevationCallout"
-          ),
+          label: IModelApp.localization.getLocalizedString("HyperModeling:Message.ElevationCallout"),
         },
         plan: {
           image: images[3],
-          label: IModelApp.localization.getLocalizedString(
-            "HyperModeling:Message.PlanCallout"
-          ),
+          label: IModelApp.localization.getLocalizedString("HyperModeling:Message.PlanCallout"),
         },
       },
     };
@@ -173,31 +151,18 @@ export class HyperModeling {
 
     if (config.markers) {
       this._markerConfig = {
-        ignoreModelSelector:
-          config.markers.ignoreModelSelector ??
-          this._markerConfig.ignoreModelSelector,
-        ignoreCategorySelector:
-          config.markers.ignoreCategorySelector ??
-          this._markerConfig.ignoreCategorySelector,
-        hiddenSectionTypes:
-          config.markers.hiddenSectionTypes ??
-          this._markerConfig.hiddenSectionTypes,
+        ignoreModelSelector: config.markers.ignoreModelSelector ?? this._markerConfig.ignoreModelSelector,
+        ignoreCategorySelector: config.markers.ignoreCategorySelector ?? this._markerConfig.ignoreCategorySelector,
+        hiddenSectionTypes: config.markers.hiddenSectionTypes ?? this._markerConfig.hiddenSectionTypes,
       };
     }
 
     if (config.graphics) {
       this._graphicsConfig = {
-        ignoreClip:
-          config.graphics.ignoreClip ?? this._graphicsConfig.ignoreClip,
-        debugClipVolumes:
-          config.graphics.debugClipVolumes ??
-          this._graphicsConfig.debugClipVolumes,
-        hideSectionGraphics:
-          config.graphics.hideSectionGraphics ??
-          this._graphicsConfig.hideSectionGraphics,
-        hideSheetAnnotations:
-          config.graphics.hideSheetAnnotations ??
-          this._graphicsConfig.hideSheetAnnotations,
+        ignoreClip: config.graphics.ignoreClip ?? this._graphicsConfig.ignoreClip,
+        debugClipVolumes: config.graphics.debugClipVolumes ?? this._graphicsConfig.debugClipVolumes,
+        hideSectionGraphics: config.graphics.hideSectionGraphics ?? this._graphicsConfig.hideSectionGraphics,
+        hideSheetAnnotations: config.graphics.hideSheetAnnotations ?? this._graphicsConfig.hideSheetAnnotations,
       };
 
       IModelApp.viewManager.invalidateViewportScenes();
@@ -234,13 +199,9 @@ export class HyperModeling {
    * so if none are present, hypermodeling features are not relevant to the iModel. Attempting to use those features with such an iModel is fine,
    * but probably not useful.
    */
-  public static async isSupportedForIModel(
-    imodel: IModelConnection
-  ): Promise<boolean> {
+  public static async isSupportedForIModel(imodel: IModelConnection): Promise<boolean> {
     try {
-      const reader = imodel.createQueryReader(
-        "SELECT ECInstanceId FROM bis.SectionDrawingLocation LIMIT 1"
-      );
+      const reader = imodel.createQueryReader("SELECT ECInstanceId FROM bis.SectionDrawingLocation LIMIT 1");
       return await reader.step(); // i.e., are any results are returned?
     } catch {
       // An iModel with a version of BisCore older than 1.0.11 will produce an expected "table not found" on the SectionDrawingLocation ECClass.
@@ -289,25 +250,17 @@ export class HyperModeling {
    * @returns The decorator that implements hypermodeling features for the viewport, or `undefined` if hypermodeling could not be enabled.
    * @note Enabling hypermodeling may fail if the viewport is not viewing a spatial model or if the viewport's iModel does not support hypermodeling.
    */
-  public static async start(
-    viewport: ScreenViewport
-  ): Promise<HyperModelingDecorator | undefined> {
+  public static async start(viewport: ScreenViewport): Promise<HyperModelingDecorator | undefined> {
     await this.ensureInitialized();
     return this._start(viewport);
   }
 
-  private static async _start(
-    viewport: ScreenViewport
-  ): Promise<HyperModelingDecorator | undefined> {
+  private static async _start(viewport: ScreenViewport): Promise<HyperModelingDecorator | undefined> {
     assertInitialized(this);
     if (!viewport.view.isSpatialView()) return undefined;
 
     let decorator = HyperModelingDecorator.getForViewport(viewport);
-    if (!decorator)
-      decorator = await HyperModelingDecorator.create(
-        viewport,
-        this._markerConfig
-      );
+    if (!decorator) decorator = await HyperModelingDecorator.create(viewport, this._markerConfig);
 
     if (undefined !== decorator && viewport.view.isCameraOn) {
       // We want the 2d graphics to align with the 3d geometry. Perspective ruins that.

@@ -56,8 +56,7 @@ export class RpcPushChannel<T> {
     const channel = this._channels.get(channelId);
     if (!channel) return;
 
-    for (const subscriber of channel._subscribers)
-      subscriber.onMessage.raiseEvent(messageData);
+    for (const subscriber of channel._subscribers) subscriber.onMessage.raiseEvent(messageData);
   }
 
   private _subscribers: RpcPushSubscription<T>[] = [];
@@ -88,34 +87,20 @@ export class RpcPushChannel<T> {
   /** Creates a new RpcPushChannel.
    * @throws IModelError if a channel with the specified name and service already exist.
    */
-  public static create<T>(
-    name: string,
-    service = RpcPushService.dedicated
-  ): RpcPushChannel<T> {
+  public static create<T>(name: string, service = RpcPushService.dedicated): RpcPushChannel<T> {
     return this.get<T>(name, service, false);
   }
 
   /** Obtains an RpcPushChannel, creating it if one with the specified name and service does not already exists. */
-  public static obtain<T>(
-    name: string,
-    service = RpcPushService.dedicated
-  ): RpcPushChannel<T> {
+  public static obtain<T>(name: string, service = RpcPushService.dedicated): RpcPushChannel<T> {
     return this.get<T>(name, service, true);
   }
 
-  private static get<T>(
-    name: string,
-    service: RpcPushService,
-    reuseExisting: boolean
-  ): RpcPushChannel<T> {
+  private static get<T>(name: string, service: RpcPushService, reuseExisting: boolean): RpcPushChannel<T> {
     const id = this.formatId(name, service);
     let channel = this._channels.get(id);
     if (channel) {
-      if (!reuseExisting)
-        throw new IModelError(
-          BentleyStatus.ERROR,
-          `Channel "${id}" already exists.`
-        );
+      if (!reuseExisting) throw new IModelError(BentleyStatus.ERROR, `Channel "${id}" already exists.`);
 
       ++channel._refCount;
       return channel;
@@ -159,10 +144,7 @@ export class RpcPushSubscription<T> {
  *  @internal
  */
 export abstract class RpcPushConnection<T> {
-  public static for<T>(
-    _channel: RpcPushChannel<T>,
-    _client: unknown = undefined
-  ): RpcPushConnection<T> {
+  public static for<T>(_channel: RpcPushChannel<T>, _client: unknown = undefined): RpcPushConnection<T> {
     throw new IModelError(BentleyStatus.ERROR, "Not implemented.");
   }
 

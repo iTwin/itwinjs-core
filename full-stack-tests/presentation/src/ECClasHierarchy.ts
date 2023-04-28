@@ -51,11 +51,9 @@ export class ECClassHierarchy {
       FROM
         meta.ClassHasBaseClasses h
       `;
-    for await (const row of imodel.createQueryReader(
-      hierarchyQuery,
-      undefined,
-      { rowFormat: QueryRowFormat.UseJsPropertyNames }
-    )) {
+    for await (const row of imodel.createQueryReader(hierarchyQuery, undefined, {
+      rowFormat: QueryRowFormat.UseJsPropertyNames,
+    })) {
       const { baseClassId, classId } = row;
 
       const baseClasses = baseClassHierarchy.get(classId);
@@ -67,12 +65,7 @@ export class ECClassHierarchy {
       else derivedClassHierarchy.set(baseClassId, [classId]);
     }
 
-    return new ECClassHierarchy(
-      imodel,
-      classInfosMap,
-      baseClassHierarchy,
-      derivedClassHierarchy
-    );
+    return new ECClassHierarchy(imodel, classInfosMap, baseClassHierarchy, derivedClassHierarchy);
   }
   private getAllBaseClassInfos(classId: Id64String) {
     const baseClassIds = this._baseClasses.get(classId) ?? [];
@@ -88,8 +81,7 @@ export class ECClassHierarchy {
     return derivedClassIds.reduce<ECClassInfo[]>((arr, id) => {
       const thisInfo = this._classInfos.get(id)!;
       const derivedInfo = this.getAllDerivedClassInfos(id, onlyLeaf);
-      if ((onlyLeaf && derivedInfo.length === 0) || !onlyLeaf)
-        arr.push(thisInfo);
+      if ((onlyLeaf && derivedInfo.length === 0) || !onlyLeaf) arr.push(thisInfo);
       arr.push(...derivedInfo);
       return arr;
     }, []);
@@ -103,17 +95,12 @@ export class ECClassHierarchy {
       leafDerivedClasses: this.getAllDerivedClassInfos(id, true),
     };
   }
-  public async getClassInfo(
-    schemaName: string,
-    className: string
-  ): Promise<ECClassHierarchyInfo> {
+  public async getClassInfo(schemaName: string, className: string): Promise<ECClassHierarchyInfo> {
     const classQuery = `SELECT c.ECInstanceId FROM meta.ECClassDef c JOIN meta.ECSchemaDef s ON s.ECInstanceId = c.Schema.Id WHERE c.Name = ? AND s.Name = ?`;
     const result = await this._imodel
-      .createQueryReader(
-        classQuery,
-        QueryBinder.from([className, schemaName]),
-        { rowFormat: QueryRowFormat.UseJsPropertyNames }
-      )
+      .createQueryReader(classQuery, QueryBinder.from([className, schemaName]), {
+        rowFormat: QueryRowFormat.UseJsPropertyNames,
+      })
       .toArray();
     const { id } = result[0];
     return this.getClassInfoById(id);

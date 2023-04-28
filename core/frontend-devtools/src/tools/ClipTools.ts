@@ -7,15 +7,7 @@
  * @module Tools
  */
 
-import {
-  ClipStyle,
-  ClipStyleProps,
-  ColorByName,
-  ColorDef,
-  LinePixels,
-  RenderMode,
-  RgbColor,
-} from "@itwin/core-common";
+import { ClipStyle, ClipStyleProps, ColorByName, ColorDef, LinePixels, RenderMode, RgbColor } from "@itwin/core-common";
 import { IModelApp, Tool, Viewport } from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 import { parseBoolean } from "./parseBoolean";
@@ -58,10 +50,7 @@ export class ClipColorTool extends Tool {
     const vp = IModelApp.viewManager.selectedView;
     if (vp) {
       const props = vp.displayStyle.settings.clipStyle.toJSON() ?? {};
-      props[which] =
-        colStr === "clear"
-          ? undefined
-          : RgbColor.fromColorDef(ColorDef.fromString(colStr));
+      props[which] = colStr === "clear" ? undefined : RgbColor.fromColorDef(ColorDef.fromString(colStr));
       vp.displayStyle.settings.clipStyle = ClipStyle.fromJSON(props);
     }
   }
@@ -89,10 +78,7 @@ export class ClipColorTool extends Tool {
 
     const which = args[0];
     if (which === "inside" || which === "outside")
-      this.setClipColor(
-        args[1],
-        "inside" === which ? "insideColor" : "outsideColor"
-      );
+      this.setClipColor(args[1], "inside" === which ? "insideColor" : "outsideColor");
 
     return true;
   }

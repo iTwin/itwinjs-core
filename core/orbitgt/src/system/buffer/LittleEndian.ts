@@ -50,11 +50,7 @@ export class LittleEndian {
   /**
    * Write an unsigned 8-bit integer.
    */
-  public static writeBufferByte(
-    buffer: ABuffer,
-    offset: int32,
-    value: int32
-  ): void {
+  public static writeBufferByte(buffer: ABuffer, offset: int32, value: int32): void {
     buffer.set(offset, value);
   }
 
@@ -86,11 +82,7 @@ export class LittleEndian {
   /**
    * Write an unsigned 16-bit integer.
    */
-  public static writeBufferShort(
-    buffer: ABuffer,
-    offset: int32,
-    value: int32
-  ): void {
+  public static writeBufferShort(buffer: ABuffer, offset: int32, value: int32): void {
     buffer.set(offset++, value >> 0);
     buffer.set(offset++, value >> 8);
   }
@@ -126,11 +118,7 @@ export class LittleEndian {
   /**
    * Write an unsigned 24-bit integer.
    */
-  public static writeBufferInt3(
-    buffer: ABuffer,
-    offset: int32,
-    value: int32
-  ): void {
+  public static writeBufferInt3(buffer: ABuffer, offset: int32, value: int32): void {
     buffer.set(offset++, value >> 0);
     buffer.set(offset++, value >> 8);
     buffer.set(offset++, value >> 16);
@@ -170,11 +158,7 @@ export class LittleEndian {
   /**
    * Write a signed 32-bit integer.
    */
-  public static writeBufferInt(
-    buffer: ABuffer,
-    offset: int32,
-    value: int32
-  ): void {
+  public static writeBufferInt(buffer: ABuffer, offset: int32, value: int32): void {
     buffer.set(offset++, value >> 0);
     buffer.set(offset++, value >> 8);
     buffer.set(offset++, value >> 16);
@@ -224,11 +208,7 @@ export class LittleEndian {
   /**
    * Write a signed 64-bit integer.
    */
-  public static writeBufferLong(
-    buffer: ABuffer,
-    offset: int32,
-    value: ALong
-  ): void {
+  public static writeBufferLong(buffer: ABuffer, offset: int32, value: ALong): void {
     buffer.set(offset++, value.getByte(0));
     buffer.set(offset++, value.getByte(1));
     buffer.set(offset++, value.getByte(2));
@@ -270,11 +250,7 @@ export class LittleEndian {
   /**
    * Write a signed 32-bit float.
    */
-  public static writeBufferFloat(
-    buffer: ABuffer,
-    offset: int32,
-    value: float32
-  ): void {
+  public static writeBufferFloat(buffer: ABuffer, offset: int32, value: float32): void {
     LittleEndian.writeBufferInt(buffer, offset, Numbers.floatToIntBits(value));
   }
 
@@ -289,9 +265,7 @@ export class LittleEndian {
    * Read a signed 64-bit float.
    */
   public static readBufferDouble(buffer: ABuffer, offset: int32): float64 {
-    return Numbers.longBitsToDouble(
-      LittleEndian.readBufferLong(buffer, offset)
-    );
+    return Numbers.longBitsToDouble(LittleEndian.readBufferLong(buffer, offset));
   }
 
   /**
@@ -304,16 +278,8 @@ export class LittleEndian {
   /**
    * Write a signed 64-bit float.
    */
-  public static writeBufferDouble(
-    buffer: ABuffer,
-    offset: int32,
-    value: float64
-  ): void {
-    LittleEndian.writeBufferLong(
-      buffer,
-      offset,
-      Numbers.doubleToLongBits(value)
-    );
+  public static writeBufferDouble(buffer: ABuffer, offset: int32, value: float64): void {
+    LittleEndian.writeBufferLong(buffer, offset, Numbers.doubleToLongBits(value));
   }
 
   /**
@@ -332,10 +298,7 @@ export class LittleEndian {
     offset += 4;
     let value: string = "";
     for (let i: number = 0; i < valueLength; i++)
-      value = Strings.appendChar(
-        value,
-        LittleEndian.readBufferShort(buffer, offset + 2 * i)
-      );
+      value = Strings.appendChar(value, LittleEndian.readBufferShort(buffer, offset + 2 * i));
     return value;
   }
 
@@ -360,8 +323,7 @@ export class LittleEndian {
     } else {
       let valueLength: int32 = Strings.getLength(value);
       LittleEndian.writeStreamInt(stream, valueLength);
-      for (let i: number = 0; i < valueLength; i++)
-        LittleEndian.writeStreamShort(stream, Strings.getCharAt(value, i));
+      for (let i: number = 0; i < valueLength; i++) LittleEndian.writeStreamShort(stream, Strings.getCharAt(value, i));
     }
   }
 

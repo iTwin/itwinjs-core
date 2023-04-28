@@ -7,17 +7,8 @@
  */
 
 import { Range1d, Range2d, Vector3d } from "@itwin/core-geometry";
-import {
-  OctEncodedNormal,
-  QParams2d,
-  QPoint2d,
-  QPoint3d,
-  Quantization,
-} from "@itwin/core-common";
-import {
-  RealityMeshParams,
-  RealityMeshParamsBuilder,
-} from "./RealityMeshParams";
+import { OctEncodedNormal, QParams2d, QPoint2d, QPoint3d, Quantization } from "@itwin/core-common";
+import { RealityMeshParams, RealityMeshParamsBuilder } from "./RealityMeshParams";
 
 class UpsampleIndexMap extends Map<number, number> {
   private _next = 0;
@@ -39,11 +30,7 @@ export interface UpsampledRealityMeshParams {
 }
 
 class ClipAxis {
-  constructor(
-    public vertical: boolean,
-    public lessThan: boolean,
-    public value: number
-  ) {}
+  constructor(public vertical: boolean, public lessThan: boolean, public value: number) {}
 }
 
 export function upsampleRealityMeshParams(
@@ -61,43 +48,25 @@ export function upsampleRealityMeshParams(
     addedParams = new Array<QPoint2d>(),
     addedNormals = new Array<number>();
   if (uvLow.x > 0) clipAxes.push(new ClipAxis(true, false, uvLow.x));
-  if (uvHigh.x < Quantization.rangeScale16)
-    clipAxes.push(new ClipAxis(true, true, uvHigh.x));
+  if (uvHigh.x < Quantization.rangeScale16) clipAxes.push(new ClipAxis(true, true, uvHigh.x));
   if (uvLow.y > 0) clipAxes.push(new ClipAxis(false, false, uvLow.y));
-  if (uvHigh.y < Quantization.rangeScale16)
-    clipAxes.push(new ClipAxis(false, true, uvHigh.y));
+  if (uvHigh.y < Quantization.rangeScale16) clipAxes.push(new ClipAxis(false, true, uvHigh.y));
 
   const triangleRange = Range2d.createNull();
   for (let i = 0; i < params.indices.length; ) {
-    const triangleIndices = [
-      params.indices[i++],
-      params.indices[i++],
-      params.indices[i++],
-    ];
+    const triangleIndices = [params.indices[i++], params.indices[i++], params.indices[i++]];
 
     Range2d.createNull(triangleRange);
     for (const index of triangleIndices) {
       const paramIndex = 2 * index;
-      triangleRange.extendXY(
-        params.uvs.points[paramIndex],
-        params.uvs.points[paramIndex + 1]
-      );
+      triangleRange.extendXY(params.uvs.points[paramIndex], params.uvs.points[paramIndex + 1]);
     }
 
     if (uvRange.intersectsRange(triangleRange)) {
       if (uvRange.containsRange(triangleRange)) {
         indexMap.addTriangle(triangleIndices);
       } else {
-        addClipped(
-          params,
-          triangleIndices,
-          indexMap,
-          clipAxes,
-          0,
-          addedPoints,
-          addedParams,
-          addedNormals
-        );
+        addClipped(params, triangleIndices, indexMap, clipAxes, 0, addedPoints, addedParams, addedNormals);
       }
     }
   }
@@ -128,10 +97,7 @@ export function upsampleRealityMeshParams(
         parentPoints.points[pointIndex + 2]
       );
       const paramIndex = 2 * parentIndex;
-      uv.setFromScalars(
-        parentParams.points[paramIndex],
-        parentParams.points[paramIndex + 1]
-      );
+      uv.setFromScalars(parentParams.points[paramIndex], parentParams.points[paramIndex + 1]);
       if (parentNormals) normal = parentNormals[parentIndex];
     } else {
       const addedIndex = parentIndex - parentPointCount;
@@ -165,11 +131,7 @@ function interpolateInt(value0: number, value1: number, fraction: number) {
   return Math.floor(0.5 + interpolate(value0, value1, fraction));
 }
 
-function interpolateQPoint3d(
-  qPoint: QPoint3d,
-  qNext: QPoint3d,
-  fraction: number
-): QPoint3d {
+function interpolateQPoint3d(qPoint: QPoint3d, qNext: QPoint3d, fraction: number): QPoint3d {
   return QPoint3d.fromScalars(
     interpolateInt(qPoint.x, qNext.x, fraction),
     interpolateInt(qPoint.y, qNext.y, fraction),
@@ -177,22 +139,11 @@ function interpolateQPoint3d(
   );
 }
 
-function interpolateQPoint2d(
-  qPoint: QPoint2d,
-  qNext: QPoint2d,
-  fraction: number
-): QPoint2d {
-  return QPoint2d.fromScalars(
-    interpolateInt(qPoint.x, qNext.x, fraction),
-    interpolateInt(qPoint.y, qNext.y, fraction)
-  );
+function interpolateQPoint2d(qPoint: QPoint2d, qNext: QPoint2d, fraction: number): QPoint2d {
+  return QPoint2d.fromScalars(interpolateInt(qPoint.x, qNext.x, fraction), interpolateInt(qPoint.y, qNext.y, fraction));
 }
 
-function interpolateOctEncodedNormal(
-  normal0: number,
-  normal1: number,
-  fraction: number
-): number {
+function interpolateOctEncodedNormal(normal0: number, normal1: number, fraction: number): number {
   const n0 = OctEncodedNormal.decodeValue(normal0);
   const n1 = OctEncodedNormal.decodeValue(normal1);
   if (undefined !== n0 && undefined !== n1) {
@@ -243,11 +194,7 @@ function addClipped(
   const getPoint = (index: number, result: QPoint3d): QPoint3d => {
     if (index < parentPointCount) {
       const pointIndex = index * 3;
-      result.setFromScalars(
-        parentPoints[pointIndex],
-        parentPoints[pointIndex + 1],
-        parentPoints[pointIndex + 2]
-      );
+      result.setFromScalars(parentPoints[pointIndex], parentPoints[pointIndex + 1], parentPoints[pointIndex + 2]);
     } else {
       addedPoints[index - parentPointCount].clone(result);
     }
@@ -258,10 +205,7 @@ function addClipped(
   const getParam = (index: number, result: QPoint2d): QPoint2d => {
     if (index < parentPointCount) {
       const pointIndex = index * 2;
-      result.setFromScalars(
-        parentParams[pointIndex],
-        parentParams[pointIndex + 1]
-      );
+      result.setFromScalars(parentParams[pointIndex], parentParams[pointIndex + 1]);
     } else {
       addedParams[index - parentPointCount].clone(result);
     }
@@ -271,9 +215,7 @@ function addClipped(
   const getNormal = (index: number): number | undefined => {
     if (!parentNormals) return undefined;
 
-    return index < parentPointCount
-      ? parentNormals[index]
-      : addedNormals[index - parentPointCount];
+    return index < parentPointCount ? parentNormals[index] : addedNormals[index - parentPointCount];
   };
 
   for (let i = 0; i < 3; i++) {
@@ -281,9 +223,7 @@ function addClipped(
     const thisParam = getParam(index, scratchQPoint2d);
     const thisValue = clipAxis.vertical ? thisParam.x : thisParam.y;
     values[i] = thisValue;
-    inside[i] = clipAxis.lessThan
-      ? thisValue < clipValue
-      : thisValue > clipValue;
+    inside[i] = clipAxis.lessThan ? thisValue < clipValue : thisValue > clipValue;
   }
 
   for (let i = 0; i < 3; i++) {
@@ -296,41 +236,18 @@ function addClipped(
 
       clipOutput.push(parentPointCount + addedPoints.length);
       addedPoints.push(
-        interpolateQPoint3d(
-          getPoint(index, scratchQPoint3d),
-          getPoint(nextIndex, scratchQPoint3d1),
-          fraction
-        )
+        interpolateQPoint3d(getPoint(index, scratchQPoint3d), getPoint(nextIndex, scratchQPoint3d1), fraction)
       );
       addedParams.push(
-        interpolateQPoint2d(
-          getParam(index, scratchQPoint2d),
-          getParam(nextIndex, scratchQPoint2d1),
-          fraction
-        )
+        interpolateQPoint2d(getParam(index, scratchQPoint2d), getParam(nextIndex, scratchQPoint2d1), fraction)
       );
       if (parentNormals)
-        addedNormals.push(
-          interpolateOctEncodedNormal(
-            getNormal(index)!,
-            getNormal(nextIndex)!,
-            fraction
-          )
-        );
+        addedNormals.push(interpolateOctEncodedNormal(getNormal(index)!, getNormal(nextIndex)!, fraction));
     }
   }
 
   if (clipOutput.length > 2) {
-    addClipped(
-      params,
-      clipOutput.slice(0, 3),
-      indexMap,
-      clipAxes,
-      clipIndex,
-      addedPoints,
-      addedParams,
-      addedNormals
-    );
+    addClipped(params, clipOutput.slice(0, 3), indexMap, clipAxes, clipIndex, addedPoints, addedParams, addedNormals);
     if (clipOutput.length > 3)
       addClipped(
         params,

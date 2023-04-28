@@ -26,10 +26,7 @@ function MobileReporter(runner) {
     // Following send a event to UI and write the log message in a text view
     process.mocha_log("MOCHA", msg);
     // replace special char and replaced it with string for logging and filtering purpose
-    let plainMsg = msg
-      .replace("λ", "[*]")
-      .replace("✔", "[PASSED]")
-      .replace("✘", "[FAILED]");
+    let plainMsg = msg.replace("λ", "[*]").replace("✔", "[PASSED]").replace("✘", "[FAILED]");
 
     // remove \n from the front of the string
     let i = 0;
@@ -60,17 +57,9 @@ function MobileReporter(runner) {
   runner.on("pass", function (test) {
     stats.passes = stats.passes || 0;
     var medium = test.slow() / 2;
-    test.speed =
-      test.duration > test.slow()
-        ? "slow"
-        : test.duration > medium
-        ? "medium"
-        : "fast";
+    test.speed = test.duration > test.slow() ? "slow" : test.duration > medium ? "medium" : "fast";
     stats.passes++;
-    log(
-      "info",
-      `${indent()} ✔ ${test.title}  (${test.speed}) ${test.duration} ms`
-    );
+    log("info", `${indent()} ✔ ${test.title}  (${test.speed}) ${test.duration} ms`);
   });
   runner.on("fail", function (test, err) {
     stats.failures++;
@@ -80,12 +69,7 @@ function MobileReporter(runner) {
       log("error", `${indent()}    ${err.message}`);
     } else {
       if (err.expected && err.actual) {
-        log(
-          "error",
-          `${indent()} Expected: ${err.expected}, Actual: ${err.actual} ${
-            err.message
-          }`
-        );
+        log("error", `${indent()} Expected: ${err.expected}, Actual: ${err.actual} ${err.message}`);
       }
     }
     failedTest.push(test);
@@ -99,37 +83,21 @@ function MobileReporter(runner) {
     log("info", `\n${stats.passes} Passes`);
     log("info", `\n${stats.failures} Failures`);
     log("info", `\n${stats.pending} Pending`);
-    log(
-      "info",
-      `\nDone ${stats.passes} / ${stats.passes + stats.failures} (${
-        stats.duration
-      } seconds)`
-    );
+    log("info", `\nDone ${stats.passes} / ${stats.passes + stats.failures} (${stats.duration} seconds)`);
     process.mocha_complete();
 
     if (failedTest.length > 0) {
-      log(
-        "error",
-        `\n=========================[errors]=========================`
-      );
+      log("error", `\n=========================[errors]=========================`);
       for (const test of failedTest) {
         log("error", `\n${indent()} ✘ ${test.title}`);
         if (test.err.expected && test.err.actual) {
-          log(
-            "error",
-            `${indent()} Expected: ${test.err.expected}, Actual: ${
-              test.err.actual
-            }`
-          );
+          log("error", `${indent()} Expected: ${test.err.expected}, Actual: ${test.err.actual}`);
         }
         if (test.err.stack) {
           log("error", `${indent()} Trace: ${test.err.stack}`);
         }
       }
-      log(
-        "error",
-        `\n=========================[errors]=========================`
-      );
+      log("error", `\n=========================[errors]=========================`);
     }
   });
 }

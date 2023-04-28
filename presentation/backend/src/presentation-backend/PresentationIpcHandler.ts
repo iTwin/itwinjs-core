@@ -18,15 +18,10 @@ import {
 import { Presentation } from "./Presentation";
 
 /** @internal */
-export class PresentationIpcHandler
-  extends IpcHandler
-  implements PresentationIpcInterface
-{
+export class PresentationIpcHandler extends IpcHandler implements PresentationIpcInterface {
   public channelName = PRESENTATION_IPC_CHANNEL_NAME;
 
-  public async setRulesetVariable(
-    params: SetRulesetVariableParams<RulesetVariableJSON>
-  ): Promise<void> {
+  public async setRulesetVariable(params: SetRulesetVariableParams<RulesetVariableJSON>): Promise<void> {
     const { clientId, rulesetId, variable } = params;
     const parsedVariable = RulesetVariable.fromJSON(variable);
     Presentation.getManager(clientId)
@@ -34,9 +29,7 @@ export class PresentationIpcHandler
       .setValue(parsedVariable.id, parsedVariable.type, parsedVariable.value);
   }
 
-  public async unsetRulesetVariable(
-    params: UnsetRulesetVariableParams
-  ): Promise<void> {
+  public async unsetRulesetVariable(params: UnsetRulesetVariableParams): Promise<void> {
     const { clientId, rulesetId, variableId } = params;
     Presentation.getManager(clientId).vars(rulesetId).unset(variableId);
   }

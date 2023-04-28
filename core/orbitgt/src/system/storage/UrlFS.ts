@@ -90,11 +90,7 @@ export class UrlFS extends FileStorage {
   /**
    * FileStorage method.
    */
-  public override async readFilePart(
-    url: string,
-    offset: ALong,
-    size: int32
-  ): Promise<ABuffer> {
+  public override async readFilePart(url: string, offset: ALong, size: int32): Promise<ABuffer> {
     const extent: ALong = offset.addInt(size - 1);
     const range: string = `bytes=${offset.toString()}-${extent.toString()}`;
     const requestHeaders: StringMap<string> = new StringMap<string>();
@@ -109,17 +105,9 @@ export class UrlFS extends FileStorage {
       null /* postData*/,
       responseHeaders
     );
-    const contentLength: number = parseInt(
-      responseHeaders.get("content-length")
-    );
-    ASystem.assertNot(
-      contentLength != size,
-      `Expected ${size} bytes of content, not ${contentLength}`
-    );
-    ASystem.assertNot(
-      content.size() != size,
-      `Expected content buffer size ${size}, not ${content}`
-    );
+    const contentLength: number = parseInt(responseHeaders.get("content-length"));
+    ASystem.assertNot(contentLength != size, `Expected ${size} bytes of content, not ${contentLength}`);
+    ASystem.assertNot(content.size() != size, `Expected content buffer size ${size}, not ${content}`);
     this.requestCount++;
     this.responseSize += size;
     return content;
@@ -128,19 +116,12 @@ export class UrlFS extends FileStorage {
   /**
    * FileStorage method.
    */
-  public override async readFileParts(
-    url: string,
-    ranges: AList<FileRange>
-  ): Promise<AList<FileContent>> {
+  public override async readFileParts(url: string, ranges: AList<FileRange>): Promise<AList<FileContent>> {
     /* Request all file parts in parallel */
     const contentFetchers: Array<Promise<ABuffer>> = [];
     for (let i: number = 0; i < ranges.size(); i++) {
       const range: FileRange = ranges.get(i);
-      const contentFetcher: Promise<ABuffer> = this.readFilePart(
-        url,
-        range.offset,
-        range.size
-      );
+      const contentFetcher: Promise<ABuffer> = this.readFilePart(url, range.offset, range.size);
       contentFetchers.push(contentFetcher);
     }
     /* Await all requests at once */

@@ -14,10 +14,7 @@ if (!ProcessDetector.isElectronAppFrontend) {
         return;
       }
 
-      const sum = await MobileTestInterface.getClient().multipart(
-        1,
-        new Uint8Array([2, 3, 4])
-      );
+      const sum = await MobileTestInterface.getClient().multipart(1, new Uint8Array([2, 3, 4]));
       assert.equal(sum, 10);
     });
   });

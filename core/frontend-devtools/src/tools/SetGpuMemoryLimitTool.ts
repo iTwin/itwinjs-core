@@ -32,9 +32,7 @@ export class SetGpuMemoryLimitTool extends Tool {
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     const maxBytes = Number.parseInt(args[0], 10);
-    const limit = Number.isNaN(maxBytes)
-      ? (args[0] as GpuMemoryLimit)
-      : maxBytes;
+    const limit = Number.isNaN(maxBytes) ? (args[0] as GpuMemoryLimit) : maxBytes;
     return this.run(limit);
   }
 }

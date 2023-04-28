@@ -69,37 +69,17 @@ describe("LocalizationHelper", () => {
 
   describe("getLocalizedContent", () => {
     it("translates contentItem labelDefinitions", () => {
-      const contentItem = new Item(
-        [],
-        createRandomLabelDefinition(),
-        "",
-        undefined,
-        {},
-        {},
-        []
-      );
+      const contentItem = new Item([], createRandomLabelDefinition(), "", undefined, {}, {}, []);
       contentItem.label.rawValue = "@namespace:LocalizedValue@";
-      const content = new Content(createTestContentDescriptor({ fields: [] }), [
-        contentItem,
-      ]);
+      const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
       localizationHelper.getLocalizedContent(content);
       expect(content.contentSet[0]!.label.rawValue).to.be.eq("LocalizedValue");
     });
 
     it("translates contentItem value", () => {
-      const contentItem = new Item(
-        [],
-        createRandomLabelDefinition(),
-        "",
-        undefined,
-        {},
-        {},
-        []
-      );
+      const contentItem = new Item([], createRandomLabelDefinition(), "", undefined, {}, {}, []);
       contentItem.values.property = "@namespace:LocalizedValue@";
-      const content = new Content(createTestContentDescriptor({ fields: [] }), [
-        contentItem,
-      ]);
+      const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
       localizationHelper.getLocalizedContent(content);
       expect(content.contentSet[0]!.values.property).to.be.eq("LocalizedValue");
     });
@@ -122,9 +102,7 @@ describe("LocalizationHelper", () => {
         },
         displayValues: {},
       });
-      const content = new Content(createTestContentDescriptor({ fields: [] }), [
-        contentItem,
-      ]);
+      const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
       localizationHelper.getLocalizedContent(content);
       expect(content.contentSet[0]!.values.parent)
         .to.have.lengthOf(1)
@@ -143,74 +121,33 @@ describe("LocalizationHelper", () => {
     });
 
     it("translates contentItem display value", () => {
-      const contentItem = new Item(
-        [],
-        createRandomLabelDefinition(),
-        "",
-        undefined,
-        {},
-        {},
-        []
-      );
+      const contentItem = new Item([], createRandomLabelDefinition(), "", undefined, {}, {}, []);
       contentItem.displayValues.property = "@namespace:LocalizedValue@";
-      const content = new Content(createTestContentDescriptor({ fields: [] }), [
-        contentItem,
-      ]);
+      const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
       localizationHelper.getLocalizedContent(content);
-      expect(content.contentSet[0]!.displayValues.property).to.be.eq(
-        "LocalizedValue"
-      );
+      expect(content.contentSet[0]!.displayValues.property).to.be.eq("LocalizedValue");
     });
 
     it("does not translate contentItem non-translatable value", () => {
-      const contentItem = new Item(
-        [],
-        createRandomLabelDefinition(),
-        "",
-        undefined,
-        {},
-        {},
-        []
-      );
+      const contentItem = new Item([], createRandomLabelDefinition(), "", undefined, {}, {}, []);
       contentItem.values.property = 10;
-      const content = new Content(createTestContentDescriptor({ fields: [] }), [
-        contentItem,
-      ]);
+      const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
       localizationHelper.getLocalizedContent(content);
       expect(content.contentSet[0]!.values.property).to.be.eq(10);
     });
 
     it("translates content descriptor field label", () => {
-      const contentItem = new Item(
-        [],
-        createRandomLabelDefinition(),
-        "",
-        undefined,
-        {},
-        {},
-        []
-      );
+      const contentItem = new Item([], createRandomLabelDefinition(), "", undefined, {}, {}, []);
       const field = createTestSimpleContentField({
         label: "@namespace:LocalizedValue@",
       });
-      const content = new Content(
-        createTestContentDescriptor({ fields: [field] }),
-        [contentItem]
-      );
+      const content = new Content(createTestContentDescriptor({ fields: [field] }), [contentItem]);
       localizationHelper.getLocalizedContent(content);
       expect(content.descriptor.fields[0].label).to.be.eq("LocalizedValue");
     });
 
     it("translates content descriptor category label", () => {
-      const contentItem = new Item(
-        [],
-        createRandomLabelDefinition(),
-        "",
-        undefined,
-        {},
-        {},
-        []
-      );
+      const contentItem = new Item([], createRandomLabelDefinition(), "", undefined, {}, {}, []);
       const testCategory = createTestCategoryDescription({
         label: "@namespace:LocalizedLabel@",
       });
@@ -227,15 +164,7 @@ describe("LocalizationHelper", () => {
     });
 
     it("translates content descriptor category description", () => {
-      const contentItem = new Item(
-        [],
-        createRandomLabelDefinition(),
-        "",
-        undefined,
-        {},
-        {},
-        []
-      );
+      const contentItem = new Item([], createRandomLabelDefinition(), "", undefined, {}, {}, []);
       const testCategory = createTestCategoryDescription({
         description: "@namespace:LocalizedDescription@",
       });
@@ -248,9 +177,7 @@ describe("LocalizationHelper", () => {
         [contentItem]
       );
       localizationHelper.getLocalizedContent(content);
-      expect(content.descriptor.categories[0].description).to.be.eq(
-        "LocalizedDescription"
-      );
+      expect(content.descriptor.categories[0].description).to.be.eq("LocalizedDescription");
     });
 
     it("translates navigation property value label", () => {
@@ -266,23 +193,19 @@ describe("LocalizationHelper", () => {
         },
         displayValues: {},
       });
-      const content = new Content(createTestContentDescriptor({ fields: [] }), [
-        contentItem,
-      ]);
+      const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
       localizationHelper.getLocalizedContent(content);
-      const localizedValue = content.contentSet[0]!.values
-        .navigationProperty as NavigationPropertyValue;
+      const localizedValue = content.contentSet[0]!.values.navigationProperty as NavigationPropertyValue;
       expect(localizedValue.label.rawValue).to.be.eq("LocalizedValue");
     });
 
     it("translates element properties label", () => {
-      const elementProperties =
-        localizationHelper.getLocalizedElementProperties({
-          class: "class",
-          label: "@namespace:LocalizedLabel@",
-          id: "id",
-          items: {},
-        });
+      const elementProperties = localizationHelper.getLocalizedElementProperties({
+        class: "class",
+        label: "@namespace:LocalizedLabel@",
+        id: "id",
+        items: {},
+      });
       expect(elementProperties.label).to.be.eq("LocalizedLabel");
     });
   });
@@ -324,14 +247,8 @@ describe("LocalizationHelper", () => {
 
   describe("getLocalizedLabelDefinitions", () => {
     it("translates labelDefinitions", () => {
-      const labelDefinitions = [
-        createRandomLabelDefinition(),
-        createRandomLabelDefinition(),
-      ];
-      labelDefinitions.forEach(
-        (labelDefinition) =>
-          (labelDefinition.rawValue = "@namespace:LocalizedValue@")
-      );
+      const labelDefinitions = [createRandomLabelDefinition(), createRandomLabelDefinition()];
+      labelDefinitions.forEach((labelDefinition) => (labelDefinition.rawValue = "@namespace:LocalizedValue@"));
       localizationHelper.getLocalizedLabelDefinitions(labelDefinitions);
       labelDefinitions.forEach((labelDefinition) => {
         expect(labelDefinition.rawValue).to.be.eq("LocalizedValue");

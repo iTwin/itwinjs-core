@@ -38,9 +38,7 @@ class MochaSerializer {
       isPrimary = true;
     }
 
-    return isPrimary
-      ? { $$index, $$typeName, ...raw }
-      : { $$index, $$typeName };
+    return isPrimary ? { $$index, $$typeName, ...raw } : { $$index, $$typeName };
   }
 
   /**
@@ -51,8 +49,7 @@ class MochaSerializer {
    *             properties (even if it should already exist in the backend's registry).
    */
   public static serialize(root: any) {
-    const isMochaObj = (obj: any): obj is MochaObj =>
-      obj instanceof Mocha.Runnable || obj instanceof Mocha.Suite;
+    const isMochaObj = (obj: any): obj is MochaObj => obj instanceof Mocha.Runnable || obj instanceof Mocha.Suite;
 
     const replacer = (key: string, value: any): any => {
       // Some pretty important properties of Errors are not enumerable, so we need to special handle them here:
@@ -66,15 +63,10 @@ class MochaSerializer {
 
       if (key === "" || !isMochaObj(value)) return value;
 
-      return JSON.parse(
-        JSON.stringify(this.createHandle(value, false), replacer)
-      );
+      return JSON.parse(JSON.stringify(this.createHandle(value, false), replacer));
     };
 
-    return JSON.stringify(
-      isMochaObj(root) ? this.createHandle(root, true) : root,
-      replacer
-    );
+    return JSON.stringify(isMochaObj(root) ? this.createHandle(root, true) : root, replacer);
   }
 
   /**
@@ -84,12 +76,7 @@ class MochaSerializer {
   public static deserialize(txt: string): any {
     return JSON.parse(txt, (_key, value) => {
       // We only need to special-case our "handle" objects, and we'll assume anything with `$$index` fits the bill.
-      if (
-        typeof value !== "object" ||
-        value === null ||
-        typeof value.$$index !== "number"
-      )
-        return value;
+      if (typeof value !== "object" || value === null || typeof value.$$index !== "number") return value;
 
       // Try to lookup this handle's instance in our registry
       const existing = this._registry[value.$$index];
@@ -102,15 +89,11 @@ class MochaSerializer {
       }
 
       // Set the prototype and add the handle to the registry - we can now treat this as (essentially) the real instance.
-      Object.setPrototypeOf(
-        value,
-        require("mocha")[value.$$typeName].prototype
-      );
+      Object.setPrototypeOf(value, require("mocha")[value.$$typeName].prototype);
       this._registry[value.$$index] = value;
       return value;
     });
   }
 }
 
-if (typeof global !== "undefined")
-  (global as any).MochaSerializer = MochaSerializer;
+if (typeof global !== "undefined") (global as any).MochaSerializer = MochaSerializer;

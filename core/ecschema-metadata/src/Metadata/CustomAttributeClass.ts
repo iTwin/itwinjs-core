@@ -57,20 +57,13 @@ export class CustomAttributeClass extends ECClass {
   /** @internal */
   public override async toXml(schemaXml: Document): Promise<Element> {
     const itemElement = await super.toXml(schemaXml);
-    itemElement.setAttribute(
-      "appliesTo",
-      containerTypeToString(this.containerType)
-    );
+    itemElement.setAttribute("appliesTo", containerTypeToString(this.containerType));
     return itemElement;
   }
 
-  public override fromJSONSync(
-    customAttributeProps: CustomAttributeClassProps
-  ) {
+  public override fromJSONSync(customAttributeProps: CustomAttributeClassProps) {
     super.fromJSONSync(customAttributeProps);
-    const containerType = parseCustomAttributeContainerType(
-      customAttributeProps.appliesTo
-    );
+    const containerType = parseCustomAttributeContainerType(customAttributeProps.appliesTo);
     if (undefined === containerType)
       throw new ECObjectsError(
         ECObjectsStatus.InvalidContainerType,
@@ -79,9 +72,7 @@ export class CustomAttributeClass extends ECClass {
     this._containerType = containerType;
   }
 
-  public override async fromJSON(
-    customAttributeProps: CustomAttributeClassProps
-  ) {
+  public override async fromJSON(customAttributeProps: CustomAttributeClassProps) {
     this.fromJSONSync(customAttributeProps);
   }
 
@@ -97,8 +88,6 @@ export class CustomAttributeClass extends ECClass {
  * An abstract class used for Schema editing.
  */
 export abstract class MutableCAClass extends CustomAttributeClass {
-  public abstract override setContainerType(
-    containerType: CustomAttributeContainerType
-  ): void;
+  public abstract override setContainerType(containerType: CustomAttributeContainerType): void;
   public abstract override setDisplayLabel(displayLabel: string): void;
 }

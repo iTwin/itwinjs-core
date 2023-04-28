@@ -84,11 +84,7 @@ export class HotineObliqueMercator extends OperationMethod {
    * @param parameters the values of the parameters.
    */
   public constructor(parameters: ParameterValueList) {
-    super(
-      HotineObliqueMercator.METHOD_CODE,
-      "Hotine Oblique Mercator",
-      parameters
-    );
+    super(HotineObliqueMercator.METHOD_CODE, "Hotine Oblique Mercator", parameters);
     /* Store the parameters */
     this._latC = parameters.getValue(8811);
     this._lonC = parameters.getValue(8812);
@@ -125,33 +121,23 @@ export class HotineObliqueMercator extends OperationMethod {
     this._a = ellipsoid.getA();
     this._e = ellipsoid.getE();
     this._e2 = this._e * this._e;
-    this._B = Math.sqrt(
-      1.0 +
-        (this._e2 * HotineObliqueMercator.pow(Math.cos(this._latC), 4)) /
-          (1.0 - this._e2)
-    );
+    this._B = Math.sqrt(1.0 + (this._e2 * HotineObliqueMercator.pow(Math.cos(this._latC), 4)) / (1.0 - this._e2));
     const esinLatC: float64 = this._e * Math.sin(this._latC);
     this._A =
-      (this._a * this._B * this._kC * Math.sqrt(1.0 - this._e2)) /
-      (1.0 - HotineObliqueMercator.pow(esinLatC, 2));
+      (this._a * this._B * this._kC * Math.sqrt(1.0 - this._e2)) / (1.0 - HotineObliqueMercator.pow(esinLatC, 2));
     this._tO =
-      Math.tan(Math.PI / 4.0 - this._latC / 2.0) /
-      Math.pow((1.0 - esinLatC) / (1.0 + esinLatC), this._e / 2.0);
+      Math.tan(Math.PI / 4.0 - this._latC / 2.0) / Math.pow((1.0 - esinLatC) / (1.0 + esinLatC), this._e / 2.0);
     this._D =
       (this._B * Math.sqrt(1.0 - this._e2)) /
-      (Math.cos(this._latC) *
-        Math.sqrt(1.0 - HotineObliqueMercator.pow(esinLatC, 2)));
+      (Math.cos(this._latC) * Math.sqrt(1.0 - HotineObliqueMercator.pow(esinLatC, 2)));
     const D2: float64 = this._D < 1.0 ? 1.0 : this._D * this._D;
-    this._F =
-      this._D + Math.sqrt(D2 - 1.0) * HotineObliqueMercator.sign(this._latC);
+    this._F = this._D + Math.sqrt(D2 - 1.0) * HotineObliqueMercator.sign(this._latC);
     this._H = this._F * Math.pow(this._tO, this._B);
     this._G = (this._F - 1.0 / this._F) / 2.0;
     this._latO = Math.asin(Math.sin(this._aziC) / this._D);
-    this._lonO =
-      this._lonC - Math.asin(this._G * Math.tan(this._latO)) / this._B;
+    this._lonO = this._lonC - Math.asin(this._G * Math.tan(this._latO)) / this._B;
     this._vC = 0.0;
-    if (Math.abs(this._aziC - 0.5 * Math.PI) < 0.00001)
-      this._uC = this._A * (this._lonC - this._lonO);
+    if (Math.abs(this._aziC - 0.5 * Math.PI) < 0.00001) this._uC = this._A * (this._lonC - this._lonO);
     // special case Hungary, Switzerland
     else
       this._uC =
@@ -182,34 +168,22 @@ export class HotineObliqueMercator extends OperationMethod {
    * OperationMethod interface method.
    * @see OperationMethod#forward
    */
-  public forward(
-    sourceCRS: CRS,
-    source: Coordinate,
-    targetCRS: CRS,
-    target: Coordinate
-  ): void {
+  public forward(sourceCRS: CRS, source: Coordinate, targetCRS: CRS, target: Coordinate): void {
     /* Get the parameters */
     const lon: float64 = source.getX();
     const lat: float64 = source.getY();
     /* Make the calculation */
     const esinLat: float64 = this._e * Math.sin(lat);
-    const t: float64 =
-      Math.tan(Math.PI / 4.0 - lat / 2.0) /
-      Math.pow((1.0 - esinLat) / (1.0 + esinLat), this._e / 2.0);
+    const t: float64 = Math.tan(Math.PI / 4.0 - lat / 2.0) / Math.pow((1.0 - esinLat) / (1.0 + esinLat), this._e / 2.0);
     const Q: float64 = this._H / Math.pow(t, this._B);
     const S: float64 = (Q - 1.0 / Q) / 2.0;
     const T: float64 = (Q + 1.0 / Q) / 2.0;
     const V: float64 = Math.sin(this._B * (lon - this._lonO));
-    const U: float64 =
-      (-V * Math.cos(this._latO) + S * Math.sin(this._latO)) / T;
-    const v: float64 =
-      (this._A * Math.log((1.0 - U) / (1.0 + U))) / (2.0 * this._B);
+    const U: float64 = (-V * Math.cos(this._latO) + S * Math.sin(this._latO)) / T;
+    const v: float64 = (this._A * Math.log((1.0 - U) / (1.0 + U))) / (2.0 * this._B);
     const u: float64 =
       (this._A *
-        Math.atan(
-          (S * Math.cos(this._latO) + V * Math.sin(this._latO)) /
-            Math.cos(this._B * (lon - this._lonO))
-        )) /
+        Math.atan((S * Math.cos(this._latO) + V * Math.sin(this._latO)) / Math.cos(this._B * (lon - this._lonO)))) /
       this._B; // possibly related to method 9815 atan2 problem? (LER 15/06/2018)
     const sinGamC: float64 = Math.sin(this._gamC);
     const cosGamC: float64 = Math.cos(this._gamC);
@@ -225,12 +199,7 @@ export class HotineObliqueMercator extends OperationMethod {
    * OperationMethod interface method.
    * @see OperationMethod#reverse
    */
-  public reverse(
-    sourceCRS: CRS,
-    source: Coordinate,
-    targetCRS: CRS,
-    target: Coordinate
-  ): void {
+  public reverse(sourceCRS: CRS, source: Coordinate, targetCRS: CRS, target: Coordinate): void {
     /* Get the parameters */
     const E: float64 = target.getX();
     const N: float64 = target.getY();
@@ -243,12 +212,8 @@ export class HotineObliqueMercator extends OperationMethod {
     const S: float64 = (Q - 1.0 / Q) / 2.0;
     const T: float64 = (Q + 1.0 / Q) / 2.0;
     const V: float64 = Math.sin((this._B * u) / this._A);
-    const U: float64 =
-      (V * Math.cos(this._latO) + S * Math.sin(this._latO)) / T;
-    const t: float64 = Math.pow(
-      this._H / Math.sqrt((1.0 + U) / (1.0 - U)),
-      1.0 / this._B
-    );
+    const U: float64 = (V * Math.cos(this._latO) + S * Math.sin(this._latO)) / T;
+    const t: float64 = Math.pow(this._H / Math.sqrt((1.0 + U) / (1.0 - U)), 1.0 / this._B);
     const chi: float64 = Math.PI / 2.0 - 2.0 * Math.atan(t);
     const lat: float64 =
       chi +
@@ -257,11 +222,7 @@ export class HotineObliqueMercator extends OperationMethod {
       Math.sin(6.0 * chi) * this._rev3 +
       Math.sin(8.0 * chi) * this._rev4;
     const lon: float64 =
-      this._lonO -
-      Math.atan(
-        (S * cosGamC - V * sinGamC) / Math.cos((this._B * u) / this._A)
-      ) /
-        this._B; // possibly related to method 9815 atan2 problem? (LER 15/06/2018)
+      this._lonO - Math.atan((S * cosGamC - V * sinGamC) / Math.cos((this._B * u) / this._A)) / this._B; // possibly related to method 9815 atan2 problem? (LER 15/06/2018)
     /* Save the position */
     source.setX(lon);
     source.setY(lat);

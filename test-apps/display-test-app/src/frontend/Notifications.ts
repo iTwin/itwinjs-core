@@ -41,17 +41,14 @@ export class NotificationsWindow extends Window {
 
   public addMessage(message: NotifyMessageDetails): void {
     const toHtml = (msg: HTMLElement | string) => {
-      return "string" !== typeof msg
-        ? msg
-        : IModelApp.makeHTMLElement("div", { innerText: msg });
+      return "string" !== typeof msg ? msg : IModelApp.makeHTMLElement("div", { innerText: msg });
     };
 
     const msgDiv = IModelApp.makeHTMLElement("div", {
       parent: this.contentDiv,
     });
     msgDiv.appendChild(toHtml(message.briefMessage));
-    if (undefined !== message.detailedMessage)
-      msgDiv.appendChild(toHtml(message.detailedMessage));
+    if (undefined !== message.detailedMessage) msgDiv.appendChild(toHtml(message.detailedMessage));
 
     IModelApp.makeHTMLElement("hr", { parent: msgDiv });
 

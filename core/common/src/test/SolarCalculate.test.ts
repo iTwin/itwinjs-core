@@ -4,10 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Cartographic } from "../geometry/Cartographic";
-import {
-  calculateSolarAngles,
-  calculateSunriseOrSunset,
-} from "../SolarCalculate";
+import { calculateSolarAngles, calculateSunriseOrSunset } from "../SolarCalculate";
 
 function testSolarAngleCalculation(
   location: Cartographic,
@@ -19,10 +16,7 @@ function testSolarAngleCalculation(
 ) {
   const date = new Date(dateString);
   const azEl = calculateSolarAngles(date, location);
-  assert(
-    Math.abs(azEl.azimuth - expectedAzimuth) < 0.05 &&
-      Math.abs(azEl.elevation - expectedElevation) < 0.05
-  );
+  assert(Math.abs(azEl.azimuth - expectedAzimuth) < 0.05 && Math.abs(azEl.elevation - expectedElevation) < 0.05);
   if (expectedSunriseString) {
     const expectedSunrise = new Date(expectedSunriseString);
     const sunrise = calculateSunriseOrSunset(date, location, true);
@@ -75,24 +69,9 @@ describe("Solar Calculations", () => {
       latitude: 27.761329,
       height: 0.0,
     });
-    testSolarAngleCalculation(
-      algeria,
-      "May 03 2019 12:00:00 GMT -0000",
-      194.96,
-      77.53
-    );
-    testSolarAngleCalculation(
-      algeria,
-      "Sep 03 2019 12:00:00 GMT -0000",
-      187.66,
-      69.64
-    );
-    testSolarAngleCalculation(
-      algeria,
-      "Feb 03 2019 12:00:00 GMT -0000",
-      178.76,
-      45.72
-    );
+    testSolarAngleCalculation(algeria, "May 03 2019 12:00:00 GMT -0000", 194.96, 77.53);
+    testSolarAngleCalculation(algeria, "Sep 03 2019 12:00:00 GMT -0000", 187.66, 69.64);
+    testSolarAngleCalculation(algeria, "Feb 03 2019 12:00:00 GMT -0000", 178.76, 45.72);
     const melbourne = Cartographic.fromDegrees({
       longitude: 145.371093,
       latitude: -37.8575,

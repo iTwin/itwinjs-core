@@ -103,8 +103,5 @@ export class OctEncodedNormal {
 
 /** @internal */
 export class OctEncodedNormalPair {
-  constructor(
-    public first: OctEncodedNormal,
-    public second: OctEncodedNormal
-  ) {}
+  constructor(public first: OctEncodedNormal, public second: OctEncodedNormal) {}
 }

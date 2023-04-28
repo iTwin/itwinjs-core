@@ -111,49 +111,25 @@ The appui-react package provide item definitions that can be used to insert a st
 ```tsx
 if (useCategoryAndModelsContextTools) {
   items.push(
-    ToolbarHelper.createToolbarItemFromItemDef(
-      10,
-      CoreTools.clearSelectionItemDef
-    ),
+    ToolbarHelper.createToolbarItemFromItemDef(10, CoreTools.clearSelectionItemDef),
     ToolbarHelper.createToolbarItemFromItemDef(
       20,
       SelectionContextToolDefinitions.clearHideIsolateEmphasizeElementsItemDef
     ),
-    ToolbarHelper.createToolbarItemFromItemDef(
-      30,
-      SelectionContextToolDefinitions.hideSectionToolGroup
-    ),
-    ToolbarHelper.createToolbarItemFromItemDef(
-      40,
-      SelectionContextToolDefinitions.isolateSelectionToolGroup
-    ),
-    ToolbarHelper.createToolbarItemFromItemDef(
-      50,
-      SelectionContextToolDefinitions.emphasizeElementsItemDef
-    )
+    ToolbarHelper.createToolbarItemFromItemDef(30, SelectionContextToolDefinitions.hideSectionToolGroup),
+    ToolbarHelper.createToolbarItemFromItemDef(40, SelectionContextToolDefinitions.isolateSelectionToolGroup),
+    ToolbarHelper.createToolbarItemFromItemDef(50, SelectionContextToolDefinitions.emphasizeElementsItemDef)
   );
 } else {
   items.push(
-    ToolbarHelper.createToolbarItemFromItemDef(
-      10,
-      CoreTools.clearSelectionItemDef
-    ),
+    ToolbarHelper.createToolbarItemFromItemDef(10, CoreTools.clearSelectionItemDef),
     ToolbarHelper.createToolbarItemFromItemDef(
       20,
       SelectionContextToolDefinitions.clearHideIsolateEmphasizeElementsItemDef
     ),
-    ToolbarHelper.createToolbarItemFromItemDef(
-      30,
-      SelectionContextToolDefinitions.hideElementsItemDef
-    ),
-    ToolbarHelper.createToolbarItemFromItemDef(
-      40,
-      SelectionContextToolDefinitions.isolateElementsItemDef
-    ),
-    ToolbarHelper.createToolbarItemFromItemDef(
-      50,
-      SelectionContextToolDefinitions.emphasizeElementsItemDef
-    )
+    ToolbarHelper.createToolbarItemFromItemDef(30, SelectionContextToolDefinitions.hideElementsItemDef),
+    ToolbarHelper.createToolbarItemFromItemDef(40, SelectionContextToolDefinitions.isolateElementsItemDef),
+    ToolbarHelper.createToolbarItemFromItemDef(50, SelectionContextToolDefinitions.emphasizeElementsItemDef)
   );
 }
 ```
@@ -161,9 +137,7 @@ if (useCategoryAndModelsContextTools) {
 The default processing of these tools are to modify only on the "active" ScreenViewport. There may be special cases where the application may want to apply the hide, isolate, or emphasize processing to more than a single viewport. When this is the case, the application can register a handler to call once the active viewport is processed. Below is an example of registering a handler.
 
 ```ts
-HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.addListener(
-  this._onEmphasizeElementsChangedHandler
-);
+HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.addListener(this._onEmphasizeElementsChangedHandler);
 ```
 
 Below is an example of applying the processing to other viewports.

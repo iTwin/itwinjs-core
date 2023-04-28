@@ -13,7 +13,5 @@ sourceMapSupport.install();
 const originalPrepareStackTrace = Error.prepareStackTrace;
 Error.prepareStackTrace = function (...args) {
   const res = originalPrepareStackTrace!.call(this, ...args);
-  return res
-    .replace(/\(.*file:(\/|\\)/g, "(")
-    .replace(/at .*file:(\/|\\)/g, "at ");
+  return res.replace(/\(.*file:(\/|\\)/g, "(").replace(/at .*file:(\/|\\)/g, "at ");
 };

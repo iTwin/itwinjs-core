@@ -28,41 +28,22 @@ export class MXCubicAlongArcEvaluator extends CubicEvaluator {
   public nominalRadius1: number;
 
   /** Constructor is private.  Caller responsible for cubicM validity. */
-  private constructor(
-    length1: number,
-    radius1: number,
-    axisLength: number,
-    cubicM: number
-  ) {
+  private constructor(length1: number, radius1: number, axisLength: number, cubicM: number) {
     super(axisLength, cubicM);
     this.nominalLength1 = length1;
     this.nominalRadius1 = radius1;
   }
 
   /** Compute the cubic constant. */
-  public static computeCubicM(
-    length1: number,
-    radius1: number
-  ): number | undefined {
-    const axisLength = MXCubicAlongArcEvaluator.approximateDistanceAlongToX(
-      length1,
-      radius1,
-      length1
-    );
+  public static computeCubicM(length1: number, radius1: number): number | undefined {
+    const axisLength = MXCubicAlongArcEvaluator.approximateDistanceAlongToX(length1, radius1, length1);
     return 1.0 / (6.0 * radius1 * axisLength);
   }
 
-  public static create(
-    length1: number,
-    radius1: number
-  ): MXCubicAlongArcEvaluator | undefined {
+  public static create(length1: number, radius1: number): MXCubicAlongArcEvaluator | undefined {
     const m = this.computeCubicM(length1, radius1);
     if (m === undefined) return undefined;
-    const xMax = MXCubicAlongArcEvaluator.approximateDistanceAlongToX(
-      length1,
-      radius1,
-      length1
-    );
+    const xMax = MXCubicAlongArcEvaluator.approximateDistanceAlongToX(length1, radius1, length1);
     return new MXCubicAlongArcEvaluator(length1, radius1, xMax, m);
   }
 
@@ -73,12 +54,7 @@ export class MXCubicAlongArcEvaluator extends CubicEvaluator {
   }
   /** return a deep copy of the evaluator */
   public clone(): MXCubicAlongArcEvaluator {
-    return new MXCubicAlongArcEvaluator(
-      this.nominalLength1,
-      this.nominalRadius1,
-      super._axisLength,
-      this.cubicM
-    );
+    return new MXCubicAlongArcEvaluator(this.nominalLength1, this.nominalRadius1, super._axisLength, this.cubicM);
   }
   /** Member by member matchup ... */
   public isAlmostEqual(other: any): boolean {

@@ -44,15 +44,9 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
   }
 
   public send(message: IpcWebSocketMessage): void {
-    if (
-      message.type === IpcWebSocketMessageType.Send ||
-      message.type === IpcWebSocketMessageType.Invoke
-    ) {
+    if (message.type === IpcWebSocketMessageType.Send || message.type === IpcWebSocketMessageType.Invoke) {
       this.sendToBackend(message); // eslint-disable-line @typescript-eslint/no-floating-promises
-    } else if (
-      message.type === IpcWebSocketMessageType.Push ||
-      message.type === IpcWebSocketMessageType.Response
-    ) {
+    } else if (message.type === IpcWebSocketMessageType.Push || message.type === IpcWebSocketMessageType.Response) {
       this.sendToFrontend(message); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
   }
@@ -60,10 +54,7 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
   public consumeRequest(request: SerializedRpcRequest): boolean {
     if (request.operation.interfaceDefinition !== IPC) return false;
 
-    const message = RpcMarshaling.deserialize(
-      this._protocol,
-      request.parameters
-    )[0] as IpcWebSocketMessage;
+    const message = RpcMarshaling.deserialize(this._protocol, request.parameters)[0] as IpcWebSocketMessage;
     this.broadcast({} as Event, message);
     return true;
   }
@@ -71,10 +62,7 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
   public consumeResponse(response: RpcRequestFulfillment): boolean {
     if (response.interfaceName !== IPC) return false;
 
-    const message = RpcMarshaling.deserialize(
-      this._protocol,
-      response.result
-    ) as IpcWebSocketMessage;
+    const message = RpcMarshaling.deserialize(this._protocol, response.result) as IpcWebSocketMessage;
     this.broadcast({} as Event, message);
     return true;
   }

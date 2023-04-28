@@ -55,35 +55,13 @@ describe("ClipNodes", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const sharedOrigin = Point3d.create(0.5, 0.75, 0.0);
-    const clipY = ClipPlane.createNormalAndPoint(
-      Vector3d.create(0, 1, 0),
-      sharedOrigin
-    )!;
-    const clipX = ClipPlane.createNormalAndPoint(
-      Vector3d.create(1, 0, 0),
-      sharedOrigin
-    )!;
-    const clipperAOrB = BooleanClipFactory.createCaptureUnion(
-      [clipX, clipY],
-      true
-    );
-    const clipperAAndB = BooleanClipFactory.createCaptureIntersection(
-      [clipY, clipX],
-      true
-    );
-    const clipperAMinusB = BooleanClipFactory.createCaptureDifference(
-      clipX,
-      clipY,
-      false
-    );
-    const clipperXOR = BooleanClipFactory.createCaptureParity(
-      [clipX, clipY],
-      true
-    );
-    const clipperNXOR = BooleanClipFactory.createCaptureParity(
-      [clipX, clipY],
-      false
-    );
+    const clipY = ClipPlane.createNormalAndPoint(Vector3d.create(0, 1, 0), sharedOrigin)!;
+    const clipX = ClipPlane.createNormalAndPoint(Vector3d.create(1, 0, 0), sharedOrigin)!;
+    const clipperAOrB = BooleanClipFactory.createCaptureUnion([clipX, clipY], true);
+    const clipperAAndB = BooleanClipFactory.createCaptureIntersection([clipY, clipX], true);
+    const clipperAMinusB = BooleanClipFactory.createCaptureDifference(clipX, clipY, false);
+    const clipperXOR = BooleanClipFactory.createCaptureParity([clipX, clipY], true);
+    const clipperNXOR = BooleanClipFactory.createCaptureParity([clipX, clipY], false);
     const allClippers: Clipper[] = [
       clipperAMinusB,
       clipperAAndB,
@@ -136,11 +114,7 @@ describe("ClipNodes", () => {
     const radiusStep = 0.04;
     const gapDegrees = 10.0;
     for (const sweepDegrees of [40, 65, 170, 360]) {
-      for (
-        let startDegrees = 35.0;
-        startDegrees + sweepDegrees < 390;
-        startDegrees += sweepDegrees + gapDegrees
-      ) {
+      for (let startDegrees = 35.0; startDegrees + sweepDegrees < 390; startDegrees += sweepDegrees + gapDegrees) {
         radius += radiusStep;
         const arc = Arc3d.createXY(
           sharedOrigin,
@@ -152,20 +126,14 @@ describe("ClipNodes", () => {
         const arc1 = Arc3d.createXY(
           sharedOrigin,
           radius + radiusStep * 0.25,
-          AngleSweep.createStartSweepDegrees(
-            startDegrees + sweepDegrees,
-            -sweepDegrees
-          )
+          AngleSweep.createStartSweepDegrees(startDegrees + sweepDegrees, -sweepDegrees)
         );
         arcs.push(arc1);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc1, x0, y0, z0);
         const arc2 = Arc3d.createXY(
           sharedOrigin,
           radius + radiusStep * 0.5,
-          AngleSweep.createStartSweepDegrees(
-            startDegrees + sweepDegrees - 360,
-            -sweepDegrees
-          )
+          AngleSweep.createStartSweepDegrees(startDegrees + sweepDegrees - 360, -sweepDegrees)
         );
         arcs.push(arc2);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc2, x0, y0, z0);
@@ -179,9 +147,7 @@ describe("ClipNodes", () => {
       }
     }
     const polygons: GrowableXYZArray[] = [];
-    polygons.push(
-      GrowableXYZArray.create(Sample.createRectangleXY(-3, -3, 6, 6))
-    );
+    polygons.push(GrowableXYZArray.create(Sample.createRectangleXY(-3, -3, 6, 6)));
 
     const vectorX = Vector3d.unitX(1);
     const vectorY = Vector3d.unitY(1);
@@ -201,14 +167,7 @@ describe("ClipNodes", () => {
           ck.testBoolean(q, !q1, "clip versus clip outside");
           clipper.toggleResult();
           const r = clipper.isPointOnOrInside(p);
-          ck.testBoolean(
-            q,
-            !r,
-            `toggled test ${clipperName.get(clipper)}`,
-            p,
-            q,
-            r
-          );
+          ck.testBoolean(q, !r, `toggled test ${clipperName.get(clipper)}`, p, q, r);
           clipper.toggleResult();
         }
       }
@@ -226,16 +185,9 @@ describe("ClipNodes", () => {
           segment.startPoint(),
           segment.endPoint(),
           (a0: number, a1: number) => {
-            const midPoint = segment.fractionToPoint(
-              Geometry.interpolate(a0, 0.5, a1)
-            );
+            const midPoint = segment.fractionToPoint(Geometry.interpolate(a0, 0.5, a1));
             if (
-              !ck.testTrue(
-                clipper.isPointOnOrInside(midPoint),
-                "clipped midpoint",
-                midPoint,
-                clipperName.get(clipper)
-              )
+              !ck.testTrue(clipper.isPointOnOrInside(midPoint), "clipped midpoint", midPoint, clipperName.get(clipper))
             )
               clipper.isPointOnOrInside(midPoint);
             if (clipper instanceof BooleanClipNode) {
@@ -251,37 +203,16 @@ describe("ClipNodes", () => {
                 clipper.isPointOnOrInside(midPoint);
               clipper.toggleResult();
             }
-            GeometryCoreTestIO.captureGeometry(
-              allGeometry,
-              segment.clonePartialCurve(a0, a1),
-              x0,
-              y0,
-              z0
-            );
+            GeometryCoreTestIO.captureGeometry(allGeometry, segment.clonePartialCurve(a0, a1), x0, y0, z0);
           }
         );
       }
       for (const arc of arcs) {
         clipper.announceClippedArcIntervals(arc, (a0: number, a1: number) => {
-          const midPoint = arc.fractionToPoint(
-            Geometry.interpolate(a0, 0.5, a1)
-          );
-          if (
-            !ck.testTrue(
-              clipper.isPointOnOrInside(midPoint),
-              "clipped midpoint",
-              midPoint,
-              clipperName.get(clipper)
-            )
-          )
+          const midPoint = arc.fractionToPoint(Geometry.interpolate(a0, 0.5, a1));
+          if (!ck.testTrue(clipper.isPointOnOrInside(midPoint), "clipped midpoint", midPoint, clipperName.get(clipper)))
             clipper.isPointOnOrInside(midPoint);
-          GeometryCoreTestIO.captureGeometry(
-            allGeometry,
-            arc.clonePartialCurve(a0, a1),
-            x0,
-            y0,
-            z0
-          );
+          GeometryCoreTestIO.captureGeometry(allGeometry, arc.clonePartialCurve(a0, a1), x0, y0, z0);
         });
       }
     }
@@ -296,13 +227,7 @@ describe("ClipNodes", () => {
           segment.startPoint(),
           segment.endPoint(),
           (a0: number, a1: number) => {
-            GeometryCoreTestIO.captureGeometry(
-              allGeometry,
-              segment.clonePartialCurve(a0, a1),
-              x0,
-              y0,
-              z0 + 0.1
-            );
+            GeometryCoreTestIO.captureGeometry(allGeometry, segment.clonePartialCurve(a0, a1), x0, y0, z0 + 0.1);
           }
         );
       }
@@ -314,22 +239,12 @@ describe("ClipNodes", () => {
           const insideClip: GrowableXYZArray[] = [];
           const outsideClip: GrowableXYZArray[] = [];
           clipper.appendPolygonClip(polygon, insideClip, outsideClip, cache);
-          GeometryCoreTestIO.createAndCaptureLoops(
-            allGeometry,
-            insideClip,
-            x0,
-            y0,
-            z0
-          );
+          GeometryCoreTestIO.createAndCaptureLoops(allGeometry, insideClip, x0, y0, z0);
         }
       }
     }
 
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "ClipNode",
-      "ClipManyBooleans"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipNode", "ClipManyBooleans");
     expect(ck.getNumErrors()).equals(0);
   });
   it("ClipManyBoxes", () => {
@@ -339,12 +254,7 @@ describe("ClipNodes", () => {
     const y0 = 0.0;
     let yOut = 10.0;
     const captureClip = (a0: number, a1: number, cp: CurvePrimitive) => {
-      GeometryCoreTestIO.captureGeometry(
-        allGeometry,
-        cp.clonePartialCurve(a0, a1),
-        x0,
-        yOut
-      );
+      GeometryCoreTestIO.captureGeometry(allGeometry, cp.clonePartialCurve(a0, a1), x0, yOut);
     };
     const unitBoxPoints = [
       Point3d.create(0, 0, 0),
@@ -365,19 +275,7 @@ describe("ClipNodes", () => {
       y0
     );
     const ls = LineString3d.create(
-      Sample.createBidirectionalSawtooth(
-        Point3d.create(-1, 0.5, 0),
-        3,
-        2,
-        5,
-        3,
-        3,
-        7,
-        1,
-        2,
-        -1,
-        2
-      )
+      Sample.createBidirectionalSawtooth(Point3d.create(-1, 0.5, 0), 3, 2, 5, 3, 3, 7, 1, 2, -1, 2)
     );
     ls.announceClipIntervals(clipperA, captureClip);
     (clipperA as BooleanClipNode).toggleResult();
@@ -396,12 +294,8 @@ function createTranslatedClipper(
   scale: number
 ): { clipper: Clipper; points: Point3d[] } {
   const myPoints: Point3d[] = [];
-  for (const p of polygonPoints)
-    myPoints.push(Point3d.createAdd2Scaled(origin, 1, p, scale));
-  const convexClip = ConvexClipPlaneSet.createSweptPolyline(
-    myPoints,
-    Vector3d.unitZ()
-  )!;
+  for (const p of polygonPoints) myPoints.push(Point3d.createAdd2Scaled(origin, 1, p, scale));
+  const convexClip = ConvexClipPlaneSet.createSweptPolyline(myPoints, Vector3d.unitZ())!;
   return { clipper: convexClip, points: myPoints };
 }
 
@@ -423,12 +317,7 @@ function createTranslatedClipperUnion(
     const scale = Geometry.interpolate(scale0, f, scale1);
     const data = createTranslatedClipper(origin, points, scale);
     clippers.push(data.clipper);
-    GeometryCoreTestIO.captureGeometry(
-      allGeometry,
-      LineString3d.create(data.points),
-      x0,
-      y0
-    );
+    GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(data.points), x0, y0);
   }
   return BooleanClipFactory.createCaptureUnion(clippers, true);
 }
@@ -437,91 +326,39 @@ it("MichaelBCover", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
   const shape0 = IModelJson.Reader.parse(
-    JSON.parse(
-      fs.readFileSync("./src/test/testInputs/clipping/base_shape.imjs", "utf8")
-    )
+    JSON.parse(fs.readFileSync("./src/test/testInputs/clipping/base_shape.imjs", "utf8"))
   );
   const shape1 = IModelJson.Reader.parse(
-    JSON.parse(
-      fs.readFileSync("./src/test/testInputs/clipping/shape1.imjs", "utf8")
-    )
+    JSON.parse(fs.readFileSync("./src/test/testInputs/clipping/shape1.imjs", "utf8"))
   );
   const shape2 = IModelJson.Reader.parse(
-    JSON.parse(
-      fs.readFileSync("./src/test/testInputs/clipping/shape2.imjs", "utf8")
-    )
+    JSON.parse(fs.readFileSync("./src/test/testInputs/clipping/shape2.imjs", "utf8"))
   );
   const shape3 = IModelJson.Reader.parse(
-    JSON.parse(
-      fs.readFileSync("./src/test/testInputs/clipping/shape3.imjs", "utf8")
-    )
+    JSON.parse(fs.readFileSync("./src/test/testInputs/clipping/shape3.imjs", "utf8"))
   );
   // we expect 3 loops
   let x0 = -10;
   const dy = 100;
   const dx = 100.0;
   const offset = 1.0;
-  if (
-    shape0 instanceof Loop &&
-    shape1 instanceof Loop &&
-    shape2 instanceof Loop &&
-    shape3 instanceof Loop
-  ) {
+  if (shape0 instanceof Loop && shape1 instanceof Loop && shape2 instanceof Loop && shape3 instanceof Loop) {
     const area = RegionOps.computeXYArea(shape0)!;
-    const smallShape0 = RegionOps.constructCurveXYOffset(
-      shape0,
-      area > 0 ? offset : -offset
-    );
+    const smallShape0 = RegionOps.constructCurveXYOffset(shape0, area > 0 ? offset : -offset);
     const smallArea = RegionOps.computeXYArea(smallShape0 as Loop)!;
     ck.testLT(smallArea, area, "confirm area reduction");
     let y0 = -dy;
-    GeometryCoreTestIO.captureCloneGeometry(
-      allGeometry,
-      shape0,
-      x0,
-      y0,
-      offset
-    );
-    GeometryCoreTestIO.captureCloneGeometry(
-      allGeometry,
-      smallShape0,
-      x0,
-      y0,
-      offset
-    );
-    GeometryCoreTestIO.captureCloneGeometry(
-      allGeometry,
-      shape1,
-      x0,
-      y0 + dy,
-      offset
-    );
-    GeometryCoreTestIO.captureCloneGeometry(
-      allGeometry,
-      shape2,
-      x0,
-      y0 + 2 * dy,
-      offset
-    );
-    GeometryCoreTestIO.captureCloneGeometry(
-      allGeometry,
-      shape3,
-      x0,
-      y0 + 3 * dy,
-      offset
-    );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, shape0, x0, y0, offset);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, smallShape0, x0, y0, offset);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, shape1, x0, y0 + dy, offset);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, shape2, x0, y0 + 2 * dy, offset);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, shape3, x0, y0 + 3 * dy, offset);
 
     for (const baseShape999 of [shape0]) {
       const baseShape = baseShape999;
       y0 = 0;
       x0 += 10 * dx;
-      GeometryCoreTestIO.createAndCaptureXYCircle(
-        allGeometry,
-        Point3d.create(x0, y0),
-        1.0,
-        x0,
-        y0
-      );
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, Point3d.create(x0, y0), 1.0, x0, y0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, baseShape, x0, y0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, shape1, x0, y0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, shape2, x0, y0);
@@ -539,35 +376,11 @@ it("MichaelBCover", () => {
         [shape1, shape2, shape3],
       ]) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, setB, x0, yyy);
-        GeometryCoreTestIO.captureCloneGeometry(
-          allGeometry,
-          baseShape,
-          x0,
-          yyy,
-          5.0
-        );
-        const shapeMinusB = RegionOps.regionBooleanXY(
-          baseShape,
-          setB,
-          RegionBinaryOpType.AMinusB
-        );
-        GeometryCoreTestIO.captureCloneGeometry(
-          allGeometry,
-          shapeMinusB,
-          x0 + dx,
-          yyy
-        );
-        const bMinusShape = RegionOps.regionBooleanXY(
-          baseShape,
-          setB,
-          RegionBinaryOpType.Intersection
-        );
-        GeometryCoreTestIO.captureCloneGeometry(
-          allGeometry,
-          bMinusShape,
-          x0 + 2 * dx,
-          yyy
-        );
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, baseShape, x0, yyy, 5.0);
+        const shapeMinusB = RegionOps.regionBooleanXY(baseShape, setB, RegionBinaryOpType.AMinusB);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, shapeMinusB, x0 + dx, yyy);
+        const bMinusShape = RegionOps.regionBooleanXY(baseShape, setB, RegionBinaryOpType.Intersection);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, bMinusShape, x0 + 2 * dx, yyy);
         yyy += dy;
       }
       /*

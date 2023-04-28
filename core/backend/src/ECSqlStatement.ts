@@ -6,28 +6,9 @@
  * @module ECSQL
  */
 
-import {
-  assert,
-  DbResult,
-  GuidString,
-  Id64String,
-  IDisposable,
-  StatusCodeWithMessage,
-} from "@itwin/core-bentley";
-import {
-  LowAndHighXYZ,
-  Range3d,
-  XAndY,
-  XYAndZ,
-  XYZ,
-} from "@itwin/core-geometry";
-import {
-  ECJsNames,
-  ECSqlValueType,
-  IModelError,
-  NavigationBindingValue,
-  NavigationValue,
-} from "@itwin/core-common";
+import { assert, DbResult, GuidString, Id64String, IDisposable, StatusCodeWithMessage } from "@itwin/core-bentley";
+import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@itwin/core-geometry";
+import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { ECDb } from "./ECDb";
 import { IModelHost } from "./IModelHost";
@@ -91,11 +72,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * The error.message property will provide details.
    * @internal
    */
-  public prepare(
-    db: IModelJsNative.DgnDb | IModelJsNative.ECDb,
-    ecsql: string,
-    logErrors = true
-  ): void {
+  public prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors = true): void {
     const stat = this.tryPrepare(db, ecsql, logErrors);
     if (stat.status !== DbResult.BE_SQLITE_OK) {
       throw new IModelError(stat.status, stat.message);
@@ -165,10 +142,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param parameter Index (1-based) or name of the parameter
    * @param BLOB value as either a Uint8Array, ArrayBuffer or a Base64 string
    */
-  public bindBlob(
-    parameter: number | string,
-    blob: string | Uint8Array | ArrayBuffer | SharedArrayBuffer
-  ): void {
+  public bindBlob(parameter: number | string, blob: string | Uint8Array | ArrayBuffer | SharedArrayBuffer): void {
     this.getBinder(parameter).bindBlob(blob);
   }
 
@@ -184,10 +158,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param parameter Index (1-based) or name of the parameter
    * @param isoDateTimeString DateTime value as ISO8601 string
    */
-  public bindDateTime(
-    parameter: number | string,
-    isoDateTimeString: string
-  ): void {
+  public bindDateTime(parameter: number | string, isoDateTimeString: string): void {
     this.getBinder(parameter).bindDateTime(isoDateTimeString);
   }
 
@@ -259,10 +230,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param parameter Index (1-based) or name of the parameter
    * @param val Navigation property value
    */
-  public bindNavigation(
-    parameter: number | string,
-    val: NavigationBindingValue
-  ): void {
+  public bindNavigation(parameter: number | string, val: NavigationBindingValue): void {
     this.getBinder(parameter).bindNavigation(val);
   }
 
@@ -335,8 +303,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   public clearBindings(): void {
     if (this._stmt) {
       const stat: DbResult = this._stmt.clearBindings();
-      if (stat !== DbResult.BE_SQLITE_OK)
-        throw new IModelError(stat, "Error clearing bindings");
+      if (stat !== DbResult.BE_SQLITE_OK) throw new IModelError(stat, "Error clearing bindings");
     }
   }
 
@@ -377,8 +344,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   public stepForInsert(): ECSqlInsertResult {
     assert(undefined !== this._stmt);
     const r: { status: DbResult; id: string } = this._stmt.stepForInsert();
-    if (r.status === DbResult.BE_SQLITE_DONE)
-      return new ECSqlInsertResult(r.status, r.id);
+    if (r.status === DbResult.BE_SQLITE_DONE) return new ECSqlInsertResult(r.status, r.id);
 
     return new ECSqlInsertResult(r.status);
   }
@@ -402,10 +368,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     for (let i = 0; i < colCount; i++) {
       const ecsqlValue = this.getValue(i);
       if (!ecsqlValue.isNull) {
-        const propName: string = ECSqlStatement.determineResultRowPropertyName(
-          duplicatePropNames,
-          ecsqlValue
-        );
+        const propName: string = ECSqlStatement.determineResultRowPropertyName(duplicatePropNames, ecsqlValue);
         const val: any = ecsqlValue.value;
         Object.defineProperty(row, propName, {
           enumerable: true,
@@ -423,10 +386,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     ecsqlValue: ECSqlValue
   ): string {
     const colInfo: ECSqlColumnInfo = ecsqlValue.columnInfo;
-    let jsName: string = ECJsNames.toJsName(
-      colInfo.getAccessString(),
-      colInfo.isSystemProperty()
-    );
+    let jsName: string = ECJsNames.toJsName(colInfo.getAccessString(), colInfo.isSystemProperty());
 
     // now check duplicates. If there are, append a numeric suffix to the duplicates
     let suffix: number | undefined = duplicatePropNames.get(jsName);
@@ -504,19 +464,15 @@ export class ECSqlBinder {
   /** Binds null to the ECSQL parameter. */
   public bindNull(): void {
     const stat: DbResult = this._binder.bindNull();
-    if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding null");
+    if (stat !== DbResult.BE_SQLITE_OK) throw new IModelError(stat, "Error binding null");
   }
 
   /** Binds a BLOB value to the ECSQL parameter.
    * @param BLOB value as either a UInt8Array, ArrayBuffer or a Base64 string
    */
-  public bindBlob(
-    blob: string | Uint8Array | ArrayBuffer | SharedArrayBuffer
-  ): void {
+  public bindBlob(blob: string | Uint8Array | ArrayBuffer | SharedArrayBuffer): void {
     const stat: DbResult = this._binder.bindBlob(blob);
-    if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding blob");
+    if (stat !== DbResult.BE_SQLITE_OK) throw new IModelError(stat, "Error binding blob");
   }
 
   /** Binds a boolean value to the ECSQL parameter.
@@ -524,8 +480,7 @@ export class ECSqlBinder {
    */
   public bindBoolean(val: boolean): void {
     const stat: DbResult = this._binder.bindBoolean(val);
-    if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding boolean");
+    if (stat !== DbResult.BE_SQLITE_OK) throw new IModelError(stat, "Error binding boolean");
   }
 
   /** Binds a DateTime value to the ECSQL parameter.
@@ -533,8 +488,7 @@ export class ECSqlBinder {
    */
   public bindDateTime(isoDateTimeString: string): void {
     const stat: DbResult = this._binder.bindDateTime(isoDateTimeString);
-    if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding DateTime");
+    if (stat !== DbResult.BE_SQLITE_OK) throw new IModelError(stat, "Error binding DateTime");
   }
 
   /** Binds a double value to the ECSQL parameter.
@@ -542,8 +496,7 @@ export class ECSqlBinder {
    */
   public bindDouble(val: number): void {
     const stat: DbResult = this._binder.bindDouble(val);
-    if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding double");
+    if (stat !== DbResult.BE_SQLITE_OK) throw new IModelError(stat, "Error binding double");
   }
 
   /** Binds an GUID value to the ECSQL parameter.
@@ -551,8 +504,7 @@ export class ECSqlBinder {
    */
   public bindGuid(val: GuidString): void {
     const stat: DbResult = this._binder.bindGuid(val);
-    if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding GUID");
+    if (stat !== DbResult.BE_SQLITE_OK) throw new IModelError(stat, "Error binding GUID");
   }
 
   /** Binds an Id value to the ECSQL parameter.
@@ -560,8 +512,7 @@ export class ECSqlBinder {
    */
   public bindId(val: Id64String): void {
     const stat: DbResult = this._binder.bindId(val);
-    if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding Id");
+    if (stat !== DbResult.BE_SQLITE_OK) throw new IModelError(stat, "Error binding Id");
   }
 
   /** Binds an integer value to the ECSQL parameter.
@@ -569,8 +520,7 @@ export class ECSqlBinder {
    */
   public bindInteger(val: number | string): void {
     const stat: DbResult = this._binder.bindInteger(val);
-    if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding integer");
+    if (stat !== DbResult.BE_SQLITE_OK) throw new IModelError(stat, "Error binding integer");
   }
 
   /** Binds an Point2d value to the ECSQL parameter.
@@ -578,8 +528,7 @@ export class ECSqlBinder {
    */
   public bindPoint2d(val: XAndY): void {
     const stat: DbResult = this._binder.bindPoint2d(val.x, val.y);
-    if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding Point2d");
+    if (stat !== DbResult.BE_SQLITE_OK) throw new IModelError(stat, "Error binding Point2d");
   }
 
   /** Binds an Point3d value to the ECSQL parameter.
@@ -587,19 +536,15 @@ export class ECSqlBinder {
    */
   public bindPoint3d(val: XYAndZ): void {
     const stat: DbResult = this._binder.bindPoint3d(val.x, val.y, val.z);
-    if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding Point3d");
+    if (stat !== DbResult.BE_SQLITE_OK) throw new IModelError(stat, "Error binding Point3d");
   }
 
   /** Binds a Range3d as a blob to the ECSQL parameter.
    * @param val Range3d value
    */
   public bindRange3d(val: LowAndHighXYZ): void {
-    const stat: DbResult = this._binder.bindBlob(
-      Range3d.toFloat64Array(val).buffer
-    );
-    if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding Range3d");
+    const stat: DbResult = this._binder.bindBlob(Range3d.toFloat64Array(val).buffer);
+    if (stat !== DbResult.BE_SQLITE_OK) throw new IModelError(stat, "Error binding Range3d");
   }
 
   /** Binds an string to the ECSQL parameter.
@@ -607,21 +552,15 @@ export class ECSqlBinder {
    */
   public bindString(val: string): void {
     const stat: DbResult = this._binder.bindString(val);
-    if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding string");
+    if (stat !== DbResult.BE_SQLITE_OK) throw new IModelError(stat, "Error binding string");
   }
 
   /** Binds a navigation property value to the ECSQL parameter.
    * @param val Navigation property value
    */
   public bindNavigation(val: NavigationBindingValue): void {
-    const stat: DbResult = this._binder.bindNavigation(
-      val.id,
-      val.relClassName,
-      val.relClassTableSpace
-    );
-    if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding navigation property");
+    const stat: DbResult = this._binder.bindNavigation(val.id, val.relClassName, val.relClassTableSpace);
+    if (stat !== DbResult.BE_SQLITE_OK) throw new IModelError(stat, "Error binding navigation property");
   }
 
   /** Binds a struct property value to the ECSQL parameter.
@@ -646,8 +585,7 @@ export class ECSqlBinder {
    */
   public bindIdSet(vector: Id64String[]): void {
     const stat: DbResult = this._binder.bindIdSet(vector);
-    if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding id set");
+    if (stat !== DbResult.BE_SQLITE_OK) throw new IModelError(stat, "Error binding id set");
   }
 
   /** Binds an array value to the ECSQL parameter.
@@ -819,8 +757,7 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
   }
 
   public next(): IteratorResult<ECSqlValue> {
-    if (this._it.moveNext())
-      return { done: false, value: new ECSqlValue(this._it.getCurrent()) };
+    if (this._it.moveNext()) return { done: false, value: new ECSqlValue(this._it.getCurrent()) };
 
     return { done: true, value: undefined };
   }
@@ -916,10 +853,7 @@ class ECSqlBindingHelper {
    */
   public static bindPrimitive(binder: ECSqlBinder, val: any): void {
     if (!ECSqlBindingHelper.tryBindPrimitiveTypes(binder, val))
-      throw new IModelError(
-        DbResult.BE_SQLITE_ERROR,
-        `Binding value is of an unsupported primitive type: ${val}`
-      );
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Binding value is of an unsupported primitive type: ${val}`);
   }
 
   /** Binds the specified object to the specified struct binder
@@ -1041,9 +975,7 @@ class ECSqlValueHelper {
       for (const memberECSqlVal of it) {
         if (memberECSqlVal.isNull) continue;
 
-        const memberName: string = ECJsNames.toJsName(
-          memberECSqlVal.columnInfo.getPropertyName()
-        );
+        const memberName: string = ECJsNames.toJsName(memberECSqlVal.columnInfo.getPropertyName());
         const memberVal = ECSqlValueHelper.getValue(memberECSqlVal);
         Object.defineProperty(structVal, memberName, {
           enumerable: true,
@@ -1089,10 +1021,7 @@ class ECSqlValueHelper {
       case ECSqlValueType.Guid:
         return ecsqlValue.getGuid();
       case ECSqlValueType.Id: {
-        if (
-          colInfo.isSystemProperty() &&
-          colInfo.getPropertyName().endsWith("ECClassId")
-        )
+        if (colInfo.isSystemProperty() && colInfo.getPropertyName().endsWith("ECClassId"))
           return ecsqlValue.getClassNameForClassId();
 
         return ecsqlValue.getId();
@@ -1114,11 +1043,7 @@ class ECSqlValueHelper {
     }
   }
 
-  public static queryClassName(
-    ecdb: ECDb,
-    classId: Id64String,
-    tableSpace?: string
-  ): string {
+  public static queryClassName(ecdb: ECDb, classId: Id64String, tableSpace?: string): string {
     if (!tableSpace) tableSpace = "main";
 
     return ecdb.withPreparedStatement(
@@ -1131,9 +1056,7 @@ class ECSqlValueHelper {
             `No class found with ECClassId ${classId} in table space ${tableSpace}.`
           );
 
-        return `${stmt.getValue(0).getString()}.${stmt
-          .getValue(1)
-          .getString()}`;
+        return `${stmt.getValue(0).getString()}.${stmt.getValue(1).getString()}`;
       }
     );
   }
@@ -1159,9 +1082,7 @@ class ECSqlTypeHelper {
     );
   }
 
-  public static isNavigationBindingValue(
-    val: any
-  ): val is NavigationBindingValue {
+  public static isNavigationBindingValue(val: any): val is NavigationBindingValue {
     return val.id !== undefined && typeof val.id === "string";
   }
 }

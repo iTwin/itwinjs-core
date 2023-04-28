@@ -12,10 +12,7 @@ import {
   Id64String,
   OrderedId64Iterable,
 } from "@itwin/core-bentley";
-import {
-  SubCategoryAppearance,
-  SubCategoryResultRow,
-} from "@itwin/core-common";
+import { SubCategoryAppearance, SubCategoryResultRow } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 
 /** A cancelable paginated request for subcategory information.
@@ -54,9 +51,7 @@ export class SubCategoriesCache {
   }
 
   /** Get the base appearance of the subcategory with the specified Id, or undefined if no such information is present. */
-  public getSubCategoryAppearance(
-    subCategoryId: Id64String
-  ): SubCategoryAppearance | undefined {
+  public getSubCategoryAppearance(subCategoryId: Id64String): SubCategoryAppearance | undefined {
     return this._appearances.get(subCategoryId.toString());
   }
 
@@ -70,13 +65,11 @@ export class SubCategoriesCache {
     if (undefined === missing) return undefined;
 
     const request = new SubCategoriesCache.Request(missing, this._imodel);
-    const promise = request
-      .dispatch()
-      .then((result?: SubCategoriesCache.Result) => {
-        if (undefined !== result) this.processResults(result, missing);
+    const promise = request.dispatch().then((result?: SubCategoriesCache.Result) => {
+      if (undefined !== result) this.processResults(result, missing);
 
-        return !request.wasCanceled;
-      });
+      return !request.wasCanceled;
+    });
 
     return {
       missingCategoryIds: missing,
@@ -115,34 +108,21 @@ export class SubCategoriesCache {
     return new SubCategoryAppearance(props);
   }
 
-  private processResults(
-    result: SubCategoriesCache.Result,
-    missing: Id64Set
-  ): void {
+  private processResults(result: SubCategoriesCache.Result, missing: Id64Set): void {
     for (const row of result)
-      this.add(
-        row.parentId,
-        row.id,
-        SubCategoriesCache.createSubCategoryAppearance(row.appearance)
-      );
+      this.add(row.parentId, row.id, SubCategoriesCache.createSubCategoryAppearance(row.appearance));
 
     // Ensure that any category Ids which returned no results (e.g., non-existent category, invalid Id, etc) are still recorded so they are not repeatedly re-requested
     for (const id of missing)
-      if (undefined === this._byCategoryId.get(id))
-        this._byCategoryId.set(id, invalidCategoryIdEntry);
+      if (undefined === this._byCategoryId.get(id)) this._byCategoryId.set(id, invalidCategoryIdEntry);
   }
 
   /** Exposed strictly for tests.
    * @internal
    */
-  public add(
-    categoryId: string,
-    subCategoryId: string,
-    appearance: SubCategoryAppearance
-  ) {
+  public add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance) {
     let set = this._byCategoryId.get(categoryId);
-    if (undefined === set)
-      this._byCategoryId.set(categoryId, (set = new Set<string>()));
+    if (undefined === set) this._byCategoryId.set(categoryId, (set = new Set<string>()));
 
     set.add(subCategoryId);
     this._appearances.set(subCategoryId, appearance);
@@ -152,11 +132,7 @@ export class SubCategoriesCache {
     inputCategoryIds: Id64String | Iterable<Id64String>
   ): Promise<Map<Id64String, IModelConnection.Categories.CategoryInfo>> {
     // Eliminate duplicates...
-    const categoryIds = new Set<string>(
-      typeof inputCategoryIds === "string"
-        ? [inputCategoryIds]
-        : inputCategoryIds
-    );
+    const categoryIds = new Set<string>(typeof inputCategoryIds === "string" ? [inputCategoryIds] : inputCategoryIds);
     const req = this.load(categoryIds);
     if (req) await req.promise;
 
@@ -165,10 +141,7 @@ export class SubCategoriesCache {
       const subCategoryIds = this._byCategoryId.get(categoryId);
       if (!subCategoryIds) continue;
 
-      const subCategories = this.mapSubCategoryInfos(
-        categoryId,
-        subCategoryIds
-      );
+      const subCategories = this.mapSubCategoryInfos(categoryId, subCategoryIds);
       map.set(categoryId, { id: categoryId, subCategories });
     }
 
@@ -181,9 +154,7 @@ export class SubCategoriesCache {
   ): Promise<Map<Id64String, IModelConnection.Categories.SubCategoryInfo>> {
     // Eliminate duplicates...
     const subCategoryIds = new Set<string>(
-      typeof inputSubCategoryIds === "string"
-        ? [inputSubCategoryIds]
-        : inputSubCategoryIds
+      typeof inputSubCategoryIds === "string" ? [inputSubCategoryIds] : inputSubCategoryIds
     );
     const req = this.load(categoryId);
     if (req) await req.promise;
@@ -195,10 +166,7 @@ export class SubCategoriesCache {
     categoryId: Id64String,
     subCategoryIds: Set<Id64String>
   ): Map<Id64String, IModelConnection.Categories.SubCategoryInfo> {
-    const map = new Map<
-      Id64String,
-      IModelConnection.Categories.SubCategoryInfo
-    >();
+    const map = new Map<Id64String, IModelConnection.Categories.SubCategoryInfo>();
     for (const id of subCategoryIds) {
       const appearance = this._appearances.get(id);
       if (appearance) map.set(id, { id, categoryId, appearance });
@@ -226,23 +194,14 @@ export namespace SubCategoriesCache {
       return this._canceled || this._imodel.isClosed;
     }
 
-    public constructor(
-      categoryIds: Set<string>,
-      imodel: IModelConnection,
-      maxCategoriesPerQuery = 200
-    ) {
+    public constructor(categoryIds: Set<string>, imodel: IModelConnection, maxCategoriesPerQuery = 200) {
       this._imodel = imodel;
 
       const catIds = [...categoryIds];
       OrderedId64Iterable.sortArray(catIds); // sort categories, so that given the same set of categoryIds we will always create the same batches.
       while (catIds.length !== 0) {
-        const end =
-          catIds.length > maxCategoriesPerQuery
-            ? maxCategoriesPerQuery
-            : catIds.length;
-        const compressedIds = CompressedId64Set.compressArray(
-          catIds.splice(0, end)
-        );
+        const end = catIds.length > maxCategoriesPerQuery ? maxCategoriesPerQuery : catIds.length;
+        const compressedIds = CompressedId64Set.compressArray(catIds.splice(0, end));
         this._categoryIds.push(compressedIds);
       }
     }
@@ -252,10 +211,7 @@ export namespace SubCategoriesCache {
     }
 
     public async dispatch(): Promise<Result | undefined> {
-      if (
-        this.wasCanceled ||
-        this._curCategoryIdsIndex >= this._categoryIds.length
-      )
+      if (this.wasCanceled || this._curCategoryIdsIndex >= this._categoryIds.length)
         // handle case of empty category Id set...
         return undefined;
 
@@ -309,14 +265,9 @@ export namespace SubCategoriesCache {
     /** Push a request onto the queue. The requested categories will be loaded if necessary, and then
      * the supplied function will be invoked. Any previously-pushed requests are guaranteed to be processed before this one.
      */
-    public push(
-      cache: SubCategoriesCache,
-      categoryIds: Id64Arg,
-      func: QueueFunc
-    ): void {
+    public push(cache: SubCategoriesCache, categoryIds: Id64Arg, func: QueueFunc): void {
       if (this._disposed) return;
-      else if (undefined === this._current)
-        this.pushCurrent(cache, categoryIds, func);
+      else if (undefined === this._current) this.pushCurrent(cache, categoryIds, func);
       else this.pushNext(categoryIds, func);
     }
 
@@ -336,11 +287,7 @@ export namespace SubCategoriesCache {
       return undefined === this._current && undefined === this._next;
     }
 
-    private pushCurrent(
-      cache: SubCategoriesCache,
-      categoryIds: Id64Arg,
-      func: QueueFunc
-    ): void {
+    private pushCurrent(cache: SubCategoriesCache, categoryIds: Id64Arg, func: QueueFunc): void {
       assert(undefined === this._next);
       assert(undefined === this._current);
       assert(undefined === this._request);
@@ -352,10 +299,7 @@ export namespace SubCategoriesCache {
         return;
       } else {
         // We need to load the requested categories before invoking the function.
-        this.processCurrent(
-          cache,
-          new QueueEntry(Id64.toIdSet(categoryIds, true), func)
-        );
+        this.processCurrent(cache, new QueueEntry(Id64.toIdSet(categoryIds, true), func));
       }
     }
 
@@ -404,8 +348,7 @@ export namespace SubCategoriesCache {
       } else {
         // We have a request currently in process, and one or more pending. Append this one to the pending.
         this._next.funcs.push(func);
-        for (const categoryId of Id64.iterable(categoryIds))
-          this._next.categoryIds.add(categoryId);
+        for (const categoryId of Id64.iterable(categoryIds)) this._next.categoryIds.add(categoryId);
       }
     }
   }

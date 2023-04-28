@@ -99,30 +99,23 @@ export class SubCategoryOverride {
     )
       return false;
 
-    if (undefined !== this.color && undefined !== other.color)
-      return this.color.tbgr === other.color.tbgr;
+    if (undefined !== this.color && undefined !== other.color) return this.color.tbgr === other.color.tbgr;
     else return undefined === this.color && undefined === other.color;
   }
 
   /** Create a new SubCategoryOverride from a JSON object */
-  public static fromJSON(
-    json?: SubCategoryAppearance.Props
-  ): SubCategoryOverride {
+  public static fromJSON(json?: SubCategoryAppearance.Props): SubCategoryOverride {
     return undefined !== json ? new SubCategoryOverride(json) : this.defaults;
   }
 
   private constructor(props: SubCategoryAppearance.Props) {
-    if (undefined !== props.invisible)
-      this.invisible = JsonUtils.asBool(props.invisible);
+    if (undefined !== props.invisible) this.invisible = JsonUtils.asBool(props.invisible);
     if (undefined !== props.color) this.color = ColorDef.fromJSON(props.color);
     if (undefined !== props.weight) this.weight = JsonUtils.asInt(props.weight);
     if (undefined !== props.style) this.style = Id64.fromJSON(props.style);
-    if (undefined !== props.material)
-      this.material = Id64.fromJSON(props.material);
-    if (undefined !== props.priority)
-      this.priority = JsonUtils.asInt(props.priority);
-    if (undefined !== props.transp)
-      this.transparency = JsonUtils.asDouble(props.transp);
+    if (undefined !== props.material) this.material = Id64.fromJSON(props.material);
+    if (undefined !== props.priority) this.priority = JsonUtils.asInt(props.priority);
+    if (undefined !== props.transp) this.transparency = JsonUtils.asDouble(props.transp);
   }
 
   /** A default SubCategoryOverride which overrides nothing. */

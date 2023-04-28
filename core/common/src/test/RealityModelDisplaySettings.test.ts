@@ -28,9 +28,7 @@ describe("PointCloudDisplaySettings", () => {
       expect(actualSettings === PointCloudDisplaySettings.defaults).to.equal(
         settings.equals(PointCloudDisplaySettings.defaults)
       );
-      expect(actualSettings === PointCloudDisplaySettings.defaults).to.equal(
-        undefined === actual
-      );
+      expect(actualSettings === PointCloudDisplaySettings.defaults).to.equal(undefined === actual);
     };
 
     roundTrip(undefined, undefined);
@@ -157,9 +155,7 @@ describe("RealityModelDisplaySettings", () => {
       expect(actualSettings === RealityModelDisplaySettings.defaults).to.equal(
         settings.equals(RealityModelDisplaySettings.defaults)
       );
-      expect(actualSettings === RealityModelDisplaySettings.defaults).to.equal(
-        undefined === actual
-      );
+      expect(actualSettings === RealityModelDisplaySettings.defaults).to.equal(undefined === actual);
     };
 
     roundTrip(undefined, undefined);
@@ -189,10 +185,7 @@ describe("RealityModelDisplaySettings", () => {
       { pointCloud: { sizeMode: "pixel", pixelSize: 1, shape: "square" } },
       { pointCloud: { sizeMode: "pixel", shape: "square" } }
     );
-    roundTrip(
-      { overrideColorRatio: 12.5, pointCloud: { voxelScale: 2 } },
-      "input"
-    );
+    roundTrip({ overrideColorRatio: 12.5, pointCloud: { voxelScale: 2 } }, "input");
   });
 
   it("clones", () => {
@@ -210,16 +203,8 @@ describe("RealityModelDisplaySettings", () => {
     };
 
     test(undefined, { overrideColorRatio: 0.5 }, undefined);
-    test(
-      { overrideColorRatio: 2 },
-      { overrideColorRatio: undefined },
-      undefined
-    );
-    test(
-      { overrideColorRatio: 2 },
-      { overrideColorRatio: 3 },
-      { overrideColorRatio: 3 }
-    );
+    test({ overrideColorRatio: 2 }, { overrideColorRatio: undefined }, undefined);
+    test({ overrideColorRatio: 2 }, { overrideColorRatio: 3 }, { overrideColorRatio: 3 });
     test(
       { pointCloud: { sizeMode: "pixel" } },
       { overrideColorRatio: 2 },

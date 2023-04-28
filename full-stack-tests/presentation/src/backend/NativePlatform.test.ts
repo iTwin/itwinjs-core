@@ -25,8 +25,7 @@ describe("NativePlatform", () => {
   });
 
   beforeEach(() => {
-    const testIModelName: string =
-      "assets/datasets/Properties_60InstancesWithUrl2.ibim";
+    const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = SnapshotDb.openFile(testIModelName);
     expect(imodel).is.not.null;
     const TNativePlatform = createDefaultNativePlatform({
@@ -53,16 +52,15 @@ describe("NativePlatform", () => {
 
   it("throws on empty options", async () => {
     const db = nativePlatform.getImodelAddon(imodel);
-    await expect(
-      nativePlatform.handleRequest(db, "")
-    ).to.eventually.be.rejectedWith(PresentationError, "request");
+    await expect(nativePlatform.handleRequest(db, "")).to.eventually.be.rejectedWith(PresentationError, "request");
   });
 
   it("throws on empty request id", async () => {
     const db = nativePlatform.getImodelAddon(imodel);
-    await expect(
-      nativePlatform.handleRequest(db, JSON.stringify({ requestId: "" }))
-    ).to.eventually.be.rejectedWith(PresentationError, "request.requestId");
+    await expect(nativePlatform.handleRequest(db, JSON.stringify({ requestId: "" }))).to.eventually.be.rejectedWith(
+      PresentationError,
+      "request.requestId"
+    );
   });
 
   it("throws on not handled request id", async () => {

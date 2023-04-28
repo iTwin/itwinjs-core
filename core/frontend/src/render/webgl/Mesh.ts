@@ -19,11 +19,7 @@ import { InstanceBuffers, PatternBuffers } from "./InstancedGeometry";
 import { Primitive } from "./Primitive";
 import { RenderCommands } from "./RenderCommands";
 import { RenderPass } from "./RenderFlags";
-import {
-  EdgeGeometry,
-  PolylineEdgeGeometry,
-  SilhouetteEdgeGeometry,
-} from "./EdgeGeometry";
+import { EdgeGeometry, PolylineEdgeGeometry, SilhouetteEdgeGeometry } from "./EdgeGeometry";
 import { IndexedEdgeGeometry } from "./IndexedEdgeGeometry";
 import { SurfaceGeometry } from "./SurfaceGeometry";
 import { MeshData } from "./MeshData";
@@ -45,26 +41,16 @@ export class MeshRenderGeometry {
     const edges = params.edges;
     if (!edges || data.type === SurfaceType.VolumeClassifier) return;
 
-    if (edges.silhouettes)
-      this.silhouetteEdges = SilhouetteEdgeGeometry.createSilhouettes(
-        data,
-        edges.silhouettes
-      );
+    if (edges.silhouettes) this.silhouetteEdges = SilhouetteEdgeGeometry.createSilhouettes(data, edges.silhouettes);
 
-    if (edges.segments)
-      this.segmentEdges = EdgeGeometry.create(data, edges.segments);
+    if (edges.segments) this.segmentEdges = EdgeGeometry.create(data, edges.segments);
 
-    if (edges.polylines)
-      this.polylineEdges = PolylineEdgeGeometry.create(data, edges.polylines);
+    if (edges.polylines) this.polylineEdges = PolylineEdgeGeometry.create(data, edges.polylines);
 
-    if (edges.indexed)
-      this.indexedEdges = IndexedEdgeGeometry.create(data, edges.indexed);
+    if (edges.indexed) this.indexedEdges = IndexedEdgeGeometry.create(data, edges.indexed);
   }
 
-  public static create(
-    params: MeshParams,
-    viewIndependentOrigin: Point3d | undefined
-  ): MeshRenderGeometry | undefined {
+  public static create(params: MeshParams, viewIndependentOrigin: Point3d | undefined): MeshRenderGeometry | undefined {
     const data = MeshData.create(params, viewIndependentOrigin);
     return data ? new this(data, params) : undefined;
   }
@@ -105,11 +91,7 @@ export class MeshGraphic extends Graphic {
       } else {
         const instancesRange =
           instances.range ??
-          InstanceBuffers.computeRange(
-            geometry.range,
-            instances.transforms,
-            instances.transformCenter
-          );
+          InstanceBuffers.computeRange(geometry.range, instances.transforms, instances.transformCenter);
         buffers = InstanceBuffers.create(instances, instancesRange);
         if (!buffers) return undefined;
       }
@@ -126,10 +108,7 @@ export class MeshGraphic extends Graphic {
     if (primitive) this._primitives.push(primitive);
   }
 
-  private constructor(
-    geometry: MeshRenderGeometry,
-    instances?: InstanceBuffers | PatternBuffers
-  ) {
+  private constructor(geometry: MeshRenderGeometry, instances?: InstanceBuffers | PatternBuffers) {
     super();
     this.meshData = geometry.data;
     this._instances = instances;
@@ -165,10 +144,7 @@ export class MeshGraphic extends Graphic {
   public addCommands(cmds: RenderCommands): void {
     this._primitives.forEach((prim) => prim.addCommands(cmds));
   }
-  public override addHiliteCommands(
-    cmds: RenderCommands,
-    pass: RenderPass
-  ): void {
+  public override addHiliteCommands(cmds: RenderCommands, pass: RenderPass): void {
     this._primitives.forEach((prim) => prim.addHiliteCommands(cmds, pass));
   }
 

@@ -12,12 +12,7 @@ import {
   ThematicGradientColorScheme,
   ThematicGradientMode,
 } from "@itwin/core-common";
-import {
-  IModelConnection,
-  SnapshotConnection,
-  ViewRect,
-  ViewState3d,
-} from "@itwin/core-frontend";
+import { IModelConnection, SnapshotConnection, ViewRect, ViewState3d } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { Color, TestViewport, testViewportsWithDpr } from "../TestViewport";
 
@@ -145,8 +140,7 @@ describe("Thematic display", () => {
       };
       const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
 
-      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d()
-        .settings;
+      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d().settings;
       displaySettings.thematic = thematicDisplay;
 
       await vp.waitForAllTilesToRender();
@@ -194,8 +188,7 @@ describe("Thematic display", () => {
       };
       const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
 
-      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d()
-        .settings;
+      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d().settings;
       displaySettings.thematic = thematicDisplay;
 
       await vp.waitForAllTilesToRender();
@@ -242,8 +235,7 @@ describe("Thematic display", () => {
       };
       const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
 
-      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d()
-        .settings;
+      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d().settings;
       displaySettings.thematic = thematicDisplay;
 
       await vp.waitForAllTilesToRender();
@@ -290,8 +282,7 @@ describe("Thematic display", () => {
       };
       const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
 
-      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d()
-        .settings;
+      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d().settings;
       displaySettings.thematic = thematicDisplay;
 
       await vp.waitForAllTilesToRender();
@@ -339,8 +330,7 @@ describe("Thematic display", () => {
       };
       const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
 
-      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d()
-        .settings;
+      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d().settings;
       displaySettings.thematic = thematicDisplay;
 
       await vp.waitForAllTilesToRender();
@@ -386,8 +376,7 @@ describe("Thematic display", () => {
       };
       const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
 
-      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d()
-        .settings;
+      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d().settings;
       displaySettings.thematic = thematicDisplay;
 
       await vp.waitForAllTilesToRender();
@@ -432,8 +421,7 @@ describe("Thematic display", () => {
       };
       const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
 
-      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d()
-        .settings;
+      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d().settings;
       displaySettings.thematic = thematicDisplay;
 
       await vp.waitForAllTilesToRender();

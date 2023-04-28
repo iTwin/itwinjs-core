@@ -16,11 +16,7 @@ import { ECClass, StructClass } from "../Metadata/Class";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
 import { Enumeration } from "../Metadata/Enumeration";
-import {
-  PrimitiveProperty,
-  Property,
-  StructArrayProperty,
-} from "../Metadata/Property";
+import { PrimitiveProperty, Property, StructArrayProperty } from "../Metadata/Property";
 import { ECName } from "../ECName";
 import { AbstractParser, CAProviderTuple } from "./AbstractParser";
 import {
@@ -108,15 +104,9 @@ export class XmlParser extends AbstractParser<Element> {
   public parseSchema(): SchemaProps {
     const schemaMetadata = this._rawSchema.documentElement;
     if ("ECSchema" !== schemaMetadata.nodeName)
-      throw new ECObjectsError(
-        ECObjectsStatus.InvalidSchemaXML,
-        "An ECSchema is missing the required metadata."
-      );
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, "An ECSchema is missing the required metadata.");
 
-    const schemaDefDuplicates = this.getElementChildrenByTagName(
-      schemaMetadata,
-      "ECSchema"
-    );
+    const schemaDefDuplicates = this.getElementChildrenByTagName(schemaMetadata, "ECSchema");
     if (schemaDefDuplicates.length > 1)
       throw new ECObjectsError(
         ECObjectsStatus.InvalidSchemaXML,
@@ -152,14 +142,8 @@ export class XmlParser extends AbstractParser<Element> {
       "alias",
       `The ECSchema ${this._schemaName} is missing a required 'alias' attribute`
     );
-    const description = this.getOptionalAttribute(
-      schemaMetadata,
-      "description"
-    );
-    const displayLabel = this.getOptionalAttribute(
-      schemaMetadata,
-      "displayLabel"
-    );
+    const description = this.getOptionalAttribute(schemaMetadata, "description");
+    const displayLabel = this.getOptionalAttribute(schemaMetadata, "displayLabel");
 
     const schemaProps = {
       name: this._schemaName,
@@ -174,10 +158,7 @@ export class XmlParser extends AbstractParser<Element> {
   }
 
   public *getReferences(): Iterable<SchemaReferenceProps> {
-    const schemaReferences = this.getElementChildrenByTagName(
-      this._rawSchema.documentElement,
-      "ECSchemaReference"
-    );
+    const schemaReferences = this.getElementChildrenByTagName(this._rawSchema.documentElement, "ECSchemaReference");
     for (const ref of schemaReferences) {
       yield this.getSchemaReference(ref);
     }
@@ -191,16 +172,10 @@ export class XmlParser extends AbstractParser<Element> {
         if (NON_ITEM_SCHEMA_ELEMENTS.includes(rawItemType)) continue;
 
         // Differentiate a Mixin from an EntityClass
-        const customAttributesResult = this.getElementChildrenByTagName(
-          item,
-          "ECCustomAttributes"
-        );
+        const customAttributesResult = this.getElementChildrenByTagName(item, "ECCustomAttributes");
         if (customAttributesResult.length > 0) {
           const customAttributes = customAttributesResult[0];
-          const isMixinResult = this.getElementChildrenByTagName(
-            customAttributes,
-            "IsMixin"
-          );
+          const isMixinResult = this.getElementChildrenByTagName(customAttributes, "IsMixin");
           if (isMixinResult.length > 0) rawItemType = "Mixin";
         }
 
@@ -258,10 +233,7 @@ export class XmlParser extends AbstractParser<Element> {
 
   public parseEntityClass(xmlElement: Element): EntityClassProps {
     const classProps = this.getClassProps(xmlElement);
-    const baseClasses = this.getElementChildrenByTagName(
-      xmlElement,
-      "BaseClass"
-    );
+    const baseClasses = this.getElementChildrenByTagName(xmlElement, "BaseClass");
     let mixinElements: Element[];
     const mixins = new Array<string>();
 
@@ -287,10 +259,7 @@ export class XmlParser extends AbstractParser<Element> {
   public parseMixin(xmlElement: Element): MixinProps {
     const classProps = this.getClassProps(xmlElement);
 
-    const baseClasses = this.getElementChildrenByTagName(
-      xmlElement,
-      "BaseClass"
-    );
+    const baseClasses = this.getElementChildrenByTagName(xmlElement, "BaseClass");
 
     // Mixins can only have one base class
     if (baseClasses.length > 1)
@@ -299,10 +268,7 @@ export class XmlParser extends AbstractParser<Element> {
         `The Mixin ${this._currentItemFullName} has more than one base class which is not allowed.`
       );
 
-    const customAttributesResult = this.getElementChildrenByTagName(
-      xmlElement,
-      "ECCustomAttributes"
-    );
+    const customAttributesResult = this.getElementChildrenByTagName(xmlElement, "ECCustomAttributes");
 
     if (customAttributesResult.length < 1)
       throw new ECObjectsError(
@@ -311,10 +277,7 @@ export class XmlParser extends AbstractParser<Element> {
       );
 
     const customAttributes = customAttributesResult[0];
-    const isMixinResult = this.getElementChildrenByTagName(
-      customAttributes,
-      "IsMixin"
-    );
+    const isMixinResult = this.getElementChildrenByTagName(customAttributes, "IsMixin");
     if (isMixinResult.length < 1)
       throw new ECObjectsError(
         ECObjectsStatus.InvalidSchemaXML,
@@ -322,10 +285,7 @@ export class XmlParser extends AbstractParser<Element> {
       );
 
     const mixinAttributes = isMixinResult[0];
-    const appliesToResult = this.getElementChildrenByTagName(
-      mixinAttributes,
-      "AppliesToEntityClass"
-    );
+    const appliesToResult = this.getElementChildrenByTagName(mixinAttributes, "AppliesToEntityClass");
 
     if (appliesToResult.length < 1)
       throw new ECObjectsError(
@@ -355,9 +315,7 @@ export class XmlParser extends AbstractParser<Element> {
     return this.getClassProps(xmlElement);
   }
 
-  public parseCustomAttributeClass(
-    xmlElement: Element
-  ): CustomAttributeClassProps {
+  public parseCustomAttributeClass(xmlElement: Element): CustomAttributeClassProps {
     const classProps = this.getClassProps(xmlElement);
     const appliesTo = this.getRequiredAttribute(
       xmlElement,
@@ -380,12 +338,8 @@ export class XmlParser extends AbstractParser<Element> {
       "strength",
       `The RelationshipClass ${this._currentItemFullName} is missing the required 'strength' attribute.`
     );
-    let strengthDirection = this.getOptionalAttribute(
-      xmlElement,
-      "strengthDirection"
-    );
-    if (!strengthDirection)
-      strengthDirection = strengthDirectionToString(StrengthDirection.Forward);
+    let strengthDirection = this.getOptionalAttribute(xmlElement, "strengthDirection");
+    if (!strengthDirection) strengthDirection = strengthDirectionToString(StrengthDirection.Forward);
 
     const sourceResult = this.getElementChildrenByTagName(xmlElement, "Source");
     if (sourceResult.length !== 1) {
@@ -446,10 +400,7 @@ export class XmlParser extends AbstractParser<Element> {
         `The Enumeration ${this._currentItemFullName} has an invalid 'backingTypeName' attribute. It should be either "int" or "string".`
       );
 
-    let isStrictString: string | undefined = this.getOptionalAttribute(
-      xmlElement,
-      "isStrict"
-    );
+    let isStrictString: string | undefined = this.getOptionalAttribute(xmlElement, "isStrict");
     if (isStrictString === undefined) isStrictString = "true";
 
     const isStrict = this.parseBoolean(
@@ -457,10 +408,7 @@ export class XmlParser extends AbstractParser<Element> {
       `The Enumeration ${this._currentItemFullName} has an invalid 'isStrict' attribute. It should either be "true" or "false".`
     );
 
-    const enumeratorElements = this.getElementChildrenByTagName(
-      xmlElement,
-      "ECEnumerator"
-    );
+    const enumeratorElements = this.getElementChildrenByTagName(xmlElement, "ECEnumerator");
     const enumerators = new Array<EnumeratorProps>();
 
     for (const element of enumeratorElements) {
@@ -521,15 +469,10 @@ export class XmlParser extends AbstractParser<Element> {
         `The KindOfQuantity ${this._currentItemFullName} has an invalid 'relativeError' attribute. It should be a numeric value.`
       );
 
-    const presentationUnitsString = this.getOptionalAttribute(
-      xmlElement,
-      "presentationUnits"
-    );
+    const presentationUnitsString = this.getOptionalAttribute(xmlElement, "presentationUnits");
     let presentationUnits: string[] | undefined;
     if (presentationUnitsString)
-      presentationUnits = this.getQualifiedPresentationUnits(
-        presentationUnitsString.split(";")
-      );
+      presentationUnits = this.getQualifiedPresentationUnits(presentationUnitsString.split(";"));
 
     let persistenceUnit = this.getRequiredAttribute(
       xmlElement,
@@ -712,10 +655,7 @@ export class XmlParser extends AbstractParser<Element> {
       "minWidth",
       `The Format ${this._currentItemFullName} has an invalid 'minWidth' attribute. It should be a numeric value.`
     );
-    const showSignOption = this.getOptionalAttribute(
-      xmlElement,
-      "showSignOption"
-    );
+    const showSignOption = this.getOptionalAttribute(xmlElement, "showSignOption");
 
     const formatTraitsString = this.getRequiredAttribute(
       xmlElement,
@@ -724,19 +664,10 @@ export class XmlParser extends AbstractParser<Element> {
     );
     const formatTraits = formatTraitsString.split("|");
 
-    const decimalSeparator = this.getOptionalAttribute(
-      xmlElement,
-      "decimalSeparator"
-    );
-    const thousandSeparator = this.getOptionalAttribute(
-      xmlElement,
-      "thousandSeparator"
-    );
+    const decimalSeparator = this.getOptionalAttribute(xmlElement, "decimalSeparator");
+    const thousandSeparator = this.getOptionalAttribute(xmlElement, "thousandSeparator");
     const uomSeparator = this.getOptionalAttribute(xmlElement, "uomSeparator");
-    const scientificType = this.getOptionalAttribute(
-      xmlElement,
-      "scientificType"
-    );
+    const scientificType = this.getOptionalAttribute(xmlElement, "scientificType");
 
     const stationOffsetSize = this.getOptionalIntAttribute(
       xmlElement,
@@ -744,25 +675,16 @@ export class XmlParser extends AbstractParser<Element> {
       `The Format ${this._currentItemFullName} has an invalid 'stationOffsetSize' attribute. It should be a numeric value.`
     );
 
-    const stationSeparator = this.getOptionalAttribute(
-      xmlElement,
-      "stationSeparator"
-    );
+    const stationSeparator = this.getOptionalAttribute(xmlElement, "stationSeparator");
 
     let composite: object | undefined;
-    const compositeResult = this.getElementChildrenByTagName(
-      xmlElement,
-      "Composite"
-    );
+    const compositeResult = this.getElementChildrenByTagName(xmlElement, "Composite");
     if (compositeResult.length > 0) {
       const compositeElement = compositeResult[0];
 
       const spacer = this.getOptionalAttribute(compositeElement, "spacer");
 
-      const includeZeroString = this.getOptionalAttribute(
-        compositeElement,
-        "includeZero"
-      );
+      const includeZeroString = this.getOptionalAttribute(compositeElement, "includeZero");
       let includeZero: boolean | undefined;
       if (includeZeroString) {
         includeZero = this.parseBoolean(
@@ -772,10 +694,7 @@ export class XmlParser extends AbstractParser<Element> {
       }
 
       const units = new Array<{ name: string; label?: string }>();
-      const unitsResult = this.getElementChildrenByTagName(
-        compositeElement,
-        "Unit"
-      );
+      const unitsResult = this.getElementChildrenByTagName(compositeElement, "Unit");
       if (unitsResult.length < 1)
         throw new ECObjectsError(
           ECObjectsStatus.InvalidSchemaXML,
@@ -824,15 +743,9 @@ export class XmlParser extends AbstractParser<Element> {
     return this.getClassProps(xmlElement);
   }
 
-  public *getProperties(
-    xmlElement: Element,
-    itemName: string
-  ): Iterable<[string, string, Element]> {
+  public *getProperties(xmlElement: Element, itemName: string): Iterable<[string, string, Element]> {
     const propertyTagRegex = /EC((Struct(Array)?)|Array|Navigation)?Property/;
-    const children = this.getElementChildrenByTagName(
-      xmlElement,
-      propertyTagRegex
-    );
+    const children = this.getElementChildrenByTagName(xmlElement, propertyTagRegex);
 
     for (const child of children) {
       const childType = child.nodeName;
@@ -868,9 +781,7 @@ export class XmlParser extends AbstractParser<Element> {
     return structPropertyProps;
   }
 
-  public parsePrimitiveArrayProperty(
-    xmlElement: Element
-  ): PrimitiveArrayPropertyProps {
+  public parsePrimitiveArrayProperty(xmlElement: Element): PrimitiveArrayPropertyProps {
     const typeName = this.getPropertyTypeName(xmlElement);
     const propertyProps = this.getPrimitiveOrEnumPropertyBaseProps(xmlElement);
     const minAndMaxOccurs = this.getPropertyMinAndMaxOccurs(xmlElement);
@@ -882,9 +793,7 @@ export class XmlParser extends AbstractParser<Element> {
     };
   }
 
-  public parseStructArrayProperty(
-    xmlElement: Element
-  ): StructArrayPropertyProps {
+  public parseStructArrayProperty(xmlElement: Element): StructArrayPropertyProps {
     const propertyProps = this.getPropertyProps(xmlElement);
     const typeName = this.getPropertyTypeName(xmlElement);
     const minAndMaxOccurs = this.getPropertyMinAndMaxOccurs(xmlElement);
@@ -919,40 +828,21 @@ export class XmlParser extends AbstractParser<Element> {
   }
 
   public getSchemaCustomAttributeProviders(): Iterable<CAProviderTuple> {
-    return this.getCustomAttributeProviders(
-      this._rawSchema.documentElement,
-      "Schema",
-      this._schemaName
-    );
+    return this.getCustomAttributeProviders(this._rawSchema.documentElement, "Schema", this._schemaName);
   }
 
-  public getClassCustomAttributeProviders(
-    xmlElement: Element
-  ): Iterable<CAProviderTuple> {
-    return this.getCustomAttributeProviders(
-      xmlElement,
-      "ECClass",
-      this._currentItemFullName
-    );
+  public getClassCustomAttributeProviders(xmlElement: Element): Iterable<CAProviderTuple> {
+    return this.getCustomAttributeProviders(xmlElement, "ECClass", this._currentItemFullName);
   }
 
-  public getPropertyCustomAttributeProviders(
-    xmlElement: Element
-  ): Iterable<CAProviderTuple> {
+  public getPropertyCustomAttributeProviders(xmlElement: Element): Iterable<CAProviderTuple> {
     const propName = this.getPropertyName(xmlElement);
-    return this.getCustomAttributeProviders(
-      xmlElement,
-      "ECProperty",
-      `${this._currentItemFullName}.${propName}`
-    );
+    return this.getCustomAttributeProviders(xmlElement, "ECProperty", `${this._currentItemFullName}.${propName}`);
   }
 
   public getRelationshipConstraintCustomAttributeProviders(
     xmlElement: Element
-  ): [
-    Iterable<CAProviderTuple> /* source */,
-    Iterable<CAProviderTuple> /* target */
-  ] {
+  ): [Iterable<CAProviderTuple> /* source */, Iterable<CAProviderTuple> /* target */] {
     const sourceResult = this.getElementChildrenByTagName(xmlElement, "Source");
     if (sourceResult.length < 1)
       throw new ECObjectsError(
@@ -992,10 +882,7 @@ export class XmlParser extends AbstractParser<Element> {
     return children as Element[];
   }
 
-  private getElementChildrenByTagName(
-    xmlElement: Element,
-    tagName: string | RegExp
-  ): Element[] {
+  private getElementChildrenByTagName(xmlElement: Element, tagName: string | RegExp): Element[] {
     const children = this.getElementChildren(xmlElement);
     if ("*" === tagName) return children;
 
@@ -1013,10 +900,7 @@ export class XmlParser extends AbstractParser<Element> {
     return result;
   }
 
-  private getOptionalAttribute(
-    xmlElement: Element,
-    attributeName: string
-  ): string | undefined {
+  private getOptionalAttribute(xmlElement: Element, attributeName: string): string | undefined {
     if (!xmlElement.hasAttribute(attributeName)) return undefined;
     const result = xmlElement.getAttribute(attributeName);
 
@@ -1037,11 +921,7 @@ export class XmlParser extends AbstractParser<Element> {
     let result: number | undefined;
     if (resultString) {
       result = parseFloat(resultString);
-      if (isNaN(result))
-        throw new ECObjectsError(
-          ECObjectsStatus.InvalidSchemaXML,
-          parseErrorMsg
-        );
+      if (isNaN(result)) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, parseErrorMsg);
     }
     return result;
   }
@@ -1055,11 +935,7 @@ export class XmlParser extends AbstractParser<Element> {
     let result: number | undefined;
     if (resultString) {
       result = parseInt(resultString, 10);
-      if (isNaN(result))
-        throw new ECObjectsError(
-          ECObjectsStatus.InvalidSchemaXML,
-          parseErrorMsg
-        );
+      if (isNaN(result)) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, parseErrorMsg);
     }
     return result;
   }
@@ -1068,20 +944,13 @@ export class XmlParser extends AbstractParser<Element> {
     const textString = text.toLowerCase();
     if ("true" === textString) return true;
     else if ("false" === textString) return false;
-    else
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, parseErrorMsg);
+    else throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, parseErrorMsg);
   }
 
-  private getRequiredAttribute(
-    xmlElement: Element,
-    attributeName: string,
-    errorMsg: string
-  ): string {
-    if (!xmlElement.hasAttribute(attributeName))
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, errorMsg);
+  private getRequiredAttribute(xmlElement: Element, attributeName: string, errorMsg: string): string {
+    if (!xmlElement.hasAttribute(attributeName)) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, errorMsg);
     const result = xmlElement.getAttribute(attributeName);
-    if (result === null)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, errorMsg);
+    if (result === null) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, errorMsg);
     return result;
   }
 
@@ -1102,8 +971,7 @@ export class XmlParser extends AbstractParser<Element> {
       `The schema ${this._schemaName} has an invalid ECSchemaReference attribute. One of the references is missing the required 'version' attribute.`
     );
 
-    if (!this._schemaReferenceNames.has(alias.toLowerCase()))
-      this._schemaReferenceNames.set(alias.toLowerCase(), name);
+    if (!this._schemaReferenceNames.has(alias.toLowerCase())) this._schemaReferenceNames.set(alias.toLowerCase(), name);
 
     return {
       name,
@@ -1165,10 +1033,7 @@ export class XmlParser extends AbstractParser<Element> {
     const modifier = this.getOptionalAttribute(xmlElement, "modifier");
 
     let baseClass: string | null | undefined = null;
-    const baseClasses = this.getElementChildrenByTagName(
-      xmlElement,
-      "BaseClass"
-    );
+    const baseClasses = this.getElementChildrenByTagName(xmlElement, "BaseClass");
     if (baseClasses.length > 0) {
       // We are assuming here that the first BaseClass is the 'real' one - the rest are mixins
       // This is not a finalized approach as this could lead to unsupported schemas
@@ -1184,13 +1049,8 @@ export class XmlParser extends AbstractParser<Element> {
     };
   }
 
-  private getRelationshipConstraintProps(
-    xmlElement: Element,
-    isSource: boolean
-  ): RelationshipConstraintProps {
-    const constraintName = `${isSource ? "Source" : "Target"} Constraint of ${
-      this._currentItemFullName
-    }`;
+  private getRelationshipConstraintProps(xmlElement: Element, isSource: boolean): RelationshipConstraintProps {
+    const constraintName = `${isSource ? "Source" : "Target"} Constraint of ${this._currentItemFullName}`;
 
     const multiplicity = this.getRequiredAttribute(
       xmlElement,
@@ -1213,18 +1073,11 @@ export class XmlParser extends AbstractParser<Element> {
       `The ${constraintName} has an invalid 'polymorphic' attribute. It should either be "true" or "false".`
     );
 
-    let abstractConstraint = this.getOptionalAttribute(
-      xmlElement,
-      "abstractConstraint"
-    );
-    if (undefined !== abstractConstraint)
-      abstractConstraint = this.getQualifiedTypeName(abstractConstraint);
+    let abstractConstraint = this.getOptionalAttribute(xmlElement, "abstractConstraint");
+    if (undefined !== abstractConstraint) abstractConstraint = this.getQualifiedTypeName(abstractConstraint);
 
     const constraintClasses = new Array<string>();
-    const constraintClassesResult = this.getElementChildrenByTagName(
-      xmlElement,
-      "Class"
-    );
+    const constraintClassesResult = this.getElementChildrenByTagName(xmlElement, "Class");
     if (constraintClassesResult.length < 1)
       throw new ECObjectsError(
         ECObjectsStatus.InvalidSchemaXML,
@@ -1316,13 +1169,9 @@ export class XmlParser extends AbstractParser<Element> {
       );
     }
 
-    let kindOfQuantity = this.getOptionalAttribute(
-      xmlElement,
-      "kindOfQuantity"
-    );
+    let kindOfQuantity = this.getOptionalAttribute(xmlElement, "kindOfQuantity");
 
-    if (kindOfQuantity)
-      kindOfQuantity = this.getQualifiedTypeName(kindOfQuantity);
+    if (kindOfQuantity) kindOfQuantity = this.getQualifiedTypeName(kindOfQuantity);
     if (category) category = this.getQualifiedTypeName(category);
 
     return {
@@ -1353,15 +1202,10 @@ export class XmlParser extends AbstractParser<Element> {
     return this.getQualifiedTypeName(rawTypeName);
   }
 
-  private getPrimitiveOrEnumPropertyBaseProps(
-    xmlElement: Element
-  ): PrimitiveOrEnumPropertyBaseProps {
+  private getPrimitiveOrEnumPropertyBaseProps(xmlElement: Element): PrimitiveOrEnumPropertyBaseProps {
     const propertyProps = this.getPropertyProps(xmlElement);
     const propName = propertyProps.name;
-    const extendedTypeName = this.getOptionalAttribute(
-      xmlElement,
-      "extendedTypeName"
-    );
+    const extendedTypeName = this.getOptionalAttribute(xmlElement, "extendedTypeName");
     const minLength = this.getOptionalIntAttribute(
       xmlElement,
       "minimumLength",
@@ -1406,8 +1250,7 @@ export class XmlParser extends AbstractParser<Element> {
 
     const maxOccursStr = this.getOptionalAttribute(xmlElement, "maxOccurs");
     let maxOccurs: number | undefined;
-    if ("unbounded" === maxOccursStr)
-      maxOccurs = 2147483647; // TODO: This should be using the INT32_MAX variable.
+    if ("unbounded" === maxOccursStr) maxOccurs = 2147483647; // TODO: This should be using the INT32_MAX variable.
     else if (undefined !== maxOccursStr) {
       maxOccurs = parseInt(maxOccursStr, 10);
       if (isNaN(maxOccurs))
@@ -1420,15 +1263,8 @@ export class XmlParser extends AbstractParser<Element> {
     return { minOccurs, maxOccurs };
   }
 
-  private *getCustomAttributeProviders(
-    xmlElement: Element,
-    type: string,
-    _name?: string
-  ): Iterable<CAProviderTuple> {
-    const customAttributesResult = this.getElementChildrenByTagName(
-      xmlElement,
-      "ECCustomAttributes"
-    );
+  private *getCustomAttributeProviders(xmlElement: Element, type: string, _name?: string): Iterable<CAProviderTuple> {
+    const customAttributesResult = this.getElementChildrenByTagName(xmlElement, "ECCustomAttributes");
     if (customAttributesResult.length < 1) return;
 
     const attributes = this.getElementChildren(customAttributesResult[0]);
@@ -1439,9 +1275,7 @@ export class XmlParser extends AbstractParser<Element> {
     }
   }
 
-  private getCustomAttributeProvider(
-    xmlCustomAttribute: Element
-  ): CAProviderTuple {
+  private getCustomAttributeProvider(xmlCustomAttribute: Element): CAProviderTuple {
     assert(this._ecXmlVersion !== undefined);
 
     let ns = xmlCustomAttribute.getAttribute("xmlns");
@@ -1451,10 +1285,7 @@ export class XmlParser extends AbstractParser<Element> {
       ns = `${this._schemaName}.${this._schemaVersion}`;
     }
 
-    if (
-      null === ns ||
-      !this.isSchemaFullNameValidForVersion(ns, this._ecXmlVersion)
-    )
+    if (null === ns || !this.isSchemaFullNameValidForVersion(ns, this._ecXmlVersion))
       throw new ECObjectsError(
         ECObjectsStatus.InvalidSchemaXML,
         `Custom attribute namespaces must contain a valid 3.2 full schema name in the form <schemaName>.RR.ww.mm.`
@@ -1471,10 +1302,7 @@ export class XmlParser extends AbstractParser<Element> {
     return [className, provider];
   }
 
-  private addCAPropertyValues(
-    caClass: CustomAttributeClass,
-    propertyElements: Element[]
-  ): CustomAttribute {
+  private addCAPropertyValues(caClass: CustomAttributeClass, propertyElements: Element[]): CustomAttribute {
     const instance = { className: caClass.fullName } as CustomAttribute;
     if (!caClass.properties) return instance;
 
@@ -1490,60 +1318,37 @@ export class XmlParser extends AbstractParser<Element> {
     const propertyClass = parentClass.getPropertySync(propElement.tagName);
     if (!propertyClass) return;
 
-    if (propertyClass.isArray())
-      return this.readArrayPropertyValue(propElement, propertyClass);
+    if (propertyClass.isArray()) return this.readArrayPropertyValue(propElement, propertyClass);
 
     let enumeration: Enumeration | undefined;
     if (propertyClass.isPrimitive()) {
       if (propertyClass.isEnumeration() && propertyClass.enumeration) {
-        enumeration = propertyClass.schema.lookupItemSync(
-          propertyClass.enumeration.fullName
-        );
+        enumeration = propertyClass.schema.lookupItemSync(propertyClass.enumeration.fullName);
         if (!enumeration)
           throw new ECObjectsError(
             ECObjectsStatus.ClassNotFound,
             `The Enumeration class '${propertyClass.enumeration.fullName}' could not be found.`
           );
       }
-      const primitiveType =
-        enumeration && enumeration.type
-          ? enumeration.type
-          : propertyClass.primitiveType;
+      const primitiveType = enumeration && enumeration.type ? enumeration.type : propertyClass.primitiveType;
       return this.readPrimitivePropertyValue(propElement, primitiveType);
     }
 
-    if (propertyClass.isStruct())
-      return this.readStructPropertyValue(
-        propElement,
-        propertyClass.structClass
-      );
+    if (propertyClass.isStruct()) return this.readStructPropertyValue(propElement, propertyClass.structClass);
 
     return undefined;
   }
 
-  private readArrayPropertyValue(
-    propElement: Element,
-    propertyClass: Property
-  ): PrimitiveArray | undefined {
+  private readArrayPropertyValue(propElement: Element, propertyClass: Property): PrimitiveArray | undefined {
     if (propertyClass.isPrimitive())
-      return this.readPrimitiveArrayValues(
-        propElement,
-        (propertyClass as PrimitiveProperty).primitiveType
-      );
+      return this.readPrimitiveArrayValues(propElement, (propertyClass as PrimitiveProperty).primitiveType);
 
-    if (propertyClass.isStruct())
-      return this.readStructArrayValues(
-        propElement,
-        propertyClass as StructArrayProperty
-      );
+    if (propertyClass.isStruct()) return this.readStructArrayValues(propElement, propertyClass as StructArrayProperty);
 
     return undefined;
   }
 
-  private readPrimitiveArrayValues(
-    propElement: Element,
-    primitiveType: PrimitiveType
-  ): PrimitiveArray {
+  private readPrimitiveArrayValues(propElement: Element, primitiveType: PrimitiveType): PrimitiveArray {
     const typeName = primitiveTypeToString(primitiveType);
     const children = this.getElementChildrenByTagName(propElement, typeName);
     const values: PrimitiveArray = [];
@@ -1555,27 +1360,18 @@ export class XmlParser extends AbstractParser<Element> {
     return values;
   }
 
-  private readStructArrayValues(
-    propElement: Element,
-    propertyClass: StructArrayProperty
-  ): any {
+  private readStructArrayValues(propElement: Element, propertyClass: StructArrayProperty): any {
     const children = this.getElementChildren(propElement);
     const values: any = [];
     for (const child of children) {
-      const value = this.readStructPropertyValue(
-        child,
-        propertyClass.structClass
-      );
+      const value = this.readStructPropertyValue(child, propertyClass.structClass);
       values.push(value);
     }
 
     return values;
   }
 
-  private readStructPropertyValue(
-    propElement: Element,
-    structClass: StructClass
-  ): any {
+  private readStructPropertyValue(propElement: Element, structClass: StructClass): any {
     const structObj: any = {};
     const children = this.getElementChildren(propElement);
     for (const child of children) {
@@ -1585,10 +1381,7 @@ export class XmlParser extends AbstractParser<Element> {
     return structObj;
   }
 
-  private readPrimitivePropertyValue(
-    propElement: Element,
-    primitiveType: PrimitiveType
-  ): PrimitiveValue {
+  private readPrimitivePropertyValue(propElement: Element, primitiveType: PrimitiveType): PrimitiveValue {
     if (!propElement.textContent)
       throw new ECObjectsError(
         ECObjectsStatus.InvalidSchemaXML,
@@ -1603,36 +1396,18 @@ export class XmlParser extends AbstractParser<Element> {
       case PrimitiveType.IGeometry /** TODO - Currently treated as strings */:
         return propElement.textContent;
       case PrimitiveType.DateTime:
-        return this.getDatePropertyValue(
-          propElement.textContent,
-          propElement.tagName
-        );
+        return this.getDatePropertyValue(propElement.textContent, propElement.tagName);
       case PrimitiveType.Point2d:
-        return this.getPoint2DPropertyValue(
-          propElement.textContent,
-          propElement.tagName
-        );
+        return this.getPoint2DPropertyValue(propElement.textContent, propElement.tagName);
       case PrimitiveType.Point3d:
-        return this.getPoint3DPropertyValue(
-          propElement.textContent,
-          propElement.tagName
-        );
+        return this.getPoint3DPropertyValue(propElement.textContent, propElement.tagName);
       case PrimitiveType.Boolean:
-        return this.getBooleanPropertyValue(
-          propElement.textContent,
-          propElement.tagName
-        );
+        return this.getBooleanPropertyValue(propElement.textContent, propElement.tagName);
       case PrimitiveType.Integer:
       case PrimitiveType.Long:
-        return this.getIntegerPropertyValue(
-          propElement.textContent,
-          propElement.tagName
-        );
+        return this.getIntegerPropertyValue(propElement.textContent, propElement.tagName);
       case PrimitiveType.Double:
-        return this.getDoublePropertyValue(
-          propElement.textContent,
-          propElement.tagName
-        );
+        return this.getDoublePropertyValue(propElement.textContent, propElement.tagName);
       default:
         throw new ECObjectsError(
           ECObjectsStatus.InvalidSchemaXML,
@@ -1641,19 +1416,10 @@ export class XmlParser extends AbstractParser<Element> {
     }
   }
 
-  private getBooleanPropertyValue(
-    propValue: string,
-    propName: string
-  ): boolean {
-    if (
-      propValue.toLowerCase() === "true" ||
-      Number.parseInt(propValue, 10) > 0
-    ) {
+  private getBooleanPropertyValue(propValue: string, propName: string): boolean {
+    if (propValue.toLowerCase() === "true" || Number.parseInt(propValue, 10) > 0) {
       return true;
-    } else if (
-      propValue.toLowerCase() === "false" ||
-      Number.parseInt(propValue, 10) === 0
-    ) {
+    } else if (propValue.toLowerCase() === "false" || Number.parseInt(propValue, 10) === 0) {
       return false;
     }
 
@@ -1739,16 +1505,10 @@ export class XmlParser extends AbstractParser<Element> {
     return { x, y, z };
   }
 
-  private isSchemaFullNameValidForVersion(
-    schemaFullName: string,
-    ecXmlVersion: ECXmlVersion
-  ) {
+  private isSchemaFullNameValidForVersion(schemaFullName: string, ecXmlVersion: ECXmlVersion) {
     const schemaNameParts = schemaFullName.split(".");
 
-    if (
-      (ecXmlVersion.readVersion >= 3 && ecXmlVersion.writeVersion >= 2) ||
-      ecXmlVersion.readVersion > 3
-    ) {
+    if ((ecXmlVersion.readVersion >= 3 && ecXmlVersion.writeVersion >= 2) || ecXmlVersion.readVersion > 3) {
       if (schemaNameParts.length < 4) return false;
     } else {
       if (schemaNameParts.length < 3) return false;
@@ -1770,17 +1530,11 @@ export class XmlParser extends AbstractParser<Element> {
     const nameParts = rawTypeName.split(":");
     if (nameParts.length !== 2) return `${this._schemaName}.${rawTypeName}`;
 
-    if (nameParts[0].toLowerCase() === this._schemaAlias.toLowerCase())
-      return `${this._schemaName}.${nameParts[1]}`;
+    if (nameParts[0].toLowerCase() === this._schemaAlias.toLowerCase()) return `${this._schemaName}.${nameParts[1]}`;
     if (this._schemaReferenceNames.has(nameParts[0].toLowerCase()))
-      return `${this._schemaReferenceNames.get(nameParts[0].toLowerCase())}.${
-        nameParts[1]
-      }`;
+      return `${this._schemaReferenceNames.get(nameParts[0].toLowerCase())}.${nameParts[1]}`;
 
-    throw new ECObjectsError(
-      ECObjectsStatus.InvalidSchemaXML,
-      `No valid schema found for alias ${nameParts[0]}`
-    );
+    throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `No valid schema found for alias ${nameParts[0]}`);
   }
 
   /** The rest of the API uses the full name format of `{SchemaName}.{SchemaItemName}`,
@@ -1793,18 +1547,13 @@ export class XmlParser extends AbstractParser<Element> {
       // we format the first one and the next one will be put into [ ] again
       const presentationUnitFormats = presentationUnit.split(/[\[\]]/g);
       let qualifiedPresentation: string = "";
-      qualifiedPresentation = this.getQualifiedTypeName(
-        presentationUnitFormats[0]
-      );
+      qualifiedPresentation = this.getQualifiedTypeName(presentationUnitFormats[0]);
       if (presentationUnitFormats.length > 1) {
         for (let i = 1; i < presentationUnitFormats.length; ++i) {
           if (presentationUnitFormats[i].length === 0) continue;
           const verticalSlashIdx = presentationUnitFormats[i].indexOf("|");
-          const overrideFormat = this.getQualifiedTypeName(
-            presentationUnitFormats[i].slice(0, verticalSlashIdx)
-          );
-          const formatLabel =
-            presentationUnitFormats[i].slice(verticalSlashIdx);
+          const overrideFormat = this.getQualifiedTypeName(presentationUnitFormats[i].slice(0, verticalSlashIdx));
+          const formatLabel = presentationUnitFormats[i].slice(verticalSlashIdx);
           qualifiedPresentation += `[${overrideFormat}${formatLabel}]`;
         }
       }

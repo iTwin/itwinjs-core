@@ -89,8 +89,7 @@ export class PresentationManagerDetail implements IDisposable {
     const backendAssetsRoot =
       (typeof params.presentationAssetsRoot === "string"
         ? params.presentationAssetsRoot
-        : params.presentationAssetsRoot?.backend) ??
-      PRESENTATION_BACKEND_ASSETS_ROOT;
+        : params.presentationAssetsRoot?.backend) ?? PRESENTATION_BACKEND_ASSETS_ROOT;
 
     const changeTrackingEnabled = !!params.updatesPollInterval;
     this._nativePlatform =
@@ -157,18 +156,12 @@ export class PresentationManagerDetail implements IDisposable {
   }
 
   public async getNodes(
-    requestOptions: WithCancelEvent<
-      Prioritized<
-        Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>
-      >
-    > &
+    requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> &
       BackendDiagnosticsAttribute
   ): Promise<string> {
     const { rulesetOrId, parentKey, ...strippedOptions } = requestOptions;
     const params = {
-      requestId: parentKey
-        ? NativePlatformRequestTypes.GetChildren
-        : NativePlatformRequestTypes.GetRootNodes,
+      requestId: parentKey ? NativePlatformRequestTypes.GetChildren : NativePlatformRequestTypes.GetRootNodes,
       rulesetId: this.registerRuleset(rulesetOrId),
       ...strippedOptions,
       nodeKey: parentKey,
@@ -177,16 +170,12 @@ export class PresentationManagerDetail implements IDisposable {
   }
 
   public async getNodesCount(
-    requestOptions: WithCancelEvent<
-      Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>
-    > &
+    requestOptions: WithCancelEvent<Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> &
       BackendDiagnosticsAttribute
   ): Promise<number> {
     const { rulesetOrId, parentKey, ...strippedOptions } = requestOptions;
     const params = {
-      requestId: parentKey
-        ? NativePlatformRequestTypes.GetChildrenCount
-        : NativePlatformRequestTypes.GetRootNodesCount,
+      requestId: parentKey ? NativePlatformRequestTypes.GetChildrenCount : NativePlatformRequestTypes.GetRootNodesCount,
       rulesetId: this.registerRuleset(rulesetOrId),
       ...strippedOptions,
       nodeKey: parentKey,
@@ -196,13 +185,7 @@ export class PresentationManagerDetail implements IDisposable {
 
   public async getNodesDescriptor(
     requestOptions: WithCancelEvent<
-      Prioritized<
-        HierarchyLevelDescriptorRequestOptions<
-          IModelDb,
-          NodeKey,
-          RulesetVariable
-        >
-      >
+      Prioritized<HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey, RulesetVariable>>
     > &
       BackendDiagnosticsAttribute
   ): Promise<string> {
@@ -218,9 +201,7 @@ export class PresentationManagerDetail implements IDisposable {
 
   public async getNodePaths(
     requestOptions: WithCancelEvent<
-      Prioritized<
-        FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>
-      >
+      Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>>
     > &
       BackendDiagnosticsAttribute
   ): Promise<NodePathElement[]> {
@@ -235,11 +216,7 @@ export class PresentationManagerDetail implements IDisposable {
   }
 
   public async getFilteredNodePaths(
-    requestOptions: WithCancelEvent<
-      Prioritized<
-        FilterByTextHierarchyRequestOptions<IModelDb, RulesetVariable>
-      >
-    > &
+    requestOptions: WithCancelEvent<Prioritized<FilterByTextHierarchyRequestOptions<IModelDb, RulesetVariable>>> &
       BackendDiagnosticsAttribute
   ): Promise<NodePathElement[]> {
     const { rulesetOrId, ...strippedOptions } = requestOptions;
@@ -252,9 +229,7 @@ export class PresentationManagerDetail implements IDisposable {
   }
 
   public async getContentDescriptor(
-    requestOptions: WithCancelEvent<
-      Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet>>
-    >
+    requestOptions: WithCancelEvent<Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet>>>
   ): Promise<string> {
     const { rulesetOrId, ...strippedOptions } = requestOptions;
     const params = {
@@ -270,10 +245,7 @@ export class PresentationManagerDetail implements IDisposable {
   }
 
   public async getContentSources(
-    requestOptions: WithCancelEvent<
-      Prioritized<ContentSourcesRequestOptions<IModelDb>>
-    > &
-      BackendDiagnosticsAttribute
+    requestOptions: WithCancelEvent<Prioritized<ContentSourcesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute
   ): Promise<SelectClassInfo[]> {
     const params = {
       requestId: NativePlatformRequestTypes.GetContentSources,
@@ -281,26 +253,14 @@ export class PresentationManagerDetail implements IDisposable {
       ...requestOptions,
     };
     const reviver = (key: string, value: any) => {
-      return key === ""
-        ? SelectClassInfo.listFromCompressedJSON(
-            value.sources,
-            value.classesMap
-          )
-        : value;
+      return key === "" ? SelectClassInfo.listFromCompressedJSON(value.sources, value.classesMap) : value;
     };
     return JSON.parse(await this.request(params), reviver);
   }
 
   public async getContentSetSize(
     requestOptions: WithCancelEvent<
-      Prioritized<
-        ContentRequestOptions<
-          IModelDb,
-          Descriptor | DescriptorOverrides,
-          KeySet,
-          RulesetVariable
-        >
-      >
+      Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>
     > &
       BackendDiagnosticsAttribute
   ): Promise<number> {
@@ -319,16 +279,7 @@ export class PresentationManagerDetail implements IDisposable {
 
   public async getContent(
     requestOptions: WithCancelEvent<
-      Prioritized<
-        Paged<
-          ContentRequestOptions<
-            IModelDb,
-            Descriptor | DescriptorOverrides,
-            KeySet,
-            RulesetVariable
-          >
-        >
-      >
+      Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>
     > &
       BackendDiagnosticsAttribute
   ): Promise<Content | undefined> {
@@ -347,27 +298,17 @@ export class PresentationManagerDetail implements IDisposable {
 
   public async getPagedDistinctValues(
     requestOptions: WithCancelEvent<
-      Prioritized<
-        DistinctValuesRequestOptions<
-          IModelDb,
-          Descriptor | DescriptorOverrides,
-          KeySet,
-          RulesetVariable
-        >
-      >
+      Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>
     > &
       BackendDiagnosticsAttribute
   ): Promise<PagedResponse<DisplayValueGroup>> {
     const { rulesetOrId, ...strippedOptions } = requestOptions;
-    const { descriptor, keys, ...strippedOptionsNoDescriptorAndKeys } =
-      strippedOptions;
+    const { descriptor, keys, ...strippedOptionsNoDescriptorAndKeys } = strippedOptions;
     const params = {
       requestId: NativePlatformRequestTypes.GetPagedDistinctValues,
       rulesetId: this.registerRuleset(rulesetOrId),
       ...strippedOptionsNoDescriptorAndKeys,
-      keys: getKeysForContentRequest(keys, (map) =>
-        bisElementInstanceKeysProcessor(requestOptions.imodel, map)
-      ),
+      keys: getKeysForContentRequest(keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
     const reviver = (key: string, value: any) => {
@@ -383,9 +324,7 @@ export class PresentationManagerDetail implements IDisposable {
   }
 
   public async getDisplayLabelDefinition(
-    requestOptions: WithCancelEvent<
-      Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>>
-    > &
+    requestOptions: WithCancelEvent<Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>>> &
       BackendDiagnosticsAttribute
   ): Promise<LabelDefinition> {
     const params = {
@@ -396,23 +335,16 @@ export class PresentationManagerDetail implements IDisposable {
   }
 
   public async getDisplayLabelDefinitions(
-    requestOptions: WithCancelEvent<
-      Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>
-    > &
+    requestOptions: WithCancelEvent<Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>> &
       BackendDiagnosticsAttribute
   ): Promise<LabelDefinition[]> {
     const concreteKeys = requestOptions.keys
       .map((k) => {
-        if (k.className === "BisCore:Element")
-          return getElementKey(requestOptions.imodel, k.id);
+        if (k.className === "BisCore:Element") return getElementKey(requestOptions.imodel, k.id);
         return k;
       })
       .filter<InstanceKey>((k): k is InstanceKey => !!k);
-    const contentRequestOptions: ContentRequestOptions<
-      IModelDb,
-      Descriptor | DescriptorOverrides,
-      KeySet
-    > = {
+    const contentRequestOptions: ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet> = {
       ...requestOptions,
       rulesetOrId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
       descriptor: {
@@ -425,9 +357,7 @@ export class PresentationManagerDetail implements IDisposable {
     return concreteKeys.map((key) => {
       const item = content
         ? content.contentSet.find(
-            (it) =>
-              it.primaryKeys.length > 0 &&
-              InstanceKey.compare(it.primaryKeys[0], key) === 0
+            (it) => it.primaryKeys.length > 0 && InstanceKey.compare(it.primaryKeys[0], key) === 0
           )
         : undefined;
       if (!item) return { displayValue: "", rawValue: "", typeName: "" };
@@ -436,9 +366,7 @@ export class PresentationManagerDetail implements IDisposable {
   }
 
   public async getElementProperties(
-    requestOptions: WithCancelEvent<
-      Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>
-    > &
+    requestOptions: WithCancelEvent<Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>> &
       BackendDiagnosticsAttribute
   ): Promise<ElementProperties | undefined> {
     const { elementId, ...optionsNoElementId } = requestOptions;
@@ -475,14 +403,7 @@ export class PresentationManagerDetail implements IDisposable {
 
   public async request(params: RequestParams): Promise<string> {
     this._onManagerUsed?.();
-    const {
-      requestId,
-      imodel,
-      unitSystem,
-      diagnostics: requestDiagnostics,
-      cancelEvent,
-      ...strippedParams
-    } = params;
+    const { requestId, imodel, unitSystem, diagnostics: requestDiagnostics, cancelEvent, ...strippedParams } = params;
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
     const response = await withOptionalDiagnostics(
       [this._diagnosticsOptions, requestDiagnostics],
@@ -490,20 +411,12 @@ export class PresentationManagerDetail implements IDisposable {
         const nativeRequestParams: any = {
           requestId,
           params: {
-            unitSystem: toOptionalNativeUnitSystem(
-              unitSystem ?? this.activeUnitSystem
-            ),
+            unitSystem: toOptionalNativeUnitSystem(unitSystem ?? this.activeUnitSystem),
             ...strippedParams,
-            ...(diagnosticsOptions
-              ? { diagnostics: diagnosticsOptions }
-              : undefined),
+            ...(diagnosticsOptions ? { diagnostics: diagnosticsOptions } : undefined),
           },
         };
-        return this.getNativePlatform().handleRequest(
-          imodelAddon,
-          JSON.stringify(nativeRequestParams),
-          cancelEvent
-        );
+        return this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams), cancelEvent);
       }
     );
     return response.result;
@@ -556,9 +469,7 @@ function setupRulesetDirectories(
     path.join(presentationAssetsRoot, "supplemental-presentation-rules"),
     supplementalRulesetDirectoriesOverrides
   );
-  nativePlatform.setupSupplementalRulesetDirectories(
-    supplementalRulesetDirectories
-  );
+  nativePlatform.setupSupplementalRulesetDirectories(supplementalRulesetDirectories);
 
   const primaryRulesetDirectories = collateAssetDirectories(
     path.join(presentationAssetsRoot, "primary-presentation-rules"),
@@ -576,9 +487,7 @@ interface RulesetIdObject {
 }
 
 /** @internal */
-export function getRulesetIdObject(
-  rulesetOrId: Ruleset | string
-): RulesetIdObject {
+export function getRulesetIdObject(rulesetOrId: Ruleset | string): RulesetIdObject {
   if (typeof rulesetOrId === "object") {
     if (IpcHost.isValid) {
       // in case of native apps we don't want to enforce ruleset id uniqueness as ruleset variables
@@ -636,10 +545,7 @@ export function getKeysForContentRequest(
 }
 
 /** @internal */
-export function bisElementInstanceKeysProcessor(
-  imodel: IModelDb,
-  classInstancesMap: Map<string, Set<string>>
-) {
+export function bisElementInstanceKeysProcessor(imodel: IModelDb, classInstancesMap: Map<string, Set<string>>) {
   const elementClassName = "BisCore:Element";
   const elementIds = classInstancesMap.get(elementClassName);
   if (elementIds) {
@@ -660,10 +566,7 @@ export function bisElementInstanceKeysProcessor(
   }
 }
 
-function addInstanceKey(
-  classInstancesMap: Map<string, Set<string>>,
-  key: InstanceKey
-): void {
+function addInstanceKey(classInstancesMap: Map<string, Set<string>>, key: InstanceKey): void {
   let set = classInstancesMap.get(key.className);
   // istanbul ignore else
   if (!set) {
@@ -696,9 +599,7 @@ function createNativePlatform(
     useMmap,
   }))();
 
-  function createCacheConfig(
-    config?: HierarchyCacheConfig
-  ): IModelJsNative.ECPresentationHierarchyCacheConfig {
+  function createCacheConfig(config?: HierarchyCacheConfig): IModelJsNative.ECPresentationHierarchyCacheConfig {
     switch (config?.mode) {
       case HierarchyCacheMode.Disk:
         return { ...config, directory: normalizeDirectory(config.directory) };
@@ -726,9 +627,7 @@ function createNativePlatform(
     return directory ? path.resolve(directory) : "";
   }
 
-  function toNativeUnitFormatsMap(
-    map: UnitFormatMap | undefined
-  ): NativePresentationDefaultUnitFormats | undefined {
+  function toNativeUnitFormatsMap(map: UnitFormatMap | undefined): NativePresentationDefaultUnitFormats | undefined {
     if (!map) {
       return undefined;
     }
@@ -745,15 +644,11 @@ function createNativePlatform(
   }
 }
 
-function toOptionalNativeUnitSystem(
-  unitSystem: UnitSystemKey | undefined
-): NativePresentationUnitSystem | undefined {
+function toOptionalNativeUnitSystem(unitSystem: UnitSystemKey | undefined): NativePresentationUnitSystem | undefined {
   return unitSystem ? toNativeUnitSystem(unitSystem) : undefined;
 }
 
-function toNativeUnitSystem(
-  unitSystem: UnitSystemKey
-): NativePresentationUnitSystem {
+function toNativeUnitSystem(unitSystem: UnitSystemKey): NativePresentationUnitSystem {
   switch (unitSystem) {
     case "imperial":
       return NativePresentationUnitSystem.BritishImperial;
@@ -766,17 +661,13 @@ function toNativeUnitSystem(
   }
 }
 
-function collateAssetDirectories(
-  mainDirectory: string,
-  additionalDirectories: string[]
-): string[] {
+function collateAssetDirectories(mainDirectory: string, additionalDirectories: string[]): string[] {
   return [...new Set([mainDirectory, ...additionalDirectories])];
 }
 
 const createContentDescriptorOverrides = (
   descriptorOrOverrides: Descriptor | DescriptorOverrides
 ): DescriptorOverrides => {
-  if (descriptorOrOverrides instanceof Descriptor)
-    return descriptorOrOverrides.createDescriptorOverrides();
+  if (descriptorOrOverrides instanceof Descriptor) return descriptorOrOverrides.createDescriptorOverrides();
   return descriptorOrOverrides;
 };

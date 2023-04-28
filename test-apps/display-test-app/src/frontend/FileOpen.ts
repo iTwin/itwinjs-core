@@ -15,9 +15,7 @@ export interface BrowserFileSelector {
 export class MobileMessenger {
   private static _anyWindow: any = window;
 
-  public static getHandler(
-    handlerName: string
-  ): ((data: string) => any) | undefined {
+  public static getHandler(handlerName: string): ((data: string) => any) | undefined {
     const messageHandlers = ProcessDetector.isIOSAppFrontend
       ? this._anyWindow.webkit?.messageHandlers
       : this._anyWindow.DTA_Android;
@@ -51,9 +49,7 @@ export class MobileMessenger {
     return true;
   }
 
-  public static async sendMessage(
-    handlerName: string
-  ): Promise<string | undefined> {
+  public static async sendMessage(handlerName: string): Promise<string | undefined> {
     const handler = this.getHandler(handlerName);
     if (!handler) return undefined;
 
@@ -72,9 +68,7 @@ export class MobileMessenger {
   }
 }
 
-export async function selectFileName(
-  selector: BrowserFileSelector | undefined
-): Promise<string | undefined> {
+export async function selectFileName(selector: BrowserFileSelector | undefined): Promise<string | undefined> {
   if (ProcessDetector.isElectronAppFrontend) {
     const opts: OpenDialogOptions = {
       properties: ["openFile"],
@@ -105,8 +99,7 @@ export async function selectFileName(
       selector.input.removeEventListener("change", handler);
       try {
         const files = selector.input.files;
-        if (files && files.length > 0)
-          resolve(`${selector.directory}/${files[0].name}`);
+        if (files && files.length > 0) resolve(`${selector.directory}/${files[0].name}`);
         else resolve(undefined);
       } catch (e) {
         reject(e);

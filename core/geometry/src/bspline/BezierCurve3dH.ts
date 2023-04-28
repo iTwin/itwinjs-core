@@ -38,13 +38,7 @@ export class BezierCurve3dH extends BezierCurveBase {
     const data = this._workData0;
     for (let i = 0; i < this._polygon.order; i++) {
       this._polygon.getPolygonPoint(i, data);
-      transform.multiplyXYZWToFloat64Array(
-        data[0],
-        data[1],
-        data[2],
-        data[3],
-        data
-      );
+      transform.multiplyXYZWToFloat64Array(data[0], data[1], data[2], data[3], data);
       this._polygon.setPolygonPoint(i, data);
     }
     return true;
@@ -101,9 +95,7 @@ export class BezierCurve3dH extends BezierCurveBase {
    * * If input is `Point3d[]`, the points are promoted with w=1`
    *
    */
-  public static create(
-    data: Point3d[] | Point4d[] | Point2d[]
-  ): BezierCurve3dH | undefined {
+  public static create(data: Point3d[] | Point4d[] | Point2d[]): BezierCurve3dH | undefined {
     if (data.length < 1) return undefined;
     const polygon = new Float64Array(data.length * 4);
     if (data[0] instanceof Point3d) {
@@ -142,11 +134,7 @@ export class BezierCurve3dH extends BezierCurveBase {
     return new BezierCurve3dH(polygonArray);
   }
   /** Load order * 4 doubles from data[3 * spanIndex] as poles (with added weight) */
-  public loadSpan3dPolesWithWeight(
-    data: Float64Array,
-    spanIndex: number,
-    weight: number
-  ) {
+  public loadSpan3dPolesWithWeight(data: Float64Array, spanIndex: number, weight: number) {
     this._polygon.loadSpanPolesWithWeight(data, 3, spanIndex, weight);
   }
   /** Load order * 4 doubles from data[3 * spanIndex] as poles (with added weight) */
@@ -172,11 +160,7 @@ export class BezierCurve3dH extends BezierCurveBase {
   public fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d {
     this._polygon.evaluate(fraction, this._workData0);
     this._polygon.evaluateDerivative(fraction, this._workData1);
-    result = Ray3d.createWeightedDerivative(
-      this._workData0,
-      this._workData1,
-      result
-    );
+    result = Ray3d.createWeightedDerivative(this._workData0, this._workData1, result);
     if (result) return result;
     // Bad. Very Bad.  Return origin and x axis.   Should be undefined, but usual cartesian types do not allow that
     return Ray3d.createXAxis();
@@ -197,21 +181,9 @@ export class BezierCurve3dH extends BezierCurveBase {
     const ray = this.fractionToPointAndDerivative(fraction, this._workRay0);
     result.origin.setFrom(ray.origin);
     result.vectorU.setFrom(ray.direction);
-    const ray0 = this.fractionToPointAndDerivative(
-      fraction - epsilon,
-      this._workRay0
-    );
-    const ray1 = this.fractionToPointAndDerivative(
-      fraction + epsilon,
-      this._workRay1
-    );
-    Vector3d.createAdd2Scaled(
-      ray0.direction,
-      -a,
-      ray1.direction,
-      a,
-      result.vectorV
-    );
+    const ray0 = this.fractionToPointAndDerivative(fraction - epsilon, this._workRay0);
+    const ray1 = this.fractionToPointAndDerivative(fraction + epsilon, this._workRay1);
+    Vector3d.createAdd2Scaled(ray0.direction, -a, ray1.direction, a, result.vectorV);
     return result;
   }
   /** test for nearly equal control points */
@@ -233,18 +205,11 @@ export class BezierCurve3dH extends BezierCurveBase {
    * @param az z coefficient
    * @param aw w coefficient
    */
-  public poleProductsXYZW(
-    products: Float64Array,
-    ax: number,
-    ay: number,
-    az: number,
-    aw: number
-  ) {
+  public poleProductsXYZW(products: Float64Array, ax: number, ay: number, az: number, aw: number) {
     const n = this.numPoles;
     const data = this._polygon.packedData;
     for (let i = 0, k = 0; i < n; i++, k += 4)
-      products[i] =
-        ax * data[k] + ay * data[k + 1] + az * data[k + 2] + aw * data[k + 3];
+      products[i] = ax * data[k] + ay * data[k + 1] + az * data[k + 2] + aw * data[k + 3];
   }
   /** Find the closest point within the bezier span, using true perpendicular test (but no endpoint test)
    * * If closer than previously recorded, update the CurveLocationDetail
@@ -357,39 +322,17 @@ export class BezierCurve3dH extends BezierCurveBase {
       for (const fraction of roots) {
         const xyz = this.fractionToPoint(fraction);
         const a = xyz.distance(spacePoint);
-        numUpdates += detail.updateIfCloserCurveFractionPointDistance(
-          this,
-          fraction,
-          xyz,
-          a
-        )
-          ? 1
-          : 0;
+        numUpdates += detail.updateIfCloserCurveFractionPointDistance(this, fraction, xyz, a) ? 1 : 0;
       }
     }
-    if (testAt0)
-      numUpdates += this.updateDetailAtFraction(detail, 0.0, spacePoint)
-        ? 1
-        : 0;
-    if (testAt1)
-      numUpdates += this.updateDetailAtFraction(detail, 1.0, spacePoint)
-        ? 1
-        : 0;
+    if (testAt0) numUpdates += this.updateDetailAtFraction(detail, 0.0, spacePoint) ? 1 : 0;
+    if (testAt1) numUpdates += this.updateDetailAtFraction(detail, 1.0, spacePoint) ? 1 : 0;
     return numUpdates > 0;
   }
-  private updateDetailAtFraction(
-    detail: CurveLocationDetail,
-    fraction: number,
-    spacePoint: Point3d
-  ): boolean {
+  private updateDetailAtFraction(detail: CurveLocationDetail, fraction: number, spacePoint: Point3d): boolean {
     const xyz = this.fractionToPoint(fraction);
     const a = xyz.distance(spacePoint);
-    return detail.updateIfCloserCurveFractionPointDistance(
-      this,
-      fraction,
-      xyz,
-      a
-    );
+    return detail.updateIfCloserCurveFractionPointDistance(this, fraction, xyz, a);
   }
   /** Extend `rangeToExtend`, using candidate extrema at
    * * both end points
@@ -468,27 +411,11 @@ export class BezierCurve3dH extends BezierCurveBase {
         bezier.zero();
         for (let i = 0, k = 0; i < order; i++, k += 4) {
           weight = data[k + 3];
-          componentCoffs[i] = transform.multiplyComponentXYZW(
-            axisIndex,
-            data[k],
-            data[k + 1],
-            data[k + 2],
-            weight
-          );
+          componentCoffs[i] = transform.multiplyComponentXYZW(axisIndex, data[k], data[k + 1], data[k + 2], weight);
           weightCoffs[i] = weight;
         }
-        BezierPolynomialAlgebra.accumulateProductWithDifferences(
-          bezier.coffs,
-          componentCoffs,
-          weightCoffs,
-          1.0
-        );
-        BezierPolynomialAlgebra.accumulateProductWithDifferences(
-          bezier.coffs,
-          weightCoffs,
-          componentCoffs,
-          -1.0
-        );
+        BezierPolynomialAlgebra.accumulateProductWithDifferences(bezier.coffs, componentCoffs, weightCoffs, 1.0);
+        BezierPolynomialAlgebra.accumulateProductWithDifferences(bezier.coffs, weightCoffs, componentCoffs, -1.0);
         const roots = bezier.roots(0.0, true);
         if (roots && roots.length > 0) {
           for (const r of roots) {

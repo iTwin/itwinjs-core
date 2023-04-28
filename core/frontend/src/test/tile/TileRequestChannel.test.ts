@@ -77,9 +77,7 @@ class TestTile extends Tile {
     return this.empty ?? super.isEmpty;
   }
 
-  protected _loadChildren(
-    resolve: (children: Tile[] | undefined) => void
-  ): void {
+  protected _loadChildren(resolve: (children: Tile[] | undefined) => void): void {
     resolve(undefined);
   }
 
@@ -111,9 +109,7 @@ class TestTile extends Tile {
     });
   }
 
-  public resolveRequest(
-    response: TileRequest.Response | "undefined" = new Uint8Array(1)
-  ): void {
+  public resolveRequest(response: TileRequest.Response | "undefined" = new Uint8Array(1)): void {
     if ("undefined" === response) response = undefined; // passing `undefined` to resolveRequest uses the default arg instead...
 
     expect(this._resolveRequest).not.to.be.undefined;
@@ -157,11 +153,7 @@ class TestTile extends Tile {
 class TestTree extends TileTree {
   private readonly _rootTile: TestTile;
 
-  public constructor(
-    iModel: IModelConnection,
-    channel: LoggingChannel,
-    priority = TileLoadPriority.Primary
-  ) {
+  public constructor(iModel: IModelConnection, channel: LoggingChannel, priority = TileLoadPriority.Primary) {
     super({
       iModel,
       id: "test",
@@ -246,11 +238,7 @@ class LoggingChannel extends TileRequestChannel {
     return false;
   }
 
-  public override recordCompletion(
-    tile: Tile,
-    content: TileContent,
-    elapsedMS: number
-  ): void {
+  public override recordCompletion(tile: Tile, content: TileContent, elapsedMS: number): void {
     this.log("recordCompletion");
     super.recordCompletion(tile, content, elapsedMS);
   }
@@ -315,10 +303,7 @@ class LoggingChannel extends TileRequestChannel {
     super.cancel(request);
   }
 
-  public override async requestContent(
-    tile: Tile,
-    isCanceled: () => boolean
-  ): Promise<TileRequest.Response> {
+  public override async requestContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response> {
     this.log("requestContent");
     return super.requestContent(tile, isCanceled);
   }
@@ -356,37 +341,20 @@ describe("TileRequestChannel", () => {
 
     IModelApp.tileAdmin.process();
     tree.rootTile.expectStatus(TileLoadStatus.Queued);
-    channel.expect([
-      "swapPending",
-      "append",
-      "process",
-      "processCancellations",
-      "dispatch",
-      "requestContent",
-    ]);
+    channel.expect(["swapPending", "append", "process", "processCancellations", "dispatch", "requestContent"]);
     channel.expectRequests(1, 0);
 
     channel.clear();
     tree.rootTile.resolveRequest();
     await processOnce();
-    channel.expect([
-      "swapPending",
-      "process",
-      "processCancellations",
-      "dropActiveRequest",
-    ]);
+    channel.expect(["swapPending", "process", "processCancellations", "dropActiveRequest"]);
     channel.expectRequests(0, 0);
     tree.rootTile.expectStatus(TileLoadStatus.Loading);
 
     channel.clear();
     tree.rootTile.resolveRead();
     await processOnce();
-    channel.expect([
-      "swapPending",
-      "process",
-      "processCancellations",
-      "recordCompletion",
-    ]);
+    channel.expect(["swapPending", "process", "processCancellations", "recordCompletion"]);
     channel.expectRequests(0, 0);
     tree.rootTile.expectStatus(TileLoadStatus.Ready);
   });
@@ -404,20 +372,12 @@ describe("TileRequestChannel", () => {
 
     tiles[0].resolveRequest();
     await processOnce();
-    tiles.forEach((x) =>
-      x.expectStatus(
-        x === tiles[0] ? TileLoadStatus.Loading : TileLoadStatus.Queued
-      )
-    );
+    tiles.forEach((x) => x.expectStatus(x === tiles[0] ? TileLoadStatus.Loading : TileLoadStatus.Queued));
     channel.expectRequests(1, 3);
 
     tiles[0].resolveRead();
     await processOnce();
-    tiles.forEach((x) =>
-      x.expectStatus(
-        x === tiles[0] ? TileLoadStatus.Ready : TileLoadStatus.Queued
-      )
-    );
+    tiles.forEach((x) => x.expectStatus(x === tiles[0] ? TileLoadStatus.Ready : TileLoadStatus.Queued));
     channel.expectRequests(2, 2);
 
     tiles[1].rejectRequest();

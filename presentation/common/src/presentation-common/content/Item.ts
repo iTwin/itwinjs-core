@@ -9,14 +9,7 @@
 import { ClassInfo, InstanceKey } from "../EC";
 import { LabelDefinition, LabelDefinitionJSON } from "../LabelDefinition";
 import { ValuesDictionary } from "../Utils";
-import {
-  DisplayValue,
-  DisplayValueJSON,
-  DisplayValuesMapJSON,
-  Value,
-  ValueJSON,
-  ValuesMapJSON,
-} from "./Value";
+import { DisplayValue, DisplayValueJSON, DisplayValuesMapJSON, Value, ValueJSON, ValuesMapJSON } from "./Value";
 
 /**
  * Serialized [[Item]] JSON representation.
@@ -97,10 +90,7 @@ export class Item {
     this.displayValues = displayValues;
     this.mergedFieldNames = mergedFieldNames;
     this.extendedData = extendedData;
-    this.label =
-      typeof label === "string"
-        ? LabelDefinition.fromLabelString(label)
-        : label;
+    this.label = typeof label === "string" ? LabelDefinition.fromLabelString(label) : label;
   }
 
   /**
@@ -118,18 +108,14 @@ export class Item {
       // eslint-disable-next-line deprecation/deprecation
       values: Value.toJSON(this.values) as ValuesMapJSON,
       // eslint-disable-next-line deprecation/deprecation
-      displayValues: DisplayValue.toJSON(
-        this.displayValues
-      ) as DisplayValuesMapJSON,
+      displayValues: DisplayValue.toJSON(this.displayValues) as DisplayValuesMapJSON,
       // eslint-disable-next-line deprecation/deprecation
       labelDefinition: LabelDefinition.toJSON(label),
     };
   }
 
   /** Deserialize [[Item]] from JSON */
-  public static fromJSON(
-    json: ItemJSON | string | undefined
-  ): Item | undefined {
+  public static fromJSON(json: ItemJSON | string | undefined): Item | undefined {
     if (!json) return undefined;
     if (typeof json === "string") return JSON.parse(json, Item.reviver);
     const item = Object.create(Item.prototype);

@@ -4,11 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert, Assertion, util } from "chai";
 import { ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
-import {
-  BentleyCloudRpcManager,
-  BentleyCloudRpcParams,
-  RpcConfiguration,
-} from "@itwin/core-common";
+import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@itwin/core-common";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { Geometry } from "@itwin/core-geometry";
 
@@ -33,30 +29,21 @@ declare global {
   namespace Chai {
     interface Deep {
       // might be more consistent to implement .approximately.deep.equal, but this is much simpler
-      equalWithFpTolerance(
-        actual: any,
-        options?: DeepEqualWithFpToleranceOpts
-      ): Assertion;
+      equalWithFpTolerance(actual: any, options?: DeepEqualWithFpToleranceOpts): Assertion;
     }
   }
 }
 
 /** get whether two numbers are almost equal within a tolerance  */
-const isAlmostEqualNumber: (a: number, b: number, tol: number) => boolean =
-  Geometry.isSameCoordinate;
+const isAlmostEqualNumber: (a: number, b: number, tol: number) => boolean = Geometry.isSameCoordinate;
 
 /**
  * The diff shown on failure will show undefined fields as part of the diff even if
  * consideringNonExistingAndUndefinedEqual is true. You can ignore that.
  * We would have to mutate the object to clean the diff, although it is worth considering.
  */
-export function deepEqualWithFpTolerance(
-  a: any,
-  b: any,
-  options: DeepEqualWithFpToleranceOpts = {}
-): boolean {
-  if (options.tolerance === undefined)
-    options.tolerance = defaultOpts.tolerance;
+export function deepEqualWithFpTolerance(a: any, b: any, options: DeepEqualWithFpToleranceOpts = {}): boolean {
+  if (options.tolerance === undefined) options.tolerance = defaultOpts.tolerance;
 
   if (a === b) return true;
   else if (typeof a !== typeof b) return false;
@@ -74,12 +61,10 @@ export function deepEqualWithFpTolerance(
       if ((a === null) !== (b === null)) return false;
 
       const aSize = Object.keys(a).filter(
-        (k) =>
-          options.considerNonExistingAndUndefinedEqual && a[k] !== undefined
+        (k) => options.considerNonExistingAndUndefinedEqual && a[k] !== undefined
       ).length;
       const bSize = Object.keys(b).filter(
-        (k) =>
-          options.considerNonExistingAndUndefinedEqual && b[k] !== undefined
+        (k) => options.considerNonExistingAndUndefinedEqual && b[k] !== undefined
       ).length;
       return (
         aSize === bSize &&
@@ -96,10 +81,7 @@ export function deepEqualWithFpTolerance(
 
 Assertion.addMethod(
   "equalWithFpTolerance",
-  function equalWithFpTolerance(
-    expected: any,
-    options: DeepEqualWithFpToleranceOpts = {}
-  ) {
+  function equalWithFpTolerance(expected: any, options: DeepEqualWithFpToleranceOpts = {}) {
     if (options.tolerance === undefined) options.tolerance = 1e-10;
 
     const actual = this._obj;
@@ -108,12 +90,8 @@ Assertion.addMethod(
       isDeep
         ? deepEqualWithFpTolerance(expected, actual, options)
         : isAlmostEqualNumber(expected, actual, options.tolerance),
-      `expected ${
-        isDeep ? "deep equality of " : " "
-      }#{exp} and #{act} with a tolerance of ${options.tolerance}`,
-      `expected ${
-        isDeep ? "deep inequality of " : " "
-      }#{exp} and #{act} with a tolerance of ${options.tolerance}`,
+      `expected ${isDeep ? "deep equality of " : " "}#{exp} and #{act} with a tolerance of ${options.tolerance}`,
+      `expected ${isDeep ? "deep inequality of " : " "}#{exp} and #{act} with a tolerance of ${options.tolerance}`,
       expected,
       actual
     );
@@ -123,9 +101,7 @@ Assertion.addMethod(
 if (!ProcessDetector.isElectronAppFrontend) {
   const params: BentleyCloudRpcParams = {
     info: { title: "full-stack-test", version: "v1.0" },
-    pathPrefix: `http://${window.location.hostname}:${
-      Number(window.location.port) + 2000
-    }`,
+    pathPrefix: `http://${window.location.hostname}:${Number(window.location.port) + 2000}`,
   };
 
   BentleyCloudRpcManager.initializeClient(params, rpcInterfaces);
@@ -135,9 +111,7 @@ if (!ProcessDetector.isElectronAppFrontend) {
     it("Backend server should be accessible", async () => {
       const req = new XMLHttpRequest();
       req.open("GET", `${params.pathPrefix}/v3/swagger.json`);
-      const loaded = new Promise((resolve) =>
-        req.addEventListener("load", resolve)
-      );
+      const loaded = new Promise((resolve) => req.addEventListener("load", resolve));
       req.send();
       await loaded;
       assert.equal(200, req.status);

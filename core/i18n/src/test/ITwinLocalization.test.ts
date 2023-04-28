@@ -21,10 +21,7 @@ describe("ITwinLocalization", () => {
       await itwinLocalization.initialize([]);
 
       assert.equal(itwinLocalization.i18next.options.defaultNS, "Default");
-      assert.equal(
-        itwinLocalization.getLocalizedString("FirstTrivial"),
-        "First level string (default)"
-      );
+      assert.equal(itwinLocalization.getLocalizedString("FirstTrivial"), "First level string (default)");
     });
 
     it("set default language as english", async () => {
@@ -34,10 +31,7 @@ describe("ITwinLocalization", () => {
       await itwinLocalization.initialize([]);
 
       assert.equal(itwinLocalization.i18next.options.lng, "en");
-      assert.equal(
-        itwinLocalization.getLocalizedString("FirstTrivial"),
-        "First level string (default)"
-      );
+      assert.equal(itwinLocalization.getLocalizedString("FirstTrivial"), "First level string (default)");
     });
 
     it("set default language as NOT english", async () => {
@@ -47,10 +41,7 @@ describe("ITwinLocalization", () => {
       await itwinLocalization.initialize([]);
 
       assert.equal(itwinLocalization.i18next.options.lng, "de");
-      assert.equal(
-        itwinLocalization.getLocalizedString("FirstTrivial"),
-        "First level string (default german)"
-      );
+      assert.equal(itwinLocalization.getLocalizedString("FirstTrivial"), "First level string (default german)");
     });
 
     it("set fallback language as NOT english", async () => {
@@ -70,14 +61,8 @@ describe("ITwinLocalization", () => {
     it("cannot fetch from unregistered namespaces", async () => {
       localization = new ITwinLocalization();
       await localization.initialize([]);
-      assert.equal(
-        localization.getEnglishString("Default", "FirstTrivial"),
-        "FirstTrivial"
-      );
-      assert.equal(
-        localization.getLocalizedString("Test:FirstTrivial"),
-        "FirstTrivial"
-      );
+      assert.equal(localization.getEnglishString("Default", "FirstTrivial"), "FirstTrivial");
+      assert.equal(localization.getLocalizedString("Test:FirstTrivial"), "FirstTrivial");
     });
 
     describe("with no default namespace predefined", () => {
@@ -96,54 +81,32 @@ describe("ITwinLocalization", () => {
 
         assert.equal(itwinLocalization.i18next.options.defaultNS, "Test");
         assert.isTrue(itwinLocalization.i18next.options.ns?.includes("Test"));
-        assert.equal(
-          itwinLocalization.getLocalizedString("Test:FirstTrivial"),
-          "First level string (test)"
-        );
+        assert.equal(itwinLocalization.getLocalizedString("Test:FirstTrivial"), "First level string (test)");
       });
 
       it("initialize with two namespaces recognizes both namespaces", async () => {
         await itwinLocalization.initialize(["Default", "Test"]);
 
-        assert.isTrue(
-          itwinLocalization.i18next.options.ns?.includes("Default")
-        );
+        assert.isTrue(itwinLocalization.i18next.options.ns?.includes("Default"));
         assert.isTrue(itwinLocalization.i18next.options.ns?.includes("Test"));
-        assert.equal(
-          itwinLocalization.getLocalizedString("Default:FirstTrivial"),
-          "First level string (default)"
-        );
-        assert.equal(
-          itwinLocalization.getLocalizedString("Test:FirstTrivial"),
-          "First level string (test)"
-        );
+        assert.equal(itwinLocalization.getLocalizedString("Default:FirstTrivial"), "First level string (default)");
+        assert.equal(itwinLocalization.getLocalizedString("Test:FirstTrivial"), "First level string (test)");
       });
 
       it("initialize with two namespaces sets first as default", async () => {
         await itwinLocalization.initialize(["Default", "Test"]);
 
         assert.equal(itwinLocalization.i18next.options.defaultNS, "Default");
-        assert.equal(
-          itwinLocalization.getLocalizedString("FirstTrivial"),
-          "First level string (default)"
-        );
+        assert.equal(itwinLocalization.getLocalizedString("FirstTrivial"), "First level string (default)");
       });
 
       it("initialize with duplicate namespace values does not break anything", async () => {
         await itwinLocalization.initialize(["Default", "Default"]);
 
         assert.equal(itwinLocalization.i18next.options.defaultNS, "Default");
-        assert.isTrue(
-          itwinLocalization.i18next.options.ns?.includes("Default")
-        );
-        assert.equal(
-          itwinLocalization.getLocalizedString("FirstTrivial"),
-          "First level string (default)"
-        );
-        assert.equal(
-          itwinLocalization.getLocalizedString("Default:FirstTrivial"),
-          "First level string (default)"
-        );
+        assert.isTrue(itwinLocalization.i18next.options.ns?.includes("Default"));
+        assert.equal(itwinLocalization.getLocalizedString("FirstTrivial"), "First level string (default)");
+        assert.equal(itwinLocalization.getLocalizedString("Default:FirstTrivial"), "First level string (default)");
       });
     });
 
@@ -176,16 +139,12 @@ describe("ITwinLocalization", () => {
 
       it("default namespace is in list of all namespaces initalized with empty array", async () => {
         await itwinLocalization.initialize([]);
-        assert.isTrue(
-          itwinLocalization.i18next.options.ns?.includes("Default")
-        );
+        assert.isTrue(itwinLocalization.i18next.options.ns?.includes("Default"));
       });
 
       it("default namespace is in list of all namespaces", async () => {
         await itwinLocalization.initialize(["Test"]);
-        assert.isTrue(
-          itwinLocalization.i18next.options.ns?.includes("Default")
-        );
+        assert.isTrue(itwinLocalization.i18next.options.ns?.includes("Default"));
       });
     });
   });
@@ -207,10 +166,7 @@ describe("ITwinLocalization", () => {
 
     describe("Default Namespace", () => {
       it("first level string", () => {
-        assert.equal(
-          localization.getLocalizedKeys("hi %{FirstTrivial}"),
-          "hi First level string (default)"
-        );
+        assert.equal(localization.getLocalizedKeys("hi %{FirstTrivial}"), "hi First level string (default)");
         assert.equal(
           germanLocalization.getLocalizedKeys("hi %{FirstTrivial}"),
           "hi First level string (default german)"
@@ -218,10 +174,7 @@ describe("ITwinLocalization", () => {
       });
 
       it("second level string", () => {
-        assert.equal(
-          localization.getLocalizedKeys("%{SecondTrivial.Test1}"),
-          "Second level string 1 (default)"
-        );
+        assert.equal(localization.getLocalizedKeys("%{SecondTrivial.Test1}"), "Second level string 1 (default)");
         assert.equal(
           localization.getLocalizedKeys("bye %{SecondTrivial.Test2}"),
           "bye Second level string 2 (default)"
@@ -237,10 +190,7 @@ describe("ITwinLocalization", () => {
       });
 
       it("first level string with keys", () => {
-        assert.equal(
-          localization.getLocalizedKeys("%{FirstSubstitution1}"),
-          "First level {{str}} (default)"
-        );
+        assert.equal(localization.getLocalizedKeys("%{FirstSubstitution1}"), "First level {{str}} (default)");
         assert.equal(
           localization.getLocalizedKeys("bye %{FirstSubstitution2}"),
           "bye First level {{str1}} and {{str2}} (default)"
@@ -275,14 +225,8 @@ describe("ITwinLocalization", () => {
       });
 
       it("first level missing key doesn't find a value", () => {
-        assert.equal(
-          localization.getLocalizedKeys("no %{MissingKeyString}"),
-          "no MissingKeyString"
-        );
-        assert.equal(
-          localization.getLocalizedKeys("no %{MissingKeyString}"),
-          "no MissingKeyString"
-        );
+        assert.equal(localization.getLocalizedKeys("no %{MissingKeyString}"), "no MissingKeyString");
+        assert.equal(localization.getLocalizedKeys("no %{MissingKeyString}"), "no MissingKeyString");
       });
 
       it("second level missing key doesn't find a value", () => {
@@ -299,14 +243,8 @@ describe("ITwinLocalization", () => {
 
     describe("Given Namespace", () => {
       it("first level string", () => {
-        assert.equal(
-          localization.getLocalizedKeys("hi %{Default:FirstTrivial}"),
-          "hi First level string (default)"
-        );
-        assert.equal(
-          localization.getLocalizedKeys("hi %{Test:FirstTrivial}"),
-          "hi First level string (test)"
-        );
+        assert.equal(localization.getLocalizedKeys("hi %{Default:FirstTrivial}"), "hi First level string (default)");
+        assert.equal(localization.getLocalizedKeys("hi %{Test:FirstTrivial}"), "hi First level string (test)");
       });
 
       it("second level string", () => {
@@ -318,10 +256,7 @@ describe("ITwinLocalization", () => {
           localization.getLocalizedKeys("bye %{Default:SecondTrivial.Test2}"),
           "bye Second level string 2 (default)"
         );
-        assert.equal(
-          localization.getLocalizedKeys("%{Test:SecondTrivial.Test1}"),
-          "Second level string 1 (test)"
-        );
+        assert.equal(localization.getLocalizedKeys("%{Test:SecondTrivial.Test1}"), "Second level string 1 (test)");
         assert.equal(
           localization.getLocalizedKeys("bye %{Test:SecondTrivial.Test2}"),
           "bye Second level string 2 (test)"
@@ -329,18 +264,12 @@ describe("ITwinLocalization", () => {
       });
 
       it("first level string with keys", () => {
-        assert.equal(
-          localization.getLocalizedKeys("%{Default:FirstSubstitution1}"),
-          "First level {{str}} (default)"
-        );
+        assert.equal(localization.getLocalizedKeys("%{Default:FirstSubstitution1}"), "First level {{str}} (default)");
         assert.equal(
           localization.getLocalizedKeys("bye %{Default:FirstSubstitution2}"),
           "bye First level {{str1}} and {{str2}} (default)"
         );
-        assert.equal(
-          localization.getLocalizedKeys("%{Test:FirstSubstitution1}"),
-          "First level {{str}} (test)"
-        );
+        assert.equal(localization.getLocalizedKeys("%{Test:FirstSubstitution1}"), "First level {{str}} (test)");
         assert.equal(
           localization.getLocalizedKeys("bye %{Test:FirstSubstitution2}"),
           "bye First level {{str1}} and {{str2}} (test)"
@@ -353,9 +282,7 @@ describe("ITwinLocalization", () => {
           "Substitute {{varA}} and {{varB}} (default)"
         );
         assert.equal(
-          localization.getLocalizedKeys(
-            "hi %{Default:SecondSubstitution.Test2}"
-          ),
+          localization.getLocalizedKeys("hi %{Default:SecondSubstitution.Test2}"),
           "hi Reverse substitute {{varB}} and {{varA}} (default)"
         );
         assert.equal(
@@ -369,39 +296,25 @@ describe("ITwinLocalization", () => {
       });
 
       it("first level missing key doesn't find a value", () => {
-        assert.equal(
-          localization.getLocalizedKeys("no %{Default:MissingKeyString}"),
-          "no MissingKeyString"
-        );
-        assert.equal(
-          localization.getLocalizedKeys("no %{Test:MissingKeyString}"),
-          "no MissingKeyString"
-        );
+        assert.equal(localization.getLocalizedKeys("no %{Default:MissingKeyString}"), "no MissingKeyString");
+        assert.equal(localization.getLocalizedKeys("no %{Test:MissingKeyString}"), "no MissingKeyString");
       });
 
       it("second level missing key doesn't find a value", () => {
         assert.equal(
-          localization.getLocalizedKeys(
-            "hi %{Default:SecondTrivial.MissingString}"
-          ),
+          localization.getLocalizedKeys("hi %{Default:SecondTrivial.MissingString}"),
           "hi SecondTrivial.MissingString"
         );
         assert.equal(
-          localization.getLocalizedKeys(
-            "%{Default:MissingKeyObject.MissingString}"
-          ),
+          localization.getLocalizedKeys("%{Default:MissingKeyObject.MissingString}"),
           "MissingKeyObject.MissingString"
         );
         assert.equal(
-          localization.getLocalizedKeys(
-            "hi %{Test:SecondTrivial.MissingString}"
-          ),
+          localization.getLocalizedKeys("hi %{Test:SecondTrivial.MissingString}"),
           "hi SecondTrivial.MissingString"
         );
         assert.equal(
-          localization.getLocalizedKeys(
-            "%{Test:MissingKeyObject.MissingString}"
-          ),
+          localization.getLocalizedKeys("%{Test:MissingKeyObject.MissingString}"),
           "MissingKeyObject.MissingString"
         );
       });
@@ -409,25 +322,13 @@ describe("ITwinLocalization", () => {
 
     describe("Nonexisting Namespace", () => {
       it("first level fails", () => {
-        assert.equal(
-          localization.getLocalizedKeys("%{Nonexisting:FirstTrivial}"),
-          "FirstTrivial"
-        );
-        assert.equal(
-          localization.getLocalizedKeys("%{Nonexisting:MissingKeyString}"),
-          "MissingKeyString"
-        );
+        assert.equal(localization.getLocalizedKeys("%{Nonexisting:FirstTrivial}"), "FirstTrivial");
+        assert.equal(localization.getLocalizedKeys("%{Nonexisting:MissingKeyString}"), "MissingKeyString");
       });
 
       it("second level fails", () => {
-        assert.equal(
-          localization.getLocalizedKeys("%{Nonexisting:SecondTrivial.Test1}"),
-          "SecondTrivial.Test1"
-        );
-        assert.equal(
-          localization.getLocalizedKeys("%{Nonexisting:Missing.String}"),
-          "Missing.String"
-        );
+        assert.equal(localization.getLocalizedKeys("%{Nonexisting:SecondTrivial.Test1}"), "SecondTrivial.Test1");
+        assert.equal(localization.getLocalizedKeys("%{Nonexisting:Missing.String}"), "Missing.String");
       });
     });
   });
@@ -449,70 +350,36 @@ describe("ITwinLocalization", () => {
 
     describe("Default Namespace", () => {
       it("first level with no substitution", () => {
-        assert.equal(
-          localization.getLocalizedString("FirstTrivial"),
-          "First level string (default)"
-        );
+        assert.equal(localization.getLocalizedString("FirstTrivial"), "First level string (default)");
       });
 
       it("first level with no substitution with fallback keys", () => {
-        assert.equal(
-          localization.getLocalizedString(["FirstTrivial", "NotExist"]),
-          "First level string (default)"
-        );
-        assert.equal(
-          localization.getLocalizedString(["NotExist", "FirstTrivial"]),
-          "First level string (default)"
-        );
+        assert.equal(localization.getLocalizedString(["FirstTrivial", "NotExist"]), "First level string (default)");
+        assert.equal(localization.getLocalizedString(["NotExist", "FirstTrivial"]), "First level string (default)");
       });
 
       it("more than two fallback keys succeeds", () => {
         assert.equal(
-          localization.getLocalizedString([
-            "FirstTrivial",
-            "NotExist1",
-            "NotExist2",
-          ]),
+          localization.getLocalizedString(["FirstTrivial", "NotExist1", "NotExist2"]),
           "First level string (default)"
         );
         assert.equal(
-          localization.getLocalizedString([
-            "NotExist1",
-            "FirstTrivial",
-            "NotExist2",
-          ]),
+          localization.getLocalizedString(["NotExist1", "FirstTrivial", "NotExist2"]),
           "First level string (default)"
         );
         assert.equal(
-          localization.getLocalizedString([
-            "NotExist1",
-            "NotExist2",
-            "FirstTrivial",
-          ]),
+          localization.getLocalizedString(["NotExist1", "NotExist2", "FirstTrivial"]),
           "First level string (default)"
         );
         assert.equal(
-          localization.getLocalizedString([
-            "1",
-            "2",
-            "3",
-            "4",
-            "5",
-            "FirstTrivial",
-          ]),
+          localization.getLocalizedString(["1", "2", "3", "4", "5", "FirstTrivial"]),
           "First level string (default)"
         );
       });
 
       it("second level with no substitution", () => {
-        assert.equal(
-          localization.getLocalizedString("SecondTrivial.Test1"),
-          "Second level string 1 (default)"
-        );
-        assert.equal(
-          localization.getLocalizedString("SecondTrivial.Test2"),
-          "Second level string 2 (default)"
-        );
+        assert.equal(localization.getLocalizedString("SecondTrivial.Test1"), "Second level string 1 (default)");
+        assert.equal(localization.getLocalizedString("SecondTrivial.Test2"), "Second level string 2 (default)");
       });
 
       it("second level with no substitution with fallback keys", () => {
@@ -589,66 +456,45 @@ describe("ITwinLocalization", () => {
 
       it("second level with substitution with fallback keys", () => {
         assert.equal(
-          localization.getLocalizedString(
-            ["NotExist", "SecondSubstitution.Test1"],
-            { varA: "Variable1", varB: "Variable2" }
-          ),
+          localization.getLocalizedString(["NotExist", "SecondSubstitution.Test1"], {
+            varA: "Variable1",
+            varB: "Variable2",
+          }),
           "Substitute Variable1 and Variable2 (default)"
         );
         assert.equal(
-          localization.getLocalizedString(
-            ["SecondSubstitution.Test2", "NotExist"],
-            { varA: "Variable1", varB: "Variable2" }
-          ),
+          localization.getLocalizedString(["SecondSubstitution.Test2", "NotExist"], {
+            varA: "Variable1",
+            varB: "Variable2",
+          }),
           "Reverse substitute Variable2 and Variable1 (default)"
         );
       });
 
       it("first level missing key doesn't find a value", () => {
-        assert.equal(
-          localization.getLocalizedString("MissingKeyString"),
-          "MissingKeyString"
-        );
+        assert.equal(localization.getLocalizedString("MissingKeyString"), "MissingKeyString");
       });
 
       it("first level missing all keys doesn't find a value", () => {
-        assert.equal(
-          localization.getLocalizedString([
-            "MissingKeyString",
-            "MissingString2",
-          ]),
-          "MissingString2"
-        );
+        assert.equal(localization.getLocalizedString(["MissingKeyString", "MissingString2"]), "MissingString2");
       });
 
       it("second level missing key doesn't find a value", () => {
+        assert.equal(localization.getLocalizedString("SecondTrivial.MissingString"), "SecondTrivial.MissingString");
         assert.equal(
-          localization.getLocalizedString("SecondTrivial.MissingString"),
-          "SecondTrivial.MissingString"
-        );
-        assert.equal(
-          localization.getLocalizedString([
-            "NotExist",
-            "MissingKeyObject.MissingString",
-          ]),
+          localization.getLocalizedString(["NotExist", "MissingKeyObject.MissingString"]),
           "MissingKeyObject.MissingString"
         );
       });
 
       it("read from en-US fallback", () => {
-        assert.equal(
-          localization.getLocalizedString("OnlyEnglishUS"),
-          "HelloUS"
-        );
+        assert.equal(localization.getLocalizedString("OnlyEnglishUS"), "HelloUS");
       });
     });
 
     describe("Default Namespace (German)", () => {
       it("first level with no substitution", () => {
-        assert.equal(
-          germanLocalization.getLocalizedString("FirstTrivial"),
-          "First level string (default german)"
-        );
+        assert.equal(germanLocalization.getLocalizedString("FirstTrivial"), "First level string (default german)");
       });
 
       it("first level with no substitution with fallback keys", () => {
@@ -675,17 +521,11 @@ describe("ITwinLocalization", () => {
 
       it("second level with no substitution with fallback keys", () => {
         assert.equal(
-          germanLocalization.getLocalizedString([
-            "NotExist",
-            "SecondTrivial.Test1",
-          ]),
+          germanLocalization.getLocalizedString(["NotExist", "SecondTrivial.Test1"]),
           "Second level string 1 (default german)"
         );
         assert.equal(
-          germanLocalization.getLocalizedString([
-            "SecondTrivial.Test2",
-            "NotExist",
-          ]),
+          germanLocalization.getLocalizedString(["SecondTrivial.Test2", "NotExist"]),
           "Second level string 2 (default german)"
         );
       });
@@ -714,24 +554,18 @@ describe("ITwinLocalization", () => {
 
       it("first level with substitution with fallback keys", () => {
         assert.equal(
-          germanLocalization.getLocalizedString(
-            ["NotExist", "FirstSubstitution1"],
-            { str: "CUSTOM1" }
-          ),
+          germanLocalization.getLocalizedString(["NotExist", "FirstSubstitution1"], { str: "CUSTOM1" }),
           "First level CUSTOM1 (default german)"
         );
         assert.equal(
-          germanLocalization.getLocalizedString(
-            ["FirstSubstitution1", "NotExist"],
-            { str: "CUSTOM2" }
-          ),
+          germanLocalization.getLocalizedString(["FirstSubstitution1", "NotExist"], { str: "CUSTOM2" }),
           "First level CUSTOM2 (default german)"
         );
         assert.equal(
-          germanLocalization.getLocalizedString(
-            ["NotExist", "FirstSubstitution2"],
-            { str1: "CUSTOM1", str2: "CUSTOM2" }
-          ),
+          germanLocalization.getLocalizedString(["NotExist", "FirstSubstitution2"], {
+            str1: "CUSTOM1",
+            str2: "CUSTOM2",
+          }),
           "First level CUSTOM1 and CUSTOM2 (default german)"
         );
       });
@@ -755,36 +589,27 @@ describe("ITwinLocalization", () => {
 
       it("second level with substitution with fallback keys", () => {
         assert.equal(
-          germanLocalization.getLocalizedString(
-            ["NotExist", "SecondSubstitution.Test1"],
-            { varA: "Variable1", varB: "Variable2" }
-          ),
+          germanLocalization.getLocalizedString(["NotExist", "SecondSubstitution.Test1"], {
+            varA: "Variable1",
+            varB: "Variable2",
+          }),
           "Substitute Variable1 and Variable2 (default german)"
         );
         assert.equal(
-          germanLocalization.getLocalizedString(
-            ["SecondSubstitution.Test2", "NotExist"],
-            { varA: "Variable1", varB: "Variable2" }
-          ),
+          germanLocalization.getLocalizedString(["SecondSubstitution.Test2", "NotExist"], {
+            varA: "Variable1",
+            varB: "Variable2",
+          }),
           "Reverse substitute Variable2 and Variable1 (default german)"
         );
       });
 
       it("first level missing key doesn't find a value", () => {
-        assert.equal(
-          germanLocalization.getLocalizedString("MissingKeyString"),
-          "MissingKeyString"
-        );
+        assert.equal(germanLocalization.getLocalizedString("MissingKeyString"), "MissingKeyString");
       });
 
       it("first level missing all keys doesn't find a value", () => {
-        assert.equal(
-          germanLocalization.getLocalizedString([
-            "MissingKeyString",
-            "MissingString2",
-          ]),
-          "MissingString2"
-        );
+        assert.equal(germanLocalization.getLocalizedString(["MissingKeyString", "MissingString2"]), "MissingString2");
       });
 
       it("second level missing key doesn't find a value", () => {
@@ -793,9 +618,7 @@ describe("ITwinLocalization", () => {
           "SecondTrivial.MissingString"
         );
         assert.equal(
-          germanLocalization.getLocalizedString(
-            "MissingKeyObject.MissingString"
-          ),
+          germanLocalization.getLocalizedString("MissingKeyObject.MissingString"),
           "MissingKeyObject.MissingString"
         );
       });
@@ -803,65 +626,35 @@ describe("ITwinLocalization", () => {
 
     describe("Given Namespace", () => {
       it("first level with no substitution", () => {
-        assert.equal(
-          localization.getLocalizedString("Default:FirstTrivial"),
-          "First level string (default)"
-        );
-        assert.equal(
-          localization.getLocalizedString("Test:FirstTrivial"),
-          "First level string (test)"
-        );
+        assert.equal(localization.getLocalizedString("Default:FirstTrivial"), "First level string (default)");
+        assert.equal(localization.getLocalizedString("Test:FirstTrivial"), "First level string (test)");
       });
 
       it("first level with no substitution with fallback keys", () => {
         assert.equal(
-          localization.getLocalizedString([
-            "Default:FirstTrivial",
-            "Not:NotExist",
-          ]),
+          localization.getLocalizedString(["Default:FirstTrivial", "Not:NotExist"]),
           "First level string (default)"
         );
         assert.equal(
-          localization.getLocalizedString([
-            "Default:NotExist",
-            "Test:FirstTrivial",
-          ]),
+          localization.getLocalizedString(["Default:NotExist", "Test:FirstTrivial"]),
           "First level string (test)"
         );
       });
 
       it("second level with no substitution", () => {
-        assert.equal(
-          localization.getLocalizedString("Default:SecondTrivial.Test1"),
-          "Second level string 1 (default)"
-        );
-        assert.equal(
-          localization.getLocalizedString("Default:SecondTrivial.Test2"),
-          "Second level string 2 (default)"
-        );
-        assert.equal(
-          localization.getLocalizedString("Test:SecondTrivial.Test1"),
-          "Second level string 1 (test)"
-        );
-        assert.equal(
-          localization.getLocalizedString("Test:SecondTrivial.Test2"),
-          "Second level string 2 (test)"
-        );
+        assert.equal(localization.getLocalizedString("Default:SecondTrivial.Test1"), "Second level string 1 (default)");
+        assert.equal(localization.getLocalizedString("Default:SecondTrivial.Test2"), "Second level string 2 (default)");
+        assert.equal(localization.getLocalizedString("Test:SecondTrivial.Test1"), "Second level string 1 (test)");
+        assert.equal(localization.getLocalizedString("Test:SecondTrivial.Test2"), "Second level string 2 (test)");
       });
 
       it("second level with no substitution with fallback keys", () => {
         assert.equal(
-          localization.getLocalizedString([
-            "Test:NotExist",
-            "Default:SecondTrivial.Test1",
-          ]),
+          localization.getLocalizedString(["Test:NotExist", "Default:SecondTrivial.Test1"]),
           "Second level string 1 (default)"
         );
         assert.equal(
-          localization.getLocalizedString([
-            "Test:SecondTrivial.Test2",
-            "NotExist",
-          ]),
+          localization.getLocalizedString(["Test:SecondTrivial.Test2", "NotExist"]),
           "Second level string 2 (test)"
         );
       });
@@ -909,24 +702,18 @@ describe("ITwinLocalization", () => {
 
       it("first level with substitution with fallback keys", () => {
         assert.equal(
-          localization.getLocalizedString(
-            ["Test:NotExist", "Default:FirstSubstitution1"],
-            { str: "CUSTOM1" }
-          ),
+          localization.getLocalizedString(["Test:NotExist", "Default:FirstSubstitution1"], { str: "CUSTOM1" }),
           "First level CUSTOM1 (default)"
         );
         assert.equal(
-          localization.getLocalizedString(
-            ["Test:FirstSubstitution1", "Default:NotExist"],
-            { str: "CUSTOM2" }
-          ),
+          localization.getLocalizedString(["Test:FirstSubstitution1", "Default:NotExist"], { str: "CUSTOM2" }),
           "First level CUSTOM2 (test)"
         );
         assert.equal(
-          localization.getLocalizedString(
-            ["Test:NotExist", "Default:FirstSubstitution2"],
-            { str1: "CUSTOM1", str2: "CUSTOM2" }
-          ),
+          localization.getLocalizedString(["Test:NotExist", "Default:FirstSubstitution2"], {
+            str1: "CUSTOM1",
+            str2: "CUSTOM2",
+          }),
           "First level CUSTOM1 and CUSTOM2 (default)"
         );
       });
@@ -964,30 +751,24 @@ describe("ITwinLocalization", () => {
 
       it("second level with substitution with fallback keys", () => {
         assert.equal(
-          localization.getLocalizedString(
-            ["Test:NotExist", "Default:SecondSubstitution.Test1"],
-            { varA: "Variable1", varB: "Variable2" }
-          ),
+          localization.getLocalizedString(["Test:NotExist", "Default:SecondSubstitution.Test1"], {
+            varA: "Variable1",
+            varB: "Variable2",
+          }),
           "Substitute Variable1 and Variable2 (default)"
         );
         assert.equal(
-          localization.getLocalizedString(
-            ["Test:SecondSubstitution.Test2", "Default:NotExist"],
-            { varA: "Variable1", varB: "Variable2" }
-          ),
+          localization.getLocalizedString(["Test:SecondSubstitution.Test2", "Default:NotExist"], {
+            varA: "Variable1",
+            varB: "Variable2",
+          }),
           "Reverse substitute Variable2 and Variable1 (test)"
         );
       });
 
       it("first level missing key doesn't find a value", () => {
-        assert.equal(
-          localization.getLocalizedString("Default:MissingKeyString"),
-          "MissingKeyString"
-        );
-        assert.equal(
-          localization.getLocalizedString("Test:MissingKeyString"),
-          "MissingKeyString"
-        );
+        assert.equal(localization.getLocalizedString("Default:MissingKeyString"), "MissingKeyString");
+        assert.equal(localization.getLocalizedString("Test:MissingKeyString"), "MissingKeyString");
       });
 
       it("second level missing key doesn't find a value", () => {
@@ -996,18 +777,13 @@ describe("ITwinLocalization", () => {
           "SecondTrivial.MissingString"
         );
         assert.equal(
-          localization.getLocalizedString(
-            "Test:MissingKeyObject.MissingString"
-          ),
+          localization.getLocalizedString("Test:MissingKeyObject.MissingString"),
           "MissingKeyObject.MissingString"
         );
       });
 
       it("read from en-US fallback", () => {
-        assert.equal(
-          localization.getLocalizedString("Default:OnlyEnglishUS"),
-          "HelloUS"
-        );
+        assert.equal(localization.getLocalizedString("Default:OnlyEnglishUS"), "HelloUS");
       });
     });
 
@@ -1017,10 +793,7 @@ describe("ITwinLocalization", () => {
           germanLocalization.getLocalizedString("Default:FirstTrivial"),
           "First level string (default german)"
         );
-        assert.equal(
-          germanLocalization.getLocalizedString("Test:FirstTrivial"),
-          "First level string (german)"
-        );
+        assert.equal(germanLocalization.getLocalizedString("Test:FirstTrivial"), "First level string (german)");
       });
 
       it("second level with no substitution", () => {
@@ -1085,57 +858,47 @@ describe("ITwinLocalization", () => {
 
       it("second level with substitution", () => {
         assert.equal(
-          germanLocalization.getLocalizedString(
-            "Default:SecondSubstitution.Test1",
-            { varA: "Variable1", varB: "Variable2" }
-          ),
+          germanLocalization.getLocalizedString("Default:SecondSubstitution.Test1", {
+            varA: "Variable1",
+            varB: "Variable2",
+          }),
           "Substitute Variable1 and Variable2 (default german)"
         );
         assert.equal(
-          germanLocalization.getLocalizedString(
-            "Default:SecondSubstitution.Test2",
-            { varA: "Variable1", varB: "Variable2" }
-          ),
+          germanLocalization.getLocalizedString("Default:SecondSubstitution.Test2", {
+            varA: "Variable1",
+            varB: "Variable2",
+          }),
           "Reverse substitute Variable2 and Variable1 (default german)"
         );
         assert.equal(
-          germanLocalization.getLocalizedString(
-            "Test:SecondSubstitution.Test1",
-            { varA: "Variable1", varB: "Variable2" }
-          ),
+          germanLocalization.getLocalizedString("Test:SecondSubstitution.Test1", {
+            varA: "Variable1",
+            varB: "Variable2",
+          }),
           "Substitute Variable1 and Variable2 (german)"
         );
         assert.equal(
-          germanLocalization.getLocalizedString(
-            "Test:SecondSubstitution.Test2",
-            { varA: "Variable1", varB: "Variable2" }
-          ),
+          germanLocalization.getLocalizedString("Test:SecondSubstitution.Test2", {
+            varA: "Variable1",
+            varB: "Variable2",
+          }),
           "Reverse substitute Variable2 and Variable1 (german)"
         );
       });
 
       it("first level missing key doesn't find a value", () => {
-        assert.equal(
-          germanLocalization.getLocalizedString("Default:MissingKeyString"),
-          "MissingKeyString"
-        );
-        assert.equal(
-          germanLocalization.getLocalizedString("Test:MissingKeyString"),
-          "MissingKeyString"
-        );
+        assert.equal(germanLocalization.getLocalizedString("Default:MissingKeyString"), "MissingKeyString");
+        assert.equal(germanLocalization.getLocalizedString("Test:MissingKeyString"), "MissingKeyString");
       });
 
       it("second level missing key doesn't find a value", () => {
         assert.equal(
-          germanLocalization.getLocalizedString(
-            "Test:SecondTrivial.MissingString"
-          ),
+          germanLocalization.getLocalizedString("Test:SecondTrivial.MissingString"),
           "SecondTrivial.MissingString"
         );
         assert.equal(
-          germanLocalization.getLocalizedString(
-            "Test:MissingKeyObject.MissingString"
-          ),
+          germanLocalization.getLocalizedString("Test:MissingKeyObject.MissingString"),
           "MissingKeyObject.MissingString"
         );
       });
@@ -1143,42 +906,18 @@ describe("ITwinLocalization", () => {
 
     describe("Nonexisting Namespace", () => {
       it("first level fails", () => {
-        assert.equal(
-          localization.getLocalizedString("Nonexisting:FirstTrivial"),
-          "FirstTrivial"
-        );
-        assert.equal(
-          localization.getLocalizedString("Nonexisting:MissingKeyString"),
-          "MissingKeyString"
-        );
+        assert.equal(localization.getLocalizedString("Nonexisting:FirstTrivial"), "FirstTrivial");
+        assert.equal(localization.getLocalizedString("Nonexisting:MissingKeyString"), "MissingKeyString");
       });
 
       it("second level fails", () => {
-        assert.equal(
-          localization.getLocalizedString("Nonexisting:SecondTrivial.Test1"),
-          "SecondTrivial.Test1"
-        );
-        assert.equal(
-          localization.getLocalizedString("Nonexisting:Missing.String"),
-          "Missing.String"
-        );
+        assert.equal(localization.getLocalizedString("Nonexisting:SecondTrivial.Test1"), "SecondTrivial.Test1");
+        assert.equal(localization.getLocalizedString("Nonexisting:Missing.String"), "Missing.String");
       });
 
       it("fallback key fails", () => {
-        assert.equal(
-          localization.getLocalizedString([
-            "Nonexisting:FirstTrivial",
-            "NotExist",
-          ]),
-          "NotExist"
-        );
-        assert.equal(
-          localization.getLocalizedString([
-            "NotExist",
-            "Nonexisting:Missing.String",
-          ]),
-          "Missing.String"
-        );
+        assert.equal(localization.getLocalizedString(["Nonexisting:FirstTrivial", "NotExist"]), "NotExist");
+        assert.equal(localization.getLocalizedString(["NotExist", "Nonexisting:Missing.String"]), "Missing.String");
       });
     });
 
@@ -1225,10 +964,7 @@ describe("ITwinLocalization", () => {
       });
 
       it("set namespace", () => {
-        assert.equal(
-          localization.getLocalizedString("FirstTrivial", { ns: "Test" }),
-          "First level string (test)"
-        );
+        assert.equal(localization.getLocalizedString("FirstTrivial", { ns: "Test" }), "First level string (test)");
         assert.equal(
           localization.getLocalizedString("FirstSubstitution1", {
             str: "CUSTOM1",
@@ -1257,10 +993,7 @@ describe("ITwinLocalization", () => {
           localization.getLocalizedString("FirstTrivial", { ns: "Default" }),
           "First level string (default)"
         );
-        assert.equal(
-          localization.getLocalizedString("FirstTrivial", { ns: "Test" }),
-          "First level string (test)"
-        );
+        assert.equal(localization.getLocalizedString("FirstTrivial", { ns: "Test" }), "First level string (test)");
       });
 
       it("first level with no substitution with fallback keys", () => {
@@ -1429,17 +1162,19 @@ describe("ITwinLocalization", () => {
 
       it("second level with substitution with fallback keys", () => {
         assert.equal(
-          localization.getLocalizedString(
-            ["NotExist", "SecondSubstitution.Test1"],
-            { ns: "Default", varA: "Variable1", varB: "Variable2" }
-          ),
+          localization.getLocalizedString(["NotExist", "SecondSubstitution.Test1"], {
+            ns: "Default",
+            varA: "Variable1",
+            varB: "Variable2",
+          }),
           "Substitute Variable1 and Variable2 (default)"
         );
         assert.equal(
-          localization.getLocalizedString(
-            ["SecondSubstitution.Test2", "NotExist"],
-            { ns: "Test", varA: "Variable1", varB: "Variable2" }
-          ),
+          localization.getLocalizedString(["SecondSubstitution.Test2", "NotExist"], {
+            ns: "Test",
+            varA: "Variable1",
+            varB: "Variable2",
+          }),
           "Reverse substitute Variable2 and Variable1 (test)"
         );
       });
@@ -1451,10 +1186,7 @@ describe("ITwinLocalization", () => {
           }),
           "MissingKeyString"
         );
-        assert.equal(
-          localization.getLocalizedString("MissingKeyString", { ns: "Test" }),
-          "MissingKeyString"
-        );
+        assert.equal(localization.getLocalizedString("MissingKeyString", { ns: "Test" }), "MissingKeyString");
       });
 
       it("second level missing key doesn't find a value", () => {
@@ -1619,10 +1351,7 @@ describe("ITwinLocalization", () => {
           "SecondTrivial.MissingString"
         );
         assert.equal(
-          germanLocalization.getLocalizedString(
-            "MissingKeyObject.MissingString",
-            { ns: "Test" }
-          ),
+          germanLocalization.getLocalizedString("MissingKeyObject.MissingString", { ns: "Test" }),
           "MissingKeyObject.MissingString"
         );
       });
@@ -1661,34 +1390,22 @@ describe("ITwinLocalization", () => {
 
       it("key with same namespace works with fallback keys", () => {
         assert.equal(
-          localization.getLocalizedString(
-            ["NotExist:FirstTrivial", "Default:FirstTrivial"],
-            { ns: "Default" }
-          ),
+          localization.getLocalizedString(["NotExist:FirstTrivial", "Default:FirstTrivial"], { ns: "Default" }),
           "First level string (default)"
         );
         assert.equal(
-          localization.getLocalizedString(
-            ["NotExist:FirstTrivial", "Test:FirstTrivial"],
-            { ns: "Test" }
-          ),
+          localization.getLocalizedString(["NotExist:FirstTrivial", "Test:FirstTrivial"], { ns: "Test" }),
           "First level string (test)"
         );
       });
 
       it("key with different namespace overrides given namespace with fallback keys", () => {
         assert.equal(
-          localization.getLocalizedString(
-            ["NotExist:FirstTrivial", "Test:FirstTrivial"],
-            { ns: "Default" }
-          ),
+          localization.getLocalizedString(["NotExist:FirstTrivial", "Test:FirstTrivial"], { ns: "Default" }),
           "First level string (test)"
         );
         assert.equal(
-          localization.getLocalizedString(
-            ["NotExist:FirstTrivial", "Default:FirstTrivial"],
-            { ns: "Test" }
-          ),
+          localization.getLocalizedString(["NotExist:FirstTrivial", "Default:FirstTrivial"], { ns: "Test" }),
           "First level string (default)"
         );
       });
@@ -1701,10 +1418,7 @@ describe("ITwinLocalization", () => {
           "MissingKeyString"
         );
         assert.equal(
-          germanLocalization.getLocalizedString(
-            ["Missing1", "MissingKeyObject.MissingString"],
-            { ns: "Test" }
-          ),
+          germanLocalization.getLocalizedString(["Missing1", "MissingKeyObject.MissingString"], { ns: "Test" }),
           "MissingKeyObject.MissingString"
         );
       });
@@ -1742,10 +1456,7 @@ describe("ITwinLocalization", () => {
       });
 
       it("empty string namespace falls back to default namespace", () => {
-        assert.equal(
-          localization.getLocalizedString("FirstTrivial", { ns: "" }),
-          "First level string (default)"
-        );
+        assert.equal(localization.getLocalizedString("FirstTrivial", { ns: "" }), "First level string (default)");
         assert.equal(
           localization.getLocalizedString("SecondTrivial.Test1", { ns: "" }),
           "Second level string 1 (default)"
@@ -1858,28 +1569,16 @@ describe("ITwinLocalization", () => {
 
     describe("Given Namespace", () => {
       it("first level with no substitution", () => {
-        assert.equal(
-          localization.getEnglishString("Default", "FirstTrivial"),
-          "First level string (default)"
-        );
-        assert.equal(
-          localization.getEnglishString("Test", "FirstTrivial"),
-          "First level string (test)"
-        );
+        assert.equal(localization.getEnglishString("Default", "FirstTrivial"), "First level string (default)");
+        assert.equal(localization.getEnglishString("Test", "FirstTrivial"), "First level string (test)");
       });
 
       it("first level with no substitution with fallback keys", () => {
         assert.equal(
-          localization.getEnglishString("Default", [
-            "FirstTrivial",
-            "NotExist",
-          ]),
+          localization.getEnglishString("Default", ["FirstTrivial", "NotExist"]),
           "First level string (default)"
         );
-        assert.equal(
-          localization.getEnglishString("Test", ["NotExist", "FirstTrivial"]),
-          "First level string (test)"
-        );
+        assert.equal(localization.getEnglishString("Test", ["NotExist", "FirstTrivial"]), "First level string (test)");
       });
 
       it("second level with no substitution", () => {
@@ -1891,29 +1590,17 @@ describe("ITwinLocalization", () => {
           localization.getEnglishString("Default", "SecondTrivial.Test2"),
           "Second level string 2 (default)"
         );
-        assert.equal(
-          localization.getEnglishString("Test", "SecondTrivial.Test1"),
-          "Second level string 1 (test)"
-        );
-        assert.equal(
-          localization.getEnglishString("Test", "SecondTrivial.Test2"),
-          "Second level string 2 (test)"
-        );
+        assert.equal(localization.getEnglishString("Test", "SecondTrivial.Test1"), "Second level string 1 (test)");
+        assert.equal(localization.getEnglishString("Test", "SecondTrivial.Test2"), "Second level string 2 (test)");
       });
 
       it("second level with no substitution with fallback keys", () => {
         assert.equal(
-          localization.getEnglishString("Default", [
-            "NotExist",
-            "SecondTrivial.Test1",
-          ]),
+          localization.getEnglishString("Default", ["NotExist", "SecondTrivial.Test1"]),
           "Second level string 1 (default)"
         );
         assert.equal(
-          localization.getEnglishString("Test", [
-            "SecondTrivial.Test2",
-            "NotExist",
-          ]),
+          localization.getEnglishString("Test", ["SecondTrivial.Test2", "NotExist"]),
           "Second level string 2 (test)"
         );
       });
@@ -1961,27 +1648,18 @@ describe("ITwinLocalization", () => {
 
       it("first level with substitution with fallback keys", () => {
         assert.equal(
-          localization.getEnglishString(
-            "Default",
-            ["NotExist", "FirstSubstitution1"],
-            { str: "CUSTOM1" }
-          ),
+          localization.getEnglishString("Default", ["NotExist", "FirstSubstitution1"], { str: "CUSTOM1" }),
           "First level CUSTOM1 (default)"
         );
         assert.equal(
-          localization.getEnglishString(
-            "Test",
-            ["FirstSubstitution1", "NotExist"],
-            { str: "CUSTOM2" }
-          ),
+          localization.getEnglishString("Test", ["FirstSubstitution1", "NotExist"], { str: "CUSTOM2" }),
           "First level CUSTOM2 (test)"
         );
         assert.equal(
-          localization.getEnglishString(
-            "Test",
-            ["NotExist", "FirstSubstitution2"],
-            { str1: "CUSTOM1", str2: "CUSTOM2" }
-          ),
+          localization.getEnglishString("Test", ["NotExist", "FirstSubstitution2"], {
+            str1: "CUSTOM1",
+            str2: "CUSTOM2",
+          }),
           "First level CUSTOM1 and CUSTOM2 (test)"
         );
       });
@@ -2019,32 +1697,24 @@ describe("ITwinLocalization", () => {
 
       it("second level with substitution with fallback keys", () => {
         assert.equal(
-          localization.getEnglishString(
-            "Default",
-            ["NotExist", "SecondSubstitution.Test1"],
-            { varA: "Variable1", varB: "Variable2" }
-          ),
+          localization.getEnglishString("Default", ["NotExist", "SecondSubstitution.Test1"], {
+            varA: "Variable1",
+            varB: "Variable2",
+          }),
           "Substitute Variable1 and Variable2 (default)"
         );
         assert.equal(
-          localization.getEnglishString(
-            "Test",
-            ["SecondSubstitution.Test2", "NotExist"],
-            { varA: "Variable1", varB: "Variable2" }
-          ),
+          localization.getEnglishString("Test", ["SecondSubstitution.Test2", "NotExist"], {
+            varA: "Variable1",
+            varB: "Variable2",
+          }),
           "Reverse substitute Variable2 and Variable1 (test)"
         );
       });
 
       it("first level missing key doesn't find a value", () => {
-        assert.equal(
-          localization.getEnglishString("Default", "MissingKeyString"),
-          "MissingKeyString"
-        );
-        assert.equal(
-          localization.getEnglishString("Test", "MissingKeyString"),
-          "MissingKeyString"
-        );
+        assert.equal(localization.getEnglishString("Default", "MissingKeyString"), "MissingKeyString");
+        assert.equal(localization.getEnglishString("Test", "MissingKeyString"), "MissingKeyString");
       });
 
       it("second level missing key doesn't find a value", () => {
@@ -2053,10 +1723,7 @@ describe("ITwinLocalization", () => {
           "SecondTrivial.MissingString"
         );
         assert.equal(
-          localization.getEnglishString(
-            "Test",
-            "MissingKeyObject.MissingString"
-          ),
+          localization.getEnglishString("Test", "MissingKeyObject.MissingString"),
           "MissingKeyObject.MissingString"
         );
       });
@@ -2064,29 +1731,17 @@ describe("ITwinLocalization", () => {
 
     describe("Given Namespace with German default language returns English strings", () => {
       it("first level with no substitution", () => {
-        assert.equal(
-          germanLocalization.getEnglishString("Default", "FirstTrivial"),
-          "First level string (default)"
-        );
-        assert.equal(
-          germanLocalization.getEnglishString("Test", "FirstTrivial"),
-          "First level string (test)"
-        );
+        assert.equal(germanLocalization.getEnglishString("Default", "FirstTrivial"), "First level string (default)");
+        assert.equal(germanLocalization.getEnglishString("Test", "FirstTrivial"), "First level string (test)");
       });
 
       it("first level with no substitution with fallback keys", () => {
         assert.equal(
-          germanLocalization.getEnglishString("Default", [
-            "FirstTrivial",
-            "NotExist",
-          ]),
+          germanLocalization.getEnglishString("Default", ["FirstTrivial", "NotExist"]),
           "First level string (default)"
         );
         assert.equal(
-          germanLocalization.getEnglishString("Test", [
-            "NotExist",
-            "FirstTrivial",
-          ]),
+          germanLocalization.getEnglishString("Test", ["NotExist", "FirstTrivial"]),
           "First level string (test)"
         );
       });
@@ -2112,17 +1767,11 @@ describe("ITwinLocalization", () => {
 
       it("second level with no substitution with fallback keys", () => {
         assert.equal(
-          germanLocalization.getEnglishString("Default", [
-            "NotExist",
-            "SecondTrivial.Test1",
-          ]),
+          germanLocalization.getEnglishString("Default", ["NotExist", "SecondTrivial.Test1"]),
           "Second level string 1 (default)"
         );
         assert.equal(
-          germanLocalization.getEnglishString("Test", [
-            "SecondTrivial.Test2",
-            "NotExist",
-          ]),
+          germanLocalization.getEnglishString("Test", ["SecondTrivial.Test2", "NotExist"]),
           "Second level string 2 (test)"
         );
       });
@@ -2170,109 +1819,82 @@ describe("ITwinLocalization", () => {
 
       it("first level with substitution with fallback keys", () => {
         assert.equal(
-          germanLocalization.getEnglishString(
-            "Default",
-            ["NotExist", "FirstSubstitution1"],
-            { str: "CUSTOM1" }
-          ),
+          germanLocalization.getEnglishString("Default", ["NotExist", "FirstSubstitution1"], { str: "CUSTOM1" }),
           "First level CUSTOM1 (default)"
         );
         assert.equal(
-          germanLocalization.getEnglishString(
-            "Test",
-            ["FirstSubstitution1", "NotExist"],
-            { str: "CUSTOM2" }
-          ),
+          germanLocalization.getEnglishString("Test", ["FirstSubstitution1", "NotExist"], { str: "CUSTOM2" }),
           "First level CUSTOM2 (test)"
         );
         assert.equal(
-          germanLocalization.getEnglishString(
-            "Test",
-            ["NotExist", "FirstSubstitution2"],
-            { str1: "CUSTOM1", str2: "CUSTOM2" }
-          ),
+          germanLocalization.getEnglishString("Test", ["NotExist", "FirstSubstitution2"], {
+            str1: "CUSTOM1",
+            str2: "CUSTOM2",
+          }),
           "First level CUSTOM1 and CUSTOM2 (test)"
         );
       });
 
       it("second level with substitution", () => {
         assert.equal(
-          germanLocalization.getEnglishString(
-            "Default",
-            "SecondSubstitution.Test1",
-            { varA: "Variable1", varB: "Variable2" }
-          ),
+          germanLocalization.getEnglishString("Default", "SecondSubstitution.Test1", {
+            varA: "Variable1",
+            varB: "Variable2",
+          }),
           "Substitute Variable1 and Variable2 (default)"
         );
         assert.equal(
-          germanLocalization.getEnglishString(
-            "Default",
-            "SecondSubstitution.Test2",
-            { varA: "Variable1", varB: "Variable2" }
-          ),
+          germanLocalization.getEnglishString("Default", "SecondSubstitution.Test2", {
+            varA: "Variable1",
+            varB: "Variable2",
+          }),
           "Reverse substitute Variable2 and Variable1 (default)"
         );
         assert.equal(
-          germanLocalization.getEnglishString(
-            "Test",
-            "SecondSubstitution.Test1",
-            { varA: "Variable1", varB: "Variable2" }
-          ),
+          germanLocalization.getEnglishString("Test", "SecondSubstitution.Test1", {
+            varA: "Variable1",
+            varB: "Variable2",
+          }),
           "Substitute Variable1 and Variable2 (test)"
         );
         assert.equal(
-          germanLocalization.getEnglishString(
-            "Test",
-            "SecondSubstitution.Test2",
-            { varA: "Variable1", varB: "Variable2" }
-          ),
+          germanLocalization.getEnglishString("Test", "SecondSubstitution.Test2", {
+            varA: "Variable1",
+            varB: "Variable2",
+          }),
           "Reverse substitute Variable2 and Variable1 (test)"
         );
       });
 
       it("second level with substitution with fallback keys", () => {
         assert.equal(
-          germanLocalization.getEnglishString(
-            "Default",
-            ["NotExist", "SecondSubstitution.Test1"],
-            { varA: "Variable1", varB: "Variable2" }
-          ),
+          germanLocalization.getEnglishString("Default", ["NotExist", "SecondSubstitution.Test1"], {
+            varA: "Variable1",
+            varB: "Variable2",
+          }),
           "Substitute Variable1 and Variable2 (default)"
         );
         assert.equal(
-          germanLocalization.getEnglishString(
-            "Test",
-            ["SecondSubstitution.Test2", "NotExist"],
-            { varA: "Variable1", varB: "Variable2" }
-          ),
+          germanLocalization.getEnglishString("Test", ["SecondSubstitution.Test2", "NotExist"], {
+            varA: "Variable1",
+            varB: "Variable2",
+          }),
           "Reverse substitute Variable2 and Variable1 (test)"
         );
       });
 
       it("first level missing key doesn't find a value", () => {
-        assert.equal(
-          germanLocalization.getEnglishString("Default", "MissingKeyString"),
-          "MissingKeyString"
-        );
-        assert.equal(
-          germanLocalization.getEnglishString("Test", "MissingKeyString"),
-          "MissingKeyString"
-        );
+        assert.equal(germanLocalization.getEnglishString("Default", "MissingKeyString"), "MissingKeyString");
+        assert.equal(germanLocalization.getEnglishString("Test", "MissingKeyString"), "MissingKeyString");
       });
 
       it("second level missing key doesn't find a value", () => {
         assert.equal(
-          germanLocalization.getEnglishString(
-            "Test",
-            "SecondTrivial.MissingString"
-          ),
+          germanLocalization.getEnglishString("Test", "SecondTrivial.MissingString"),
           "SecondTrivial.MissingString"
         );
         assert.equal(
-          germanLocalization.getEnglishString(
-            "Test",
-            "MissingKeyObject.MissingString"
-          ),
+          germanLocalization.getEnglishString("Test", "MissingKeyObject.MissingString"),
           "MissingKeyObject.MissingString"
         );
       });
@@ -2280,36 +1902,18 @@ describe("ITwinLocalization", () => {
 
     describe("Nonexisting Namespace", () => {
       it("first level fails", () => {
-        assert.equal(
-          localization.getEnglishString("Nonexisting", "FirstTrivial"),
-          "FirstTrivial"
-        );
-        assert.equal(
-          localization.getEnglishString("Nonexisting", "MissingKeyString"),
-          "MissingKeyString"
-        );
+        assert.equal(localization.getEnglishString("Nonexisting", "FirstTrivial"), "FirstTrivial");
+        assert.equal(localization.getEnglishString("Nonexisting", "MissingKeyString"), "MissingKeyString");
       });
 
       it("second level fails", () => {
-        assert.equal(
-          localization.getEnglishString("Nonexisting", "SecondTrivial.Test1"),
-          "SecondTrivial.Test1"
-        );
-        assert.equal(
-          localization.getEnglishString("Nonexisting", "Missing.String"),
-          "Missing.String"
-        );
+        assert.equal(localization.getEnglishString("Nonexisting", "SecondTrivial.Test1"), "SecondTrivial.Test1");
+        assert.equal(localization.getEnglishString("Nonexisting", "Missing.String"), "Missing.String");
       });
 
       it("empty string namespace is treated as default namespace", () => {
-        assert.equal(
-          localization.getEnglishString("", "FirstTrivial"),
-          "First level string (default)"
-        );
-        assert.equal(
-          localization.getEnglishString("", "SecondTrivial.Test1"),
-          "Second level string 1 (default)"
-        );
+        assert.equal(localization.getEnglishString("", "FirstTrivial"), "First level string (default)");
+        assert.equal(localization.getEnglishString("", "SecondTrivial.Test1"), "Second level string 1 (default)");
       });
     });
 
@@ -2410,30 +2014,18 @@ describe("ITwinLocalization", () => {
       localization = new ITwinLocalization();
       await localization.initialize(["Default"]);
 
-      assert.equal(
-        localization.getLocalizedString("FirstTrivial"),
-        "First level string (default)"
-      ); // english
+      assert.equal(localization.getLocalizedString("FirstTrivial"), "First level string (default)"); // english
       await localization.changeLanguage("de");
-      assert.equal(
-        localization.getLocalizedString("FirstTrivial"),
-        "First level string (default german)"
-      ); // german
+      assert.equal(localization.getLocalizedString("FirstTrivial"), "First level string (default german)"); // german
     });
 
     it("change from another language to english", async () => {
       localization = new ITwinLocalization({ initOptions: { lng: "de" } });
       await localization.initialize(["Default"]);
 
-      assert.equal(
-        localization.getLocalizedString("FirstTrivial"),
-        "First level string (default german)"
-      ); // german
+      assert.equal(localization.getLocalizedString("FirstTrivial"), "First level string (default german)"); // german
       await localization.changeLanguage("en");
-      assert.equal(
-        localization.getLocalizedString("FirstTrivial"),
-        "First level string (default)"
-      ); // english
+      assert.equal(localization.getLocalizedString("FirstTrivial"), "First level string (default)"); // english
     });
   });
 
@@ -2450,10 +2042,7 @@ describe("ITwinLocalization", () => {
       await itwinLocalization.registerNamespace("Test");
 
       assert.isTrue(itwinLocalization.i18next.hasLoadedNamespace("Test"));
-      assert.equal(
-        itwinLocalization.getLocalizedString("Test:FirstTrivial"),
-        "First level string (test)"
-      );
+      assert.equal(itwinLocalization.getLocalizedString("Test:FirstTrivial"), "First level string (test)");
     });
 
     it("zero initial, register one", async () => {
@@ -2522,10 +2111,7 @@ describe("ITwinLocalization", () => {
       await itwinLocalization.registerNamespace("Test");
 
       assert.isTrue(itwinLocalization.i18next.hasLoadedNamespace("Test"));
-      assert.equal(
-        itwinLocalization.getLocalizedString("Test:FirstTrivial"),
-        "First level string (test)"
-      );
+      assert.equal(itwinLocalization.getLocalizedString("Test:FirstTrivial"), "First level string (test)");
     });
 
     it("register duplicate namespace of initial namespace doesn't break anything", async () => {
@@ -2534,10 +2120,7 @@ describe("ITwinLocalization", () => {
       await itwinLocalization.registerNamespace("Test");
 
       assert.isTrue(itwinLocalization.i18next.hasLoadedNamespace("Test"));
-      assert.equal(
-        itwinLocalization.getLocalizedString("Test:FirstTrivial"),
-        "First level string (test)"
-      );
+      assert.equal(itwinLocalization.getLocalizedString("Test:FirstTrivial"), "First level string (test)");
     });
   });
 

@@ -101,10 +101,7 @@ export class ModelState extends EntityState implements ModelProps {
  * @public
  * @extensions
  */
-export abstract class GeometricModelState
-  extends ModelState
-  implements GeometricModelProps
-{
+export abstract class GeometricModelState extends ModelState implements GeometricModelProps {
   public static override get className() {
     return "GeometricModel";
   }
@@ -113,11 +110,7 @@ export abstract class GeometricModelState
 
   private _modelRange?: Range3d;
 
-  constructor(
-    props: GeometricModelProps,
-    iModel: IModelConnection,
-    state?: GeometricModelState
-  ) {
+  constructor(props: GeometricModelProps, iModel: IModelConnection, state?: GeometricModelState) {
     super(props, iModel, state);
     this.geometryGuid = props.geometryGuid;
   }
@@ -162,12 +155,10 @@ export abstract class GeometricModelState
     const spatialModel = this.asSpatialModel;
     const rdSourceKey = this.jsonProperties.rdSourceKey;
     const getDisplaySettings = () =>
-      view.displayStyle.settings.getRealityModelDisplaySettings(this.id) ??
-      RealityModelDisplaySettings.defaults;
+      view.displayStyle.settings.getRealityModelDisplaySettings(this.id) ?? RealityModelDisplaySettings.defaults;
 
     if (rdSourceKey) {
-      const useOrbitGtTileTreeReference =
-        rdSourceKey.format === RealityDataFormat.OPC;
+      const useOrbitGtTileTreeReference = rdSourceKey.format === RealityDataFormat.OPC;
       const treeRef = !useOrbitGtTileTreeReference
         ? createRealityTileTreeReference({
             rdSourceKey,
@@ -175,8 +166,7 @@ export abstract class GeometricModelState
             source: view,
             modelId: this.id,
             // url: tilesetUrl, // If rdSourceKey is defined, url is not used
-            classifiers:
-              undefined !== spatialModel ? spatialModel.classifiers : undefined,
+            classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
             getDisplaySettings,
           })
         : createOrbitGtTileTreeReference({
@@ -185,8 +175,7 @@ export abstract class GeometricModelState
             source: view,
             modelId: this.id,
             // orbitGtBlob: props.orbitGtBlob!, // If rdSourceKey is defined, orbitGtBlob is not used
-            classifiers:
-              undefined !== spatialModel ? spatialModel.classifiers : undefined,
+            classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
             getDisplaySettings,
           });
       return treeRef;
@@ -198,13 +187,11 @@ export abstract class GeometricModelState
     if (orbitGtBlob) {
       let orbitGtName = "";
       if (orbitGtBlob.blobFileName !== "") {
-        if (orbitGtBlob.blobFileName[0] === "/")
-          orbitGtName = orbitGtBlob.blobFileName.substring(1);
+        if (orbitGtBlob.blobFileName[0] === "/") orbitGtName = orbitGtBlob.blobFileName.substring(1);
         else orbitGtName = orbitGtBlob.blobFileName;
       }
       // Create rdSourceKey if not provided
-      const rdSourceKeyOGT: RealityDataSourceKey =
-        RealityDataSource.createKeyFromOrbitGtBlobProps(orbitGtBlob);
+      const rdSourceKeyOGT: RealityDataSourceKey = RealityDataSource.createKeyFromOrbitGtBlobProps(orbitGtBlob);
 
       return createOrbitGtTileTreeReference({
         rdSourceKey: rdSourceKeyOGT,
@@ -213,8 +200,7 @@ export abstract class GeometricModelState
         modelId: this.id,
         orbitGtBlob,
         name: orbitGtName,
-        classifiers:
-          undefined !== spatialModel ? spatialModel.classifiers : undefined,
+        classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
         getDisplaySettings,
       });
     }
@@ -231,8 +217,7 @@ export abstract class GeometricModelState
         source: view,
         modelId: this.id,
         tilesetToDbTransform: this.jsonProperties.tilesetToDbTransform,
-        classifiers:
-          undefined !== spatialModel ? spatialModel.classifiers : undefined,
+        classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
         getDisplaySettings,
       });
     }
@@ -244,21 +229,14 @@ export abstract class GeometricModelState
  * @public
  * @extensions
  */
-export class GeometricModel2dState
-  extends GeometricModelState
-  implements GeometricModel2dProps
-{
+export class GeometricModel2dState extends GeometricModelState implements GeometricModel2dProps {
   public static override get className() {
     return "GeometricModel2d";
   }
   /** @internal */
   public readonly globalOrigin: Point2d;
 
-  constructor(
-    props: GeometricModel2dProps,
-    iModel: IModelConnection,
-    state?: GeometricModel2dState
-  ) {
+  constructor(props: GeometricModel2dProps, iModel: IModelConnection, state?: GeometricModel2dState) {
     super(props, iModel, state);
     this.globalOrigin = Point2d.fromJSON(props.globalOrigin);
   }
@@ -288,11 +266,7 @@ export class GeometricModel3dState extends GeometricModelState {
     return "GeometricModel3d";
   }
 
-  constructor(
-    props: GeometricModel3dProps,
-    iModel: IModelConnection,
-    state?: GeometricModel3dState
-  ) {
+  constructor(props: GeometricModel3dProps, iModel: IModelConnection, state?: GeometricModel3dState) {
     super(props, iModel, state);
     this.isNotSpatiallyLocated = JsonUtils.asBool(props.isNotSpatiallyLocated);
     this.isPlanProjection = JsonUtils.asBool(props.isPlanProjection);
@@ -359,14 +333,9 @@ export class SpatialModelState extends GeometricModel3dState {
     return this;
   }
 
-  public constructor(
-    props: ModelProps,
-    iModel: IModelConnection,
-    state?: SpatialModelState
-  ) {
+  public constructor(props: ModelProps, iModel: IModelConnection, state?: SpatialModelState) {
     super(props, iModel, state);
-    if (this.isRealityModel)
-      this.classifiers = new SpatialClassifiers(this.jsonProperties);
+    if (this.isRealityModel) this.classifiers = new SpatialClassifiers(this.jsonProperties);
   }
   /** Return true if this is a reality model (represented by a 3d tile set). */
   public get isRealityModel(): boolean {

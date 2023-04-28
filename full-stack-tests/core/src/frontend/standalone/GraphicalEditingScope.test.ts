@@ -5,22 +5,9 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
-import {
-  BeDuration,
-  compareStrings,
-  DbOpcode,
-  Guid,
-  Id64String,
-  OpenMode,
-  ProcessDetector,
-} from "@itwin/core-bentley";
+import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import {
-  BatchType,
-  ChangedEntities,
-  ElementGeometryChange,
-  IModelError,
-} from "@itwin/core-common";
+import { BatchType, ChangedEntities, ElementGeometryChange, IModelError } from "@itwin/core-common";
 import {
   BriefcaseConnection,
   GeometricModel3dState,
@@ -58,10 +45,7 @@ describe("GraphicalEditingScope", () => {
   if (!ProcessDetector.isMobileAppFrontend) {
     let imodel: BriefcaseConnection | undefined;
     // Editable; BisCore version < 1.0.11
-    const oldFilePath = path.join(
-      process.env.IMODELJS_CORE_DIRNAME!,
-      "core/backend/lib/cjs/test/assets/test.bim"
-    );
+    const oldFilePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/test.bim");
     // Editable; BisCore version == 1.0.11
     const newFilePath = path.join(
       process.env.IMODELJS_CORE_DIRNAME!,
@@ -90,10 +74,7 @@ describe("GraphicalEditingScope", () => {
     });
 
     it("should not be supported for read-only connections", async () => {
-      imodel = await BriefcaseConnection.openStandalone(
-        oldFilePath,
-        OpenMode.Readonly
-      );
+      imodel = await BriefcaseConnection.openStandalone(oldFilePath, OpenMode.Readonly);
       expect(imodel.openMode).to.equal(OpenMode.Readonly);
       expect(await imodel.supportsGraphicalEditing()).to.be.false;
       await expect(imodel.enterEditingScope()).to.be.rejectedWith(IModelError);
@@ -107,20 +88,14 @@ describe("GraphicalEditingScope", () => {
     });
 
     it("should not be supported for read-only iModels with BisCore >= 1.0.11", async () => {
-      imodel = await BriefcaseConnection.openStandalone(
-        newFilePath,
-        OpenMode.Readonly
-      );
+      imodel = await BriefcaseConnection.openStandalone(newFilePath, OpenMode.Readonly);
       expect(imodel.openMode).to.equal(OpenMode.Readonly);
       expect(await imodel.supportsGraphicalEditing()).to.be.false;
       await expect(imodel.enterEditingScope()).to.be.rejectedWith(IModelError);
     });
 
     it("should be supported for writable iModels with BisCore >= 1.0.11", async () => {
-      imodel = await BriefcaseConnection.openStandalone(
-        newFilePath,
-        OpenMode.ReadWrite
-      );
+      imodel = await BriefcaseConnection.openStandalone(newFilePath, OpenMode.ReadWrite);
       expect(imodel.openMode).to.equal(OpenMode.ReadWrite);
       expect(await imodel.supportsGraphicalEditing()).to.be.true;
       const scope = await imodel.enterEditingScope();
@@ -131,10 +106,7 @@ describe("GraphicalEditingScope", () => {
 
     async function openWritable(): Promise<BriefcaseConnection> {
       expect(imodel).to.be.undefined;
-      return BriefcaseConnection.openStandalone(
-        newFilePath,
-        OpenMode.ReadWrite
-      );
+      return BriefcaseConnection.openStandalone(newFilePath, OpenMode.ReadWrite);
     }
 
     it("throws if enter is called repeatedly", async () => {
@@ -169,18 +141,14 @@ describe("GraphicalEditingScope", () => {
       imodel = await openWritable();
 
       let beginCount = 0;
-      const removeBeginListener = GraphicalEditingScope.onEnter.addListener(
-        () => ++beginCount
-      );
+      const removeBeginListener = GraphicalEditingScope.onEnter.addListener(() => ++beginCount);
 
       const scope = await imodel.enterEditingScope();
       expect(beginCount).to.equal(1);
 
       let endingCount = 0;
       let endCount = 0;
-      const removeEndingListener = scope.onExiting.addListener(
-        () => ++endingCount
-      );
+      const removeEndingListener = scope.onExiting.addListener(() => ++endingCount);
       const removeEndListener = scope.onExited.addListener(() => ++endCount);
 
       const endPromise = scope.exit();
@@ -199,20 +167,15 @@ describe("GraphicalEditingScope", () => {
       imodel = await openWritable();
       const modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(
         imodel.key,
-        await makeModelCode(
-          imodel,
-          imodel.models.repositoryModelId,
-          Guid.createValue()
-        )
+        await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())
       );
       const dictModelId = await imodel.models.getDictionaryModel();
-      const category =
-        await coreFullStackTestIpc.createAndInsertSpatialCategory(
-          imodel.key,
-          dictModelId,
-          Guid.createValue(),
-          { color: 0 }
-        );
+      const category = await coreFullStackTestIpc.createAndInsertSpatialCategory(
+        imodel.key,
+        dictModelId,
+        Guid.createValue(),
+        { color: 0 }
+      );
       await imodel.saveChanges();
 
       // Enter an editing scope.
@@ -223,16 +186,11 @@ describe("GraphicalEditingScope", () => {
         changedElements = ch;
       });
 
-      function expectChanges(
-        expected: ElementGeometryChange[],
-        compareRange = false
-      ): void {
+      function expectChanges(expected: ElementGeometryChange[], compareRange = false): void {
         const changes = scope.getGeometryChangesForModel(modelId);
         expect(undefined === changes).to.equal(expected.length === 0);
         if (changes) {
-          const actual = Array.from(changes).sort((x, y) =>
-            compareStrings(x.id, y.id)
-          );
+          const actual = Array.from(changes).sort((x, y) => compareStrings(x.id, y.id));
           if (compareRange) {
             expect(actual).to.deep.equal(expected);
           } else {
@@ -257,36 +215,20 @@ describe("GraphicalEditingScope", () => {
       expect(changedElements!.inserted).to.not.be.undefined;
 
       // Modify the line element.
-      await transformElements(
-        imodel,
-        [elem1],
-        Transform.createTranslationXYZ(1, 0, 0)
-      );
+      await transformElements(imodel, [elem1], Transform.createTranslationXYZ(1, 0, 0));
       const updateElem1 = makeUpdate(elem1);
       await imodel.saveChanges();
       expectChanges([updateElem1]);
 
       // Modify the line element twice.
-      await transformElements(
-        imodel,
-        [elem1],
-        Transform.createTranslationXYZ(0, 1, 0)
-      );
-      await transformElements(
-        imodel,
-        [elem1],
-        Transform.createTranslationXYZ(-1, 0, 0)
-      );
+      await transformElements(imodel, [elem1], Transform.createTranslationXYZ(0, 1, 0));
+      await transformElements(imodel, [elem1], Transform.createTranslationXYZ(-1, 0, 0));
       await imodel.saveChanges();
       expectChanges([updateElem1]);
 
       // Insert a new line element, modify both elements, then delete the old line element.
       const elem2 = await insertLineElement(imodel, modelId, category);
-      await transformElements(
-        imodel,
-        [elem1, elem2],
-        Transform.createTranslationXYZ(0, 0, 1)
-      );
+      await transformElements(imodel, [elem1, elem2], Transform.createTranslationXYZ(0, 0, 1));
       await deleteElements(imodel, [elem1]);
       const deleteElem1 = makeDelete(elem1);
       const insertElem2 = makeInsert(elem2);
@@ -335,20 +277,15 @@ describe("GraphicalEditingScope", () => {
       // Initial geometric model contains one line element.
       const modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(
         imodel.key,
-        await makeModelCode(
-          imodel,
-          imodel.models.repositoryModelId,
-          Guid.createValue()
-        )
+        await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())
       );
       const dictModelId = await imodel.models.getDictionaryModel();
-      const category =
-        await coreFullStackTestIpc.createAndInsertSpatialCategory(
-          imodel.key,
-          dictModelId,
-          Guid.createValue(),
-          { color: 0 }
-        );
+      const category = await coreFullStackTestIpc.createAndInsertSpatialCategory(
+        imodel.key,
+        dictModelId,
+        Guid.createValue(),
+        { color: 0 }
+      );
       const elem1 = await insertLineElement(
         imodel,
         modelId,
@@ -415,13 +352,9 @@ describe("GraphicalEditingScope", () => {
         for (const t of treeList) {
           expect(t.tileState).to.equal(expectedState);
           expect(t.hiddenElements.length).to.equal(expectedHiddenElementCount);
-          expect(t.rootTile.range.isAlmostEqual(expectedRange, rangeTolerance))
-            .to.be.true;
-          expect(
-            t.rootTile.contentRange.isAlmostEqual(expectedRange, rangeTolerance)
-          ).to.be.true;
-          expect(t.contentRange!.isAlmostEqual(expectedRange, rangeTolerance))
-            .to.be.true;
+          expect(t.rootTile.range.isAlmostEqual(expectedRange, rangeTolerance)).to.be.true;
+          expect(t.rootTile.contentRange.isAlmostEqual(expectedRange, rangeTolerance)).to.be.true;
+          expect(t.contentRange!.isAlmostEqual(expectedRange, rangeTolerance)).to.be.true;
         }
       };
 
@@ -458,11 +391,7 @@ describe("GraphicalEditingScope", () => {
       await expectTreeState(trees, "dynamic", 0, range2);
 
       // Modify an element.
-      await transformElements(
-        imodel,
-        [elem1],
-        Transform.createTranslationXYZ(0, 5, 0)
-      );
+      await transformElements(imodel, [elem1], Transform.createTranslationXYZ(0, 5, 0));
       await imodel.saveChanges();
 
       const range3 = range2.clone();

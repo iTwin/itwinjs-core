@@ -3,18 +3,8 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import {
-  Compiler,
-  Configuration,
-  DefinePlugin,
-  ExternalsPlugin,
-  RuleSetRule,
-  WebpackOptionsNormalized,
-} from "webpack";
-import {
-  CopyAppAssetsPlugin,
-  CopyStaticAssetsPlugin,
-} from "./CopyBentleyStaticResourcesPlugin";
+import { Compiler, Configuration, DefinePlugin, ExternalsPlugin, RuleSetRule, WebpackOptionsNormalized } from "webpack";
+import { CopyAppAssetsPlugin, CopyStaticAssetsPlugin } from "./CopyBentleyStaticResourcesPlugin";
 import { CopyExternalsPlugin } from "./CopyExternalsPlugin";
 import { IgnoreOptionalDependenciesPlugin } from "./OptionalDependenciesPlugin";
 import {
@@ -25,9 +15,7 @@ import {
   RequireMagicCommentsPlugin,
 } from "./RequireMagicCommentsPlugin";
 
-const isProductionLikeMode = (
-  options: Configuration | WebpackOptionsNormalized
-) => {
+const isProductionLikeMode = (options: Configuration | WebpackOptionsNormalized) => {
   return options.mode === "production" || !options.mode;
 };
 
@@ -71,29 +59,18 @@ export class BackendDefaultsPlugin {
       copyFilesRule,
     ];
 
-    compiler.options.output.devtoolModuleFilenameTemplate = (
-      value: any,
-      options: Configuration
-    ) => {
+    compiler.options.output.devtoolModuleFilenameTemplate = (value: any, options: Configuration) => {
       if (value) return value;
 
       if (isProductionLikeMode(options))
         return (info: any) =>
-          path
-            .relative(
-              options.output?.path || process.cwd(),
-              info.absoluteResourcePath
-            )
-            .replace(/\\/g, "/");
+          path.relative(options.output?.path || process.cwd(), info.absoluteResourcePath).replace(/\\/g, "/");
 
       return (info: any) => info.absoluteResourcePath.replace(/\\/g, "/");
     };
 
-    if (compiler.options.ignoreWarnings === undefined)
-      compiler.options.ignoreWarnings = [];
-    compiler.options.ignoreWarnings.push((warn) =>
-      /Failed to parse source map/.test(warn.message)
-    );
+    if (compiler.options.ignoreWarnings === undefined) compiler.options.ignoreWarnings = [];
+    compiler.options.ignoreWarnings.push((warn) => /Failed to parse source map/.test(warn.message));
 
     // Add default plugins
     const plugins = [

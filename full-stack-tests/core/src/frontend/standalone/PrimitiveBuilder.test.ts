@@ -84,8 +84,7 @@ describe("PrimitiveBuilder", () => {
     assert(arcGeom !== undefined);
     if (arcGeom === undefined) return;
 
-    let strokesPrimList: StrokesPrimitiveList | undefined =
-      arcGeom.getStrokes(0.22);
+    let strokesPrimList: StrokesPrimitiveList | undefined = arcGeom.getStrokes(0.22);
 
     assert(strokesPrimList !== undefined);
     if (strokesPrimList === undefined) return;
@@ -97,8 +96,7 @@ describe("PrimitiveBuilder", () => {
 
     // check that first and last point of stroking match first and last point of original points
     expect(strks.points[0].isAlmostEqual(pointA)).to.be.true;
-    expect(strks.points[strks.points.length - 1].isAlmostEqual(pointC)).to.be
-      .true;
+    expect(strks.points[strks.points.length - 1].isAlmostEqual(pointC)).to.be.true;
     const numPointsA = strks.points.length;
 
     strokesPrimList = arcGeom.getStrokes(0.12);
@@ -113,8 +111,7 @@ describe("PrimitiveBuilder", () => {
 
     // check that first and last point of stroking match first and last point of original points
     expect(strks.points[0].isAlmostEqual(pointA)).to.be.true;
-    expect(strks.points[strks.points.length - 1].isAlmostEqual(pointC)).to.be
-      .true;
+    expect(strks.points[strks.points.length - 1].isAlmostEqual(pointC)).to.be.true;
     const numPointsB = strks.points.length;
 
     expect(numPointsA).to.be.lessThan(numPointsB);
@@ -145,8 +142,7 @@ describe("PrimitiveBuilder", () => {
     assert(firstGeom !== undefined);
     if (firstGeom === undefined) return;
 
-    let strokesPrimList: StrokesPrimitiveList | undefined =
-      firstGeom.getStrokes(0.22);
+    let strokesPrimList: StrokesPrimitiveList | undefined = firstGeom.getStrokes(0.22);
     assert(strokesPrimList === undefined);
 
     strokesPrimList = firstGeom.getStrokes(0.12);
@@ -169,8 +165,7 @@ describe("PrimitiveBuilder", () => {
     assert(arcGeom !== undefined);
     if (arcGeom === undefined) return;
 
-    let strokesPrimList: StrokesPrimitiveList | undefined =
-      arcGeom.getStrokes(0.22);
+    let strokesPrimList: StrokesPrimitiveList | undefined = arcGeom.getStrokes(0.22);
     assert(strokesPrimList === undefined || strokesPrimList.length === 0);
 
     strokesPrimList = arcGeom.getStrokes(0.12);
@@ -193,8 +188,7 @@ describe("PrimitiveBuilder", () => {
     assert(arcGeom !== undefined);
     if (arcGeom === undefined) return;
 
-    let strokesPrimList: StrokesPrimitiveList | undefined =
-      arcGeom.getStrokes(0.22);
+    let strokesPrimList: StrokesPrimitiveList | undefined = arcGeom.getStrokes(0.22);
     assert(strokesPrimList === undefined || strokesPrimList.length === 0);
 
     strokesPrimList = arcGeom.getStrokes(0.12);
@@ -220,8 +214,7 @@ describe("PrimitiveBuilder", () => {
     assert(pointGeom !== undefined);
     if (pointGeom === undefined) return;
 
-    let strokesPrimList: StrokesPrimitiveList | undefined =
-      pointGeom.getStrokes(0.0);
+    let strokesPrimList: StrokesPrimitiveList | undefined = pointGeom.getStrokes(0.0);
 
     assert(strokesPrimList !== undefined);
     if (strokesPrimList === undefined) return;
@@ -275,8 +268,7 @@ describe("PrimitiveBuilder", () => {
     assert(pointGeom !== undefined);
     if (pointGeom === undefined) return;
 
-    let strokesPrimList: StrokesPrimitiveList | undefined =
-      pointGeom.getStrokes(0.0);
+    let strokesPrimList: StrokesPrimitiveList | undefined = pointGeom.getStrokes(0.0);
 
     assert(strokesPrimList !== undefined);
     if (strokesPrimList === undefined) return;
@@ -330,8 +322,7 @@ describe("PrimitiveBuilder", () => {
     assert(pointGeom !== undefined);
     if (pointGeom === undefined) return;
 
-    let strokesPrimList: StrokesPrimitiveList | undefined =
-      pointGeom.getStrokes(0.0);
+    let strokesPrimList: StrokesPrimitiveList | undefined = pointGeom.getStrokes(0.0);
 
     assert(strokesPrimList !== undefined);
     if (strokesPrimList === undefined) return;
@@ -342,8 +333,7 @@ describe("PrimitiveBuilder", () => {
     let strks: StrokesPrimitivePointList = strksPrims[0];
 
     // check that points of stroking match points of original points
-    expect(strks.points[0].isAlmostEqual(Point3d.create(-100, 0, 5))).to.be
-      .true;
+    expect(strks.points[0].isAlmostEqual(Point3d.create(-100, 0, 5))).to.be.true;
     expect(strks.points[1].isAlmostEqual(Point3d.create(0, 100, 5))).to.be.true;
     expect(strks.points[2].isAlmostEqual(Point3d.create(100, 0, 5))).to.be.true;
     const numPointsA = strks.points.length;
@@ -359,8 +349,7 @@ describe("PrimitiveBuilder", () => {
     strks = strksPrims[0];
 
     // check that first and last point of stroking match first and last point of original points
-    expect(strks.points[0].isAlmostEqual(Point3d.create(-100, 0, 5))).to.be
-      .true;
+    expect(strks.points[0].isAlmostEqual(Point3d.create(-100, 0, 5))).to.be.true;
     expect(strks.points[1].isAlmostEqual(Point3d.create(0, 100, 5))).to.be.true;
     expect(strks.points[2].isAlmostEqual(Point3d.create(100, 0, 5))).to.be.true;
     const numPointsB = strks.points.length;
@@ -378,10 +367,7 @@ describe("PrimitiveBuilder", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(
-      gfParams,
-      false
-    );
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
@@ -412,14 +398,9 @@ describe("PrimitiveBuilder", () => {
 
     const gfParams2: GraphicParams = new GraphicParams();
     gfParams2.lineColor = ColorDef.white;
-    const displayParams2: DisplayParams =
-      DisplayParams.createForLinear(gfParams2);
+    const displayParams2: DisplayParams = DisplayParams.createForLinear(gfParams2);
 
-    accum.addPolyface(
-      loopGeom.getPolyfaces(0.22)![0].indexedPolyface,
-      displayParams,
-      Transform.createIdentity()
-    );
+    accum.addPolyface(loopGeom.getPolyfaces(0.22)![0].indexedPolyface, displayParams, Transform.createIdentity());
     accum.addPath(pth, displayParams2, Transform.createIdentity(), false);
 
     const graphic = primBuilder.finishGraphic(accum);

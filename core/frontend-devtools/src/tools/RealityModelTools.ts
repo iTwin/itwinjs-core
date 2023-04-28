@@ -7,11 +7,7 @@
  * @module Tools
  */
 
-import {
-  FeatureAppearance,
-  FeatureAppearanceProps,
-  RgbColorProps,
-} from "@itwin/core-common";
+import { FeatureAppearance, FeatureAppearanceProps, RgbColorProps } from "@itwin/core-common";
 import {
   getCesiumAssetUrl,
   IModelApp,
@@ -46,19 +42,13 @@ export class AttachRealityModelTool extends Tool {
 
     if (props === undefined || props.tilesetUrl === undefined) {
       IModelApp.notifications.outputMessage(
-        new NotifyMessageDetails(
-          OutputMessagePriority.Error,
-          `Properties ${props} are not valid`
-        )
+        new NotifyMessageDetails(OutputMessagePriority.Error, `Properties ${props} are not valid`)
       );
     }
 
     vp.displayStyle.attachRealityModel(props);
     IModelApp.notifications.outputMessage(
-      new NotifyMessageDetails(
-        OutputMessagePriority.Info,
-        `Reality Model ${props.tilesetUrl} attached`
-      )
+      new NotifyMessageDetails(OutputMessagePriority.Info, `Reality Model ${props.tilesetUrl} attached`)
     );
 
     return true;
@@ -93,10 +83,7 @@ export class SaveRealityModelTool extends Tool {
       if (name === undefined || realityModel.name === name) {
         copyStringToClipboard(JSON.stringify(realityModel.toJSON()));
         IModelApp.notifications.outputMessage(
-          new NotifyMessageDetails(
-            OutputMessagePriority.Info,
-            `Reality Model ${realityModel.name} copied to clipboard`
-          )
+          new NotifyMessageDetails(OutputMessagePriority.Info, `Reality Model ${realityModel.name} copied to clipboard`)
         );
       }
     });
@@ -151,26 +138,17 @@ export class SetRealityModelTransparencyTool extends Tool {
     return 2;
   }
 
-  public override async run(
-    transparency: number,
-    index: number
-  ): Promise<boolean> {
+  public override async run(transparency: number, index: number): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (vp === undefined) return false;
 
-    const changed = changeRealityModelAppearanceOverrides(
-      vp,
-      { transparency },
-      index
-    );
+    const changed = changeRealityModelAppearanceOverrides(vp, { transparency }, index);
 
     if (changed)
       IModelApp.notifications.outputMessage(
         new NotifyMessageDetails(
           OutputMessagePriority.Info,
-          `${appearanceChangedString(
-            index
-          )} set to transparency: ${transparency}`
+          `${appearanceChangedString(index)} set to transparency: ${transparency}`
         )
       );
 
@@ -178,10 +156,7 @@ export class SetRealityModelTransparencyTool extends Tool {
   }
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
-    return this.run(
-      parseFloat(args[0]),
-      args.length > 1 ? parseInt(args[1], 10) : -1
-    );
+    return this.run(parseFloat(args[0]), args.length > 1 ? parseInt(args[1], 10) : -1);
   }
 }
 /** Set reality model appearance override for locatable in display style.
@@ -201,11 +176,7 @@ export class SetRealityModelLocateTool extends Tool {
     if (vp === undefined) return false;
 
     const nonLocatable = locate ? undefined : true;
-    const changed = changeRealityModelAppearanceOverrides(
-      vp,
-      { nonLocatable },
-      index
-    );
+    const changed = changeRealityModelAppearanceOverrides(vp, { nonLocatable }, index);
 
     if (changed)
       IModelApp.notifications.outputMessage(
@@ -220,9 +191,7 @@ export class SetRealityModelLocateTool extends Tool {
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     const locate = parseBoolean(args[0]);
-    return locate === undefined
-      ? false
-      : this.run(locate, args.length > 1 ? parseInt(args[1], 10) : -1);
+    return locate === undefined ? false : this.run(locate, args.length > 1 ? parseInt(args[1], 10) : -1);
   }
 }
 
@@ -238,18 +207,11 @@ export class SetRealityModelEmphasizedTool extends Tool {
     return 2;
   }
 
-  public override async run(
-    emphasized: true | undefined,
-    index: number
-  ): Promise<boolean> {
+  public override async run(emphasized: true | undefined, index: number): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (vp === undefined) return false;
 
-    const changed = changeRealityModelAppearanceOverrides(
-      vp,
-      { emphasized },
-      index
-    );
+    const changed = changeRealityModelAppearanceOverrides(vp, { emphasized }, index);
 
     if (changed)
       IModelApp.notifications.outputMessage(
@@ -266,10 +228,7 @@ export class SetRealityModelEmphasizedTool extends Tool {
     const emphasized = parseBoolean(args[0]);
     return emphasized === undefined
       ? false
-      : this.run(
-          emphasized ? true : undefined,
-          args.length > 1 ? parseInt(args[1], 10) : -1
-        );
+      : this.run(emphasized ? true : undefined, args.length > 1 ? parseInt(args[1], 10) : -1);
   }
 }
 
@@ -320,10 +279,7 @@ export class SetRealityModelColorTool extends Tool {
     return 4;
   }
 
-  public override async run(
-    rgb: RgbColorProps,
-    index: number
-  ): Promise<boolean> {
+  public override async run(rgb: RgbColorProps, index: number): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (vp === undefined) return false;
 
@@ -333,9 +289,7 @@ export class SetRealityModelColorTool extends Tool {
       IModelApp.notifications.outputMessage(
         new NotifyMessageDetails(
           OutputMessagePriority.Info,
-          `${appearanceChangedString(index)} set to RGB color: (${rgb.r}, ${
-            rgb.g
-          }, ${rgb.b})`
+          `${appearanceChangedString(index)} set to RGB color: (${rgb.r}, ${rgb.g}, ${rgb.b})`
         )
       );
 
@@ -394,10 +348,7 @@ export class AttachCesiumAssetTool extends Tool {
     return 2;
   }
 
-  public override async run(
-    assetId: number,
-    requestKey: string
-  ): Promise<boolean> {
+  public override async run(assetId: number, requestKey: string): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (vp === undefined) return false;
 
@@ -416,10 +367,7 @@ export class AttachCesiumAssetTool extends Tool {
 
     vp.displayStyle.attachRealityModel(props);
     IModelApp.notifications.outputMessage(
-      new NotifyMessageDetails(
-        OutputMessagePriority.Info,
-        `Cesium Asset #${assetId} attached`
-      )
+      new NotifyMessageDetails(OutputMessagePriority.Info, `Cesium Asset #${assetId} attached`)
     );
     return true;
   }
@@ -442,15 +390,11 @@ export class ToggleOSMBuildingDisplay extends Tool {
     return 2;
   }
 
-  public override async run(
-    onOff?: boolean,
-    transparency?: number
-  ): Promise<boolean> {
+  public override async run(onOff?: boolean, transparency?: number): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (vp === undefined) return false;
 
-    if (onOff === undefined)
-      onOff = undefined === vp.displayStyle.getOSMBuildingRealityModel(); // Toggle current state.
+    if (onOff === undefined) onOff = undefined === vp.displayStyle.getOSMBuildingRealityModel(); // Toggle current state.
 
     const appearanceOverrides =
       transparency !== undefined && transparency > 0 && transparency < 1

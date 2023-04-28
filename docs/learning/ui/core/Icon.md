@@ -7,8 +7,7 @@ When the IconSpec is a string, the value is either a Webfont symbol name or a fo
 When using an SVG, we use the web component svg-loader to load the SVG from its path. This web component is defined in UiCore.initialize() as follows:
 
 ```tsx
-if (window.customElements.get("svg-loader") === undefined)
-  window.customElements.define("svg-loader", IconWebComponent);
+if (window.customElements.get("svg-loader") === undefined) window.customElements.define("svg-loader", IconWebComponent);
 ```
 
 If your app does not initialize UiFramework or UiCore, you'll need to define this custom element to use the svg-loader.

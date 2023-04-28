@@ -9,9 +9,7 @@ import { SelectTool } from "@itwin/core-markup";
 async function getSvgFile(uri: string): Promise<string> {
   const xhr = new XMLHttpRequest();
   xhr.open("GET", uri);
-  const loaded = new Promise((resolve) =>
-    xhr.addEventListener("load", resolve)
-  );
+  const loaded = new Promise((resolve) => xhr.addEventListener("load", resolve));
   xhr.send();
   await loaded;
   return xhr.responseText;
@@ -19,12 +17,8 @@ async function getSvgFile(uri: string): Promise<string> {
 
 export class MarkupSelectTestTool extends SelectTool {
   public static override toolId = "Markup.TestSelect";
-  public override async onKeyTransition(
-    wentDown: boolean,
-    key: KeyboardEvent
-  ): Promise<EventHandled> {
-    if (EventHandled.Yes === (await super.onKeyTransition(wentDown, key)))
-      return EventHandled.Yes;
+  public override async onKeyTransition(wentDown: boolean, key: KeyboardEvent): Promise<EventHandled> {
+    if (EventHandled.Yes === (await super.onKeyTransition(wentDown, key))) return EventHandled.Yes;
     if (!wentDown) return EventHandled.No;
     const tools = IModelApp.tools;
     switch (key.key.toLowerCase()) {

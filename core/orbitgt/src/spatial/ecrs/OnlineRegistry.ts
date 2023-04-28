@@ -69,26 +69,15 @@ export class OnlineRegistry {
     let crs: CRS = Registry.getCRS(epsgCode);
     if (crs != null) return crs;
     /* Download the declaration */
-    Message.print(
-      OnlineRegistry.MODULE,
-      "Requesting online crs '" + epsgCode + "'"
-    );
-    let downloadURL: string = Strings.replace(
-      this._urlTemplate,
-      "[epsgCode]",
-      "" + epsgCode
-    );
+    Message.print(OnlineRegistry.MODULE, "Requesting online crs '" + epsgCode + "'");
+    let downloadURL: string = Strings.replace(this._urlTemplate, "[epsgCode]", "" + epsgCode);
     let wkt: string = await Downloader.INSTANCE.downloadText2(downloadURL);
     if (wkt == null) {
       Message.print(OnlineRegistry.MODULE, "No WKT response");
       return null;
     }
     /* Try to parse the WKT */
-    crs = WellKnownText.parseSpatialReferenceSystem(
-      epsgCode,
-      wkt,
-      this._dialect
-    );
+    crs = WellKnownText.parseSpatialReferenceSystem(epsgCode, wkt, this._dialect);
     if (crs == null) {
       Message.print(OnlineRegistry.MODULE, "The WKT could not be parsed");
       return null;

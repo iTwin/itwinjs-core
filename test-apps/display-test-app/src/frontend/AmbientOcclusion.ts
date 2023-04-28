@@ -3,12 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-  createButton,
-  createCheckBox,
-  createSlider,
-  Slider,
-} from "@itwin/frontend-devtools";
+import { createButton, createCheckBox, createSlider, Slider } from "@itwin/frontend-devtools";
 import { AmbientOcclusion, RenderMode, ViewFlags } from "@itwin/core-common";
 import { Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
 
@@ -28,8 +23,7 @@ export class AmbientOcclusionEditor {
   public constructor(vp: Viewport, parent: HTMLElement) {
     this._vp = vp;
 
-    const isAOSupported = (view: ViewState) =>
-      view.is3d() && RenderMode.SmoothShade === view.viewFlags.renderMode;
+    const isAOSupported = (view: ViewState) => view.is3d() && RenderMode.SmoothShade === view.viewFlags.renderMode;
     const isAOEnabled = (view: ViewState) => view.viewFlags.ambientOcclusion;
 
     const div = document.createElement("div");
@@ -210,47 +204,32 @@ export class AmbientOcclusionEditor {
   }
 
   private updateAmbientOcclusionUI(view: ViewState) {
-    const getAOSettings = (v: ViewState) =>
-      (v as ViewState3d).getDisplayStyle3d().settings.ambientOcclusionSettings;
+    const getAOSettings = (v: ViewState) => (v as ViewState3d).getDisplayStyle3d().settings.ambientOcclusionSettings;
 
     const aoSettings = getAOSettings(view);
 
-    this._aoBias.slider.value = this._aoBias.readout.innerText =
-      aoSettings.bias.toString();
-    this._aoZLengthCap.slider.value = this._aoZLengthCap.readout.innerText =
-      aoSettings.zLengthCap.toString();
-    this._aoMaxDistance.slider.value = this._aoMaxDistance.readout.innerText =
-      aoSettings.maxDistance.toString();
-    this._aoIntensity.slider.value = this._aoIntensity.readout.innerText =
-      aoSettings.intensity.toString();
-    this._aoTexelStepSize.slider.value =
-      this._aoTexelStepSize.readout.innerText =
-        aoSettings.texelStepSize.toString();
-    this._aoBlurDelta.slider.value = this._aoBlurDelta.readout.innerText =
-      aoSettings.blurDelta.toString();
-    this._aoBlurSigma.slider.value = this._aoBlurSigma.readout.innerText =
-      aoSettings.blurSigma.toString();
-    this._aoBlurTexelStepSize.slider.value =
-      this._aoBlurTexelStepSize.readout.innerText =
-        aoSettings.blurTexelStepSize.toString();
+    this._aoBias.slider.value = this._aoBias.readout.innerText = aoSettings.bias.toString();
+    this._aoZLengthCap.slider.value = this._aoZLengthCap.readout.innerText = aoSettings.zLengthCap.toString();
+    this._aoMaxDistance.slider.value = this._aoMaxDistance.readout.innerText = aoSettings.maxDistance.toString();
+    this._aoIntensity.slider.value = this._aoIntensity.readout.innerText = aoSettings.intensity.toString();
+    this._aoTexelStepSize.slider.value = this._aoTexelStepSize.readout.innerText = aoSettings.texelStepSize.toString();
+    this._aoBlurDelta.slider.value = this._aoBlurDelta.readout.innerText = aoSettings.blurDelta.toString();
+    this._aoBlurSigma.slider.value = this._aoBlurSigma.readout.innerText = aoSettings.blurSigma.toString();
+    this._aoBlurTexelStepSize.slider.value = this._aoBlurTexelStepSize.readout.innerText =
+      aoSettings.blurTexelStepSize.toString();
   }
 
   private updateAmbientOcclusion(updateFunction: (aoProps: any) => void) {
-    const displayStyleSettings = (
-      this._vp.view as ViewState3d
-    ).getDisplayStyle3d().settings;
+    const displayStyleSettings = (this._vp.view as ViewState3d).getDisplayStyle3d().settings;
     const aoProps = displayStyleSettings.ambientOcclusionSettings.toJSON();
     updateFunction(aoProps);
-    displayStyleSettings.ambientOcclusionSettings =
-      AmbientOcclusion.Settings.fromJSON(aoProps);
+    displayStyleSettings.ambientOcclusionSettings = AmbientOcclusion.Settings.fromJSON(aoProps);
     this.sync();
   }
 
   private resetAmbientOcclusion(): void {
     const newAOSettings = AmbientOcclusion.Settings.defaults;
-    (
-      this._vp.view as ViewState3d
-    ).getDisplayStyle3d().settings.ambientOcclusionSettings = newAOSettings;
+    (this._vp.view as ViewState3d).getDisplayStyle3d().settings.ambientOcclusionSettings = newAOSettings;
     this.sync();
     this.updateAmbientOcclusionUI(this._vp.view);
   }

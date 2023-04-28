@@ -13,11 +13,7 @@ import {
   TransientIdSequence,
 } from "@itwin/core-bentley";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
-import {
-  ElementGeometryChange,
-  ModelGeometryChanges,
-  ModelGeometryChangesProps,
-} from "../ModelGeometryChanges";
+import { ElementGeometryChange, ModelGeometryChanges, ModelGeometryChangesProps } from "../ModelGeometryChanges";
 
 // Each test is list of inserted, updated, and/or deleted element Ids; along with modelId.
 // We choose an arbitrary range for each insert or update.
@@ -42,11 +38,7 @@ class ElementChangeSets {
   public deletes = new Set<ElementGeometryChange>();
 }
 
-function generateElementChanges(
-  numInserts: number,
-  numUpdates: number,
-  numDeletes: number
-): ElementChangeSets {
+function generateElementChanges(numInserts: number, numUpdates: number, numDeletes: number): ElementChangeSets {
   const changes = new ElementChangeSets();
   for (let i = 0; i < numInserts; i++)
     changes.inserts.add({
@@ -62,27 +54,20 @@ function generateElementChanges(
       range: nextRange(),
     });
 
-  for (let i = 0; i < numDeletes; i++)
-    changes.deletes.add({ id: ids.getNext(), type: DbOpcode.Delete });
+  for (let i = 0; i < numDeletes; i++) changes.deletes.add({ id: ids.getNext(), type: DbOpcode.Delete });
 
   return changes;
 }
 
-function* elementIdIterator(
-  changes: Set<ElementGeometryChange>
-): Iterator<Id64String> {
+function* elementIdIterator(changes: Set<ElementGeometryChange>): Iterator<Id64String> {
   for (const change of changes) yield change.id;
 }
 
-function elementIdIterable(
-  changes: Set<ElementGeometryChange>
-): OrderedId64Iterable {
+function elementIdIterable(changes: Set<ElementGeometryChange>): OrderedId64Iterable {
   return { [Symbol.iterator]: () => elementIdIterator(changes) };
 }
 
-function elementRangesToJSON(
-  changes: Set<ElementGeometryChange>
-): Range3dProps[] {
+function elementRangesToJSON(changes: Set<ElementGeometryChange>): Range3dProps[] {
   const ranges: Range3dProps[] = [];
   for (const change of changes) {
     expect(change.type).not.to.equal(DbOpcode.Delete);
@@ -92,24 +77,18 @@ function elementRangesToJSON(
   return ranges;
 }
 
-function elementChangesToJSON(
-  changes: ElementChangeSets
-): ModelGeometryChangesProps {
+function elementChangesToJSON(changes: ElementChangeSets): ModelGeometryChangesProps {
   let insertedIds, updatedIds, deleted;
   let insertedRanges, updatedRanges;
   if (0 < changes.inserts.size) {
-    insertedIds = CompressedId64Set.compressIds(
-      elementIdIterable(changes.inserts)
-    );
+    insertedIds = CompressedId64Set.compressIds(elementIdIterable(changes.inserts));
     insertedRanges = elementRangesToJSON(changes.inserts);
     expect(insertedIds.length).least(2);
     expect(insertedRanges.length).least(1);
   }
 
   if (0 < changes.updates.size) {
-    updatedIds = CompressedId64Set.compressIds(
-      elementIdIterable(changes.updates)
-    );
+    updatedIds = CompressedId64Set.compressIds(elementIdIterable(changes.updates));
     updatedRanges = elementRangesToJSON(changes.updates);
     expect(updatedIds.length).least(2);
     expect(updatedRanges.length).least(1);
@@ -120,14 +99,8 @@ function elementChangesToJSON(
     expect(deleted.length).least(2);
   }
 
-  const inserted =
-    insertedIds && insertedRanges
-      ? { ids: insertedIds, ranges: insertedRanges }
-      : undefined;
-  const updated =
-    updatedIds && updatedRanges
-      ? { ids: updatedIds, ranges: updatedRanges }
-      : undefined;
+  const inserted = insertedIds && insertedRanges ? { ids: insertedIds, ranges: insertedRanges } : undefined;
+  const updated = updatedIds && updatedRanges ? { ids: updatedIds, ranges: updatedRanges } : undefined;
   return {
     inserted,
     updated,
@@ -138,9 +111,7 @@ function elementChangesToJSON(
   };
 }
 
-function extractElementChanges(
-  changes: Iterable<ElementGeometryChange>
-): ElementChangeSets {
+function extractElementChanges(changes: Iterable<ElementGeometryChange>): ElementChangeSets {
   const sets = new ElementChangeSets();
   const allIds = new Set<string>();
   for (const change of changes) {
@@ -148,11 +119,7 @@ function extractElementChanges(
     allIds.add(change.id);
 
     const set =
-      DbOpcode.Insert === change.type
-        ? sets.inserts
-        : DbOpcode.Update === change.type
-        ? sets.updates
-        : sets.deletes;
+      DbOpcode.Insert === change.type ? sets.inserts : DbOpcode.Update === change.type ? sets.updates : sets.deletes;
     set.add(change);
   }
 
@@ -161,23 +128,13 @@ function extractElementChanges(
 
 describe("ModelGeometryChanges", () => {
   it("should iterate ElementGeometryChanges", () => {
-    const test = (
-      numInserts: number,
-      numUpdates: number,
-      numDeletes: number
-    ) => {
-      const expected = generateElementChanges(
-        numInserts,
-        numUpdates,
-        numDeletes
-      );
-      const actual = extractElementChanges(
-        ElementGeometryChange.iterable(elementChangesToJSON(expected))
-      );
+    const test = (numInserts: number, numUpdates: number, numDeletes: number) => {
+      const expected = generateElementChanges(numInserts, numUpdates, numDeletes);
+      const actual = extractElementChanges(ElementGeometryChange.iterable(elementChangesToJSON(expected)));
       expect(expected).to.deep.equal(actual);
-      expect(
-        actual.inserts.size + actual.updates.size + actual.deletes.size
-      ).to.equal(numInserts + numUpdates + numDeletes);
+      expect(actual.inserts.size + actual.updates.size + actual.deletes.size).to.equal(
+        numInserts + numUpdates + numDeletes
+      );
     };
 
     test(0, 0, 0);
@@ -194,9 +151,7 @@ describe("ModelGeometryChanges", () => {
       let index = 0;
       for (const modelChanges of ModelGeometryChanges.iterable(props)) {
         expect(modelChanges.id).to.equal(props[index].id);
-        expect(modelChanges.range).to.deep.equal(
-          Range3d.fromJSON(props[index].range)
-        );
+        expect(modelChanges.range).to.deep.equal(Range3d.fromJSON(props[index].range));
         expect(modelChanges.geometryGuid).to.equal(props[index].guid);
         const actualElems = extractElementChanges(modelChanges.elements);
         expect(actualElems).to.deep.equal(expected[index]);

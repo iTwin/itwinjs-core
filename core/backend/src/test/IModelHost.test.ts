@@ -8,12 +8,7 @@ import * as sinon from "sinon";
 import { RpcRegistry } from "@itwin/core-common";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { SnapshotDb } from "../IModelDb";
-import {
-  IModelHost,
-  IModelHostConfiguration,
-  IModelHostOptions,
-  KnownLocations,
-} from "../IModelHost";
+import { IModelHost, IModelHostConfiguration, IModelHostOptions, KnownLocations } from "../IModelHost";
 import { Schemas } from "../Schema";
 import { KnownTestLocations } from "./KnownTestLocations";
 import {
@@ -45,22 +40,11 @@ describe("IModelHost", () => {
 
     // Valid registered implemented RPCs
     expect(RpcRegistry.instance.implementationClasses.size).to.equal(5);
-    expect(
-      RpcRegistry.instance.implementationClasses.get("IModelReadRpcInterface")
-    ).to.exist;
-    expect(
-      RpcRegistry.instance.implementationClasses.get("IModelTileRpcInterface")
-    ).to.exist;
-    expect(
-      RpcRegistry.instance.implementationClasses.get(
-        "SnapshotIModelRpcInterface"
-      )
-    ).to.exist;
-    expect(RpcRegistry.instance.implementationClasses.get("WipRpcInterface")).to
-      .exist;
-    expect(
-      RpcRegistry.instance.implementationClasses.get("DevToolsRpcInterface")
-    ).to.exist;
+    expect(RpcRegistry.instance.implementationClasses.get("IModelReadRpcInterface")).to.exist;
+    expect(RpcRegistry.instance.implementationClasses.get("IModelTileRpcInterface")).to.exist;
+    expect(RpcRegistry.instance.implementationClasses.get("SnapshotIModelRpcInterface")).to.exist;
+    expect(RpcRegistry.instance.implementationClasses.get("WipRpcInterface")).to.exist;
+    expect(RpcRegistry.instance.implementationClasses.get("DevToolsRpcInterface")).to.exist;
 
     expect(Schemas.getRegisteredSchema("BisCore")).to.exist;
     expect(Schemas.getRegisteredSchema("Generic")).to.exist;
@@ -86,9 +70,7 @@ describe("IModelHost", () => {
     await TestUtils.startBackend();
     const eventHandler = sinon.spy();
     IModelHost.onBeforeShutdown.addOnce(eventHandler);
-    const filename = IModelTestUtils.resolveAssetFile(
-      "GetSetAutoHandledStructProperties.bim"
-    );
+    const filename = IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim");
 
     const workspaceClose = sinon.spy(IModelHost.appWorkspace as any, "close");
     const saveSettings = IModelHost.appWorkspace.settings as any;
@@ -159,14 +141,11 @@ describe("IModelHost", () => {
       setMaxTileCacheSize: setMaxTileCacheSizeStub,
     }));
 
-    const storageStub = sinon.createStubInstance(
-      AzureServerStorage
-    ) as sinon.SinonStubbedInstance<AzureServerStorage> & AzureServerStorage; // I guess Sinon type definitions don't work well with overloads
-    const registerStub = sinon
-      .stub(AzureServerStorageBindings.prototype, "register")
-      .callsFake((container) => {
-        container.bind(ServerStorage).toConstantValue(storageStub);
-      });
+    const storageStub = sinon.createStubInstance(AzureServerStorage) as sinon.SinonStubbedInstance<AzureServerStorage> &
+      AzureServerStorage; // I guess Sinon type definitions don't work well with overloads
+    const registerStub = sinon.stub(AzureServerStorageBindings.prototype, "register").callsFake((container) => {
+      container.bind(ServerStorage).toConstantValue(storageStub);
+    });
 
     await IModelHost.startup(config);
 
@@ -174,18 +153,15 @@ describe("IModelHost", () => {
     assert.equal(IModelHost.tileStorage!.storage, storageStub);
     assert.isTrue(registerStub.calledOnce);
     assert.equal(
-      (registerStub.firstCall.lastArg as AzureServerStorageBindingsConfig)
-        .accountName,
+      (registerStub.firstCall.lastArg as AzureServerStorageBindingsConfig).accountName,
       config.tileCacheAzureCredentials.account
     );
     assert.equal(
-      (registerStub.firstCall.lastArg as AzureServerStorageBindingsConfig)
-        .accountKey,
+      (registerStub.firstCall.lastArg as AzureServerStorageBindingsConfig).accountKey,
       config.tileCacheAzureCredentials.accessKey
     );
     assert.equal(
-      (registerStub.firstCall.lastArg as AzureServerStorageBindingsConfig)
-        .baseUrl,
+      (registerStub.firstCall.lastArg as AzureServerStorageBindingsConfig).baseUrl,
       `https://${config.tileCacheAzureCredentials.account}.blob.core.windows.net`
     );
     assert.isTrue(setMaxTileCacheSizeStub.calledOnceWithExactly(0));
@@ -229,11 +205,7 @@ describe("IModelHost", () => {
     await IModelHost.startup(opts);
 
     assert.isUndefined(IModelHost.tileStorage);
-    assert.isTrue(
-      setMaxTileCacheSizeStub.calledOnceWithExactly(
-        IModelHostConfiguration.defaultMaxTileCacheDbSize
-      )
-    );
+    assert.isTrue(setMaxTileCacheSizeStub.calledOnceWithExactly(IModelHostConfiguration.defaultMaxTileCacheDbSize));
   });
 
   it("should use configured size for local cache", async () => {
@@ -248,9 +220,7 @@ describe("IModelHost", () => {
       maxTileCacheDbSize,
     });
 
-    assert.isTrue(
-      setMaxTileCacheSizeStub.calledOnceWithExactly(maxTileCacheDbSize)
-    );
+    assert.isTrue(setMaxTileCacheSizeStub.calledOnceWithExactly(maxTileCacheDbSize));
   });
 
   it("should cleanup tileStorage on shutdown", async () => {

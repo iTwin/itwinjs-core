@@ -107,11 +107,7 @@ export class StrokeOptions {
   /** return stroke count which is the larger of the minCount or count needed for edge length condition. */
   public applyMaxEdgeLength(minCount: number, totalLength: number): number {
     totalLength = Math.abs(totalLength);
-    if (
-      this.maxEdgeLength &&
-      this.maxEdgeLength > 0.0 &&
-      minCount * this.maxEdgeLength < totalLength
-    ) {
+    if (this.maxEdgeLength && this.maxEdgeLength > 0.0 && minCount * this.maxEdgeLength < totalLength) {
       minCount = Geometry.stepCount(this.maxEdgeLength, totalLength, minCount);
     }
     return minCount;
@@ -121,17 +117,8 @@ export class StrokeOptions {
    * return stroke count which is the larger of the existing count or count needed for angle condition for given sweepRadians
    * * defaultStepRadians is assumed to be larger than zero.
    */
-  public applyAngleTol(
-    minCount: number,
-    sweepRadians: number,
-    defaultStepRadians: number
-  ): number {
-    return StrokeOptions.applyAngleTol(
-      this,
-      minCount,
-      sweepRadians,
-      defaultStepRadians
-    );
+  public applyAngleTol(minCount: number, sweepRadians: number, defaultStepRadians: number): number {
+    return StrokeOptions.applyAngleTol(this, minCount, sweepRadians, defaultStepRadians);
   }
   /**
    * return stroke count which is the larger of minCount and the count required to turn sweepRadians, using tolerance from the options.
@@ -144,10 +131,8 @@ export class StrokeOptions {
   ): number {
     sweepRadians = Math.abs(sweepRadians);
     let stepRadians = defaultStepRadians ? defaultStepRadians : Math.PI / 8.0;
-    if (options && options.angleTol && options.angleTol.radians > 0.0)
-      stepRadians = options.angleTol.radians;
-    if (minCount * stepRadians < sweepRadians)
-      minCount = Geometry.stepCount(stepRadians, sweepRadians, minCount);
+    if (options && options.angleTol && options.angleTol.radians > 0.0) stepRadians = options.angleTol.radians;
+    if (minCount * stepRadians < sweepRadians) minCount = Geometry.stepCount(stepRadians, sweepRadians, minCount);
     return minCount;
   }
   /**
@@ -156,33 +141,18 @@ export class StrokeOptions {
    * @param minCount smallest allowed count
    * @param edgeLength
    */
-  public static applyMaxEdgeLength(
-    options: StrokeOptions | undefined,
-    minCount: number,
-    edgeLength: number
-  ): number {
+  public static applyMaxEdgeLength(options: StrokeOptions | undefined, minCount: number, edgeLength: number): number {
     if (edgeLength < 0) edgeLength = -edgeLength;
     if (minCount < 1) minCount = 1;
-    if (
-      options &&
-      options.maxEdgeLength &&
-      options.maxEdgeLength * minCount < edgeLength
-    ) {
-      minCount = Geometry.stepCount(
-        options.maxEdgeLength,
-        edgeLength,
-        minCount
-      );
+    if (options && options.maxEdgeLength && options.maxEdgeLength * minCount < edgeLength) {
+      minCount = Geometry.stepCount(options.maxEdgeLength, edgeLength, minCount);
     }
     return minCount;
   }
   /**
    * Determine a stroke count for a (partial) circular arc of given radius. This considers angle, maxEdgeLength, chord, and minimum stroke.
    */
-  public applyTolerancesToArc(
-    radius: number,
-    sweepRadians: number = Math.PI * 2
-  ): number {
+  public applyTolerancesToArc(radius: number, sweepRadians: number = Math.PI * 2): number {
     let numStrokes = 1;
     numStrokes = this.applyAngleTol(numStrokes, sweepRadians, Math.PI * 0.25);
     numStrokes = this.applyMaxEdgeLength(numStrokes, sweepRadians * radius);
@@ -192,11 +162,7 @@ export class StrokeOptions {
   }
 
   /** return stroke count which is the larger of existing count or count needed for circular arc chord tolerance condition. */
-  public applyChordTol(
-    minCount: number,
-    radius: number,
-    sweepRadians: number
-  ): number {
+  public applyChordTol(minCount: number, radius: number, sweepRadians: number): number {
     if (this.chordTol && this.chordTol > 0.0 && this.chordTol < radius) {
       const a = this.chordTol;
       const stepRadians = 2.0 * Math.acos(1.0 - a / radius);
@@ -206,15 +172,10 @@ export class StrokeOptions {
   }
   /** return stroke count which is the larger of existing count or count needed for circular arc chord tol with given arc length and radians
    */
-  public applyChordTolToLengthAndRadians(
-    minCount: number,
-    length: number,
-    sweepRadians: number
-  ): number {
+  public applyChordTolToLengthAndRadians(minCount: number, length: number, sweepRadians: number): number {
     if (this.chordTol && this.chordTol > 0.0) {
       const radius = Geometry.conditionalDivideFraction(length, sweepRadians);
-      if (radius !== undefined)
-        return this.applyChordTol(minCount, radius, sweepRadians);
+      if (radius !== undefined) return this.applyChordTol(minCount, radius, sweepRadians);
     }
     return minCount;
   }

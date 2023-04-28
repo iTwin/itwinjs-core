@@ -80,8 +80,7 @@ beforeEach(function () {
     // we want snapshot tests to use the same random data between runs
     const faker = require("faker");
     let seed = 0;
-    for (let i = 0; i < currentTest.fullTitle().length; ++i)
-      seed += currentTest.fullTitle().charCodeAt(i);
+    for (let i = 0; i < currentTest.fullTitle().length; ++i) seed += currentTest.fullTitle().charCodeAt(i);
     faker.seed(seed);
   } catch (e) {
     // may throw if package doesn't use faker - ignore

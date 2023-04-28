@@ -26,10 +26,7 @@ export abstract class RecursiveCurveProcessor {
   /** process error content */
   public announceUnexpected(_data: AnyCurve, _indexInParent: number) {}
   /** process a leaf primitive. */
-  public announceCurvePrimitive(
-    _data: CurvePrimitive,
-    _indexInParent = -1
-  ): void {}
+  public announceCurvePrimitive(_data: CurvePrimitive, _indexInParent = -1): void {}
 
   /** announce a path (recurse to children) */
   public announcePath(data: Path, _indexInParent: number = -1): void {
@@ -43,18 +40,12 @@ export abstract class RecursiveCurveProcessor {
   }
 
   /** announce beginning or end of loops in a parity region */
-  public announceParityRegion(
-    data: ParityRegion,
-    _indexInParent: number = -1
-  ): void {
+  public announceParityRegion(data: ParityRegion, _indexInParent: number = -1): void {
     let i = 0;
     for (const loop of data.children) this.announceLoop(loop, i++);
   }
   /** announce beginning or end of a parity region */
-  public announceUnionRegion(
-    data: UnionRegion,
-    _indexInParent: number = -1
-  ): void {
+  public announceUnionRegion(data: UnionRegion, _indexInParent: number = -1): void {
     let i = 0;
     for (const child of data.children) {
       child.announceToCurveProcessor(this, i++);
@@ -66,10 +57,7 @@ export abstract class RecursiveCurveProcessor {
    * * `this.announceCurvePrimitive(child)`
    * * `child.announceToCurveProcessor(this)`
    */
-  public announceBagOfCurves(
-    data: BagOfCurves,
-    _indexInParent: number = -1
-  ): void {
+  public announceBagOfCurves(data: BagOfCurves, _indexInParent: number = -1): void {
     for (const child of data.children) {
       if (child instanceof CurvePrimitive) this.announceCurvePrimitive(child);
       else child.announceToCurveProcessor(this);
@@ -105,10 +93,7 @@ export abstract class RecursiveCurveProcessorWithStack extends RecursiveCurvePro
   /** process error content */
   public override announceUnexpected(_data: AnyCurve, _indexInParent: number) {}
   /** process a leaf primitive. */
-  public override announceCurvePrimitive(
-    _data: CurvePrimitive,
-    _indexInParent = -1
-  ): void {}
+  public override announceCurvePrimitive(_data: CurvePrimitive, _indexInParent = -1): void {}
 
   /** announce a path (recurse to children) */
   public override announcePath(data: Path, indexInParent: number = -1): void {
@@ -124,20 +109,14 @@ export abstract class RecursiveCurveProcessorWithStack extends RecursiveCurvePro
   }
 
   /** announce beginning or end of loops in a parity region */
-  public override announceParityRegion(
-    data: ParityRegion,
-    _indexInParent: number = -1
-  ): void {
+  public override announceParityRegion(data: ParityRegion, _indexInParent: number = -1): void {
     this.enter(data);
     let i = 0;
     for (const loop of data.children) this.announceLoop(loop, i++);
     this.leave();
   }
   /** announce beginning or end of a parity region */
-  public override announceUnionRegion(
-    data: UnionRegion,
-    indexInParent: number = -1
-  ): void {
+  public override announceUnionRegion(data: UnionRegion, indexInParent: number = -1): void {
     this.enter(data);
     super.announceUnionRegion(data, indexInParent);
     this.leave();
@@ -150,15 +129,11 @@ export abstract class RecursiveCurveProcessorWithStack extends RecursiveCurvePro
    * @param data the collection
    * @param _indexInParent index where the collection appears in its parent.
    */
-  public override announceBagOfCurves(
-    data: BagOfCurves,
-    _indexInParent: number = -1
-  ): void {
+  public override announceBagOfCurves(data: BagOfCurves, _indexInParent: number = -1): void {
     this.enter(data);
     let i = 0;
     for (const child of data.children) {
-      if (child instanceof CurvePrimitive)
-        this.announceCurvePrimitive(child, i++);
+      if (child instanceof CurvePrimitive) this.announceCurvePrimitive(child, i++);
       else child.announceToCurveProcessor(this);
     }
     this.leave();

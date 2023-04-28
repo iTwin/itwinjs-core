@@ -8,10 +8,7 @@ import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
-import {
-  BSplineSurface3d,
-  BSplineSurface3dH,
-} from "../../bspline/BSplineSurface";
+import { BSplineSurface3d, BSplineSurface3dH } from "../../bspline/BSplineSurface";
 import { Arc3d } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { CurveCollection } from "../../curve/CurveCollection";
@@ -23,11 +20,7 @@ import { CylindricalRangeQuery } from "../../curve/Query/CylindricalRange";
 import { StrokeCountSection } from "../../curve/Query/StrokeCountChain";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { TransitionSpiral3d } from "../../curve/spiral/TransitionSpiral3d";
-import {
-  GeometryHandler,
-  NullGeometryHandler,
-  RecurseToCurvesGeometryHandler,
-} from "../../geometry3d/GeometryHandler";
+import { GeometryHandler, NullGeometryHandler, RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler";
 import { Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { IndexedPolyface } from "../../polyface/Polyface";
@@ -181,25 +174,14 @@ describe("CylindricalRangeQuery", () => {
     const stringA = LineString3d.create([0, 0, 0], [1, 0, 0], [1, 1, 0]);
     const stringB = LineString3d.create([1, 1, 0], [2, 2, 0]);
     const path = Path.create(stringA, stringB);
-    CylindricalRangeQuery.buildRotationalNormalsInLineStrings(
-      path,
-      Ray3d.createYAxis(),
-      Vector3d.unitZ()
-    );
+    CylindricalRangeQuery.buildRotationalNormalsInLineStrings(path, Ray3d.createYAxis(), Vector3d.unitZ());
 
     const options = StrokeOptions.createForFacets();
     options.needNormals = true;
     options.needParams = true;
-    const section = StrokeCountSection.createForParityRegionOrChain(
-      path,
-      options
-    );
+    const section = StrokeCountSection.createForParityRegionOrChain(path, options);
     const strokes = section.getStrokes();
-    CylindricalRangeQuery.buildRotationalNormalsInLineStrings(
-      strokes,
-      Ray3d.createYAxis(),
-      Vector3d.unitZ()
-    );
+    CylindricalRangeQuery.buildRotationalNormalsInLineStrings(strokes, Ray3d.createYAxis(), Vector3d.unitZ());
 
     expect(ck.getNumErrors()).equals(0);
   });
@@ -215,68 +197,20 @@ describe("CylindricalRangeQuery", () => {
     const chain2 = Loop.create();
     chain2.tryAddChild(arc);
     const range = Range1d.createNull();
-    ck.testFalse(
-      StrokeCountSection.extendDistanceRangeBetweenStrokes(arc, chain1, range)
-    );
-    ck.testFalse(
-      StrokeCountSection.extendDistanceRangeBetweenStrokes(chain1, arc, range)
-    );
-    ck.testFalse(
-      StrokeCountSection.extendDistanceRangeBetweenStrokes(
-        linestring,
-        chain1,
-        range
-      )
-    );
-    ck.testFalse(
-      StrokeCountSection.extendDistanceRangeBetweenStrokes(
-        linestring,
-        linestring0,
-        range
-      )
-    );
-    ck.testFalse(
-      StrokeCountSection.extendDistanceRangeBetweenStrokes(
-        chain1,
-        linestring,
-        range
-      )
-    );
-    ck.testFalse(
-      StrokeCountSection.extendDistanceRangeBetweenStrokes(
-        chain1,
-        chain2,
-        range
-      )
-    );
-    ck.testFalse(
-      StrokeCountSection.extendDistanceRangeBetweenStrokes(chain1, arc, range)
-    );
+    ck.testFalse(StrokeCountSection.extendDistanceRangeBetweenStrokes(arc, chain1, range));
+    ck.testFalse(StrokeCountSection.extendDistanceRangeBetweenStrokes(chain1, arc, range));
+    ck.testFalse(StrokeCountSection.extendDistanceRangeBetweenStrokes(linestring, chain1, range));
+    ck.testFalse(StrokeCountSection.extendDistanceRangeBetweenStrokes(linestring, linestring0, range));
+    ck.testFalse(StrokeCountSection.extendDistanceRangeBetweenStrokes(chain1, linestring, range));
+    ck.testFalse(StrokeCountSection.extendDistanceRangeBetweenStrokes(chain1, chain2, range));
+    ck.testFalse(StrokeCountSection.extendDistanceRangeBetweenStrokes(chain1, arc, range));
 
     const parity1 = ParityRegion.create(chain1);
     const parity2 = ParityRegion.create(chain2);
     const parity0 = ParityRegion.create();
-    ck.testFalse(
-      StrokeCountSection.extendDistanceRangeBetweenStrokes(
-        parity1,
-        parity2,
-        range
-      )
-    );
-    ck.testFalse(
-      StrokeCountSection.extendDistanceRangeBetweenStrokes(
-        parity0,
-        parity2,
-        range
-      )
-    );
-    ck.testFalse(
-      StrokeCountSection.extendDistanceRangeBetweenStrokes(
-        parity0,
-        chain1,
-        range
-      )
-    );
+    ck.testFalse(StrokeCountSection.extendDistanceRangeBetweenStrokes(parity1, parity2, range));
+    ck.testFalse(StrokeCountSection.extendDistanceRangeBetweenStrokes(parity0, parity2, range));
+    ck.testFalse(StrokeCountSection.extendDistanceRangeBetweenStrokes(parity0, chain1, range));
 
     expect(ck.getNumErrors()).equals(0);
   });

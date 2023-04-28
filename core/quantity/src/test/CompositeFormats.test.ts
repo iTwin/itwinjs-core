@@ -46,25 +46,13 @@ describe("Composite Formats tests:", () => {
         result: "12:6 1/2",
       };
 
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
       Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(false);
     } catch (err: any) {
-      assert.strictEqual(
-        err.message,
-        "The Format test has a invalid unit specification.."
-      );
+      assert.strictEqual(err.message, "The Format test has a invalid unit specification..");
     }
   });
 
@@ -103,25 +91,13 @@ describe("Composite Formats tests:", () => {
         result: "12:6 1/2",
       };
 
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
       Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(false);
     } catch (err: any) {
-      assert.strictEqual(
-        err.message,
-        "The Format test has a invalid unit specification.."
-      );
+      assert.strictEqual(err.message, "The Format test has a invalid unit specification..");
       // eslint-disable-next-line no-console
       // console.log(err.message);
     }
@@ -180,22 +156,10 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue.length > 0);
       assert.strictEqual(formattedValue, testEntry.result);
       // eslint-disable-next-line no-console
@@ -454,18 +418,13 @@ describe("Composite Formats tests:", () => {
         type: "Decimal",
       };
 
-      if (testEntry.keepSingleZero)
-        formatData.formatTraits.push("keepSingleZero");
-      if (testEntry.keepDecimalPoint)
-        formatData.formatTraits.push("keepDecimalPoint");
+      if (testEntry.keepSingleZero) formatData.formatTraits.push("keepSingleZero");
+      if (testEntry.keepDecimalPoint) formatData.formatTraits.push("keepDecimalPoint");
       if (testEntry.trailZeroes) formatData.formatTraits.push("trailZeroes");
 
       const format = new Format("test");
       await format.fromJSON(unitsProvider, formatData).catch(() => {});
-      assert.isTrue(
-        format.hasUnits,
-        `Test case number ${testEntry.testCaseNum} failed`
-      );
+      assert.isTrue(format.hasUnits, `Test case number ${testEntry.testCaseNum} failed`);
       assert.equal(
         format.hasFormatTraitSet(FormatTraits.KeepSingleZero),
         testEntry.keepSingleZero,
@@ -488,19 +447,9 @@ describe("Composite Formats tests:", () => {
         unitsProvider,
         new BasicUnit(unit.name, unit.label, unit.contextId)
       );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
-      assert.equal(
-        formattedValue,
-        testEntry.result,
-        `Test case number ${testEntry.testCaseNum} failed`
-      );
-      assert.isTrue(
-        formattedValue.length > 0,
-        `Test case number ${testEntry.testCaseNum} failed`
-      );
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
+      assert.equal(formattedValue, testEntry.result, `Test case number ${testEntry.testCaseNum} failed`);
+      assert.isTrue(formattedValue.length > 0, `Test case number ${testEntry.testCaseNum} failed`);
     }
   });
 
@@ -566,22 +515,10 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue.length > 0);
       assert.strictEqual(formattedValue, testEntry.result);
       // eslint-disable-next-line no-console
@@ -651,22 +588,10 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue.length > 0);
       assert.strictEqual(formattedValue, testEntry.result);
       // eslint-disable-next-line no-console
@@ -732,22 +657,10 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue.length > 0);
       assert.strictEqual(formattedValue, testEntry.result);
       // eslint-disable-next-line no-console
@@ -812,21 +725,9 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue.length > 0);
       assert.strictEqual(formattedValue, testEntry.result);
       // eslint-disable-next-line no-console
@@ -892,21 +793,9 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
       // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -970,21 +859,9 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue.length > 0);
       assert.isTrue(formattedValue === testEntry.result);
       // eslint-disable-next-line no-console
@@ -1049,21 +926,9 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       assert.isTrue(formattedValue.length > 0);
       // eslint-disable-next-line no-console
@@ -1109,21 +974,9 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       assert.isTrue(formattedValue.length > 0);
       // eslint-disable-next-line no-console
@@ -1169,21 +1022,9 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       assert.isTrue(formattedValue.length > 0);
       // eslint-disable-next-line no-console
@@ -1237,21 +1078,9 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       assert.isTrue(formattedValue.length > 0);
       // eslint-disable-next-line no-console
@@ -1329,21 +1158,9 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new BasicUnit(
-        testEntry.unit.name,
-        testEntry.unit.label,
-        testEntry.unit.contextId
-      );
-      const spec = await FormatterSpec.create(
-        "test",
-        format,
-        unitsProvider,
-        unit
-      );
-      const formattedValue = Formatter.formatQuantity(
-        testEntry.magnitude,
-        spec
-      );
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       expect(formattedValue).to.be.eql(testEntry.result);
       assert.isTrue(formattedValue.length > 0);
       // eslint-disable-next-line no-console

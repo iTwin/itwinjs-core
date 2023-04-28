@@ -11,10 +11,7 @@ import { Ray3d } from "../geometry3d/Ray3d";
 import { SmallSystem } from "../numerics/Polynomials";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { MarkedEdgeSet } from "./HalfEdgeMarkSet";
-import {
-  PointSearchContext,
-  RayClassification,
-} from "./HalfEdgePointInGraphSearch";
+import { PointSearchContext, RayClassification } from "./HalfEdgePointInGraphSearch";
 import { HalfEdgePositionDetail } from "./HalfEdgePositionDetail";
 import { Triangulator } from "./Triangulation";
 
@@ -59,12 +56,7 @@ export class InsertAndRetriangulateContext {
     let nearNode = centralNode;
     for (let i = 0; i < numEdge; i++) {
       farNode = farNode.faceSuccessor;
-      nearNode = this._graph.createEdgeHalfEdgeHalfEdge(
-        nearNode,
-        0,
-        farNode,
-        0
-      );
+      nearNode = this._graph.createEdgeHalfEdgeHalfEdge(nearNode, 0, farNode, 0);
       farNode = nearNode.faceSuccessor;
       this._edgeSet.addToSet(nearNode);
     }
@@ -91,11 +83,7 @@ export class InsertAndRetriangulateContext {
     let distanceC;
     for (const nodeA of this._graph.allHalfEdges) {
       const nodeB = nodeA.faceSuccessor;
-      fractionC = SmallSystem.lineSegment3dXYClosestPointUnbounded(
-        nodeA,
-        nodeB,
-        xyz
-      );
+      fractionC = SmallSystem.lineSegment3dXYClosestPointUnbounded(nodeA, nodeB, xyz);
       if (fractionC !== undefined) {
         if (fractionC > 1.0) {
           distanceC = xyz.distanceXY(nodeB);
@@ -146,24 +134,14 @@ export class InsertAndRetriangulateContext {
     if (seedNode === undefined) {
     } else if (this._searcher.isFace) {
       if (!seedNode.isMaskSet(HalfEdgeMask.EXTERIOR)) {
-        const newInteriorNode = this._graph.createEdgeXYZHalfEdge(
-          xyz.x,
-          xyz.y,
-          xyz.z,
-          0,
-          seedNode,
-          0
-        );
+        const newInteriorNode = this._graph.createEdgeXYZHalfEdge(xyz.x, xyz.y, xyz.z, 0, seedNode, 0);
         this.retriangulateFromBaseVertex(newInteriorNode);
         Triangulator.flipTrianglesInEdgeSet(this._graph, this._edgeSet);
         this._searcher.resetAsVertex(newInteriorNode);
       }
       stat = true;
     } else if (this._searcher.isEdge) {
-      const newA = this._graph.splitEdgeAtFraction(
-        seedNode,
-        this._searcher.edgeFraction!
-      );
+      const newA = this._graph.splitEdgeAtFraction(seedNode, this._searcher.edgeFraction!);
       const newB = newA.vertexPredecessor;
       this.retriangulateFromBaseVertex(newA);
       this.retriangulateFromBaseVertex(newB);
@@ -207,13 +185,7 @@ export class InsertAndRetriangulateContext {
       } else if (movingPosition.isFace) {
         const lastBefore = HalfEdgePositionDetail.create();
         const firstAfter = HalfEdgePositionDetail.create();
-        const rc = psc.reAimAroundFace(
-          movingPosition.node!,
-          ray,
-          ray.a!,
-          lastBefore,
-          firstAfter
-        );
+        const rc = psc.reAimAroundFace(movingPosition.node!, ray, ray.a!, lastBefore, firstAfter);
         // reAimAroundFace returns lots of cases in `lastBefore` !!
         switch (rc) {
           case RayClassification.RC_NoHits: {

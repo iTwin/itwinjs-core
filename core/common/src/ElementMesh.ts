@@ -7,10 +7,7 @@
  */
 
 import { ByteStream, Id64String } from "@itwin/core-bentley";
-import {
-  BentleyGeometryFlatBuffer,
-  IndexedPolyface,
-} from "@itwin/core-geometry";
+import { BentleyGeometryFlatBuffer, IndexedPolyface } from "@itwin/core-geometry";
 
 /** Options used to control how [Polyface]($core-geometry)s are produced from elements by [IModelConnection.generateElementMeshes]($frontend).
  * @beta
@@ -56,12 +53,7 @@ function nextChunk(stream: ByteStream): Chunk | undefined {
   }
 
   // Type codes are a sequence of four uppercase ASCII letters.
-  const chars = [
-    stream.readUint8(),
-    stream.readUint8(),
-    stream.readUint8(),
-    stream.readUint8(),
-  ];
+  const chars = [stream.readUint8(), stream.readUint8(), stream.readUint8(), stream.readUint8()];
   if (chars.some((c) => c < 65 || c > 90)) return undefined;
 
   const dataLength = stream.readUint32();

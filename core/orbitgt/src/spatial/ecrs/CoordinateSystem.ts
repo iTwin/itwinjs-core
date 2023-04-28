@@ -74,16 +74,8 @@ export class CoordinateSystem {
    * @param axes the (sorted on order) coordinate axes.
    * @return the coordinate system (null for an identify system).
    */
-  public static create(
-    type: int32,
-    csCode: int32,
-    axes: AList<Axis>
-  ): CoordinateSystem {
-    let coordinateSystem: CoordinateSystem = new CoordinateSystem(
-      type,
-      csCode,
-      axes
-    );
+  public static create(type: int32, csCode: int32, axes: AList<Axis>): CoordinateSystem {
+    let coordinateSystem: CoordinateSystem = new CoordinateSystem(type, csCode, axes);
     if (coordinateSystem.isIdentity()) return null;
     return coordinateSystem;
   }
@@ -111,10 +103,7 @@ export class CoordinateSystem {
     /* Log? */
     if (this.isIdentity() == false) {
       /* Log */
-      Message.print(
-        CoordinateSystem.MODULE,
-        "Created coordinate system " + this._csCode
-      );
+      Message.print(CoordinateSystem.MODULE, "Created coordinate system " + this._csCode);
       if (this._xAxis != null)
         Message.print(
           CoordinateSystem.MODULE,
@@ -148,21 +137,9 @@ export class CoordinateSystem {
             this._zAxis.getOrder() +
             ")"
         );
-      if (this._xUnit != null)
-        Message.print(
-          CoordinateSystem.MODULE,
-          "X unit '" + this._xUnit.getName() + "'"
-        );
-      if (this._yUnit != null)
-        Message.print(
-          CoordinateSystem.MODULE,
-          "Y unit '" + this._yUnit.getName() + "'"
-        );
-      if (this._zUnit != null)
-        Message.print(
-          CoordinateSystem.MODULE,
-          "Z unit '" + this._zUnit.getName() + "'"
-        );
+      if (this._xUnit != null) Message.print(CoordinateSystem.MODULE, "X unit '" + this._xUnit.getName() + "'");
+      if (this._yUnit != null) Message.print(CoordinateSystem.MODULE, "Y unit '" + this._yUnit.getName() + "'");
+      if (this._zUnit != null) Message.print(CoordinateSystem.MODULE, "Z unit '" + this._zUnit.getName() + "'");
     }
   }
 
@@ -273,24 +250,12 @@ export class CoordinateSystem {
     //            name2 = "E";
     //        }
     /* Check the various combinations */
-    let xy1: boolean =
-      Strings.equalsIgnoreCase(name1, "X") &&
-      Strings.equalsIgnoreCase(name2, "Y");
-    let xy2: boolean =
-      Strings.equalsIgnoreCase(name1, "E") &&
-      Strings.equalsIgnoreCase(name2, "N");
-    let xy3: boolean =
-      Strings.equalsIgnoreCase(name1, "E(X)") &&
-      Strings.equalsIgnoreCase(name2, "N(Y)");
-    let xy4: boolean =
-      Strings.equalsIgnoreCase(name1, "M") &&
-      Strings.equalsIgnoreCase(name2, "P"); // csCode 1024, Portuguese
-    let yx1: boolean =
-      Strings.equalsIgnoreCase(name1, "Y") &&
-      Strings.equalsIgnoreCase(name2, "X");
-    let yx2: boolean =
-      Strings.equalsIgnoreCase(name1, "N") &&
-      Strings.equalsIgnoreCase(name2, "E");
+    let xy1: boolean = Strings.equalsIgnoreCase(name1, "X") && Strings.equalsIgnoreCase(name2, "Y");
+    let xy2: boolean = Strings.equalsIgnoreCase(name1, "E") && Strings.equalsIgnoreCase(name2, "N");
+    let xy3: boolean = Strings.equalsIgnoreCase(name1, "E(X)") && Strings.equalsIgnoreCase(name2, "N(Y)");
+    let xy4: boolean = Strings.equalsIgnoreCase(name1, "M") && Strings.equalsIgnoreCase(name2, "P"); // csCode 1024, Portuguese
+    let yx1: boolean = Strings.equalsIgnoreCase(name1, "Y") && Strings.equalsIgnoreCase(name2, "X");
+    let yx2: boolean = Strings.equalsIgnoreCase(name1, "N") && Strings.equalsIgnoreCase(name2, "E");
     /* XY sequence? */
     if (xy1 || xy2 || xy3 || xy4) {
       this._xAxis = this._axes.get(0);
@@ -304,10 +269,7 @@ export class CoordinateSystem {
       this._xAxis = this._axes.get(0);
       this._yAxis = this._axes.get(1);
       /* Log */
-      Message.printWarning(
-        CoordinateSystem.MODULE,
-        "Invalid projected axis '" + name1 + "','" + name2 + "'"
-      );
+      Message.printWarning(CoordinateSystem.MODULE, "Invalid projected axis '" + name1 + "','" + name2 + "'");
     }
     /* Do we have a Z axis? */
     if (this._axes.size() >= 3) {
@@ -329,11 +291,7 @@ export class CoordinateSystem {
    * @param order the default order.
    * @return the coordinate.
    */
-  private static getLocalCoordinate(
-    local: Coordinate,
-    axis: Axis,
-    order: int32
-  ): float64 {
+  private static getLocalCoordinate(local: Coordinate, axis: Axis, order: int32): float64 {
     /* Do we have an axis? */
     if (axis != null) order = axis.getOrder();
     /* Return the request coordinate */
@@ -373,13 +331,7 @@ export class CoordinateSystem {
    * @param index the default index.
    * @return the coordinate.
    */
-  private getStandardCoordinate(
-    x: float64,
-    y: float64,
-    z: float64,
-    axis: Axis,
-    index: int32
-  ): float64 {
+  private getStandardCoordinate(x: float64, y: float64, z: float64, axis: Axis, index: int32): float64 {
     /* Check the standard index of the axis */
     if (axis == this._xAxis) index = 1;
     else if (axis == this._yAxis) index = 2;
@@ -409,7 +361,6 @@ export class CoordinateSystem {
     /* Set */
     local.setX(this.getStandardCoordinate(x, y, z, this._axes.get(0), 1));
     local.setY(this.getStandardCoordinate(x, y, z, this._axes.get(1), 2));
-    if (this._axes.size() >= 3)
-      local.setZ(this.getStandardCoordinate(x, y, z, this._axes.get(2), 3));
+    if (this._axes.size() >= 3) local.setZ(this.getStandardCoordinate(x, y, z, this._axes.get(2), 3));
   }
 }

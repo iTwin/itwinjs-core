@@ -51,9 +51,7 @@ export const createRandomRelatedClassInfo = (): ec.RelatedClassInfo => {
 /**
  * @internal Used for testing only.
  */
-export const createRandomRelationshipPath = (
-  length: number = 2
-): ec.RelationshipPath => {
+export const createRandomRelationshipPath = (length: number = 2): ec.RelationshipPath => {
   const path = new Array<ec.RelatedClassInfo>();
   while (length--) path.push(createRandomRelatedClassInfo());
   return path;

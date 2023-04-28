@@ -79,14 +79,7 @@ export interface OpenAPIParameter {
   description?: string;
   required?: boolean;
   allowEmptyValue?: boolean;
-  style?:
-    | "matrix"
-    | "label"
-    | "form"
-    | "simple"
-    | "spaceDelimited"
-    | "pipeDelimited"
-    | "deepObject";
+  style?: "matrix" | "label" | "form" | "simple" | "spaceDelimited" | "pipeDelimited" | "deepObject";
   explode?: boolean;
   allowReserved?: boolean;
   schema?: OpenAPISchema;
@@ -207,8 +200,7 @@ export class RpcOpenAPIDescription {
       },
     };
 
-    const parameters =
-      this.protocol.supplyPathParametersForOperation(operation);
+    const parameters = this.protocol.supplyPathParametersForOperation(operation);
     if (parameters.length) description.parameters = parameters;
 
     return description;

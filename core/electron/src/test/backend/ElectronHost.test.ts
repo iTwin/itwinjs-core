@@ -64,15 +64,9 @@ async function testStartWithOptions() {
   assertElectronHostIsInitialized();
 
   // If relative path doesn't exist (is empty), paths are the same.
-  let relativePath = path.relative(
-    ElectronHost.webResourcesPath,
-    options.webResourcesPath!
-  );
+  let relativePath = path.relative(ElectronHost.webResourcesPath, options.webResourcesPath!);
   assert(relativePath.length === 0);
-  relativePath = path.relative(
-    ElectronHost.appIconPath,
-    path.join(options.webResourcesPath!, options.iconName!)
-  );
+  relativePath = path.relative(ElectronHost.appIconPath, path.join(options.webResourcesPath!, options.iconName!));
   assert(relativePath.length === 0);
 }
 
@@ -111,9 +105,7 @@ async function testInitializeProvidedRpcInterface() {
     },
   });
 
-  assert(
-    RpcRegistry.instance.definitionClasses.has(TestRpcInterface.interfaceName)
-  );
+  assert(RpcRegistry.instance.definitionClasses.has(TestRpcInterface.interfaceName));
 }
 
 async function testOpenMainWindow() {
@@ -143,9 +135,7 @@ async function testMainWindowUrl() {
   const window = ElectronHost.electron.BrowserWindow.getAllWindows()[0];
   assert(window !== undefined);
 
-  await new Promise((resolve) =>
-    window.webContents.once("did-finish-load", resolve)
-  );
+  await new Promise((resolve) => window.webContents.once("did-finish-load", resolve));
   assert(url === window.webContents.getURL());
 }
 
@@ -163,8 +153,7 @@ async function testWindowSizeSettings() {
   const window = ElectronHost.mainWindow;
   assert(window);
 
-  let sizeAndPos =
-    ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
+  let sizeAndPos = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
   const expectedBounds = window.getBounds();
   assert(sizeAndPos?.width === expectedBounds.width);
   assert(sizeAndPos?.height === expectedBounds.height);

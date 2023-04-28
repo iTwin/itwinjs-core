@@ -4,13 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Camera } from "@itwin/core-common";
 import { IModelConnection, Viewport } from "@itwin/core-frontend";
-import {
-  Angle,
-  AngleProps,
-  Point3d,
-  Vector3d,
-  XYZProps,
-} from "@itwin/core-geometry";
+import { Angle, AngleProps, Point3d, Vector3d, XYZProps } from "@itwin/core-geometry";
 import { createButton, createTextBox } from "@itwin/frontend-devtools";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { ToolBarDropDown } from "./ToolBar";
@@ -71,14 +65,7 @@ class Keyframe {
   }
 
   public static createZero(): Keyframe {
-    return new Keyframe(
-      0,
-      Point3d.createZero(),
-      Point3d.createZero(),
-      Vector3d.createZero(),
-      undefined,
-      undefined
-    );
+    return new Keyframe(0, Point3d.createZero(), Point3d.createZero(), Vector3d.createZero(), undefined, undefined);
   }
 
   /**
@@ -99,10 +86,7 @@ class Keyframe {
     if (this.extents === undefined) {
       extent = other.extents;
     } else {
-      extent =
-        other.extents !== undefined
-          ? this.extents.interpolate(fraction, other.extents)
-          : other.extents;
+      extent = other.extents !== undefined ? this.extents.interpolate(fraction, other.extents) : other.extents;
     }
 
     return new Keyframe(
@@ -187,30 +171,21 @@ class CameraPath {
   /**
    * Remove keyframes that can be reconstructed with interpolation within the given error range.
    */
-  public simplifies(
-    distanceThreshold: number,
-    lensAngleThreshold: Angle,
-    extentThreshold: number
-  ): void {
+  public simplifies(distanceThreshold: number, lensAngleThreshold: Angle, extentThreshold: number): void {
     let i = 1;
     while (i < this.keyframes.length - 1) {
       const [before, current, after] = this.keyframes.slice(i - 1, i + 2);
-      const fraction =
-        (current.time - before.time) / (after.time - before.time);
+      const fraction = (current.time - before.time) / (after.time - before.time);
       const interpolated = before.interpolate(fraction, after);
 
       // Check if the distances between the reconstructed keyframe and the original is acceptable
-      const sameCameraType =
-        (interpolated.lensAngle === undefined) ===
-        (current.lensAngle === undefined);
+      const sameCameraType = (interpolated.lensAngle === undefined) === (current.lensAngle === undefined);
       const locationDistance = interpolated.location.distance(current.location);
       const targetDistance = interpolated.target.distance(current.target);
       const lensAngleDistance =
         interpolated.lensAngle === undefined || !sameCameraType
           ? 0
-          : Math.abs(
-              interpolated.lensAngle.degrees - current.lensAngle!.degrees
-            );
+          : Math.abs(interpolated.lensAngle.degrees - current.lensAngle!.degrees);
       const extentDistance =
         interpolated.extents !== undefined && current.extents !== undefined
           ? interpolated.extents.distance(current.extents)
@@ -243,8 +218,7 @@ class CameraPath {
 
     // Two keyframes: interpolate between them
     const timeDifference = after.time - before.time;
-    const fraction =
-      timeDifference !== 0 ? (time - before.time) / timeDifference : 0.0;
+    const fraction = timeDifference !== 0 ? (time - before.time) / timeDifference : 0.0;
 
     return before.interpolate(fraction, after);
   }
@@ -258,8 +232,7 @@ class CameraPath {
     before: Keyframe;
     after?: Keyframe;
   } {
-    if (this.keyframes.length <= 0)
-      throw new Error("Selected path has no keyframes.");
+    if (this.keyframes.length <= 0) throw new Error("Selected path has no keyframes.");
 
     // Only one keyframe or before first keyframe
     if (this.keyframes.length === 1 || time < this.keyframes[0].time) {
@@ -268,8 +241,7 @@ class CameraPath {
 
     // Between two keyframes
     for (let i = 1; i < this.keyframes.length; i++) {
-      if (time < this.keyframes[i].time)
-        return { before: this.keyframes[i - 1], after: this.keyframes[i] };
+      if (time < this.keyframes[i].time) return { before: this.keyframes[i - 1], after: this.keyframes[i] };
     }
 
     // After the last keyframe
@@ -382,30 +354,24 @@ export class CameraPathsMenu extends ToolBarDropDown {
       keypresshandler: async (_tb, ev): Promise<void> => {
         ev.stopPropagation();
         if ("Enter" === ev.key) {
-          if (await this.appendNewPathToPathList())
-            await this.savePathsToExternalFile();
+          if (await this.appendNewPathToPathList()) await this.savePathsToExternalFile();
         }
       },
     });
 
-    pathNameTextBox.div.style.marginLeft =
-      pathNameTextBox.div.style.marginRight = "3px";
+    pathNameTextBox.div.style.marginLeft = pathNameTextBox.div.style.marginRight = "3px";
     pathNameTextBox.textbox.size = 36;
     pathNameTextBox.textbox.value = this._newPathName;
     this._element.appendChild(document.createElement("hr"));
 
     const pathsList = document.createElement("select");
     // If only 1 entry in list, input becomes a combo box and can't select the view...
-    pathsList.size =
-      1 === this._paths.length ? 2 : Math.min(15, this._paths.length);
+    pathsList.size = 1 === this._paths.length ? 2 : Math.min(15, this._paths.length);
     pathsList.style.width = "100%";
     pathsList.style.display = 0 < this._paths.length ? "" : "none";
 
     this._element.appendChild(pathsList);
-    this._element.onchange = () =>
-      (this.selectedPath = pathsList.value
-        ? this.findPath(pathsList.value)
-        : undefined);
+    this._element.onchange = () => (this.selectedPath = pathsList.value ? this.findPath(pathsList.value) : undefined);
     pathsList.addEventListener("keyup", async (ev) => {
       if (ev.key === "Delete") await this.deletePath();
     });
@@ -415,8 +381,7 @@ export class CameraPathsMenu extends ToolBarDropDown {
       option.value = option.innerText = path.name;
       if (path.duration === 0 || path.keyframes.length === 0) {
         option.style.color = "grey";
-        option.title =
-          "This path is empty. Please use the record button to record it.";
+        option.title = "This path is empty. Please use the record button to record it.";
       }
       pathsList.appendChild(option);
     }
@@ -429,8 +394,7 @@ export class CameraPathsMenu extends ToolBarDropDown {
       id: "btn_createCameraPath",
       value: "Create",
       handler: async () => {
-        if (await this.appendNewPathToPathList())
-          await this.savePathsToExternalFile();
+        if (await this.appendNewPathToPathList()) await this.savePathsToExternalFile();
       },
       tooltip: "Create a new camera path",
       inline: true,
@@ -477,8 +441,7 @@ export class CameraPathsMenu extends ToolBarDropDown {
     }).button;
 
     const setCreatePathButtonDisabled = () => {
-      const pathExist =
-        this._paths.findIndex((path) => path.name === this._newPathName) !== -1;
+      const pathExist = this._paths.findIndex((path) => path.name === this._newPathName) !== -1;
       const isPathNameValid = this._newPathName.length > 0 && !pathExist;
 
       pathNameTextBox.textbox.style.color = isPathNameValid ? "" : "red";
@@ -492,16 +455,10 @@ export class CameraPathsMenu extends ToolBarDropDown {
 
     this._onStateChanged = () => {
       if (this.selectedPath === undefined) {
-        playButton.disabled =
-          recordButton.disabled =
-          stopButton.disabled =
-          deletePathButton.disabled =
-            true;
+        playButton.disabled = recordButton.disabled = stopButton.disabled = deletePathButton.disabled = true;
         pathsList.disabled = false;
       } else {
-        const canRecord =
-          this.selectedPath.duration === 0 ||
-          this.selectedPath.keyframes.length === 0;
+        const canRecord = this.selectedPath.duration === 0 || this.selectedPath.keyframes.length === 0;
         playButton.disabled = this._isPlaying || canRecord;
         recordButton.disabled = this._isPlaying || !canRecord;
         stopButton.disabled = !this._isPlaying;
@@ -518,8 +475,7 @@ export class CameraPathsMenu extends ToolBarDropDown {
   }
 
   private clearContent(): void {
-    while (this._element.hasChildNodes())
-      this._element.removeChild(this._element.firstChild!);
+    while (this._element.hasChildNodes()) this._element.removeChild(this._element.firstChild!);
     this._onStateChanged = () => {};
   }
 
@@ -538,8 +494,7 @@ export class CameraPathsMenu extends ToolBarDropDown {
   }
 
   private async appendNewPathToPathList(): Promise<boolean> {
-    const pathExist =
-      this._paths.findIndex((path) => path.name === this._newPathName) !== -1;
+    const pathExist = this._paths.findIndex((path) => path.name === this._newPathName) !== -1;
     if (this._newPathName.length > 0 && !pathExist) {
       this._paths.push(CameraPath.createEmpty());
       this.selectedPath = this._paths[this._paths.length - 1];
@@ -554,13 +509,10 @@ export class CameraPathsMenu extends ToolBarDropDown {
 
   private async loadPathsFromExternalFile() {
     const filename = this._viewport.view.iModel.key;
-    const externalCameraPathsString =
-      await DtaRpcInterface.getClient().readExternalCameraPaths(filename);
+    const externalCameraPathsString = await DtaRpcInterface.getClient().readExternalCameraPaths(filename);
 
     try {
-      this._paths = JSON.parse(externalCameraPathsString).map(
-        (path: CameraPathProps) => CameraPath.fromJSON(path)
-      );
+      this._paths = JSON.parse(externalCameraPathsString).map((path: CameraPathProps) => CameraPath.fromJSON(path));
     } catch (_e) {
       this._paths = [];
     }
@@ -571,10 +523,7 @@ export class CameraPathsMenu extends ToolBarDropDown {
     if (undefined === filename) return;
 
     const namedViews = JSON.stringify(this._paths.map((path) => path.toJSON()));
-    await DtaRpcInterface.getClient().writeExternalCameraPaths(
-      filename,
-      namedViews
-    );
+    await DtaRpcInterface.getClient().writeExternalCameraPaths(filename, namedViews);
   }
 
   private findPath(name: string): CameraPath | undefined {
@@ -607,9 +556,7 @@ export class CameraPathsMenu extends ToolBarDropDown {
     this.selectedPath.sortKeyframes();
 
     const animate = (timestamp: number) => {
-      const elapsed = this._previousAnimationFrame
-        ? timestamp - this._previousAnimationFrame
-        : 0;
+      const elapsed = this._previousAnimationFrame ? timestamp - this._previousAnimationFrame : 0;
       this._currentAnimationTime += elapsed;
 
       this.computeAnimationFrame();
@@ -664,8 +611,7 @@ export class CameraPathsMenu extends ToolBarDropDown {
     } else {
       this.playAnimationFrame();
 
-      if (this._currentAnimationTime > this.selectedPath.duration)
-        this.endAnimation();
+      if (this._currentAnimationTime > this.selectedPath.duration) this.endAnimation();
     }
   }
 
@@ -673,9 +619,7 @@ export class CameraPathsMenu extends ToolBarDropDown {
     if (!this.selectedPath) throw new Error("No valid camera path loaded");
 
     this._viewport.setAnimator(undefined);
-    const keyframe = this.selectedPath.getKeyframeAtTime(
-      this._currentAnimationTime
-    );
+    const keyframe = this.selectedPath.getKeyframeAtTime(this._currentAnimationTime);
     this.setCameraPosition(keyframe);
   }
 
@@ -683,8 +627,7 @@ export class CameraPathsMenu extends ToolBarDropDown {
     if (!this.selectedPath) throw new Error("No valid camera path loaded");
 
     const view = this._viewport.view;
-    if (!view.is3d() || !view.supportsCamera())
-      throw new Error("Invalid view for camera path");
+    if (!view.is3d() || !view.supportsCamera()) throw new Error("Invalid view for camera path");
 
     // TODO: Handle global coordinates
     const location = this._viewport.npcToWorld(new Point3d(0.5, 0.5, 1.0));
@@ -697,20 +640,11 @@ export class CameraPathsMenu extends ToolBarDropDown {
     const up = location.unitVectorTo(topScreen);
     if (up === undefined) return;
 
-    const lensAngle = view.isCameraOn
-      ? view.camera.getLensAngle().clone()
-      : undefined;
+    const lensAngle = view.isCameraOn ? view.camera.getLensAngle().clone() : undefined;
     const extents = view.isCameraOn ? undefined : view.getExtents().clone();
 
     this.selectedPath.keyframes.push(
-      new Keyframe(
-        this._currentAnimationTime,
-        location,
-        target,
-        up,
-        lensAngle,
-        extents
-      )
+      new Keyframe(this._currentAnimationTime, location, target, up, lensAngle, extents)
     );
   }
 
@@ -720,8 +654,7 @@ export class CameraPathsMenu extends ToolBarDropDown {
 
   private setCameraPosition(keyframe: Keyframe) {
     const view = this._viewport.view;
-    if (!view.is3d() || !view.supportsCamera())
-      throw new Error("Invalid view for camera path");
+    if (!view.is3d() || !view.supportsCamera()) throw new Error("Invalid view for camera path");
 
     // TODO: Handle global coordinates
     if (keyframe.lensAngle !== undefined) {
@@ -737,9 +670,7 @@ export class CameraPathsMenu extends ToolBarDropDown {
       });
     } else {
       if (keyframe.extents === undefined)
-        throw new Error(
-          "Invalid keyframe for camera: path should specifies either lensAngle or extents."
-        );
+        throw new Error("Invalid keyframe for camera: path should specifies either lensAngle or extents.");
 
       // Orthographic camera
       view.lookAt({

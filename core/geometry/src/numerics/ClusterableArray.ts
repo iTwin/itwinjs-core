@@ -38,15 +38,8 @@ export class ClusterableArray extends GrowableBlockedArray {
    * @param  numExtraDataPerPoint of extra data values per point.
    * @param initialBlockCapacity predicted number of points.  (This does not have to be accurate)
    */
-  public constructor(
-    numCoordinatePerPoint: number,
-    numExtraDataPerPoint: number,
-    initialBlockCapacity: number
-  ) {
-    super(
-      1 + numCoordinatePerPoint + numExtraDataPerPoint,
-      initialBlockCapacity
-    );
+  public constructor(numCoordinatePerPoint: number, numExtraDataPerPoint: number, initialBlockCapacity: number) {
+    super(1 + numCoordinatePerPoint + numExtraDataPerPoint, initialBlockCapacity);
     this._numExtraDataPerPoint = numExtraDataPerPoint;
     this._numCoordinatePerPoint = numCoordinatePerPoint;
   }
@@ -61,13 +54,7 @@ export class ClusterableArray extends GrowableBlockedArray {
   /** add a block directly with 1 to 5 listed content parameters.
    * This assumes numDataPerPoint is sufficient for the parameters provided.
    */
-  public addDirect(
-    x0: number,
-    x1?: number,
-    x2?: number,
-    x3?: number,
-    x4?: number
-  ) {
+  public addDirect(x0: number, x1?: number, x2?: number, x3?: number, x4?: number) {
     const i0 = this.newBlockIndex();
     this._data[i0 + 1] = x0;
     if (x1 !== undefined) this._data[i0 + 2] = x1;
@@ -108,12 +95,7 @@ export class ClusterableArray extends GrowableBlockedArray {
   /** Get the xyZ coordinates by point index. */
   public getPoint3d(blockIndex: number, result?: Point3d): Point3d {
     const i0 = this.blockIndexToDoubleIndex(blockIndex);
-    return Point3d.create(
-      this._data[i0 + 1],
-      this._data[i0 + 2],
-      this._data[i0 + 3],
-      result
-    );
+    return Point3d.create(this._data[i0 + 1], this._data[i0 + 2], this._data[i0 + 3], result);
   }
   /** Return a single extra data value */
   public getExtraData(blockIndex: number, i: number): number {
@@ -150,9 +132,7 @@ export class ClusterableArray extends GrowableBlockedArray {
    * are inspected.  Within that candidate set, all blocks that are within tolerance for ALL components are clustered.
    * * In the output cluster array, clusters are terminated a invalid index. Test for the invalid index with GrowableBlockArray.isClusterTerminator (x)
    */
-  public clusterIndicesLexical(
-    clusterTolerance: number = Geometry.smallMetricDistance
-  ): Uint32Array {
+  public clusterIndicesLexical(clusterTolerance: number = Geometry.smallMetricDistance): Uint32Array {
     // install primary sort key
     this.setupPrimaryClusterSort();
     // presort by all coordinates ....
@@ -177,17 +157,9 @@ export class ClusterableArray extends GrowableBlockedArray {
         firstSort[i] = ClusterableArray.clusterTerminator;
         for (j = i + 1; j < n; j++) {
           candidateBlockIndex = firstSort[j];
-          if (candidateBlockIndex === ClusterableArray.clusterTerminator)
-            continue; // nearby in sort direction but already in a cluster.
+          if (candidateBlockIndex === ClusterableArray.clusterTerminator) continue; // nearby in sort direction but already in a cluster.
           if (this.component(candidateBlockIndex, 0) >= barrierU) break;
-          if (
-            this.distanceBetweenSubBlocks(
-              clusterStartBlockIndex,
-              candidateBlockIndex,
-              k0,
-              k1
-            ) < clusterTolerance
-          ) {
+          if (this.distanceBetweenSubBlocks(clusterStartBlockIndex, candidateBlockIndex, k0, k1) < clusterTolerance) {
             clusterIndices[m++] = candidateBlockIndex; // The candidate is in the block
             firstSort[j] = ClusterableArray.clusterTerminator; // and it will not be reused as future block base
           }
@@ -206,8 +178,7 @@ export class ClusterableArray extends GrowableBlockedArray {
     const nc = this._numCoordinatePerPoint;
     const vector = new Float64Array(nc);
     vector[0] = 1.0;
-    for (let c = 1; c < nc; c++)
-      vector[c] = vector[c - 1] * ClusterableArray._vectorFactor;
+    for (let c = 1; c < nc; c++) vector[c] = vector[c - 1] * ClusterableArray._vectorFactor;
     let k = 0;
     let dot = 0.0;
     const data = this._data;
@@ -229,11 +200,9 @@ export class ClusterableArray extends GrowableBlockedArray {
       let i = this.blockIndexToDoubleIndex(b);
       const chunk: any[] = [b, this._data[i++]];
       const coordinates = [];
-      for (let c = 0; c < this._numCoordinatePerPoint; c++)
-        coordinates.push(this._data[i++]);
+      for (let c = 0; c < this._numCoordinatePerPoint; c++) coordinates.push(this._data[i++]);
       chunk.push(coordinates);
-      for (let c = 0; c < this._numExtraDataPerPoint; c++)
-        chunk.push(this._data[i++]);
+      for (let c = 0; c < this._numExtraDataPerPoint; c++) chunk.push(this._data[i++]);
       result.push(chunk);
     }
     return result;
@@ -242,9 +211,7 @@ export class ClusterableArray extends GrowableBlockedArray {
    * Return an array of indices from block index to cluster index.
    * @param clusteredBlocks clusters of block indices followed by separators.
    */
-  public createIndexBlockToClusterIndex(
-    clusteredBlocks: Uint32Array
-  ): Uint32Array {
+  public createIndexBlockToClusterIndex(clusteredBlocks: Uint32Array): Uint32Array {
     const numBlocks = this.numBlocks;
     const blockToCluster = new Uint32Array(numBlocks);
     blockToCluster.fill(ClusterableArray.clusterTerminator);
@@ -262,9 +229,7 @@ export class ClusterableArray extends GrowableBlockedArray {
    * Return an array of indices from block index to index of its cluster's start in the cluster index array.
    * @param clusteredBlocks clusters of block indices followed by separators.
    */
-  public createIndexBlockToClusterStart(
-    clusteredBlocks: Uint32Array
-  ): Uint32Array {
+  public createIndexBlockToClusterStart(clusteredBlocks: Uint32Array): Uint32Array {
     const n = clusteredBlocks.length;
     const numBlocks = this.numBlocks;
     const blockToClusterStart = new Uint32Array(numBlocks);
@@ -293,9 +258,7 @@ export class ClusterableArray extends GrowableBlockedArray {
   /** create a reverse index: given a cluster index k, clusterToClusterStart[k] is the place
    * the cluster's block indices appear in clusterBlocks
    */
-  public createIndexClusterToClusterStart(
-    clusteredBlocks: Uint32Array
-  ): Uint32Array {
+  public createIndexClusterToClusterStart(clusteredBlocks: Uint32Array): Uint32Array {
     let numCluster = this.countClusters(clusteredBlocks);
     const clusterToClusterStart = new Uint32Array(numCluster);
     const terminator = ClusterableArray.clusterTerminator;
@@ -318,10 +281,7 @@ export class ClusterableArray extends GrowableBlockedArray {
    * @param blockedIndices indices, organized as blocks of good indices terminated by the clusterTerminator. Each block is individually sorted on return.
    * @param dataIndex index of the data key, e.g., if the sort key is the first extraData (angle) after x and y coordinate data, pass dataIndex = 2.
    */
-  public sortSubsetsBySingleKey(
-    blockedIndices: Uint32Array,
-    dataIndex: number
-  ) {
+  public sortSubsetsBySingleKey(blockedIndices: Uint32Array, dataIndex: number) {
     const dataOffset = 1 + dataIndex;
     let kBegin = 0;
     let swap;

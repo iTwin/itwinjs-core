@@ -30,11 +30,7 @@ import { createBlankConnection } from "../createBlankConnection";
 
 describe("TileAdmin", () => {
   describe("memory limit configuration", () => {
-    function expectLimits(
-      admin: TileAdmin,
-      limit: GpuMemoryLimit,
-      maxBytes: number | undefined
-    ): void {
+    function expectLimits(admin: TileAdmin, limit: GpuMemoryLimit, maxBytes: number | undefined): void {
       expect(admin.gpuMemoryLimit).to.equal(limit);
       expect(admin.maxTotalTileContentBytes).to.equal(maxBytes);
     }
@@ -45,22 +41,14 @@ describe("TileAdmin", () => {
       expectedLimit: GpuMemoryLimit,
       expectedMaxBytes: number | undefined
     ): TileAdmin {
-      const admin = new TileAdmin(
-        isMobile,
-        undefined,
-        undefined !== limits ? { gpuMemoryLimits: limits } : undefined
-      );
+      const admin = new TileAdmin(isMobile, undefined, undefined !== limits ? { gpuMemoryLimits: limits } : undefined);
       expectLimits(admin, expectedLimit, expectedMaxBytes);
       return admin;
     }
 
     const mobileLimits = TileAdmin.mobileGpuMemoryLimits;
     const desktopLimits = TileAdmin.nonMobileGpuMemoryLimits;
-    const keys: Array<"relaxed" | "default" | "aggressive"> = [
-      "relaxed",
-      "default",
-      "aggressive",
-    ];
+    const keys: Array<"relaxed" | "default" | "aggressive"> = ["relaxed", "default", "aggressive"];
 
     it("defaults to 'default' on mobile", () => {
       expectAdmin(true, undefined, "default", mobileLimits.default);
@@ -85,12 +73,7 @@ describe("TileAdmin", () => {
     it("can be changed after initialization", () => {
       for (const isMobile of [true, false]) {
         const limits = isMobile ? mobileLimits : desktopLimits;
-        const admin = expectAdmin(
-          isMobile,
-          "default",
-          "default",
-          limits.default
-        );
+        const admin = expectAdmin(isMobile, "default", "default", limits.default);
 
         for (const key of keys) {
           admin.gpuMemoryLimit = key;
@@ -112,12 +95,7 @@ describe("TileAdmin", () => {
     });
 
     it("defaults to 'none' for invalid input", () => {
-      expectAdmin(
-        false,
-        "invalid" as unknown as GpuMemoryLimit,
-        "none",
-        undefined
-      );
+      expectAdmin(false, "invalid" as unknown as GpuMemoryLimit, "none", undefined);
     });
 
     it("uses different number of bytes on mobile vs desktop", () => {
@@ -147,11 +125,7 @@ describe("TileAdmin", () => {
       public retainMemory = false;
       public visible = true;
 
-      public constructor(
-        tileTree: TileTree,
-        contentSize: number,
-        retainMemory = false
-      ) {
+      public constructor(tileTree: TileTree, contentSize: number, retainMemory = false) {
         super(
           {
             contentId: contentSize.toString(),
@@ -167,9 +141,7 @@ describe("TileAdmin", () => {
         if (contentSize === 0) this.setIsReady();
       }
 
-      protected _loadChildren(
-        resolve: (children: Tile[] | undefined) => void
-      ): void {
+      protected _loadChildren(resolve: (children: Tile[] | undefined) => void): void {
         resolve(undefined);
       }
 
@@ -202,11 +174,7 @@ describe("TileAdmin", () => {
       public readonly contentSize: number;
       private readonly _rootTile: TestTile;
 
-      public constructor(
-        contentSize: number,
-        iModel: IModelConnection,
-        retainMemory = false
-      ) {
+      public constructor(contentSize: number, iModel: IModelConnection, retainMemory = false) {
         super({
           iModel,
           id: (++TestTree._nextId).toString(),
@@ -259,9 +227,7 @@ describe("TileAdmin", () => {
         return lhs.treeId - rhs.treeId;
       }
 
-      public async createTileTree(
-        tree: TestTree
-      ): Promise<TileTree | undefined> {
+      public async createTileTree(tree: TestTree): Promise<TileTree | undefined> {
         return Promise.resolve(tree);
       }
     }
@@ -284,10 +250,7 @@ describe("TileAdmin", () => {
     class Provider implements TiledGraphicsProvider {
       public readonly refs: TileTreeReference[] = [];
 
-      public forEachTileTreeRef(
-        _vp: Viewport,
-        func: (ref: TileTreeReference) => void
-      ): void {
+      public forEachTileTreeRef(_vp: Viewport, func: (ref: TileTreeReference) => void): void {
         for (const ref of this.refs) func(ref);
       }
 
@@ -332,20 +295,14 @@ describe("TileAdmin", () => {
     document.body.appendChild(viewDiv);
 
     function createViewport(imodel: IModelConnection): Viewport {
-      const view = SpatialViewState.createBlank(
-        imodel,
-        new Point3d(),
-        new Vector3d(1, 1, 1)
-      );
+      const view = SpatialViewState.createBlank(imodel, new Point3d(), new Vector3d(1, 1, 1));
       return ScreenViewport.create(viewDiv, view);
     }
 
     async function render(...viewports: Viewport[]): Promise<void> {
       const loadTrees = new Array<Promise<void>>();
       for (const viewport of viewports)
-        viewport.forEachTiledGraphicsProvider((p) =>
-          loadTrees.push((p as Provider).loadAllTrees())
-        );
+        viewport.forEachTiledGraphicsProvider((p) => loadTrees.push((p as Provider).loadAllTrees()));
 
       await Promise.all(loadTrees);
 
@@ -377,10 +334,7 @@ describe("TileAdmin", () => {
       }
     }
 
-    function addTilesToViewport(
-      viewport: Viewport,
-      ...contentSizes: number[]
-    ): TestTile[] {
+    function addTilesToViewport(viewport: Viewport, ...contentSizes: number[]): TestTile[] {
       const tiles = [];
       const provider = new Provider();
       viewport.addTiledGraphicsProvider(provider);
@@ -404,9 +358,7 @@ describe("TileAdmin", () => {
 
       const tiles = trees.map((x) => x.rootTile);
       for (const tile of tiles) {
-        expect(tile.isReady).to.equal(
-          (tile.tree as TestTree).contentSize === 0
-        );
+        expect(tile.isReady).to.equal((tile.tree as TestTree).contentSize === 0);
         expect(tile.hasGraphics).to.be.false;
         expect(isLinked(tile)).to.be.false;
       }
@@ -557,11 +509,7 @@ describe("TileAdmin", () => {
     it("manages memory across multiple viewports", async () => {
       const admin = IModelApp.tileAdmin;
       admin.gpuMemoryLimit = 0;
-      const trees = [
-        new TestTree(1, imodel1),
-        new TestTree(10, imodel1),
-        new TestTree(100, imodel1),
-      ];
+      const trees = [new TestTree(1, imodel1), new TestTree(10, imodel1), new TestTree(100, imodel1)];
       const tiles = trees.map((x) => x.rootTile);
 
       const vp1 = createViewport(imodel1);

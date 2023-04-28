@@ -191,10 +191,7 @@ export class Coordinate {
    * @param direction2 the second direction.
    * @return the angle between the directions, in radians from 0.0 to PI (never negative).
    */
-  public static getAngleRad(
-    direction1: Coordinate,
-    direction2: Coordinate
-  ): float64 {
+  public static getAngleRad(direction1: Coordinate, direction2: Coordinate): float64 {
     let length1: float64 = direction1.getLength();
     if (length1 == 0.0) return 0.0;
     let length2: float64 = direction2.getLength();
@@ -211,10 +208,7 @@ export class Coordinate {
    * @param direction2 the second direction.
    * @return the angle between the directions, in degrees from 0.0 to 180.0 (never negative).
    */
-  public static getAngleDeg(
-    direction1: Coordinate,
-    direction2: Coordinate
-  ): float64 {
+  public static getAngleDeg(direction1: Coordinate, direction2: Coordinate): float64 {
     return (Coordinate.getAngleRad(direction1, direction2) / Math.PI) * 180.0;
   }
 }

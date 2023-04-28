@@ -4,21 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import {
-  CustomAttributeClass,
-  ECClassModifier,
-  EntityClass,
-  Schema,
-  SchemaContext,
-} from "@itwin/ecschema-metadata";
+import { CustomAttributeClass, ECClassModifier, EntityClass, Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { MutableClass } from "../../../Editing/Mutable/MutableClass";
 import { MutableSchema } from "../../../Editing/Mutable/MutableSchema";
 import * as Rules from "../../../Validation/ECRules";
 import { toArray } from "../../TestUtils/DiagnosticHelpers";
-import {
-  DiagnosticCategory,
-  DiagnosticType,
-} from "../../../Validation/Diagnostic";
+import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -56,22 +47,12 @@ describe("CustomAttribute Rules Tests", () => {
       for await (const diagnostic of result) {
         resultHasEntries = true;
         expect(diagnostic.ecDefinition).to.equal(testEntity);
-        expect(diagnostic.messageArgs).to.eql([
-          testEntity.fullName,
-          "TestCASchema.TestCA",
-        ]);
+        expect(diagnostic.messageArgs).to.eql([testEntity.fullName, "TestCASchema.TestCA"]);
         expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic.code).to.equal(
-          Rules.DiagnosticCodes.CustomAttributeNotOfConcreteClass
-        );
-        expect(diagnostic.diagnosticType).to.equal(
-          DiagnosticType.CustomAttributeContainer
-        );
+        expect(diagnostic.code).to.equal(Rules.DiagnosticCodes.CustomAttributeNotOfConcreteClass);
+        expect(diagnostic.diagnosticType).to.equal(DiagnosticType.CustomAttributeContainer);
       }
-      expect(
-        resultHasEntries,
-        "expected rule to return an AsyncIterable with entries."
-      ).to.be.true;
+      expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
     });
 
     it("CustomAttribute is concrete, rule passes", async () => {
@@ -109,17 +90,10 @@ describe("CustomAttribute Rules Tests", () => {
       expect(results.length).to.equal(2, "Expected 2 diagnostics");
       const diagnostic = results[0];
       expect(diagnostic.ecDefinition).to.equal(testEntity);
-      expect(diagnostic.messageArgs).to.eql([
-        testEntity.fullName,
-        "TestCASchema.TestCA",
-      ]);
+      expect(diagnostic.messageArgs).to.eql([testEntity.fullName, "TestCASchema.TestCA"]);
       expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
-      expect(diagnostic.code).to.equal(
-        Rules.DiagnosticCodes.CustomAttributeSchemaMustBeReferenced
-      );
-      expect(diagnostic.diagnosticType).to.equal(
-        DiagnosticType.CustomAttributeContainer
-      );
+      expect(diagnostic.code).to.equal(Rules.DiagnosticCodes.CustomAttributeSchemaMustBeReferenced);
+      expect(diagnostic.diagnosticType).to.equal(DiagnosticType.CustomAttributeContainer);
     });
 
     it("CustomAttribute schema is referenced, rule passes", async () => {

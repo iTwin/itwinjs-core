@@ -4,13 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Point3d, Range3d, XYAndZ, XYZProps } from "@itwin/core-geometry";
-import {
-  Cartographic,
-  EcefLocation,
-  EmptyLocalization,
-  GeoCoordStatus,
-  PointWithStatus,
-} from "@itwin/core-common";
+import { Cartographic, EcefLocation, EmptyLocalization, GeoCoordStatus, PointWithStatus } from "@itwin/core-common";
 import { BlankConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { CoordinateConverter } from "../GeoServices";
@@ -121,10 +115,7 @@ describe("CoordinateConverter", () => {
     expect(c.maxPointsPerRequest).to.equal(1);
   });
 
-  function expectConvertedPoint(
-    requested: XYZProps,
-    received: PointWithStatus
-  ): void {
+  function expectConvertedPoint(requested: XYZProps, received: PointWithStatus): void {
     expect(received.s).to.equal(GeoCoordStatus.Success);
     const rec = Point3d.fromJSON(received.p);
     const req = Point3d.fromJSON(requested);
@@ -133,22 +124,13 @@ describe("CoordinateConverter", () => {
     expect(rec.z).to.equal(req.z);
   }
 
-  function expectConverted(
-    requested: XYZProps[],
-    received: PointWithStatus[]
-  ): void {
+  function expectConverted(requested: XYZProps[], received: PointWithStatus[]): void {
     expect(requested.length).to.equal(received.length);
-    for (let i = 0; i < requested.length; i++)
-      expectConvertedPoint(requested[i], received[i]);
+    for (let i = 0; i < requested.length; i++) expectConvertedPoint(requested[i], received[i]);
   }
 
   it("converts points", async () => {
-    const input: XYZProps[] = [
-      { x: 0, y: 1, z: 2 },
-      [6, 7, 8],
-      [9, 10, 11],
-      { x: 3, y: 4, z: 5 },
-    ];
+    const input: XYZProps[] = [{ x: 0, y: 1, z: 2 }, [6, 7, 8], [9, 10, 11], { x: 3, y: 4, z: 5 }];
 
     const c = new Converter({ iModel, requestPoints });
     const output = await c.convert(input);
@@ -380,10 +362,7 @@ describe("CoordinateConverter", () => {
       },
     });
 
-    const results = await Promise.all([
-      c.convert([[0, 0, 0]]),
-      c.convert([[1, 1, 1]]),
-    ]);
+    const results = await Promise.all([c.convert([[0, 0, 0]]), c.convert([[1, 1, 1]])]);
 
     expect(results.length).to.equal(2);
     expectConverted([[0, 0, 0]], results[0].points);
@@ -417,8 +396,7 @@ describe("CoordinateConverter", () => {
   it("produces an error status for points requested but not returned", async () => {
     const c = new Converter({
       iModel,
-      requestPoints: async () =>
-        Promise.resolve([{ p: [1, 2, 3], s: GeoCoordStatus.Success }]),
+      requestPoints: async () => Promise.resolve([{ p: [1, 2, 3], s: GeoCoordStatus.Success }]),
     });
 
     const results = await c.convert([

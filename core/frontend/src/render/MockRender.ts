@@ -9,21 +9,13 @@
 
 import { dispose } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
-import {
-  ElementAlignedBox3d,
-  EmptyLocalization,
-  RenderFeatureTable,
-} from "@itwin/core-common";
+import { ElementAlignedBox3d, EmptyLocalization, RenderFeatureTable } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { ViewRect } from "../ViewRect";
 import { Decorations } from "./Decorations";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
-import {
-  CustomGraphicBuilderOptions,
-  GraphicBuilder,
-  ViewportGraphicBuilderOptions,
-} from "./GraphicBuilder";
+import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { Pixel } from "./Pixel";
 import { PrimitiveBuilder } from "./primitives/geometry/GeometryListBuilder";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
@@ -33,11 +25,7 @@ import { MeshParams } from "./primitives/VertexTable";
 import { GraphicList, RenderGraphic } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderPlan } from "./RenderPlan";
-import {
-  RenderAreaPattern,
-  RenderGeometry,
-  RenderSystem,
-} from "./RenderSystem";
+import { RenderAreaPattern, RenderGeometry, RenderSystem } from "./RenderSystem";
 import { RenderTarget } from "./RenderTarget";
 import { Scene } from "./Scene";
 
@@ -94,30 +82,19 @@ export namespace MockRender {
 
   /** @internal */
   export class OnScreenTarget extends Target {
-    public constructor(
-      system: RenderSystem,
-      private readonly _canvas: HTMLCanvasElement
-    ) {
+    public constructor(system: RenderSystem, private readonly _canvas: HTMLCanvasElement) {
       super(system);
     }
 
     public get viewRect() {
-      return new ViewRect(
-        0,
-        0,
-        this._canvas.clientWidth,
-        this._canvas.clientHeight
-      );
+      return new ViewRect(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
     }
     public setViewRect(_rect: ViewRect, _temp: boolean) {}
   }
 
   /** @internal */
   export class OffScreenTarget extends Target {
-    public constructor(
-      system: RenderSystem,
-      private readonly _viewRect: ViewRect
-    ) {
+    public constructor(system: RenderSystem, private readonly _viewRect: ViewRect) {
       super(system);
     }
 
@@ -131,10 +108,7 @@ export namespace MockRender {
 
   /** @internal */
   export class Builder extends PrimitiveBuilder {
-    public constructor(
-      system: System,
-      options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions
-    ) {
+    public constructor(system: System, options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions) {
       super(system, options);
     }
   }
@@ -236,18 +210,10 @@ export namespace MockRender {
     public override createGraphicList(primitives: RenderGraphic[]) {
       return new List(primitives);
     }
-    public override createGraphicBranch(
-      branch: GraphicBranch,
-      transform: Transform,
-      options?: GraphicBranchOptions
-    ) {
+    public override createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions) {
       return new Branch(branch, transform, options);
     }
-    public override createBatch(
-      graphic: RenderGraphic,
-      features: RenderFeatureTable,
-      range: ElementAlignedBox3d
-    ) {
+    public override createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d) {
       return new Batch(graphic, features, range);
     }
 
@@ -264,10 +230,7 @@ export namespace MockRender {
       return new Graphic();
     }
     /** @internal */
-    public override createPointCloud(
-      _args: PointCloudArgs,
-      _imodel: IModelConnection
-    ) {
+    public override createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection) {
       return new Graphic();
     }
     public override createRenderGraphic() {
@@ -296,8 +259,7 @@ export namespace MockRender {
 
   /** An implementation of IModelApp which uses a MockRender.System by default. */
   export class App {
-    public static systemFactory: SystemFactory = () =>
-      App.createDefaultRenderSystem();
+    public static systemFactory: SystemFactory = () => App.createDefaultRenderSystem();
 
     public static async startup(opts?: IModelAppOptions): Promise<void> {
       opts = opts ? opts : {};

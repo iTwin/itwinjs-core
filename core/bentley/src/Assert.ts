@@ -29,10 +29,7 @@ const assertionsEnabled = process.env.NODE_ENV === "development";
  * @throws Error containing the specified `message` if `condition` is `false`.
  * @public
  */
-export function assert(
-  condition: boolean | (() => boolean),
-  message?: string | (() => string)
-): asserts condition {
+export function assert(condition: boolean | (() => boolean), message?: string | (() => string)): asserts condition {
   if (!assertionsEnabled) return;
 
   if ("boolean" !== typeof condition) condition = condition();

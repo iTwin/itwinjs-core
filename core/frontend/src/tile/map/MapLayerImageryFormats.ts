@@ -46,9 +46,7 @@ export class ImageryMapLayerFormat extends MapLayerFormat {
 class WmsMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "WMS";
 
-  public static override createImageryProvider(
-    settings: ImageMapLayerSettings
-  ): MapLayerImageryProvider | undefined {
+  public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     return new WmsMapLayerImageryProvider(settings);
   }
   public static override async validateSource(
@@ -67,14 +65,10 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
       );
       if (capabilities !== undefined) {
         subLayers = capabilities.getSubLayers(false);
-        const rootsSubLayer = subLayers?.find(
-          (sublayer) => sublayer.parent === undefined
-        );
-        const hasTooManyLayers =
-          subLayers && subLayers.length > maxVisibleSubLayers;
+        const rootsSubLayer = subLayers?.find((sublayer) => sublayer.parent === undefined);
+        const hasTooManyLayers = subLayers && subLayers.length > maxVisibleSubLayers;
 
-        if (!Array.isArray(subLayers))
-          return { status: MapLayerSourceStatus.Valid, subLayers };
+        if (!Array.isArray(subLayers)) return { status: MapLayerSourceStatus.Valid, subLayers };
 
         for (const subLayer of subLayers) {
           // In general for WMS, we prefer to have the children of root node visible, but not the root itself.
@@ -90,31 +84,17 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
           }
 
           // Make children of the root node visible.
-          if (
-            subLayer.parent &&
-            subLayer.parent === rootsSubLayer?.id &&
-            !hasTooManyLayers
-          ) {
+          if (subLayer.parent && subLayer.parent === rootsSubLayer?.id && !hasTooManyLayers) {
             const isUnnamedGroup = (layer: MapSubLayerProps) => {
-              return (
-                layer.children &&
-                layer.children.length > 0 &&
-                (!layer.name || layer.name.length === 0)
-              );
+              return layer.children && layer.children.length > 0 && (!layer.name || layer.name.length === 0);
             };
 
-            const makeChildrenVisible = (
-              layers: MapSubLayerProps[] | undefined,
-              layer: MapSubLayerProps
-            ) => {
+            const makeChildrenVisible = (layers: MapSubLayerProps[] | undefined, layer: MapSubLayerProps) => {
               layer?.children?.forEach((childId) => {
-                const childSubLayer = subLayers?.find(
-                  (child) => child?.id === childId
-                );
+                const childSubLayer = subLayers?.find((child) => child?.id === childId);
                 if (childSubLayer) {
                   childSubLayer.visible = true;
-                  if (isUnnamedGroup(childSubLayer))
-                    makeChildrenVisible(layers, childSubLayer);
+                  if (isUnnamedGroup(childSubLayer)) makeChildrenVisible(layers, childSubLayer);
                 }
               });
             };
@@ -122,8 +102,7 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
             subLayer.visible = true;
 
             // If we got a unnamed group, make children visible recursively until we have a leaf or named group
-            if (isUnnamedGroup(subLayer))
-              makeChildrenVisible(subLayers, subLayer);
+            if (isUnnamedGroup(subLayer)) makeChildrenVisible(subLayers, subLayer);
           }
         }
       }
@@ -132,10 +111,7 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
     } catch (err: any) {
       let status = MapLayerSourceStatus.InvalidUrl;
       if (err?.status === 401) {
-        status =
-          userName && password
-            ? MapLayerSourceStatus.InvalidCredentials
-            : MapLayerSourceStatus.RequireAuth;
+        status = userName && password ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth;
       }
       return { status };
     }
@@ -145,9 +121,7 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
 class WmtsMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "WMTS";
 
-  public static override createImageryProvider(
-    settings: ImageMapLayerSettings
-  ): MapLayerImageryProvider | undefined {
+  public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     return new WmtsMapLayerImageryProvider(settings);
   }
 
@@ -168,13 +142,11 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
 
       // Only returns layer that can be published in the Google maps or WGS84 aligned tile trees.
       let supportedTms: WmtsCapability.TileMatrixSet[] = [];
-      const googleMapsTms =
-        capabilities?.contents?.getGoogleMapsCompatibleTileMatrixSet();
+      const googleMapsTms = capabilities?.contents?.getGoogleMapsCompatibleTileMatrixSet();
       if (googleMapsTms) {
         supportedTms = googleMapsTms;
       }
-      const wsg84Tms =
-        capabilities?.contents?.getEpsg4326CompatibleTileMatrixSet();
+      const wsg84Tms = capabilities?.contents?.getEpsg4326CompatibleTileMatrixSet();
       if (wsg84Tms) {
         supportedTms = supportedTms.concat(wsg84Tms);
       }
@@ -187,9 +159,7 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
       let subLayerId = 0;
       capabilities?.contents?.layers.forEach((layer) => {
         const hasSupportedTms = supportedTms?.some((tms) => {
-          return layer.tileMatrixSetLinks.some(
-            (tmls) => tmls.tileMatrixSet === tms.identifier
-          );
+          return layer.tileMatrixSetLinks.some((tmls) => tmls.tileMatrixSet === tms.identifier);
         });
         if (hasSupportedTms) {
           subLayers.push({
@@ -204,8 +174,7 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
       });
 
       // Return error if we could find a single compatible layer.
-      if (subLayers.length === 0)
-        return { status: MapLayerSourceStatus.InvalidTileTree };
+      if (subLayers.length === 0) return { status: MapLayerSourceStatus.InvalidTileTree };
 
       return { status: MapLayerSourceStatus.Valid, subLayers };
     } catch (err) {
@@ -224,18 +193,9 @@ class ArcGISMapLayerFormat extends ImageryMapLayerFormat {
     ignoreCache?: boolean
   ): Promise<MapLayerSourceValidation> {
     // Some Map service supporting only tiles don't include the 'Map' capabilities, thus we can't make it mandatory.
-    return ArcGisUtilities.validateSource(
-      url,
-      this.formatId,
-      [],
-      userName,
-      password,
-      ignoreCache
-    );
+    return ArcGisUtilities.validateSource(url, this.formatId, [], userName, password, ignoreCache);
   }
-  public static override createImageryProvider(
-    settings: ImageMapLayerSettings
-  ): MapLayerImageryProvider | undefined {
+  public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     return new ArcGISMapLayerImageryProvider(settings);
   }
 }
@@ -243,34 +203,26 @@ class ArcGISMapLayerFormat extends ImageryMapLayerFormat {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class AzureMapsMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "AzureMaps";
-  public static override createImageryProvider(
-    settings: ImageMapLayerSettings
-  ): MapLayerImageryProvider | undefined {
+  public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     return new AzureMapsLayerImageryProvider(settings);
   }
 }
 class BingMapsMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "BingMaps";
-  public static override createImageryProvider(
-    settings: ImageMapLayerSettings
-  ): MapLayerImageryProvider | undefined {
+  public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     return new BingMapsImageryLayerProvider(settings);
   }
 }
 
 class MapBoxImageryMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "MapboxImagery";
-  public static override createImageryProvider(
-    settings: ImageMapLayerSettings
-  ): MapLayerImageryProvider | undefined {
+  public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     return new MapBoxLayerImageryProvider(settings);
   }
 }
 class TileUrlMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "TileURL";
-  public static override createImageryProvider(
-    settings: ImageMapLayerSettings
-  ): MapLayerImageryProvider | undefined {
+  public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     return new TileUrlImageryProvider(settings);
   }
 }

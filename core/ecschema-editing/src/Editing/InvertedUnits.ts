@@ -36,19 +36,13 @@ export class InvertedUnits {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       return {
-        errorMessage: `Schema Key ${schemaKey.toString(
-          true
-        )} not found in context`,
+        errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context`,
       };
 
-    const newUnit = (await schema.createInvertedUnit(
-      name
-    )) as MutableInvertedUnit;
+    const newUnit = (await schema.createInvertedUnit(name)) as MutableInvertedUnit;
     if (newUnit === undefined)
       return {
-        errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(
-          true
-        )}.`,
+        errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.`,
       };
 
     const invertsUnit = await schema.lookupItem<Unit>(invertsUnitKey);
@@ -60,12 +54,7 @@ export class InvertedUnits {
     if (invertsUnit.schemaItemType !== SchemaItemType.Unit)
       return { errorMessage: `${invertsUnit.fullName} is not of type Unit.` };
 
-    newUnit.setInvertsUnit(
-      new DelayedPromiseWithProps<SchemaItemKey, Unit>(
-        invertsUnitKey,
-        async () => invertsUnit
-      )
-    );
+    newUnit.setInvertsUnit(new DelayedPromiseWithProps<SchemaItemKey, Unit>(invertsUnitKey, async () => invertsUnit));
 
     const unitSystem = await schema.lookupItem<UnitSystem>(unitSystemKey);
     if (unitSystem === undefined)
@@ -79,10 +68,7 @@ export class InvertedUnits {
       };
 
     newUnit.setUnitSystem(
-      new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(
-        unitSystemKey,
-        async () => unitSystem
-      )
+      new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemKey, async () => unitSystem)
     );
 
     if (displayLabel) newUnit.setDisplayLabel(displayLabel);
@@ -97,36 +83,23 @@ export class InvertedUnits {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       return {
-        errorMessage: `Schema Key ${schemaKey.toString(
-          true
-        )} not found in context`,
+        errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context`,
       };
 
-    if (invertedUnitProps.name === undefined)
-      return { errorMessage: `No name was supplied within props.` };
+    if (invertedUnitProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
 
-    const newUnit = (await schema.createInvertedUnit(
-      invertedUnitProps.name
-    )) as MutableInvertedUnit;
+    const newUnit = (await schema.createInvertedUnit(invertedUnitProps.name)) as MutableInvertedUnit;
     if (newUnit === undefined)
       return {
-        errorMessage: `Failed to create class ${
-          invertedUnitProps.name
-        } in schema ${schemaKey.toString(true)}.`,
+        errorMessage: `Failed to create class ${invertedUnitProps.name} in schema ${schemaKey.toString(true)}.`,
       };
 
     await newUnit.fromJSON(invertedUnitProps);
     return { itemKey: newUnit.key };
   }
 
-  public async setInvertsUnit(
-    invertedUnitKey: SchemaItemKey,
-    invertsUnitKey: SchemaItemKey
-  ): Promise<void> {
-    const invertedUnit =
-      await this._schemaEditor.schemaContext.getSchemaItem<MutableInvertedUnit>(
-        invertedUnitKey
-      );
+  public async setInvertsUnit(invertedUnitKey: SchemaItemKey, invertsUnitKey: SchemaItemKey): Promise<void> {
+    const invertedUnit = await this._schemaEditor.schemaContext.getSchemaItem<MutableInvertedUnit>(invertedUnitKey);
 
     if (invertedUnit === undefined)
       throw new ECObjectsError(
@@ -140,10 +113,7 @@ export class InvertedUnits {
         `Expected ${invertedUnitKey.fullName} to be of type Inverted Unit.`
       );
 
-    const invertsUnit =
-      await this._schemaEditor.schemaContext.getSchemaItem<Unit>(
-        invertsUnitKey
-      );
+    const invertsUnit = await this._schemaEditor.schemaContext.getSchemaItem<Unit>(invertsUnitKey);
     if (invertsUnit === undefined)
       throw new ECObjectsError(
         ECObjectsStatus.ClassNotFound,
@@ -157,21 +127,12 @@ export class InvertedUnits {
       );
 
     invertedUnit.setInvertsUnit(
-      new DelayedPromiseWithProps<SchemaItemKey, Unit>(
-        invertsUnitKey,
-        async () => invertsUnit
-      )
+      new DelayedPromiseWithProps<SchemaItemKey, Unit>(invertsUnitKey, async () => invertsUnit)
     );
   }
 
-  public async setUnitSystem(
-    invertedUnitKey: SchemaItemKey,
-    unitSystemKey: SchemaItemKey
-  ): Promise<void> {
-    const invertedUnit =
-      await this._schemaEditor.schemaContext.getSchemaItem<MutableInvertedUnit>(
-        invertedUnitKey
-      );
+  public async setUnitSystem(invertedUnitKey: SchemaItemKey, unitSystemKey: SchemaItemKey): Promise<void> {
+    const invertedUnit = await this._schemaEditor.schemaContext.getSchemaItem<MutableInvertedUnit>(invertedUnitKey);
 
     if (invertedUnit === undefined)
       throw new ECObjectsError(
@@ -185,10 +146,7 @@ export class InvertedUnits {
         `Expected ${invertedUnitKey.fullName} to be of type Inverted Unit.`
       );
 
-    const unitSystem =
-      await this._schemaEditor.schemaContext.getSchemaItem<UnitSystem>(
-        unitSystemKey
-      );
+    const unitSystem = await this._schemaEditor.schemaContext.getSchemaItem<UnitSystem>(unitSystemKey);
     if (unitSystem === undefined)
       throw new ECObjectsError(
         ECObjectsStatus.ClassNotFound,
@@ -202,10 +160,7 @@ export class InvertedUnits {
       );
 
     invertedUnit.setUnitSystem(
-      new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(
-        unitSystemKey,
-        async () => unitSystem
-      )
+      new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemKey, async () => unitSystem)
     );
   }
 }

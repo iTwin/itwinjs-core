@@ -50,9 +50,7 @@ export class Bezier1dNd {
     return this._packedData;
   }
   /** Create a Bezier1dNd, using the structure of `data[0]` to determine the bezier order. */
-  public static create(
-    data: Point2d[] | Point3d[] | Point4d[]
-  ): Bezier1dNd | undefined {
+  public static create(data: Point2d[] | Point3d[] | Point4d[]): Bezier1dNd | undefined {
     if (data.length < 1) return undefined;
     if (data[0] instanceof Point3d) {
       const polygon = new Float64Array(data.length * 3);
@@ -88,34 +86,20 @@ export class Bezier1dNd {
    * @return buffer of length `blockSize`.
    */
   public evaluate(s: number, buffer?: Float64Array): Float64Array {
-    return this._basis.sumBasisFunctions(
-      s,
-      this._packedData,
-      this._blockSize,
-      buffer
-    );
+    return this._basis.sumBasisFunctions(s, this._packedData, this._blockSize, buffer);
   }
   /** Return the curve derivative value at bezier fraction `s`
    * @return buffer of length `blockSize`.
    */
   public evaluateDerivative(s: number, buffer?: Float64Array): Float64Array {
-    return this._basis.sumBasisFunctionDerivatives(
-      s,
-      this._packedData,
-      this._blockSize,
-      buffer
-    );
+    return this._basis.sumBasisFunctionDerivatives(s, this._packedData, this._blockSize, buffer);
   }
   /** get a single point of the polygon as a simple array.  */
-  public getPolygonPoint(
-    i: number,
-    buffer?: Float64Array
-  ): Float64Array | undefined {
+  public getPolygonPoint(i: number, buffer?: Float64Array): Float64Array | undefined {
     if (!buffer) buffer = new Float64Array(this._blockSize);
     if (i >= 0 && i < this._order) {
       const k0 = this._blockSize * i;
-      for (let k = 0; k < this._blockSize; k++)
-        buffer[k] = this._packedData[k0 + k];
+      for (let k = 0; k < this._blockSize; k++) buffer[k] = this._packedData[k0 + k];
       return buffer;
     }
     return undefined;
@@ -124,8 +108,7 @@ export class Bezier1dNd {
   public setPolygonPoint(i: number, buffer: Float64Array) {
     if (i >= 0 && i < this._order) {
       const k0 = this._blockSize * i;
-      for (let k = 0; k < this._blockSize; k++)
-        this._packedData[k0 + k] = buffer[k];
+      for (let k = 0; k < this._blockSize; k++) this._packedData[k0 + k] = buffer[k];
     }
   }
   /** Load order * dimension doubles from data[dimension * spanIndex] as poles
@@ -134,8 +117,7 @@ export class Bezier1dNd {
    */
   public loadSpanPoles(data: Float64Array, spanIndex: number) {
     let k = spanIndex * this._blockSize;
-    for (let i = 0; i < this._packedData.length; i++)
-      this._packedData[i] = data[k++];
+    for (let i = 0; i < this._packedData.length; i++) this._packedData[i] = data[k++];
   }
   /** Load order * (dataDimension + 1)  doubles from data[dataDimension * spanIndex] as poles with weight inserted
    * @param data packed array of data.
@@ -143,27 +125,18 @@ export class Bezier1dNd {
    * @param spanIndex index of first data block to access.
    * @param weight weight to append to each block
    */
-  public loadSpanPolesWithWeight(
-    data: Float64Array,
-    dataDimension: number,
-    spanIndex: number,
-    weight: number
-  ) {
+  public loadSpanPolesWithWeight(data: Float64Array, dataDimension: number, spanIndex: number, weight: number) {
     let destIndex = 0;
     const order = this._order;
     let dataIndex = spanIndex * dataDimension;
     for (let i = 0; i < order; i++) {
-      for (let j = 0; j < dataDimension; j++)
-        this._packedData[destIndex++] = data[dataIndex++];
+      for (let j = 0; j < dataDimension; j++) this._packedData[destIndex++] = data[dataIndex++];
       this._packedData[destIndex++] = weight;
     }
   }
   /**  return a json array of arrays with each control point as a lower level array of numbers */
   public unpackToJsonArrays(): any[] {
-    return Point3dArray.unpackNumbersToNestedArrays(
-      this._packedData,
-      this._blockSize
-    );
+    return Point3dArray.unpackNumbersToNestedArrays(this._packedData, this._blockSize);
   }
   /** equality test with usual metric tolerances */
   public isAlmostEqual(other: any): boolean {
@@ -172,10 +145,7 @@ export class Bezier1dNd {
       if (this._order !== other._order) return false;
       if (this._packedData.length !== other._packedData.length) return false;
       for (let i = 0; i < this._packedData.length; i++) {
-        if (
-          !Geometry.isSameCoordinate(this._packedData[i], other._packedData[i])
-        )
-          return false;
+        if (!Geometry.isSameCoordinate(this._packedData[i], other._packedData[i])) return false;
       }
       return true;
     }
@@ -203,11 +173,7 @@ export class Bezier1dNd {
    * @param fraction fractional position
    * @param poleIndexB second pole index
    */
-  public interpolatePoleInPlace(
-    poleIndexA: number,
-    fraction: number,
-    poleIndexB: number
-  ) {
+  public interpolatePoleInPlace(poleIndexA: number, fraction: number, poleIndexB: number) {
     let i0 = poleIndexA * this._blockSize;
     let i1 = poleIndexB * this._blockSize;
     const data = this._packedData;
@@ -267,11 +233,7 @@ export class Bezier1dNd {
    * @param knots knot vector
    * @param spanIndex index of span whose (unsaturated) poles are in the coefficients.
    */
-  public static saturate1dInPlace(
-    coffs: Float64Array,
-    knots: KnotVector,
-    spanIndex: number
-  ): boolean {
+  public static saturate1dInPlace(coffs: Float64Array, knots: KnotVector, spanIndex: number): boolean {
     const degree = knots.degree;
     const kA = spanIndex + degree - 1; // left knot index of the active span
     const kB = kA + 1;
@@ -336,8 +298,7 @@ export class Bezier1dNd {
     if (Geometry.isAlmostEqualNumber(fraction, 1.0)) return false;
     const order = this.order;
     for (let level = 1; level < order; level++) {
-      for (let i0 = 0; i0 + level < order; i0++)
-        this.interpolatePoleInPlace(i0, fraction, i0 + 1); // leave updates to left.
+      for (let i0 = 0; i0 + level < order; i0++) this.interpolatePoleInPlace(i0, fraction, i0 + 1); // leave updates to left.
     }
     return true;
   }
@@ -348,10 +309,7 @@ export class Bezier1dNd {
    * @param fraction1 fraction for second split.   This is the end of the output polygon
    * @return false if fractions are (almost) identical.
    */
-  public subdivideToIntervalInPlace(
-    fraction0: number,
-    fraction1: number
-  ): boolean {
+  public subdivideToIntervalInPlace(fraction0: number, fraction1: number): boolean {
     if (Geometry.isAlmostEqualNumber(fraction0, fraction1)) return false;
     if (fraction1 < fraction0) {
       this.subdivideToIntervalInPlace(fraction1, fraction0);

@@ -17,11 +17,7 @@ import {
 import { Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
 import { FeatureSymbology } from "../FeatureSymbology";
-import {
-  GraphicBranch,
-  GraphicBranchFrustum,
-  GraphicBranchOptions,
-} from "../GraphicBranch";
+import { GraphicBranch, GraphicBranchFrustum, GraphicBranchOptions } from "../GraphicBranch";
 import { BatchOptions } from "../GraphicBuilder";
 import { GraphicList, RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
@@ -82,10 +78,7 @@ export class GraphicOwner extends Graphic {
   public override get isPickable(): boolean {
     return this._graphic.isPickable;
   }
-  public override addHiliteCommands(
-    commands: RenderCommands,
-    pass: RenderPass
-  ): void {
+  public override addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
     this._graphic.addHiliteCommands(commands, pass);
   }
   public override toPrimitive(): Primitive | undefined {
@@ -104,10 +97,7 @@ export interface BatchContext {
 /** @internal exported strictly for tests. */
 export class PerTargetBatchData {
   public readonly target: Target;
-  protected readonly _featureOverrides = new Map<
-    FeatureSymbology.Source | undefined,
-    FeatureOverrides
-  >();
+  protected readonly _featureOverrides = new Map<FeatureSymbology.Source | undefined, FeatureOverrides>();
   protected _thematicSensors?: ThematicSensors;
 
   public constructor(target: Target) {
@@ -122,14 +112,10 @@ export class PerTargetBatchData {
   }
 
   public getThematicSensors(batch: Batch): ThematicSensors {
-    if (
-      this._thematicSensors &&
-      !this._thematicSensors.matchesTarget(this.target)
-    )
+    if (this._thematicSensors && !this._thematicSensors.matchesTarget(this.target))
       this._thematicSensors = dispose(this._thematicSensors);
 
-    if (!this._thematicSensors)
-      this._thematicSensors = ThematicSensors.create(this.target, batch.range);
+    if (!this._thematicSensors) this._thematicSensors = ThematicSensors.create(this.target, batch.range);
 
     this._thematicSensors.update(this.target.uniforms.frustum.viewMatrix);
     return this._thematicSensors;
@@ -139,16 +125,10 @@ export class PerTargetBatchData {
     const source = this.target.currentFeatureSymbologyOverrides?.source;
     let ovrs = this._featureOverrides.get(source);
     if (!ovrs) {
-      const cleanup = source
-        ? source.onSourceDisposed.addOnce(() => this.onSourceDisposed(source))
-        : undefined;
+      const cleanup = source ? source.onSourceDisposed.addOnce(() => this.onSourceDisposed(source)) : undefined;
       this._featureOverrides.set(
         source,
-        (ovrs = FeatureOverrides.createFromTarget(
-          this.target,
-          batch.options,
-          cleanup
-        ))
+        (ovrs = FeatureOverrides.createFromTarget(this.target, batch.options, cleanup))
       );
       ovrs.initFromMap(batch.featureTable);
     }
@@ -158,11 +138,9 @@ export class PerTargetBatchData {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    if (this._thematicSensors)
-      stats.addThematicTexture(this._thematicSensors.bytesUsed);
+    if (this._thematicSensors) stats.addThematicTexture(this._thematicSensors.bytesUsed);
 
-    for (const ovrs of this._featureOverrides.values())
-      stats.addFeatureOverrides(ovrs.byteLength);
+    for (const ovrs of this._featureOverrides.values()) stats.addFeatureOverrides(ovrs.byteLength);
   }
 
   /** Exposed strictly for tests. */
@@ -313,19 +291,12 @@ export class Batch extends Graphic {
   }
 
   public getThematicSensors(target: Target): ThematicSensors {
+    assert(target.plan.thematic !== undefined, "thematic display settings must exist");
     assert(
-      target.plan.thematic !== undefined,
-      "thematic display settings must exist"
-    );
-    assert(
-      target.plan.thematic.displayMode ===
-        ThematicDisplayMode.InverseDistanceWeightedSensors,
+      target.plan.thematic.displayMode === ThematicDisplayMode.InverseDistanceWeightedSensors,
       "thematic display mode must be sensor-based"
     );
-    assert(
-      target.plan.thematic.sensorSettings.sensors.length > 0,
-      "must have at least one sensor to process"
-    );
+    assert(target.plan.thematic.sensorSettings.sensors.length > 0, "must have at least one sensor to process");
 
     return this.perTargetData.getThematicSensors(target);
   }
@@ -374,16 +345,13 @@ export class Branch extends Graphic {
 
     if (opts.hline) this.edgeSettings = EdgeSettings.create(opts.hline);
 
-    if (opts.classifierOrDrape instanceof PlanarClassifier)
-      this.planarClassifier = opts.classifierOrDrape;
-    else if (opts.classifierOrDrape instanceof TextureDrape)
-      this.textureDrape = opts.classifierOrDrape;
+    if (opts.classifierOrDrape instanceof PlanarClassifier) this.planarClassifier = opts.classifierOrDrape;
+    else if (opts.classifierOrDrape instanceof TextureDrape) this.textureDrape = opts.classifierOrDrape;
 
     if (opts.secondaryClassifiers) {
       this.secondaryClassifiers = new Array<PlanarClassifier>();
       opts.secondaryClassifiers.forEach((classifier) => {
-        if (classifier instanceof PlanarClassifier)
-          this.secondaryClassifiers?.push(classifier);
+        if (classifier instanceof PlanarClassifier) this.secondaryClassifiers?.push(classifier);
       });
     }
   }
@@ -405,23 +373,15 @@ export class Branch extends Graphic {
   }
 
   private shouldAddCommands(commands: RenderCommands): boolean {
-    const nodeId = commands.target.getAnimationTransformNodeId(
-      this.branch.animationNodeId
-    );
-    return (
-      undefined === nodeId ||
-      nodeId === commands.target.currentAnimationTransformNodeId
-    );
+    const nodeId = commands.target.getAnimationTransformNodeId(this.branch.animationNodeId);
+    return undefined === nodeId || nodeId === commands.target.currentAnimationTransformNodeId;
   }
 
   public addCommands(commands: RenderCommands): void {
     if (this.shouldAddCommands(commands)) commands.addBranch(this);
   }
 
-  public override addHiliteCommands(
-    commands: RenderCommands,
-    pass: RenderPass
-  ): void {
+  public override addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
     if (this.shouldAddCommands(commands)) commands.addHiliteBranch(this, pass);
   }
 }
@@ -460,10 +420,7 @@ export class AnimationTransformBranch extends Graphic {
     commands.target.currentAnimationTransformNodeId = undefined;
   }
 
-  public override addHiliteCommands(
-    commands: RenderCommands,
-    pass: RenderPass
-  ) {
+  public override addHiliteCommands(commands: RenderCommands, pass: RenderPass) {
     commands.target.currentAnimationTransformNodeId = this.nodeId;
     this.graphic.addHiliteCommands(commands, pass);
     commands.target.currentAnimationTransformNodeId = undefined;
@@ -512,10 +469,7 @@ export class GraphicsArray extends Graphic {
     }
   }
 
-  public override addHiliteCommands(
-    commands: RenderCommands,
-    pass: RenderPass
-  ): void {
+  public override addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
     for (const graphic of this.graphics) {
       (graphic as Graphic).addHiliteCommands(commands, pass);
     }

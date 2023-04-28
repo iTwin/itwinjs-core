@@ -82,16 +82,7 @@
           "type": "string",
           "description": "Specifies the mocha reporter to use.",
           "default": "spec",
-          "examples": [
-            "spec",
-            "dot",
-            "nyan",
-            "tap",
-            "landing",
-            "list",
-            "json",
-            "min"
-          ]
+          "examples": ["spec", "dot", "nyan", "tap", "landing", "list", "json", "min"]
         }
       }
     },

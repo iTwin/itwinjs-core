@@ -79,9 +79,7 @@ For a second example, each of regionA and regionB is an array of regions to be t
   ```ts
   const manyRoundedRectangles = [];
   for (let a = 0; a < 5; a += 1) {
-    manyRoundedRectangles.push(
-      CurveFactory.createRectangleXY(a, a, a + 4, a + 1.75, 0, 0.5)
-    );
+    manyRoundedRectangles.push(CurveFactory.createRectangleXY(a, a, a + 4, a + 1.75, 0, 0.5));
   }
   ```
 

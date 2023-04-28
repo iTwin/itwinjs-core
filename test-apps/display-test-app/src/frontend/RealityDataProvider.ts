@@ -52,13 +52,8 @@ class CustomRealityDataSource implements RealityDataSource {
     return response.json();
   }
 
-  private async _getTileContent(
-    name: string,
-    responseType: "json" | "arraybuffer"
-  ): Promise<any> {
-    const response = await fetch(
-      `${this._baseUrl}/${name}?key=${this._apiKey}`
-    );
+  private async _getTileContent(name: string, responseType: "json" | "arraybuffer"): Promise<any> {
+    const response = await fetch(`${this._baseUrl}/${name}?key=${this._apiKey}`);
     return "json" === responseType ? response.json() : response.arrayBuffer();
   }
 
@@ -77,8 +72,7 @@ class CustomRealityDataSource implements RealityDataSource {
 
 export function registerRealityDataSourceProvider(apiKey: string): void {
   IModelApp.realityDataSourceProviders.register("DtaRealityDataProvider", {
-    createRealityDataSource: async (key) =>
-      new CustomRealityDataSource(key, apiKey),
+    createRealityDataSource: async (key) => new CustomRealityDataSource(key, apiKey),
   });
 }
 

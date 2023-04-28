@@ -3,10 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { Range3d } from "@itwin/core-geometry";
-import {
-  RealityMeshParams,
-  RealityMeshParamsBuilder,
-} from "@itwin/core-frontend";
+import { RealityMeshParams, RealityMeshParamsBuilder } from "@itwin/core-frontend";
 
 // __PUBLISH_EXTRACT_START__ Build_Reality_Mesh_Params
 export function buildRealityMeshParams(): RealityMeshParams {

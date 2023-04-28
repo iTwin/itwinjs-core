@@ -8,13 +8,7 @@
 import * as _ from "lodash";
 import * as https from "https";
 import * as sarequest from "superagent";
-import {
-  BentleyError,
-  GetMetaDataFunction,
-  HttpStatus,
-  Logger,
-  LogLevel,
-} from "@itwin/core-bentley";
+import { BentleyError, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@itwin/core-bentley";
 
 const loggerCategory: string = "core-mobile-backend.Request";
 
@@ -94,11 +88,7 @@ export class ResponseError extends BentleyError {
   protected _data?: any;
   public status?: number;
   public description?: string;
-  public constructor(
-    errorNumber: number | HttpStatus,
-    message?: string,
-    getMetaData?: GetMetaDataFunction
-  ) {
+  public constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction) {
     super(errorNumber, message, getMetaData);
   }
 
@@ -109,9 +99,7 @@ export class ResponseError extends BentleyError {
    * @internal
    */
   public static parse(response: any, log = true): ResponseError {
-    const error = new ResponseError(
-      ResponseError.parseHttpStatus(response.statusType)
-    );
+    const error = new ResponseError(ResponseError.parseHttpStatus(response.statusType));
     if (!response) {
       error.message = "Couldn't get response object.";
       return error;
@@ -125,10 +113,7 @@ export class ResponseError extends BentleyError {
       if (response.response.res) {
         error.message = response.response.res.statusMessage;
       }
-      if (
-        response.response.body &&
-        Object.keys(response.response.body).length > 0
-      ) {
+      if (response.response.body && Object.keys(response.response.body).length > 0) {
         error._data = {};
         _.merge(error._data, response.response.body);
       } else {
@@ -153,16 +138,11 @@ export class ResponseError extends BentleyError {
    */
   public static shouldRetry(error: any, response: any): boolean {
     if (error !== undefined && error !== null) {
-      if (
-        (error.status === undefined || error.status === null) &&
-        (error.res === undefined || error.res === null)
-      ) {
+      if ((error.status === undefined || error.status === null) && (error.res === undefined || error.res === null)) {
         return true;
       }
     }
-    return (
-      response !== undefined && response.statusType === HttpStatus.ServerError
-    );
+    return response !== undefined && response.statusType === HttpStatus.ServerError;
   }
 
   /**
@@ -197,27 +177,18 @@ export class ResponseError extends BentleyError {
    * @internal
    */
   public log(): void {
-    Logger.logError(loggerCategory, this.logMessage(), () =>
-      this.getMetaData()
-    );
+    Logger.logError(loggerCategory, this.logMessage(), () => this.getMetaData());
   }
 }
 
-const logResponse =
-  (req: sarequest.SuperAgentRequest, startTime: number) =>
-  (res: sarequest.Response) => {
-    const elapsed = new Date().getTime() - startTime;
-    const elapsedTime = `${elapsed}ms`;
-    Logger.logTrace(
-      loggerCategory,
-      `${req.method.toUpperCase()} ${res.status} ${req.url} (${elapsedTime})`
-    );
-  };
+const logResponse = (req: sarequest.SuperAgentRequest, startTime: number) => (res: sarequest.Response) => {
+  const elapsed = new Date().getTime() - startTime;
+  const elapsedTime = `${elapsed}ms`;
+  Logger.logTrace(loggerCategory, `${req.method.toUpperCase()} ${res.status} ${req.url} (${elapsedTime})`);
+};
 
 // eslint-disable-next-line @typescript-eslint/promise-function-async
-const logRequest = (
-  req: sarequest.SuperAgentRequest
-): sarequest.SuperAgentRequest => {
+const logRequest = (req: sarequest.SuperAgentRequest): sarequest.SuperAgentRequest => {
   const startTime = new Date().getTime();
   return req.on("response", logResponse(req, startTime));
 };
@@ -232,16 +203,11 @@ const logRequest = (
  * @throws ResponseError if the request fails due to network issues, or if the returned status is *outside* the range of 200-299 (inclusive)
  * @internal
  */
-export async function request(
-  url: string,
-  options: RequestOptions
-): Promise<Response> {
+export async function request(url: string, options: RequestOptions): Promise<Response> {
   let sareq: sarequest.SuperAgentRequest = sarequest(options.method, url);
-  if (options.retries)
-    sareq = sareq.retry(options.retries, options.retryCallback);
+  if (options.retries) sareq = sareq.retry(options.retries, options.retryCallback);
 
-  if (Logger.isEnabled(loggerCategory, LogLevel.Trace))
-    sareq = sareq.use(logRequest);
+  if (Logger.isEnabled(loggerCategory, LogLevel.Trace)) sareq = sareq.use(logRequest);
 
   if (options.headers) sareq = sareq.set(options.headers);
 
@@ -277,13 +243,10 @@ export async function request(
     });
   }
 
-  const errorCallback = options.errorCallback
-    ? options.errorCallback
-    : ResponseError.parse;
+  const errorCallback = options.errorCallback ? options.errorCallback : ResponseError.parse;
 
   if (options.readStream) {
-    if (typeof window !== "undefined")
-      throw new Error("This option is not supported on browsers");
+    if (typeof window !== "undefined") throw new Error("This option is not supported on browsers");
 
     return new Promise<Response>((resolve, reject) => {
       sareq = sareq.type("blob");
@@ -306,8 +269,7 @@ export async function request(
   }
 
   if (options.stream) {
-    if (typeof window !== "undefined")
-      throw new Error("This option is not supported on browsers");
+    if (typeof window !== "undefined") throw new Error("This option is not supported on browsers");
 
     return new Promise<Response>((resolve, reject) => {
       sareq

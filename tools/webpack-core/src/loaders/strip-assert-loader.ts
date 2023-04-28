@@ -4,9 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 module.exports = function loader(source: string) {
-  source = source.replace(
-    /core_bentley_\d+\.assert/g,
-    "/*@__PURE__*/(function(){})"
-  );
+  source = source.replace(/core_bentley_\d+\.assert/g, "/*@__PURE__*/(function(){})");
   return source;
 };

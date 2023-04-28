@@ -39,30 +39,15 @@ packageClassification:
     {
       "order": "4",
       "header": "Presentation Packages",
-      "packages":
-        [
-          "presentation-common",
-          "presentation-components",
-          "presentation-backend",
-          "presentation-frontend",
-        ],
+      "packages": ["presentation-common", "presentation-components", "presentation-backend", "presentation-frontend"],
     },
     {
       "order": "5",
       "header": "Domain Packages",
       "packages":
-        [
-          "analytical-backend",
-          "linear-referencing-backend",
-          "linear-referencing-common",
-          "physical-material-backend",
-        ],
+        ["analytical-backend", "linear-referencing-backend", "linear-referencing-common", "physical-material-backend"],
     },
-    {
-      "order": "6",
-      "header": "Transformer",
-      "packages": ["imodel-transformer"],
-    },
+    { "order": "6", "header": "Transformer", "packages": ["imodel-transformer"] },
   ]
 ---
 

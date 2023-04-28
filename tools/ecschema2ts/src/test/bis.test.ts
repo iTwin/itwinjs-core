@@ -81,8 +81,7 @@ export interface DerivedElementProps extends ElementProps {
 
     const context = new SchemaContext();
     const schema = utils.deserializeXml(context, schemaXml);
-    const { elemTsString, propsTsString } =
-      ecschema2ts.convertSchemaToTs(schema);
+    const { elemTsString, propsTsString } = ecschema2ts.convertSchemaToTs(schema);
 
     assert.equal(propsTsString, expectedPropsSchemaString);
     assert.equal(elemTsString, expectedElementSchemaString);
@@ -145,8 +144,7 @@ export class DerivedElement extends Element {
 }\n\n`;
     const context = new SchemaContext();
     const schema = utils.deserializeXml(context, schemaXml);
-    const { elemTsString, propsTsString } =
-      ecschema2ts.convertSchemaToTs(schema);
+    const { elemTsString, propsTsString } = ecschema2ts.convertSchemaToTs(schema);
 
     assert.equal(propsTsString, `\n`);
     assert.equal(elemTsString, expectedElementSchemaString);
@@ -256,8 +254,7 @@ export interface SubjectProps extends ElementProps {
 
     const context = new SchemaContext();
     const schema = utils.deserializeXml(context, schemaXml);
-    const { elemTsString, propsTsString } =
-      ecschema2ts.convertSchemaToTs(schema);
+    const { elemTsString, propsTsString } = ecschema2ts.convertSchemaToTs(schema);
 
     assert.equal(elemTsString, expectedElementSchemaString);
     assert.equal(propsTsString, expectedPropSchemaString);
@@ -311,8 +308,7 @@ export class SchemaModel extends DefinitionModel {
     context.addLocater(schemaLocator);
     const schema = utils.deserializeXml(context, schemaXml);
     const ecschema2ts = new ECSchemaToTs();
-    const { elemTsString, propsTsString } =
-      ecschema2ts.convertSchemaToTs(schema);
+    const { elemTsString, propsTsString } = ecschema2ts.convertSchemaToTs(schema);
 
     assert.equal(propsTsString, `\n`);
     assert.equal(elemTsString, expectedElementSchemaString);

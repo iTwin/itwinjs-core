@@ -29,12 +29,7 @@ export class PolyfacePrimitive {
     return new PolyfacePrimitive(params, pf, displayEdges, isPlanar);
   }
 
-  private constructor(
-    params: DisplayParams,
-    pf: IndexedPolyface,
-    displayEdges: boolean,
-    isPlanar: boolean
-  ) {
+  private constructor(params: DisplayParams, pf: IndexedPolyface, displayEdges: boolean, isPlanar: boolean) {
     this.displayParams = params;
     this._polyface = pf;
     this.displayEdges = displayEdges;
@@ -42,12 +37,7 @@ export class PolyfacePrimitive {
   }
 
   public clone(): PolyfacePrimitive {
-    return new PolyfacePrimitive(
-      this.displayParams,
-      this._polyface.clone(),
-      this.displayEdges,
-      this.isPlanar
-    );
+    return new PolyfacePrimitive(this.displayParams, this._polyface.clone(), this.displayEdges, this.isPlanar);
   }
   public transform(trans: Transform): boolean {
     return this._polyface.tryTransformInPlace(trans);

@@ -15,11 +15,7 @@ import { AttributeMap } from "./AttributeMap";
 import { LUTGeometry } from "./CachedGeometry";
 import { ShaderProgramParams } from "./DrawCommand";
 import { GL } from "./GL";
-import {
-  BufferHandle,
-  BufferParameters,
-  BuffersContainer,
-} from "./AttributeBuffers";
+import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
 import { Pass, RenderOrder } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
@@ -51,22 +47,10 @@ export class PointStringGeometry extends LUTGeometry {
   ) {
     super(viOrigin);
     this.buffers = BuffersContainer.create();
-    const attrPos = AttributeMap.findAttribute(
-      "a_pos",
-      TechniqueId.PointString,
-      false
-    );
+    const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.PointString, false);
     assert(undefined !== attrPos);
     this.buffers.addBuffer(indices, [
-      BufferParameters.create(
-        attrPos.location,
-        3,
-        GL.DataType.UnsignedByte,
-        false,
-        0,
-        0,
-        false
-      ),
+      BufferParameters.create(attrPos.location, 3, GL.DataType.UnsignedByte, false, 0, 0, false),
     ]);
     this.numIndices = numIndices;
     this.indices = indices;
@@ -96,33 +80,23 @@ export class PointStringGeometry extends LUTGeometry {
     return this.weight;
   }
 
-  protected _draw(
-    numInstances: number,
-    instanceBuffersContainer?: BuffersContainer
-  ): void {
+  protected _draw(numInstances: number, instanceBuffersContainer?: BuffersContainer): void {
     const gl = System.instance;
-    const bufs =
-      instanceBuffersContainer !== undefined
-        ? instanceBuffersContainer
-        : this.buffers;
+    const bufs = instanceBuffersContainer !== undefined ? instanceBuffersContainer : this.buffers;
 
     bufs.bind();
     gl.drawArrays(GL.PrimitiveType.Points, 0, this.numIndices, numInstances);
     bufs.unbind();
   }
 
-  public static create(
-    params: PointStringParams,
-    viOrigin: Point3d | undefined
-  ): PointStringGeometry | undefined {
+  public static create(params: PointStringParams, viOrigin: Point3d | undefined): PointStringGeometry | undefined {
     const indices = BufferHandle.createArrayBuffer(params.indices.data);
     if (undefined === indices) return undefined;
 
     const lut = VertexLUT.createFromVertexTable(params.vertices);
     if (undefined === lut) return undefined;
 
-    const hasFeatures =
-      FeatureIndexType.Empty !== params.vertices.featureIndexType;
+    const hasFeatures = FeatureIndexType.Empty !== params.vertices.featureIndexType;
     return new PointStringGeometry(
       indices,
       params.indices.length,
@@ -135,9 +109,7 @@ export class PointStringGeometry extends LUTGeometry {
   }
 
   public get isDisposed(): boolean {
-    return (
-      this.buffers.isDisposed && this.lut.isDisposed && this.indices.isDisposed
-    );
+    return this.buffers.isDisposed && this.lut.isDisposed && this.indices.isDisposed;
   }
 
   public dispose() {

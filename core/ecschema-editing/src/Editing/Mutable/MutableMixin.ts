@@ -15,9 +15,7 @@ import {
  * An abstract class used for schema editing.
  */
 export abstract class MutableMixin extends Mixin {
-  public abstract override setAppliesTo(
-    entityClass: LazyLoadedEntityClass
-  ): void;
+  public abstract override setAppliesTo(entityClass: LazyLoadedEntityClass): void;
   public abstract override createNavigationProperty(
     name: string,
     relationship: string | RelationshipClass,

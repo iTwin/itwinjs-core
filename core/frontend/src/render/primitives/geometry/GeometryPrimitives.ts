@@ -32,11 +32,7 @@ import {
 } from "../Strokes";
 
 /** @internal */
-export type PrimitiveGeometryType =
-  | Loop
-  | Path
-  | IndexedPolyface
-  | SolidPrimitive;
+export type PrimitiveGeometryType = Loop | Path | IndexedPolyface | SolidPrimitive;
 
 /** @internal */
 export abstract class Geometry {
@@ -64,13 +60,7 @@ export abstract class Geometry {
     params: DisplayParams,
     feature: Feature | undefined
   ): Geometry {
-    return new PrimitivePointStringGeometry(
-      pts,
-      tf,
-      tileRange,
-      params,
-      feature
-    );
+    return new PrimitivePointStringGeometry(pts, tf, tileRange, params, feature);
   }
 
   public static createFromLineString(
@@ -91,14 +81,7 @@ export abstract class Geometry {
     disjoint: boolean,
     feature: Feature | undefined
   ): Geometry {
-    return new PrimitiveLoopGeometry(
-      loop,
-      tf,
-      tileRange,
-      params,
-      disjoint,
-      feature
-    );
+    return new PrimitiveLoopGeometry(loop, tf, tileRange, params, disjoint, feature);
   }
 
   public static createFromSolidPrimitive(
@@ -108,13 +91,7 @@ export abstract class Geometry {
     params: DisplayParams,
     feature: Feature | undefined
   ): Geometry {
-    return new SolidPrimitiveGeometry(
-      primitive,
-      tf,
-      tileRange,
-      params,
-      feature
-    );
+    return new SolidPrimitiveGeometry(primitive, tf, tileRange, params, feature);
   }
 
   public static createFromPath(
@@ -125,14 +102,7 @@ export abstract class Geometry {
     disjoint: boolean,
     feature: Feature | undefined
   ): Geometry {
-    return new PrimitivePathGeometry(
-      path,
-      tf,
-      tileRange,
-      params,
-      disjoint,
-      feature
-    );
+    return new PrimitivePathGeometry(path, tf, tileRange, params, disjoint, feature);
   }
 
   public static createFromPolyface(
@@ -145,12 +115,8 @@ export abstract class Geometry {
     return new PrimitivePolyfaceGeometry(ipf, tf, tileRange, params, feature);
   }
 
-  protected abstract _getPolyfaces(
-    facetOptions: StrokeOptions
-  ): PolyfacePrimitiveList | undefined;
-  protected abstract _getStrokes(
-    facetOptions: StrokeOptions
-  ): StrokesPrimitiveList | undefined;
+  protected abstract _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined;
+  protected abstract _getStrokes(facetOptions: StrokeOptions): StrokesPrimitiveList | undefined;
 
   public getPolyfaces(tolerance: number): PolyfacePrimitiveList | undefined {
     const facetOptions = StrokeOptions.createForFacets();
@@ -202,15 +168,11 @@ export class PrimitivePathGeometry extends Geometry {
     this.isDisjoint = isDisjoint;
   }
 
-  protected _getPolyfaces(
-    _facetOptions: StrokeOptions
-  ): PolyfacePrimitiveList | undefined {
+  protected _getPolyfaces(_facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
     return undefined;
   }
 
-  protected _getStrokes(
-    facetOptions: StrokeOptions
-  ): StrokesPrimitiveList | undefined {
+  protected _getStrokes(facetOptions: StrokeOptions): StrokesPrimitiveList | undefined {
     return PrimitivePathGeometry.getStrokesForLoopOrPath(
       this.path,
       facetOptions,
@@ -230,23 +192,13 @@ export class PrimitivePathGeometry extends Geometry {
     const strksList = new StrokesPrimitiveList();
 
     if (!loopOrPath.isAnyRegionType || params.wantRegionOutline) {
-      const strksPts: StrokesPrimitivePointLists =
-        new StrokesPrimitivePointLists();
-      PrimitivePathGeometry.collectCurveStrokes(
-        strksPts,
-        loopOrPath,
-        facetOptions,
-        transform
-      );
+      const strksPts: StrokesPrimitivePointLists = new StrokesPrimitivePointLists();
+      PrimitivePathGeometry.collectCurveStrokes(strksPts, loopOrPath, facetOptions, transform);
 
       if (strksPts.length > 0) {
         const isPlanar = loopOrPath.isAnyRegionType;
         assert(isPlanar === params.wantRegionOutline);
-        const strksPrim: StrokesPrimitive = StrokesPrimitive.create(
-          params,
-          isDisjoint,
-          isPlanar
-        );
+        const strksPrim: StrokesPrimitive = StrokesPrimitive.create(params, isDisjoint, isPlanar);
         strksPrim.strokes = strksPts;
         strksList.push(strksPrim);
       }
@@ -285,25 +237,15 @@ export class PrimitivePointStringGeometry extends Geometry {
     this.pts = pts;
   }
 
-  protected _getPolyfaces(
-    _facetOptions: StrokeOptions
-  ): PolyfacePrimitiveList | undefined {
+  protected _getPolyfaces(_facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
     return undefined;
   }
 
-  protected _getStrokes(
-    _facetOptions: StrokeOptions
-  ): StrokesPrimitiveList | undefined {
+  protected _getStrokes(_facetOptions: StrokeOptions): StrokesPrimitiveList | undefined {
     const strksList = new StrokesPrimitiveList();
-    const strksPts = new StrokesPrimitivePointLists(
-      new StrokesPrimitivePointList(this.pts)
-    );
+    const strksPts = new StrokesPrimitivePointLists(new StrokesPrimitivePointList(this.pts));
 
-    const strksPrim: StrokesPrimitive = StrokesPrimitive.create(
-      this.displayParams,
-      true,
-      false
-    );
+    const strksPrim: StrokesPrimitive = StrokesPrimitive.create(this.displayParams, true, false);
     strksPrim.strokes = strksPts;
     strksPrim.transform(this.transform);
     strksList.push(strksPrim);
@@ -327,25 +269,15 @@ export class PrimitiveLineStringGeometry extends Geometry {
     this.pts = pts;
   }
 
-  protected _getPolyfaces(
-    _facetOptions: StrokeOptions
-  ): PolyfacePrimitiveList | undefined {
+  protected _getPolyfaces(_facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
     return undefined;
   }
 
-  protected _getStrokes(
-    _facetOptions: StrokeOptions
-  ): StrokesPrimitiveList | undefined {
+  protected _getStrokes(_facetOptions: StrokeOptions): StrokesPrimitiveList | undefined {
     const strksList = new StrokesPrimitiveList();
-    const strksPts = new StrokesPrimitivePointLists(
-      new StrokesPrimitivePointList(this.pts)
-    );
+    const strksPts = new StrokesPrimitivePointLists(new StrokesPrimitivePointList(this.pts));
 
-    const strksPrim: StrokesPrimitive = StrokesPrimitive.create(
-      this.displayParams,
-      false,
-      false
-    );
+    const strksPrim: StrokesPrimitive = StrokesPrimitive.create(this.displayParams, false, false);
     strksPrim.strokes = strksPts;
     strksPrim.transform(this.transform);
     strksList.push(strksPrim);
@@ -372,9 +304,7 @@ export class PrimitiveLoopGeometry extends Geometry {
     this.isDisjoint = isDisjoint;
   }
 
-  protected _getPolyfaces(
-    facetOptions: StrokeOptions
-  ): PolyfacePrimitiveList | undefined {
+  protected _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
     if (!this.loop.isAnyRegionType) {
       return undefined;
     }
@@ -385,26 +315,15 @@ export class PrimitiveLoopGeometry extends Geometry {
       const pfBuilder: PolyfaceBuilder = PolyfaceBuilder.create(facetOptions);
       contour.emitFacets(pfBuilder, false, this.transform); // build facets and emit them to the builder
       const polyface = pfBuilder.claimPolyface();
-      const wantEdges =
-        DisplayParams.RegionEdgeType.Default ===
-        this.displayParams.regionEdgeType;
+      const wantEdges = DisplayParams.RegionEdgeType.Default === this.displayParams.regionEdgeType;
       const isPlanar = true;
-      return new PolyfacePrimitiveList(
-        PolyfacePrimitive.create(
-          this.displayParams,
-          polyface,
-          wantEdges,
-          isPlanar
-        )
-      );
+      return new PolyfacePrimitiveList(PolyfacePrimitive.create(this.displayParams, polyface, wantEdges, isPlanar));
     } // ###TODO: this approach might not work with holes
 
     return undefined;
   }
 
-  protected _getStrokes(
-    facetOptions: StrokeOptions
-  ): StrokesPrimitiveList | undefined {
+  protected _getStrokes(facetOptions: StrokeOptions): StrokesPrimitiveList | undefined {
     return PrimitivePathGeometry.getStrokesForLoopOrPath(
       this.loop,
       facetOptions,
@@ -430,9 +349,7 @@ export class PrimitivePolyfaceGeometry extends Geometry {
     this.polyface = tf.isIdentity ? polyface : polyface.cloneTransformed(tf);
   }
 
-  protected _getPolyfaces(
-    facetOptions: StrokeOptions
-  ): PolyfacePrimitiveList | undefined {
+  protected _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
     if (!this.hasTexture) {
       if (this.polyface.data.param) this.polyface.data.param.clear();
 
@@ -443,21 +360,14 @@ export class PrimitivePolyfaceGeometry extends Geometry {
       if (this.polyface.data.normal) this.polyface.data.normal.clear();
 
       if (this.polyface.data.normalIndex) this.polyface.data.normalIndex = [];
-    } else if (
-      !this.polyface.data.normal ||
-      0 === this.polyface.data.normal.length
-    ) {
+    } else if (!this.polyface.data.normal || 0 === this.polyface.data.normal.length) {
       PolyfaceQuery.buildAverageNormals(this.polyface);
     }
 
-    return new PolyfacePrimitiveList(
-      PolyfacePrimitive.create(this.displayParams, this.polyface)
-    );
+    return new PolyfacePrimitiveList(PolyfacePrimitive.create(this.displayParams, this.polyface));
   }
 
-  protected _getStrokes(
-    _facetOptions: StrokeOptions
-  ): StrokesPrimitiveList | undefined {
+  protected _getStrokes(_facetOptions: StrokeOptions): StrokesPrimitiveList | undefined {
     return undefined;
   }
 }
@@ -473,11 +383,8 @@ class SolidPrimitiveGeometry extends Geometry {
     feature: Feature | undefined
   ) {
     super(tf, range, params, feature);
-    const xformPrim = tf.isIdentity
-      ? primitive
-      : primitive.cloneTransformed(tf);
-    this._primitive =
-      xformPrim !== undefined ? (xformPrim as SolidPrimitive) : primitive;
+    const xformPrim = tf.isIdentity ? primitive : primitive.cloneTransformed(tf);
+    this._primitive = xformPrim !== undefined ? (xformPrim as SolidPrimitive) : primitive;
   }
 
   protected _getStrokes() {
@@ -487,8 +394,6 @@ class SolidPrimitiveGeometry extends Geometry {
   protected _getPolyfaces(opts: StrokeOptions): PolyfacePrimitiveList {
     const builder = PolyfaceBuilder.create(opts);
     builder.addGeometryQuery(this._primitive);
-    return new PolyfacePrimitiveList(
-      PolyfacePrimitive.create(this.displayParams, builder.claimPolyface())
-    );
+    return new PolyfacePrimitiveList(PolyfacePrimitive.create(this.displayParams, builder.claimPolyface()));
   }
 }

@@ -6,24 +6,14 @@ import { HttpServerRequest, HttpServerResponse } from "@itwin/core-common";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as request from "supertest";
-import {
-  FakeBentleyCloudRpcConfiguration,
-  TestIModelJsExpressServer,
-} from "./Mocks";
+import { FakeBentleyCloudRpcConfiguration, TestIModelJsExpressServer } from "./Mocks";
 
 // Returns fake response for specified mock's method
-function mockRequestHandler(
-  mock: sinon.SinonMock,
-  method: string,
-  status: number,
-  result: string
-) {
-  return mock
-    .expects(method)
-    .callsFake((_req: HttpServerRequest, res: HttpServerResponse) => {
-      // eslint-disable-line deprecation/deprecation
-      res.status(status).send(result);
-    });
+function mockRequestHandler(mock: sinon.SinonMock, method: string, status: number, result: string) {
+  return mock.expects(method).callsFake((_req: HttpServerRequest, res: HttpServerResponse) => {
+    // eslint-disable-line deprecation/deprecation
+    res.status(status).send(result);
+  });
 }
 
 describe("IModelJsExpressServer", () => {
@@ -42,26 +32,15 @@ describe("IModelJsExpressServer", () => {
   });
 
   it("should respond to ping", async () => {
-    await request(testServer.expressApp)
-      .get("/ping")
-      .expect(200)
-      .expect("Success");
+    await request(testServer.expressApp).get("/ping").expect(200).expect("Success");
   });
 
   it("should properly handle swagger.json GET requests", async () => {
     const mockStatus = 200;
     const mockResult = "swaggerResult";
-    const spy = mockRequestHandler(
-      protocolMock,
-      "handleOpenApiDescriptionRequest",
-      mockStatus,
-      mockResult
-    );
+    const spy = mockRequestHandler(protocolMock, "handleOpenApiDescriptionRequest", mockStatus, mockResult);
 
-    await request(testServer.expressApp)
-      .get("/v3/swagger.json")
-      .expect(mockStatus)
-      .expect(mockResult);
+    await request(testServer.expressApp).get("/v3/swagger.json").expect(mockStatus).expect(mockResult);
 
     expect(spy.calledOnce).to.be.true;
   });
@@ -69,16 +48,8 @@ describe("IModelJsExpressServer", () => {
   it("should properly handle POST requests", async () => {
     const mockStatus = 200;
     const mockResult = "mockPostResult";
-    const spy = mockRequestHandler(
-      protocolMock,
-      "handleOperationPostRequest",
-      mockStatus,
-      mockResult
-    );
-    await request(testServer.expressApp)
-      .post("/foo")
-      .expect(mockStatus)
-      .expect(mockResult);
+    const spy = mockRequestHandler(protocolMock, "handleOperationPostRequest", mockStatus, mockResult);
+    await request(testServer.expressApp).post("/foo").expect(mockStatus).expect(mockResult);
 
     expect(spy.calledOnce).to.be.true;
   });

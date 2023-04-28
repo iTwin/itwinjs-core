@@ -64,9 +64,7 @@ export class ECVersion {
       return (num < 10 ? "0" : "") + num;
     };
 
-    return `${padWithZeroes(this.read)}.${padWithZeroes(
-      this.write
-    )}.${padWithZeroes(this.minor)}`;
+    return `${padWithZeroes(this.read)}.${padWithZeroes(this.write)}.${padWithZeroes(this.minor)}`;
   }
 
   /**
@@ -121,23 +119,11 @@ export class SchemaKey {
   // TODO: need to add a checksum
 
   constructor(name: string, version: ECVersion);
-  constructor(
-    name: string,
-    readVersion?: number,
-    writeVersion?: number,
-    minorVersion?: number
-  );
-  constructor(
-    name: string,
-    readOrVersion?: number | ECVersion,
-    writeVersion?: number,
-    minorVersion?: number
-  ) {
+  constructor(name: string, readVersion?: number, writeVersion?: number, minorVersion?: number);
+  constructor(name: string, readOrVersion?: number | ECVersion, writeVersion?: number, minorVersion?: number) {
     this._name = new ECName(name);
-    if (readOrVersion !== undefined && typeof readOrVersion !== "number")
-      this._version = readOrVersion;
-    else
-      this._version = new ECVersion(readOrVersion, writeVersion, minorVersion);
+    if (readOrVersion !== undefined && typeof readOrVersion !== "number") this._version = readOrVersion;
+    else this._version = new ECVersion(readOrVersion, writeVersion, minorVersion);
   }
 
   public get version() {
@@ -167,17 +153,13 @@ export class SchemaKey {
 
   public static parseString(fullName: string) {
     const keyPieces = fullName.split(".");
-    if (keyPieces.length !== 4)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECName);
+    if (keyPieces.length !== 4) throw new ECObjectsError(ECObjectsStatus.InvalidECName);
 
     const schemaName = keyPieces[0];
     const readVer = Number(keyPieces[1]);
     const writeVer = Number(keyPieces[2]);
     const minorVer = Number(keyPieces[3]);
-    return new SchemaKey(
-      schemaName,
-      new ECVersion(readVer, writeVer, minorVer)
-    );
+    return new SchemaKey(schemaName, new ECVersion(readVer, writeVer, minorVer));
   }
 
   /**
@@ -187,8 +169,7 @@ export class SchemaKey {
   public compareByName(rhs: SchemaKey | string | undefined): boolean {
     if (undefined === rhs) return false;
 
-    if (typeof rhs === "string")
-      return rhs.toLowerCase() === this.name.toLowerCase();
+    if (typeof rhs === "string") return rhs.toLowerCase() === this.name.toLowerCase();
 
     return rhs.name.toLowerCase() === this.name.toLowerCase();
   }
@@ -207,10 +188,7 @@ export class SchemaKey {
    * @param rhs The SchemaKey to compare with
    * @param matchType The match type to use for comparison.
    */
-  public matches(
-    rhs: SchemaKey,
-    matchType: SchemaMatchType = SchemaMatchType.Identical
-  ): boolean {
+  public matches(rhs: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Identical): boolean {
     switch (matchType) {
       case SchemaMatchType.Identical:
         // TODO: if (this.checksum && rhs.checksum)
@@ -233,8 +211,7 @@ export class SchemaKey {
 
         if (rhs.readVersion !== this.readVersion) return false;
 
-        if (this.writeVersion === rhs.writeVersion)
-          return this.minorVersion >= rhs.minorVersion;
+        if (this.writeVersion === rhs.writeVersion) return this.minorVersion >= rhs.minorVersion;
 
         return this.writeVersion > rhs.writeVersion;
       case SchemaMatchType.LatestWriteCompatible:
@@ -310,20 +287,14 @@ export class SchemaItemKey {
   public matches(rhs: SchemaItemKey): boolean {
     if (rhs.name !== this.name) return false;
 
-    if (!rhs.schemaKey.matches(this.schemaKey, SchemaMatchType.Latest))
-      return false;
+    if (!rhs.schemaKey.matches(this.schemaKey, SchemaMatchType.Latest)) return false;
 
     return true;
   }
 
   public matchesFullName(name: string): boolean {
-    const schemaVersion = this.schemaKey.version
-      .toString()
-      .replace(/\./g, "\\.");
-    const fullNameRegex = new RegExp(
-      `^${this.schemaName}(\\.${schemaVersion})?[.:]${this.name}$`,
-      "i"
-    );
+    const schemaVersion = this.schemaKey.version.toString().replace(/\./g, "\\.");
+    const fullNameRegex = new RegExp(`^${this.schemaName}(\\.${schemaVersion})?[.:]${this.name}$`, "i");
     return fullNameRegex.test(name);
   }
 }

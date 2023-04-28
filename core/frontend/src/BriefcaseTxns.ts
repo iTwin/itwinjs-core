@@ -45,10 +45,7 @@ export abstract class BriefcaseNotificationHandler extends NotificationHandler {
  * @see [TxnManager]($backend) for the backend counterpart.
  * @public
  */
-export class BriefcaseTxns
-  extends BriefcaseNotificationHandler
-  implements TxnNotifications
-{
+export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNotifications {
   private readonly _iModel: BriefcaseConnection;
   private _cleanup?: RemoveFunction;
 
@@ -60,16 +57,12 @@ export class BriefcaseTxns
   /** Event raised after Txn validation or changeset application to indicate the set of changed elements.
    * @note If there are many changed elements in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
    */
-  public readonly onElementsChanged = new BeEvent<
-    (changes: Readonly<ChangedEntities>) => void
-  >();
+  public readonly onElementsChanged = new BeEvent<(changes: Readonly<ChangedEntities>) => void>();
 
   /** Event raised after Txn validation or changeset application to indicate the set of changed models.
    * @note If there are many changed models in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
    */
-  public readonly onModelsChanged = new BeEvent<
-    (changes: Readonly<ChangedEntities>) => void
-  >();
+  public readonly onModelsChanged = new BeEvent<(changes: Readonly<ChangedEntities>) => void>();
 
   /** Event raised after the geometry within one or more [[GeometricModelState]]s is modified by applying a changeset or validation of a transaction.
    * A model's geometry can change as a result of:
@@ -77,9 +70,7 @@ export class BriefcaseTxns
    *  - Modification of an existing element's geometric properties; or
    *  - An explicit request to flag it as changed via [IModelDb.Models.updateModel]($backend).
    */
-  public readonly onModelGeometryChanged = new BeEvent<
-    (changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void
-  >();
+  public readonly onModelGeometryChanged = new BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>();
 
   /** Event raised before a commit operation is performed. Initiated by a call to [[BriefcaseConnection.saveChanges]], unless there are no changes to save.
    * @see [[onCommitted]] for the event raised after the operation.
@@ -92,9 +83,7 @@ export class BriefcaseTxns
    *  - `time`: the time at which changes were saved on the backend (obtained via `Date.now()`).
    * @see [[onCommit]] for the event raised before the operation.
    */
-  public readonly onCommitted = new BeEvent<
-    (hasPendingTxns: boolean, time: number) => void
-  >();
+  public readonly onCommitted = new BeEvent<(hasPendingTxns: boolean, time: number) => void>();
 
   /** Event raised after a changeset has been applied to the briefcase.
    * Changesets may be applied as a result of [[BriefcaseConnection.pullChanges]], or by undo/redo operations.
@@ -114,16 +103,12 @@ export class BriefcaseTxns
   /** Event raised after changes are pulled and merged into the briefcase.
    * @see [[BriefcaseConnection.pullAndMergeChanges]].
    */
-  public readonly onChangesPulled = new BeEvent<
-    (parentChangeset: ChangesetIndexAndId) => void
-  >();
+  public readonly onChangesPulled = new BeEvent<(parentChangeset: ChangesetIndexAndId) => void>();
 
   /** Event raised after the briefcase's local changes are pushed.
    * @see [[BriefcaseConnection.pushChanges]].
    */
-  public readonly onChangesPushed = new BeEvent<
-    (parentChangeset: ChangesetIndexAndId) => void
-  >();
+  public readonly onChangesPushed = new BeEvent<(parentChangeset: ChangesetIndexAndId) => void>();
 
   /** @internal */
   public constructor(iModel: BriefcaseConnection) {
@@ -314,11 +299,7 @@ export class BriefcaseTxns
   }
 
   /** @internal */
-  public notifyGeographicCoordinateSystemChanged(
-    gcs: GeographicCRSProps | undefined
-  ) {
-    this._iModel.geographicCoordinateSystem = gcs
-      ? new GeographicCRS(gcs)
-      : undefined;
+  public notifyGeographicCoordinateSystemChanged(gcs: GeographicCRSProps | undefined) {
+    this._iModel.geographicCoordinateSystem = gcs ? new GeographicCRS(gcs) : undefined;
   }
 }

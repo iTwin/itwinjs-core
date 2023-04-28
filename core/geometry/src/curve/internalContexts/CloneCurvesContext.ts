@@ -24,10 +24,7 @@ export class CloneCurvesContext extends RecursiveCurveProcessorWithStack {
     this._transform = transform;
     this._result = undefined;
   }
-  public static clone(
-    target: CurveCollection,
-    transform?: Transform
-  ): CurveCollection | undefined {
+  public static clone(target: CurveCollection, transform?: Transform): CurveCollection | undefined {
     const context = new CloneCurvesContext(transform);
     target.announceToCurveProcessor(context);
     return context._result;
@@ -47,16 +44,11 @@ export class CloneCurvesContext extends RecursiveCurveProcessorWithStack {
     return result;
   }
   // specialized clone methods override this (and allow announceCurvePrimitive to insert to parent)
-  protected doClone(
-    primitive: CurvePrimitive
-  ): CurvePrimitive | CurvePrimitive[] | undefined {
+  protected doClone(primitive: CurvePrimitive): CurvePrimitive | CurvePrimitive[] | undefined {
     if (this._transform) return primitive.cloneTransformed(this._transform);
     return primitive.clone();
   }
-  public override announceCurvePrimitive(
-    primitive: CurvePrimitive,
-    _indexInParent: number
-  ): void {
+  public override announceCurvePrimitive(primitive: CurvePrimitive, _indexInParent: number): void {
     const c = this.doClone(primitive);
     if (c !== undefined && this._stack.length > 0) {
       const parent = this._stack[this._stack.length - 1];

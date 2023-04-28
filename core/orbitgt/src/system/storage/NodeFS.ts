@@ -49,21 +49,11 @@ export class NodeFS extends FileStorage {
   /**
    * FileStorage method.
    */
-  public override async readFilePart(
-    fileName: string,
-    offset: ALong,
-    size: int32
-  ): Promise<ABuffer> {
+  public override async readFilePart(fileName: string, offset: ALong, size: int32): Promise<ABuffer> {
     const rawBuffer: ArrayBuffer = new ArrayBuffer(size);
     const buffer: Uint8Array = new Uint8Array(rawBuffer);
     const fd: number = fs.openSync(fileName, "r");
-    const bytesRead: number = fs.readSync(
-      fd,
-      buffer,
-      0,
-      size,
-      offset.toDouble()
-    );
+    const bytesRead: number = fs.readSync(fd, buffer, 0, size, offset.toDouble());
     fs.closeSync(fd);
     ASystem.assert0(
       bytesRead == size,
@@ -75,28 +65,17 @@ export class NodeFS extends FileStorage {
   /**
    * FileStorage method.
    */
-  public override async readFileParts(
-    fileName: string,
-    ranges: AList<FileRange>
-  ): Promise<AList<FileContent>> {
+  public override async readFileParts(fileName: string, ranges: AList<FileRange>): Promise<AList<FileContent>> {
     const buffers: AList<FileContent> = new AList<FileContent>();
     const fd: number = fs.openSync(fileName, "r");
     for (let i: number = 0; i < ranges.size(); i++) {
       const range: FileRange = ranges.get(i);
       const rawBuffer: ArrayBuffer = new ArrayBuffer(range.size);
       const buffer: Uint8Array = new Uint8Array(rawBuffer);
-      const bytesRead: number = fs.readSync(
-        fd,
-        buffer,
-        0,
-        range.size,
-        range.offset.toDouble()
-      );
+      const bytesRead: number = fs.readSync(fd, buffer, 0, range.size, range.offset.toDouble());
       ASystem.assert0(
         bytesRead == range.size,
-        `Expected ${
-          range.size
-        } bytes read, not ${bytesRead} from file '${fileName}' offset ${range.offset.toDouble()}`
+        `Expected ${range.size} bytes read, not ${bytesRead} from file '${fileName}' offset ${range.offset.toDouble()}`
       );
       buffers.add(new FileContent(range.offset, ABuffer.wrap(rawBuffer)));
     }
@@ -107,10 +86,7 @@ export class NodeFS extends FileStorage {
   /**
    * FileStorage method.
    */
-  public override async writeFile(
-    fileName: string,
-    fileContent: ABuffer
-  ): Promise<void> {
+  public override async writeFile(fileName: string, fileContent: ABuffer): Promise<void> {
     const fd: number = fs.openSync(fileName, "w");
     fs.writeSync(fd, new Uint8Array(fileContent.toNativeBuffer()));
     fs.closeSync(fd);

@@ -4,12 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { RequestBasicCredentials } from "../../../request/Request";
-import {
-  EmptyLocalization,
-  ImageMapLayerSettings,
-  MapLayerProps,
-  ServerError,
-} from "@itwin/core-common";
+import { EmptyLocalization, ImageMapLayerSettings, MapLayerProps, ServerError } from "@itwin/core-common";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import sinon from "sinon";
@@ -37,9 +32,7 @@ const createFakeTileResponse = (contentType: string, data?: Uint8Array) => {
   const test = {
     headers: new Headers({ "content-type": contentType }),
     arrayBuffer: async () => {
-      return Promise.resolve(
-        data ? ByteStream.fromUint8Array(data).arrayBuffer : undefined
-      );
+      return Promise.resolve(data ? ByteStream.fromUint8Array(data).arrayBuffer : undefined);
     },
     status: 200,
   } as unknown; // By using unknown type, I can define parts of Response I really need
@@ -59,20 +52,14 @@ describe("WmsMapLayerImageryProvider", () => {
 
     const createSub = sandbox
       .stub(WmsCapabilities, "create")
-      .callsFake(async function _(
-        _url: string,
-        _credentials?: RequestBasicCredentials,
-        _ignoreCache?: boolean
-      ) {
+      .callsFake(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
         // eslint-disable-next-line no-throw-literal
         throw { status: 401 };
       });
     const provider = new WmsMapLayerImageryProvider(settings);
     await provider.initialize();
     chai.expect(createSub.calledOnce).to.true;
-    chai
-      .expect(provider.status)
-      .to.equals(MapLayerImageryProviderStatus.RequireAuth);
+    chai.expect(provider.status).to.equals(MapLayerImageryProviderStatus.RequireAuth);
   });
 
   it("initialize() should handle 401 error from WmtsCapabilities", async () => {
@@ -81,20 +68,14 @@ describe("WmsMapLayerImageryProvider", () => {
 
     const createSub = sandbox
       .stub(WmtsCapabilities, "create")
-      .callsFake(async function _(
-        _url: string,
-        _credentials?: RequestBasicCredentials,
-        _ignoreCache?: boolean
-      ) {
+      .callsFake(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
         // eslint-disable-next-line no-throw-literal
         throw { status: 401 };
       });
     const provider = new WmtsMapLayerImageryProvider(settings);
     await provider.initialize();
     chai.expect(createSub.calledOnce).to.true;
-    chai
-      .expect(provider.status)
-      .to.equals(MapLayerImageryProviderStatus.RequireAuth);
+    chai.expect(provider.status).to.equals(MapLayerImageryProviderStatus.RequireAuth);
   });
 
   it("initialize() should handle unknown exception from WmsCapabilities", async () => {
@@ -103,11 +84,7 @@ describe("WmsMapLayerImageryProvider", () => {
 
     sandbox
       .stub(WmsCapabilities, "create")
-      .callsFake(async function _(
-        _url: string,
-        _credentials?: RequestBasicCredentials,
-        _ignoreCache?: boolean
-      ) {
+      .callsFake(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
         throw { someError: "error" }; // eslint-disable-line no-throw-literal
       });
     const provider = new WmsMapLayerImageryProvider(settings);
@@ -120,11 +97,7 @@ describe("WmsMapLayerImageryProvider", () => {
 
     sandbox
       .stub(WmtsCapabilities, "create")
-      .callsFake(async function _(
-        _url: string,
-        _credentials?: RequestBasicCredentials,
-        _ignoreCache?: boolean
-      ) {
+      .callsFake(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
         throw { someError: "error" }; // eslint-disable-line no-throw-literal
       });
     const provider = new WmtsMapLayerImageryProvider(settings);
@@ -137,11 +110,7 @@ describe("WmsMapLayerImageryProvider", () => {
 
     sandbox
       .stub(WmsMapLayerImageryProvider.prototype, "constructUrl")
-      .callsFake(async function (
-        _row: number,
-        _column: number,
-        _zoomLevel: number
-      ) {
+      .callsFake(async function (_row: number, _column: number, _zoomLevel: number) {
         return "https://fake/url";
       });
 
@@ -160,9 +129,7 @@ describe("WmsMapLayerImageryProvider", () => {
     makeTileRequestStub = sandbox
       .stub(MapLayerImageryProvider.prototype, "makeTileRequest")
       .callsFake(async function (_url: string) {
-        return Promise.resolve(
-          createFakeTileResponse("image/png", Uint8Array.from([0, 0, 0]))
-        );
+        return Promise.resolve(createFakeTileResponse("image/png", Uint8Array.from([0, 0, 0])));
       });
     tileData = await provider.loadTile(0, 0, 0);
     chai.expect(tileData).to.not.undefined;
@@ -172,9 +139,7 @@ describe("WmsMapLayerImageryProvider", () => {
     makeTileRequestStub = sandbox
       .stub(MapLayerImageryProvider.prototype, "makeTileRequest")
       .callsFake(async function (_url: string) {
-        return Promise.resolve(
-          createFakeTileResponse("image/jpeg", Uint8Array.from([0, 0, 0]))
-        );
+        return Promise.resolve(createFakeTileResponse("image/jpeg", Uint8Array.from([0, 0, 0])));
       });
 
     tileData = await provider.loadTile(0, 0, 0);
@@ -182,16 +147,9 @@ describe("WmsMapLayerImageryProvider", () => {
 
     // test invalid content type
     makeTileRequestStub.restore();
-    sandbox
-      .stub(MapLayerImageryProvider.prototype, "makeTileRequest")
-      .callsFake(async function (_url: string) {
-        return Promise.resolve(
-          createFakeTileResponse(
-            "image/strangeFormat",
-            Uint8Array.from([0, 0, 0])
-          )
-        );
-      });
+    sandbox.stub(MapLayerImageryProvider.prototype, "makeTileRequest").callsFake(async function (_url: string) {
+      return Promise.resolve(createFakeTileResponse("image/strangeFormat", Uint8Array.from([0, 0, 0])));
+    });
     tileData = await provider.loadTile(0, 0, 0);
     chai.expect(tileData).to.undefined;
   });
@@ -209,16 +167,10 @@ describe("WmsMapLayerImageryProvider", () => {
     let settings = ImageMapLayerSettings.fromJSON(layerPros);
     if (!settings) chai.assert.fail("Could not create settings");
 
-    const fakeCapabilities = await WmsCapabilities.create(
-      "assets/wms_capabilities/continents.xml"
-    );
+    const fakeCapabilities = await WmsCapabilities.create("assets/wms_capabilities/continents.xml");
     sandbox
       .stub(WmsCapabilities, "create")
-      .callsFake(async function _(
-        _url: string,
-        _credentials?: RequestBasicCredentials,
-        _ignoreCache?: boolean
-      ) {
+      .callsFake(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
         return fakeCapabilities;
       });
 
@@ -269,16 +221,10 @@ describe("WmsMapLayerImageryProvider", () => {
     const settings = ImageMapLayerSettings.fromJSON(layerPros);
     if (!settings) chai.assert.fail("Could not create settings");
 
-    const fakeCapabilities = await WmsCapabilities.create(
-      "assets/wms_capabilities/mapproxy_111.xml"
-    );
+    const fakeCapabilities = await WmsCapabilities.create("assets/wms_capabilities/mapproxy_111.xml");
     sandbox
       .stub(WmsCapabilities, "create")
-      .callsFake(async function _(
-        _url: string,
-        _credentials?: RequestBasicCredentials,
-        _ignoreCache?: boolean
-      ) {
+      .callsFake(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
         return fakeCapabilities;
       });
 
@@ -311,16 +257,10 @@ describe("WmsMapLayerImageryProvider", () => {
     const settings = ImageMapLayerSettings.fromJSON(layerPros);
     if (!settings) chai.assert.fail("Could not create settings");
 
-    const fakeCapabilities = await WmsCapabilities.create(
-      "assets/wms_capabilities/mapproxy_130.xml"
-    );
+    const fakeCapabilities = await WmsCapabilities.create("assets/wms_capabilities/mapproxy_130.xml");
     sandbox
       .stub(WmsCapabilities, "create")
-      .callsFake(async function _(
-        _url: string,
-        _credentials?: RequestBasicCredentials,
-        _ignoreCache?: boolean
-      ) {
+      .callsFake(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
         return fakeCapabilities;
       });
 
@@ -361,18 +301,11 @@ describe("MapLayerImageryProvider with IModelApp", () => {
     const settings = ImageMapLayerSettings.fromJSON(wmsSampleSource);
     if (!settings) chai.assert.fail("Could not create settings");
     const provider = new WmsMapLayerImageryProvider(settings);
-    const outputMessageSpy = sinon.spy(
-      IModelApp.notifications,
-      "outputMessage"
-    );
+    const outputMessageSpy = sinon.spy(IModelApp.notifications, "outputMessage");
 
     sandbox
       .stub(WmsMapLayerImageryProvider.prototype, "constructUrl")
-      .callsFake(async function (
-        _row: number,
-        _column: number,
-        _zoomLevel: number
-      ) {
+      .callsFake(async function (_row: number, _column: number, _zoomLevel: number) {
         return "https://fake/url";
       });
 
@@ -391,9 +324,7 @@ describe("MapLayerImageryProvider with IModelApp", () => {
     // 'outputMessage' should not be called because no successful tile request occurred.
     chai.expect(outputMessageSpy.calledOnce).to.false;
     // Status should have changed
-    chai
-      .expect(provider.status)
-      .to.be.equals(MapLayerImageryProviderStatus.RequireAuth);
+    chai.expect(provider.status).to.be.equals(MapLayerImageryProviderStatus.RequireAuth);
     // Event should have been triggered
     chai.expect(raiseEventSpy.getCalls().length).to.equals(1);
 
@@ -420,9 +351,7 @@ describe("MapLayerImageryProvider with IModelApp", () => {
     // Output message should have been called that time (because we had a previous successful request)
     chai.expect(outputMessageSpy.calledOnce).to.true;
     // Status should remains to 'RequireAuth'
-    chai
-      .expect(provider.status)
-      .to.be.equals(MapLayerImageryProviderStatus.RequireAuth);
+    chai.expect(provider.status).to.be.equals(MapLayerImageryProviderStatus.RequireAuth);
     // Event should not have been triggered again
     chai.expect(raiseEventSpy.getCalls().length).to.equals(1);
   });
@@ -446,11 +375,7 @@ describe("WmtsMapLayerImageryProvider", () => {
 
     sandbox
       .stub(WmsCapabilities, "create")
-      .callsFake(async function _(
-        _url: string,
-        _credentials?: RequestBasicCredentials,
-        _ignoreCache?: boolean
-      ) {
+      .callsFake(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
         throw { someError: "error" }; // eslint-disable-line no-throw-literal
       });
     const provider = new WmsMapLayerImageryProvider(settings);
@@ -463,11 +388,7 @@ describe("WmtsMapLayerImageryProvider", () => {
 
     sandbox
       .stub(WmtsCapabilities, "create")
-      .callsFake(async function _(
-        _url: string,
-        _credentials?: RequestBasicCredentials,
-        _ignoreCache?: boolean
-      ) {
+      .callsFake(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
         throw { someError: "error" }; // eslint-disable-line no-throw-literal
       });
     const provider = new WmtsMapLayerImageryProvider(settings);

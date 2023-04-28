@@ -7,27 +7,9 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import {
-  Angle,
-  Point2d,
-  Point3d,
-  Range3d,
-  Vector2d,
-  Vector3d,
-} from "@itwin/core-geometry";
-import {
-  Npc,
-  QParams2d,
-  QParams3d,
-  QPoint2dList,
-  QPoint3dList,
-  RenderMode,
-  RenderTexture,
-} from "@itwin/core-common";
-import {
-  RenderSkyGradientParams,
-  RenderSkySphereParams,
-} from "../RenderSystem";
+import { Angle, Point2d, Point3d, Range3d, Vector2d, Vector3d } from "@itwin/core-geometry";
+import { Npc, QParams2d, QParams3d, QPoint2dList, QPoint3dList, RenderMode, RenderTexture } from "@itwin/core-common";
+import { RenderSkyGradientParams, RenderSkySphereParams } from "../RenderSystem";
 import { FlashMode } from "../../FlashSettings";
 import { TesselatedPolyline } from "../primitives/PolylineParams";
 import { RenderMemory } from "../RenderMemory";
@@ -38,13 +20,7 @@ import { DrawParams, ShaderProgramParams } from "./DrawCommand";
 import { LineCode } from "./LineCode";
 import { fromSumOf, FrustumUniformType } from "./FrustumUniforms";
 import { GL } from "./GL";
-import {
-  BufferHandle,
-  BufferParameters,
-  BuffersContainer,
-  QBufferHandle2d,
-  QBufferHandle3d,
-} from "./AttributeBuffers";
+import { BufferHandle, BufferParameters, BuffersContainer, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers";
 import { InstancedGeometry } from "./InstancedGeometry";
 import { MaterialInfo } from "./Material";
 import { MeshGeometry } from "./MeshGeometry";
@@ -72,9 +48,7 @@ const scratchPoint3d = new Point3d();
 /** Represents a geometric primitive ready to be submitted to the GPU for rendering.
  * @internal
  */
-export abstract class CachedGeometry
-  implements WebGLDisposable, RenderMemory.Consumer
-{
+export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Consumer {
   protected _range?: Range3d;
   /**
    * Functions for obtaining a subclass of CachedGeometry.
@@ -207,15 +181,10 @@ export abstract class CachedGeometry
     }
   }
   public wantWoWReversal(params: ShaderProgramParams): boolean {
-    return (
-      params.target.currentViewFlags.whiteOnWhiteReversal &&
-      this._wantWoWReversal(params.target)
-    );
+    return params.target.currentViewFlags.whiteOnWhiteReversal && this._wantWoWReversal(params.target);
   }
   public getLineCode(params: ShaderProgramParams): number {
-    return params.target.currentViewFlags.styles
-      ? this._getLineCode(params)
-      : LineCode.solid;
+    return params.target.currentViewFlags.styles ? this._getLineCode(params) : LineCode.solid;
   }
   public getLineWeight(params: ShaderProgramParams): number {
     if (!params.target.currentViewFlags.weights) {
@@ -235,12 +204,9 @@ export abstract class CachedGeometry
     if (this.hasBakedLighting) return FlashMode.Hilite;
 
     const vf = params.target.currentViewFlags;
-    if (!this.isLitSurface || RenderMode.SmoothShade !== vf.renderMode)
-      return FlashMode.Hilite;
+    if (!this.isLitSurface || RenderMode.SmoothShade !== vf.renderMode) return FlashMode.Hilite;
 
-    return vf.lighting
-      ? params.target.plan.flashSettings.litMode
-      : FlashMode.Hilite;
+    return vf.lighting ? params.target.plan.flashSettings.litMode : FlashMode.Hilite;
   }
 
   public wantMixMonochromeColor(_target: Target): boolean {
@@ -286,17 +252,11 @@ export abstract class LUTGeometry extends CachedGeometry {
     return this._viewIndependentOrigin;
   }
 
-  protected abstract _draw(
-    _numInstances: number,
-    _instanceBuffersContainer?: BuffersContainer
-  ): void;
+  protected abstract _draw(_numInstances: number, _instanceBuffersContainer?: BuffersContainer): void;
   public draw(): void {
     this._draw(0);
   }
-  public drawInstanced(
-    numInstances: number,
-    instanceBuffersContainer: BuffersContainer
-  ): void {
+  public drawInstanced(numInstances: number, instanceBuffersContainer: BuffersContainer): void {
     this._draw(numInstances, instanceBuffersContainer);
   }
 
@@ -333,24 +293,12 @@ export class IndexedGeometryParams implements WebGLDisposable {
   public readonly indices: BufferHandle;
   public readonly numIndices: number;
 
-  protected constructor(
-    positions: QBufferHandle3d,
-    indices: BufferHandle,
-    numIndices: number
-  ) {
+  protected constructor(positions: QBufferHandle3d, indices: BufferHandle, numIndices: number) {
     this.buffers = BuffersContainer.create();
     const attrPos = AttributeMap.findAttribute("a_pos", undefined, false);
     assert(attrPos !== undefined);
     this.buffers.addBuffer(positions, [
-      BufferParameters.create(
-        attrPos.location,
-        3,
-        GL.DataType.UnsignedShort,
-        false,
-        0,
-        0,
-        false
-      ),
+      BufferParameters.create(attrPos.location, 3, GL.DataType.UnsignedShort, false, 0, 0, false),
     ]);
     this.buffers.addBuffer(indices, []);
     this.positions = positions;
@@ -358,34 +306,19 @@ export class IndexedGeometryParams implements WebGLDisposable {
     this.numIndices = numIndices;
   }
 
-  public static create(
-    positions: Uint16Array,
-    qParams: QParams3d,
-    indices: Uint32Array
-  ) {
+  public static create(positions: Uint16Array, qParams: QParams3d, indices: Uint32Array) {
     const posBuf = QBufferHandle3d.create(qParams, positions);
-    const indBuf = BufferHandle.createBuffer(
-      GL.Buffer.Target.ElementArrayBuffer,
-      indices
-    );
+    const indBuf = BufferHandle.createBuffer(GL.Buffer.Target.ElementArrayBuffer, indices);
     if (undefined === posBuf || undefined === indBuf) return undefined;
 
     return new IndexedGeometryParams(posBuf, indBuf, indices.length);
   }
   public static createFromList(positions: QPoint3dList, indices: Uint32Array) {
-    return IndexedGeometryParams.create(
-      positions.toTypedArray(),
-      positions.params,
-      indices
-    );
+    return IndexedGeometryParams.create(positions.toTypedArray(), positions.params, indices);
   }
 
   public get isDisposed(): boolean {
-    return (
-      this.buffers.isDisposed &&
-      this.positions.isDisposed &&
-      this.indices.isDisposed
-    );
+    return this.buffers.isDisposed && this.positions.isDisposed && this.indices.isDisposed;
   }
 
   public dispose() {
@@ -521,15 +454,7 @@ export class SkyBoxGeometryParams implements WebGLDisposable {
     const attrPos = AttributeMap.findAttribute("a_pos", undefined, false);
     assert(attrPos !== undefined);
     this.buffers.addBuffer(positions, [
-      BufferParameters.create(
-        attrPos.location,
-        3,
-        GL.DataType.UnsignedShort,
-        false,
-        0,
-        0,
-        false
-      ),
+      BufferParameters.create(attrPos.location, 3, GL.DataType.UnsignedShort, false, 0, 0, false),
     ]);
     this.positions = positions;
   }
@@ -571,23 +496,16 @@ export class SkyBoxQuadsGeometry extends CachedGeometry {
   public readonly cube: RenderTexture;
   protected readonly _params: SkyBoxGeometryParams;
 
-  protected constructor(
-    ndxGeomParams: SkyBoxGeometryParams,
-    texture: RenderTexture
-  ) {
+  protected constructor(ndxGeomParams: SkyBoxGeometryParams, texture: RenderTexture) {
     super();
     this.cube = texture;
     this._techniqueId = TechniqueId.SkyBox;
     this._params = ndxGeomParams;
   }
 
-  public static create(
-    texture: RenderTexture
-  ): SkyBoxQuadsGeometry | undefined {
+  public static create(texture: RenderTexture): SkyBoxQuadsGeometry | undefined {
     const sbxGeomParams = SkyBoxQuads.getInstance().createParams();
-    return undefined !== sbxGeomParams
-      ? new SkyBoxQuadsGeometry(sbxGeomParams, texture)
-      : undefined;
+    return undefined !== sbxGeomParams ? new SkyBoxQuadsGeometry(sbxGeomParams, texture) : undefined;
   }
 
   public collectStatistics(_stats: RenderMemory.Statistics): void {
@@ -661,11 +579,7 @@ class ViewportQuad {
   }
 
   public createParams() {
-    return IndexedGeometryParams.create(
-      this.vertices,
-      this.vertexParams,
-      this.indices
-    );
+    return IndexedGeometryParams.create(this.vertices, this.vertexParams, this.indices);
   }
 }
 
@@ -687,10 +601,7 @@ namespace ViewportQuad {
 export class ViewportQuadGeometry extends IndexedGeometry {
   protected _techniqueId: TechniqueId;
 
-  protected constructor(
-    params: IndexedGeometryParams,
-    techniqueId: TechniqueId
-  ) {
+  protected constructor(params: IndexedGeometryParams, techniqueId: TechniqueId) {
     super(params);
     this._techniqueId = techniqueId;
   }
@@ -720,11 +631,7 @@ export class ViewportQuadGeometry extends IndexedGeometry {
 export class TexturedViewportQuadGeometry extends ViewportQuadGeometry {
   protected readonly _textures: WebGLTexture[];
 
-  protected constructor(
-    params: IndexedGeometryParams,
-    techniqueId: TechniqueId,
-    textures: WebGLTexture[]
-  ) {
+  protected constructor(params: IndexedGeometryParams, techniqueId: TechniqueId, textures: WebGLTexture[]) {
     super(params, techniqueId);
     this._textures = textures;
 
@@ -766,22 +673,10 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
     this._isWorldPosSet = true;
     this._setPointsFromFrustum(target);
     this._worldPosBuff.bindData(this.worldPos, GL.Buffer.Usage.StreamDraw);
-    const attrWorldPos = AttributeMap.findAttribute(
-      "a_worldPos",
-      TechniqueId.SkySphereGradient,
-      false
-    );
+    const attrWorldPos = AttributeMap.findAttribute("a_worldPos", TechniqueId.SkySphereGradient, false);
     assert(attrWorldPos !== undefined);
     this._params.buffers.addBuffer(this._worldPosBuff, [
-      BufferParameters.create(
-        attrWorldPos.location,
-        3,
-        GL.DataType.Float,
-        false,
-        0,
-        0,
-        false
-      ),
+      BufferParameters.create(attrWorldPos.location, 3, GL.DataType.Float, false, 0, 0, false),
     ]);
   }
 
@@ -794,11 +689,7 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
       .interpolate(0.5, frustum.getCorner(Npc.LeftBottomFront), scratchPoint3a);
     const rb = frustum
       .getCorner(Npc.RightBottomRear)
-      .interpolate(
-        0.5,
-        frustum.getCorner(Npc.RightBottomFront),
-        scratchPoint3b
-      );
+      .interpolate(0.5, frustum.getCorner(Npc.RightBottomFront), scratchPoint3b);
     const rt = frustum
       .getCorner(Npc.RightTopRear)
       .interpolate(0.5, frustum.getCorner(Npc.RightTopFront), scratchPoint3c);
@@ -837,11 +728,7 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
         const farLowerLeft = frustum.getCorner(Npc.LeftBottomRear);
         const nearLowerLeft = frustum.getCorner(Npc.LeftBottomFront);
         const scale = 1.0 / (1.0 - target.planFraction);
-        const zVec = Vector3d.createStartEnd(
-          farLowerLeft,
-          nearLowerLeft,
-          scratchVec3c
-        );
+        const zVec = Vector3d.createStartEnd(farLowerLeft, nearLowerLeft, scratchVec3c);
         camPos = fromSumOf(farLowerLeft, zVec, scale, scratchPoint3a);
       } else {
         const delta = Vector3d.createStartEnd(
@@ -850,12 +737,8 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
           scratchVec3c
         );
         const pseudoCameraHalfAngle = 22.5;
-        const diagonal = frustum
-          .getCorner(Npc.LeftBottomRear)
-          .distance(frustum.getCorner(Npc.RightTopRear));
-        const focalLength =
-          diagonal /
-          (2 * Math.atan(pseudoCameraHalfAngle * Angle.radiansPerDegree));
+        const diagonal = frustum.getCorner(Npc.LeftBottomRear).distance(frustum.getCorner(Npc.RightTopRear));
+        const focalLength = diagonal / (2 * Math.atan(pseudoCameraHalfAngle * Angle.radiansPerDegree));
         let zScale = focalLength / delta.magnitude();
         if (zScale < 1.000001) zScale = 1.000001; // prevent worldEye front being on or inside the frustum front plane
         camPos = Point3d.createAdd3Scaled(
@@ -964,16 +847,11 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
     }
   }
 
-  public static createGeometry(
-    skybox: RenderSkySphereParams | RenderSkyGradientParams
-  ) {
+  public static createGeometry(skybox: RenderSkySphereParams | RenderSkyGradientParams) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined === params) return undefined;
 
-    const technique =
-      "sphere" === skybox.type
-        ? TechniqueId.SkySphereTexture
-        : TechniqueId.SkySphereGradient;
+    const technique = "sphere" === skybox.type ? TechniqueId.SkySphereTexture : TechniqueId.SkySphereGradient;
     return new SkySphereViewportQuadGeometry(params, skybox, technique);
   }
 
@@ -991,10 +869,7 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
  * @internal
  */
 export class AmbientOcclusionGeometry extends TexturedViewportQuadGeometry {
-  public static createGeometry(
-    depthAndOrder: WebGLTexture,
-    depth: WebGLTexture
-  ) {
+  public static createGeometry(depthAndOrder: WebGLTexture, depth: WebGLTexture) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined === params) {
       return undefined;
@@ -1041,19 +916,8 @@ export class BlurGeometry extends TexturedViewportQuadGeometry {
       return undefined;
     }
     if (undefined === depthAndOrderHidden || BlurType.NoTest === blurType)
-      return new BlurGeometry(
-        params,
-        [texToBlur, depthAndOrder],
-        blurDir,
-        blurType
-      );
-    else
-      return new BlurGeometry(
-        params,
-        [texToBlur, depthAndOrder, depthAndOrderHidden],
-        blurDir,
-        blurType
-      );
+      return new BlurGeometry(params, [texToBlur, depthAndOrder], blurDir, blurType);
+    else return new BlurGeometry(params, [texToBlur, depthAndOrder, depthAndOrderHidden], blurDir, blurType);
   }
 
   public get textureToBlur() {
@@ -1066,19 +930,8 @@ export class BlurGeometry extends TexturedViewportQuadGeometry {
     return this._textures[2];
   }
 
-  private constructor(
-    params: IndexedGeometryParams,
-    textures: WebGLTexture[],
-    blurDir: Vector2d,
-    blurType: BlurType
-  ) {
-    super(
-      params,
-      BlurType.NoTest === blurType
-        ? TechniqueId.Blur
-        : TechniqueId.BlurTestOrder,
-      textures
-    );
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[], blurDir: Vector2d, blurType: BlurType) {
+    super(params, BlurType.NoTest === blurType ? TechniqueId.Blur : TechniqueId.BlurTestOrder, textures);
     this.blurDir = blurDir;
   }
 }
@@ -1087,21 +940,11 @@ export class BlurGeometry extends TexturedViewportQuadGeometry {
 export class EDLCalcBasicGeometry extends TexturedViewportQuadGeometry {
   public readonly texInfo = new Float32Array(3);
 
-  public static createGeometry(
-    colorBuffer: WebGLTexture,
-    depthBuffer: WebGLTexture,
-    width: number,
-    height: number
-  ) {
+  public static createGeometry(colorBuffer: WebGLTexture, depthBuffer: WebGLTexture, width: number, height: number) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined === params) return undefined;
 
-    return new EDLCalcBasicGeometry(
-      params,
-      [colorBuffer, depthBuffer],
-      width,
-      height
-    );
+    return new EDLCalcBasicGeometry(params, [colorBuffer, depthBuffer], width, height);
   }
 
   public get colorTexture() {
@@ -1111,12 +954,7 @@ export class EDLCalcBasicGeometry extends TexturedViewportQuadGeometry {
     return this._textures[1];
   }
 
-  private constructor(
-    params: IndexedGeometryParams,
-    textures: WebGLTexture[],
-    width: number,
-    height: number
-  ) {
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[], width: number, height: number) {
     super(params, TechniqueId.EDLCalcBasic, textures);
     this.texInfo[0] = 1.0 / width;
     this.texInfo[1] = 1.0 / height;
@@ -1138,13 +976,7 @@ export class EDLCalcFullGeometry extends TexturedViewportQuadGeometry {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined === params) return undefined;
 
-    return new EDLCalcFullGeometry(
-      params,
-      [colorBuffer, depthBuffer],
-      scale,
-      width,
-      height
-    );
+    return new EDLCalcFullGeometry(params, [colorBuffer, depthBuffer], scale, width, height);
   }
 
   public get colorTexture() {
@@ -1182,13 +1014,7 @@ export class EDLFilterGeometry extends TexturedViewportQuadGeometry {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined === params) return undefined;
 
-    return new EDLFilterGeometry(
-      params,
-      [colorBuffer, depthBuffer],
-      scale,
-      width,
-      height
-    );
+    return new EDLFilterGeometry(params, [colorBuffer, depthBuffer], scale, width, height);
   }
 
   public get colorTexture() {
@@ -1214,19 +1040,11 @@ export class EDLFilterGeometry extends TexturedViewportQuadGeometry {
 
 /** @internal */
 export class EDLMixGeometry extends TexturedViewportQuadGeometry {
-  public static createGeometry(
-    colorTexture1: WebGLTexture,
-    colorTexture2: WebGLTexture,
-    colorTexture4: WebGLTexture
-  ) {
+  public static createGeometry(colorTexture1: WebGLTexture, colorTexture2: WebGLTexture, colorTexture4: WebGLTexture) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined === params) return undefined;
 
-    return new EDLMixGeometry(params, [
-      colorTexture1,
-      colorTexture2,
-      colorTexture4,
-    ]);
+    return new EDLMixGeometry(params, [colorTexture1, colorTexture2, colorTexture4]);
   }
 
   public get colorTexture1() {
@@ -1248,11 +1066,7 @@ export class EDLMixGeometry extends TexturedViewportQuadGeometry {
 export class EVSMGeometry extends TexturedViewportQuadGeometry {
   public readonly stepSize = new Float32Array(2);
 
-  public static createGeometry(
-    depthBuffer: WebGLTexture,
-    width: number,
-    height: number
-  ) {
+  public static createGeometry(depthBuffer: WebGLTexture, width: number, height: number) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined === params) return undefined;
 
@@ -1263,12 +1077,7 @@ export class EVSMGeometry extends TexturedViewportQuadGeometry {
     return this._textures[0];
   }
 
-  private constructor(
-    params: IndexedGeometryParams,
-    textures: WebGLTexture[],
-    width: number,
-    height: number
-  ) {
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[], width: number, height: number) {
     super(params, TechniqueId.EVSMFromDepth, textures);
     this.stepSize[0] = 1.0 / width;
     this.stepSize[1] = 1.0 / height;
@@ -1279,12 +1088,7 @@ export class EVSMGeometry extends TexturedViewportQuadGeometry {
  * @internal
  */
 export class CompositeGeometry extends TexturedViewportQuadGeometry {
-  public static createGeometry(
-    opaque: WebGLTexture,
-    accum: WebGLTexture,
-    reveal: WebGLTexture,
-    hilite: WebGLTexture
-  ) {
+  public static createGeometry(opaque: WebGLTexture, accum: WebGLTexture, reveal: WebGLTexture, hilite: WebGLTexture) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined === params) return undefined;
 
@@ -1332,10 +1136,7 @@ export class CompositeGeometry extends TexturedViewportQuadGeometry {
  * @internal
  */
 export class CopyPickBufferGeometry extends TexturedViewportQuadGeometry {
-  public static createGeometry(
-    featureId: WebGLTexture,
-    depthAndOrder: WebGLTexture
-  ) {
+  public static createGeometry(featureId: WebGLTexture, depthAndOrder: WebGLTexture) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined !== params) {
       return new CopyPickBufferGeometry(params, [featureId, depthAndOrder]);
@@ -1378,18 +1179,10 @@ export class CombineTexturesGeometry extends TexturedViewportQuadGeometry {
 }
 
 export class Combine3TexturesGeometry extends TexturedViewportQuadGeometry {
-  public static createGeometry(
-    texture0: WebGLTexture,
-    texture1: WebGLTexture,
-    texture2: WebGLTexture
-  ) {
+  public static createGeometry(texture0: WebGLTexture, texture1: WebGLTexture, texture2: WebGLTexture) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined !== params) {
-      return new Combine3TexturesGeometry(params, [
-        texture0,
-        texture1,
-        texture2,
-      ]);
+      return new Combine3TexturesGeometry(params, [texture0, texture1, texture2]);
     } else {
       return undefined;
     }
@@ -1428,11 +1221,7 @@ export class SingleTexturedViewportQuadGeometry extends TexturedViewportQuadGeom
     this._textures[0] = texture;
   }
 
-  protected constructor(
-    params: IndexedGeometryParams,
-    texture: WebGLTexture,
-    techId: TechniqueId
-  ) {
+  protected constructor(params: IndexedGeometryParams, texture: WebGLTexture, techId: TechniqueId) {
     super(params, techId, [texture]);
   }
 }
@@ -1477,10 +1266,7 @@ export class ScreenPointsGeometry extends CachedGeometry {
 
     this._numPoints = vertices.length;
 
-    this._positions = QBufferHandle2d.create(
-      vertices.params,
-      vertices.toTypedArray()
-    )!;
+    this._positions = QBufferHandle2d.create(vertices.params, vertices.toTypedArray())!;
 
     this._origin = new Float32Array(3);
     this._origin[0] = this._positions.params[0];
@@ -1492,30 +1278,14 @@ export class ScreenPointsGeometry extends CachedGeometry {
     this._scale[2] = this._positions.params[3]; // just copy the scale from y
 
     this.buffers = BuffersContainer.create();
-    const attrPos = AttributeMap.findAttribute(
-      "a_pos",
-      TechniqueId.VolClassCopyZ,
-      false
-    );
+    const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.VolClassCopyZ, false);
     assert(attrPos !== undefined);
     this.buffers.addBuffer(this._positions, [
-      BufferParameters.create(
-        attrPos.location,
-        2,
-        GL.DataType.UnsignedShort,
-        false,
-        0,
-        0,
-        false
-      ),
+      BufferParameters.create(attrPos.location, 2, GL.DataType.UnsignedShort, false, 0, 0, false),
     ]);
   }
 
-  public static createGeometry(
-    width: number,
-    height: number,
-    depth: WebGLTexture
-  ): ScreenPointsGeometry {
+  public static createGeometry(width: number, height: number, depth: WebGLTexture): ScreenPointsGeometry {
     const pixWidth = 2.0 / width;
     const pixHeight = 2.0 / height;
 
@@ -1538,11 +1308,7 @@ export class ScreenPointsGeometry extends CachedGeometry {
 
   public draw(): void {
     this.buffers.bind();
-    System.instance.context.drawArrays(
-      GL.PrimitiveType.Points,
-      0,
-      this._numPoints
-    );
+    System.instance.context.drawArrays(GL.PrimitiveType.Points, 0, this._numPoints);
     this.buffers.unbind();
   }
 
@@ -1556,10 +1322,7 @@ export class ScreenPointsGeometry extends CachedGeometry {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    stats.addBuffer(
-      RenderMemory.BufferType.PointStrings,
-      this._positions.bytesUsed
-    );
+    stats.addBuffer(RenderMemory.BufferType.PointStrings, this._positions.bytesUsed);
   }
 
   protected _wantWoWReversal(_target: Target): boolean {
@@ -1588,79 +1351,27 @@ export class PolylineBuffers implements WebGLDisposable {
   public indices: BufferHandle;
   public prevIndices: BufferHandle;
   public nextIndicesAndParams: BufferHandle;
-  private constructor(
-    indices: BufferHandle,
-    prevIndices: BufferHandle,
-    nextIndicesAndParams: BufferHandle
-  ) {
+  private constructor(indices: BufferHandle, prevIndices: BufferHandle, nextIndicesAndParams: BufferHandle) {
     this.buffers = BuffersContainer.create();
 
-    const attrPos = AttributeMap.findAttribute(
-      "a_pos",
-      TechniqueId.Polyline,
-      false
-    );
-    const attrPrevIndex = AttributeMap.findAttribute(
-      "a_prevIndex",
-      TechniqueId.Polyline,
-      false
-    );
-    const attrNextIndex = AttributeMap.findAttribute(
-      "a_nextIndex",
-      TechniqueId.Polyline,
-      false
-    );
-    const attrParam = AttributeMap.findAttribute(
-      "a_param",
-      TechniqueId.Polyline,
-      false
-    );
+    const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.Polyline, false);
+    const attrPrevIndex = AttributeMap.findAttribute("a_prevIndex", TechniqueId.Polyline, false);
+    const attrNextIndex = AttributeMap.findAttribute("a_nextIndex", TechniqueId.Polyline, false);
+    const attrParam = AttributeMap.findAttribute("a_param", TechniqueId.Polyline, false);
     assert(attrPos !== undefined);
     assert(attrPrevIndex !== undefined);
     assert(attrNextIndex !== undefined);
     assert(attrParam !== undefined);
 
     this.buffers.addBuffer(indices, [
-      BufferParameters.create(
-        attrPos.location,
-        3,
-        GL.DataType.UnsignedByte,
-        false,
-        0,
-        0,
-        false
-      ),
+      BufferParameters.create(attrPos.location, 3, GL.DataType.UnsignedByte, false, 0, 0, false),
     ]);
     this.buffers.addBuffer(prevIndices, [
-      BufferParameters.create(
-        attrPrevIndex.location,
-        3,
-        GL.DataType.UnsignedByte,
-        false,
-        0,
-        0,
-        false
-      ),
+      BufferParameters.create(attrPrevIndex.location, 3, GL.DataType.UnsignedByte, false, 0, 0, false),
     ]);
     this.buffers.addBuffer(nextIndicesAndParams, [
-      BufferParameters.create(
-        attrNextIndex.location,
-        3,
-        GL.DataType.UnsignedByte,
-        false,
-        4,
-        0,
-        false
-      ),
-      BufferParameters.create(
-        attrParam.location,
-        1,
-        GL.DataType.UnsignedByte,
-        false,
-        4,
-        3,
-        false
-      ),
+      BufferParameters.create(attrNextIndex.location, 3, GL.DataType.UnsignedByte, false, 4, 0, false),
+      BufferParameters.create(attrParam.location, 1, GL.DataType.UnsignedByte, false, 4, 3, false),
     ]);
 
     this.indices = indices;
@@ -1668,9 +1379,7 @@ export class PolylineBuffers implements WebGLDisposable {
     this.nextIndicesAndParams = nextIndicesAndParams;
   }
 
-  public static create(
-    polyline: TesselatedPolyline
-  ): PolylineBuffers | undefined {
+  public static create(polyline: TesselatedPolyline): PolylineBuffers | undefined {
     const indices = BufferHandle.createArrayBuffer(polyline.indices.data);
     const prev = BufferHandle.createArrayBuffer(polyline.prevIndices.data);
     const next = BufferHandle.createArrayBuffer(polyline.nextIndicesAndParams);
@@ -1679,16 +1388,8 @@ export class PolylineBuffers implements WebGLDisposable {
       : undefined;
   }
 
-  public collectStatistics(
-    stats: RenderMemory.Statistics,
-    type: RenderMemory.BufferType
-  ): void {
-    stats.addBuffer(
-      type,
-      this.indices.bytesUsed +
-        this.prevIndices.bytesUsed +
-        this.nextIndicesAndParams.bytesUsed
-    );
+  public collectStatistics(stats: RenderMemory.Statistics, type: RenderMemory.BufferType): void {
+    stats.addBuffer(type, this.indices.bytesUsed + this.prevIndices.bytesUsed + this.nextIndicesAndParams.bytesUsed);
   }
 
   public get isDisposed(): boolean {

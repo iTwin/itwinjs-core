@@ -74,13 +74,7 @@ export abstract class CubicEvaluator extends XYCurveEvaluator {
   }
   /** Evaluate third derivative of Y with respect to fraction. */
   public fractionToD3Y(_fraction: number): number {
-    return (
-      6.0 *
-      this._cubicM *
-      this._axisLength *
-      this._axisLength *
-      this._axisLength
-    );
+    return 6.0 * this._cubicM * this._axisLength * this._axisLength * this._axisLength;
   }
   /** Evaluate fraction at x. */
   public xToFraction(x: number): number {

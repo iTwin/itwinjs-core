@@ -7,10 +7,7 @@ import { expect } from "chai";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import {
-  ClippedPolyfaceBuilders,
-  PolyfaceClip,
-} from "../../polyface/PolyfaceClip";
+import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
 import { Range3d } from "../../geometry3d/Range";
 import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
@@ -42,10 +39,7 @@ function clipMeshToRange(
  * * The initial step of this process is to call markPairedEdgesInvisible on the original mesh.
  *    * this marks the boundary visible and interior edges invisible.
  */
-function createDrapeFromMeshToZ(
-  mesh: IndexedPolyface,
-  z: number
-): IndexedPolyface | string {
+function createDrapeFromMeshToZ(mesh: IndexedPolyface, z: number): IndexedPolyface | string {
   const builder = PolyfaceBuilder.create();
   PolyfaceQuery.markPairedEdgesInvisible(mesh);
   const visitor = mesh.createVisitor(1);
@@ -82,25 +76,15 @@ function createDrapeFromMeshToZ(
  * @param upwardFacingMesh surface mesh
  * @param range clip range
  */
-function createVolumeBelowSurfaceMeshInRange(
-  mesh: IndexedPolyface,
-  clipRange: Range3d
-): Polyface | string {
+function createVolumeBelowSurfaceMeshInRange(mesh: IndexedPolyface, clipRange: Range3d): Polyface | string {
   const meshRange = mesh.range();
   // create side faces that extend beyond the bottom of the range.
-  const meshWithSides = createDrapeFromMeshToZ(
-    mesh,
-    Math.min(clipRange.low.z, meshRange.low.z) - 1
-  );
+  const meshWithSides = createDrapeFromMeshToZ(mesh, Math.min(clipRange.low.z, meshRange.low.z) - 1);
   if (meshWithSides instanceof IndexedPolyface) {
     // Clip with (a) parts of the mesh within the range (b) sides draped below the mesh edges (c) additional sides at clip range (d) bottom of clipRange
     const clipper = ConvexClipPlaneSet.createRange3dPlanes(clipRange);
     const clipBuilders = ClippedPolyfaceBuilders.create(true, false, true);
-    PolyfaceClip.clipPolyfaceInsideOutside(
-      meshWithSides,
-      clipper,
-      clipBuilders
-    );
+    PolyfaceClip.clipPolyfaceInsideOutside(meshWithSides, clipper, clipBuilders);
     const clippedMesh = clipBuilders.claimPolyface(0, true);
     if (clippedMesh instanceof Polyface) return clippedMesh;
     return "PolyfaceClip.clipPolyfaceInsideOutside did not return inside clip";
@@ -108,10 +92,7 @@ function createVolumeBelowSurfaceMeshInRange(
   return "failed creation of vertical facets on sides.";
 }
 
-function createSampleUndulatingSurface(
-  numX: number,
-  numY: number
-): IndexedPolyface {
+function createSampleUndulatingSurface(numX: number, numY: number): IndexedPolyface {
   const mesh = Sample.createTriangularUnitGridPolyface(
     Point3d.create(0, 0, 1),
     Vector3d.create(1, 0.1, 0.3),
@@ -147,29 +128,14 @@ describe("CutFill", () => {
     const meshWithSides = createDrapeFromMeshToZ(mesh, -1.0);
     if (meshWithSides instanceof IndexedPolyface) {
       y0 += 10.0;
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        meshWithSides,
-        x0,
-        y0
-      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshWithSides, x0, y0);
       const range = Range3d.createXYZXYZ(0.5, 0.5, 0, 5.5, 4.0, 6);
       GeometryCoreTestIO.captureRangeEdges(allGeometry, range, x0, y0);
       const clips = clipMeshToRange(range, meshWithSides);
       y0 += 10;
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        clips.inside,
-        x0,
-        y0
-      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, clips.inside, x0, y0);
       y0 += 10;
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        clips.outside,
-        x0,
-        y0
-      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, clips.outside, x0, y0);
       GeometryCoreTestIO.saveGeometry(allGeometry, "CutFill", "RangeBoxClipA");
       expect(ck.getNumErrors()).equals(0);
     }
@@ -194,13 +160,7 @@ describe("CutFill", () => {
       GeometryCoreTestIO.captureRangeEdges(allGeometry, clipRange, x0, y0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0);
       const bigClip = createVolumeBelowSurfaceMeshInRange(mesh, clipRange);
-      if (bigClip instanceof Polyface)
-        GeometryCoreTestIO.captureCloneGeometry(
-          allGeometry,
-          bigClip,
-          x0,
-          y0 + 12.0
-        );
+      if (bigClip instanceof Polyface) GeometryCoreTestIO.captureCloneGeometry(allGeometry, bigClip, x0, y0 + 12.0);
       else ck.announceError(bigClip, clipRange);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CutFill", "RangeBoxClipB");

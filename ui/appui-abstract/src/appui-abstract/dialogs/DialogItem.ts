@@ -132,10 +132,7 @@ export class DialogProperty<T> {
     return { propertyName: this.name, value: this.dialogItemValue };
   }
 
-  public toDialogItem(
-    editorPosition: EditorPosition,
-    lockProperty?: DialogItem
-  ): DialogItem {
+  public toDialogItem(editorPosition: EditorPosition, lockProperty?: DialogItem): DialogItem {
     return {
       value: this.dialogItemValue,
       property: this.description,

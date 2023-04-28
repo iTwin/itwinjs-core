@@ -8,18 +8,8 @@
 
 import { assert } from "@itwin/core-bentley";
 import { AttributeMap } from "../AttributeMap";
-import {
-  FragmentShaderComponent,
-  ProgramBuilder,
-  VariableType,
-  VertexShaderComponent,
-} from "../ShaderBuilder";
-import {
-  FeatureMode,
-  IsAnimated,
-  IsClassified,
-  IsThematic,
-} from "../TechniqueFlags";
+import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import { FeatureMode, IsAnimated, IsClassified, IsThematic } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { addUniformHiliter } from "./FeatureSymbology";
 import {
@@ -74,18 +64,13 @@ const computePosition = `
 `;
 
 function createBuilder(): ProgramBuilder {
-  const builder = new ProgramBuilder(
-    AttributeMap.findAttributeMap(TechniqueId.PointCloud, false)
-  );
+  const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.PointCloud, false));
   const vert = builder.vert;
   addViewportTransformation(vert);
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   addModelViewProjectionMatrix(vert);
 
-  builder.frag.set(
-    FragmentShaderComponent.CheckForEarlyDiscard,
-    roundPointDiscard
-  );
+  builder.frag.set(FragmentShaderComponent.CheckForEarlyDiscard, roundPointDiscard);
 
   // Uniforms based on the PointCloudDisplaySettings.
   builder.addUniform("u_pointCloudSettings", VariableType.Vec4, (prog) => {
@@ -123,10 +108,7 @@ export function createPointCloudBuilder(
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
   if (classified) {
     addColorPlanarClassifier(builder, false, thematic);
-    builder.frag.set(
-      FragmentShaderComponent.CheckForDiscard,
-      checkForClassifiedDiscard
-    );
+    builder.frag.set(FragmentShaderComponent.CheckForDiscard, checkForClassifiedDiscard);
 
     if (FeatureMode.None !== featureMode) addFeaturePlanarClassifier(builder);
   }
@@ -140,9 +122,7 @@ export function createPointCloudBuilder(
 }
 
 /** @internal */
-export function createPointCloudHiliter(
-  classified: IsClassified
-): ProgramBuilder {
+export function createPointCloudHiliter(classified: IsClassified): ProgramBuilder {
   const builder = createBuilder();
   if (classified) {
     addHilitePlanarClassifier(builder, false);

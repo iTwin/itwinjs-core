@@ -75,10 +75,7 @@ export class MapTileLoader extends RealityTileLoader {
     return IModelApp.tileAdmin.channels.getForHttp("itwinjs-imagery");
   }
 
-  public async requestTileContent(
-    tile: MapTile,
-    isCanceled: () => boolean
-  ): Promise<TileRequest.Response> {
+  public async requestTileContent(tile: MapTile, isCanceled: () => boolean): Promise<TileRequest.Response> {
     assert(tile instanceof MapTile);
     try {
       const data = await this.terrainProvider.requestMeshData({
@@ -113,11 +110,7 @@ export class MapTileLoader extends RealityTileLoader {
     if (!mesh || isCanceled()) return {};
 
     const projection = tile.getProjection(tile.heightRange);
-    const terrainGeometry = system.createTerrainMesh(
-      mesh,
-      projection.transformFromLocal,
-      true
-    );
+    const terrainGeometry = system.createTerrainMesh(mesh, projection.transformFromLocal, true);
 
     let unavailableChild = false;
     if (quadId.level < this.maxDepth) {
@@ -131,9 +124,7 @@ export class MapTileLoader extends RealityTileLoader {
     }
 
     return {
-      contentRange: projection.transformFromLocal.multiplyRange(
-        projection.localRange
-      ),
+      contentRange: projection.transformFromLocal.multiplyRange(projection.localRange),
       terrain: {
         mesh: unavailableChild ? mesh : undefined, // If a child is unavailable retain mesh for upsampling.,
         renderGeometry: terrainGeometry,
@@ -145,11 +136,7 @@ export class MapTileLoader extends RealityTileLoader {
     assert(false, "load polyFaces not implmented for map tiles");
   }
 
-  public getChildHeightRange(
-    quadId: QuadId,
-    rectangle: MapCartoRectangle,
-    parent: MapTile
-  ): Range1d | undefined {
+  public getChildHeightRange(quadId: QuadId, rectangle: MapCartoRectangle, parent: MapTile): Range1d | undefined {
     return this._terrainProvider.getChildHeightRange(quadId, rectangle, parent);
   }
 

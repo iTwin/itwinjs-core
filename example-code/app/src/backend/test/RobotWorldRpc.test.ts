@@ -3,12 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import {
-  Id64,
-  Id64String,
-  OpenMode,
-  ProcessDetector,
-} from "@itwin/core-bentley";
+import { Id64, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { Angle, Point3d } from "@itwin/core-geometry";
 import { IModelJsFs, PhysicalModel, StandaloneDb } from "@itwin/core-backend";
@@ -24,10 +19,7 @@ import {
   TestRpcManager,
 } from "@itwin/core-common";
 import { BriefcaseConnection, NullRenderSystem } from "@itwin/core-frontend";
-import {
-  RobotWorldReadRpcInterface,
-  RobotWorldWriteRpcInterface,
-} from "../../common/RobotWorldRpcInterface";
+import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../../common/RobotWorldRpcInterface";
 import { RobotWorldEngine } from "../RobotWorldEngine";
 import { RobotWorld } from "../RobotWorldSchema";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -102,12 +94,7 @@ if (ProcessDetector.isElectronAppFrontend) {
       //  |                   |
       //  |R1                 V
       //  +-- -- -- -- -- -- --
-      const robot1Id = await roWrite.insertRobot(
-        iToken,
-        modelId,
-        "r1",
-        Point3d.create(0, 0, 0).toJSON()
-      );
+      const robot1Id = await roWrite.insertRobot(iToken, modelId, "r1", Point3d.create(0, 0, 0).toJSON());
       const barrier1Id = await roWrite.insertBarrier(
         iToken,
         modelId,
@@ -124,9 +111,7 @@ if (ProcessDetector.isElectronAppFrontend) {
       );
 
       await iModel.saveChanges();
-      const barrier1 = (
-        await iModel.elements.getProps(barrier1Id)
-      )[0] as GeometricElement3dProps;
+      const barrier1 = (await iModel.elements.getProps(barrier1Id))[0] as GeometricElement3dProps;
       /* const barrier2 = */
       await iModel.elements.getProps(barrier2Id);
       assert.equal(await roRead.countRobots(iToken), 1);
@@ -147,14 +132,9 @@ if (ProcessDetector.isElectronAppFrontend) {
       if (true) {
         await roWrite.moveRobot(iToken, robot1Id, barrier1.placement!.origin);
         await iModel.saveChanges();
-        const r1 = (
-          await iModel.elements.getProps(robot1Id)
-        )[0] as GeometricElement3dProps;
+        const r1 = (await iModel.elements.getProps(robot1Id))[0] as GeometricElement3dProps;
         assert.deepEqual(r1.placement!.origin, barrier1.placement!.origin);
-        const barriersHit = await roRead.queryObstaclesHitByRobot(
-          iToken,
-          robot1Id
-        );
+        const barriersHit = await roRead.queryObstaclesHitByRobot(iToken, robot1Id);
         assert.equal(barriersHit.length, 1, "expect a collision");
         assert.equal(barriersHit[0].toString(), barrier1.id);
       }
@@ -170,9 +150,7 @@ if (ProcessDetector.isElectronAppFrontend) {
 
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeClientBentleyCloudApp
 
-export function initializeRpcClientBentleyCloudForApp(
-  interfaces: RpcInterfaceDefinition[]
-) {
+export function initializeRpcClientBentleyCloudForApp(interfaces: RpcInterfaceDefinition[]) {
   const cloudParams: BentleyCloudRpcParams = {
     info: { title: "RobotWorldEngine", version: "v1.0" },
   };
@@ -181,10 +159,7 @@ export function initializeRpcClientBentleyCloudForApp(
 // __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeClientBentleyCloudRemote
-export function initializeRpcClientBentleyCloud(
-  interfaces: RpcInterfaceDefinition[],
-  serviceUrl?: string
-) {
+export function initializeRpcClientBentleyCloud(interfaces: RpcInterfaceDefinition[], serviceUrl?: string) {
   const cloudParams: BentleyCloudRpcParams = {
     info: { title: "RobotWorldEngine", version: "v1.0" },
     uriPrefix: serviceUrl,
@@ -195,9 +170,7 @@ export function initializeRpcClientBentleyCloud(
 
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeFrontendForElectron
 
-export async function initializeElectron(
-  rpcInterfaces: RpcInterfaceDefinition[]
-) {
+export async function initializeElectron(rpcInterfaces: RpcInterfaceDefinition[]) {
   await ElectronApp.startup({
     iModelApp: {
       rpcInterfaces,

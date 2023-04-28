@@ -17,10 +17,7 @@ Example below shows a settings provide that provides two settings pages. The fir
 export class ExampleSettingsProvider implements SettingsTabsProvider {
   public readonly id = "myApp:ExampleSettingsProvider";
 
-  public getSettingEntries(
-    stageId: string,
-    stageUsage: string
-  ): ReadonlyArray<SettingsTabEntry> | undefined {
+  public getSettingEntries(stageId: string, stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined {
     // It is possible to use arguments stageId and stageUsage to determine if a settings entry is to be provided for display. In this example
     // we will just assume to always provide this SettingsTabEntry.
     return [

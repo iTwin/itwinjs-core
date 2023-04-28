@@ -4,11 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import sinon from "sinon";
-import {
-  HttpResponseError,
-  request,
-  RequestBasicCredentials,
-} from "../request/Request";
+import { HttpResponseError, request, RequestBasicCredentials } from "../request/Request";
 import { assert, expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
 

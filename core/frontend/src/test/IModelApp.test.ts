@@ -91,27 +91,13 @@ describe("IModelApp", () => {
 
   it("TestApp should override correctly", async () => {
     assert.instanceOf(IModelApp.accuDraw, TestAccuDraw, "accudraw override");
-    assert.instanceOf(
-      IModelApp.toolAdmin.idleTool,
-      TestIdleTool,
-      "idle tool override"
-    );
-    assert.isTrue(
-      await IModelApp.tools.run("Test.Immediate", "test1", "test2"),
-      "immediate tool ran"
-    );
+    assert.instanceOf(IModelApp.toolAdmin.idleTool, TestIdleTool, "idle tool override");
+    assert.isTrue(await IModelApp.tools.run("Test.Immediate", "test1", "test2"), "immediate tool ran");
     assert.equal(testVal1, "test1", "arg1 was correct");
     assert.equal(testVal2, "test2", "arg2 was correct");
-    assert.isFalse(
-      await IModelApp.tools.run("Not.Found"),
-      "toolId is not registered"
-    );
+    assert.isFalse(await IModelApp.tools.run("Not.Found"), "toolId is not registered");
     assert.isTrue(await IModelApp.tools.run("View.Pan"), "run view pan");
-    assert.instanceOf(
-      IModelApp.toolAdmin.viewTool,
-      PanViewTool,
-      "pan tool is active"
-    );
+    assert.instanceOf(IModelApp.toolAdmin.viewTool, PanViewTool, "pan tool is active");
 
     assert.isTrue(await IModelApp.tools.run("Null.Tool"), "run null");
     assert.equal(testVal1, "fromNullTool");
@@ -122,62 +108,28 @@ describe("IModelApp", () => {
     assert.equal(TestImmediate.flyover, "Localized TestImmediate Flyover");
     assert.equal(TestImmediate.description, "Test of an Immediate Command");
 
-    assert.equal(
-      AnotherImmediate.keyin,
-      "Localized AnotherImmediate keyin and flyover"
-    );
-    assert.equal(
-      AnotherImmediate.flyover,
-      "Localized AnotherImmediate keyin and flyover"
-    );
-    assert.equal(
-      AnotherImmediate.description,
-      "Another Immediate Command description"
-    );
+    assert.equal(AnotherImmediate.keyin, "Localized AnotherImmediate keyin and flyover");
+    assert.equal(AnotherImmediate.flyover, "Localized AnotherImmediate keyin and flyover");
+    assert.equal(AnotherImmediate.description, "Another Immediate Command description");
 
     assert.equal(ThirdImmediate.keyin, "Localized ThirdImmediate Keyin");
-    assert.equal(
-      ThirdImmediate.flyover,
-      "ThirdImmediate flyover and description"
-    );
-    assert.equal(
-      ThirdImmediate.description,
-      "ThirdImmediate flyover and description"
-    );
+    assert.equal(ThirdImmediate.flyover, "ThirdImmediate flyover and description");
+    assert.equal(ThirdImmediate.description, "ThirdImmediate flyover and description");
 
-    assert.equal(
-      FourthImmediate.keyin,
-      "Localized FourthImmediate keyin, flyover, and description"
-    );
-    assert.equal(
-      FourthImmediate.flyover,
-      "Localized FourthImmediate keyin, flyover, and description"
-    );
-    assert.equal(
-      FourthImmediate.description,
-      "Localized FourthImmediate keyin, flyover, and description"
-    );
+    assert.equal(FourthImmediate.keyin, "Localized FourthImmediate keyin, flyover, and description");
+    assert.equal(FourthImmediate.flyover, "Localized FourthImmediate keyin, flyover, and description");
+    assert.equal(FourthImmediate.description, "Localized FourthImmediate keyin, flyover, and description");
 
     // here we are testing to make sure we can override the Select command but the keyin comes from the superclass because the toolId is not overridden
     const selTool = IModelApp.tools.create("Select")!;
     assert.instanceOf(selTool, TestSelectTool, "test select tool is active");
-    assert.equal(
-      selTool.keyin,
-      "select elements",
-      "keyin comes from superclass"
-    );
+    assert.equal(selTool.keyin, "select elements", "keyin comes from superclass");
   });
 
   it("Should do localizations", () => {
     // we have "TrivialTest.Test1" as the key in TestApp.json
-    assert.equal(
-      IModelApp.localization.getLocalizedString("TestApp:TrivialTests.Test1"),
-      "Localized Trivial Test 1"
-    );
-    assert.equal(
-      IModelApp.localization.getLocalizedString("TestApp:TrivialTests.Test2"),
-      "Localized Trivial Test 2"
-    );
+    assert.equal(IModelApp.localization.getLocalizedString("TestApp:TrivialTests.Test1"), "Localized Trivial Test 1");
+    assert.equal(IModelApp.localization.getLocalizedString("TestApp:TrivialTests.Test2"), "Localized Trivial Test 2");
     assert.equal(
       IModelApp.localization.getLocalizedString("LocateFailure.NoElements"),
       "No Elements Found",
@@ -185,39 +137,27 @@ describe("IModelApp", () => {
     );
 
     // there is no key for TrivialTest.Test3
-    assert.equal(
-      IModelApp.localization.getLocalizedString("TestApp:TrivialTests.Test3"),
-      "TrivialTests.Test3"
-    );
+    assert.equal(IModelApp.localization.getLocalizedString("TestApp:TrivialTests.Test3"), "TrivialTests.Test3");
 
     // Should properly substitute the values in localized strings with interpolations
     assert.equal(
-      IModelApp.localization.getLocalizedString(
-        "TestApp:SubstitutionTests.Test1",
-        { varA: "Variable1", varB: "Variable2" }
-      ),
+      IModelApp.localization.getLocalizedString("TestApp:SubstitutionTests.Test1", {
+        varA: "Variable1",
+        varB: "Variable2",
+      }),
       "Substitute Variable1 and Variable2"
     );
     assert.equal(
-      IModelApp.localization.getLocalizedString(
-        "TestApp:SubstitutionTests.Test2",
-        { varA: "Variable1", varB: "Variable2" }
-      ),
+      IModelApp.localization.getLocalizedString("TestApp:SubstitutionTests.Test2", {
+        varA: "Variable1",
+        varB: "Variable2",
+      }),
       "Reverse substitute Variable2 and Variable1"
     );
 
-    assert.equal(
-      IModelApp.translateStatus(IModelStatus.AlreadyOpen),
-      "Already open"
-    );
-    assert.equal(
-      IModelApp.translateStatus(IModelStatus.DuplicateCode),
-      "Duplicate code"
-    );
-    assert.equal(
-      IModelApp.translateStatus(DbResult.BE_SQLITE_ERROR_AlreadyOpen),
-      "Database already open"
-    );
+    assert.equal(IModelApp.translateStatus(IModelStatus.AlreadyOpen), "Already open");
+    assert.equal(IModelApp.translateStatus(IModelStatus.DuplicateCode), "Duplicate code");
+    assert.equal(IModelApp.translateStatus(DbResult.BE_SQLITE_ERROR_AlreadyOpen), "Database already open");
     assert.equal(IModelApp.translateStatus(BentleyStatus.ERROR), "Error");
     assert.equal(IModelApp.translateStatus(BentleyStatus.SUCCESS), "Success");
     assert.equal(IModelApp.translateStatus(101), "DbResult.BE_SQLITE_DONE");
@@ -227,9 +167,7 @@ describe("IModelApp", () => {
 
   it("Should support WebGL", () => {
     expect(IModelApp.hasRenderSystem).to.be.true;
-    let canvas = document.getElementById(
-      "WebGLTestCanvas"
-    ) as HTMLCanvasElement;
+    let canvas = document.getElementById("WebGLTestCanvas") as HTMLCanvasElement;
     if (null === canvas) {
       canvas = document.createElement("canvas");
       if (null !== canvas) {

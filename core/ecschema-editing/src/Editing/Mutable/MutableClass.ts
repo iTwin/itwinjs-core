@@ -31,9 +31,7 @@ export abstract class MutableStructClass extends StructClass {
  * @internal
  */
 export abstract class MutableClass extends ECClass {
-  public abstract override addCustomAttribute(
-    customAttribute: CustomAttribute
-  ): void;
+  public abstract override addCustomAttribute(customAttribute: CustomAttribute): void;
   public abstract override setModifier(modifier: ECClassModifier): void;
   public abstract override createPrimitiveProperty(
     name: string,
@@ -48,14 +46,8 @@ export abstract class MutableClass extends ECClass {
     primitiveType?: string | PrimitiveType | Enumeration
   ): Promise<Property>;
 
-  public abstract override createPrimitivePropertySync(
-    name: string,
-    primitiveType: PrimitiveType
-  ): PrimitiveProperty;
-  public abstract override createPrimitivePropertySync(
-    name: string,
-    primitiveType: Enumeration
-  ): EnumerationProperty;
+  public abstract override createPrimitivePropertySync(name: string, primitiveType: PrimitiveType): PrimitiveProperty;
+  public abstract override createPrimitivePropertySync(name: string, primitiveType: Enumeration): EnumerationProperty;
   public abstract override createPrimitivePropertySync(
     name: string,
     primitiveType?: string | PrimitiveType | Enumeration
@@ -91,10 +83,7 @@ export abstract class MutableClass extends ECClass {
     name: string,
     structType: string | StructClass
   ): Promise<StructProperty>;
-  public abstract override createStructPropertySync(
-    name: string,
-    structType: string | StructClass
-  ): StructProperty;
+  public abstract override createStructPropertySync(name: string, structType: string | StructClass): StructProperty;
 
   public abstract override createStructArrayProperty(
     name: string,

@@ -4,12 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as backend from "@itwin/core-backend";
-import {
-  IModelRpcProps,
-  QueryRowFormat,
-  RpcInterface,
-  RpcManager,
-} from "@itwin/core-common";
+import { IModelRpcProps, QueryRowFormat, RpcInterface, RpcManager } from "@itwin/core-common";
 import { SchemaKeyProps, SchemaProps } from "@itwin/ecschema-metadata";
 import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 
@@ -27,10 +22,7 @@ interface SchemaNameRow {
  * Implementation of the SchemaRpcInterface.
  * @internal
  */
-export class ECSchemaRpcImpl
-  extends RpcInterface
-  implements ECSchemaRpcInterface
-{
+export class ECSchemaRpcImpl extends RpcInterface implements ECSchemaRpcInterface {
   // eslint-disable-line deprecation/deprecation
   /**
    * Registers the RPC interface with its corresponding implementation class.
@@ -45,9 +37,7 @@ export class ECSchemaRpcImpl
    * @param tokenProps        The iModelToken props that hold the information which iModel is used.
    * @returns                 Instance of IModelDb.
    */
-  private async getIModelDatabase(
-    tokenProps: IModelRpcProps
-  ): Promise<backend.IModelDb> {
+  private async getIModelDatabase(tokenProps: IModelRpcProps): Promise<backend.IModelDb> {
     return new Promise<backend.IModelDb>((resolve) => {
       resolve(backend.IModelDb.findByKey(tokenProps.key));
     });
@@ -59,18 +49,14 @@ export class ECSchemaRpcImpl
    * @param tokenProps        The iModelToken props that hold the information which iModel is used.
    * @returns                 An array of SchemaKeyProps.
    */
-  public async getSchemaKeys(
-    tokenProps: IModelRpcProps
-  ): Promise<SchemaKeyProps[]> {
+  public async getSchemaKeys(tokenProps: IModelRpcProps): Promise<SchemaKeyProps[]> {
     const schemaKeyProps: SchemaKeyProps[] = [];
     const iModelDb = await this.getIModelDatabase(tokenProps);
 
     const schemaNameQuery = `SELECT Name as schemaName, VersionMajor as read, VersionWrite as write, VersionMinor as minor FROM main.meta.ECSchemaDef`;
-    for await (const row of iModelDb.createQueryReader(
-      schemaNameQuery,
-      undefined,
-      { rowFormat: QueryRowFormat.UseJsPropertyNames }
-    )) {
+    for await (const row of iModelDb.createQueryReader(schemaNameQuery, undefined, {
+      rowFormat: QueryRowFormat.UseJsPropertyNames,
+    })) {
       const schemaDefinitionRow = row.toRow() as SchemaNameRow;
       const schemaFullName = schemaDefinitionRow.schemaName;
       const read = Number(schemaDefinitionRow.read);
@@ -88,10 +74,7 @@ export class ECSchemaRpcImpl
    * @param schemaName        The name of the schema that shall be returned.
    * @returns                 The SchemaProps.
    */
-  public async getSchemaJSON(
-    tokenProps: IModelRpcProps,
-    schemaName: string
-  ): Promise<SchemaProps> {
+  public async getSchemaJSON(tokenProps: IModelRpcProps, schemaName: string): Promise<SchemaProps> {
     if (schemaName === undefined || schemaName.length < 1) {
       throw new Error(`Schema name must not be undefined or empty.`);
     }

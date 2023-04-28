@@ -3,13 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@itwin/core-bentley";
-import {
-  ClipPlane,
-  ClipPrimitive,
-  ClipVector,
-  ConvexClipPlaneSet,
-  Vector3d,
-} from "@itwin/core-geometry";
+import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Vector3d } from "@itwin/core-geometry";
 import { ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
 import {
   IModelApp,
@@ -50,8 +44,7 @@ import { RealityModelSettingsPanel } from "./RealityModelDisplaySettingsWidget";
 
 async function zoomToSelectedElements(vp: Viewport, options?: MarginOptions) {
   const elems = vp.iModel.selectionSet.elements;
-  if (0 < elems.size)
-    await vp.zoomToElements(elems, { animateFrustumChange: true, ...options });
+  if (0 < elems.size) await vp.zoomToElements(elems, { animateFrustumChange: true, ...options });
 }
 
 export class ZoomToSelectedElementsTool extends Tool {
@@ -92,12 +85,7 @@ export class ZoomToSelectedElementsTool extends Tool {
       const right = args.getFloat("r") ?? 0;
       const top = args.getFloat("t") ?? 0;
       const bottom = args.getFloat("b") ?? 0;
-      if (
-        undefined !== left ||
-        undefined !== right ||
-        undefined !== top ||
-        undefined !== bottom
-      ) {
+      if (undefined !== left || undefined !== right || undefined !== top || undefined !== bottom) {
         if (args.getBoolean("m")) this._margin = { left, right, top, bottom };
         else this._padding = { left, right, top, bottom };
       }
@@ -111,14 +99,10 @@ export class ModelClipTool extends Tool {
   public static override toolId = "ModelClip";
   public override async run(_args: any[]): Promise<boolean> {
     const view = IModelApp.viewManager.selectedView?.view;
-    if (!view || !view.isSpatialView() || view.modelSelector.models.size < 2)
-      return true;
+    if (!view || !view.isSpatialView() || view.modelSelector.models.size < 2) return true;
 
     const createClip = (vector: Vector3d) => {
-      const plane = ClipPlane.createNormalAndPoint(
-        vector,
-        view.iModel.projectExtents.center
-      )!;
+      const plane = ClipPlane.createNormalAndPoint(vector, view.iModel.projectExtents.center)!;
       const planes = ConvexClipPlaneSet.createPlanes([plane]);
       const primitive = ClipPrimitive.createCapture(planes);
       return ClipVector.createCapture([primitive]);
@@ -161,8 +145,7 @@ export class MarkupTool extends Tool {
       const startMarkupSelect =
         IModelApp.toolAdmin.defaultToolId === MarkupApp.markupSelectToolId &&
         (undefined === IModelApp.toolAdmin.activeTool ||
-          MarkupApp.markupSelectToolId !==
-            IModelApp.toolAdmin.activeTool.toolId);
+          MarkupApp.markupSelectToolId !== IModelApp.toolAdmin.activeTool.toolId);
       if (startMarkupSelect) {
         await IModelApp.toolAdmin.startDefaultTool();
         return true;
@@ -171,17 +154,13 @@ export class MarkupTool extends Tool {
       MarkupApp.stop()
         .then((markupData) => {
           if (wantSavedData) MarkupTool.savedData = markupData;
-          if (undefined !== markupData.image)
-            openImageDataUrlInNewWindow(markupData.image, "Markup");
+          if (undefined !== markupData.image) openImageDataUrlInNewWindow(markupData.image, "Markup");
         })
         .catch((_) => {});
     } else {
       MarkupApp.props.active.element.stroke = "white"; // as an example, set default color for elements
       MarkupApp.markupSelectToolId = "Markup.TestSelect"; // as an example override the default markup select tool to launch redline tools using key events
-      await MarkupApp.start(
-        vp,
-        wantSavedData ? MarkupTool.savedData : undefined
-      );
+      await MarkupApp.start(vp, wantSavedData ? MarkupTool.savedData : undefined);
     }
 
     return true;
@@ -210,10 +189,7 @@ export class Viewer extends Window {
   private _isSavedView = false;
   private _debugWindow?: DebugWindow;
 
-  public static async create(
-    surface: Surface,
-    props: ViewerProps
-  ): Promise<Viewer> {
+  public static async create(surface: Surface, props: ViewerProps): Promise<Viewer> {
     const views = await ViewList.create(props.iModel, props.defaultViewName);
     const view = await views.getDefaultView(props.iModel);
     const viewer = new Viewer(surface, view, views, props);
@@ -234,8 +210,7 @@ export class Viewer extends Window {
 
       // Offset position from top-left corner
       const style = getComputedStyle(this.container, null);
-      const pxToNum = (propName: string) =>
-        parseFloat(style.getPropertyValue(propName).replace("px", "")) + 40;
+      const pxToNum = (propName: string) => parseFloat(style.getPropertyValue(propName).replace("px", "")) + 40;
       viewer.container.style.top = `${pxToNum("top")}px`;
       viewer.container.style.left = `${pxToNum("left")}px`;
     }
@@ -244,11 +219,7 @@ export class Viewer extends Window {
   }
 
   private _maybeDisableEdges() {
-    if (
-      this.disableEdges &&
-      (this.viewport.viewFlags.visibleEdges ||
-        this.viewport.viewFlags.hiddenEdges)
-    ) {
+    if (this.disableEdges && (this.viewport.viewFlags.visibleEdges || this.viewport.viewFlags.hiddenEdges)) {
       this.viewport.viewFlags = this.viewport.viewFlags.copy({
         visibleEdges: false,
         hiddenEdges: false,
@@ -256,12 +227,7 @@ export class Viewer extends Window {
     }
   }
 
-  private constructor(
-    surface: Surface,
-    view: ViewState,
-    views: ViewList,
-    props: ViewerProps
-  ) {
+  private constructor(surface: Surface, view: ViewState, views: ViewList, props: ViewerProps) {
     super(surface, { scrollbars: true });
 
     // Allow HTMLElements beneath viewport to be visible if background color has transparency.
@@ -276,9 +242,7 @@ export class Viewer extends Window {
 
     this._maybeDisableEdges();
 
-    this.toolBar = new ToolBar(
-      IModelApp.makeHTMLElement("div", { className: "topdiv" })
-    );
+    this.toolBar = new ToolBar(IModelApp.makeHTMLElement("div", { className: "topdiv" }));
 
     this.toolBar.addItem(
       createToolButton({
@@ -319,12 +283,8 @@ export class Viewer extends Window {
     });
 
     this._viewPicker = new ViewPicker(this.toolBar.element, this.views);
-    this._viewPicker.onSelectedViewChanged.addListener(async (id) =>
-      this.changeView(id)
-    );
-    this._viewPicker.element.addEventListener("click", () =>
-      this.toolBar.close()
-    );
+    this._viewPicker.onSelectedViewChanged.addListener(async (id) => this.changeView(id));
+    this._viewPicker.element.addEventListener("click", () => this.toolBar.close());
 
     this.toolBar.addDropDown({
       iconUnicode: "\ue90b", // "model"
@@ -378,11 +338,7 @@ export class Viewer extends Window {
     this.toolBar.addItem(
       createToolButton({
         iconUnicode: "\ueb08",
-        click: async () =>
-          IModelApp.tools.run(
-            "Measure.Distance",
-            IModelApp.viewManager.selectedView!
-          ),
+        click: async () => IModelApp.tools.run("Measure.Distance", IModelApp.viewManager.selectedView!),
         tooltip: "Measure distance",
       })
     );
@@ -391,11 +347,7 @@ export class Viewer extends Window {
       iconUnicode: "\ue90e",
       tooltip: "View settings",
       createDropDown: async (container: HTMLElement) => {
-        const panel = new ViewAttributesPanel(
-          this.viewport,
-          container,
-          this.disableEdges
-        );
+        const panel = new ViewAttributesPanel(this.viewport, container, this.disableEdges);
         await panel.populate();
         return panel;
       },
@@ -412,8 +364,7 @@ export class Viewer extends Window {
     this.toolBar.addItem(
       createImageButton({
         src: "window-area.svg",
-        click: async () =>
-          IModelApp.tools.run("View.WindowArea", this.viewport),
+        click: async () => IModelApp.tools.run("View.WindowArea", this.viewport),
         tooltip: "Window area",
       })
     );
@@ -428,8 +379,7 @@ export class Viewer extends Window {
 
     this.toolBar.addDropDown({
       iconUnicode: "\ue909", // "gyroscope"
-      createDropDown: async (container: HTMLElement) =>
-        new StandardRotations(container, this.viewport),
+      createDropDown: async (container: HTMLElement) => new StandardRotations(container, this.viewport),
       tooltip: "Standard rotations",
       only3d: true,
     });
@@ -460,16 +410,14 @@ export class Viewer extends Window {
 
     this.toolBar.addDropDown({
       iconUnicode: "\ue931", // "animation"
-      createDropDown: async (container: HTMLElement) =>
-        createTimeline(this.viewport, container, 10),
+      createDropDown: async (container: HTMLElement) => createTimeline(this.viewport, container, 10),
       tooltip: "Animation / solar time",
     });
 
     this.toolBar.addDropDown({
       iconUnicode: "\ue916", // "viewtop"
       tooltip: "Sectioning tools",
-      createDropDown: async (container: HTMLElement) =>
-        new SectionsPanel(this.viewport, container),
+      createDropDown: async (container: HTMLElement) => new SectionsPanel(this.viewport, container),
     });
 
     this.toolBar.addDropDown({
@@ -485,8 +433,7 @@ export class Viewer extends Window {
 
     this.toolBar.addDropDown({
       iconUnicode: "\ue90a", // "isolate"
-      createDropDown: async (container: HTMLElement) =>
-        new FeatureOverridesPanel(this.viewport, container),
+      createDropDown: async (container: HTMLElement) => new FeatureOverridesPanel(this.viewport, container),
       tooltip: "Override feature symbology",
     });
 
@@ -519,10 +466,7 @@ export class Viewer extends Window {
     if (!view.iModel.isBriefcaseConnection()) return;
 
     const settings = view.iModel.editorToolSettings;
-    if (
-      undefined === settings.category ||
-      !view.viewsCategory(settings.category)
-    ) {
+    if (undefined === settings.category || !view.viewsCategory(settings.category)) {
       settings.category = undefined;
       for (const catId of view.categorySelector.categories) {
         settings.category = catId;
@@ -547,8 +491,7 @@ export class Viewer extends Window {
   private async changeView(id: Id64String): Promise<void> {
     const view = await this.views.getView(id, this._imodel);
     await this.setView(view.clone());
-    for (const control of this._3dOnly)
-      control.style.display = this.viewport.view.is3d() ? "block" : "none";
+    for (const control of this._3dOnly) control.style.display = this.viewport.view.is3d() ? "block" : "none";
   }
 
   public async setView(view: ViewState, isSavedView = false): Promise<void> {
@@ -675,18 +618,11 @@ export class Viewer extends Window {
 
   public override onClosed(): void {
     if (undefined === IModelApp.viewManager.selectedView) {
-      IModelApp.notifications.outputMessage(
-        new NotifyMessageDetails(
-          OutputMessagePriority.Info,
-          "Closing iModel..."
-        )
-      );
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Closing iModel..."));
 
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this.closeIModel().then(() =>
-        IModelApp.notifications.outputMessage(
-          new NotifyMessageDetails(OutputMessagePriority.Info, "iModel closed.")
-        )
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "iModel closed."))
       );
     }
   }

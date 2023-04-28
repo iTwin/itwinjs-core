@@ -35,17 +35,14 @@ import { GraphChecker } from "./Graph.test";
 
 function rotateArray(data: Point3d[], index0: number) {
   const out = [];
-  for (let i = 0; i < data.length; i++)
-    out.push(data[(index0 + i) % data.length].clone());
+  for (let i = 0; i < data.length; i++) out.push(data[(index0 + i) % data.length].clone());
   return out;
 }
 
 describe("Triangulation", () => {
   it("NullTriangulations", () => {
     const ck = new Checker();
-    ck.testUndefined(
-      Triangulator.createTriangulatedGraphFromPoints([Point3d.create(0, 0, 0)])
-    );
+    ck.testUndefined(Triangulator.createTriangulatedGraphFromPoints([Point3d.create(0, 0, 0)]));
     ck.testUndefined(Triangulator.createTriangulatedGraphFromLoops([]));
 
     expect(ck.getNumErrors()).equals(0);
@@ -57,13 +54,7 @@ describe("Triangulation", () => {
     const dy = 30.0;
     const allGeometry: GeometryQuery[] = [];
     for (const myLoops of [
-      [
-        [
-          Point3d.create(1, -1, 0),
-          Point3d.create(2, -1, 0),
-          Point3d.create(2, 1, 0),
-        ],
-      ],
+      [[Point3d.create(1, -1, 0), Point3d.create(2, -1, 0), Point3d.create(2, 1, 0)]],
       // outer
       [
         [
@@ -75,56 +66,23 @@ describe("Triangulation", () => {
           Point3d.create(1, 3, 0),
         ],
         // hole
-        [
-          Point3d.create(1, 1, 0),
-          Point3d.create(2, 2, 0),
-          Point3d.create(3, 1, 0),
-        ],
+        [Point3d.create(1, 1, 0), Point3d.create(2, 2, 0), Point3d.create(3, 1, 0)],
       ],
       // triangle with one hole
       [
-        [
-          Point3d.create(0, 0, 0),
-          Point3d.create(5, -5, 0),
-          Point3d.create(5, 5, 0),
-        ],
-        [
-          Point3d.create(2, 1, 0),
-          Point3d.create(3, 1, 0),
-          Point3d.create(3, 0, 0),
-        ],
+        [Point3d.create(0, 0, 0), Point3d.create(5, -5, 0), Point3d.create(5, 5, 0)],
+        [Point3d.create(2, 1, 0), Point3d.create(3, 1, 0), Point3d.create(3, 0, 0)],
       ],
       // triangle with one hole, CCW orientation on the hole (expect it to be corrected)
       [
-        [
-          Point3d.create(0, 0, 0),
-          Point3d.create(5, -5, 0),
-          Point3d.create(5, 5, 0),
-        ],
-        [
-          Point3d.create(2, 1, 0),
-          Point3d.create(3, 0, 0),
-          Point3d.create(3, 1, 0),
-        ],
+        [Point3d.create(0, 0, 0), Point3d.create(5, -5, 0), Point3d.create(5, 5, 0)],
+        [Point3d.create(2, 1, 0), Point3d.create(3, 0, 0), Point3d.create(3, 1, 0)],
       ],
       // rectangle with 2 holes
       [
-        [
-          Point3d.create(0, 0, 0),
-          Point3d.create(5, 0, 0),
-          Point3d.create(5, 5, 0),
-          Point3d.create(0, 5, 0),
-        ],
-        [
-          Point3d.create(1, 1, 0),
-          Point3d.create(2, 2, 0),
-          Point3d.create(2, 1, 0),
-        ],
-        [
-          Point3d.create(3, 1.5, 0),
-          Point3d.create(4, 3, 0),
-          Point3d.create(4, 1.5, 0),
-        ],
+        [Point3d.create(0, 0, 0), Point3d.create(5, 0, 0), Point3d.create(5, 5, 0), Point3d.create(0, 5, 0)],
+        [Point3d.create(1, 1, 0), Point3d.create(2, 2, 0), Point3d.create(2, 1, 0)],
+        [Point3d.create(3, 1.5, 0), Point3d.create(4, 3, 0), Point3d.create(4, 1.5, 0)],
       ],
       // rectangle with 2 holes, duplicate points here and there
       [
@@ -135,18 +93,8 @@ describe("Triangulation", () => {
           Point3d.create(5, 5, 0),
           Point3d.create(0, 5, 0),
         ],
-        [
-          Point3d.create(1, 1, 0),
-          Point3d.create(2, 2, 0),
-          Point3d.create(2, 1, 0),
-          Point3d.create(2, 1, 0),
-        ],
-        [
-          Point3d.create(3, 1.5, 0),
-          Point3d.create(4, 3, 0),
-          Point3d.create(4, 1.5, 0),
-          Point3d.create(3, 1.5, 0),
-        ],
+        [Point3d.create(1, 1, 0), Point3d.create(2, 2, 0), Point3d.create(2, 1, 0), Point3d.create(2, 1, 0)],
+        [Point3d.create(3, 1.5, 0), Point3d.create(4, 3, 0), Point3d.create(4, 1.5, 0), Point3d.create(3, 1.5, 0)],
       ],
       Sample.createStarsInStars(11, 8, 5, 2, 1, 4, 3, 3, false),
       Sample.createStarsInStars(10, 10, 2, 2, 2, 4, 3, 3, false),
@@ -159,9 +107,7 @@ describe("Triangulation", () => {
       }
       xShift += dx;
       // triangulate and flip in the outer loop only . . .
-      const graph1 = Triangulator.createTriangulatedGraphFromSingleLoop(
-        myLoops[0]
-      );
+      const graph1 = Triangulator.createTriangulatedGraphFromSingleLoop(myLoops[0]);
       if (graph1) {
         const unflippedOuter = PolyfaceBuilder.graphToPolyface(graph1);
         unflippedOuter.tryTranslateInPlace(xShift, yShift, 0);
@@ -206,17 +152,8 @@ describe("Triangulation", () => {
     for (const myLoops of [
       // rectangle with hole not fully contained
       [
-        [
-          Point3d.create(0, 0, 0),
-          Point3d.create(5, 0, 0),
-          Point3d.create(5, 5, 0),
-          Point3d.create(0, 5, 0),
-        ],
-        [
-          Point3d.create(1, -1, 0),
-          Point3d.create(2, -1, 0),
-          Point3d.create(2, 1, 0),
-        ],
+        [Point3d.create(0, 0, 0), Point3d.create(5, 0, 0), Point3d.create(5, 5, 0), Point3d.create(0, 5, 0)],
+        [Point3d.create(1, -1, 0), Point3d.create(2, -1, 0), Point3d.create(2, 1, 0)],
       ],
       // Edge-Edge contact from hole to parent along lower edge.
       [
@@ -228,12 +165,7 @@ describe("Triangulation", () => {
           Point3d.create(10, 5, 0),
           Point3d.create(0, 5, 0),
         ],
-        [
-          Point3d.create(4, 0, 0),
-          Point3d.create(8, 0, 0),
-          Point3d.create(8, 2, 0),
-          Point3d.create(4, 2, 0),
-        ],
+        [Point3d.create(4, 0, 0), Point3d.create(8, 0, 0), Point3d.create(8, 2, 0), Point3d.create(4, 2, 0)],
       ],
       // Edge-Edge contact from hole to parent along right edge.
       [
@@ -271,11 +203,7 @@ describe("Triangulation", () => {
 
       yShift += dy;
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "Graph",
-      "TriangulateBadLoops"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "TriangulateBadLoops");
     ck.checkpoint("TriangulateAndFlip");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -294,31 +222,14 @@ describe("Triangulation", () => {
         const yShiftVector = Vector3d.create(0, 2, 0);
         const rotation = Transform.createFixedPointAndMatrix(
           Point3d.create(1.5 * numPhase, 0, 0),
-          Matrix3d.createRotationAroundVector(
-            Vector3d.unitZ(),
-            Angle.createDegrees(degrees)
-          ) as Matrix3d
+          Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(degrees)) as Matrix3d
         );
-        const points = Sample.createSquareWave(
-          Point3d.create(0, 0, 0),
-          1,
-          0.5,
-          2,
-          numPhase,
-          1
-        );
+        const points = Sample.createSquareWave(Point3d.create(0, 0, 0), 1, 0.5, 2, numPhase, 1);
         rotation.multiplyVector(yShiftVector, yShiftVector);
         if (degrees !== 0.0) rotation.multiplyPoint3dArrayInPlace(points);
         if (Checker.noisy.squareWaves)
-          GeometryCoreTestIO.consoleLog(
-            name,
-            "Rotation angle ",
-            degrees,
-            " numPhase",
-            numPhase
-          );
-        const graph =
-          Triangulator.createTriangulatedGraphFromSingleLoop(points);
+          GeometryCoreTestIO.consoleLog(name, "Rotation angle ", degrees, " numPhase", numPhase);
+        const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points);
         if (ck.testType(graph, HalfEdgeGraph)) {
           const pfA = PolyfaceBuilder.graphToPolyface(graph);
           Triangulator.flipTriangles(graph);
@@ -330,30 +241,17 @@ describe("Triangulation", () => {
           const ls1 = LineString3d.create(Point3d.create(), pointA);
           ls.tryTranslateInPlace(x0, y0);
           pfA.tryTranslateInPlace(x0 + yShiftVector.x, y0 + yShiftVector.y, 0);
-          pfB.tryTranslateInPlace(
-            x0 + 2 * yShiftVector.x,
-            y0 + 2 * yShiftVector.y,
-            0
-          );
+          pfB.tryTranslateInPlace(x0 + 2 * yShiftVector.x, y0 + 2 * yShiftVector.y, 0);
           // pfC.tryTranslateInPlace(x0 + 4 * yShiftVector.x, y0 + 4 * yShiftVector.y, 0);
 
           ls1.tryTranslateInPlace(x0, y0);
-          GeometryCoreTestIO.captureGeometry(
-            allGeometry,
-            [ls1, ls, pfA, pfB],
-            x0,
-            y0
-          );
+          GeometryCoreTestIO.captureGeometry(allGeometry, [ls1, ls, pfA, pfB], x0, y0);
         }
         y0 += 3 + 4 * numPhase;
       }
       x0 += 100.0;
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "Triangulation",
-      "SquareWaves"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "SquareWaves");
     expect(ck.getNumErrors()).equals(0);
   });
 });
@@ -373,29 +271,11 @@ function testGraphFromSegments(
   let dy = -yStep;
   const allGeometry: GeometryQuery[] = [];
   GeometryCoreTestIO.captureGeometry(allGeometry, segments, dx, (dy += yStep));
-  if (outputAnnotatedGeometry)
-    GraphChecker.captureAnnotatedGraph(
-      allGeometry,
-      theGraph,
-      dx,
-      (dy += yStep)
-    );
-  if (expectSingleLoop)
-    GraphChecker.verifyGraphCounts(ck, theGraph, true, 2, undefined, undefined);
+  if (outputAnnotatedGeometry) GraphChecker.captureAnnotatedGraph(allGeometry, theGraph, dx, (dy += yStep));
+  if (expectSingleLoop) GraphChecker.verifyGraphCounts(ck, theGraph, true, 2, undefined, undefined);
   GraphChecker.verifySignedFaceCounts(ck, theGraph, undefined, 1, undefined);
-  GeometryCoreTestIO.captureGeometry(
-    allGeometry,
-    PolyfaceBuilder.graphToPolyface(theGraph),
-    dx,
-    (dy += yStep)
-  );
-  if (outputAnnotatedGeometry)
-    GraphChecker.captureAnnotatedGraph(
-      allGeometry,
-      theGraph,
-      dx,
-      (dy += yStep)
-    );
+  GeometryCoreTestIO.captureGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(theGraph), dx, (dy += yStep));
+  if (outputAnnotatedGeometry) GraphChecker.captureAnnotatedGraph(allGeometry, theGraph, dx, (dy += yStep));
 
   // GeometryCoreTestIO.consoleLog("Total Faces: ", theGraph.collectFaceLoops().length);
   // for (const face of faces) {
@@ -489,14 +369,7 @@ describe("MonotoneFaces", () => {
       dy += yStep;
 
       const numFace = (numLine - 1) * (numLine - 2);
-      GraphChecker.verifyGraphCounts(
-        ck,
-        theGraph,
-        true,
-        numFace,
-        (numLine + 2) * (numLine + 2) - 4,
-        a * b * numFace
-      );
+      GraphChecker.verifyGraphCounts(ck, theGraph, true, numFace, (numLine + 2) * (numLine + 2) - 4, a * b * numFace);
 
       GraphChecker.captureAnnotatedGraph(allGeometry, theGraph, dx, dy);
       dy += yStep;
@@ -543,10 +416,7 @@ describe("Triangulation", () => {
             const points = generatorFunction(numRecursion, perpendicularFactor);
             const transform0 = Transform.createFixedPointAndMatrix(
               points[0],
-              Matrix3d.createRotationAroundAxisIndex(
-                2,
-                Angle.createDegrees(degrees)
-              )
+              Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(degrees))
             );
             transform0.multiplyPoint3dArrayInPlace(points);
             const range = Range3d.createArray(points);
@@ -556,8 +426,7 @@ describe("Triangulation", () => {
             transform.multiplyPoint3dArray(points, points);
             baseVectorB.addInPlace(Vector3d.create(2 * range.xLength(), 0, 0));
             allGeometry.push(Loop.create(LineString3d.create(points)));
-            const graph =
-              Triangulator.createTriangulatedGraphFromSingleLoop(points);
+            const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points);
             if (graph) {
               const pfA = PolyfaceBuilder.graphToPolyface(graph);
               pfA.tryTranslateInPlace(0, 2.0 * dy, 0);
@@ -575,11 +444,7 @@ describe("Triangulation", () => {
       baseVectorA.y = 0.0;
     }
 
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "Triangulation",
-      "TriangulateFractals"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "TriangulateFractals");
   });
   /* These cases had problems -- but maybe only due to bad input?
     it("ProblemTriangulation", () => {
@@ -672,23 +537,16 @@ describe("Triangulation", () => {
     for (const numColinear of [1, 3, 7]) {
       const points = [Point3d.create(-r, 0, 0)];
       for (let i = 0; i <= numColinear; i++)
-        points.push(
-          Point3d.create(Geometry.interpolate(-r, i / numColinear, r), 0, 0)
-        );
+        points.push(Point3d.create(Geometry.interpolate(-r, i / numColinear, r), 0, 0));
       for (let i = 1; i < numTheta; i++) {
         const theta = Angle.createDegrees((i * 180) / numTheta);
         points.push(Point3d.create(r * theta.cos(), r * theta.sin(), 0));
       }
       // run the triangulator with the array rotated to each x-axis point, and one of every numThetaSkip points around the arc.
       let y0 = 0.0;
-      for (
-        let rotation = 0;
-        rotation < points.length;
-        rotation += rotation < numColinear ? 1 : numThetaSkip
-      ) {
+      for (let rotation = 0; rotation < points.length; rotation += rotation < numColinear ? 1 : numThetaSkip) {
         const pointsB = rotateArray(points, rotation);
-        const graph =
-          Triangulator.createTriangulatedGraphFromSingleLoop(pointsB);
+        const graph = Triangulator.createTriangulatedGraphFromSingleLoop(pointsB);
         if (graph) {
           const pfA = PolyfaceBuilder.graphToPolyface(graph);
           pfA.tryTranslateInPlace(x0, y0 + 2.0 * dy, 0);
@@ -702,11 +560,7 @@ describe("Triangulation", () => {
       }
       x0 += 4.0;
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "Triangulation",
-      "TriangulationWithColinearVertices"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "TriangulationWithColinearVertices");
   });
   // public static createCutPie(x0: number, y0: number, radius: number, sweep: AngleSweep, numRadialEdges: number, numArcEdges: number, addClosure = false) {
   it("PieCuts", () => {
@@ -718,132 +572,20 @@ describe("Triangulation", () => {
     let x0 = 0.0;
     // promise: all x above x0 is free space.
     for (const points of [
-      Sample.createCutPie(
-        0,
-        0,
-        r,
-        AngleSweep.createStartEndDegrees(0, 180),
-        2,
-        2,
-        false
-      ),
-      Sample.createCutPie(
-        0,
-        0,
-        r,
-        AngleSweep.createStartEndDegrees(0, 180),
-        2,
-        3,
-        false
-      ),
-      Sample.createCutPie(
-        0,
-        0,
-        r,
-        AngleSweep.createStartEndDegrees(0, 180),
-        2,
-        4,
-        false
-      ),
-      Sample.createCutPie(
-        0,
-        0,
-        r,
-        AngleSweep.createStartEndDegrees(0, 180),
-        2,
-        6,
-        false
-      ),
-      Sample.createCutPie(
-        0,
-        0,
-        r,
-        AngleSweep.createStartEndDegrees(0, 180),
-        1,
-        4,
-        false
-      ),
-      Sample.createCutPie(
-        0,
-        0,
-        r,
-        AngleSweep.createStartEndDegrees(0, 180),
-        5,
-        12,
-        false
-      ),
-      Sample.createCutPie(
-        0,
-        0,
-        r,
-        AngleSweep.createStartEndDegrees(0, 180),
-        1,
-        4,
-        false
-      ),
-      Sample.createCutPie(
-        0,
-        0,
-        r,
-        AngleSweep.createStartEndDegrees(0, 90),
-        2,
-        5,
-        false
-      ),
-      Sample.createCutPie(
-        0,
-        0,
-        r,
-        AngleSweep.createStartEndDegrees(0, 180),
-        3,
-        9,
-        false
-      ),
-      Sample.createCutPie(
-        0,
-        0,
-        r,
-        AngleSweep.createStartEndDegrees(0, 90),
-        3,
-        4,
-        false
-      ),
-      Sample.createCutPie(
-        0,
-        0,
-        r,
-        AngleSweep.createStartEndDegrees(0, 180),
-        5,
-        12,
-        false
-      ),
-      Sample.createCutPie(
-        0,
-        0,
-        r,
-        AngleSweep.createStartEndDegrees(-10, 270),
-        2,
-        8,
-        false
-      ),
-      Sample.createCutPie(
-        0,
-        0,
-        r,
-        AngleSweep.createStartEndDegrees(-30, 200),
-        5,
-        12,
-        false
-      ),
-      Sample.createCutPie(
-        0,
-        0,
-        100 * r,
-        AngleSweep.createStartEndDegrees(0, 180),
-        5,
-        12,
-        false
-      ),
+      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 2, 2, false),
+      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 2, 3, false),
+      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 2, 4, false),
+      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 2, 6, false),
+      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 1, 4, false),
+      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 5, 12, false),
+      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 1, 4, false),
+      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 90), 2, 5, false),
+      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 3, 9, false),
+      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 90), 3, 4, false),
+      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 5, 12, false),
+      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(-10, 270), 2, 8, false),
+      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(-30, 200), 5, 12, false),
+      Sample.createCutPie(0, 0, 100 * r, AngleSweep.createStartEndDegrees(0, 180), 5, 12, false),
     ]) {
       // run the triangulator with the array rotated to each x-axis point, and one of every numThetaSkip points around the arc.
       let y0 = 0.0;
@@ -854,65 +596,25 @@ describe("Triangulation", () => {
       const ex = x0 - range.low.x;
       const polygonArea = PolygonOps.areaXY(points);
       x0 += r;
-      for (
-        let rotation = 0;
-        rotation < points.length;
-        rotation += rotation < 4 ? 1 : numThetaSkip
-      ) {
+      for (let rotation = 0; rotation < points.length; rotation += rotation < 4 ? 1 : numThetaSkip) {
         const pointsB = rotateArray(points, rotation);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, pointsB, x0, y0);
         Triangulator.clearAndEnableDebugGraphCapture(true);
-        const graph =
-          Triangulator.createTriangulatedGraphFromSingleLoop(pointsB)!;
-        if (
-          ck.testDefined(graph, "unexpected empty graph from triangulation") &&
-          graph
-        ) {
-          const faceSummary = HalfEdgeGraphSearch.collectFaceAreaSummary(
-            graph,
-            false
-          );
-          ck.testExactNumber(
-            1,
-            faceSummary.numNegative,
-            "Exactly one outer loop after triangulation"
-          );
+        const graph = Triangulator.createTriangulatedGraphFromSingleLoop(pointsB)!;
+        if (ck.testDefined(graph, "unexpected empty graph from triangulation") && graph) {
+          const faceSummary = HalfEdgeGraphSearch.collectFaceAreaSummary(graph, false);
+          ck.testExactNumber(1, faceSummary.numNegative, "Exactly one outer loop after triangulation");
           ck.testExactNumber(0, faceSummary.numZero, " no slivers");
-          ck.testExactNumber(
-            expectedTriangleCount,
-            faceSummary.numPositive,
-            "triangle count"
-          );
-          ck.testCoordinate(
-            polygonArea,
-            faceSummary.positiveSum,
-            "positive area sum"
-          );
+          ck.testExactNumber(expectedTriangleCount, faceSummary.numPositive, "triangle count");
+          ck.testCoordinate(polygonArea, faceSummary.positiveSum, "positive area sum");
           const pfA = PolyfaceBuilder.graphToPolyface(graph);
-          GeometryCoreTestIO.captureCloneGeometry(
-            allGeometry,
-            pfA,
-            ex,
-            y0 + 1.5 * dy,
-            0
-          );
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, pfA, ex, y0 + 1.5 * dy, 0);
           Triangulator.flipTriangles(graph);
           const pfB = PolyfaceBuilder.graphToPolyface(graph);
-          GeometryCoreTestIO.captureCloneGeometry(
-            allGeometry,
-            pfB,
-            ex,
-            y0 + 3.0 * dy,
-            0
-          );
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, pfB, ex, y0 + 3.0 * dy, 0);
         } else {
           const badGraph = Triangulator.claimDebugGraph();
-          GraphChecker.captureAnnotatedGraph(
-            allGeometry,
-            badGraph,
-            ex,
-            y0 + 2.0 * dy
-          );
+          GraphChecker.captureAnnotatedGraph(allGeometry, badGraph, ex, y0 + 2.0 * dy);
         }
         y0 += 8.0 * dy;
       }
@@ -936,17 +638,9 @@ describe("Triangulation", () => {
         }
         points.push(points[0].clone());
         x0 += 2.0 * r;
-        const graph =
-          Triangulator.createTriangulatedGraphFromSingleLoop(points)!;
+        const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points)!;
         ck.testExactNumber(n - 1, graph.countFaceLoops());
-        if (graph)
-          GeometryCoreTestIO.captureGeometry(
-            savedMeshes,
-            PolyfaceBuilder.graphToPolyface(graph),
-            x0,
-            y0,
-            0
-          );
+        if (graph) GeometryCoreTestIO.captureGeometry(savedMeshes, PolyfaceBuilder.graphToPolyface(graph), x0, y0, 0);
         y0 += 2.0 * r;
       }
     }
@@ -978,11 +672,7 @@ describe("Triangulation", () => {
       const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points);
       if (graph) {
         const polyface = PolyfaceBuilder.graphToPolyface(graph);
-        ck.testExactNumber(
-          polyface.facetCount,
-          0,
-          "degenerate triangle produced no facets."
-        );
+        ck.testExactNumber(polyface.facetCount, 0, "degenerate triangle produced no facets.");
       }
     }
   });
@@ -1006,8 +696,7 @@ describe("Triangulation", () => {
       const needParams = true;
       for (let startIndex = 0; startIndex < basePoints.length; startIndex++) {
         const arrowPoints = [];
-        for (let j = 0; j < basePoints.length; j++)
-          arrowPoints.push(basePoints[(startIndex + j) % basePoints.length]);
+        for (let j = 0; j < basePoints.length; j++) arrowPoints.push(basePoints[(startIndex + j) % basePoints.length]);
         const loop = Loop.createPolygon(arrowPoints);
         const sweepContour = SweepContour.createForLinearSweep(loop);
 
@@ -1026,9 +715,7 @@ describe("Triangulation", () => {
           ) ||
           Checker.noisy.acsArrows
         ) {
-          GeometryCoreTestIO.consoleLog(
-            ` Triangulation From Start index ${startIndex} needParams ${needParams} `
-          );
+          GeometryCoreTestIO.consoleLog(` Triangulation From Start index ${startIndex} needParams ${needParams} `);
           GeometryCoreTestIO.consoleLog(`   arrow parameter ${a}`);
           GeometryCoreTestIO.consoleLog(
             `    Facet Count ${polyface.facetCount} counter0 ${counter0}   counter1 ${counter1}`
@@ -1066,20 +753,9 @@ describe("Triangulation", () => {
         for (let j = 0; j < basePoints.length; j++)
           shiftedPoints.push(basePoints[(startIndex + j) % basePoints.length]);
 
-        const graph =
-          Triangulator.createTriangulatedGraphFromSingleLoop(shiftedPoints)!;
-        GeometryCoreTestIO.captureGeometry(
-          allGeometry,
-          LineString3d.create(shiftedPoints),
-          dx,
-          (dy += step)
-        );
-        GraphChecker.captureAnnotatedGraph(
-          allGeometry,
-          graph,
-          dx,
-          (dy += step)
-        );
+        const graph = Triangulator.createTriangulatedGraphFromSingleLoop(shiftedPoints)!;
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(shiftedPoints), dx, (dy += step));
+        GraphChecker.captureAnnotatedGraph(allGeometry, graph, dx, (dy += step));
         dx += step;
       }
     }
@@ -1107,20 +783,9 @@ describe("Triangulation", () => {
         for (let j = 0; j < basePoints.length; j++)
           shiftedPoints.push(basePoints[(startIndex + j) % basePoints.length]);
 
-        const graph =
-          Triangulator.createTriangulatedGraphFromSingleLoop(shiftedPoints)!;
-        GeometryCoreTestIO.captureGeometry(
-          allGeometry,
-          LineString3d.create(shiftedPoints),
-          dx,
-          (dy += step)
-        );
-        GraphChecker.captureAnnotatedGraph(
-          allGeometry,
-          graph,
-          dx,
-          (dy += step)
-        );
+        const graph = Triangulator.createTriangulatedGraphFromSingleLoop(shiftedPoints)!;
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(shiftedPoints), dx, (dy += step));
+        GraphChecker.captureAnnotatedGraph(allGeometry, graph, dx, (dy += step));
         dx += step;
       }
     }
@@ -1175,12 +840,7 @@ describe("Triangulation", () => {
       }
     }
     for (const points of loops) {
-      GeometryCoreTestIO.captureGeometry(
-        allGeometry,
-        LineString3d.create(points),
-        dx,
-        dy
-      );
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), dx, dy);
       const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points)!;
       if (graph) {
         GraphChecker.captureAnnotatedGraph(allGeometry, graph, dx, dy + 10);
@@ -1196,11 +856,7 @@ describe("Triangulation", () => {
       }
       dx += 20;
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "Triangulation",
-      "PinchedTriangulation"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "PinchedTriangulation");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -1226,23 +882,10 @@ describe("Triangulation", () => {
     let dy = 0;
     const outerArea = PolygonOps.areaXY(dartInTriangleOuter);
     const innerArea = PolygonOps.areaXY(dartInTriangleInner);
-    GeometryCoreTestIO.captureCloneGeometry(
-      allGeometry,
-      dartInTriangleOuter,
-      dx,
-      dy
-    );
-    GeometryCoreTestIO.captureCloneGeometry(
-      allGeometry,
-      dartInTriangleInner,
-      dx,
-      dy
-    );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, dartInTriangleOuter, dx, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, dartInTriangleInner, dx, dy);
     dy += 10;
-    const graph1 = Triangulator.createTriangulatedGraphFromLoops([
-      dartInTriangleOuter,
-      dartInTriangleInner,
-    ]);
+    const graph1 = Triangulator.createTriangulatedGraphFromLoops([dartInTriangleOuter, dartInTriangleInner]);
     if (graph1) {
       const polyface1 = PolyfaceBuilder.graphToPolyface(graph1);
       ck.testCoordinate(
@@ -1255,18 +898,10 @@ describe("Triangulation", () => {
     dx += 20;
     dy = 0;
     const innerReversed = dartInTriangleInner.slice().reverse();
-    GeometryCoreTestIO.captureCloneGeometry(
-      allGeometry,
-      dartInTriangleOuter,
-      dx,
-      dy
-    );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, dartInTriangleOuter, dx, dy);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, innerReversed, dx, dy);
     dy += 10;
-    const graph2 = Triangulator.createTriangulatedGraphFromLoops([
-      dartInTriangleOuter,
-      innerReversed,
-    ]);
+    const graph2 = Triangulator.createTriangulatedGraphFromLoops([dartInTriangleOuter, innerReversed]);
     if (graph2) {
       const polyface2 = PolyfaceBuilder.graphToPolyface(graph2);
       ck.testCoordinate(
@@ -1277,19 +912,10 @@ describe("Triangulation", () => {
       GeometryCoreTestIO.captureGeometry(allGeometry, polyface2, dx, dy);
     }
 
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "Triangulation",
-      "DartInTriangle"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "DartInTriangle");
     expect(ck.getNumErrors()).equals(0);
   });
-  function messyShapePointsJson(
-    ex0: number = 0,
-    ey0: number = 0,
-    ex1: number = 0,
-    ey1: number = 0
-  ): any {
+  function messyShapePointsJson(ex0: number = 0, ey0: number = 0, ex1: number = 0, ey1: number = 0): any {
     return [
       [0, 0],
       [0.654709, 0.03484],
@@ -1423,12 +1049,7 @@ describe("Triangulation", () => {
     },
   ];
 
-  function tryTriangulation(
-    allGeometry: GeometryQuery[],
-    points: Point3d[],
-    x0: number,
-    y0: number
-  ) {
+  function tryTriangulation(allGeometry: GeometryQuery[], points: Point3d[], x0: number, y0: number) {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, points, x0, y0);
     const range = Range3d.createArray(points);
     y0 += range.yLength();
@@ -1441,12 +1062,7 @@ describe("Triangulation", () => {
       const graph2 = Triangulator.claimDebugGraph();
       if (graph2) {
         const polyface2 = PolyfaceBuilder.graphToPolyface(graph2);
-        GeometryCoreTestIO.captureGeometry(
-          allGeometry,
-          polyface2,
-          x0 + range.xLength(),
-          y0
-        );
+        GeometryCoreTestIO.captureGeometry(allGeometry, polyface2, x0 + range.xLength(), y0);
       }
     }
   }
@@ -1455,19 +1071,13 @@ describe("Triangulation", () => {
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     const y0 = 0;
-    const points = Point3dArray.cloneDeepXYZPoint3dArrays(
-      messyShapePointsJson()
-    );
+    const points = Point3dArray.cloneDeepXYZPoint3dArrays(messyShapePointsJson());
     const range = Range3d.createFromVariantData(points);
     tryTriangulation(allGeometry, points, x0, y0);
     const cleanerPoints = PolylineOps.compressDanglers(points, true);
     x0 += 3.0 * range.xLength();
     tryTriangulation(allGeometry, cleanerPoints, x0, y0);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "Triangulation",
-      "MessyPolygon"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "MessyPolygon");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -1481,18 +1091,10 @@ describe("Triangulation", () => {
     method: number,
     position: Point2d
   ): number {
-    ck.testTrue(
-      HalfEdgeGraphOps.isEveryFaceConvex(graph),
-      "graph has non-convex face on input"
-    );
+    ck.testTrue(HalfEdgeGraphOps.isEveryFaceConvex(graph), "graph has non-convex face on input");
     const polyface = PolyfaceBuilder.graphToPolyface(graph);
     const range = polyface.range();
-    GeometryCoreTestIO.captureGeometry(
-      allGeometry,
-      polyface,
-      position.x,
-      position.y
-    );
+    GeometryCoreTestIO.captureGeometry(allGeometry, polyface, position.x, position.y);
     let numRemovedEdges = 0;
     let succeeded = false;
     switch (method) {
@@ -1500,53 +1102,27 @@ describe("Triangulation", () => {
         // mask, yank and delete edges
         numRemovedEdges = HalfEdgeGraphOps.expandConvexFaces(graph);
         const polyface2 = PolyfaceBuilder.graphToPolyface(graph);
-        GeometryCoreTestIO.captureGeometry(
-          allGeometry,
-          polyface2,
-          position.x,
-          position.y + range.yLength()
-        );
-        succeeded = ck.testLT(
-          0,
-          numRemovedEdges,
-          "expandConvexFaces did not remove any edges."
-        );
+        GeometryCoreTestIO.captureGeometry(allGeometry, polyface2, position.x, position.y + range.yLength());
+        succeeded = ck.testLT(0, numRemovedEdges, "expandConvexFaces did not remove any edges.");
         break;
       }
       case 2: {
         // collect, isolate and delete edges
-        const removableEdges =
-          HalfEdgeGraphOps.collectRemovableEdgesToExpandConvexFaces(graph);
+        const removableEdges = HalfEdgeGraphOps.collectRemovableEdgesToExpandConvexFaces(graph);
         if (
-          (succeeded = ck.testDefined(
-            removableEdges,
-            "expandConvexFaces did not return any removable edges."
-          )) &&
+          (succeeded = ck.testDefined(removableEdges, "expandConvexFaces did not return any removable edges.")) &&
           removableEdges
         ) {
           for (const node of removableEdges) node.isolateEdge();
           numRemovedEdges = graph.deleteIsolatedEdges() / 2;
           const polyface2 = PolyfaceBuilder.graphToPolyface(graph);
-          GeometryCoreTestIO.captureGeometry(
-            allGeometry,
-            polyface2,
-            position.x,
-            position.y + range.yLength()
-          );
-          ck.testExactNumber(
-            numRemovedEdges,
-            removableEdges.length,
-            "deleted unexpected number of removable edges."
-          );
+          GeometryCoreTestIO.captureGeometry(allGeometry, polyface2, position.x, position.y + range.yLength());
+          ck.testExactNumber(numRemovedEdges, removableEdges.length, "deleted unexpected number of removable edges.");
         }
         break;
       }
     }
-    if (succeeded)
-      ck.testTrue(
-        HalfEdgeGraphOps.isEveryFaceConvex(graph),
-        "expandConvexFaces yielded non-convex face."
-      );
+    if (succeeded) ck.testTrue(HalfEdgeGraphOps.isEveryFaceConvex(graph), "expandConvexFaces yielded non-convex face.");
     return numRemovedEdges;
   }
 
@@ -1563,22 +1139,10 @@ describe("Triangulation", () => {
   ): boolean {
     if (ck.testDefined(graph1, "Triangulation failed") && graph1) {
       const range = HalfEdgeGraphOps.graphRange(graph1);
-      const numRemovedEdges1 = tryExpandConvex(
-        ck,
-        allGeometry,
-        graph1,
-        1,
-        position
-      );
+      const numRemovedEdges1 = tryExpandConvex(ck, allGeometry, graph1, 1, position);
       position.x += range.xLength();
       if (graph2) {
-        const numRemovedEdges2 = tryExpandConvex(
-          ck,
-          allGeometry,
-          graph2,
-          2,
-          position
-        );
+        const numRemovedEdges2 = tryExpandConvex(ck, allGeometry, graph2, 2, position);
         ck.testExactNumber(
           numRemovedEdges1,
           numRemovedEdges2,
@@ -1592,22 +1156,14 @@ describe("Triangulation", () => {
           break;
         }
       }
-      ck.testFalse(
-        HalfEdgeGraphOps.isEveryFaceConvex(graph1),
-        "isFaceConvex failed to detect non-convex face."
-      );
+      ck.testFalse(HalfEdgeGraphOps.isEveryFaceConvex(graph1), "isFaceConvex failed to detect non-convex face.");
       return true;
     }
     const debugGraph = Triangulator.claimDebugGraph();
     if (debugGraph) {
       const debugPolyface = PolyfaceBuilder.graphToPolyface(debugGraph);
       const range = debugPolyface.range();
-      GeometryCoreTestIO.captureGeometry(
-        allGeometry,
-        debugPolyface,
-        position.x,
-        position.y
-      );
+      GeometryCoreTestIO.captureGeometry(allGeometry, debugPolyface, position.x, position.y);
       position.x += range.xLength();
     }
     return false;
@@ -1618,23 +1174,13 @@ describe("Triangulation", () => {
     const allGeometry: GeometryQuery[] = [];
     const position = Point2d.createZero();
     Triangulator.clearAndEnableDebugGraphCapture(true);
-    const graph1 = Triangulator.createTriangulatedGraphFromLoops([
-      dartInTriangleOuter,
-      dartInTriangleInner,
-    ]);
-    const graph2 = Triangulator.createTriangulatedGraphFromLoops([
-      dartInTriangleOuter,
-      dartInTriangleInner,
-    ]);
+    const graph1 = Triangulator.createTriangulatedGraphFromLoops([dartInTriangleOuter, dartInTriangleInner]);
+    const graph2 = Triangulator.createTriangulatedGraphFromLoops([dartInTriangleOuter, dartInTriangleInner]);
     ck.testTrue(
       tryExpandConvex2(ck, allGeometry, graph1, graph2, position),
       "tryExpandConvex2 failed on DartInTriangle."
     );
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "Triangulation",
-      "ExpandConvexFaces-DartInTriangle"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "ExpandConvexFaces-DartInTriangle");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -1642,10 +1188,7 @@ describe("Triangulation", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const position = Point2d.createZero();
-    const points = PolylineOps.compressDanglers(
-      Point3dArray.cloneDeepXYZPoint3dArrays(messyShapePointsJson()),
-      true
-    );
+    const points = PolylineOps.compressDanglers(Point3dArray.cloneDeepXYZPoint3dArrays(messyShapePointsJson()), true);
     Triangulator.clearAndEnableDebugGraphCapture(true);
     const graph1 = Triangulator.createTriangulatedGraphFromSingleLoop(points);
     const graph2 = Triangulator.createTriangulatedGraphFromSingleLoop(points);
@@ -1653,11 +1196,7 @@ describe("Triangulation", () => {
       tryExpandConvex2(ck, allGeometry, graph1, graph2, position),
       "tryExpandConvex2 failed on MessyPolygon."
     );
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "Triangulation",
-      "ExpandConvexFaces-MessyPolygon"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "ExpandConvexFaces-MessyPolygon");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -1679,18 +1218,13 @@ describe("Triangulation", () => {
             let range = Range3d.createArray(points);
             const transform = Transform.createFixedPointAndMatrix(
               range.center,
-              Matrix3d.createRotationAroundAxisIndex(
-                2,
-                Angle.createDegrees(degrees)
-              )
+              Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(degrees))
             );
             transform.multiplyPoint3dArrayInPlace(points);
             range = Range3d.createArray(points);
             Triangulator.clearAndEnableDebugGraphCapture(true);
-            const graph1 =
-              Triangulator.createTriangulatedGraphFromSingleLoop(points);
-            const graph2 =
-              Triangulator.createTriangulatedGraphFromSingleLoop(points);
+            const graph1 = Triangulator.createTriangulatedGraphFromSingleLoop(points);
+            const graph2 = Triangulator.createTriangulatedGraphFromSingleLoop(points);
             position.x += range.xLength() / 2;
             ck.testTrue(
               tryExpandConvex2(ck, allGeometry, graph1, graph2, position),
@@ -1700,11 +1234,7 @@ describe("Triangulation", () => {
         }
       }
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "Triangulation",
-      "ExpandConvexFaces-Fractals"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "ExpandConvexFaces-Fractals");
     expect(ck.getNumErrors()).equals(0);
   });
 });

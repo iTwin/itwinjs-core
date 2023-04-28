@@ -8,13 +8,7 @@
  */
 
 import { ColorDef, LinePixels } from "@itwin/core-common";
-import {
-  DecorateContext,
-  GraphicType,
-  IModelApp,
-  TileTreeReference,
-  Tool,
-} from "@itwin/core-frontend";
+import { DecorateContext, GraphicType, IModelApp, TileTreeReference, Tool } from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 
 class TreeDecoration {
@@ -36,29 +30,15 @@ class TreeDecoration {
   public readonly useCachedDecorations = true;
 
   public decorate(context: DecorateContext): void {
-    context.viewport.forEachTileTreeRef((ref) =>
-      this.drawBoundingBox(ref, context)
-    );
+    context.viewport.forEachTileTreeRef((ref) => this.drawBoundingBox(ref, context));
   }
 
-  private drawBoundingBox(
-    ref: TileTreeReference,
-    context: DecorateContext
-  ): void {
+  private drawBoundingBox(ref: TileTreeReference, context: DecorateContext): void {
     const tree = ref.treeOwner.tileTree;
     const location = ref.getLocation();
-    if (
-      undefined === location ||
-      undefined === tree ||
-      tree.isContentUnbounded ||
-      tree.range.isNull
-    )
-      return;
+    if (undefined === location || undefined === tree || tree.isContentUnbounded || tree.range.isNull) return;
 
-    const builder = context.createGraphicBuilder(
-      GraphicType.WorldDecoration,
-      location
-    );
+    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, location);
     builder.setSymbology(ColorDef.green, ColorDef.green, 1, LinePixels.Solid);
     builder.addRangeBox(tree.range);
 

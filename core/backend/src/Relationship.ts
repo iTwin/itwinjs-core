@@ -7,13 +7,7 @@
  */
 
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import {
-  EntityReferenceSet,
-  IModelError,
-  IModelStatus,
-  RelationshipProps,
-  SourceAndTarget,
-} from "@itwin/core-common";
+import { EntityReferenceSet, IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -53,10 +47,7 @@ export class Relationship extends Entity {
    * @param _props The ElementDrivesElement relationship instance.
    * @param _iModel The iModel
    */
-  public static onRootChanged(
-    _props: RelationshipProps,
-    _iModel: IModelDb
-  ): void {}
+  public static onRootChanged(_props: RelationshipProps, _iModel: IModelDb): void {}
 
   /**
    * Callback invoked by saveChanges on an ElementDrivesElement relationship when the relationship instance has been deleted.
@@ -64,10 +55,7 @@ export class Relationship extends Entity {
    * @param _props The deleted ElementDrivesElement relationship instance.
    * @param _iModel The iModel
    */
-  public static onDeletedDependency(
-    _props: RelationshipProps,
-    _iModel: IModelDb
-  ): void {}
+  public static onDeletedDependency(_props: RelationshipProps, _iModel: IModelDb): void {}
 
   /** Insert this Relationship into the iModel. */
   public insert(): Id64String {
@@ -82,10 +70,7 @@ export class Relationship extends Entity {
     this.iModel.relationships.deleteInstance(this.toJSON());
   }
 
-  public static getInstance<T extends Relationship>(
-    iModel: IModelDb,
-    criteria: Id64String | SourceAndTarget
-  ): T {
+  public static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T {
     return iModel.relationships.getInstance(this.classFullName, criteria);
   }
 }
@@ -131,9 +116,7 @@ export class ElementRefersToElements extends Relationship {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(
-    referenceIds: EntityReferenceSet
-  ): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     referenceIds.addElement(this.sourceId);
     referenceIds.addElement(this.targetId);
@@ -492,9 +475,7 @@ export class ElementDrivesElement extends Relationship {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(
-    referenceIds: EntityReferenceSet
-  ): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     referenceIds.addElement(this.sourceId);
     referenceIds.addElement(this.targetId);
@@ -513,9 +494,7 @@ export class ModelSelectorRefersToModels extends Relationship {
     return "ModelSelectorRefersToModels";
   }
   /** @internal */
-  protected override collectReferenceConcreteIds(
-    referenceIds: EntityReferenceSet
-  ): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     referenceIds.addElement(this.sourceId);
     referenceIds.addModel(this.targetId);
@@ -543,11 +522,7 @@ export class Relationships {
 
   /** Check classFullName to ensure it is a link table relationship class. */
   private checkRelationshipClass(classFullName: string) {
-    if (
-      !this._iModel.nativeDb.isLinkTableRelationship(
-        classFullName.replace(".", ":")
-      )
-    ) {
+    if (!this._iModel.nativeDb.isLinkTableRelationship(classFullName.replace(".", ":"))) {
       throw new IModelError(
         DbResult.BE_SQLITE_ERROR,
         `Class '${classFullName}' must be a relationship class and it should be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.`
@@ -562,8 +537,7 @@ export class Relationships {
    */
   public insertInstance(props: RelationshipProps): Id64String {
     this.checkRelationshipClass(props.classFullName);
-    return (props.id =
-      this._iModel.nativeDb.insertLinkTableRelationship(props));
+    return (props.id = this._iModel.nativeDb.insertLinkTableRelationship(props));
   }
 
   /** Update the properties of an existing relationship instance in the iModel.
@@ -588,10 +562,7 @@ export class Relationships {
     relClassFullName: string,
     criteria: Id64String | SourceAndTarget
   ): T {
-    const relationshipProps = this.tryGetInstanceProps<T>(
-      relClassFullName,
-      criteria
-    );
+    const relationshipProps = this.tryGetInstanceProps<T>(relClassFullName, criteria);
     if (undefined === relationshipProps) {
       throw new IModelError(IModelStatus.NotFound, "Relationship not found");
     }
@@ -615,9 +586,7 @@ export class Relationships {
         `SELECT * FROM ${relClassFullName} WHERE ecinstanceid=?`,
         (stmt: ECSqlStatement) => {
           stmt.bindId(1, criteria);
-          return DbResult.BE_SQLITE_ROW === stmt.step()
-            ? (stmt.getRow() as T)
-            : undefined;
+          return DbResult.BE_SQLITE_ROW === stmt.step() ? (stmt.getRow() as T) : undefined;
         }
       );
     } else {
@@ -626,9 +595,7 @@ export class Relationships {
         (stmt: ECSqlStatement) => {
           stmt.bindId(1, criteria.sourceId);
           stmt.bindId(2, criteria.targetId);
-          return DbResult.BE_SQLITE_ROW === stmt.step()
-            ? (stmt.getRow() as T)
-            : undefined;
+          return DbResult.BE_SQLITE_ROW === stmt.step() ? (stmt.getRow() as T) : undefined;
         }
       );
     }
@@ -644,13 +611,8 @@ export class Relationships {
    * @throws [IModelError]($common) if the relationship is not found or cannot be loaded.
    * @see tryGetInstance
    */
-  public getInstance<T extends Relationship>(
-    relClassSqlName: string,
-    criteria: Id64String | SourceAndTarget
-  ): T {
-    return this._iModel.constructEntity<T>(
-      this.getInstanceProps(relClassSqlName, criteria)
-    );
+  public getInstance<T extends Relationship>(relClassSqlName: string, criteria: Id64String | SourceAndTarget): T {
+    return this._iModel.constructEntity<T>(this.getInstanceProps(relClassSqlName, criteria));
   }
 
   /** Get a Relationship instance
@@ -664,12 +626,7 @@ export class Relationships {
     relClassFullName: string,
     criteria: Id64String | SourceAndTarget
   ): T | undefined {
-    const relationshipProps = this.tryGetInstanceProps<RelationshipProps>(
-      relClassFullName,
-      criteria
-    );
-    return undefined !== relationshipProps
-      ? this._iModel.constructEntity<T>(relationshipProps)
-      : undefined;
+    const relationshipProps = this.tryGetInstanceProps<RelationshipProps>(relClassFullName, criteria);
+    return undefined !== relationshipProps ? this._iModel.constructEntity<T>(relationshipProps) : undefined;
   }
 }

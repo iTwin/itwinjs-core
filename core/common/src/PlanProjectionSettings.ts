@@ -47,14 +47,11 @@ export class PlanProjectionSettings {
       elevation: this.elevation,
       transparency: this.transparency,
       overlay: true === this.overlay ? true : undefined,
-      enforceDisplayPriority:
-        true === this.enforceDisplayPriority ? true : undefined,
+      enforceDisplayPriority: true === this.enforceDisplayPriority ? true : undefined,
     };
   }
 
-  public static fromJSON(
-    props: PlanProjectionSettingsProps | undefined
-  ): PlanProjectionSettings | undefined {
+  public static fromJSON(props: PlanProjectionSettingsProps | undefined): PlanProjectionSettings | undefined {
     if (undefined === props) return undefined;
 
     if (
@@ -75,8 +72,7 @@ export class PlanProjectionSettings {
     this.enforceDisplayPriority = true === props.enforceDisplayPriority;
 
     let transparency = props.transparency;
-    if (undefined !== transparency)
-      transparency = Math.max(0, Math.min(1, transparency));
+    if (undefined !== transparency) transparency = Math.max(0, Math.min(1, transparency));
 
     this.transparency = transparency;
   }
@@ -85,20 +81,15 @@ export class PlanProjectionSettings {
    * @param changedProps JSON representation of the properties to change.
    * @returns A PlanProjectionSettings with all of its properties set to match those of `this`, except those explicitly defined in `changedProps`.
    */
-  public clone(
-    changedProps?: PlanProjectionSettingsProps
-  ): PlanProjectionSettings {
+  public clone(changedProps?: PlanProjectionSettingsProps): PlanProjectionSettings {
     if (undefined === changedProps) return this;
 
     const props: PlanProjectionSettingsProps = this.toJSON();
-    if (undefined !== changedProps.elevation)
-      props.elevation = changedProps.elevation;
+    if (undefined !== changedProps.elevation) props.elevation = changedProps.elevation;
 
-    if (undefined !== changedProps.transparency)
-      props.transparency = changedProps.transparency;
+    if (undefined !== changedProps.transparency) props.transparency = changedProps.transparency;
 
-    if (undefined !== changedProps.overlay)
-      props.overlay = changedProps.overlay;
+    if (undefined !== changedProps.overlay) props.overlay = changedProps.overlay;
 
     if (undefined !== changedProps.enforceDisplayPriority)
       props.enforceDisplayPriority = changedProps.enforceDisplayPriority;

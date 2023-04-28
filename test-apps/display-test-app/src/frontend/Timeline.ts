@@ -45,12 +45,7 @@ class SolarTimelineProvider {
     let cartoCenter;
     if (vp.iModel.isGeoLocated) {
       const projectExtents = vp.iModel.projectExtents;
-      const projectCenter = Point3d.createAdd2Scaled(
-        projectExtents.low,
-        0.5,
-        projectExtents.high,
-        0.5
-      );
+      const projectCenter = Point3d.createAdd2Scaled(projectExtents.low, 0.5, projectExtents.high, 0.5);
       cartoCenter = vp.iModel.spatialToCartographicFromEcef(projectCenter);
     } else {
       cartoCenter = Cartographic.fromDegrees({
@@ -122,13 +117,9 @@ class NoOpTimelineProvider {
 }
 
 function createTimelineProvider(vp: Viewport): TimelineProvider {
-  if (vp.displayStyle.scheduleScript)
-    return new ScheduleTimelineProvider(
-      vp.displayStyle.scheduleScript.duration
-    );
+  if (vp.displayStyle.scheduleScript) return new ScheduleTimelineProvider(vp.displayStyle.scheduleScript.duration);
 
-  if (vp.displayStyle.settings.analysisStyle)
-    return new AnalysisTimelineProvider();
+  if (vp.displayStyle.settings.analysisStyle) return new AnalysisTimelineProvider();
 
   if (vp.displayStyle.is3d()) return new SolarTimelineProvider(vp);
 
@@ -150,11 +141,7 @@ class TimelinePanel extends ToolBarDropDown {
   private readonly _playButton: HTMLElement;
   private readonly _pauseButton: HTMLElement;
 
-  public constructor(
-    vp: Viewport,
-    parent: HTMLElement,
-    durationInSeconds: number
-  ) {
+  public constructor(vp: Viewport, parent: HTMLElement, durationInSeconds: number) {
     super();
     this._vp = vp;
     this._totalMillis = 1000 * durationInSeconds;
@@ -206,9 +193,7 @@ class TimelinePanel extends ToolBarDropDown {
     this._slider.max = "1000";
     this._slider.value = "0";
     this._slider.className = "slider";
-    this._slider.addEventListener("input", () =>
-      this.processSliderAdjustment()
-    );
+    this._slider.addEventListener("input", () => this.processSliderAdjustment());
     this._element.appendChild(this._slider);
 
     this._messageElement = document.createElement("div");
@@ -323,18 +308,13 @@ class TimelinePanel extends ToolBarDropDown {
     const provider = createTimelineProvider(this._vp);
 
     const time = provider.getCurrentTime(this._vp);
-    const timeFraction =
-      (time - provider.duration.low) / provider.duration.length();
+    const timeFraction = (time - provider.duration.low) / provider.duration.length();
     this._elapsedMillis = timeFraction * this._totalMillis;
 
     return provider;
   }
 }
 
-export function createTimeline(
-  vp: Viewport,
-  parent: HTMLElement,
-  durationInSeconds: number
-): ToolBarDropDown {
+export function createTimeline(vp: Viewport, parent: HTMLElement, durationInSeconds: number): ToolBarDropDown {
   return new TimelinePanel(vp, parent, durationInSeconds);
 }

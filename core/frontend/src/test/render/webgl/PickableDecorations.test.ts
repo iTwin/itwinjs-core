@@ -9,10 +9,7 @@ import { IModelApp } from "../../../IModelApp";
 import { DecorateContext } from "../../../ViewContext";
 import { Viewport } from "../../../Viewport";
 import { GraphicType } from "../../../render/GraphicBuilder";
-import {
-  readUniquePixelData,
-  testBlankViewport,
-} from "../../openBlankViewport";
+import { readUniquePixelData, testBlankViewport } from "../../openBlankViewport";
 
 describe("Pickable decorations", () => {
   class Decorator {
@@ -36,17 +33,10 @@ describe("Pickable decorations", () => {
     public decorate(context: DecorateContext): void {
       this._curId = context.viewport.iModel.transientIds.getNext();
       const pt = new Point3d(this._x++, this._y++, 0);
-      if (
-        GraphicType.ViewBackground !== this._type &&
-        GraphicType.ViewOverlay !== this._type
-      )
+      if (GraphicType.ViewBackground !== this._type && GraphicType.ViewOverlay !== this._type)
         context.viewport.viewToWorld(pt, pt);
 
-      const builder = context.createGraphicBuilder(
-        this._type,
-        undefined,
-        this._curId
-      );
+      const builder = context.createGraphicBuilder(this._type, undefined, this._curId);
       builder.addPointString([pt]);
       context.addDecorationFromBuilder(builder);
     }

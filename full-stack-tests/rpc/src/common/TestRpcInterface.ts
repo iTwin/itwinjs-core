@@ -87,10 +87,7 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  public async op6(_data: {
-    x: number;
-    y: number;
-  }): Promise<{ x: number; y: number }> {
+  public async op6(_data: { x: number; y: number }): Promise<{ x: number; y: number }> {
     return this.forward(arguments);
   }
 
@@ -98,10 +95,7 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  public async op8(
-    _x: number,
-    _y: number
-  ): Promise<{ initializer: number; sum: number }> {
+  public async op8(_x: number, _y: number): Promise<{ initializer: number; sum: number }> {
     return this.forward(arguments);
   }
 
@@ -133,10 +127,7 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  public async op16(
-    _token: IModelRpcProps,
-    _values: TokenValues
-  ): Promise<boolean> {
+  public async op16(_token: IModelRpcProps, _values: TokenValues): Promise<boolean> {
     return this.forward(arguments);
   }
 
@@ -212,10 +203,7 @@ export abstract class RpcTransportTest extends RpcInterface {
   public async binary(_value: Uint8Array): Promise<Uint8Array> {
     return this.forward(arguments);
   }
-  public async mixed(
-    _value1: string,
-    _value2: Uint8Array
-  ): Promise<{ 0: string; 1: Uint8Array }> {
+  public async mixed(_value1: string, _value2: Uint8Array): Promise<{ 0: string; 1: Uint8Array }> {
     return this.forward(arguments);
   }
   public async nested(_value: {
@@ -227,10 +215,7 @@ export abstract class RpcTransportTest extends RpcInterface {
   }
 }
 
-export class RpcTransportTestImpl
-  extends RpcInterface
-  implements RpcTransportTest
-{
+export class RpcTransportTestImpl extends RpcInterface implements RpcTransportTest {
   public static register() {
     RpcManager.registerImpl(RpcTransportTest, RpcTransportTestImpl);
   }
@@ -257,10 +242,7 @@ export class RpcTransportTestImpl
     return RpcTransportTestImpl.mutateBits(value);
   }
 
-  public async mixed(
-    value1: string,
-    value2: Uint8Array
-  ): Promise<{ 0: string; 1: Uint8Array }> {
+  public async mixed(value1: string, value2: Uint8Array): Promise<{ 0: string; 1: Uint8Array }> {
     return {
       0: RpcTransportTestImpl.mutateString(value1),
       1: RpcTransportTestImpl.mutateBits(value2),
@@ -290,9 +272,7 @@ export abstract class MultipleClientsInterface extends RpcInterface {
   public static config1 = RpcRoutingToken.generate();
   public static config2 = RpcRoutingToken.generate();
 
-  public static getClientWithRouting(
-    routing: RpcRoutingToken
-  ): MultipleClientsInterface {
+  public static getClientWithRouting(routing: RpcRoutingToken): MultipleClientsInterface {
     return RpcManager.getClientForInterface(MultipleClientsInterface, routing);
   }
 

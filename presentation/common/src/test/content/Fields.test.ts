@@ -3,15 +3,8 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  Field,
-  NestedContentField,
-  PropertiesField,
-} from "../../presentation-common";
-import {
-  FieldDescriptor,
-  FieldDescriptorType,
-} from "../../presentation-common/content/Fields";
+import { Field, NestedContentField, PropertiesField } from "../../presentation-common";
+import { FieldDescriptor, FieldDescriptorType } from "../../presentation-common/content/Fields";
 import { RelationshipMeaning } from "../../presentation-common/rules/content/modifiers/RelatedPropertiesSpecification";
 import {
   createTestCategoryDescription,
@@ -19,11 +12,7 @@ import {
   createTestPropertiesContentField,
   createTestSimpleContentField,
 } from "../_helpers/Content";
-import {
-  createTestECClassInfo,
-  createTestPropertyInfo,
-  createTestRelatedClassInfo,
-} from "../_helpers/EC";
+import { createTestECClassInfo, createTestPropertyInfo, createTestRelatedClassInfo } from "../_helpers/EC";
 
 describe("Field", () => {
   describe("fromJSON", () => {
@@ -62,9 +51,7 @@ describe("Field", () => {
     it("throws when creating field with category that doesn't exist in given list", () => {
       const category = createTestCategoryDescription();
       const json = createTestSimpleContentField({ category }).toJSON();
-      expect(() =>
-        Field.fromJSON({ ...json, category: "does not exist" }, [category])
-      ).to.throw();
+      expect(() => Field.fromJSON({ ...json, category: "does not exist" }, [category])).to.throw();
     });
   });
 

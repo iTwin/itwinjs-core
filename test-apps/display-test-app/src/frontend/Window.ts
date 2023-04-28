@@ -74,17 +74,11 @@ class ResizeState {
       const surfaceTop = window.surface.element.clientTop;
 
       if (width > this.minSize)
-        target.style.width = `${
-          windowRight <= surfaceRight ? width : surfaceWidth - windowLeft
-        }px`;
+        target.style.width = `${windowRight <= surfaceRight ? width : surfaceWidth - windowLeft}px`;
 
       if (height > minSize) {
-        target.style.height = `${
-          windowTop >= surfaceTop ? height : prevBottom
-        }px`;
-        target.style.top = `${
-          windowTop >= surfaceTop ? windowTop : surfaceTop
-        }px`;
+        target.style.height = `${windowTop >= surfaceTop ? height : prevBottom}px`;
+        target.style.top = `${windowTop >= surfaceTop ? windowTop : surfaceTop}px`;
       }
     };
 
@@ -98,8 +92,7 @@ class ResizeState {
       e.stopPropagation();
 
       const style = getComputedStyle(target, null);
-      const pxToNum = (propName: string) =>
-        parseFloat(style.getPropertyValue(propName).replace("px", ""));
+      const pxToNum = (propName: string) => parseFloat(style.getPropertyValue(propName).replace("px", ""));
       this._prevWidth = pxToNum("width");
       this._prevHeight = pxToNum("height");
       this._prevY = pxToNum("top");
@@ -367,25 +360,17 @@ export abstract class Window {
     this.container.style.height = `${surface.element.clientHeight / 3}px`;
     if (undefined !== props) {
       if (undefined !== props.top) this.container.style.top = `${props.top}px`;
-      if (undefined !== props.left)
-        this.container.style.left = `${props.left}px`;
-      if (undefined !== props.width)
-        this.container.style.width = `${props.width}px`;
-      if (undefined !== props.height)
-        this.container.style.height = `${props.height}px`;
+      if (undefined !== props.left) this.container.style.left = `${props.left}px`;
+      if (undefined !== props.width) this.container.style.width = `${props.width}px`;
+      if (undefined !== props.height) this.container.style.height = `${props.height}px`;
     }
 
-    this._header = new WindowHeader(
-      this,
-      this.container,
-      undefined !== props ? props.title : undefined
-    );
+    this._header = new WindowHeader(this, this.container, undefined !== props ? props.title : undefined);
     this.contentDiv = IModelApp.makeHTMLElement("div", {
       className: "floating-window",
       parent: this.container,
     });
-    if (props && props.scrollbars)
-      this.contentDiv.classList.add("overflow-auto");
+    if (props && props.scrollbars) this.contentDiv.classList.add("overflow-auto");
   }
 
   // Do not set directly - use Surface.togglePin(window)

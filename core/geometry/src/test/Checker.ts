@@ -101,14 +101,7 @@ export class Checker {
   public checkpoint(...params: any[]) {
     // this.show(params);
     if (Checker.noisy.checkpoint || this._numErrors > 0)
-      GeometryCoreTestIO.consoleLog(
-        "               (ok ",
-        this._numOK,
-        ")  (errors ",
-        this._numErrors,
-        ")",
-        params
-      );
+      GeometryCoreTestIO.consoleLog("               (ok ", this._numOK, ")  (errors ", this._numErrors, ")", params);
     this._savedErrors += this._numErrors;
     this._savedOK += this._numOK;
     this._numErrors = 0;
@@ -124,54 +117,29 @@ export class Checker {
     this._numOK++;
     return true;
   }
-  public testPoint3d(
-    dataA: Point3d,
-    dataB: Point3d,
-    ...params: any[]
-  ): boolean {
+  public testPoint3d(dataA: Point3d, dataB: Point3d, ...params: any[]): boolean {
     if (Geometry.isSamePoint3d(dataA, dataB)) return this.announceOK();
     this.announceError("expect same Point3d", dataA, dataB, params);
     return false;
   }
   /** test if `transformAToB * dataA` matches pointB */
-  public testTransformedPoint3d(
-    transformAToB: Transform,
-    dataA: Point3d,
-    dataB: Point3d,
-    ...params: any[]
-  ): boolean {
+  public testTransformedPoint3d(transformAToB: Transform, dataA: Point3d, dataB: Point3d, ...params: any[]): boolean {
     const dataA1 = transformAToB.multiplyPoint3d(dataA);
     if (Geometry.isSamePoint3d(dataA1, dataB)) return this.announceOK();
     this.announceError(
       "expect same transformed Point3d",
-      `${prettyPrint(transformAToB)} * ${prettyPrint(dataA)} ==> ${prettyPrint(
-        dataA1
-      )} =?= ${prettyPrint(dataB)}`,
+      `${prettyPrint(transformAToB)} * ${prettyPrint(dataA)} ==> ${prettyPrint(dataA1)} =?= ${prettyPrint(dataB)}`,
       params
     );
     return false;
   }
-  public testPoint3dArray(
-    dataA: Point3d[],
-    dataB: Point3d[],
-    ...params: any[]
-  ): boolean {
+  public testPoint3dArray(dataA: Point3d[], dataB: Point3d[], ...params: any[]): boolean {
     if (dataA.length !== dataB.length)
-      return this.announceError(
-        "mismatched Point3d array lengths",
-        dataA,
-        dataB,
-        params
-      );
+      return this.announceError("mismatched Point3d array lengths", dataA, dataB, params);
 
     for (let i = 0; i < dataA.length; i++)
       if (!Geometry.isSamePoint3d(dataA[i], dataB[i]))
-        return this.announceError(
-          `mismatched point at array position ${i}`,
-          dataA,
-          dataB,
-          params
-        );
+        return this.announceError(`mismatched point at array position ${i}`, dataA, dataB, params);
     return this.announceOK();
   }
   /**
@@ -184,15 +152,13 @@ export class Checker {
   ): boolean {
     const numA = dataA === undefined ? 0 : dataA.length;
     const numB = dataB === undefined ? 0 : dataB.length;
-    if (numA !== numB)
-      return this.announceError("array length mismatch", dataA, dataB, params);
+    if (numA !== numB) return this.announceError("array length mismatch", dataA, dataB, params);
     if (dataA && dataB) {
       let numError = 0;
       for (let i = 0; i < dataA.length; i++) {
         if (!Geometry.isSameCoordinate(dataA[i], dataB[i])) numError++;
       }
-      if (numError !== 0)
-        return this.announceError("contents different", dataA, dataB, params);
+      if (numError !== 0) return this.announceError("contents different", dataA, dataB, params);
     }
     return this.announceOK();
   }
@@ -206,16 +172,13 @@ export class Checker {
   ): boolean {
     const numA = dataA === undefined ? 0 : dataA.length;
     const numB = dataB === undefined ? 0 : dataB.length;
-    if (numA !== numB)
-      return this.announceError("array length mismatch", dataA, dataB, params);
+    if (numA !== numB) return this.announceError("array length mismatch", dataA, dataB, params);
     if (dataA && dataB) {
       let numError = 0;
       for (let i = 0; i < dataA.length; i++) {
-        if (!Geometry.isSameCoordinate(dataA[i], dataB.atUncheckedIndex(i)))
-          numError++;
+        if (!Geometry.isSameCoordinate(dataA[i], dataB.atUncheckedIndex(i))) numError++;
       }
-      if (numError !== 0)
-        return this.announceError("contents different", dataA, dataB, params);
+      if (numError !== 0) return this.announceError("contents different", dataA, dataB, params);
     }
     return this.announceOK();
   }
@@ -229,81 +192,44 @@ export class Checker {
   ): boolean {
     const numA = dataA === undefined ? 0 : dataA.length;
     const numB = dataB === undefined ? 0 : dataB.length;
-    if (numA !== numB)
-      return this.announceError("array length mismatch", dataA, dataB, params);
+    if (numA !== numB) return this.announceError("array length mismatch", dataA, dataB, params);
     if (dataA && dataB) {
       let numError = 0;
       for (let i = 0; i < dataA.length; i++) {
-        if (
-          !Geometry.isSameCoordinate(
-            dataA.atUncheckedIndex(i),
-            dataB.atUncheckedIndex(i)
-          )
-        )
-          numError++;
+        if (!Geometry.isSameCoordinate(dataA.atUncheckedIndex(i), dataB.atUncheckedIndex(i))) numError++;
       }
-      if (numError !== 0)
-        return this.announceError("contents different", dataA, dataB, params);
+      if (numError !== 0) return this.announceError("contents different", dataA, dataB, params);
     }
     return this.announceOK();
   }
-  public testRange3d(
-    dataA: Range3d,
-    dataB: Range3d,
-    ...params: any[]
-  ): boolean {
+  public testRange3d(dataA: Range3d, dataB: Range3d, ...params: any[]): boolean {
     if (dataA.isAlmostEqual(dataB)) return this.announceOK();
     this.announceError("expect same Range3d", dataA, dataB, params);
     return false;
   }
-  public testRange1d(
-    dataA: Range1d,
-    dataB: Range1d,
-    ...params: any[]
-  ): boolean {
+  public testRange1d(dataA: Range1d, dataB: Range1d, ...params: any[]): boolean {
     if (dataA.isAlmostEqual(dataB)) return this.announceOK();
     this.announceError("expect same Range1d", dataA, dataB, params);
     return false;
   }
-  public testRange2d(
-    dataA: Range2d,
-    dataB: Range2d,
-    ...params: any[]
-  ): boolean {
+  public testRange2d(dataA: Range2d, dataB: Range2d, ...params: any[]): boolean {
     if (dataA.isAlmostEqual(dataB)) return this.announceOK();
     this.announceError("expect same Range2d", dataA, dataB, params);
     return false;
   }
-  public testPoint3dXY(
-    dataA: Point3d,
-    dataB: Point3d,
-    ...params: any[]
-  ): boolean {
+  public testPoint3dXY(dataA: Point3d, dataB: Point3d, ...params: any[]): boolean {
     if (Geometry.isSamePoint3dXY(dataA, dataB)) return this.announceOK();
     this.announceError("expect same Point3d XY", dataA, dataB, params);
     return false;
   }
-  public testPoint2d(
-    dataA: Point2d,
-    dataB: Point2d,
-    ...params: any[]
-  ): boolean {
+  public testPoint2d(dataA: Point2d, dataB: Point2d, ...params: any[]): boolean {
     if (Geometry.isSamePoint2d(dataA, dataB)) return this.announceOK();
     this.announceError("expect same Point2d", dataA, dataB, params);
     return false;
   }
-  public testBoolean(
-    dataA: boolean,
-    dataB: boolean,
-    ...params: any[]
-  ): boolean {
+  public testBoolean(dataA: boolean, dataB: boolean, ...params: any[]): boolean {
     if (dataA === dataB) return this.announceOK();
-    this.announceError(
-      "Expect same boolean",
-      JSON.stringify(dataA),
-      JSON.stringify(dataB),
-      params
-    );
+    this.announceError("Expect same boolean", JSON.stringify(dataA), JSON.stringify(dataB), params);
 
     return false;
   }
@@ -332,13 +258,8 @@ export class Checker {
 
     return false;
   }
-  public testType<T extends Function>(
-    data: any,
-    classType: T,
-    ...params: any[]
-  ): data is T["prototype"] {
-    if (data !== undefined && data instanceof classType)
-      return this.announceOK();
+  public testType<T extends Function>(data: any, classType: T, ...params: any[]): data is T["prototype"] {
+    if (data !== undefined && data instanceof classType) return this.announceOK();
     this.announceError("Expect defined with type", data, params);
     return false;
   }
@@ -354,18 +275,9 @@ export class Checker {
 
     return false;
   }
-  public testBetween(
-    dataA: number,
-    dataB: number,
-    dataC: number,
-    ...params: any[]
-  ): boolean {
+  public testBetween(dataA: number, dataB: number, dataC: number, ...params: any[]): boolean {
     if ((dataB - dataA) * (dataC - dataB) >= 0.0) return this.announceOK();
-    this.announceError(
-      "Expect dataB in [dataA, dataC]",
-      [dataA, dataB, dataC],
-      params
-    );
+    this.announceError("Expect dataB in [dataA, dataC]", [dataA, dataB, dataC], params);
 
     return false;
   }
@@ -375,11 +287,7 @@ export class Checker {
 
     return false;
   }
-  public testVector3d(
-    dataA: Vector3d,
-    dataB: Vector3d,
-    ...params: any[]
-  ): boolean {
+  public testVector3d(dataA: Vector3d, dataB: Vector3d, ...params: any[]): boolean {
     if (Geometry.isSameVector3d(dataA, dataB)) return this.announceOK();
     return this.announceError(" expect same Vector3d", dataA, dataB, params);
   }
@@ -389,18 +297,9 @@ export class Checker {
     ...params: any[]
   ): boolean {
     if (dataA.isAlmostEqual(dataB)) return this.announceOK();
-    return this.announceError(
-      " expect same LongitudeLatitudeNumber",
-      dataA,
-      dataB,
-      params
-    );
+    return this.announceError(" expect same LongitudeLatitudeNumber", dataA, dataB, params);
   }
-  public testVector2d(
-    dataA: Vector2d,
-    dataB: Vector2d,
-    ...params: any[]
-  ): boolean {
+  public testVector2d(dataA: Vector2d, dataB: Vector2d, ...params: any[]): boolean {
     if (Geometry.isSameVector2d(dataA, dataB)) return this.announceOK();
     return this.announceError(" expect same Vector2d", dataA, dataB, params);
   }
@@ -408,31 +307,16 @@ export class Checker {
     if (Geometry.isSameXYZ(dataA, dataB)) return this.announceOK();
     return this.announceError(" expect same XYZ", dataA, dataB, params);
   }
-  public testComplex(
-    dataA: Complex,
-    dataB: Complex,
-    ...params: any[]
-  ): boolean {
-    if (Geometry.isSmallMetricDistance(dataA.distance(dataB)))
-      return this.announceOK();
+  public testComplex(dataA: Complex, dataB: Complex, ...params: any[]): boolean {
+    if (Geometry.isSmallMetricDistance(dataA.distance(dataB))) return this.announceOK();
     return this.announceError(" expect same Vector3d", dataA, dataB, params);
   }
-  public testPoint4d(
-    dataA: Point4d,
-    dataB: Point4d,
-    ...params: any[]
-  ): boolean {
-    if (Geometry.isSmallMetricDistance(dataA.distanceXYZW(dataB)))
-      return this.announceOK();
+  public testPoint4d(dataA: Point4d, dataB: Point4d, ...params: any[]): boolean {
+    if (Geometry.isSmallMetricDistance(dataA.distanceXYZW(dataB))) return this.announceOK();
     return this.announceError(" expect same Point4d", dataA, dataB, params);
   }
-  public testMatrix4d(
-    dataA: Matrix4d,
-    dataB: Matrix4d,
-    ...params: any[]
-  ): boolean {
-    if (Geometry.isSmallMetricDistance(dataA.maxDiff(dataB)))
-      return this.announceOK();
+  public testMatrix4d(dataA: Matrix4d, dataB: Matrix4d, ...params: any[]): boolean {
+    if (Geometry.isSmallMetricDistance(dataA.maxDiff(dataB))) return this.announceOK();
     return this.announceError(" expect same Matrix4d", dataA, dataB, params);
   }
   /**
@@ -441,34 +325,15 @@ export class Checker {
    * * radiiOfGyration
    * * principal directions
    */
-  public testCentroidAndRadii(
-    dataA: MomentData,
-    dataB: MomentData,
-    ...params: any[]
-  ): boolean {
-    if (MomentData.areEquivalentPrincipalAxes(dataA, dataB))
-      return this.announceOK();
-    return this.announceError(
-      "Fail areEquivalentPrincipalAxes",
-      dataA,
-      dataB,
-      params
-    );
+  public testCentroidAndRadii(dataA: MomentData, dataB: MomentData, ...params: any[]): boolean {
+    if (MomentData.areEquivalentPrincipalAxes(dataA, dataB)) return this.announceOK();
+    return this.announceError("Fail areEquivalentPrincipalAxes", dataA, dataB, params);
   }
-  public testMatrix3d(
-    dataA: Matrix3d,
-    dataB: Matrix3d,
-    ...params: any[]
-  ): boolean {
-    if (dataA.maxDiff(dataB) < Geometry.smallMetricDistance)
-      return this.announceOK();
+  public testMatrix3d(dataA: Matrix3d, dataB: Matrix3d, ...params: any[]): boolean {
+    if (dataA.maxDiff(dataB) < Geometry.smallMetricDistance) return this.announceOK();
     return this.announceError("expect same Matrix3d", dataA, dataB, params);
   }
-  public testTransform(
-    dataA: Transform,
-    dataB: Transform,
-    ...params: any[]
-  ): boolean {
+  public testTransform(dataA: Transform, dataB: Transform, ...params: any[]): boolean {
     if (
       dataA.matrix.maxDiff(dataB.matrix) < Geometry.smallMetricDistance &&
       dataA.origin.maxDiff(dataB.origin) < Geometry.smallMetricDistance
@@ -476,11 +341,7 @@ export class Checker {
       return this.announceOK();
     return this.announceError("expect same Transform", dataA, dataB, params);
   }
-  public testCoordinate(
-    dataA: number,
-    dataB: number,
-    ...params: any[]
-  ): boolean {
+  public testCoordinate(dataA: number, dataB: number, ...params: any[]): boolean {
     if (Geometry.isSameCoordinate(dataA, dataB)) return this.announceOK();
     return this.announceError("Expect same coordinate", dataA, dataB, params);
   }
@@ -490,14 +351,7 @@ export class Checker {
     toleranceFactor: number,
     ...params: any[]
   ): boolean {
-    if (
-      Geometry.isSameCoordinateWithToleranceFactor(
-        dataA,
-        dataB,
-        toleranceFactor
-      )
-    )
-      return this.announceOK();
+    if (Geometry.isSameCoordinateWithToleranceFactor(dataA, dataB, toleranceFactor)) return this.announceOK();
     return this.announceError("Expect same coordinate", dataA, dataB, params);
   }
   public testSmallRelative(dataA: number, ...params: any[]): boolean {
@@ -505,56 +359,32 @@ export class Checker {
     return this.announceError("Expect small relative", dataA, params);
   }
   // return true if dataA is strictly before dataB as a signed toleranced coordinate value.
-  public testCoordinateOrder(
-    dataA: number,
-    dataB: number,
-    ...params: any[]
-  ): boolean {
+  public testCoordinateOrder(dataA: number, dataB: number, ...params: any[]): boolean {
     if (dataA + Geometry.smallMetricDistance < dataB) return this.announceOK();
     return this.announceError("Expect coordinate order", dataA, dataB, params);
   }
   // return true if dataA is strictly before dataB as a signed toleranced coordinate value.
-  public testParallel(
-    dataA: Vector3d,
-    dataB: Vector3d,
-    ...params: any[]
-  ): boolean {
+  public testParallel(dataA: Vector3d, dataB: Vector3d, ...params: any[]): boolean {
     if (dataA.isParallelTo(dataB)) return this.announceOK();
     return this.announceError("Expect parallel", dataA, dataB, params);
   }
   // return true if dataA is strictly before dataB as a signed toleranced coordinate value.
-  public testPerpendicular(
-    dataA: Vector3d,
-    dataB: Vector3d,
-    ...params: any[]
-  ): boolean {
+  public testPerpendicular(dataA: Vector3d, dataB: Vector3d, ...params: any[]): boolean {
     if (dataA.isPerpendicularTo(dataB)) return this.announceOK();
     return this.announceError("Expect perpendicular", dataA, dataB, params);
   }
   // return true if dataA is strictly before dataB as a signed toleranced coordinate value.
-  public testParallel2d(
-    dataA: Vector2d,
-    dataB: Vector2d,
-    ...params: any[]
-  ): boolean {
+  public testParallel2d(dataA: Vector2d, dataB: Vector2d, ...params: any[]): boolean {
     if (dataA.isParallelTo(dataB)) return this.announceOK();
     return this.announceError("Expect parallel", dataA, dataB, params);
   }
   // return true if dataA is strictly before dataB as a signed toleranced coordinate value.
-  public testPerpendicular2d(
-    dataA: Vector2d,
-    dataB: Vector2d,
-    ...params: any[]
-  ): boolean {
+  public testPerpendicular2d(dataA: Vector2d, dataB: Vector2d, ...params: any[]): boolean {
     if (dataA.isPerpendicularTo(dataB)) return this.announceOK();
     return this.announceError("Expect perpendicular", dataA, dataB, params);
   }
   // return true for exact numeric equality
-  public testExactNumber(
-    dataA: number,
-    dataB: number,
-    ...params: any[]
-  ): boolean {
+  public testExactNumber(dataA: number, dataB: number, ...params: any[]): boolean {
     if (dataA === dataB) return this.announceOK();
     return this.announceError("Expect exact number", dataA, dataB, params);
   }
@@ -564,56 +394,30 @@ export class Checker {
     return this.announceError("Expect exact string", dataA, dataB, params);
   }
   // return true if numbers are nearly identical, tolerance e * (1 + abs(dataA) + abs (dataB)) for e = 8e-16
-  public testTightNumber(
-    dataA: number,
-    dataB: number,
-    ...params: any[]
-  ): boolean {
+  public testTightNumber(dataA: number, dataB: number, ...params: any[]): boolean {
     const d = Math.abs(dataB - dataA);
     const tol = 8.0e-16 * (1.0 + Math.abs(dataA) + Math.abs(dataB));
     if (d < tol) return this.announceOK();
     return this.announceError("Expect exact number", dataA, dataB, params);
   }
   // return true if dataA is strictly before dataB as a signed toleranced coordinate value.
-  public testContainsCoordinate(
-    dataA: GrowableFloat64Array,
-    dataB: number,
-    ...params: any[]
-  ): boolean {
+  public testContainsCoordinate(dataA: GrowableFloat64Array, dataB: number, ...params: any[]): boolean {
     for (let i = 0; i < dataA.length; i++)
       if (Geometry.isSameCoordinate(dataA.atUncheckedIndex(i), dataB)) {
         return this.announceOK();
       }
-    return this.announceError(
-      "Expect containsCoordinate",
-      dataA,
-      dataB,
-      params
-    );
+    return this.announceError("Expect containsCoordinate", dataA, dataB, params);
   }
-  public testArrayContainsCoordinate(
-    dataA: Float64Array | number[],
-    dataB: number,
-    ...params: any[]
-  ): boolean {
+  public testArrayContainsCoordinate(dataA: Float64Array | number[], dataB: number, ...params: any[]): boolean {
     // simple number array.
     for (const a of dataA)
       if (Geometry.isSameCoordinate(a, dataB)) {
         return this.announceOK();
       }
-    return this.announceError(
-      "Expect containsCoordinate",
-      dataA,
-      dataB,
-      params
-    );
+    return this.announceError("Expect containsCoordinate", dataA, dataB, params);
   }
   // return true if dataA and dataB are almost equal as Segment1d.
-  public testSegment1d(
-    dataA: Segment1d,
-    dataB: Segment1d,
-    ...params: any[]
-  ): boolean {
+  public testSegment1d(dataA: Segment1d, dataB: Segment1d, ...params: any[]): boolean {
     if (dataA.isAlmostEqual(dataB)) return this.announceOK();
     return this.announceError("Expect exact number", dataA, dataB, params);
   }
@@ -622,19 +426,11 @@ export class Checker {
     if (value) return this.announceOK();
     return this.announceError("Expect pointer", value, params);
   }
-  public testAngleNoShift(
-    dataA: Angle,
-    dataB: Angle,
-    ...params: any[]
-  ): boolean {
+  public testAngleNoShift(dataA: Angle, dataB: Angle, ...params: any[]): boolean {
     if (dataA.isAlmostEqualNoPeriodShift(dataB)) return this.announceOK();
     return this.announceError("Angle.isAlmostEqualNoPeriodShift", params);
   }
-  public testAngleAllowShift(
-    dataA: Angle,
-    dataB: Angle,
-    ...params: any[]
-  ): boolean {
+  public testAngleAllowShift(dataA: Angle, dataB: Angle, ...params: any[]): boolean {
     if (dataA.isAlmostEqualAllowPeriodShift(dataB)) return this.announceOK();
     return this.announceError("Angle.isAlmostEqualNoPeriodShift", params);
   }
@@ -647,29 +443,15 @@ export class Checker {
 
     if (dataA instanceof GeometryQuery && dataB instanceof GeometryQuery) {
       if (dataA.isAlmostEqual(dataB)) return this.announceOK();
-      GeometryCoreTestIO.consoleLog(
-        prettyPrint(IModelJson.Writer.toIModelJson(dataA))
-      );
-      GeometryCoreTestIO.consoleLog(
-        prettyPrint(IModelJson.Writer.toIModelJson(dataB))
-      );
+      GeometryCoreTestIO.consoleLog(prettyPrint(IModelJson.Writer.toIModelJson(dataA)));
+      GeometryCoreTestIO.consoleLog(prettyPrint(IModelJson.Writer.toIModelJson(dataB)));
       return this.announceError("same geometry", params);
-    } else if (
-      Array.isArray(dataA) &&
-      Array.isArray(dataB) &&
-      dataA.length === dataB.length
-    ) {
+    } else if (Array.isArray(dataA) && Array.isArray(dataB) && dataA.length === dataB.length) {
       let numError = 0;
       for (let i = 0; i < dataA.length; i++) {
         if (!dataA[i].isAlmostEqual(dataB[i])) {
-          GeometryCoreTestIO.consoleLog(
-            `dataA[${i}]`,
-            prettyPrint(IModelJson.Writer.toIModelJson(dataA))
-          );
-          GeometryCoreTestIO.consoleLog(
-            `dataB[${i}]`,
-            prettyPrint(IModelJson.Writer.toIModelJson(dataB))
-          );
+          GeometryCoreTestIO.consoleLog(`dataA[${i}]`, prettyPrint(IModelJson.Writer.toIModelJson(dataA)));
+          GeometryCoreTestIO.consoleLog(`dataB[${i}]`, prettyPrint(IModelJson.Writer.toIModelJson(dataB)));
           numError++;
         }
         if (numError === 0) return true;
@@ -693,17 +475,12 @@ export class Checker {
     return Checker._transform;
   }
 
-  public static saveTransformed(
-    g: GeometryQuery,
-    maxCoordinate: number = 1.0e12
-  ) {
+  public static saveTransformed(g: GeometryQuery, maxCoordinate: number = 1.0e12) {
     const range = g.range();
 
     if (!range.isNull && range.maxAbs() <= maxCoordinate) {
       Checker._cache.push(g.clone()!);
-      Checker._cache[Checker._cache.length - 1].tryTransformInPlace(
-        Checker._transform
-      );
+      Checker._cache[Checker._cache.length - 1].tryTransformInPlace(Checker._transform);
     }
   }
   public static saveTransformedLineString(points: Point3d[]) {
@@ -725,14 +502,10 @@ export class Checker {
     Checker.saveTransformed(cp);
   }
   public static shift(dx: number, dy: number, dz: number = 0) {
-    Checker._transform.multiplyTransformTransform(
-      Transform.createTranslationXYZ(dx, dy, dz),
-      Checker._transform
-    );
+    Checker._transform.multiplyTransformTransform(Transform.createTranslationXYZ(dx, dy, dz), Checker._transform);
   }
   public static moveTo(dx: number, dy: number, dz: number = 0) {
-    (Checker._transform = Transform.createTranslationXYZ(dx, dy, dz)),
-      Checker._transform;
+    (Checker._transform = Transform.createTranslationXYZ(dx, dy, dz)), Checker._transform;
   }
 
   // ===================================================================================

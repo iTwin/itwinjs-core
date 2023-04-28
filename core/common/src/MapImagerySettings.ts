@@ -8,12 +8,7 @@
 
 import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
 import { ColorDef, ColorDefProps } from "./ColorDef";
-import {
-  BaseMapLayerProps,
-  BaseMapLayerSettings,
-  MapLayerProps,
-  MapLayerSettings,
-} from "./MapLayerSettings";
+import { BaseMapLayerProps, BaseMapLayerSettings, MapLayerProps, MapLayerSettings } from "./MapLayerSettings";
 
 /** JSON representation of a [[BaseLayerSettings]].
  * @public
@@ -46,9 +41,7 @@ export type BaseLayerSettings = BaseMapLayerSettings | ColorDef;
 export namespace BaseLayerSettings {
   /** Create a base layer from its JSON representation. */
   export function fromJSON(props: BaseLayerProps): BaseLayerSettings {
-    return typeof props === "number"
-      ? ColorDef.fromJSON(props)
-      : BaseMapLayerSettings.fromJSON(props);
+    return typeof props === "number" ? ColorDef.fromJSON(props) : BaseMapLayerSettings.fromJSON(props);
   }
 }
 
@@ -115,19 +108,12 @@ export class MapImagerySettings {
   }
 
   /** @internal */
-  public static createFromJSON(
-    imageryJson?: MapImageryProps,
-    mapProps?: DeprecatedBackgroundMapProps
-  ) {
+  public static createFromJSON(imageryJson?: MapImageryProps, mapProps?: DeprecatedBackgroundMapProps) {
     const baseLayer = imageryJson?.backgroundBase
       ? BaseLayerSettings.fromJSON(imageryJson.backgroundBase)
       : BaseMapLayerSettings.fromBackgroundMapProps(mapProps ?? {});
 
-    return new MapImagerySettings(
-      baseLayer,
-      imageryJson?.backgroundLayers,
-      imageryJson?.overlayLayers
-    );
+    return new MapImagerySettings(baseLayer, imageryJson?.backgroundLayers, imageryJson?.overlayLayers);
   }
 
   public toJSON(): MapImageryProps {
@@ -135,12 +121,9 @@ export class MapImagerySettings {
       backgroundBase: this._backgroundBase.toJSON(),
     };
     if (this._backgroundLayers.length > 0)
-      props.backgroundLayers = this._backgroundLayers.map((layer) =>
-        layer.toJSON()
-      );
+      props.backgroundLayers = this._backgroundLayers.map((layer) => layer.toJSON());
 
-    if (this._overlayLayers.length > 0)
-      props.overlayLayers = this._overlayLayers.map((layer) => layer.toJSON());
+    if (this._overlayLayers.length > 0) props.overlayLayers = this._overlayLayers.map((layer) => layer.toJSON());
 
     return props;
   }

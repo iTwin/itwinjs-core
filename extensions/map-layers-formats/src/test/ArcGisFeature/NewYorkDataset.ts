@@ -18,8 +18,7 @@ export class NewYorkDataset {
     maxRecordCount: 1000,
     supportedQueryFormats: "JSON",
     supportsVCSProjection: false,
-    supportedExportFormats:
-      "csv,shapefile,sqlite,geoPackage,filegdb,featureCollection,geojson,excel",
+    supportedExportFormats: "csv,shapefile,sqlite,geoPackage,filegdb,featureCollection,geojson,excel",
     capabilities: "Query,ChangeTracking",
     description: "My Description",
     copyrightText: "",
@@ -311,11 +310,7 @@ export class NewYorkDataset {
       supportsCountDistinct: true,
       supportsPercentileStatistics: true,
       supportsSpatialAggregationStatistics: true,
-      supportedSpatialAggregationStatistics: [
-        "EnvelopeAggregate",
-        "CentroidAggregate",
-        "ConvexHullAggregate",
-      ],
+      supportedSpatialAggregationStatistics: ["EnvelopeAggregate", "CentroidAggregate", "ConvexHullAggregate"],
       supportsLod: true,
       supportsQueryWithLodSR: false,
       supportedLodTypes: ["geohash"],
@@ -667,10 +662,8 @@ export class NewYorkDataset {
       },
     ],
     supportedQueryFormats: "JSON, geoJSON, PBF",
-    supportedAppendFormats:
-      "sqlite,geoPackage,shapefile,filegdb,featureCollection,geojson,csv,excel",
-    supportedExportFormats:
-      "csv,shapefile,sqlite,geoPackage,filegdb,featureCollection,geojson,excel",
+    supportedAppendFormats: "sqlite,geoPackage,shapefile,filegdb,featureCollection,geojson,csv,excel",
+    supportedExportFormats: "csv,shapefile,sqlite,geoPackage,filegdb,featureCollection,geojson,excel",
     supportedSpatialRelationships: [
       "esriSpatialRelIntersects",
       "esriSpatialRelContains",

@@ -7,10 +7,7 @@
  */
 
 import { assert, IDisposable } from "@itwin/core-bentley";
-import {
-  PresentationError,
-  PresentationStatus,
-} from "@itwin/presentation-common";
+import { PresentationError, PresentationStatus } from "@itwin/presentation-common";
 
 /**
  * Configuration properties for [[TemporaryStorage]].
@@ -18,11 +15,7 @@ import {
  */
 export interface TemporaryStorageProps<T> {
   /** A method that's called for every value before it's removed from storage */
-  cleanupHandler?: (
-    id: string,
-    value: T,
-    reason: "timeout" | "dispose" | "request"
-  ) => void;
+  cleanupHandler?: (id: string, value: T, reason: "timeout" | "dispose" | "request") => void;
 
   onDisposedSingle?: (id: string) => void;
   onDisposedAll?: () => void;
@@ -82,11 +75,7 @@ export class TemporaryStorage<T> implements IDisposable {
   constructor(props: TemporaryStorageProps<T>) {
     this.props = props;
     this._values = new Map<string, TemporaryValue<T>>();
-    if (this.props.cleanupInterval)
-      this._timer = setInterval(
-        this.disposeOutdatedValues,
-        this.props.cleanupInterval
-      );
+    if (this.props.cleanupInterval) this._timer = setInterval(this.disposeOutdatedValues, this.props.cleanupInterval);
   }
 
   /**
@@ -114,19 +103,13 @@ export class TemporaryStorage<T> implements IDisposable {
     const valuesToDispose: string[] = [];
     for (const [key, entry] of this._values.entries()) {
       if (this.props.maxValueLifetime !== undefined) {
-        if (
-          this.props.maxValueLifetime === 0 ||
-          now - entry.created.getTime() > this.props.maxValueLifetime
-        ) {
+        if (this.props.maxValueLifetime === 0 || now - entry.created.getTime() > this.props.maxValueLifetime) {
           valuesToDispose.push(key);
           continue;
         }
       }
       if (this.props.unusedValueLifetime !== undefined) {
-        if (
-          this.props.unusedValueLifetime === 0 ||
-          now - entry.lastUsed.getTime() > this.props.unusedValueLifetime
-        ) {
+        if (this.props.unusedValueLifetime === 0 || now - entry.lastUsed.getTime() > this.props.unusedValueLifetime) {
           valuesToDispose.push(key);
           continue;
         }
@@ -138,11 +121,7 @@ export class TemporaryStorage<T> implements IDisposable {
   private deleteExistingEntry(id: string, isTimeout: boolean) {
     assert(this._values.has(id));
     this.props.cleanupHandler &&
-      this.props.cleanupHandler(
-        id,
-        this._values.get(id)!.value,
-        isTimeout ? "timeout" : "request"
-      );
+      this.props.cleanupHandler(id, this._values.get(id)!.value, isTimeout ? "timeout" : "request");
     this._values.delete(id);
     this.props.onDisposedSingle && this.props.onDisposedSingle(id);
   }
@@ -203,8 +182,7 @@ export class TemporaryStorage<T> implements IDisposable {
  * Configuration properties for [[FactoryBasedTemporaryStorage]].
  * @internal
  */
-export interface FactoryBasedTemporaryStorageProps<T>
-  extends TemporaryStorageProps<T> {
+export interface FactoryBasedTemporaryStorageProps<T> extends TemporaryStorageProps<T> {
   /** A factory method that creates a stored value given it's identifier */
   factory: (id: string, onValueUsed: () => void) => T;
 }

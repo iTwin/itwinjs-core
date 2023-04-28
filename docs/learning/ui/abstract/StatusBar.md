@@ -19,8 +19,7 @@ The following example defines a StatusBar item that just displays an icon and a 
 
 ```ts
 const labelCondition = new ConditionalStringValue(
-  () =>
-    SampleExtensionStateManager.isExtensionUiVisible ? "Active" : "Inactive",
+  () => (SampleExtensionStateManager.isExtensionUiVisible ? "Active" : "Inactive"),
   ["SampleApp.SET_EXTENSION_UI_VISIBLE"]
 );
 AbstractStatusBarItemUtilities.createLabelItem(

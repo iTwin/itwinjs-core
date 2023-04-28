@@ -27,12 +27,7 @@ export abstract class FloatColor {
   }
 
   protected abstract maskTbgr(tbgr: number): number;
-  protected abstract setComponents(
-    r: number,
-    g: number,
-    b: number,
-    a: number
-  ): void;
+  protected abstract setComponents(r: number, g: number, b: number, a: number): void;
 
   public get red() {
     return this._components[0];
@@ -73,20 +68,13 @@ export abstract class FloatColor {
     this._components[2] = b;
   }
 
-  protected setRgbaComponents(
-    r: number,
-    g: number,
-    b: number,
-    a: number
-  ): void {
+  protected setRgbaComponents(r: number, g: number, b: number, a: number): void {
     r = clamp(r);
     g = clamp(g);
     b = clamp(b);
     a = clamp(a);
 
-    const tbgr =
-      (scale(r) | (scale(g) << 8) | (scale(b) << 16) | (scale(1 - a) << 24)) >>>
-      0;
+    const tbgr = (scale(r) | (scale(g) << 8) | (scale(b) << 16) | (scale(1 - a) << 24)) >>> 0;
     this._tbgr = this.maskTbgr(tbgr);
     this.setComponents(r, g, b, a);
   }
@@ -184,8 +172,7 @@ export class FloatRgba extends FloatColor {
   }
 
   public clone(out?: FloatRgba): FloatRgba {
-    if (undefined === out)
-      return FloatRgba.from(this.red, this.green, this.blue, this.alpha);
+    if (undefined === out) return FloatRgba.from(this.red, this.green, this.blue, this.alpha);
 
     out.set(this.red, this.green, this.blue, this.alpha);
     return out;

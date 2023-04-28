@@ -38,10 +38,7 @@ export function prettyPrint(jsonObject: object): string {
     // If entering an array of numbers, loop through the array character at a time, where commas mark the end of a number. . .
     // keep track of how many characters have passed, and format with returns and tabs appropriately
     if (original[i] === "[") {
-      if (
-        (original[i + 1] >= "0" && original[i + 1] <= "9") ||
-        original[i + 1] === "-"
-      ) {
+      if ((original[i + 1] >= "0" && original[i + 1] <= "9") || original[i + 1] === "-") {
         prettyString += "[";
         i++;
         justEnteredArray = true;

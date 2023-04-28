@@ -321,19 +321,8 @@ export class OrderedRotationAngles {
         xRad = yRad = zRad = 0;
       }
     }
-    const xyzRotationIsClockwise: [boolean, boolean, boolean] = [
-      false,
-      false,
-      false,
-    ];
-    const angles = OrderedRotationAngles.createRadians(
-      xRad,
-      yRad,
-      zRad,
-      order,
-      xyzRotationIsClockwise,
-      result
-    );
+    const xyzRotationIsClockwise: [boolean, boolean, boolean] = [false, false, false];
+    const angles = OrderedRotationAngles.createRadians(xRad, yRad, zRad, order, xyzRotationIsClockwise, result);
     // sanity check
     const matrix1 = angles.toMatrix3d();
     /**
@@ -346,9 +335,7 @@ export class OrderedRotationAngles {
      *
      * with treatVectorsAsColumns = true.
      */
-    return matrix.maxDiff(matrix1) < 10 * Geometry.smallFraction
-      ? angles
-      : undefined;
+    return matrix.maxDiff(matrix1) < 10 * Geometry.smallFraction ? angles : undefined;
   }
   /**
    * Create a 3x3 rotational matrix from this OrderedRotationAngles.

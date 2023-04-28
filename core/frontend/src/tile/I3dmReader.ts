@@ -5,38 +5,16 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import {
-  ByteStream,
-  Id64String,
-  JsonUtils,
-  utf8ToString,
-} from "@itwin/core-bentley";
+import { ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { AxisOrder, Matrix3d, Point3d, Vector3d } from "@itwin/core-geometry";
-import {
-  ElementAlignedBox3d,
-  Feature,
-  FeatureTable,
-  I3dmHeader,
-  TileReadStatus,
-} from "@itwin/core-common";
+import { ElementAlignedBox3d, Feature, FeatureTable, I3dmHeader, TileReadStatus } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { RenderSystem } from "../render/RenderSystem";
-import {
-  BatchedTileIdMap,
-  GltfReader,
-  GltfReaderProps,
-  GltfReaderResult,
-  ShouldAbortReadGltf,
-} from "./internal";
+import { BatchedTileIdMap, GltfReader, GltfReaderProps, GltfReaderResult, ShouldAbortReadGltf } from "./internal";
 
-function setTransform(
-  transforms: Float32Array,
-  index: number,
-  rotation: Matrix3d,
-  origin: Point3d
-): void {
+function setTransform(transforms: Float32Array, index: number, rotation: Matrix3d, origin: Point3d): void {
   const i = index * 12;
   let rot = rotation.coffs;
 
@@ -87,16 +65,11 @@ export class I3dmReader extends GltfReader {
     const header = new I3dmHeader(stream);
     if (!header.isValid) return undefined;
 
-    const props = GltfReaderProps.create(
-      stream.nextBytes(header.length - stream.curPos),
-      yAxisUp
-    );
+    const props = GltfReaderProps.create(stream.nextBytes(header.length - stream.curPos), yAxisUp);
     if (undefined === props) return undefined;
 
     stream.curPos = header.featureTableJsonPosition;
-    const featureStr = utf8ToString(
-      stream.nextBytes(header.featureTableJsonLength)
-    );
+    const featureStr = utf8ToString(stream.nextBytes(header.featureTableJsonLength));
     if (undefined === featureStr) return undefined;
 
     const featureBinary = new Uint8Array(
@@ -148,10 +121,7 @@ export class I3dmReader extends GltfReader {
   }
 
   public async read(): Promise<GltfReaderResult> {
-    this._instanceCount = JsonUtils.asInt(
-      this._featureJson.INSTANCES_LENGTH,
-      0
-    );
+    this._instanceCount = JsonUtils.asInt(this._featureJson.INSTANCES_LENGTH, 0);
 
     // NB: For reality models with no batch table, we want the model ID in the feature table
     this._featureTable = new FeatureTable(
@@ -174,8 +144,7 @@ export class I3dmReader extends GltfReader {
     }
 
     await this.resolveResources();
-    if (this._isCanceled)
-      return { readStatus: TileReadStatus.Canceled, isLeaf: this._isLeaf };
+    if (this._isCanceled) return { readStatus: TileReadStatus.Canceled, isLeaf: this._isLeaf };
 
     const instances = this.readInstances();
     if (undefined === instances)
@@ -206,46 +175,22 @@ export class I3dmReader extends GltfReader {
     const binary = this._featureBinary;
 
     const batchIds = json.BATCH_ID
-      ? new Int32Array(
-          binary.buffer,
-          binary.byteOffset + json.BATCH_ID.byteOffset,
-          count
-        )
+      ? new Int32Array(binary.buffer, binary.byteOffset + json.BATCH_ID.byteOffset, count)
       : undefined;
     const positions = json.POSITION
-      ? new Float32Array(
-          binary.buffer,
-          binary.byteOffset + json.POSITION.byteOffset,
-          count * 3
-        )
+      ? new Float32Array(binary.buffer, binary.byteOffset + json.POSITION.byteOffset, count * 3)
       : undefined;
     const upNormals = json.NORMAL_UP
-      ? new Float32Array(
-          binary.buffer,
-          binary.byteOffset + json.NORMAL_UP.byteOffset,
-          count * 3
-        )
+      ? new Float32Array(binary.buffer, binary.byteOffset + json.NORMAL_UP.byteOffset, count * 3)
       : undefined;
     const rightNormals = json.NORMAL_RIGHT
-      ? new Float32Array(
-          binary.buffer,
-          binary.byteOffset + json.NORMAL_RIGHT.byteOffset,
-          count * 3
-        )
+      ? new Float32Array(binary.buffer, binary.byteOffset + json.NORMAL_RIGHT.byteOffset, count * 3)
       : undefined;
     const scales = json.SCALE
-      ? new Float32Array(
-          binary.buffer,
-          binary.byteOffset + json.SCALE.byteOffset,
-          count
-        )
+      ? new Float32Array(binary.buffer, binary.byteOffset + json.SCALE.byteOffset, count)
       : undefined;
     const nonUniformScales = json.SCALE_NON_UNIFORM
-      ? new Float32Array(
-          binary.buffer,
-          binary.byteOffset + json.SCALE_NON_UNIFORM.byteOffset,
-          count * 3
-        )
+      ? new Float32Array(binary.buffer, binary.byteOffset + json.SCALE_NON_UNIFORM.byteOffset, count * 3)
       : undefined;
 
     const matrix = Matrix3d.createIdentity();
@@ -266,19 +211,9 @@ export class I3dmReader extends GltfReader {
         );
 
       if (upNormals || rightNormals) {
-        if (upNormals)
-          upNormal.set(
-            upNormals[index],
-            upNormals[index + 1],
-            upNormals[index + 2]
-          );
+        if (upNormals) upNormal.set(upNormals[index], upNormals[index + 1], upNormals[index + 2]);
 
-        if (rightNormals)
-          rightNormal.set(
-            rightNormals[index],
-            rightNormals[index + 1],
-            rightNormals[index + 2]
-          );
+        if (rightNormals) rightNormal.set(rightNormals[index], rightNormals[index + 1], rightNormals[index + 2]);
 
         if (scales) scale.x = scale.y = scale.z = scales[i];
 
@@ -288,14 +223,8 @@ export class I3dmReader extends GltfReader {
           scale.z *= nonUniformScales[index + 2];
         }
 
-        Matrix3d.createRigidFromColumns(
-          rightNormal,
-          upNormal,
-          AxisOrder.XYZ,
-          matrix
-        );
-        if (scales || nonUniformScales)
-          matrix.scaleColumnsInPlace(scale.x, scale.y, scale.z);
+        Matrix3d.createRigidFromColumns(rightNormal, upNormal, AxisOrder.XYZ, matrix);
+        if (scales || nonUniformScales) matrix.scaleColumnsInPlace(scale.x, scale.y, scale.z);
 
         setTransform(transforms, i, matrix, position);
       }

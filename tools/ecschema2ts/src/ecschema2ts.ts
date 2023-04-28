@@ -63,13 +63,9 @@ export class ECSchemaToTs {
     for (const key in tsBentleyModules) {
       if (tsBentleyModules.hasOwnProperty(key)) {
         const moduleName: string = tsBentleyModules[key].moduleName;
-        const resolvedPrefix: string =
-          tsBentleyModules[key].resolvedConflictName;
+        const resolvedPrefix: string = tsBentleyModules[key].resolvedConflictName;
         this._tsBentleyModuleNames.add(moduleName);
-        this._tsBentleyModuleResolvedConflictNames.set(
-          moduleName,
-          resolvedPrefix
-        );
+        this._tsBentleyModuleResolvedConflictNames.set(moduleName, resolvedPrefix);
       }
     }
   }
@@ -113,10 +109,7 @@ export class ECSchemaToTs {
           const baseList = this.getAllBaseClasses(ecClass);
           for (let i = baseList.length - 1; i >= 0; --i) {
             const base = baseList[i];
-            if (
-              base.schema.schemaKey.compareByName(this._schema!.schemaKey) &&
-              !uniqueItemName.has(base.name)
-            ) {
+            if (base.schema.schemaKey.compareByName(this._schema!.schemaKey) && !uniqueItemName.has(base.name)) {
               schemaItemsList.push(baseList[i]);
               uniqueItemName.add(base.name);
             }
@@ -143,8 +136,7 @@ export class ECSchemaToTs {
     let outputString: string = "";
 
     // import modules
-    outputString +=
-      'import { ClassRegistry, Schema, Schemas } from "@itwin/core-backend";\n';
+    outputString += 'import { ClassRegistry, Schema, Schemas } from "@itwin/core-backend";\n';
     outputString += `import * as elementsModule from "./${schemaName}Elements";\n\n`;
 
     // create new schema class
@@ -179,10 +171,7 @@ export class ECSchemaToTs {
     for (const schemaItem of this._schemaItemList) {
       switch (schemaItem.schemaItemType) {
         case SchemaItemType.EntityClass:
-          classTs += this.convertEntityToTs(
-            schemaItem as EntityClass,
-            classNameToModule
-          );
+          classTs += this.convertEntityToTs(schemaItem as EntityClass, classNameToModule);
           break;
         case SchemaItemType.Enumeration:
           classTs += this.convertEnumToTs(schemaItem as Enumeration);
@@ -245,18 +234,12 @@ export class ECSchemaToTs {
       return interfacesTs;
 
     // convert description to typescript comment only for mixin or struct
-    if (
-      ecClass.schemaItemType !== SchemaItemType.EntityClass &&
-      ecClass.description
-    )
-      interfacesTs += `${this.convertDescriptionToTsComment(
-        ecClass.description
-      )}\n`;
+    if (ecClass.schemaItemType !== SchemaItemType.EntityClass && ecClass.description)
+      interfacesTs += `${this.convertDescriptionToTsComment(ecClass.description)}\n`;
 
     // build interface for props in ecClass
     interfacesTs += `export interface ${ecClass.name}`;
-    if (ecClass.schemaItemType === SchemaItemType.EntityClass)
-      interfacesTs += "Props";
+    if (ecClass.schemaItemType === SchemaItemType.EntityClass) interfacesTs += "Props";
 
     // Extend it with base ecClass Props interface if there is any
     const baseClasses = this.getBaseClassWithProps(ecClass);
@@ -265,9 +248,7 @@ export class ECSchemaToTs {
 
       let separator = "";
       for (const base of baseClasses) {
-        interfacesTs +=
-          separator +
-          this.addImportBasePropsClass(classNameToModule, base, ecClass);
+        interfacesTs += separator + this.addImportBasePropsClass(classNameToModule, base, ecClass);
         separator = ", ";
       }
     } else if (ecClass.schemaItemType === SchemaItemType.EntityClass)
@@ -280,8 +261,7 @@ export class ECSchemaToTs {
     // build props for ecClass
     interfacesTs += " {";
     const propertiesTs = this.convertPropsToTsVars(ecClass, classNameToModule);
-    for (const varDeclarationLine of propertiesTs)
-      interfacesTs += `\n  ${varDeclarationLine}`;
+    for (const varDeclarationLine of propertiesTs) interfacesTs += `\n  ${varDeclarationLine}`;
     interfacesTs += "\n}\n\n";
 
     return interfacesTs;
@@ -293,10 +273,7 @@ export class ECSchemaToTs {
    */
   private convertEnumToTs(ecEnum: Enumeration): string {
     let outputString: string = "";
-    if (ecEnum.description)
-      outputString += `${this.convertDescriptionToTsComment(
-        ecEnum.description
-      )}\n`;
+    if (ecEnum.description) outputString += `${this.convertDescriptionToTsComment(ecEnum.description)}\n`;
 
     outputString += `export const enum ${ecEnum.name} {\n`;
     for (const ecEnumerator of ecEnum.enumerators) {
@@ -316,15 +293,9 @@ export class ECSchemaToTs {
    * @param ecClass Schema class to be converted to typescript class
    * @param classNameToModule Typescrip modules to be updated after the conversion
    */
-  private convertEntityToTs(
-    ecClass: EntityClass,
-    classNameToModule: Map<string, string>
-  ): string {
+  private convertEntityToTs(ecClass: EntityClass, classNameToModule: Map<string, string>): string {
     let outputString: string = "";
-    if (ecClass.description)
-      outputString += `${this.convertDescriptionToTsComment(
-        ecClass.description
-      )}\n`;
+    if (ecClass.description) outputString += `${this.convertDescriptionToTsComment(ecClass.description)}\n`;
 
     let modifier: string = "";
     if (ecClass.modifier === ECClassModifier.Abstract) modifier = "abstract ";
@@ -332,35 +303,18 @@ export class ECSchemaToTs {
 
     // extend base class if there is any. Default will be Entity class defined in @itwin/core-backend
     const base = ecClass.getBaseClassSync();
-    if (base)
-      outputString += this.addImportBaseClass(classNameToModule, base, ecClass);
+    if (base) outputString += this.addImportBaseClass(classNameToModule, base, ecClass);
     else
-      outputString += this.addImportClass(
-        classNameToModule,
-        tsBentleyModules.tsIModelJsBackend.moduleName,
-        "Entity"
-      );
+      outputString += this.addImportClass(classNameToModule, tsBentleyModules.tsIModelJsBackend.moduleName, "Entity");
 
     // determine prop type to pass in the constructor
     let propsBaseTsType: string;
     const propsBase = this.getBaseClassWithProps(ecClass);
-    if (
-      ecClass.fullName !== elementECClassName &&
-      ecClass.properties &&
-      !ecClass.properties.next().done
-    ) {
+    if (ecClass.fullName !== elementECClassName && ecClass.properties && !ecClass.properties.next().done) {
       const moduleName: string = `${this._schema!.schemaKey.name}ElementProps`;
-      propsBaseTsType = this.addImportClass(
-        classNameToModule,
-        moduleName,
-        `${ecClass.name}Props`
-      );
+      propsBaseTsType = this.addImportClass(classNameToModule, moduleName, `${ecClass.name}Props`);
     } else if (propsBase.length > 0)
-      propsBaseTsType = this.addImportBasePropsClass(
-        classNameToModule,
-        propsBase[0],
-        ecClass
-      );
+      propsBaseTsType = this.addImportBasePropsClass(classNameToModule, propsBase[0], ecClass);
     else
       propsBaseTsType = this.addImportClass(
         classNameToModule,
@@ -369,8 +323,7 @@ export class ECSchemaToTs {
       );
 
     // implement the ecClass props if it has properties
-    if (`${ecClass.name}Props` === propsBaseTsType)
-      outputString += ` implements ${propsBaseTsType}`;
+    if (`${ecClass.name}Props` === propsBaseTsType) outputString += ` implements ${propsBaseTsType}`;
 
     // write constructor and className function for class
     const iModelDbTsType: string = this.addImportClass(
@@ -394,47 +347,27 @@ export class ECSchemaToTs {
    * @param ecClass The schema class that has the properties to be converted to typescript member variables
    * @param classNameToModule Typescrip modules to be updated after the conversion
    */
-  private convertPropsToTsVars(
-    ecClass: ECClass,
-    classNameToModule: Map<string, string>
-  ): string[] {
-    if (ecClass.properties === undefined || ecClass.properties.next().done)
-      return [];
+  private convertPropsToTsVars(ecClass: ECClass, classNameToModule: Map<string, string>): string[] {
+    if (ecClass.properties === undefined || ecClass.properties.next().done) return [];
 
     const outputStrings: string[] = [];
     for (const ecProperty of ecClass.properties) {
       // not generate ts variable declaration for property that has CustomHandledProperty ca
-      if (
-        ecProperty.customAttributes &&
-        ecProperty.customAttributes.has(customHandledPropertyCA)
-      )
-        continue;
+      if (ecProperty.customAttributes && ecProperty.customAttributes.has(customHandledPropertyCA)) continue;
 
-      let varDeclarationLine: string = `${this.lowerPropertyName(
-        ecProperty.name
-      )}?: `;
+      let varDeclarationLine: string = `${this.lowerPropertyName(ecProperty.name)}?: `;
       if (ecProperty.isPrimitive()) {
         // determine Ts type of the primitive
         let typeTs: string = "";
         if (ecProperty.extendedTypeName)
-          typeTs = this.convertExtendedTypeNameToTsType(
-            ecProperty.extendedTypeName,
-            classNameToModule
-          );
+          typeTs = this.convertExtendedTypeNameToTsType(ecProperty.extendedTypeName, classNameToModule);
         else if (ecProperty.isEnumeration()) {
           const ecEnumProperty = ecProperty as EnumerationProperty;
           const ecEnum = ecEnumProperty.enumeration!;
-          typeTs = this.addImportClass(
-            classNameToModule,
-            `${ecEnum.schemaKey.name}Elements`,
-            ecEnum.name
-          );
+          typeTs = this.addImportClass(classNameToModule, `${ecEnum.schemaKey.name}Elements`, ecEnum.name);
         } else {
           const ecPrimitiveProperty = ecProperty as PrimitiveProperty;
-          typeTs = this.convertPrimitiveTypeToTsType(
-            ecPrimitiveProperty.primitiveType,
-            classNameToModule
-          );
+          typeTs = this.convertPrimitiveTypeToTsType(ecPrimitiveProperty.primitiveType, classNameToModule);
         }
 
         varDeclarationLine += typeTs;
@@ -442,9 +375,7 @@ export class ECSchemaToTs {
         // import struct class if it is in different schema
         const ecStructProperty = ecProperty as StructProperty;
         const structClass = ecStructProperty.structClass;
-        if (
-          !structClass.schema.schemaKey.compareByName(ecClass.schema.schemaKey)
-        )
+        if (!structClass.schema.schemaKey.compareByName(ecClass.schema.schemaKey))
           varDeclarationLine += this.addImportClass(
             classNameToModule,
             `${structClass.schema.schemaKey.name}ElementProps`,
@@ -472,19 +403,12 @@ export class ECSchemaToTs {
    * @param typeName Schema extended type to be converted to typescript type
    * @param classNameToModule Typescrip modules to be updated after the conversion
    */
-  private convertExtendedTypeNameToTsType(
-    typeName: string,
-    classNameToModule: Map<string, string>
-  ): string {
+  private convertExtendedTypeNameToTsType(typeName: string, classNameToModule: Map<string, string>): string {
     switch (typeName) {
       case "Json":
         return "any";
       case "BeGuid":
-        return this.addImportClass(
-          classNameToModule,
-          tsBentleyModules.tsBentleyJsCore.moduleName,
-          "GuidString"
-        );
+        return this.addImportClass(classNameToModule, tsBentleyModules.tsBentleyJsCore.moduleName, "GuidString");
       default:
         return "any";
     }
@@ -495,10 +419,7 @@ export class ECSchemaToTs {
    * @param type Schema primitive type to be converted to typescript type
    * @param classNameToModule Typescrip modules to be updated after the conversion
    */
-  private convertPrimitiveTypeToTsType(
-    type: PrimitiveType,
-    classNameToModule: Map<string, string>
-  ) {
+  private convertPrimitiveTypeToTsType(type: PrimitiveType, classNameToModule: Map<string, string>) {
     switch (type) {
       case PrimitiveType.Binary:
         return "any";
@@ -519,17 +440,9 @@ export class ECSchemaToTs {
       case PrimitiveType.String:
         return "string";
       case PrimitiveType.Point2d:
-        return this.addImportClass(
-          classNameToModule,
-          tsBentleyModules.tsGeometryCore.moduleName,
-          "Point2d"
-        );
+        return this.addImportClass(classNameToModule, tsBentleyModules.tsGeometryCore.moduleName, "Point2d");
       case PrimitiveType.Point3d:
-        return this.addImportClass(
-          classNameToModule,
-          tsBentleyModules.tsGeometryCore.moduleName,
-          "Point3d"
-        );
+        return this.addImportClass(classNameToModule, tsBentleyModules.tsGeometryCore.moduleName, "Point3d");
       case PrimitiveType.IGeometry:
         // eslint-disable-next-line no-console
         console.log(
@@ -538,9 +451,7 @@ export class ECSchemaToTs {
         return "any";
       default:
         // eslint-disable-next-line no-console
-        console.log(
-          "Unknown primitive type during conversion. It will be treated as type 'any'"
-        );
+        console.log("Unknown primitive type during conversion. It will be treated as type 'any'");
         return "any";
     }
   }
@@ -582,24 +493,17 @@ export class ECSchemaToTs {
    * Convert all modules needed for the converted schema types to typescript import statements
    * @param classNameToModule Modules to be converted to typescript imports statement
    */
-  private convertImportToTsImport(
-    classNameToModule: Map<string, string>
-  ): string {
-    const moduleToTsTypes: Map<string, Set<string>> = new Map<
-      string,
-      Set<string>
-    >();
+  private convertImportToTsImport(classNameToModule: Map<string, string>): string {
+    const moduleToTsTypes: Map<string, Set<string>> = new Map<string, Set<string>>();
     classNameToModule.forEach((moduleNames: string, className: string) => {
-      if (!moduleToTsTypes.has(moduleNames))
-        moduleToTsTypes.set(moduleNames, new Set<string>());
+      if (!moduleToTsTypes.has(moduleNames)) moduleToTsTypes.set(moduleNames, new Set<string>());
 
       moduleToTsTypes.get(moduleNames)!.add(className);
     });
 
     let outputString: string = "";
     moduleToTsTypes.forEach((classNames: Set<string>, moduleName: string) => {
-      if (!this._tsBentleyModuleNames.has(moduleName))
-        moduleName = `./${moduleName}`;
+      if (!this._tsBentleyModuleNames.has(moduleName)) moduleName = `./${moduleName}`;
 
       outputString += "import { ";
       let separator = "";
@@ -671,8 +575,7 @@ export class ECSchemaToTs {
 
     for (const eachBase of baseList) {
       visited.add(eachBase.fullName);
-      if (shouldTraverseDown(eachBase))
-        this.traverseBaseClass(eachBase, visited, shouldTraverseDown);
+      if (shouldTraverseDown(eachBase)) this.traverseBaseClass(eachBase, visited, shouldTraverseDown);
     }
   }
 
@@ -683,11 +586,7 @@ export class ECSchemaToTs {
    * @param refModule Typescript module that the typescrip class comes from
    * @param className Required Typescript class for the conversion
    */
-  private addImportClass(
-    classNameToModule: Map<string, string>,
-    refModule: string,
-    className: string
-  ): string {
+  private addImportClass(classNameToModule: Map<string, string>, refModule: string, className: string): string {
     if (!classNameToModule.has(className)) {
       classNameToModule.set(className, refModule);
       return className;
@@ -697,8 +596,7 @@ export class ECSchemaToTs {
 
     let resolvedPrefix: string = refModule;
     if (this._tsBentleyModuleResolvedConflictNames.has(refModule))
-      resolvedPrefix =
-        this._tsBentleyModuleResolvedConflictNames.get(refModule)!;
+      resolvedPrefix = this._tsBentleyModuleResolvedConflictNames.get(refModule)!;
 
     const renameClassName = `${className} as ${resolvedPrefix}${className}`;
     if (!classNameToModule.has(renameClassName)) {
@@ -720,28 +618,18 @@ export class ECSchemaToTs {
     ecClass: ECClass
   ): string {
     let baseName: string = baseECClass.name;
-    if (baseECClass.schemaItemType === SchemaItemType.EntityClass)
-      baseName += "Props";
+    if (baseECClass.schemaItemType === SchemaItemType.EntityClass) baseName += "Props";
 
     // find external module to import
     let externalModule: string = "";
     const shouldImportJsCommon =
       baseECClass.fullName === elementECClassName ||
-      (baseECClass.schema.schemaKey.name === "BisCore" &&
-        ecClass.schema.schemaKey.name !== "BisCore");
-    if (shouldImportJsCommon)
-      externalModule = tsBentleyModules.tsIModelJsCommon.moduleName;
-    else if (
-      !baseECClass.schema.schemaKey.compareByName(ecClass.schema.schemaKey)
-    )
+      (baseECClass.schema.schemaKey.name === "BisCore" && ecClass.schema.schemaKey.name !== "BisCore");
+    if (shouldImportJsCommon) externalModule = tsBentleyModules.tsIModelJsCommon.moduleName;
+    else if (!baseECClass.schema.schemaKey.compareByName(ecClass.schema.schemaKey))
       externalModule = `${baseECClass.schema.schemaKey.name}ElementProps`;
 
-    if (externalModule.length !== 0)
-      baseName = this.addImportClass(
-        classNameToModule,
-        externalModule,
-        baseName
-      );
+    if (externalModule.length !== 0) baseName = this.addImportClass(classNameToModule, externalModule, baseName);
 
     return baseName;
   }
@@ -752,31 +640,17 @@ export class ECSchemaToTs {
    * @param baseECClass Base class of ecClass
    * @param ecClass ECClass to be converted to Typescript
    */
-  private addImportBaseClass(
-    classNameToModule: Map<string, string>,
-    baseECClass: ECClass,
-    ecClass: ECClass
-  ): string {
+  private addImportBaseClass(classNameToModule: Map<string, string>, baseECClass: ECClass, ecClass: ECClass): string {
     let baseName: string = baseECClass.name;
 
     // find external module to import for base class
     let externalModule: string = "";
-    if (
-      baseECClass.schema.schemaKey.name === "BisCore" &&
-      ecClass.schema.schemaKey.name !== "BisCore"
-    )
+    if (baseECClass.schema.schemaKey.name === "BisCore" && ecClass.schema.schemaKey.name !== "BisCore")
       externalModule = tsBentleyModules.tsIModelJsBackend.moduleName;
-    else if (
-      !baseECClass.schema.schemaKey.compareByName(ecClass.schema.schemaKey)
-    )
+    else if (!baseECClass.schema.schemaKey.compareByName(ecClass.schema.schemaKey))
       externalModule = `${baseECClass.schema.schemaKey.name}Elements`;
 
-    if (externalModule.length !== 0)
-      baseName = this.addImportClass(
-        classNameToModule,
-        externalModule,
-        baseName
-      );
+    if (externalModule.length !== 0) baseName = this.addImportClass(classNameToModule, externalModule, baseName);
 
     return baseName;
   }

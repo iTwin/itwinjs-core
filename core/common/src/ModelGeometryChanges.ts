@@ -6,13 +6,7 @@
  * @module Geometry
  */
 
-import {
-  assert,
-  CompressedId64Set,
-  DbOpcode,
-  GuidString,
-  Id64String,
-} from "@itwin/core-bentley";
+import { assert, CompressedId64Set, DbOpcode, GuidString, Id64String } from "@itwin/core-bentley";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 
 /** Compact wire format representing geometric changes to a set of elements as part of a [[ModelGeometryChangesProps]].
@@ -83,9 +77,7 @@ export interface DeletedElementGeometryChange {
  * @public
  * @extensions
  */
-export type ElementGeometryChange =
-  | ExtantElementGeometryChange
-  | DeletedElementGeometryChange;
+export type ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange;
 
 /** Represents a change to the geometry of a [GeometricElement]($backend), as exposed by [[ModelGeometryChanges.elements]].
  * @public
@@ -114,24 +106,17 @@ export namespace ElementGeometryChange {
   }
 
   /** Obtain an iterator over the geometry changes for a single [GeometricModel]($backend). A given element will appear at most once. */
-  export function* iterator(
-    modelChanges: ModelGeometryChangesProps
-  ): Iterator<ElementGeometryChange> {
-    if (modelChanges.inserted)
-      yield* extantIterable(modelChanges.inserted, DbOpcode.Insert);
+  export function* iterator(modelChanges: ModelGeometryChangesProps): Iterator<ElementGeometryChange> {
+    if (modelChanges.inserted) yield* extantIterable(modelChanges.inserted, DbOpcode.Insert);
 
-    if (modelChanges.updated)
-      yield* extantIterable(modelChanges.updated, DbOpcode.Update);
+    if (modelChanges.updated) yield* extantIterable(modelChanges.updated, DbOpcode.Update);
 
     if (modelChanges.deleted)
-      for (const id of CompressedId64Set.iterable(modelChanges.deleted))
-        yield { type: DbOpcode.Delete, id };
+      for (const id of CompressedId64Set.iterable(modelChanges.deleted)) yield { type: DbOpcode.Delete, id };
   }
 
   /** Obtain an iterable over the geometry changes for a single [GeometricModel]($backend). A given element will appear at most once. */
-  export function iterable(
-    modelChanges: ModelGeometryChangesProps
-  ): Iterable<ElementGeometryChange> {
+  export function iterable(modelChanges: ModelGeometryChangesProps): Iterable<ElementGeometryChange> {
     return { [Symbol.iterator]: () => iterator(modelChanges) };
   }
 }
@@ -157,23 +142,17 @@ export interface ModelGeometryChanges {
  */
 export namespace ModelGeometryChanges {
   /** Obtain an iterator over the geometry changes for a set of models. A given model will appear at most once. */
-  export function* iterator(
-    modelChanges: ModelGeometryChangesProps[]
-  ): Iterator<ModelGeometryChanges> {
+  export function* iterator(modelChanges: ModelGeometryChangesProps[]): Iterator<ModelGeometryChanges> {
     for (const props of modelChanges) yield fromJSON(props);
   }
 
   /** Obtain an iterable over the geometry changes for a set of models. A given model will appear at most once. */
-  export function iterable(
-    modelChanges: ModelGeometryChangesProps[]
-  ): Iterable<ModelGeometryChanges> {
+  export function iterable(modelChanges: ModelGeometryChangesProps[]): Iterable<ModelGeometryChanges> {
     return { [Symbol.iterator]: () => iterator(modelChanges) };
   }
 
   /** Instantiate from wire format. */
-  export function fromJSON(
-    props: ModelGeometryChangesProps
-  ): ModelGeometryChanges {
+  export function fromJSON(props: ModelGeometryChangesProps): ModelGeometryChanges {
     return {
       id: props.id,
       geometryGuid: props.guid,

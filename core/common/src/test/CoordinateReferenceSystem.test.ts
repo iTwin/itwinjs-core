@@ -21,126 +21,58 @@ import {
   GeodeticTransformPathProps,
   GeodeticTransformProps,
 } from "../geometry/GeodeticDatum";
-import {
-  GeodeticEllipsoid,
-  GeodeticEllipsoidProps,
-} from "../geometry/GeodeticEllipsoid";
+import { GeodeticEllipsoid, GeodeticEllipsoidProps } from "../geometry/GeodeticEllipsoid";
 import { Carto2DDegrees } from "../geometry/Projection";
 // import { ProjectionMethod2 } from "../geometry/Projection";
 
 describe("Geodetic Settings", () => {
   /* Geodetic Transform unit tests */
   it("round-trips GeodeticTransform through JSON", () => {
-    const roundTrip = (
-      input: GeodeticTransformProps | undefined,
-      expected: GeodeticTransformProps | "input"
-    ) => {
+    const roundTrip = (input: GeodeticTransformProps | undefined, expected: GeodeticTransformProps | "input") => {
       if (!input) input = { method: "None" };
 
-      if ("input" === expected)
-        expected = JSON.parse(JSON.stringify(input)) as GeodeticTransform;
+      if ("input" === expected) expected = JSON.parse(JSON.stringify(input)) as GeodeticTransform;
 
       const geoTransform = GeodeticTransform.fromJSON(input);
       const output = geoTransform.toJSON();
       const outTransform = GeodeticTransform.fromJSON(output);
 
       expect(output.method === expected.method).to.be.true;
-      expect(
-        (output.sourceEllipsoid === undefined) ===
-          (expected.sourceEllipsoid === undefined)
-      ).to.be.true;
+      expect((output.sourceEllipsoid === undefined) === (expected.sourceEllipsoid === undefined)).to.be.true;
       // No need to verify the ellipsoid content as they were verified in another test.
-      expect(
-        (output.targetEllipsoid === undefined) ===
-          (expected.targetEllipsoid === undefined)
-      ).to.be.true;
+      expect((output.targetEllipsoid === undefined) === (expected.targetEllipsoid === undefined)).to.be.true;
       // No need to verify the ellipsoid content as they were verified in another test.
 
-      expect(
-        (output.geocentric === undefined) ===
-          (expected.geocentric === undefined)
-      ).to.be.true;
+      expect((output.geocentric === undefined) === (expected.geocentric === undefined)).to.be.true;
       if (output.geocentric) {
         expect(output.geocentric.delta.x === expected.geocentric!.delta.x);
       }
-      expect(
-        (output.gridFile === undefined) === (expected.gridFile === undefined)
-      ).to.be.true;
+      expect((output.gridFile === undefined) === (expected.gridFile === undefined)).to.be.true;
       if (output.gridFile) {
-        expect(
-          (output.gridFile.fallback === undefined) ===
-            (expected.gridFile!.fallback === undefined)
-        ).to.be.true;
+        expect((output.gridFile.fallback === undefined) === (expected.gridFile!.fallback === undefined)).to.be.true;
         if (output.gridFile.fallback) {
-          expect(
-            output.gridFile.fallback.delta.x ===
-              expected.gridFile!.fallback!.delta.x
-          ).to.be.true;
-          expect(
-            output.gridFile.fallback.delta.y ===
-              expected.gridFile!.fallback!.delta.y
-          ).to.be.true;
-          expect(
-            output.gridFile.fallback.delta.z ===
-              expected.gridFile!.fallback!.delta.z
-          ).to.be.true;
-          expect(
-            output.gridFile.fallback.rotation.x ===
-              expected.gridFile!.fallback!.rotation.x
-          ).to.be.true;
-          expect(
-            output.gridFile.fallback.rotation.y ===
-              expected.gridFile!.fallback!.rotation.y
-          ).to.be.true;
-          expect(
-            output.gridFile.fallback.rotation.z ===
-              expected.gridFile!.fallback!.rotation.z
-          ).to.be.true;
+          expect(output.gridFile.fallback.delta.x === expected.gridFile!.fallback!.delta.x).to.be.true;
+          expect(output.gridFile.fallback.delta.y === expected.gridFile!.fallback!.delta.y).to.be.true;
+          expect(output.gridFile.fallback.delta.z === expected.gridFile!.fallback!.delta.z).to.be.true;
+          expect(output.gridFile.fallback.rotation.x === expected.gridFile!.fallback!.rotation.x).to.be.true;
+          expect(output.gridFile.fallback.rotation.y === expected.gridFile!.fallback!.rotation.y).to.be.true;
+          expect(output.gridFile.fallback.rotation.z === expected.gridFile!.fallback!.rotation.z).to.be.true;
         }
-        expect(
-          output.gridFile.files.length === expected.gridFile?.files.length
-        );
+        expect(output.gridFile.files.length === expected.gridFile?.files.length);
         for (let index = 0; index < output.gridFile.files.length; ++index) {
-          expect(
-            output.gridFile.files[index].direction ===
-              expected.gridFile?.files[index].direction
-          ).to.be.true;
-          expect(
-            output.gridFile.files[index].format ===
-              expected.gridFile?.files[index].format
-          ).to.be.true;
-          expect(
-            output.gridFile.files[index].fileName ===
-              expected.gridFile?.files[index].fileName
-          ).to.be.true;
+          expect(output.gridFile.files[index].direction === expected.gridFile?.files[index].direction).to.be.true;
+          expect(output.gridFile.files[index].format === expected.gridFile?.files[index].format).to.be.true;
+          expect(output.gridFile.files[index].fileName === expected.gridFile?.files[index].fileName).to.be.true;
         }
       }
-      expect(
-        (output.positionalVector === undefined) ===
-          (expected.positionalVector === undefined)
-      ).to.be.true;
+      expect((output.positionalVector === undefined) === (expected.positionalVector === undefined)).to.be.true;
       if (output.positionalVector) {
-        expect(
-          output.positionalVector.delta.x === expected.positionalVector!.delta.x
-        ).to.be.true;
-        expect(
-          output.positionalVector.delta.y === expected.positionalVector!.delta.y
-        ).to.be.true;
-        expect(
-          output.positionalVector.delta.z === expected.positionalVector!.delta.z
-        ).to.be.true;
-        expect(
-          output.positionalVector.rotation.x ===
-            expected.positionalVector!.rotation.x
-        ).to.be.true;
-        expect(
-          output.positionalVector.rotation.y ===
-            expected.positionalVector!.rotation.y
-        ).to.be.true;
-        expect(
-          output.positionalVector.rotation.z ===
-            expected.positionalVector!.rotation.z
-        ).to.be.true;
+        expect(output.positionalVector.delta.x === expected.positionalVector!.delta.x).to.be.true;
+        expect(output.positionalVector.delta.y === expected.positionalVector!.delta.y).to.be.true;
+        expect(output.positionalVector.delta.z === expected.positionalVector!.delta.z).to.be.true;
+        expect(output.positionalVector.rotation.x === expected.positionalVector!.rotation.x).to.be.true;
+        expect(output.positionalVector.rotation.y === expected.positionalVector!.rotation.y).to.be.true;
+        expect(output.positionalVector.rotation.z === expected.positionalVector!.rotation.z).to.be.true;
       }
 
       const expectedTransform = GeodeticTransform.fromJSON(expected);
@@ -284,8 +216,7 @@ describe("Geodetic Settings", () => {
     ) => {
       if (!input) input = { sourceDatumId: "NAD27" };
 
-      if ("input" === expected)
-        expected = JSON.parse(JSON.stringify(input)) as GeodeticTransformPath;
+      if ("input" === expected) expected = JSON.parse(JSON.stringify(input)) as GeodeticTransformPath;
 
       const geoTransformPath = GeodeticTransformPath.fromJSON(input);
       const output = geoTransformPath.toJSON();
@@ -293,10 +224,7 @@ describe("Geodetic Settings", () => {
 
       expect(output.sourceDatumId === expected.sourceDatumId).to.be.true;
       expect(output.targetDatumId === expected.targetDatumId).to.be.true;
-      expect(
-        (output.transforms === undefined) ===
-          (expected.transforms === undefined)
-      ).to.be.true;
+      expect((output.transforms === undefined) === (expected.transforms === undefined)).to.be.true;
       if (output.transforms) {
         expect(output.transforms.length === expected.transforms!.length);
         // No need to check the transform content as they were verified above
@@ -320,14 +248,10 @@ describe("Geodetic Settings", () => {
 
   /* Geodetic Ellipsoid unit tests */
   it("round-trips GeodeticEllipsoid through JSON", () => {
-    const roundTrip = (
-      input: GeodeticEllipsoidProps | undefined,
-      expected: GeodeticEllipsoidProps | "input"
-    ) => {
+    const roundTrip = (input: GeodeticEllipsoidProps | undefined, expected: GeodeticEllipsoidProps | "input") => {
       if (!input) input = {};
 
-      if ("input" === expected)
-        expected = JSON.parse(JSON.stringify(input)) as GeodeticEllipsoid;
+      if ("input" === expected) expected = JSON.parse(JSON.stringify(input)) as GeodeticEllipsoid;
 
       const ellipsoid = GeodeticEllipsoid.fromJSON(input);
       const output = ellipsoid.toJSON();
@@ -339,15 +263,9 @@ describe("Geodetic Settings", () => {
       expect(output.epsg === expected.epsg).to.be.true;
       if (output.deprecated !== undefined && expected.deprecated !== undefined)
         expect(output.deprecated === expected.deprecated).to.be.true;
-      else if (
-        output.deprecated !== undefined &&
-        expected.deprecated === undefined
-      )
+      else if (output.deprecated !== undefined && expected.deprecated === undefined)
         expect(output.deprecated).to.be.false;
-      else if (
-        output.deprecated === undefined &&
-        expected.deprecated !== undefined
-      )
+      else if (output.deprecated === undefined && expected.deprecated !== undefined)
         expect(expected.deprecated).to.be.false;
 
       expect(output.equatorialRadius === expected.equatorialRadius).to.be.true;
@@ -431,32 +349,24 @@ describe("Geodetic Settings", () => {
 
   /* HorizontalCRSExtent unit tests */
   it("round-trips Horizontal CRS Extent through JSON", () => {
-    const roundTrip = (
-      input: HorizontalCRSExtentProps | undefined,
-      expected: HorizontalCRSExtentProps | "input"
-    ) => {
+    const roundTrip = (input: HorizontalCRSExtentProps | undefined, expected: HorizontalCRSExtentProps | "input") => {
       if (!input)
         input = {
           southWest: { latitude: 0.0, longitude: 0.0 },
           northEast: { latitude: 0.0, longitude: 0.0 },
         };
 
-      if ("input" === expected)
-        expected = JSON.parse(JSON.stringify(input)) as HorizontalCRSExtent;
+      if ("input" === expected) expected = JSON.parse(JSON.stringify(input)) as HorizontalCRSExtent;
 
       const extent = HorizontalCRSExtent.fromJSON(input);
       const output = extent.toJSON();
       const outExtent = HorizontalCRSExtent.fromJSON(output);
 
-      expect(output.southWest.latitude === expected.southWest.latitude).to.be
-        .true;
-      expect(output.southWest.longitude === expected.southWest.longitude).to.be
-        .true;
+      expect(output.southWest.latitude === expected.southWest.latitude).to.be.true;
+      expect(output.southWest.longitude === expected.southWest.longitude).to.be.true;
 
-      expect(output.northEast.latitude === expected.northEast.latitude).to.be
-        .true;
-      expect(output.northEast.longitude === expected.northEast.longitude).to.be
-        .true;
+      expect(output.northEast.latitude === expected.northEast.latitude).to.be.true;
+      expect(output.northEast.longitude === expected.northEast.longitude).to.be.true;
 
       const expectedExtent = HorizontalCRSExtent.fromJSON(expected);
 
@@ -521,8 +431,7 @@ describe("Geodetic Settings", () => {
 
     cartoPoint.latitude = 100.0; /* Impossible value */
     expect(cartoPoint.latitude === 100.0).to.be.false;
-    expect(cartoPoint.latitude === 23.4).to.be
-      .true; /* value remained unchanged */
+    expect(cartoPoint.latitude === 23.4).to.be.true; /* value remained unchanged */
 
     cartoPoint.longitude = -189.1;
     expect(cartoPoint.longitude === -189.1).to.be.true;
@@ -561,14 +470,10 @@ describe("Geodetic Settings", () => {
 
   /* Geodetic Datum unit tests */
   it("round-trips GeodeticDatum through JSON", () => {
-    const roundTrip = (
-      input: GeodeticDatumProps | undefined,
-      expected: GeodeticDatumProps | "input"
-    ) => {
+    const roundTrip = (input: GeodeticDatumProps | undefined, expected: GeodeticDatumProps | "input") => {
       if (!input) input = {};
 
-      if ("input" === expected)
-        expected = JSON.parse(JSON.stringify(input)) as GeodeticDatum;
+      if ("input" === expected) expected = JSON.parse(JSON.stringify(input)) as GeodeticDatum;
 
       const datum = GeodeticDatum.fromJSON(input);
       const output = datum.toJSON();
@@ -580,36 +485,22 @@ describe("Geodetic Settings", () => {
       expect(output.epsg === expected.epsg).to.be.true;
       if (output.deprecated !== undefined && expected.deprecated !== undefined)
         expect(output.deprecated === expected.deprecated).to.be.true;
-      else if (
-        output.deprecated !== undefined &&
-        expected.deprecated === undefined
-      )
+      else if (output.deprecated !== undefined && expected.deprecated === undefined)
         expect(output.deprecated).to.be.false;
-      else if (
-        output.deprecated === undefined &&
-        expected.deprecated !== undefined
-      )
+      else if (output.deprecated === undefined && expected.deprecated !== undefined)
         expect(expected.deprecated).to.be.false;
 
       expect(output.ellipsoidId === expected.ellipsoidId).to.be.true;
 
-      expect(
-        (output.transforms === undefined) ===
-          (expected.transforms === undefined)
-      ).to.be.true;
+      expect((output.transforms === undefined) === (expected.transforms === undefined)).to.be.true;
       if (output.transforms) {
         expect(output.transforms.length === expected.transforms!.length);
         // No need to check the transform content as they were verified above
       }
-      expect(
-        (output.additionalTransformPaths === undefined) ===
-          (expected.additionalTransformPaths === undefined)
-      ).to.be.true;
+      expect((output.additionalTransformPaths === undefined) === (expected.additionalTransformPaths === undefined)).to
+        .be.true;
       if (output.additionalTransformPaths) {
-        expect(
-          output.additionalTransformPaths.length ===
-            expected.additionalTransformPaths!.length
-        );
+        expect(output.additionalTransformPaths.length === expected.additionalTransformPaths!.length);
         // No need to check the transform paths content as they were verified above
       }
 
@@ -646,8 +537,7 @@ describe("Geodetic Settings", () => {
     roundTrip(
       {
         id: "AmSamoa62",
-        description:
-          "Replaced by Samoa1962 which uses GEOCENTRIC transformation",
+        description: "Replaced by Samoa1962 which uses GEOCENTRIC transformation",
         deprecated: true,
         source: "EPSG, V6.3, 6169 [EPSG]",
         epsg: 0,
@@ -958,14 +848,10 @@ describe("Geodetic Settings", () => {
 
   /* Horizontal CRS unit tests */
   it("round-trips HorizontalCRS through JSON", () => {
-    const roundTrip = (
-      input: HorizontalCRSProps | undefined,
-      expected: HorizontalCRSProps | "input"
-    ) => {
+    const roundTrip = (input: HorizontalCRSProps | undefined, expected: HorizontalCRSProps | "input") => {
       if (!input) input = {};
 
-      if ("input" === expected)
-        expected = JSON.parse(JSON.stringify(input)) as HorizontalCRS;
+      if ("input" === expected) expected = JSON.parse(JSON.stringify(input)) as HorizontalCRS;
 
       const horizCRS = HorizontalCRS.fromJSON(input);
       const output = horizCRS.toJSON();
@@ -978,27 +864,17 @@ describe("Geodetic Settings", () => {
       expect(output.datumId === expected.datumId).to.be.true;
       if (output.deprecated !== undefined && expected.deprecated !== undefined)
         expect(output.deprecated === expected.deprecated).to.be.true;
-      else if (
-        output.deprecated !== undefined &&
-        expected.deprecated === undefined
-      )
+      else if (output.deprecated !== undefined && expected.deprecated === undefined)
         expect(output.deprecated).to.be.false;
-      else if (
-        output.deprecated === undefined &&
-        expected.deprecated !== undefined
-      )
+      else if (output.deprecated === undefined && expected.deprecated !== undefined)
         expect(expected.deprecated).to.be.false;
 
       expect(output.ellipsoidId === expected.ellipsoidId).to.be.true;
       expect(output.name === expected.name).to.be.true;
       expect(output.unit === expected.unit);
-      expect((output.datum === undefined) === (expected.datum === undefined)).to
-        .be.true;
+      expect((output.datum === undefined) === (expected.datum === undefined)).to.be.true;
       // No need to verify the datum content as they were verified in another test.
-      expect(
-        (output.ellipsoidId === undefined) ===
-          (expected.ellipsoidId === undefined)
-      ).to.be.true;
+      expect((output.ellipsoidId === undefined) === (expected.ellipsoidId === undefined)).to.be.true;
       // No need to verify the ellipsoid content as they were verified in another test.
 
       const expectedHorizCRS = HorizontalCRS.fromJSON(expected);
@@ -1085,8 +961,7 @@ describe("Geodetic Settings", () => {
         datumId: "NAD27",
         datum: {
           id: "NAD27",
-          description:
-            "North American Datum of 1927 (US48, AK, HI, and Canada)",
+          description: "North American Datum of 1927 (US48, AK, HI, and Canada)",
           deprecated: false,
           source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
           epsg: 6267,
@@ -1355,28 +1230,18 @@ describe("Geodetic Settings", () => {
 
   /* GeographicCRS unit tests */
   it("round-trips GeographicCRS through JSON", () => {
-    const roundTrip = (
-      input: GeographicCRSProps | undefined,
-      expected: GeographicCRSProps | "input"
-    ) => {
+    const roundTrip = (input: GeographicCRSProps | undefined, expected: GeographicCRSProps | "input") => {
       if (!input) input = {};
 
-      if ("input" === expected)
-        expected = JSON.parse(JSON.stringify(input)) as GeographicCRS;
+      if ("input" === expected) expected = JSON.parse(JSON.stringify(input)) as GeographicCRS;
 
       const geoCRS = GeographicCRS.fromJSON(input);
       const output = geoCRS.toJSON();
       const outGeoCRS = GeographicCRS.fromJSON(output);
 
-      expect(
-        (output.horizontalCRS === undefined) ===
-          (expected.horizontalCRS === undefined)
-      ).to.be.true;
+      expect((output.horizontalCRS === undefined) === (expected.horizontalCRS === undefined)).to.be.true;
       // No need to verify the datum content as they were verified in another test.
-      expect(
-        (output.verticalCRS === undefined) ===
-          (expected.verticalCRS === undefined)
-      ).to.be.true;
+      expect((output.verticalCRS === undefined) === (expected.verticalCRS === undefined)).to.be.true;
       // No need to verify the ellipsoid content as they were verified in another test.
 
       const expectedGeoCRS = GeographicCRS.fromJSON(expected);
@@ -1390,30 +1255,15 @@ describe("Geodetic Settings", () => {
 
     roundTrip({ horizontalCRS: { id: "123" } }, "input");
 
-    roundTrip(
-      { horizontalCRS: { description: "This is a dummy description" } },
-      "input"
-    );
+    roundTrip({ horizontalCRS: { description: "This is a dummy description" } }, "input");
     roundTrip({ horizontalCRS: { deprecated: true } }, "input");
     roundTrip({ horizontalCRS: { source: "This is a dummy source" } }, "input");
     roundTrip({ horizontalCRS: { epsg: 4326 } }, "input");
 
-    roundTrip(
-      { horizontalCRS: { id: "LL83" }, verticalCRS: { id: "NAVD88" } },
-      "input"
-    );
-    roundTrip(
-      { horizontalCRS: { id: "ETRF89" }, verticalCRS: { id: "ELLIPSOID" } },
-      "input"
-    );
-    roundTrip(
-      { horizontalCRS: { id: "OSGB" }, verticalCRS: { id: "LOCAL_ELLIPSOID" } },
-      "input"
-    );
-    roundTrip(
-      { horizontalCRS: { id: "GDA2020" }, verticalCRS: { id: "GEOID" } },
-      "input"
-    );
+    roundTrip({ horizontalCRS: { id: "LL83" }, verticalCRS: { id: "NAVD88" } }, "input");
+    roundTrip({ horizontalCRS: { id: "ETRF89" }, verticalCRS: { id: "ELLIPSOID" } }, "input");
+    roundTrip({ horizontalCRS: { id: "OSGB" }, verticalCRS: { id: "LOCAL_ELLIPSOID" } }, "input");
+    roundTrip({ horizontalCRS: { id: "GDA2020" }, verticalCRS: { id: "GEOID" } }, "input");
     roundTrip(
       {
         horizontalCRS: { id: "GDA2020" },
@@ -1458,8 +1308,7 @@ describe("Geodetic Settings", () => {
           datumId: "NAD27",
           datum: {
             id: "NAD27",
-            description:
-              "North American Datum of 1927 (US48, AK, HI, and Canada)",
+            description: "North American Datum of 1927 (US48, AK, HI, and Canada)",
             deprecated: false,
             source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
             epsg: 6267,
@@ -1479,8 +1328,7 @@ describe("Geodetic Settings", () => {
                   id: "CLRK66",
                   epsg: 7008,
                   description: "Clarke 1866, Benoit Ratio",
-                  source:
-                    "US Defense Mapping Agency, TR-8350.2-B, December 1987",
+                  source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
                   equatorialRadius: 6378160.0,
                   polarRadius: 6356774.719195306,
                 },
@@ -1488,8 +1336,7 @@ describe("Geodetic Settings", () => {
                   id: "WGS84",
                   epsg: 6326,
                   description: "Clarke 1866, Benoit Ratio",
-                  source:
-                    "US Defense Mapping Agency, TR-8350.2-B, December 1987",
+                  source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
                   equatorialRadius: 6378160.0,
                   polarRadius: 6356774.719195306,
                 },
@@ -1739,8 +1586,7 @@ describe("Geodetic Settings", () => {
           datumId: "NAD27",
           datum: {
             id: "NAD27",
-            description:
-              "North American Datum of 1927 (US48, AK, HI, and Canada)",
+            description: "North American Datum of 1927 (US48, AK, HI, and Canada)",
             deprecated: false,
             source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
             epsg: 6267,
@@ -1908,8 +1754,7 @@ describe("Geodetic Settings", () => {
         datumId: "NAD27",
         datum: {
           id: "NAD27",
-          description:
-            "North American Datum of 1927 (US48, AK, HI, and Canada)",
+          description: "North American Datum of 1927 (US48, AK, HI, and Canada)",
           deprecated: false,
           source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
           epsg: 6267,
@@ -2074,8 +1919,7 @@ describe("Geodetic Settings", () => {
         datumId: "NAD27",
         datum: {
           id: "NAD27",
-          description:
-            "North American Datum of 1927 (US48, AK, HI, and Canada)",
+          description: "North American Datum of 1927 (US48, AK, HI, and Canada)",
           deprecated: false,
           source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
           epsg: 6267,

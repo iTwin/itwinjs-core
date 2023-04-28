@@ -6,12 +6,7 @@
  * @module Rendering
  */
 
-import {
-  compareBooleans,
-  compareNumbers,
-  Dictionary,
-  Id64String,
-} from "@itwin/core-bentley";
+import { compareBooleans, compareNumbers, Dictionary, Id64String } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { Feature, FeatureTable } from "@itwin/core-common";
 import { DisplayParams } from "../DisplayParams";
@@ -24,10 +19,7 @@ import { MeshBuilder, MeshEdgeCreationOptions } from "./MeshBuilder";
 import { Mesh, MeshList } from "./MeshPrimitives";
 
 /** @internal */
-export class MeshBuilderMap extends Dictionary<
-  MeshBuilderMap.Key,
-  MeshBuilder
-> {
+export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> {
   public readonly range: Range3d;
   public readonly vertexTolerance: number;
   public readonly facetAreaTolerance: number;
@@ -44,9 +36,7 @@ export class MeshBuilderMap extends Dictionary<
     options: GeometryOptions,
     pickable: { modelId?: Id64String } | undefined
   ) {
-    super((lhs: MeshBuilderMap.Key, rhs: MeshBuilderMap.Key) =>
-      lhs.compare(rhs)
-    );
+    super((lhs: MeshBuilderMap.Key, rhs: MeshBuilderMap.Key) => lhs.compare(rhs));
     this.tolerance = tolerance;
     this.vertexTolerance = tolerance * ToleranceRatio.vertex;
     this.facetAreaTolerance = tolerance * ToleranceRatio.facetArea;
@@ -54,8 +44,7 @@ export class MeshBuilderMap extends Dictionary<
     this.is2d = is2d;
     this.options = options;
 
-    if (pickable)
-      this.features = new FeatureTable(2048 * 1024, pickable.modelId);
+    if (pickable) this.features = new FeatureTable(2048 * 1024, pickable.modelId);
   }
 
   public static createFromGeometries(
@@ -98,19 +87,14 @@ export class MeshBuilderMap extends Dictionary<
   public loadPolyfacePrimitiveList(geom: Geometry): void {
     const polyfaces = geom.getPolyfaces(this.tolerance);
 
-    if (polyfaces !== undefined)
-      for (const polyface of polyfaces)
-        this.loadIndexedPolyface(polyface, geom.feature);
+    if (polyfaces !== undefined) for (const polyface of polyfaces) this.loadIndexedPolyface(polyface, geom.feature);
   }
 
   /**
    * extract indexed polyfaces into meshBuilder stored in builderMap
    * @param polyface PolyfacePrimitive to extract indexed polyfaces from
    */
-  public loadIndexedPolyface(
-    polyface: PolyfacePrimitive,
-    feature: Feature | undefined
-  ): void {
+  public loadIndexedPolyface(polyface: PolyfacePrimitive, feature: Feature | undefined): void {
     const { indexedPolyface, displayParams, isPlanar } = polyface;
     const { pointCount, normalCount } = indexedPolyface;
     const { fillColor, isTextured } = displayParams;
@@ -118,12 +102,7 @@ export class MeshBuilderMap extends Dictionary<
 
     if (pointCount === 0) return;
 
-    const builder = this.getBuilder(
-      displayParams,
-      Mesh.PrimitiveType.Mesh,
-      normalCount > 0,
-      isPlanar
-    );
+    const builder = this.getBuilder(displayParams, Mesh.PrimitiveType.Mesh, normalCount > 0, isPlanar);
     const edgeOptions = new MeshEdgeCreationOptions(
       polyface.displayEdges && this.options.edges
         ? MeshEdgeCreationOptions.Type.DefaultEdges
@@ -148,31 +127,19 @@ export class MeshBuilderMap extends Dictionary<
   public loadStrokePrimitiveList(geom: Geometry): void {
     const strokes = geom.getStrokes(this.tolerance);
 
-    if (undefined !== strokes)
-      for (const stroke of strokes)
-        this.loadStrokesPrimitive(stroke, geom.feature);
+    if (undefined !== strokes) for (const stroke of strokes) this.loadStrokesPrimitive(stroke, geom.feature);
   }
 
   /**
    * extract strokes primitive into meshBuilder stored in builderMap
    * @param strokePrimitive StrokesPrimitive instance to extractfrom
    */
-  public loadStrokesPrimitive(
-    strokePrimitive: StrokesPrimitive,
-    feature: Feature | undefined
-  ): void {
+  public loadStrokesPrimitive(strokePrimitive: StrokesPrimitive, feature: Feature | undefined): void {
     const { displayParams, isDisjoint, isPlanar, strokes } = strokePrimitive;
 
-    const type = isDisjoint
-      ? Mesh.PrimitiveType.Point
-      : Mesh.PrimitiveType.Polyline;
+    const type = isDisjoint ? Mesh.PrimitiveType.Point : Mesh.PrimitiveType.Polyline;
     const builder = this.getBuilder(displayParams, type, false, isPlanar);
-    builder.addStrokePointLists(
-      strokes,
-      isDisjoint,
-      displayParams.fillColor.tbgr,
-      feature
-    );
+    builder.addStrokePointLists(strokes, isDisjoint, displayParams.fillColor.tbgr, feature);
   }
 
   public getBuilder(
@@ -204,12 +171,7 @@ export class MeshBuilderMap extends Dictionary<
     hasNormals: boolean,
     isPlanar: boolean
   ): MeshBuilderMap.Key {
-    const key = new MeshBuilderMap.Key(
-      displayParams,
-      type,
-      hasNormals,
-      isPlanar
-    );
+    const key = new MeshBuilderMap.Key(displayParams, type, hasNormals, isPlanar);
 
     if (this.options.preserveOrder) key.order = ++this._keyOrder;
 
@@ -222,10 +184,7 @@ export class MeshBuilderMap extends Dictionary<
    * @param props MeshBuilder.Props required to create builder if it does not already exist
    * @returns builder reference, changes will update instance stored in builderMap
    */
-  public getBuilderFromKey(
-    key: MeshBuilderMap.Key,
-    props: MeshBuilder.Props
-  ): MeshBuilder {
+  public getBuilderFromKey(key: MeshBuilderMap.Key, props: MeshBuilder.Props): MeshBuilder {
     let builder = this.get(key);
     if (undefined === builder) {
       builder = MeshBuilder.create(props);
@@ -245,12 +204,7 @@ export namespace MeshBuilderMap {
     public readonly hasNormals: boolean;
     public readonly isPlanar: boolean;
 
-    constructor(
-      params: DisplayParams,
-      type: Mesh.PrimitiveType,
-      hasNormals: boolean,
-      isPlanar: boolean
-    ) {
+    constructor(params: DisplayParams, type: Mesh.PrimitiveType, hasNormals: boolean, isPlanar: boolean) {
       this.params = params;
       this.type = type;
       this.hasNormals = hasNormals;
@@ -258,12 +212,7 @@ export namespace MeshBuilderMap {
     }
 
     public static createFromMesh(mesh: Mesh): Key {
-      return new Key(
-        mesh.displayParams,
-        mesh.type,
-        mesh.normals.length !== 0,
-        mesh.isPlanar
-      );
+      return new Key(mesh.displayParams, mesh.type, mesh.normals.length !== 0, mesh.isPlanar);
     }
 
     public compare(rhs: Key): number {

@@ -25,20 +25,14 @@ export class GapSearchContext extends RecursiveCurveProcessorWithStack {
     target.announceToCurveProcessor(context);
     return context.maxGap;
   }
-  public override announceCurvePrimitive(
-    curve: CurvePrimitive,
-    _indexInParent: number
-  ): void {
+  public override announceCurvePrimitive(curve: CurvePrimitive, _indexInParent: number): void {
     if (this._stack.length > 0) {
       const parent = this._stack[this._stack.length - 1];
       if (parent instanceof CurveChain) {
         const chain = parent;
         const nextCurve = chain.cyclicCurvePrimitive(_indexInParent + 1);
         if (curve !== undefined && nextCurve !== undefined) {
-          this.maxGap = Math.max(
-            this.maxGap,
-            curve.endPoint().distance(nextCurve.startPoint())
-          );
+          this.maxGap = Math.max(this.maxGap, curve.endPoint().distance(nextCurve.startPoint()));
         }
       }
     }

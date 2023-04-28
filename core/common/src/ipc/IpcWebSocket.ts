@@ -6,13 +6,7 @@
  * @module IpcSocket
  */
 
-import {
-  IpcListener,
-  IpcSocket,
-  IpcSocketBackend,
-  IpcSocketFrontend,
-  RemoveFunction,
-} from "./IpcSocket";
+import { IpcListener, IpcSocket, IpcSocketBackend, IpcSocketFrontend, RemoveFunction } from "./IpcSocket";
 import { IpcWebSocketTransport } from "./IpcWebSocketTransport";
 
 /** @internal */
@@ -55,19 +49,14 @@ export namespace IpcWebSocketMessage {
   }
 
   export function skip(message: IpcWebSocketMessage): boolean {
-    return (
-      message.type === IpcWebSocketMessageType.Internal ||
-      message.type === IpcWebSocketMessageType.Duplicate
-    );
+    return message.type === IpcWebSocketMessageType.Internal || message.type === IpcWebSocketMessageType.Duplicate;
   }
 }
 
 /** @internal */
 export abstract class IpcWebSocket implements IpcSocket {
   public static transport: IpcWebSocketTransport;
-  public static receivers: Set<
-    (evt: Event, message: IpcWebSocketMessage) => void
-  > = new Set();
+  public static receivers: Set<(evt: Event, message: IpcWebSocketMessage) => void> = new Set();
 
   protected _channels = new Map<string, Set<IpcListener>>();
 
@@ -94,11 +83,7 @@ export abstract class IpcWebSocket implements IpcSocket {
   }
 
   private async broadcast(evt: Event, message: IpcWebSocketMessage) {
-    if (
-      message.type !== IpcWebSocketMessageType.Send &&
-      message.type !== IpcWebSocketMessageType.Push
-    )
-      return;
+    if (message.type !== IpcWebSocketMessageType.Send && message.type !== IpcWebSocketMessageType.Push) return;
 
     const handlers = this._channels.get(message.channel);
     if (!handlers) return;
@@ -111,10 +96,7 @@ export abstract class IpcWebSocket implements IpcSocket {
 }
 
 /** @internal */
-export class IpcWebSocketFrontend
-  extends IpcWebSocket
-  implements IpcSocketFrontend
-{
+export class IpcWebSocketFrontend extends IpcWebSocket implements IpcSocketFrontend {
   private _nextRequest = 0;
   private _pendingRequests = new Map<number, (response: any) => void>();
 
@@ -132,11 +114,7 @@ export class IpcWebSocketFrontend
     });
   }
 
-  public async invoke(
-    channel: string,
-    methodName: string,
-    ...args: any[]
-  ): Promise<any> {
+  public async invoke(channel: string, methodName: string, ...args: any[]): Promise<any> {
     const requestId = ++this._nextRequest;
     IpcWebSocket.transport.send({
       type: IpcWebSocketMessageType.Invoke,
@@ -153,8 +131,7 @@ export class IpcWebSocketFrontend
   }
 
   private async dispatch(_evt: Event, message: IpcWebSocketMessage) {
-    if (message.type !== IpcWebSocketMessageType.Response || !message.response)
-      return;
+    if (message.type !== IpcWebSocketMessageType.Response || !message.response) return;
 
     const pendingHandler = this._pendingRequests.get(message.response);
     if (!pendingHandler) return;
@@ -165,14 +142,8 @@ export class IpcWebSocketFrontend
 }
 
 /** @internal */
-export class IpcWebSocketBackend
-  extends IpcWebSocket
-  implements IpcSocketBackend
-{
-  private _handlers = new Map<
-    string,
-    (event: Event, methodName: string, ...args: any[]) => Promise<any>
-  >();
+export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBackend {
+  private _handlers = new Map<string, (event: Event, methodName: string, ...args: any[]) => Promise<any>>();
   private _processingQueue: IpcWebSocketMessage[] = [];
 
   public constructor() {
@@ -196,8 +167,7 @@ export class IpcWebSocketBackend
     this._handlers.set(channel, handler);
 
     return () => {
-      if (this._handlers.get(channel) === handler)
-        this._handlers.delete(channel);
+      if (this._handlers.get(channel) === handler) this._handlers.delete(channel);
     };
   }
 

@@ -124,8 +124,7 @@ export class TechniqueFlags {
       RenderPass.HilitePlanarClassification === pass
     ) {
       const isClassified =
-        classified === IsClassified.Yes &&
-        RenderPass.HilitePlanarClassification === pass
+        classified === IsClassified.Yes && RenderPass.HilitePlanarClassification === pass
           ? IsClassified.Yes
           : IsClassified.No;
       this.initForHilite(numClipPlanes, instanced, isClassified, posType);
@@ -219,12 +218,7 @@ export class TechniqueFlags {
   public get isHilite() {
     return this._isHilite;
   }
-  public initForHilite(
-    numClipPlanes: number,
-    instanced: IsInstanced,
-    classified: IsClassified,
-    posType: PositionType
-  ) {
+  public initForHilite(numClipPlanes: number, instanced: IsInstanced, classified: IsClassified, posType: PositionType) {
     this.featureMode = classified ? FeatureMode.None : FeatureMode.Overrides;
     this._isHilite = true;
     this.isTranslucent = false;
@@ -264,8 +258,7 @@ export class TechniqueFlags {
     if (this.hasClip) parts.push("Clip");
     if (this.isShadowable) parts.push("Shadowable");
     if (this.isThematic) parts.push("Thematic");
-    if (this.hasFeatures)
-      parts.push(FeatureMode.Pick === this.featureMode ? "Pick" : "Overrides");
+    if (this.hasFeatures) parts.push(FeatureMode.Pick === this.featureMode ? "Pick" : "Overrides");
     if (this.isWiremesh) parts.push("Wiremesh");
     if (this.positionType === "unquantized") parts.push("Unquantized");
     if (this.enableAtmosphere) parts.push("EnableAtmosphere");

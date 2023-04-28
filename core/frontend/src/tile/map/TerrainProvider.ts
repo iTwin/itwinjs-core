@@ -6,11 +6,7 @@
  * @module Tiles
  */
 
-import {
-  getCesiumTerrainProvider,
-  TerrainMeshProvider,
-  TerrainMeshProviderOptions,
-} from "../internal";
+import { getCesiumTerrainProvider, TerrainMeshProvider, TerrainMeshProviderOptions } from "../internal";
 
 /** Interface adopted by an object that can supply [[TerrainMeshProvider]]s enabling the display of 3d terrain in a [[Viewport]].
  * @see [[TerrainProviderRegistry]] to register or look up a `TerrainProvider` by its name.
@@ -19,9 +15,7 @@ import {
  */
 export interface TerrainProvider {
   /** Produce a [[TerrainMeshProvider]] using the specified options. */
-  createTerrainMeshProvider(
-    options: TerrainMeshProviderOptions
-  ): Promise<TerrainMeshProvider | undefined>;
+  createTerrainMeshProvider(options: TerrainMeshProviderOptions): Promise<TerrainMeshProvider | undefined>;
 }
 
 /** A registry of [[TerrainProvider]]s identified by their unique names. The registry can be accessed via [[IModelApp.terrainProviderRegistry]].
@@ -37,8 +31,7 @@ export class TerrainProviderRegistry {
   /** @internal */
   public constructor() {
     this.register("CesiumWorldTerrain", {
-      createTerrainMeshProvider: async (options) =>
-        getCesiumTerrainProvider(options),
+      createTerrainMeshProvider: async (options) => getCesiumTerrainProvider(options),
     });
   }
 

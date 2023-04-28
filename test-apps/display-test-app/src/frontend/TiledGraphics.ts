@@ -55,11 +55,7 @@ class Provider implements TiledGraphicsProvider {
   private readonly _refs: TileTreeReference[] = [];
   public readonly iModel: IModelConnection;
 
-  private constructor(
-    vp: Viewport,
-    iModel: IModelConnection,
-    ovrs: FeatureSymbology.Overrides
-  ) {
+  private constructor(vp: Viewport, iModel: IModelConnection, ovrs: FeatureSymbology.Overrides) {
     this.iModel = iModel;
     for (const model of iModel.models) {
       const spatial = model.asSpatialModel;
@@ -70,10 +66,7 @@ class Provider implements TiledGraphicsProvider {
     }
   }
 
-  public static async create(
-    vp: Viewport,
-    iModel: IModelConnection
-  ): Promise<Provider> {
+  public static async create(vp: Viewport, iModel: IModelConnection): Promise<Provider> {
     const query = { from: SpatialModelState.classFullName, wantPrivate: false };
     const props = await iModel.models.queryProps(query);
 
@@ -98,17 +91,13 @@ class Provider implements TiledGraphicsProvider {
     const ovrs = new FeatureSymbology.Overrides();
     for (const catId of catIds) {
       const subcats = iModel.subcategories.getSubCategories(catId);
-      if (undefined !== subcats)
-        for (const subcat of subcats) ovrs.setVisibleSubCategory(subcat);
+      if (undefined !== subcats) for (const subcat of subcats) ovrs.setVisibleSubCategory(subcat);
     }
 
     return new Provider(vp, iModel, ovrs);
   }
 
-  public forEachTileTreeRef(
-    _vp: Viewport,
-    func: (ref: TileTreeReference) => void
-  ): void {
+  public forEachTileTreeRef(_vp: Viewport, func: (ref: TileTreeReference) => void): void {
     for (const ref of this._refs) func(ref);
   }
 }
@@ -116,9 +105,7 @@ class Provider implements TiledGraphicsProvider {
 const providersByViewport = new Map<Viewport, Provider>();
 
 /** A simple proof-of-concept for drawing tiles from a different IModelConnection into a Viewport. */
-export async function toggleExternalTiledGraphicsProvider(
-  vp: Viewport
-): Promise<void> {
+export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise<void> {
   const existing = providersByViewport.get(vp);
   if (undefined !== existing) {
     vp.dropTiledGraphicsProvider(existing);

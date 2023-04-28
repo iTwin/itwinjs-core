@@ -49,9 +49,7 @@ export async function createNavigationProperty(
 
   let resolvedRelationship: RelationshipClass | undefined;
   if (typeof relationship === "string") {
-    resolvedRelationship = await ecClass.schema.lookupItem<RelationshipClass>(
-      relationship
-    );
+    resolvedRelationship = await ecClass.schema.lookupItem<RelationshipClass>(relationship);
   } else resolvedRelationship = relationship;
 
   if (!resolvedRelationship)
@@ -70,10 +68,7 @@ export async function createNavigationProperty(
     direction = tmpDirection;
   }
 
-  const lazyRelationship = new DelayedPromiseWithProps(
-    resolvedRelationship.key,
-    async () => resolvedRelationship!
-  );
+  const lazyRelationship = new DelayedPromiseWithProps(resolvedRelationship.key, async () => resolvedRelationship!);
   return new NavigationProperty(ecClass, name, lazyRelationship, direction);
 }
 
@@ -92,8 +87,7 @@ export function createNavigationPropertySync(
 
   let resolvedRelationship: RelationshipClass | undefined;
   if (typeof relationship === "string") {
-    resolvedRelationship =
-      ecClass.schema.lookupItemSync<RelationshipClass>(relationship);
+    resolvedRelationship = ecClass.schema.lookupItemSync<RelationshipClass>(relationship);
   } else resolvedRelationship = relationship;
 
   if (!resolvedRelationship)
@@ -112,9 +106,6 @@ export function createNavigationPropertySync(
     direction = tmpDirection;
   }
 
-  const lazyRelationship = new DelayedPromiseWithProps(
-    resolvedRelationship.key,
-    async () => resolvedRelationship!
-  );
+  const lazyRelationship = new DelayedPromiseWithProps(resolvedRelationship.key, async () => resolvedRelationship!);
   return new NavigationProperty(ecClass, name, lazyRelationship, direction);
 }

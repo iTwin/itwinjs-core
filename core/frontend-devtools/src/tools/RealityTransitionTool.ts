@@ -41,11 +41,7 @@ export class RealityTransitionTool extends Tool {
     const timeNow = Date.now(),
       timeEnd = timeNow + 1000.0 * 60.0 * 60.0;
     const range = vp.iModel.projectExtents;
-    const directions = [
-      Vector3d.create(1, 0, 0),
-      Vector3d.create(0, 1, 0),
-      Vector3d.create(0, 0, 1),
-    ];
+    const directions = [Vector3d.create(1, 0, 0), Vector3d.create(0, 1, 0), Vector3d.create(0, 0, 1)];
     const modelInTimeline: RenderSchedule.ModelTimelineProps = {
       modelId: "",
       elementTimelines: [],
@@ -60,8 +56,7 @@ export class RealityTransitionTool extends Tool {
         const fadeInTimeline = new Array<RenderSchedule.VisibilityEntryProps>();
         fadeInTimeline.push({ time: timeNow, interpolation: 2, value: 100.0 });
         fadeInTimeline.push({ time: timeEnd, interpolation: 2, value: 0.0 });
-        const fadeOutTimeline =
-          new Array<RenderSchedule.VisibilityEntryProps>();
+        const fadeOutTimeline = new Array<RenderSchedule.VisibilityEntryProps>();
         fadeOutTimeline.push({ time: timeNow, interpolation: 2, value: 0.0 });
         fadeOutTimeline.push({ time: timeEnd, interpolation: 2, value: 100.0 });
         modelInTimeline.visibilityTimeline = fadeInTimeline;
@@ -71,8 +66,7 @@ export class RealityTransitionTool extends Tool {
 
       default: {
         const direction = directions[fadeMode - FadeMode.X];
-        const clipInTimeline =
-          new Array<RenderSchedule.CuttingPlaneEntryProps>();
+        const clipInTimeline = new Array<RenderSchedule.CuttingPlaneEntryProps>();
         clipInTimeline.push({
           time: timeNow,
           interpolation: 2,
@@ -89,8 +83,7 @@ export class RealityTransitionTool extends Tool {
             direction: [direction.x, direction.y, direction.z],
           },
         });
-        const clipOutTimeline =
-          new Array<RenderSchedule.CuttingPlaneEntryProps>();
+        const clipOutTimeline = new Array<RenderSchedule.CuttingPlaneEntryProps>();
         clipOutTimeline.push({
           time: timeNow,
           interpolation: 2,
@@ -116,9 +109,7 @@ export class RealityTransitionTool extends Tool {
     const scriptProps: RenderSchedule.ScriptProps = [];
     view.forEachModel((model) => {
       scriptProps.push({
-        ...(model.jsonProperties.tilesetUrl
-          ? modelOutTimeline
-          : modelInTimeline),
+        ...(model.jsonProperties.tilesetUrl ? modelOutTimeline : modelInTimeline),
         modelId: model.id,
       });
     });

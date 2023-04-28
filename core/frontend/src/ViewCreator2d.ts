@@ -31,11 +31,7 @@ import { Range3d } from "@itwin/core-geometry";
 import { DrawingViewState } from "./DrawingViewState";
 import { EntityState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
-import {
-  DrawingModelState,
-  SectionDrawingModelState,
-  SheetModelState,
-} from "./ModelState";
+import { DrawingModelState, SectionDrawingModelState, SheetModelState } from "./ModelState";
 import { SheetViewState } from "./SheetViewState";
 import { ViewState, ViewState2d } from "./ViewState";
 
@@ -66,10 +62,7 @@ export interface ViewCreator2dOptions {
  */
 export class ViewCreator2d {
   // Types of 2D models the API supports
-  private static _drawingModelClasses = [
-    DrawingModelState.classFullName,
-    SectionDrawingModelState.classFullName,
-  ];
+  private static _drawingModelClasses = [DrawingModelState.classFullName, SectionDrawingModelState.classFullName];
   private static _sheetModelClasses = [SheetModelState.classFullName];
 
   /**
@@ -84,17 +77,10 @@ export class ViewCreator2d {
    * @param [options] Options for creating the view.
    * @throws [IModelError]($common) If modelType is not supported.
    */
-  public async createViewForModel(
-    modelId: Id64String,
-    options?: ViewCreator2dOptions
-  ): Promise<ViewState> {
+  public async createViewForModel(modelId: Id64String, options?: ViewCreator2dOptions): Promise<ViewState> {
     const baseClassName = await this._getModelBaseClassName(modelId);
 
-    const viewState = await this._createViewState2d(
-      modelId,
-      baseClassName.classFullName,
-      options
-    );
+    const viewState = await this._createViewState2d(modelId, baseClassName.classFullName, options);
     try {
       await viewState.load();
     } catch {}
@@ -107,26 +93,17 @@ export class ViewCreator2d {
    * @param modelId of target model.
    * @throws [IModelError]($common) if modelId is invalid.
    */
-  private async _getModelBaseClassName(
-    modelId: Id64String
-  ): Promise<typeof EntityState> {
+  private async _getModelBaseClassName(modelId: Id64String): Promise<typeof EntityState> {
     let baseClassName;
 
     const modelProps = await this._imodel.models.getProps(modelId);
     if (modelProps.length > 0) {
       const modelType = modelProps[0].classFullName;
       baseClassName = await this._imodel.findClassFor(modelType, undefined);
-    } else
-      throw new IModelError(
-        IModelStatus.BadModel,
-        "ViewCreator2d._getModelBaseClassName: modelId is invalid"
-      );
+    } else throw new IModelError(IModelStatus.BadModel, "ViewCreator2d._getModelBaseClassName: modelId is invalid");
 
     if (baseClassName === undefined)
-      throw new IModelError(
-        IModelStatus.WrongClass,
-        "ViewCreator2d.getViewForModel: modelType is invalid"
-      );
+      throw new IModelError(IModelStatus.WrongClass, "ViewCreator2d.getViewForModel: modelType is invalid");
 
     return baseClassName;
   }
@@ -151,11 +128,7 @@ export class ViewCreator2d {
       let props = await this._createViewStateProps(modelId, options);
       props = await this._addSheetViewProps(modelId, props);
       viewState = SheetViewState.createFromProps(props, this._imodel);
-    } else
-      throw new IModelError(
-        IModelStatus.WrongClass,
-        "ViewCreator2d._createViewState2d: modelType not supported"
-      );
+    } else throw new IModelError(IModelStatus.WrongClass, "ViewCreator2d._createViewState2d: modelType not supported");
 
     return viewState;
   }
@@ -196,9 +169,7 @@ export class ViewCreator2d {
     const categories = await this._getAllCategories();
 
     // Get bg color from options or default to white
-    const bgColor: ColorDef = options?.bgColor
-      ? options.bgColor
-      : ColorDef.white;
+    const bgColor: ColorDef = options?.bgColor ? options.bgColor : ColorDef.white;
 
     // model extents
     const modelProps = await this._imodel.models.queryExtents(modelId);
@@ -269,9 +240,7 @@ export class ViewCreator2d {
     };
 
     // merge seed view props if needed
-    return options?.useSeedView
-      ? this._mergeSeedView(modelId, viewStateProps)
-      : viewStateProps;
+    return options?.useSeedView ? this._mergeSeedView(modelId, viewStateProps) : viewStateProps;
   };
 
   /**
@@ -310,10 +279,7 @@ export class ViewCreator2d {
    * @param modelId of target model.
    * @param props Input view props to be merged
    */
-  private async _mergeSeedView(
-    modelId: Id64String,
-    props: ViewStateProps
-  ): Promise<ViewStateProps> {
+  private async _mergeSeedView(modelId: Id64String, props: ViewStateProps): Promise<ViewStateProps> {
     const viewDefinitionId = await this._getViewDefinitionsIdForModel(modelId);
     // Return incase no viewDefinition found.
     if (viewDefinitionId === undefined) return props;
@@ -343,9 +309,7 @@ export class ViewCreator2d {
    * Get all view definitions for a given model.
    * @param modelId of target model.
    */
-  private async _getViewDefinitionsIdForModel(
-    modelId: Id64String
-  ): Promise<Id64String | undefined> {
+  private async _getViewDefinitionsIdForModel(modelId: Id64String): Promise<Id64String | undefined> {
     const query = `SELECT ECInstanceId from Bis.ViewDefinition2D WHERE BaseModel.Id = ${modelId} AND isPrivate = false LIMIT 1`;
     const viewDefinitionsId = await this._executeQuery(query);
 

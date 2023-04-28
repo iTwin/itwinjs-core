@@ -18,11 +18,7 @@ import {
   SchemaContext,
   Unit,
 } from "@itwin/ecschema-metadata";
-import {
-  AnyDiagnostic,
-  DiagnosticCategory,
-  DiagnosticType,
-} from "../../Validation/Diagnostic";
+import { AnyDiagnostic, DiagnosticCategory, DiagnosticType } from "../../Validation/Diagnostic";
 import { ISchemaChanges, SchemaChanges } from "../../Validation/SchemaChanges";
 import { SchemaCompareCodes } from "../../Validation/SchemaCompareDiagnostics";
 import { SchemaComparer } from "../../Validation/SchemaComparer";
@@ -140,20 +136,13 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        1,
-        "Expected 1 differences."
-      );
+      expect(reporter.diagnostics.length).to.equal(1, "Expected 1 differences.");
       validateDiagnostic(
         reporter.diagnostics[0],
         SchemaCompareCodes.SchemaDelta,
         DiagnosticType.Schema,
         schemaA,
-        [
-          "schemaKey",
-          schemaA.schemaKey.toString(),
-          schemaB.schemaKey.toString(),
-        ],
+        ["schemaKey", schemaA.schemaKey.toString(), schemaB.schemaKey.toString()],
         schemaA
       );
     });
@@ -166,20 +155,13 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        1,
-        "Expected 1 differences."
-      );
+      expect(reporter.diagnostics.length).to.equal(1, "Expected 1 differences.");
       validateDiagnostic(
         reporter.diagnostics[0],
         SchemaCompareCodes.SchemaDelta,
         DiagnosticType.Schema,
         schemaA,
-        [
-          "schemaKey",
-          schemaA.schemaKey.toString(),
-          schemaB.schemaKey.toString(),
-        ],
+        ["schemaKey", schemaA.schemaKey.toString(), schemaB.schemaKey.toString()],
         schemaA
       );
     });
@@ -192,10 +174,7 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        1,
-        "Expected 1 differences."
-      );
+      expect(reporter.diagnostics.length).to.equal(1, "Expected 1 differences.");
       validateDiagnostic(
         reporter.diagnostics[0],
         SchemaCompareCodes.SchemaDelta,
@@ -214,10 +193,7 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        1,
-        "Expected 1 differences."
-      );
+      expect(reporter.diagnostics.length).to.equal(1, "Expected 1 differences.");
       validateDiagnostic(
         reporter.diagnostics[0],
         SchemaCompareCodes.SchemaDelta,
@@ -239,10 +215,7 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        1,
-        "Expected 1 differences."
-      );
+      expect(reporter.diagnostics.length).to.equal(1, "Expected 1 differences.");
       validateDiagnostic(
         reporter.diagnostics[0],
         SchemaCompareCodes.SchemaDelta,
@@ -282,10 +255,7 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        2,
-        "Expected 2 differences."
-      );
+      expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
       validateDiagnostic(
         reporter.diagnostics[0],
         SchemaCompareCodes.SchemaReferenceMissing,
@@ -333,10 +303,7 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        2,
-        "Expected 2 differences."
-      );
+      expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
       validateDiagnostic(
         reporter.diagnostics[0],
         SchemaCompareCodes.SchemaReferenceDelta,
@@ -374,10 +341,7 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        1,
-        "Expected 1 differences."
-      );
+      expect(reporter.diagnostics.length).to.equal(1, "Expected 1 differences.");
       validateDiagnostic(
         reporter.diagnostics[0],
         SchemaCompareCodes.SchemaReferenceMissing,
@@ -437,9 +401,7 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      const result = reporter.diagnostics.filter(
-        (d) => d.code === SchemaCompareCodes.SchemaItemMissing
-      );
+      const result = reporter.diagnostics.filter((d) => d.code === SchemaCompareCodes.SchemaItemMissing);
       validateDiagnostic(
         result[0],
         SchemaCompareCodes.SchemaItemMissing,
@@ -474,10 +436,7 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        0,
-        "Expected no differences."
-      );
+      expect(reporter.diagnostics.length).to.equal(0, "Expected no differences.");
     });
 
     it("Different label, diagnostic reported", async () => {
@@ -534,10 +493,7 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        0,
-        "Expected no difference."
-      );
+      expect(reporter.diagnostics.length).to.equal(0, "Expected no difference.");
     });
 
     it("Different description, diagnostic reported", async () => {
@@ -632,10 +588,7 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        0,
-        "Expected no differences."
-      );
+      expect(reporter.diagnostics.length).to.equal(0, "Expected no differences.");
     });
 
     it("SchemaItem B does not exist, all diagnostics reported", async () => {
@@ -653,31 +606,16 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.code === SchemaCompareCodes.SchemaItemMissing ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "label" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "description" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "modifier" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "schemaItemType" ? true : false
-        )
-      ).to.not.be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.code === SchemaCompareCodes.SchemaItemMissing ? true : false))).to.not
+        .be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "label" ? true : false))).to.not.be
+        .undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "description" ? true : false))).to
+        .not.be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "modifier" ? true : false))).to.not
+        .be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "schemaItemType" ? true : false)))
+        .to.not.be.undefined;
     });
   });
 
@@ -731,10 +669,7 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        0,
-        "Expected no differences."
-      );
+      expect(reporter.diagnostics.length).to.equal(0, "Expected no differences.");
     });
 
     it("Different baseClass, Schema B has undefined base class, diagnostic reported", async () => {
@@ -888,10 +823,7 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        0,
-        "Expected no difference."
-      );
+      expect(reporter.diagnostics.length).to.equal(0, "Expected no difference.");
     });
 
     it("Class B does not exist, all diagnostics reported", async () => {
@@ -920,36 +852,18 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.code === SchemaCompareCodes.SchemaItemMissing ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "label" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "description" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "modifier" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "schemaItemType" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === baseClass ? true : false
-        )
-      ).to.not.be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.code === SchemaCompareCodes.SchemaItemMissing ? true : false))).to.not
+        .be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "label" ? true : false))).to.not.be
+        .undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "description" ? true : false))).to
+        .not.be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "modifier" ? true : false))).to.not
+        .be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "schemaItemType" ? true : false)))
+        .to.not.be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === baseClass ? true : false))).to.not
+        .be.undefined;
     });
   });
 
@@ -980,53 +894,25 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        5,
-        "Expected 5 differences."
-      );
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.code === SchemaCompareCodes.PropertyMissing ? true : false
-        )
-      ).to.not.be.undefined;
+      expect(reporter.diagnostics.length).to.equal(5, "Expected 5 differences.");
+      expect(reporter.diagnostics.find((d) => (d.code === SchemaCompareCodes.PropertyMissing ? true : false))).to.not.be
+        .undefined;
 
-      const propChanges = reporter.changes[0].classChanges
-        .get("TestClassA")!
-        .propertyChanges.get("PropertyA");
+      const propChanges = reporter.changes[0].classChanges.get("TestClassA")!.propertyChanges.get("PropertyA");
       let propChange = propChanges!.propertyValueChanges.find((p) =>
-        p.diagnostic &&
-        p.diagnostic.messageArgs &&
-        p.diagnostic.messageArgs[0] === "isReadOnly"
-          ? true
-          : false
+        p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "isReadOnly" ? true : false
       );
       expect(propChange?.toString()).to.equal("IsReadOnly: false -> undefined");
       propChange = propChanges!.propertyValueChanges.find((p) =>
-        p.diagnostic &&
-        p.diagnostic.messageArgs &&
-        p.diagnostic.messageArgs[0] === "type"
-          ? true
-          : false
+        p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "type" ? true : false
       );
-      expect(propChange?.toString()).to.equal(
-        "Type: PrimitiveProperty -> undefined"
-      );
+      expect(propChange?.toString()).to.equal("Type: PrimitiveProperty -> undefined");
       propChange = propChanges!.propertyValueChanges.find((p) =>
-        p.diagnostic &&
-        p.diagnostic.messageArgs &&
-        p.diagnostic.messageArgs[0] === "primitiveType"
-          ? true
-          : false
+        p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "primitiveType" ? true : false
       );
-      expect(propChange?.toString()).to.equal(
-        "PrimitiveType: string -> undefined"
-      );
+      expect(propChange?.toString()).to.equal("PrimitiveType: string -> undefined");
       propChange = propChanges!.propertyValueChanges.find((p) =>
-        p.diagnostic &&
-        p.diagnostic.messageArgs &&
-        p.diagnostic.messageArgs[0] === "priority"
-          ? true
-          : false
+        p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "priority" ? true : false
       );
       expect(propChange?.toString()).to.equal("Priority: 0 -> undefined");
     });
@@ -1129,124 +1015,56 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        11,
-        "Expected 11 differences."
-      );
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.code === SchemaCompareCodes.PropertyMissing ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "label" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "description" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "isReadOnly" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "priority" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "category" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "type" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "minOccurs" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "maxOccurs" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "primitiveType" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "kindOfQuantity" ? true : false
-        )
-      ).to.not.be.undefined;
+      expect(reporter.diagnostics.length).to.equal(11, "Expected 11 differences.");
+      expect(reporter.diagnostics.find((d) => (d.code === SchemaCompareCodes.PropertyMissing ? true : false))).to.not.be
+        .undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "label" ? true : false))).to.not.be
+        .undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "description" ? true : false))).to
+        .not.be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "isReadOnly" ? true : false))).to
+        .not.be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "priority" ? true : false))).to.not
+        .be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "category" ? true : false))).to.not
+        .be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "type" ? true : false))).to.not.be
+        .undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "minOccurs" ? true : false))).to
+        .not.be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "maxOccurs" ? true : false))).to
+        .not.be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "primitiveType" ? true : false)))
+        .to.not.be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "kindOfQuantity" ? true : false)))
+        .to.not.be.undefined;
 
-      const propChanges = reporter.changes[0].classChanges
-        .get("TestClassA")!
-        .propertyChanges.get("PropertyA");
+      const propChanges = reporter.changes[0].classChanges.get("TestClassA")!.propertyChanges.get("PropertyA");
 
       let propChange = propChanges!.propertyValueChanges.find((p) =>
-        p.diagnostic &&
-        p.diagnostic.messageArgs &&
-        p.diagnostic.messageArgs[0] === "label"
-          ? true
-          : false
+        p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "label" ? true : false
       );
       expect(propChange?.toString()).to.equal("Label: labelA -> undefined");
       propChange = propChanges!.propertyValueChanges.find((p) =>
-        p.diagnostic &&
-        p.diagnostic.messageArgs &&
-        p.diagnostic.messageArgs[0] === "description"
-          ? true
-          : false
+        p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "description" ? true : false
       );
-      expect(propChange?.toString()).to.equal(
-        "Description: test description -> undefined"
-      );
+      expect(propChange?.toString()).to.equal("Description: test description -> undefined");
       propChange = propChanges!.propertyValueChanges.find((p) =>
-        p.diagnostic &&
-        p.diagnostic.messageArgs &&
-        p.diagnostic.messageArgs[0] === "isReadOnly"
-          ? true
-          : false
+        p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "isReadOnly" ? true : false
       );
       expect(propChange?.toString()).to.equal("IsReadOnly: false -> undefined");
       propChange = propChanges!.propertyValueChanges.find((p) =>
-        p.diagnostic &&
-        p.diagnostic.messageArgs &&
-        p.diagnostic.messageArgs[0] === "priority"
-          ? true
-          : false
+        p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "priority" ? true : false
       );
       expect(propChange?.toString()).to.equal("Priority: 1 -> undefined");
       propChange = propChanges!.propertyValueChanges.find((p) =>
-        p.diagnostic &&
-        p.diagnostic.messageArgs &&
-        p.diagnostic.messageArgs[0] === "category"
-          ? true
-          : false
+        p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "category" ? true : false
       );
-      expect(propChange?.toString()).to.equal(
-        "Category: SchemaA.CategoryA -> undefined"
-      );
+      expect(propChange?.toString()).to.equal("Category: SchemaA.CategoryA -> undefined");
       propChange = propChanges!.propertyValueChanges.find((p) =>
-        p.diagnostic &&
-        p.diagnostic.messageArgs &&
-        p.diagnostic.messageArgs[0] === "kindOfQuantity"
-          ? true
-          : false
+        p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "kindOfQuantity" ? true : false
       );
-      expect(propChange?.toString()).to.equal(
-        "KindOfQuantity: SchemaA.TestKindOfQuantity -> undefined"
-      );
+      expect(propChange?.toString()).to.equal("KindOfQuantity: SchemaA.TestKindOfQuantity -> undefined");
     });
 
     it("Property B not found , Enumeration property, all diagnostics reported", async () => {
@@ -1316,83 +1134,39 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        5,
-        "Expected 5 differences."
-      );
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.code === SchemaCompareCodes.PropertyMissing ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "isReadOnly" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "priority" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "type" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "enumeration" ? true : false
-        )
-      ).to.not.be.undefined;
+      expect(reporter.diagnostics.length).to.equal(5, "Expected 5 differences.");
+      expect(reporter.diagnostics.find((d) => (d.code === SchemaCompareCodes.PropertyMissing ? true : false))).to.not.be
+        .undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "isReadOnly" ? true : false))).to
+        .not.be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "priority" ? true : false))).to.not
+        .be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "type" ? true : false))).to.not.be
+        .undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "enumeration" ? true : false))).to
+        .not.be.undefined;
 
-      const propChanges = reporter.changes[0].classChanges
-        .get("TestClassA")!
-        .propertyChanges.get("PropertyA");
+      const propChanges = reporter.changes[0].classChanges.get("TestClassA")!.propertyChanges.get("PropertyA");
 
       let propChange = propChanges!.propertyValueChanges.find((p) =>
-        p.diagnostic &&
-        p.diagnostic.messageArgs &&
-        p.diagnostic.messageArgs[0] === "label"
-          ? true
-          : false
+        p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "label" ? true : false
       );
       propChange = propChanges!.propertyValueChanges.find((p) =>
-        p.diagnostic &&
-        p.diagnostic.messageArgs &&
-        p.diagnostic.messageArgs[0] === "type"
-          ? true
-          : false
+        p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "type" ? true : false
       );
-      expect(propChange?.toString()).to.equal(
-        "Type: PrimitiveProperty -> undefined"
-      );
+      expect(propChange?.toString()).to.equal("Type: PrimitiveProperty -> undefined");
       propChange = propChanges!.propertyValueChanges.find((p) =>
-        p.diagnostic &&
-        p.diagnostic.messageArgs &&
-        p.diagnostic.messageArgs[0] === "isReadOnly"
-          ? true
-          : false
+        p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "isReadOnly" ? true : false
       );
       expect(propChange?.toString()).to.equal("IsReadOnly: false -> undefined");
       propChange = propChanges!.propertyValueChanges.find((p) =>
-        p.diagnostic &&
-        p.diagnostic.messageArgs &&
-        p.diagnostic.messageArgs[0] === "priority"
-          ? true
-          : false
+        p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "priority" ? true : false
       );
       expect(propChange?.toString()).to.equal("Priority: 0 -> undefined");
       propChange = propChanges!.propertyValueChanges.find((p) =>
-        p.diagnostic &&
-        p.diagnostic.messageArgs &&
-        p.diagnostic.messageArgs[0] === "enumeration"
-          ? true
-          : false
+        p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "enumeration" ? true : false
       );
-      expect(propChange?.toString()).to.equal(
-        "Enumeration: SchemaA.EnumA -> undefined"
-      );
+      expect(propChange?.toString()).to.equal("Enumeration: SchemaA.EnumA -> undefined");
     });
 
     it("Property B not found, Navigation property, all diagnostics reported", async () => {
@@ -1495,41 +1269,19 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        6,
-        "Expected 6 differences."
-      );
+      expect(reporter.diagnostics.length).to.equal(6, "Expected 6 differences.");
+      expect(reporter.diagnostics.find((d) => (d.code === SchemaCompareCodes.PropertyMissing ? true : false))).to.not.be
+        .undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "isReadOnly" ? true : false))).to
+        .not.be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "priority" ? true : false))).to.not
+        .be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "type" ? true : false))).to.not.be
+        .undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "direction" ? true : false))).to
+        .not.be.undefined;
       expect(
-        reporter.diagnostics.find((d) =>
-          d.code === SchemaCompareCodes.PropertyMissing ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "isReadOnly" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "priority" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "type" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "direction" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "relationshipClass"
-            ? true
-            : false
-        )
+        reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "relationshipClass" ? true : false))
       ).to.not.be.undefined;
     });
 
@@ -1615,10 +1367,7 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        0,
-        "Expected no difference."
-      );
+      expect(reporter.diagnostics.length).to.equal(0, "Expected no difference.");
     });
 
     it("Different description, diagnostic reported", async () => {
@@ -2071,11 +1820,7 @@ describe("Schema comparison tests", () => {
         SchemaCompareCodes.PropertyDelta,
         DiagnosticType.Property,
         itemAProp,
-        [
-          "kindOfQuantity",
-          "SchemaA.KindOfQuantityA",
-          "SchemaA.KindOfQuantityB",
-        ],
+        ["kindOfQuantity", "SchemaA.KindOfQuantityA", "SchemaA.KindOfQuantityB"],
         itemA.schema
       );
     });
@@ -2566,10 +2311,7 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        0,
-        "Expected no difference."
-      );
+      expect(reporter.diagnostics.length).to.equal(0, "Expected no difference.");
     });
 
     it("Different navigation property relationship, diagnostic reported", async () => {
@@ -2850,10 +2592,7 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        0,
-        "Expected no difference."
-      );
+      expect(reporter.diagnostics.length).to.equal(0, "Expected no difference.");
     });
 
     it("Different primitive type, diagnostic reported", async () => {
@@ -3044,10 +2783,7 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        0,
-        "Expected no difference."
-      );
+      expect(reporter.diagnostics.length).to.equal(0, "Expected no difference.");
     });
 
     it("Different properties, diagnostic reported for each schema", async () => {
@@ -3087,9 +2823,7 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      const result = reporter.diagnostics.filter(
-        (d) => d.code === SchemaCompareCodes.PropertyMissing
-      );
+      const result = reporter.diagnostics.filter((d) => d.code === SchemaCompareCodes.PropertyMissing);
       validateDiagnostic(
         result[0],
         SchemaCompareCodes.PropertyMissing,
@@ -3151,10 +2885,7 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        2,
-        "Expected 2 differences."
-      );
+      expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
       validateDiagnostic(
         reporter.diagnostics[0],
         SchemaCompareCodes.EntityMixinMissing,
@@ -3202,10 +2933,7 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        0,
-        "Expected no differences."
-      );
+      expect(reporter.diagnostics.length).to.equal(0, "Expected no differences.");
     });
 
     it("No SchemaItem B, all diagnostics reported", async () => {
@@ -3229,36 +2957,18 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.code === SchemaCompareCodes.SchemaItemMissing ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "label" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "description" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "modifier" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "schemaItemType" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === mixin ? true : false
-        )
-      ).to.not.be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.code === SchemaCompareCodes.SchemaItemMissing ? true : false))).to.not
+        .be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "label" ? true : false))).to.not.be
+        .undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "description" ? true : false))).to
+        .not.be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "modifier" ? true : false))).to.not
+        .be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "schemaItemType" ? true : false)))
+        .to.not.be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === mixin ? true : false))).to.not.be
+        .undefined;
     });
   });
 
@@ -3350,10 +3060,7 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        0,
-        "Expected no difference."
-      );
+      expect(reporter.diagnostics.length).to.equal(0, "Expected no difference.");
     });
 
     it("Mixin B does not exist, all diagnostics reported", async () => {
@@ -3389,16 +3096,10 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.code === SchemaCompareCodes.SchemaItemMissing ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "appliesTo" ? true : false
-        )
-      ).to.not.be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.code === SchemaCompareCodes.SchemaItemMissing ? true : false))).to.not
+        .be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "appliesTo" ? true : false))).to
+        .not.be.undefined;
     });
   });
 
@@ -3439,22 +3140,12 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
+      expect(reporter.diagnostics.find((d) => (d.code === SchemaCompareCodes.SchemaItemMissing ? true : false))).to.not
+        .be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "strength" ? true : false))).to.not
+        .be.undefined;
       expect(
-        reporter.diagnostics.find((d) =>
-          d.code === SchemaCompareCodes.SchemaItemMissing ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "strength" ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "strengthDirection"
-            ? true
-            : false
-        )
+        reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "strengthDirection" ? true : false))
       ).to.not.be.undefined;
     });
 
@@ -3577,10 +3268,7 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        0,
-        "Expected no difference."
-      );
+      expect(reporter.diagnostics.length).to.equal(0, "Expected no difference.");
     });
 
     it("Different strengthDirection, diagnostic reported", async () => {
@@ -3702,10 +3390,7 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        0,
-        "Expected no difference."
-      );
+      expect(reporter.diagnostics.length).to.equal(0, "Expected no difference.");
     });
   });
 
@@ -3762,97 +3447,65 @@ describe("Schema comparison tests", () => {
       const bJson = getSchemaJsonWithItems(schemaAJson, bItems);
       const schemaA = await Schema.fromJson(aJson, contextA);
       const schemaB = await Schema.fromJson(bJson, contextB);
-      const relationship = (await schemaA.getItem(
-        "TestRelationship"
-      )) as RelationshipClass;
+      const relationship = (await schemaA.getItem("TestRelationship")) as RelationshipClass;
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === relationship.source &&
-          d.code === SchemaCompareCodes.RelationshipConstraintClassMissing
+          d.ecDefinition === relationship.source && d.code === SchemaCompareCodes.RelationshipConstraintClassMissing
             ? true
             : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === relationship.target &&
-          d.code === SchemaCompareCodes.RelationshipConstraintClassMissing
+          d.ecDefinition === relationship.target && d.code === SchemaCompareCodes.RelationshipConstraintClassMissing
             ? true
             : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === relationship.source &&
-          d.messageArgs &&
-          d.messageArgs[0] === "multiplicity"
+          d.ecDefinition === relationship.source && d.messageArgs && d.messageArgs[0] === "multiplicity" ? true : false
+        )
+      ).to.not.be.undefined;
+      expect(
+        reporter.diagnostics.find((d) =>
+          d.ecDefinition === relationship.target && d.messageArgs && d.messageArgs[0] === "multiplicity" ? true : false
+        )
+      ).to.not.be.undefined;
+      expect(
+        reporter.diagnostics.find((d) =>
+          d.ecDefinition === relationship.source && d.messageArgs && d.messageArgs[0] === "polymorphic" ? true : false
+        )
+      ).to.not.be.undefined;
+      expect(
+        reporter.diagnostics.find((d) =>
+          d.ecDefinition === relationship.target && d.messageArgs && d.messageArgs[0] === "polymorphic" ? true : false
+        )
+      ).to.not.be.undefined;
+      expect(
+        reporter.diagnostics.find((d) =>
+          d.ecDefinition === relationship.source && d.messageArgs && d.messageArgs[0] === "roleLabel" ? true : false
+        )
+      ).to.not.be.undefined;
+      expect(
+        reporter.diagnostics.find((d) =>
+          d.ecDefinition === relationship.target && d.messageArgs && d.messageArgs[0] === "roleLabel" ? true : false
+        )
+      ).to.not.be.undefined;
+      expect(
+        reporter.diagnostics.find((d) =>
+          d.ecDefinition === relationship.source && d.messageArgs && d.messageArgs[0] === "abstractConstraint"
             ? true
             : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === relationship.target &&
-          d.messageArgs &&
-          d.messageArgs[0] === "multiplicity"
-            ? true
-            : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.ecDefinition === relationship.source &&
-          d.messageArgs &&
-          d.messageArgs[0] === "polymorphic"
-            ? true
-            : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.ecDefinition === relationship.target &&
-          d.messageArgs &&
-          d.messageArgs[0] === "polymorphic"
-            ? true
-            : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.ecDefinition === relationship.source &&
-          d.messageArgs &&
-          d.messageArgs[0] === "roleLabel"
-            ? true
-            : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.ecDefinition === relationship.target &&
-          d.messageArgs &&
-          d.messageArgs[0] === "roleLabel"
-            ? true
-            : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.ecDefinition === relationship.source &&
-          d.messageArgs &&
-          d.messageArgs[0] === "abstractConstraint"
-            ? true
-            : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.ecDefinition === relationship.target &&
-          d.messageArgs &&
-          d.messageArgs[0] === "abstractConstraint"
+          d.ecDefinition === relationship.target && d.messageArgs && d.messageArgs[0] === "abstractConstraint"
             ? true
             : false
         )
@@ -3896,14 +3549,9 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      const relA = (await schemaA.getItem(
-        "TestRelationship"
-      )) as RelationshipClass;
+      const relA = (await schemaA.getItem("TestRelationship")) as RelationshipClass;
 
-      expect(reporter.diagnostics.length).to.equal(
-        2,
-        "Expected 2 differences."
-      );
+      expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
       validateDiagnostic(
         reporter.diagnostics[0],
         SchemaCompareCodes.RelationshipConstraintDelta,
@@ -3959,14 +3607,9 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      const relA = (await schemaA.getItem(
-        "TestRelationship"
-      )) as RelationshipClass;
+      const relA = (await schemaA.getItem("TestRelationship")) as RelationshipClass;
 
-      expect(reporter.diagnostics.length).to.equal(
-        2,
-        "Expected 2 differences."
-      );
+      expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
       validateDiagnostic(
         reporter.diagnostics[0],
         SchemaCompareCodes.RelationshipConstraintDelta,
@@ -4022,14 +3665,9 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      const relA = (await schemaA.getItem(
-        "TestRelationship"
-      )) as RelationshipClass;
+      const relA = (await schemaA.getItem("TestRelationship")) as RelationshipClass;
 
-      expect(reporter.diagnostics.length).to.equal(
-        2,
-        "Expected 2 differences."
-      );
+      expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
       validateDiagnostic(
         reporter.diagnostics[0],
         SchemaCompareCodes.RelationshipConstraintDelta,
@@ -4089,14 +3727,9 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      const relA = (await schemaA.getItem(
-        "TestRelationship"
-      )) as RelationshipClass;
+      const relA = (await schemaA.getItem("TestRelationship")) as RelationshipClass;
 
-      expect(reporter.diagnostics.length).to.equal(
-        2,
-        "Expected 2 differences."
-      );
+      expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
       validateDiagnostic(
         reporter.diagnostics[0],
         SchemaCompareCodes.RelationshipConstraintDelta,
@@ -4156,14 +3789,9 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      const relA = (await schemaA.getItem(
-        "TestRelationship"
-      )) as RelationshipClass;
+      const relA = (await schemaA.getItem("TestRelationship")) as RelationshipClass;
 
-      expect(reporter.diagnostics.length).to.equal(
-        2,
-        "Expected 2 differences."
-      );
+      expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
       validateDiagnostic(
         reporter.diagnostics[0],
         SchemaCompareCodes.RelationshipConstraintDelta,
@@ -4217,17 +3845,12 @@ describe("Schema comparison tests", () => {
       const bJson = getConstraintJson(bItems);
       const schemaA = await Schema.fromJson(aJson, contextA);
       const schemaB = await Schema.fromJson(bJson, contextB);
-      const relA = (await schemaA.getItem(
-        "TestRelationship"
-      )) as RelationshipClass;
+      const relA = (await schemaA.getItem("TestRelationship")) as RelationshipClass;
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        2,
-        "Expected 2 differences."
-      );
+      expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
       validateDiagnostic(
         reporter.diagnostics[0],
         SchemaCompareCodes.RelationshipConstraintDelta,
@@ -4279,22 +3902,15 @@ describe("Schema comparison tests", () => {
       const bJson = getConstraintJson(bItems);
       const schemaA = await Schema.fromJson(aJson, contextA);
       const schemaB = await Schema.fromJson(bJson, contextB);
-      const relA = (await schemaA.getItem(
-        "TestRelationship"
-      )) as RelationshipClass;
-      const relB = (await schemaB.getItem(
-        "TestRelationship"
-      )) as RelationshipClass;
+      const relA = (await schemaA.getItem("TestRelationship")) as RelationshipClass;
+      const relB = (await schemaB.getItem("TestRelationship")) as RelationshipClass;
       const classB = await schemaA.getItem("TestClassB");
       const classC = await schemaB.getItem("TestClassC");
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        4,
-        "Expected 4 differences."
-      );
+      expect(reporter.diagnostics.length).to.equal(4, "Expected 4 differences.");
       validateDiagnostic(
         reporter.diagnostics[0],
         SchemaCompareCodes.RelationshipConstraintClassMissing,
@@ -4346,16 +3962,10 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.code === SchemaCompareCodes.SchemaItemMissing ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.messageArgs && d.messageArgs[0] === "appliesTo" ? true : false
-        )
-      ).to.not.be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.code === SchemaCompareCodes.SchemaItemMissing ? true : false))).to.not
+        .be.undefined;
+      expect(reporter.diagnostics.find((d) => (d.messageArgs && d.messageArgs[0] === "appliesTo" ? true : false))).to
+        .not.be.undefined;
     });
 
     it("Different containerType, diagnostic reported", async () => {
@@ -4424,16 +4034,11 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
+      expect(reporter.diagnostics.find((d) => (d.code === SchemaCompareCodes.SchemaItemMissing ? true : false))).to.not
+        .be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.code === SchemaCompareCodes.SchemaItemMissing ? true : false
-        )
-      ).to.not.be.undefined;
-      expect(
-        reporter.diagnostics.find((d) =>
-          d.code === SchemaCompareCodes.CustomAttributeInstanceClassMissing
-            ? true
-            : false
+          d.code === SchemaCompareCodes.CustomAttributeInstanceClassMissing ? true : false
         )
       ).to.not.be.undefined;
     });
@@ -4477,10 +4082,7 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        0,
-        "Expected no difference."
-      );
+      expect(reporter.diagnostics.length).to.equal(0, "Expected no difference.");
     });
 
     it("Different CA instances, diagnostic reported", async () => {
@@ -4535,10 +4137,7 @@ describe("Schema comparison tests", () => {
       const caA = itemA.customAttributes!.get("SchemaA.CustomAttributeA");
       const caB = itemB.customAttributes!.get("SchemaA.CustomAttributeB");
 
-      expect(reporter.diagnostics.length).to.equal(
-        2,
-        "Expected 2 differences."
-      );
+      expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
       validateDiagnostic(
         reporter.diagnostics[0],
         SchemaCompareCodes.CustomAttributeInstanceClassMissing,
@@ -4577,9 +4176,7 @@ describe("Schema comparison tests", () => {
       const bJson = getSchemaJsonWithItems(schemaAJson, {});
       const schemaA = await Schema.fromJson(aJson, contextA);
       const schemaB = await Schema.fromJson(bJson, contextB);
-      const enumeration = (await schemaA.getItem(
-        "TestEnumeration"
-      )) as Enumeration;
+      const enumeration = (await schemaA.getItem("TestEnumeration")) as Enumeration;
       const enumerator = enumeration.enumerators[0];
 
       const comparer = new SchemaComparer(reporter);
@@ -4587,55 +4184,32 @@ describe("Schema comparison tests", () => {
 
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === enumeration &&
-          d.code === SchemaCompareCodes.SchemaItemMissing
-            ? true
-            : false
+          d.ecDefinition === enumeration && d.code === SchemaCompareCodes.SchemaItemMissing ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === enumeration &&
-          d.messageArgs &&
-          d.messageArgs[0] === "type"
-            ? true
-            : false
+          d.ecDefinition === enumeration && d.messageArgs && d.messageArgs[0] === "type" ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === enumeration &&
-          d.messageArgs &&
-          d.messageArgs[0] === "isStrict"
-            ? true
-            : false
+          d.ecDefinition === enumeration && d.messageArgs && d.messageArgs[0] === "isStrict" ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.messageArgs &&
-          d.messageArgs[0] === enumerator &&
-          d.messageArgs[1] === "description"
-            ? true
-            : false
+          d.messageArgs && d.messageArgs[0] === enumerator && d.messageArgs[1] === "description" ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.messageArgs &&
-          d.messageArgs[0] === enumerator &&
-          d.messageArgs[1] === "label"
-            ? true
-            : false
+          d.messageArgs && d.messageArgs[0] === enumerator && d.messageArgs[1] === "label" ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.messageArgs &&
-          d.messageArgs[0] === enumerator &&
-          d.messageArgs[1] === "value"
-            ? true
-            : false
+          d.messageArgs && d.messageArgs[0] === enumerator && d.messageArgs[1] === "value" ? true : false
         )
       ).to.not.be.undefined;
     });
@@ -4771,16 +4345,10 @@ describe("Schema comparison tests", () => {
       const itemB = (await schemaB.getItem("TestEnumeration")) as Enumeration;
 
       const diagA = reporter.diagnostics.find((d) =>
-        d.ecDefinition === itemA &&
-        d.code === SchemaCompareCodes.EnumeratorMissing
-          ? true
-          : false
+        d.ecDefinition === itemA && d.code === SchemaCompareCodes.EnumeratorMissing ? true : false
       );
       const diagB = reporter.diagnostics.find((d) =>
-        d.ecDefinition === itemB &&
-        d.code === SchemaCompareCodes.EnumeratorMissing
-          ? true
-          : false
+        d.ecDefinition === itemB && d.code === SchemaCompareCodes.EnumeratorMissing ? true : false
       );
 
       expect(diagA).to.not.be.undefined;
@@ -4933,10 +4501,7 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(
-        0,
-        "Expected no difference."
-      );
+      expect(reporter.diagnostics.length).to.equal(0, "Expected no difference.");
     });
 
     it("Different enumerator value, diagnostic reported", async () => {
@@ -5019,36 +4584,22 @@ describe("Schema comparison tests", () => {
 
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === koq &&
-          d.code === SchemaCompareCodes.SchemaItemMissing
-            ? true
-            : false
+          d.ecDefinition === koq && d.code === SchemaCompareCodes.SchemaItemMissing ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === koq &&
-          d.messageArgs &&
-          d.messageArgs[0] === "relativeError"
-            ? true
-            : false
+          d.ecDefinition === koq && d.messageArgs && d.messageArgs[0] === "relativeError" ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === koq &&
-          d.messageArgs &&
-          d.messageArgs[0] === "persistenceUnit"
-            ? true
-            : false
+          d.ecDefinition === koq && d.messageArgs && d.messageArgs[0] === "persistenceUnit" ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === koq &&
-          d.code === SchemaCompareCodes.PresentationUnitMissing
-            ? true
-            : false
+          d.ecDefinition === koq && d.code === SchemaCompareCodes.PresentationUnitMissing ? true : false
         )
       ).to.not.be.undefined;
     });
@@ -5183,16 +4734,10 @@ describe("Schema comparison tests", () => {
       const unitC = await schemaB.getItem("FormatC");
 
       const diagA = reporter.diagnostics.find((d) =>
-        d.ecDefinition === itemA &&
-        d.code === SchemaCompareCodes.PresentationUnitMissing
-          ? true
-          : false
+        d.ecDefinition === itemA && d.code === SchemaCompareCodes.PresentationUnitMissing ? true : false
       );
       const diagB = reporter.diagnostics.find((d) =>
-        d.ecDefinition === itemB &&
-        d.code === SchemaCompareCodes.PresentationUnitMissing
-          ? true
-          : false
+        d.ecDefinition === itemB && d.code === SchemaCompareCodes.PresentationUnitMissing ? true : false
       );
 
       expect(diagA).to.not.be.undefined;
@@ -5235,19 +4780,12 @@ describe("Schema comparison tests", () => {
 
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === category &&
-          d.code === SchemaCompareCodes.SchemaItemMissing
-            ? true
-            : false
+          d.ecDefinition === category && d.code === SchemaCompareCodes.SchemaItemMissing ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === category &&
-          d.messageArgs &&
-          d.messageArgs[0] === "priority"
-            ? true
-            : false
+          d.ecDefinition === category && d.messageArgs && d.messageArgs[0] === "priority" ? true : false
         )
       ).to.not.be.undefined;
     });
@@ -5307,109 +4845,62 @@ describe("Schema comparison tests", () => {
 
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === format &&
-          d.code === SchemaCompareCodes.SchemaItemMissing
-            ? true
-            : false
+          d.ecDefinition === format && d.code === SchemaCompareCodes.SchemaItemMissing ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === format &&
-          d.messageArgs &&
-          d.messageArgs[0] === "roundFactor"
-            ? true
-            : false
+          d.ecDefinition === format && d.messageArgs && d.messageArgs[0] === "roundFactor" ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === format &&
-          d.messageArgs &&
-          d.messageArgs[0] === "type"
-            ? true
-            : false
+          d.ecDefinition === format && d.messageArgs && d.messageArgs[0] === "type" ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === format &&
-          d.messageArgs &&
-          d.messageArgs[0] === "precision"
-            ? true
-            : false
+          d.ecDefinition === format && d.messageArgs && d.messageArgs[0] === "precision" ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === format &&
-          d.messageArgs &&
-          d.messageArgs[0] === "showSignOption"
-            ? true
-            : false
+          d.ecDefinition === format && d.messageArgs && d.messageArgs[0] === "showSignOption" ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === format &&
-          d.messageArgs &&
-          d.messageArgs[0] === "decimalSeparator"
-            ? true
-            : false
+          d.ecDefinition === format && d.messageArgs && d.messageArgs[0] === "decimalSeparator" ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === format &&
-          d.messageArgs &&
-          d.messageArgs[0] === "thousandSeparator"
-            ? true
-            : false
+          d.ecDefinition === format && d.messageArgs && d.messageArgs[0] === "thousandSeparator" ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === format &&
-          d.messageArgs &&
-          d.messageArgs[0] === "uomSeparator"
-            ? true
-            : false
+          d.ecDefinition === format && d.messageArgs && d.messageArgs[0] === "uomSeparator" ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === format &&
-          d.messageArgs &&
-          d.messageArgs[0] === "stationSeparator"
-            ? true
-            : false
+          d.ecDefinition === format && d.messageArgs && d.messageArgs[0] === "stationSeparator" ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === format &&
-          d.messageArgs &&
-          d.messageArgs[0] === "formatTraits"
-            ? true
-            : false
+          d.ecDefinition === format && d.messageArgs && d.messageArgs[0] === "formatTraits" ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === format &&
-          d.messageArgs &&
-          d.messageArgs[0] === "spacer"
-            ? true
-            : false
+          d.ecDefinition === format && d.messageArgs && d.messageArgs[0] === "spacer" ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === format &&
-          d.messageArgs &&
-          d.messageArgs[0] === "includeZero"
-            ? true
-            : false
+          d.ecDefinition === format && d.messageArgs && d.messageArgs[0] === "includeZero" ? true : false
         )
       ).to.not.be.undefined;
     });
@@ -5968,10 +5459,7 @@ describe("Schema comparison tests", () => {
       const unitA = (await schemaA.getItem("UnitA")) as ECClass;
       const unitB = (await schemaB.getItem("UnitB")) as ECClass;
 
-      expect(reporter.diagnostics.length).to.equal(
-        2,
-        "Expected 2 differences."
-      );
+      expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
       validateDiagnostic(
         reporter.diagnostics[0],
         SchemaCompareCodes.FormatUnitMissing,
@@ -6076,64 +5564,37 @@ describe("Schema comparison tests", () => {
 
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === unit &&
-          d.code === SchemaCompareCodes.SchemaItemMissing
-            ? true
-            : false
+          d.ecDefinition === unit && d.code === SchemaCompareCodes.SchemaItemMissing ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === unit &&
-          d.messageArgs &&
-          d.messageArgs[0] === "phenomenon"
-            ? true
-            : false
+          d.ecDefinition === unit && d.messageArgs && d.messageArgs[0] === "phenomenon" ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === unit &&
-          d.messageArgs &&
-          d.messageArgs[0] === "unitSystem"
-            ? true
-            : false
+          d.ecDefinition === unit && d.messageArgs && d.messageArgs[0] === "unitSystem" ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === unit &&
-          d.messageArgs &&
-          d.messageArgs[0] === "definition"
-            ? true
-            : false
+          d.ecDefinition === unit && d.messageArgs && d.messageArgs[0] === "definition" ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === unit &&
-          d.messageArgs &&
-          d.messageArgs[0] === "numerator"
-            ? true
-            : false
+          d.ecDefinition === unit && d.messageArgs && d.messageArgs[0] === "numerator" ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === unit &&
-          d.messageArgs &&
-          d.messageArgs[0] === "denominator"
-            ? true
-            : false
+          d.ecDefinition === unit && d.messageArgs && d.messageArgs[0] === "denominator" ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === unit &&
-          d.messageArgs &&
-          d.messageArgs[0] === "offset"
-            ? true
-            : false
+          d.ecDefinition === unit && d.messageArgs && d.messageArgs[0] === "offset" ? true : false
         )
       ).to.not.be.undefined;
     });
@@ -6303,28 +5764,17 @@ describe("Schema comparison tests", () => {
 
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === itemA &&
-          d.code === SchemaCompareCodes.SchemaItemMissing
-            ? true
-            : false
+          d.ecDefinition === itemA && d.code === SchemaCompareCodes.SchemaItemMissing ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === itemA &&
-          d.messageArgs &&
-          d.messageArgs[0] === "invertsUnit"
-            ? true
-            : false
+          d.ecDefinition === itemA && d.messageArgs && d.messageArgs[0] === "invertsUnit" ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === itemA &&
-          d.messageArgs &&
-          d.messageArgs[0] === "unitSystem"
-            ? true
-            : false
+          d.ecDefinition === itemA && d.messageArgs && d.messageArgs[0] === "unitSystem" ? true : false
         )
       ).to.not.be.undefined;
     });
@@ -6421,19 +5871,12 @@ describe("Schema comparison tests", () => {
 
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === itemA &&
-          d.code === SchemaCompareCodes.SchemaItemMissing
-            ? true
-            : false
+          d.ecDefinition === itemA && d.code === SchemaCompareCodes.SchemaItemMissing ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === itemA &&
-          d.messageArgs &&
-          d.messageArgs[0] === "definition"
-            ? true
-            : false
+          d.ecDefinition === itemA && d.messageArgs && d.messageArgs[0] === "definition" ? true : false
         )
       ).to.not.be.undefined;
     });
@@ -6503,46 +5946,27 @@ describe("Schema comparison tests", () => {
 
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === itemA &&
-          d.code === SchemaCompareCodes.SchemaItemMissing
-            ? true
-            : false
+          d.ecDefinition === itemA && d.code === SchemaCompareCodes.SchemaItemMissing ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === itemA &&
-          d.messageArgs &&
-          d.messageArgs[0] === "phenomenon"
-            ? true
-            : false
+          d.ecDefinition === itemA && d.messageArgs && d.messageArgs[0] === "phenomenon" ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === itemA &&
-          d.messageArgs &&
-          d.messageArgs[0] === "definition"
-            ? true
-            : false
+          d.ecDefinition === itemA && d.messageArgs && d.messageArgs[0] === "definition" ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === itemA &&
-          d.messageArgs &&
-          d.messageArgs[0] === "numerator"
-            ? true
-            : false
+          d.ecDefinition === itemA && d.messageArgs && d.messageArgs[0] === "numerator" ? true : false
         )
       ).to.not.be.undefined;
       expect(
         reporter.diagnostics.find((d) =>
-          d.ecDefinition === itemA &&
-          d.messageArgs &&
-          d.messageArgs[0] === "denominator"
-            ? true
-            : false
+          d.ecDefinition === itemA && d.messageArgs && d.messageArgs[0] === "denominator" ? true : false
         )
       ).to.not.be.undefined;
     });

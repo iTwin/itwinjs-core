@@ -7,13 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import {
-  AuxChannel,
-  AuxChannelData,
-  Point2d,
-  Point3d,
-  Range3d,
-} from "@itwin/core-geometry";
+import { AuxChannel, AuxChannelData, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import {
   ColorIndex,
   EdgeArgs,
@@ -91,15 +85,9 @@ export namespace PolylineArgs {
 
     const flags = new PolylineFlags(mesh.is2d, mesh.isPlanar);
     flags.isDisjoint = mesh.type === Mesh.PrimitiveType.Point;
-    if (
-      mesh.displayParams.regionEdgeType === DisplayParams.RegionEdgeType.Outline
-    ) {
+    if (mesh.displayParams.regionEdgeType === DisplayParams.RegionEdgeType.Outline) {
       // This polyline is behaving as the edges of a region surface.
-      if (
-        !mesh.displayParams.gradient ||
-        mesh.displayParams.gradient.isOutlined
-      )
-        flags.setIsNormalEdge();
+      if (!mesh.displayParams.gradient || mesh.displayParams.gradient.isOutlined) flags.setIsNormalEdge();
       else flags.setIsOutlineEdge(); // edges only displayed if fill undisplayed
     }
 
@@ -139,9 +127,7 @@ export class MeshArgsEdges {
     this.linePixels = LinePixels.Solid;
   }
   public get isValid(): boolean {
-    return (
-      this.edges.isValid || this.silhouettes.isValid || this.polylines.isValid
-    );
+    return this.edges.isValid || this.silhouettes.isValid || this.polylines.isValid;
   }
 }
 
@@ -171,14 +157,10 @@ export interface MeshArgs {
 /** @internal */
 export namespace MeshArgs {
   export function fromMesh(mesh: Mesh): MeshArgs | undefined {
-    if (!mesh.triangles || mesh.triangles.isEmpty || mesh.points.length === 0)
-      return undefined;
+    if (!mesh.triangles || mesh.triangles.isEmpty || mesh.points.length === 0) return undefined;
 
     const texture = mesh.displayParams.textureMapping?.texture;
-    const textureMapping =
-      texture && mesh.uvParams.length > 0
-        ? { texture, uvParams: mesh.uvParams }
-        : undefined;
+    const textureMapping = texture && mesh.uvParams.length > 0 ? { texture, uvParams: mesh.uvParams } : undefined;
 
     const colors = new ColorIndex();
     mesh.colorMap.toColorIndex(colors, mesh.colors);
@@ -206,10 +188,7 @@ export namespace MeshArgs {
     return {
       vertIndices: mesh.triangles.indices,
       points: mesh.points,
-      normals:
-        !mesh.displayParams.ignoreLighting && mesh.normals.length > 0
-          ? mesh.normals
-          : undefined,
+      normals: !mesh.displayParams.ignoreLighting && mesh.normals.length > 0 ? mesh.normals : undefined,
       textureMapping,
       colors,
       features,
@@ -245,10 +224,7 @@ export class Mesh {
 
   private constructor(props: Mesh.Props) {
     const { displayParams, features, type, range, is2d, isPlanar } = props;
-    this._data =
-      Mesh.PrimitiveType.Mesh === type
-        ? new TriangleList()
-        : new MeshPolylineList();
+    this._data = Mesh.PrimitiveType.Mesh === type ? new TriangleList() : new MeshPolylineList();
     this.displayParams = displayParams;
     this.features = features ? new Mesh.Features(features) : undefined;
     this.type = type;
@@ -275,25 +251,18 @@ export class Mesh {
   }
 
   public get triangles(): TriangleList | undefined {
-    return Mesh.PrimitiveType.Mesh === this.type
-      ? (this._data as TriangleList)
-      : undefined;
+    return Mesh.PrimitiveType.Mesh === this.type ? (this._data as TriangleList) : undefined;
   }
 
   public get polylines(): MeshPolylineList | undefined {
-    return Mesh.PrimitiveType.Mesh !== this.type
-      ? (this._data as MeshPolylineList)
-      : undefined;
+    return Mesh.PrimitiveType.Mesh !== this.type ? (this._data as MeshPolylineList) : undefined;
   }
 
   public get auxChannels(): ReadonlyArray<AuxChannel> | undefined {
     return this._auxChannels;
   }
 
-  public addAuxChannels(
-    channels: ReadonlyArray<AuxChannel>,
-    srcIndex: number
-  ): void {
+  public addAuxChannels(channels: ReadonlyArray<AuxChannel>, srcIndex: number): void {
     // The native version of this function appears to assume that all polyfaces added to the Mesh will have
     // the same number + type of aux channels.
     // ###TODO We should really produce a separate Mesh for each unique combination. For now just bail on mismatch.
@@ -303,12 +272,7 @@ export class Mesh {
       for (let i = 0; i < channels.length; i++) {
         const src = channels[i];
         const dst = this._auxChannels[i];
-        if (
-          src.dataType !== dst.dataType ||
-          src.name !== dst.name ||
-          src.inputName !== dst.inputName
-        )
-          return;
+        if (src.dataType !== dst.dataType || src.name !== dst.name || src.inputName !== dst.inputName) return;
       }
     }
 
@@ -332,12 +296,7 @@ export class Mesh {
       const dstIndex = dstChannel.valueCount;
       for (let dataIndex = 0; dataIndex < srcChannel.data.length; dataIndex++) {
         const dstData = dstChannel.data[dataIndex];
-        dstData.copyValues(
-          srcChannel.data[dataIndex],
-          dstIndex,
-          srcIndex,
-          dstChannel.entriesPerValue
-        );
+        dstData.copyValues(srcChannel.data[dataIndex], dstIndex, srcIndex, dstChannel.entriesPerValue);
       }
     }
   }
@@ -359,21 +318,16 @@ export class Mesh {
     instancesOrViewIndependentOrigin?: InstancedGraphicParams | Point3d
   ): RenderGraphic | undefined {
     const meshArgs = this.toMeshArgs();
-    if (meshArgs)
-      return system.createTriMesh(meshArgs, instancesOrViewIndependentOrigin);
+    if (meshArgs) return system.createTriMesh(meshArgs, instancesOrViewIndependentOrigin);
 
     const plArgs = this.toPolylineArgs();
-    return plArgs
-      ? system.createIndexedPolylines(plArgs, instancesOrViewIndependentOrigin)
-      : undefined;
+    return plArgs ? system.createIndexedPolylines(plArgs, instancesOrViewIndependentOrigin) : undefined;
   }
 
   public addPolyline(poly: MeshPolyline): void {
     const { type, polylines } = this;
 
-    assert(
-      Mesh.PrimitiveType.Polyline === type || Mesh.PrimitiveType.Point === type
-    );
+    assert(Mesh.PrimitiveType.Polyline === type || Mesh.PrimitiveType.Point === type);
     assert(undefined !== polylines);
 
     if (Mesh.PrimitiveType.Polyline === type && poly.indices.length < 2) return;
@@ -451,8 +405,7 @@ export namespace Mesh {
         this.indices.push(index);
       } else {
         // Second feature - back-fill uniform for existing verts
-        while (this.indices.length < numVerts - 1)
-          this.indices.push(this.uniform);
+        while (this.indices.length < numVerts - 1) this.indices.push(this.uniform);
 
         this.indices.push(index);
       }

@@ -94,13 +94,7 @@ export class HalfEdgePositionDetail {
   }
   /**  Create with null data. */
   public static create(): HalfEdgePositionDetail {
-    const detail = new HalfEdgePositionDetail(
-      undefined,
-      0,
-      0,
-      0,
-      HalfEdgeTopo.None
-    );
+    const detail = new HalfEdgePositionDetail(undefined, 0, 0, 0, HalfEdgeTopo.None);
     return detail;
   }
   public getITag(): number | undefined {
@@ -121,22 +115,12 @@ export class HalfEdgePositionDetail {
   }
 
   /** Create with node, fraction along edge, marked as "HalfEdgeTopo.Edge".  Compute interpolated xyz on the edge */
-  public static createEdgeAtFraction(
-    node: HalfEdge,
-    edgeFraction: number
-  ): HalfEdgePositionDetail {
+  public static createEdgeAtFraction(node: HalfEdge, edgeFraction: number): HalfEdgePositionDetail {
     const node1 = node.faceSuccessor;
     const x = Geometry.interpolate(node.x, edgeFraction, node1.x);
     const y = Geometry.interpolate(node.y, edgeFraction, node1.y);
     const z = Geometry.interpolate(node.z, edgeFraction, node1.z);
-    return new HalfEdgePositionDetail(
-      node,
-      x,
-      y,
-      z,
-      HalfEdgeTopo.Edge,
-      edgeFraction
-    );
+    return new HalfEdgePositionDetail(node, x, y, z, HalfEdgeTopo.Edge, edgeFraction);
   }
 
   /** reassign contents so this instance becomes a face hit.
@@ -171,10 +155,7 @@ export class HalfEdgePositionDetail {
    * @param node new node value.
    * @param edgeFraction new edge fraction.   xyz is recomputed from this edge and its face successor.
    */
-  public resetAtEdgeAndFraction(
-    node: HalfEdge,
-    edgeFraction: number
-  ): HalfEdgePositionDetail {
+  public resetAtEdgeAndFraction(node: HalfEdge, edgeFraction: number): HalfEdgePositionDetail {
     this._topo = HalfEdgeTopo.Edge;
     this._node = node;
     const nodeB = node.faceSuccessor;
@@ -190,13 +171,7 @@ export class HalfEdgePositionDetail {
    * * Take xyz from the node.
    */
   public static createVertex(node: HalfEdge): HalfEdgePositionDetail {
-    return new HalfEdgePositionDetail(
-      node,
-      node.x,
-      node.y,
-      node.z,
-      HalfEdgeTopo.Vertex
-    );
+    return new HalfEdgePositionDetail(node, node.x, node.y, node.z, HalfEdgeTopo.Vertex);
   }
 
   /** Mark as "HalfEdgeTopo.Vertex"
@@ -229,9 +204,7 @@ export class HalfEdgePositionDetail {
    * * undefined flag is returned as false.
    */
   public get isExteriorTarget(): boolean {
-    return this._isExteriorTarget !== undefined
-      ? this._isExteriorTarget
-      : false;
+    return this._isExteriorTarget !== undefined ? this._isExteriorTarget : false;
   }
 
   /** Return true if this detail is marked as being within a face. */
@@ -278,9 +251,7 @@ export class HalfEdgePositionDetail {
 
   public isAtXY(x: number, y: number): boolean {
     return (
-      this._topo !== HalfEdgeTopo.None &&
-      Geometry.isSameCoordinate(this.x, x) &&
-      Geometry.isSameCoordinate(this.y, y)
+      this._topo !== HalfEdgeTopo.None && Geometry.isSameCoordinate(this.x, x) && Geometry.isSameCoordinate(this.y, y)
     );
   }
 }

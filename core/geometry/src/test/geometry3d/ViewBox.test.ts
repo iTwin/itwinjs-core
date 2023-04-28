@@ -24,15 +24,9 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
  */
 function makeViewableGeometry(): GeometryQuery[] {
   const geometry = [];
-  geometry.push(
-    LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(1, 0, 0))
-  );
-  geometry.push(
-    LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 1, 0))
-  );
-  geometry.push(
-    LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 0, 1.5))
-  );
+  geometry.push(LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(1, 0, 0)));
+  geometry.push(LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 1, 0)));
+  geometry.push(LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 0, 1.5)));
   geometry.push(
     LineString3d.create([
       Point3d.create(-1, -1, -1),
@@ -71,20 +65,10 @@ function makeViewableGeometry(): GeometryQuery[] {
   );
   const b = 0.25;
   // triangle in xz plane
-  geometry.push(
-    Loop.createPolygon([
-      Point3d.create(0, 0, 0),
-      Point3d.create(b, 0, 0),
-      Point3d.create(0, 0, b),
-    ])
-  );
+  geometry.push(Loop.createPolygon([Point3d.create(0, 0, 0), Point3d.create(b, 0, 0), Point3d.create(0, 0, b)]));
   // skinnier triangle in yz plane -- to higher z
   geometry.push(
-    Loop.createPolygon([
-      Point3d.create(0, 0, 0),
-      Point3d.create(0, b * 0.5, 0),
-      Point3d.create(0, 0, 1.5 * b),
-    ])
+    Loop.createPolygon([Point3d.create(0, 0, 0), Point3d.create(0, b * 0.5, 0), Point3d.create(0, 0, 1.5 * b)])
   );
   return geometry;
 }
@@ -104,17 +88,9 @@ function collectViewableGeometry(
   expectedIndex: StandardViewIndex | 0
 ) {
   const geometry0 = makeViewableGeometry();
-  const axes0 = Matrix3d.createViewedAxes(
-    rightVector,
-    upVector,
-    leftNoneRight,
-    topNoneBottom
-  )!;
+  const axes0 = Matrix3d.createViewedAxes(rightVector, upVector, leftNoneRight, topNoneBottom)!;
   if (expectedIndex !== 0) {
-    const standardAxes = Matrix3d.createStandardWorldToView(
-      expectedIndex,
-      true
-    );
+    const standardAxes = Matrix3d.createStandardWorldToView(expectedIndex, true);
     ck.testMatrix3d(axes0, standardAxes, "standard view axis check");
   }
   const axes1 = axes0.transpose();
@@ -125,10 +101,7 @@ function collectViewableGeometry(
     geometry.push(g.cloneTransformed(frame0)!);
   }
    */
-  const frame1 = Transform.createOriginAndMatrix(
-    Point3d.create(xShift, yShift, 0),
-    axes1
-  );
+  const frame1 = Transform.createOriginAndMatrix(Point3d.create(xShift, yShift, 0), axes1);
   for (const g of geometry0) {
     geometry.push(g.cloneTransformed(frame1)!);
   }
@@ -137,12 +110,7 @@ function collectViewableGeometry(
 // create viewing setup from given vectors local Z, Y rotations.
 // append the (rotated) geometry to the GeometryQuery[].
 //
-function collectViewableGeometryByXYZ(
-  geometry: GeometryQuery[],
-  x: number,
-  y: number,
-  z: number
-) {
+function collectViewableGeometryByXYZ(geometry: GeometryQuery[], x: number, y: number, z: number) {
   const geometry0 = makeViewableGeometry();
   const axes0 = Matrix3d.createRigidViewAxesZTowardsEye(x, y, z)!;
   /*
@@ -152,10 +120,7 @@ function collectViewableGeometryByXYZ(
     geometry.push(g.cloneTransformed(frame0)!);
   }
    */
-  const frame1 = Transform.createOriginAndMatrix(
-    Point3d.create(x, y, z),
-    axes0
-  );
+  const frame1 = Transform.createOriginAndMatrix(Point3d.create(x, y, z), axes0);
   for (const g of geometry0) {
     geometry.push(g.cloneTransformed(frame1)!);
   }
@@ -169,26 +134,13 @@ class PointLattice {
   // xCoordinates are required
   // If yCoordinates are missing, use xCoordinates
   // If zCoordinates are missing, use yCoordinates (which may have been defaulted to xCoordinates)
-  public constructor(
-    xCoordinates: number[],
-    yCoordinates?: number[],
-    zCoordinates?: number[]
-  ) {
+  public constructor(xCoordinates: number[], yCoordinates?: number[], zCoordinates?: number[]) {
     this.xCoordinates = xCoordinates.slice();
-    this.yCoordinates = yCoordinates
-      ? yCoordinates.slice()
-      : this.xCoordinates.slice();
-    this.zCoordinates = zCoordinates
-      ? zCoordinates.slice()
-      : this.yCoordinates.slice();
+    this.yCoordinates = yCoordinates ? yCoordinates.slice() : this.xCoordinates.slice();
+    this.zCoordinates = zCoordinates ? zCoordinates.slice() : this.yCoordinates.slice();
   }
   public getPoint(i: number, j: number, k: number, result?: Point3d): Point3d {
-    return Point3d.create(
-      this.xCoordinates[i],
-      this.yCoordinates[j],
-      this.zCoordinates[k],
-      result
-    );
+    return Point3d.create(this.xCoordinates[i], this.yCoordinates[j], this.zCoordinates[k], result);
   }
   // consider a cube with lattice corner indices (i0,j0,k0) and (i0+1, j0+1, k0+1)
   // if any are exterior, create an IndexedPolyface with the exterior polygons.
@@ -211,20 +163,14 @@ class PointLattice {
         }
       }
     }
-    if (i0 === 0)
-      builder.addPolygon([corners[0], corners[4], corners[6], corners[2]]);
-    if (i0 + 2 === this.xCoordinates.length)
-      builder.addPolygon([corners[1], corners[3], corners[7], corners[5]]);
+    if (i0 === 0) builder.addPolygon([corners[0], corners[4], corners[6], corners[2]]);
+    if (i0 + 2 === this.xCoordinates.length) builder.addPolygon([corners[1], corners[3], corners[7], corners[5]]);
 
-    if (j0 === 0)
-      builder.addPolygon([corners[0], corners[1], corners[5], corners[4]]);
-    if (j0 + 2 === this.yCoordinates.length)
-      builder.addPolygon([corners[2], corners[6], corners[7], corners[3]]);
+    if (j0 === 0) builder.addPolygon([corners[0], corners[1], corners[5], corners[4]]);
+    if (j0 + 2 === this.yCoordinates.length) builder.addPolygon([corners[2], corners[6], corners[7], corners[3]]);
 
-    if (k0 === 0)
-      builder.addPolygon([corners[0], corners[2], corners[3], corners[1]]);
-    if (k0 + 2 === this.zCoordinates.length)
-      builder.addPolygon([corners[4], corners[5], corners[7], corners[6]]);
+    if (k0 === 0) builder.addPolygon([corners[0], corners[2], corners[3], corners[1]]);
+    if (k0 + 2 === this.zCoordinates.length) builder.addPolygon([corners[4], corners[5], corners[7], corners[6]]);
     const polyface = builder.claimPolyface(true);
     if (polyface.facetCount > 0) return polyface;
     return undefined;
@@ -235,11 +181,7 @@ describe("ViewWidget", () => {
     const geometry = [];
     for (const lattice of [
       new PointLattice([0, 0.2, 0.8, 1.0]),
-      new PointLattice(
-        [0, 0.4, 1.6, 2.0],
-        [2, 2.2, 2.8, 3.0],
-        [0, 0.1, 0.4, 0.5]
-      ),
+      new PointLattice([0, 0.4, 1.6, 2.0], [2, 2.2, 2.8, 3.0], [0, 0.1, 0.4, 0.5]),
     ]) {
       // 8 corners
       geometry.push(lattice.createMeshOnLatticeCubeExteriorFaces(0, 0, 0, 0)!);
@@ -253,66 +195,29 @@ describe("ViewWidget", () => {
       geometry.push(lattice.createMeshOnLatticeCubeExteriorFaces(2, 2, 2, 7)!);
 
       // 12 edges
-      geometry.push(
-        lattice.createMeshOnLatticeCubeExteriorFaces(0, 1, 0, 100)!
-      );
-      geometry.push(
-        lattice.createMeshOnLatticeCubeExteriorFaces(2, 1, 0, 101)!
-      );
-      geometry.push(
-        lattice.createMeshOnLatticeCubeExteriorFaces(0, 1, 2, 102)!
-      );
-      geometry.push(
-        lattice.createMeshOnLatticeCubeExteriorFaces(2, 1, 2, 103)!
-      );
+      geometry.push(lattice.createMeshOnLatticeCubeExteriorFaces(0, 1, 0, 100)!);
+      geometry.push(lattice.createMeshOnLatticeCubeExteriorFaces(2, 1, 0, 101)!);
+      geometry.push(lattice.createMeshOnLatticeCubeExteriorFaces(0, 1, 2, 102)!);
+      geometry.push(lattice.createMeshOnLatticeCubeExteriorFaces(2, 1, 2, 103)!);
 
-      geometry.push(
-        lattice.createMeshOnLatticeCubeExteriorFaces(1, 0, 0, 110)!
-      );
-      geometry.push(
-        lattice.createMeshOnLatticeCubeExteriorFaces(1, 2, 0, 111)!
-      );
-      geometry.push(
-        lattice.createMeshOnLatticeCubeExteriorFaces(1, 0, 2, 112)!
-      );
-      geometry.push(
-        lattice.createMeshOnLatticeCubeExteriorFaces(1, 2, 2, 113)!
-      );
+      geometry.push(lattice.createMeshOnLatticeCubeExteriorFaces(1, 0, 0, 110)!);
+      geometry.push(lattice.createMeshOnLatticeCubeExteriorFaces(1, 2, 0, 111)!);
+      geometry.push(lattice.createMeshOnLatticeCubeExteriorFaces(1, 0, 2, 112)!);
+      geometry.push(lattice.createMeshOnLatticeCubeExteriorFaces(1, 2, 2, 113)!);
 
-      geometry.push(
-        lattice.createMeshOnLatticeCubeExteriorFaces(0, 0, 1, 120)!
-      );
-      geometry.push(
-        lattice.createMeshOnLatticeCubeExteriorFaces(2, 0, 1, 121)!
-      );
-      geometry.push(
-        lattice.createMeshOnLatticeCubeExteriorFaces(0, 2, 1, 122)!
-      );
-      geometry.push(
-        lattice.createMeshOnLatticeCubeExteriorFaces(2, 2, 1, 123)!
-      );
+      geometry.push(lattice.createMeshOnLatticeCubeExteriorFaces(0, 0, 1, 120)!);
+      geometry.push(lattice.createMeshOnLatticeCubeExteriorFaces(2, 0, 1, 121)!);
+      geometry.push(lattice.createMeshOnLatticeCubeExteriorFaces(0, 2, 1, 122)!);
+      geometry.push(lattice.createMeshOnLatticeCubeExteriorFaces(2, 2, 1, 123)!);
       // 6 faces
-      geometry.push(
-        lattice.createMeshOnLatticeCubeExteriorFaces(0, 1, 1, 201)!
-      );
-      geometry.push(
-        lattice.createMeshOnLatticeCubeExteriorFaces(2, 1, 1, 202)!
-      );
-      geometry.push(
-        lattice.createMeshOnLatticeCubeExteriorFaces(1, 0, 1, 203)!
-      );
-      geometry.push(
-        lattice.createMeshOnLatticeCubeExteriorFaces(1, 2, 1, 204)!
-      );
-      geometry.push(
-        lattice.createMeshOnLatticeCubeExteriorFaces(1, 1, 0, 205)!
-      );
-      geometry.push(
-        lattice.createMeshOnLatticeCubeExteriorFaces(1, 1, 2, 206)!
-      );
+      geometry.push(lattice.createMeshOnLatticeCubeExteriorFaces(0, 1, 1, 201)!);
+      geometry.push(lattice.createMeshOnLatticeCubeExteriorFaces(2, 1, 1, 202)!);
+      geometry.push(lattice.createMeshOnLatticeCubeExteriorFaces(1, 0, 1, 203)!);
+      geometry.push(lattice.createMeshOnLatticeCubeExteriorFaces(1, 2, 1, 204)!);
+      geometry.push(lattice.createMeshOnLatticeCubeExteriorFaces(1, 1, 0, 205)!);
+      geometry.push(lattice.createMeshOnLatticeCubeExteriorFaces(1, 1, 2, 206)!);
     }
-    if (geometry)
-      GeometryCoreTestIO.saveGeometry(geometry, "ViewWidget", "CubeGeometry");
+    if (geometry) GeometryCoreTestIO.saveGeometry(geometry, "ViewWidget", "CubeGeometry");
   });
 
   it("StandardViews", () => {
@@ -321,122 +226,22 @@ describe("ViewWidget", () => {
 
     const b = 30;
     const a = b * 0.5;
-    collectViewableGeometry(
-      ck,
-      geometry,
-      Vector3d.unitX(),
-      Vector3d.unitY(),
-      0,
-      0,
-      0,
-      b,
-      StandardViewIndex.Top
-    ); // TOP
+    collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitY(), 0, 0, 0, b, StandardViewIndex.Top); // TOP
 
-    collectViewableGeometry(
-      ck,
-      geometry,
-      Vector3d.unitX(),
-      Vector3d.unitZ(),
-      0,
-      0,
-      0,
-      0,
-      StandardViewIndex.Front
-    ); // FRONT
-    collectViewableGeometry(
-      ck,
-      geometry,
-      Vector3d.unitY(),
-      Vector3d.unitZ(),
-      0,
-      0,
-      b,
-      0,
-      StandardViewIndex.Right
-    ); // RIGHT
-    collectViewableGeometry(
-      ck,
-      geometry,
-      Vector3d.unitX(-1),
-      Vector3d.unitZ(),
-      0,
-      0,
-      2 * b,
-      0,
-      StandardViewIndex.Back
-    ); // BACK
-    collectViewableGeometry(
-      ck,
-      geometry,
-      Vector3d.unitY(-1),
-      Vector3d.unitZ(),
-      0,
-      0,
-      -b,
-      0,
-      StandardViewIndex.Left
-    ); // LEFT
+    collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), 0, 0, 0, 0, StandardViewIndex.Front); // FRONT
+    collectViewableGeometry(ck, geometry, Vector3d.unitY(), Vector3d.unitZ(), 0, 0, b, 0, StandardViewIndex.Right); // RIGHT
+    collectViewableGeometry(ck, geometry, Vector3d.unitX(-1), Vector3d.unitZ(), 0, 0, 2 * b, 0, StandardViewIndex.Back); // BACK
+    collectViewableGeometry(ck, geometry, Vector3d.unitY(-1), Vector3d.unitZ(), 0, 0, -b, 0, StandardViewIndex.Left); // LEFT
 
-    collectViewableGeometry(
-      ck,
-      geometry,
-      Vector3d.unitX(1),
-      Vector3d.unitY(-1),
-      0,
-      0,
-      0,
-      -b,
-      StandardViewIndex.Bottom
-    ); // BOTTOM
+    collectViewableGeometry(ck, geometry, Vector3d.unitX(1), Vector3d.unitY(-1), 0, 0, 0, -b, StandardViewIndex.Bottom); // BOTTOM
     // full iso views
-    collectViewableGeometry(
-      ck,
-      geometry,
-      Vector3d.unitX(),
-      Vector3d.unitZ(),
-      1,
-      1,
-      a,
-      a,
-      StandardViewIndex.RightIso
-    ); // RIGHT FRONT ISO (bottom to top)
-    collectViewableGeometry(
-      ck,
-      geometry,
-      Vector3d.unitX(),
-      Vector3d.unitZ(),
-      -1,
-      1,
-      -a,
-      a,
-      StandardViewIndex.Iso
-    ); // LEFT FRONT ISO (bottom to top)
+    collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), 1, 1, a, a, StandardViewIndex.RightIso); // RIGHT FRONT ISO (bottom to top)
+    collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), -1, 1, -a, a, StandardViewIndex.Iso); // LEFT FRONT ISO (bottom to top)
 
     // incremental iso views based on front
     for (const isoFactor of [0.5, -0.25, 0, 0.25, 0.5]) {
-      collectViewableGeometry(
-        ck,
-        geometry,
-        Vector3d.unitX(),
-        Vector3d.unitZ(),
-        1,
-        isoFactor,
-        a,
-        isoFactor * a,
-        0
-      ); // RIGHT FRONT ISO (bottom to top)
-      collectViewableGeometry(
-        ck,
-        geometry,
-        Vector3d.unitX(),
-        Vector3d.unitZ(),
-        -1,
-        isoFactor,
-        -a,
-        isoFactor * a,
-        0
-      ); // LEFT FRONT ISO (bottom to top)
+      collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), 1, isoFactor, a, isoFactor * a, 0); // RIGHT FRONT ISO (bottom to top)
+      collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), -1, isoFactor, -a, isoFactor * a, 0); // LEFT FRONT ISO (bottom to top)
     }
 
     for (const cornerFactor of [-0.75, -0.5, -0.25, 0.25, 0.5, 0.75]) {
@@ -572,10 +377,7 @@ describe("RaggedMatrix", () => {
     );
     if (Checker.noisy.raggedViewMatrix) {
       GeometryCoreTestIO.consoleLog(" ragged matrix ", raggedMatrix.toJSON());
-      GeometryCoreTestIO.consoleLog(
-        "   determinant",
-        raggedMatrix.determinant()
-      );
+      GeometryCoreTestIO.consoleLog("   determinant", raggedMatrix.determinant());
       GeometryCoreTestIO.consoleLog(
         "  column scales",
         raggedMatrix.columnX().magnitude(),
@@ -601,16 +403,8 @@ describe("RaggedMatrix", () => {
     const matrixC = yprC!.toMatrix3d();
     const diffBC = matrixB.maxDiff(matrixC);
     const diffAB = matrixB.maxDiff(raggedMatrix);
-    ck.testLT(
-      diffBC,
-      5.0e-7,
-      "ragged matrix YPR round trip versus cleanup rigid"
-    );
-    ck.testLT(
-      diffAB,
-      5.0e-7,
-      "ragged matrix YPR round trip versus raggedMatrix"
-    );
+    ck.testLT(diffBC, 5.0e-7, "ragged matrix YPR round trip versus cleanup rigid");
+    ck.testLT(diffAB, 5.0e-7, "ragged matrix YPR round trip versus raggedMatrix");
     if (Checker.noisy.raggedViewMatrix) {
       GeometryCoreTestIO.consoleLog(" clean matrix ", cleanMatrix.toJSON());
       GeometryCoreTestIO.consoleLog(` maxDiff ${maxDiff}`);

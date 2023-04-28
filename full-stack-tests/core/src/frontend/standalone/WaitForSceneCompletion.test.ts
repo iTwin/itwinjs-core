@@ -4,11 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ColorDef, RenderMode } from "@itwin/core-common";
-import {
-  IModelConnection,
-  SnapshotConnection,
-  ViewRect,
-} from "@itwin/core-frontend";
+import { IModelConnection, SnapshotConnection, ViewRect } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { Color, TestViewport, testViewportsWithDpr } from "../TestViewport";
 

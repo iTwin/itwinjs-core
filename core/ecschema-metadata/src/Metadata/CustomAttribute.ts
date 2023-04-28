@@ -29,9 +29,7 @@ export interface CustomAttributeContainerProps {
 }
 
 /** @internal */
-export function serializeCustomAttributes(
-  customAttributes: CustomAttributeSet | undefined
-): any[] | undefined {
+export function serializeCustomAttributes(customAttributes: CustomAttributeSet | undefined): any[] | undefined {
   if (undefined !== customAttributes) {
     // custom attributes is optional
     const attributes: any[] = [];

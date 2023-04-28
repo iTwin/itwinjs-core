@@ -39,10 +39,7 @@ export class Sprite {
   public loadPromise: Promise<HTMLImageElement>;
   /** The offset to the middle of this Sprite. If not loaded, value is not meaningful. */
   public get offset(): Point2d {
-    return new Point2d(
-      Math.round(this.size.x) / 2,
-      Math.round(this.size.y / 2)
-    );
+    return new Point2d(Math.round(this.size.x) / 2, Math.round(this.size.y / 2));
   }
   /** Whether this sprite has be successfully loaded. */
   public get isLoaded(): boolean {
@@ -53,10 +50,7 @@ export class Sprite {
    * @param src The ImageSource holding an image to create the texture for this Sprite, or the url of the image
    */
   constructor(src: ImageSource | string) {
-    this.loadPromise =
-      typeof src === "string"
-        ? imageElementFromUrl(src)
-        : imageElementFromImageSource(src);
+    this.loadPromise = typeof src === "string" ? imageElementFromUrl(src) : imageElementFromImageSource(src);
     this.loadPromise
       .then((image) => {
         this.image = image;
@@ -123,12 +117,7 @@ export class SpriteLocation implements CanvasDecoration {
    * @param locationWorld The position, in world coordinates
    * @param alpha Optional alpha for the Sprite. Must be a number between 0 (fully transparent) and 1 (fully opaque).
    */
-  public activate(
-    sprite: Sprite,
-    viewport: ScreenViewport,
-    locationWorld: XYAndZ,
-    alpha?: number
-  ): void {
+  public activate(sprite: Sprite, viewport: ScreenViewport, locationWorld: XYAndZ, alpha?: number): void {
     this._sprite = sprite;
     this._alpha = alpha;
     this._viewport = viewport;

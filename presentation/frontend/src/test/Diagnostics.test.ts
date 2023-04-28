@@ -5,10 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { ClientDiagnostics } from "@itwin/presentation-common";
-import {
-  consoleDiagnosticsHandler,
-  createCombinedDiagnosticsHandler,
-} from "../presentation-frontend/Diagnostics";
+import { consoleDiagnosticsHandler, createCombinedDiagnosticsHandler } from "../presentation-frontend/Diagnostics";
 
 describe("consoleDiagnosticsHandler", () => {
   const createConsoleSpies = () => ({
@@ -87,10 +84,7 @@ describe("createCombinedDiagnosticsHandler", () => {
     const arg: ClientDiagnostics = {};
     const handler1 = sinon.spy();
     const handler2 = sinon.spy();
-    const combinedHandler = createCombinedDiagnosticsHandler([
-      handler1,
-      handler2,
-    ]);
+    const combinedHandler = createCombinedDiagnosticsHandler([handler1, handler2]);
     combinedHandler(arg);
     expect(handler1).to.be.calledOnceWith(arg);
     expect(handler2).to.be.calledOnceWith(arg);

@@ -3,12 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-  EmphasizeElements,
-  IModelApp,
-  ScreenViewport,
-  Tool,
-} from "@itwin/core-frontend";
+import { EmphasizeElements, IModelApp, ScreenViewport, Tool } from "@itwin/core-frontend";
 import { BentleyStatus, Id64, Id64Array } from "@itwin/core-bentley";
 import { ClipPlaneContainment, ClipVector } from "@itwin/core-geometry";
 import { ColorDef, GeometryContainmentRequestProps } from "@itwin/core-common";
@@ -40,11 +35,7 @@ export class FenceClassifySelectedTool extends Tool {
     };
 
     const result = await vp.iModel.getGeometryContainment(requestProps);
-    if (
-      BentleyStatus.SUCCESS !== result.status ||
-      undefined === result.candidatesContainment
-    )
-      return;
+    if (BentleyStatus.SUCCESS !== result.status || undefined === result.candidatesContainment) return;
 
     const inside: Id64Array = [];
     const outside: Id64Array = [];
@@ -64,23 +55,10 @@ export class FenceClassifySelectedTool extends Tool {
       }
     });
 
-    EmphasizeElements.getOrCreate(vp).overrideElements(
-      inside,
-      vp,
-      ColorDef.green
-    );
-    EmphasizeElements.getOrCreate(vp).overrideElements(
-      outside,
-      vp,
-      ColorDef.red
-    );
-    EmphasizeElements.getOrCreate(vp).overrideElements(
-      overlap,
-      vp,
-      ColorDef.blue
-    );
-    EmphasizeElements.getOrCreate(vp).defaultAppearance =
-      EmphasizeElements.getOrCreate(vp).createDefaultAppearance();
+    EmphasizeElements.getOrCreate(vp).overrideElements(inside, vp, ColorDef.green);
+    EmphasizeElements.getOrCreate(vp).overrideElements(outside, vp, ColorDef.red);
+    EmphasizeElements.getOrCreate(vp).overrideElements(overlap, vp, ColorDef.blue);
+    EmphasizeElements.getOrCreate(vp).defaultAppearance = EmphasizeElements.getOrCreate(vp).createDefaultAppearance();
   }
 
   public override async run(insideOnly?: true | undefined): Promise<boolean> {
@@ -90,8 +68,7 @@ export class FenceClassifySelectedTool extends Tool {
     const isActive = EmphasizeElements.getOrCreate(vp).isActive(vp);
     EmphasizeElements.clear(vp);
 
-    if (undefined === vp.view.getViewClip() || !vp.iModel.selectionSet.isActive)
-      return !isActive;
+    if (undefined === vp.view.getViewClip() || !vp.iModel.selectionSet.isActive) return !isActive;
 
     const candidates: Id64Array = [];
     vp.iModel.selectionSet.elements.forEach((val) => {
@@ -101,20 +78,12 @@ export class FenceClassifySelectedTool extends Tool {
     if (0 === candidates.length) return false;
 
     vp.iModel.selectionSet.emptyAll();
-    await this.doClassify(
-      vp,
-      candidates,
-      vp.view.getViewClip()!,
-      insideOnly ? false : true
-    );
+    await this.doClassify(vp, candidates, vp.view.getViewClip()!, insideOnly ? false : true);
     return true;
   }
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
-    const insideOnly =
-      undefined !== args[0] && "inside" === args[0].toLowerCase()
-        ? true
-        : undefined;
+    const insideOnly = undefined !== args[0] && "inside" === args[0].toLowerCase() ? true : undefined;
     await this.run(insideOnly);
     return true;
   }

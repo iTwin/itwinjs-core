@@ -7,24 +7,11 @@
  */
 
 import { BeUiEvent } from "@itwin/core-bentley";
-import {
-  PropertyEditorParams,
-  PropertyEditorParamTypes,
-  SuppressLabelEditorParams,
-} from "../properties/EditorParams";
+import { PropertyEditorParams, PropertyEditorParamTypes, SuppressLabelEditorParams } from "../properties/EditorParams";
 import { PropertyRecord } from "../properties/Record";
 import { PrimitiveValue, PropertyValueFormat } from "../properties/Value";
-import {
-  BaseDialogItem,
-  DialogItem,
-  DialogPropertyItem,
-  DialogPropertySyncItem,
-} from "./DialogItem";
-import {
-  PropertyChangeResult,
-  PropertyChangeStatus,
-  UiDataProvider,
-} from "./UiDataProvider";
+import { BaseDialogItem, DialogItem, DialogPropertyItem, DialogPropertySyncItem } from "./DialogItem";
+import { PropertyChangeResult, PropertyChangeStatus, UiDataProvider } from "./UiDataProvider";
 
 /** Enum for button types. Determines button label, and default button style.
  * @public
@@ -84,9 +71,7 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
   private _items: ReadonlyArray<DialogItem> | undefined;
 
   /** Applies changes from one or more properties - some dialogs will use this to send a bulk set of changes back to the provider */
-  public override processChangesInUi(
-    properties: DialogPropertyItem[]
-  ): PropertyChangeResult {
+  public override processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
     // Default implementation is to just pass each property to applyUiPropertyChange
     properties.forEach((property) => this.applyUiPropertyChange(property));
     return { status: PropertyChangeStatus.Success };
@@ -94,12 +79,8 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
 
   /** Applies change of a single property - this is the default method used when property editors are dynamically generated. */
   // istanbul ignore next
-  public applyUiPropertyChange = (
-    _updatedValue: DialogPropertySyncItem
-  ): void => {
-    throw new Error(
-      "Derived UiDataProvider should implement this to apply change to a single property."
-    );
+  public applyUiPropertyChange = (_updatedValue: DialogPropertySyncItem): void => {
+    throw new Error("Derived UiDataProvider should implement this to apply change to a single property.");
   };
 
   private _rows: DialogRow[] | undefined;
@@ -120,9 +101,7 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
   /** Called by UI to request available properties that can be bound to user supplied UI components (See Tool1UiProvider for example). */
   // istanbul ignore next
   public supplyDialogItems(): DialogItem[] | undefined {
-    throw new Error(
-      "Derived UiDataProvider must implement this method to supply set of properties."
-    );
+    throw new Error("Derived UiDataProvider must implement this method to supply set of properties.");
   }
 
   public get items(): ReadonlyArray<DialogItem> {
@@ -146,9 +125,7 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
     const rows: DialogRow[] = [];
 
     this.items.forEach((item) => {
-      const row = rows.find(
-        (value) => value.priority === item.editorPosition.rowPriority
-      );
+      const row = rows.find((value) => value.priority === item.editorPosition.rowPriority);
       if (row) {
         row.items.push(item);
       } else {
@@ -160,10 +137,7 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
     rows.sort((a: DialogRow, b: DialogRow) => a.priority - b.priority);
     // sort records
     rows.forEach((row: DialogRow) =>
-      row.items.sort(
-        (a: DialogItem, b: DialogItem) =>
-          a.editorPosition.columnIndex - b.editorPosition.columnIndex
-      )
+      row.items.sort((a: DialogItem, b: DialogItem) => a.editorPosition.columnIndex - b.editorPosition.columnIndex)
     );
     return rows;
   }
@@ -172,8 +146,7 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
   public static editorWantsLabel(item: DialogItem): boolean {
     if (item.property.editor && item.property.editor.params) {
       const params = item.property.editor.params.find(
-        (param: PropertyEditorParams) =>
-          param.type === PropertyEditorParamTypes.SuppressEditorLabel
+        (param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.SuppressEditorLabel
       ) as SuppressLabelEditorParams;
       // istanbul ignore else
       if (params) return false;
@@ -190,8 +163,7 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
   public static getItemDisabledState(baseDialogItem: BaseDialogItem): boolean {
     const dialogItem = baseDialogItem as DialogItem;
     // istanbul ignore else
-    if (dialogItem === undefined || dialogItem.lockProperty === undefined)
-      return !!baseDialogItem.isDisabled;
+    if (dialogItem === undefined || dialogItem.lockProperty === undefined) return !!baseDialogItem.isDisabled;
     const value = dialogItem.lockProperty.value;
     // istanbul ignore next
     if (value === undefined) return !!baseDialogItem.isDisabled;
@@ -200,18 +172,13 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
   }
 
   /** Gets a property record for a given dialog item */
-  public static getPropertyRecord = (
-    dialogItem: BaseDialogItem
-  ): PropertyRecord => {
+  public static getPropertyRecord = (dialogItem: BaseDialogItem): PropertyRecord => {
     const propertyValue = {
       valueFormat: PropertyValueFormat.Primitive,
       value: dialogItem.value.value,
       displayValue: dialogItem.value.displayValue,
     };
-    const record = new PropertyRecord(
-      propertyValue as PrimitiveValue,
-      dialogItem.property
-    );
+    const record = new PropertyRecord(propertyValue as PrimitiveValue, dialogItem.property);
     record.isDisabled = UiLayoutDataProvider.getItemDisabledState(dialogItem);
     return record;
   };

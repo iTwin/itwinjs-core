@@ -87,9 +87,7 @@ describe("Plan projections (#integration)", () => {
           backgroundMap: true,
           lighting: false,
         });
-        vp.displayStyle.backgroundColor = ColorDef.fromJSON(
-          ColorByName.magenta
-        );
+        vp.displayStyle.backgroundColor = ColorDef.fromJSON(ColorByName.magenta);
         vp.backgroundMapSettings = BackgroundMapSettings.fromJSON({
           useDepthBuffer: test.mapDepth,
           globeMode: GlobeMode.Plane,
@@ -98,10 +96,7 @@ describe("Plan projections (#integration)", () => {
 
         // Set up plan projection settings.
         const style = vp.displayStyle as DisplayStyle3dState;
-        style.settings.setPlanProjectionSettings(
-          modelId,
-          PlanProjectionSettings.fromJSON(test)
-        );
+        style.settings.setPlanProjectionSettings(modelId, PlanProjectionSettings.fromJSON(test));
         vp.invalidateScene();
 
         // Render the scene.
@@ -113,8 +108,7 @@ describe("Plan projections (#integration)", () => {
         // the rectangle if the test expects it to based on the plan projection and map settings.
         const expectPixel = (x: number, y: number, expectMap: boolean) => {
           const color = vp.readColor(x, y);
-          expect(color.equalsColorDef(vp.displayStyle.backgroundColor)).to.be
-            .false;
+          expect(color.equalsColorDef(vp.displayStyle.backgroundColor)).to.be.false;
           expect(color.equalsColorDef(ColorDef.white)).not.to.equal(expectMap);
 
           const pixel = vp.readPixel(x, y, true);

@@ -5,13 +5,7 @@
 
 import { expect } from "chai";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
-import {
-  Box,
-  Point3d,
-  Range3d,
-  Vector3d,
-  YawPitchRollAngles,
-} from "@itwin/core-geometry";
+import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   BatchType,
   Code,
@@ -69,11 +63,7 @@ function insertPhysicalModel(db: IModelDb): Id64String {
     classFullName: PhysicalPartition.classFullName,
     model: IModel.repositoryModelId,
     parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
-    code: PhysicalPartition.createCode(
-      db,
-      IModel.rootSubjectId,
-      `PhysicalPartition_${++uniqueId}`
-    ),
+    code: PhysicalPartition.createCode(db, IModel.rootSubjectId, `PhysicalPartition_${++uniqueId}`),
   };
 
   const partitionId = db.elements.insertElement(partitionProps);
@@ -124,10 +114,7 @@ describe("tile tree", () => {
     };
 
     const name = `Test_${++uniqueId}.bim`;
-    db = SnapshotDb.createEmpty(
-      IModelTestUtils.prepareOutputFile("TileTree", name),
-      props
-    );
+    db = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("TileTree", name), props);
     modelId = insertPhysicalModel(db);
 
     // NB: The model needs to contain at least one element with a range - otherwise tile tree will have null range.
@@ -145,12 +132,11 @@ describe("tile tree", () => {
         true
       )!
     );
-    const category = SpatialCategory.insert(
-      db,
-      IModel.dictionaryId,
-      "kittycat",
-      { color: ColorDef.white.toJSON(), transp: 0, invisible: false }
-    );
+    const category = SpatialCategory.insert(db, IModel.dictionaryId, "kittycat", {
+      color: ColorDef.white.toJSON(),
+      transp: 0,
+      invisible: false,
+    });
     const elemProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: modelId,
@@ -292,10 +278,7 @@ describe("tile tree", () => {
     const options = { ...defaultTileOptions };
     options.useProjectExtents = false;
 
-    const loadTree = async () =>
-      db.tiles.requestTileTreeProps(
-        iModelTileTreeIdToString(modelId, treeId, options)
-      );
+    const loadTree = async () => db.tiles.requestTileTreeProps(iModelTileTreeIdToString(modelId, treeId, options));
 
     let tree = await loadTree();
     expect(tree.contentIdQualifier).to.be.undefined;
@@ -315,9 +298,7 @@ describe("tile tree", () => {
 
     options.useProjectExtents = true;
     tree = await loadTree();
-    expect(tree.contentIdQualifier).to.equal(
-      `${scriptChecksum}${extentsChecksum}`
-    );
+    expect(tree.contentIdQualifier).to.equal(`${scriptChecksum}${extentsChecksum}`);
   });
 
   it("should update checksum after purge when schedule script contents change", async () => {
@@ -330,30 +311,21 @@ describe("tile tree", () => {
     const options = { ...defaultTileOptions };
     options.useProjectExtents = false;
 
-    const tree1 = await db.tiles.requestTileTreeProps(
-      iModelTileTreeIdToString(modelId, treeId, options)
-    );
+    const tree1 = await db.tiles.requestTileTreeProps(iModelTileTreeIdToString(modelId, treeId, options));
     const checksum1 = tree1.contentIdQualifier!;
     expect(checksum1.length).least(1);
 
-    const renderTimeline =
-      db.elements.getElement<RenderTimeline>(renderTimelineId);
+    const renderTimeline = db.elements.getElement<RenderTimeline>(renderTimelineId);
     const props = renderTimeline.toJSON();
-    props.script = JSON.stringify(
-      makeScript((timeline) => timeline.addVisibility(4321, 0.25))
-    );
+    props.script = JSON.stringify(makeScript((timeline) => timeline.addVisibility(4321, 0.25)));
     db.elements.updateElement(props);
 
-    const tree2 = await db.tiles.requestTileTreeProps(
-      iModelTileTreeIdToString(modelId, treeId, options)
-    );
+    const tree2 = await db.tiles.requestTileTreeProps(iModelTileTreeIdToString(modelId, treeId, options));
     expect(tree2).not.to.equal(tree1);
     expect(tree2).to.deep.equal(tree1);
 
     db.nativeDb.purgeTileTrees(undefined);
-    const tree3 = await db.tiles.requestTileTreeProps(
-      iModelTileTreeIdToString(modelId, treeId, options)
-    );
+    const tree3 = await db.tiles.requestTileTreeProps(iModelTileTreeIdToString(modelId, treeId, options));
     expect(tree3).not.to.equal(tree2);
     expect(tree3).not.to.equal(tree1);
     expect(tree3.contentIdQualifier).not.to.equal(tree1.contentIdQualifier);

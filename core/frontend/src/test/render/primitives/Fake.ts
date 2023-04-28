@@ -15,12 +15,7 @@ export class FakeDisplayParams extends DisplayParams {
 
 export class FakeGeometry extends Geometry {
   public constructor() {
-    super(
-      Transform.createIdentity(),
-      Range3d.createNull(),
-      new FakeDisplayParams(),
-      undefined
-    );
+    super(Transform.createIdentity(), Range3d.createNull(), new FakeDisplayParams(), undefined);
   }
 
   protected _getPolyfaces() {

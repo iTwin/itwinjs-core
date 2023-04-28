@@ -60,11 +60,7 @@ export function metersToRange(
     const quickLerp = (start: number, end: number, amt: number): number => {
       return (1 - amt) * start + amt * end;
     };
-    output = quickLerp(
-      minimumOutput,
-      maximumOutput,
-      inputMeters / maximumInputMeters
-    );
+    output = quickLerp(minimumOutput, maximumOutput, inputMeters / maximumInputMeters);
   }
 
   return output;
@@ -74,34 +70,19 @@ export function metersToRange(
  * @public
  * @extensions
  */
-export async function queryTerrainElevationOffset(
-  viewport: ScreenViewport,
-  carto: Cartographic
-): Promise<number> {
+export async function queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise<number> {
   const bingElevationProvider = new BingElevationProvider();
-  if (
-    viewport &&
-    viewport.view instanceof ViewState3d &&
-    viewport.iModel.isGeoLocated
-  ) {
+  if (viewport && viewport.view instanceof ViewState3d && viewport.iModel.isGeoLocated) {
     const view3d = viewport.view;
     if (view3d.displayStyle.displayTerrain) {
-      const elevationOffset = await bingElevationProvider.getHeight(
-        carto,
-        view3d.globeMode === GlobeMode.Ellipsoid
-      );
+      const elevationOffset = await bingElevationProvider.getHeight(carto, view3d.globeMode === GlobeMode.Ellipsoid);
       if (elevationOffset !== undefined) return elevationOffset;
     }
   }
   return 0;
 }
 
-function _areaToEyeHeight(
-  view3d: ViewState3d,
-  ne?: Point3d,
-  sw?: Point3d,
-  offset = 0
-): number {
+function _areaToEyeHeight(view3d: ViewState3d, ne?: Point3d, sw?: Point3d, offset = 0): number {
   if (ne === undefined || sw === undefined) return 0;
   const diagonal = ne.distance(sw);
 
@@ -114,11 +95,7 @@ function _areaToEyeHeight(
  * Offset in meters, which defaults to 0, is applied to final eye height.
  * @internal
  */
-export function areaToEyeHeight(
-  view3d: ViewState3d,
-  area: GlobalLocationArea,
-  offset = 0
-): number {
+export function areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset = 0): number {
   const ne = view3d.cartographicToRoot(area.northeast);
   const sw = view3d.cartographicToRoot(area.southwest);
   return _areaToEyeHeight(view3d, ne, sw, offset);
@@ -141,34 +118,23 @@ export async function areaToEyeHeightFromGcs(
 /** Converts a root range (often project extents) to a cartographic area.
  * @internal
  */
-export function rangeToCartographicArea(
-  view3d: ViewState3d,
-  range: Range3d
-): GlobalLocationArea | undefined {
+export function rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined {
   const low = view3d.rootToCartographic(range.low);
   const high = view3d.rootToCartographic(range.high);
   if (low === undefined || high === undefined) return undefined;
-  return low.latitude < high.latitude
-    ? { northeast: high, southwest: low }
-    : { northeast: low, southwest: high };
+  return low.latitude < high.latitude ? { northeast: high, southwest: low } : { northeast: low, southwest: high };
 }
 
 /** Converts the eye of the camera to a cartographic location on the globe as if it was at height 0.
  * If preserveHeight is set to true, then height will remain untouched.
  * @internal
  */
-export function eyeToCartographicOnGlobe(
-  viewport: ScreenViewport,
-  preserveHeight = false
-): Cartographic | undefined {
-  if (!(viewport.view instanceof ViewState3d) || !viewport.iModel.isGeoLocated)
-    return undefined;
+export function eyeToCartographicOnGlobe(viewport: ScreenViewport, preserveHeight = false): Cartographic | undefined {
+  if (!(viewport.view instanceof ViewState3d) || !viewport.iModel.isGeoLocated) return undefined;
 
   const view3d = viewport.view;
 
-  const eyePointCartographic = view3d.rootToCartographic(
-    view3d.getEyeOrOrthographicViewPoint()
-  );
+  const eyePointCartographic = view3d.rootToCartographic(view3d.getEyeOrOrthographicViewPoint());
   if (eyePointCartographic !== undefined) {
     if (!preserveHeight) eyePointCartographic.height = 0.0;
     return eyePointCartographic;
@@ -185,14 +151,11 @@ export async function eyeToCartographicOnGlobeFromGcs(
   viewport: ScreenViewport,
   preserveHeight = false
 ): Promise<Cartographic | undefined> {
-  if (!(viewport.view instanceof ViewState3d) || !viewport.iModel.isGeoLocated)
-    return undefined;
+  if (!(viewport.view instanceof ViewState3d) || !viewport.iModel.isGeoLocated) return undefined;
 
   const view3d = viewport.view;
 
-  const eyePointCartographic = await view3d.rootToCartographicFromGcs(
-    view3d.getEyeOrOrthographicViewPoint()
-  );
+  const eyePointCartographic = await view3d.rootToCartographicFromGcs(view3d.getEyeOrOrthographicViewPoint());
   if (eyePointCartographic !== undefined) {
     if (!preserveHeight) eyePointCartographic.height = 0.0;
     return eyePointCartographic;
@@ -214,11 +177,7 @@ export function viewGlobalLocation(
   const before = viewport.getFrustum();
   const view3d = viewport.view;
 
-  const transitionDistance = view3d.lookAtGlobalLocation(
-    eyeHeight,
-    pitchAngleRadians,
-    location
-  );
+  const transitionDistance = view3d.lookAtGlobalLocation(eyeHeight, pitchAngleRadians, location);
   viewport.synchWithView();
 
   if (doAnimate)

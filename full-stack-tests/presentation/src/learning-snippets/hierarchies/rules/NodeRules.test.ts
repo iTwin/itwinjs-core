@@ -14,9 +14,7 @@ describe("Learning Snippets", () => {
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile(
-      "assets/datasets/Properties_60InstancesWithUrl2.ibim"
-    );
+    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {
@@ -123,9 +121,7 @@ describe("Learning Snippets", () => {
         expect(nodes).to.be.empty;
 
         // Set DISPLAY_B_NODES to get node B
-        await Presentation.presentation
-          .vars(ruleset.id)
-          .setBool("DISPLAY_B_NODES", true);
+        await Presentation.presentation.vars(ruleset.id).setBool("DISPLAY_B_NODES", true);
         nodes = await Presentation.presentation.getNodes({
           imodel,
           rulesetOrId: ruleset,
@@ -139,9 +135,7 @@ describe("Learning Snippets", () => {
           ]);
 
         // Set DISPLAY_A_NODES to also get node A
-        await Presentation.presentation
-          .vars(ruleset.id)
-          .setBool("DISPLAY_A_NODES", true);
+        await Presentation.presentation.vars(ruleset.id).setBool("DISPLAY_A_NODES", true);
         nodes = await Presentation.presentation.getNodes({
           imodel,
           rulesetOrId: ruleset,

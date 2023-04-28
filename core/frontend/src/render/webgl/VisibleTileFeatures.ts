@@ -54,11 +54,7 @@ const clippedPasses: RenderPass[] = [
   RenderPass.OverlayLayers,
 ];
 
-function isFeatureVisible(
-  feature: PackedFeature,
-  target: Target,
-  includeNonLocatable: boolean
-) {
+function isFeatureVisible(feature: PackedFeature, target: Target, includeNonLocatable: boolean) {
   const ovrs = target.currentFeatureSymbologyOverrides;
   if (!ovrs) return true;
 
@@ -93,14 +89,7 @@ function* commandIterator(features: VisibleTileFeatures, pass: RenderPass) {
       const scratchFeature = PackedFeature.createWithIndex();
       const table = command.batch.featureTable;
       for (const feature of table.iterable(scratchFeature)) {
-        if (
-          !ovrs.anyOverridden ||
-          isFeatureVisible(
-            feature,
-            features.target,
-            features.includeNonLocatable
-          )
-        ) {
+        if (!ovrs.anyOverridden || isFeatureVisible(feature, features.target, features.includeNonLocatable)) {
           yield {
             elementId: Id64.fromUint32PairObject(feature.elementId),
             subCategoryId: Id64.fromUint32PairObject(feature.subCategoryId),

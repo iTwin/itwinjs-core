@@ -9,17 +9,9 @@
 
 import { BackstageItem } from "./backstage/BackstageItem";
 import { CommonStatusBarItem } from "./statusbar/StatusBarItem";
-import {
-  CommonToolbarItem,
-  ToolbarOrientation,
-  ToolbarUsage,
-} from "./toolbars/ToolbarItem";
+import { CommonToolbarItem, ToolbarOrientation, ToolbarUsage } from "./toolbars/ToolbarItem";
 import { AbstractWidgetProps } from "./widget/AbstractWidgetProps";
-import {
-  AbstractZoneLocation,
-  StagePanelLocation,
-  StagePanelSection,
-} from "./widget/StagePanel";
+import { AbstractZoneLocation, StagePanelLocation, StagePanelSection } from "./widget/StagePanel";
 import { StageUsage } from "./items/StageUsage";
 import { UiItemsProvider } from "./UiItemsProvider";
 import { UiItemsManager } from "./UiItemsManager";
@@ -79,24 +71,13 @@ export class BaseUiItemsProvider implements UiItemsProvider {
     let provideToStage = false;
 
     if (this.isSupportedStage) {
-      provideToStage = this.isSupportedStage(
-        stageId,
-        stageUsage,
-        stageAppData,
-        this
-      );
+      provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData, this);
     } else {
       provideToStage = stageUsage === StageUsage.General;
     }
 
     return provideToStage
-      ? this.provideToolbarButtonItemsInternal(
-          stageId,
-          stageUsage,
-          toolbarUsage,
-          toolbarOrientation,
-          stageAppData
-        )
+      ? this.provideToolbarButtonItemsInternal(stageId, stageUsage, toolbarUsage, toolbarOrientation, stageAppData)
       : [];
   }
 
@@ -107,27 +88,16 @@ export class BaseUiItemsProvider implements UiItemsProvider {
   ): CommonStatusBarItem[] {
     return [];
   }
-  public provideStatusBarItems(
-    stageId: string,
-    stageUsage: string,
-    stageAppData?: any
-  ): CommonStatusBarItem[] {
+  public provideStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[] {
     let provideToStage = false;
 
     if (this.isSupportedStage) {
-      provideToStage = this.isSupportedStage(
-        stageId,
-        stageUsage,
-        stageAppData,
-        this
-      );
+      provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData, this);
     } else {
       provideToStage = stageUsage === StageUsage.General;
     }
 
-    return provideToStage
-      ? this.provideStatusBarItemsInternal(stageId, stageUsage, stageAppData)
-      : [];
+    return provideToStage ? this.provideStatusBarItemsInternal(stageId, stageUsage, stageAppData) : [];
   }
 
   public provideWidgetsInternal(
@@ -152,25 +122,13 @@ export class BaseUiItemsProvider implements UiItemsProvider {
     let provideToStage = false;
 
     if (this.isSupportedStage) {
-      provideToStage = this.isSupportedStage(
-        stageId,
-        stageUsage,
-        stageAppData,
-        this
-      );
+      provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData, this);
     } else {
       provideToStage = stageUsage === StageUsage.General;
     }
 
     return provideToStage
-      ? this.provideWidgetsInternal(
-          stageId,
-          stageUsage,
-          location,
-          section,
-          _zoneLocation,
-          stageAppData
-        )
+      ? this.provideWidgetsInternal(stageId, stageUsage, location, section, _zoneLocation, stageAppData)
       : [];
   }
 }

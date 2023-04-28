@@ -16,23 +16,11 @@ import {
   SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
-import {
-  ECSqlStatement,
-  IModelDb,
-  IModelJsFs,
-  SnapshotDb,
-  SpatialCategory,
-} from "@itwin/core-backend";
-import {
-  IModelTestUtils,
-  KnownTestLocations,
-} from "@itwin/core-backend/lib/cjs/test/index";
+import { ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
+import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 
 describe("SchemaDesignPerf Impact of Mixins", () => {
-  const outDir: string = path.join(
-    KnownTestLocations.outputDir,
-    "MixinPerformance"
-  );
+  const outDir: string = path.join(KnownTestLocations.outputDir, "MixinPerformance");
   let hierarchyCounts: number[];
   let seedCount = 0;
   let propCount = 0;
@@ -67,40 +55,25 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
   }
   function getCount(imodel: IModelDb, className: string) {
     let count = 0;
-    imodel.withPreparedStatement(
-      `SELECT count(*) AS [count] FROM ${className}`,
-      (stmt: ECSqlStatement) => {
-        assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
-        const row = stmt.getRow();
-        count = row.count;
-      }
-    );
+    imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
+      assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
+      const row = stmt.getRow();
+      count = row.count;
+    });
     return count;
   }
-  function setPropVals(
-    elem: any,
-    pCount: number,
-    baseName: string = "primProp",
-    val: string = "Test Value"
-  ) {
+  function setPropVals(elem: any, pCount: number, baseName: string = "primProp", val: string = "Test Value") {
     for (let j = 0; j < pCount; ++j) {
       const key = baseName + j.toString();
       elem[key] = val;
     }
   }
-  function setPropVal(
-    elem: any,
-    baseName: string = "primProp",
-    val: string = "Test Value"
-  ) {
+  function setPropVal(elem: any, baseName: string = "primProp", val: string = "Test Value") {
     const key = baseName;
     elem[key] = val;
   }
   function createSchema(hierarchyCount: number): string {
-    const schemaPath = path.join(
-      outDir,
-      `TestMixinSchema-${hierarchyCount}.01.00.00.ecschema.xml`
-    );
+    const schemaPath = path.join(outDir, `TestMixinSchema-${hierarchyCount}.01.00.00.ecschema.xml`);
     if (!IModelJsFs.existsSync(schemaPath)) {
       let sxml = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="TestMixinSchema" alias="tps" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -133,17 +106,13 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
 
         sxml = `${sxml}<ECEntityClass typeName = "${className}A" >\n\t\t`;
         sxml = `${sxml}<BaseClass>${baseClassName}</BaseClass>`;
-        sxml =
-          `${sxml}<ECProperty propertyName="${className}APrimProp` +
-          `" typeName="string" />\n\t\t\t`;
+        sxml = `${sxml}<ECProperty propertyName="${className}APrimProp` + `" typeName="string" />\n\t\t\t`;
         sxml = `${sxml}</ECEntityClass>\n\t\t`;
 
         sxml = `${sxml}<ECEntityClass typeName = "${className}B" >\n\t\t`;
         sxml = `${sxml}<BaseClass>${baseClassName}</BaseClass>\n\t\t`;
         sxml = `${sxml}<BaseClass>MixinElement</BaseClass>`;
-        sxml =
-          `${sxml}<ECProperty propertyName="${className}BPrimProp` +
-          `" typeName="string" />\n\t\t\t`;
+        sxml = `${sxml}<ECProperty propertyName="${className}BPrimProp` + `" typeName="string" />\n\t\t\t`;
         sxml = `${sxml}</ECEntityClass>\n\t\t`;
       }
       sxml = `${sxml}</ECSchema>`;
@@ -157,8 +126,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
     seedCount = configData.mixin.seedCount;
     propCount = configData.mixin.propCount;
     hierarchyCounts = configData.mixin.mixinLevels;
-    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
-      IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
+    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir)) IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
     if (!IModelJsFs.existsSync(outDir)) IModelJsFs.mkdirSync(outDir);
     for (const hCount of hierarchyCounts) {
       const st = createSchema(hCount);
@@ -166,10 +134,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
       const seedName = path.join(outDir, `mixin_${hCount}.bim`);
       if (!IModelJsFs.existsSync(seedName)) {
         const seedIModel = SnapshotDb.createEmpty(
-          IModelTestUtils.prepareOutputFile(
-            "MixinPerformance",
-            `mixin_${hCount}.bim`
-          ),
+          IModelTestUtils.prepareOutputFile("MixinPerformance", `mixin_${hCount}.bim`),
           { rootSubject: { name: "PerfTest" } }
         );
         await seedIModel.importSchemas([st]);
@@ -178,12 +143,11 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
           seedIModel.getMetaData("TestMixinSchema:MixinElement"),
           "Mixin Class is not present in iModel."
         );
-        const [, newModelId] =
-          IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
-            seedIModel,
-            Code.createEmpty(),
-            true
-          );
+        const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
+          seedIModel,
+          Code.createEmpty(),
+          true
+        );
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(
           seedIModel,
           IModel.dictionaryId,
@@ -200,12 +164,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
           );
         // create base class elements
         for (let i = 0; i < seedCount; ++i) {
-          let elementProps = createElemProps(
-            seedIModel,
-            newModelId,
-            spatialCategoryId,
-            "TestMixinSchema:propElement"
-          );
+          let elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, "TestMixinSchema:propElement");
           let geomElement = seedIModel.elements.createElement(elementProps);
           setPropVals(geomElement, propCount);
           let id = seedIModel.elements.insertElement(geomElement.toJSON());
@@ -213,12 +172,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
           // create elements of base upto required level
           for (let j = 0; j < hCount; ++j) {
             const className: string = `child${j.toString()}A`;
-            elementProps = createElemProps(
-              seedIModel,
-              newModelId,
-              spatialCategoryId,
-              `TestMixinSchema:${className}`
-            );
+            elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, `TestMixinSchema:${className}`);
             geomElement = seedIModel.elements.createElement(elementProps);
             setPropVal(geomElement, `${className}PrimProp`, "AChild Value");
             id = seedIModel.elements.insertElement(geomElement.toJSON());
@@ -226,12 +180,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
           }
           for (let j = 0; j < hCount; ++j) {
             const className: string = `child${j.toString()}B`;
-            elementProps = createElemProps(
-              seedIModel,
-              newModelId,
-              spatialCategoryId,
-              `TestMixinSchema:${className}`
-            );
+            elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, `TestMixinSchema:${className}`);
             geomElement = seedIModel.elements.createElement(elementProps);
             setPropVal(geomElement, `${className}PrimProp`, "BChild Value");
             setPropVals(geomElement, propCount, "mixinProp", "Mixin Value");
@@ -240,10 +189,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
           }
         }
         seedIModel.saveChanges();
-        assert.equal(
-          getCount(seedIModel, "TestMixinSchema:PropElement"),
-          2 * seedCount * hCount + seedCount
-        );
+        assert.equal(getCount(seedIModel, "TestMixinSchema:PropElement"), 2 * seedCount * hCount + seedCount);
         seedIModel.close();
       }
     }
@@ -255,36 +201,24 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
   it("Read", async () => {
     for (const hCount of hierarchyCounts) {
       const seedFileName = path.join(outDir, `mixin_${hCount}.bim`);
-      const testFileName = IModelTestUtils.prepareOutputFile(
-        "MixinPerformance",
-        `MixinPerf_Read_${hCount}.bim`
-      );
-      const perfimodel = IModelTestUtils.createSnapshotFromSeed(
-        testFileName,
-        seedFileName
-      );
+      const testFileName = IModelTestUtils.prepareOutputFile("MixinPerformance", `MixinPerf_Read_${hCount}.bim`);
+      const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
       const startTime = new Date().getTime();
-      perfimodel.withPreparedStatement(
-        "SELECT * FROM tps.MixinElement",
-        (stmt: ECSqlStatement) => {
-          assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
-          const row = stmt.getRow();
-          assert.equal(row.mixinProp0, "Mixin Value");
-          assert.equal(row.mixinProp4, "Mixin Value");
-          assert.equal(row.mixinProp9, "Mixin Value");
-        }
-      );
+      perfimodel.withPreparedStatement("SELECT * FROM tps.MixinElement", (stmt: ECSqlStatement) => {
+        assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
+        const row = stmt.getRow();
+        assert.equal(row.mixinProp0, "Mixin Value");
+        assert.equal(row.mixinProp4, "Mixin Value");
+        assert.equal(row.mixinProp9, "Mixin Value");
+      });
       const endTime = new Date().getTime();
       const elapsedTime = (endTime - startTime) / 1000.0;
       perfimodel.close();
-      reporter.addEntry(
-        "MixinPerfTest",
-        "ElementsRead",
-        "Execution time(s)",
-        elapsedTime,
-        { hierarchy: hCount, sCount: seedCount }
-      );
+      reporter.addEntry("MixinPerfTest", "ElementsRead", "Execution time(s)", elapsedTime, {
+        hierarchy: hCount,
+        sCount: seedCount,
+      });
     }
   });
 });

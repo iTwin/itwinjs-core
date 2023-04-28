@@ -22,9 +22,7 @@ import { HalfEdgeGraphOps } from "./Merging";
 export class HalfEdgePriorityQueueWithPartnerArray {
   public priorityQueue: PriorityQueue<HalfEdge>;
   public activeEdges: HalfEdge[];
-  public constructor(
-    compare: OrderedComparator<HalfEdge> = HalfEdgeGraphOps.compareNodesYXUp
-  ) {
+  public constructor(compare: OrderedComparator<HalfEdge> = HalfEdgeGraphOps.compareNodesYXUp) {
     this.priorityQueue = new PriorityQueue(compare);
     this.activeEdges = [];
   }

@@ -27,12 +27,7 @@ export class PolylineFlags {
   public is2d: boolean;
   public type: PolylineTypeFlags;
 
-  public constructor(
-    is2d = false,
-    isPlanar = false,
-    isDisjoint = false,
-    type = PolylineTypeFlags.Normal
-  ) {
+  public constructor(is2d = false, isPlanar = false, isDisjoint = false, type = PolylineTypeFlags.Normal) {
     this.isDisjoint = isDisjoint;
     this.isPlanar = isPlanar;
     this.is2d = is2d;
@@ -40,12 +35,7 @@ export class PolylineFlags {
   }
 
   public clone(): PolylineFlags {
-    return new PolylineFlags(
-      this.is2d,
-      this.isPlanar,
-      this.isDisjoint,
-      this.type
-    );
+    return new PolylineFlags(this.is2d, this.isPlanar, this.isDisjoint, this.type);
   }
 
   /** Create a PolylineFlags from a serialized numeric representation. */
@@ -54,11 +44,7 @@ export class PolylineFlags {
     const isPlanar = 0 !== (value & 2);
     const is2d = 0 !== (value & 4);
     const type: PolylineTypeFlags = value >> 3;
-    assert(
-      type === PolylineTypeFlags.Normal ||
-        type === PolylineTypeFlags.Edge ||
-        type === PolylineTypeFlags.Outline
-    );
+    assert(type === PolylineTypeFlags.Normal || type === PolylineTypeFlags.Edge || type === PolylineTypeFlags.Outline);
 
     return new PolylineFlags(is2d, isPlanar, isDisjoint, type);
   }
@@ -135,8 +121,7 @@ export class MeshPolyline {
   }
   public addIndex(index: number) {
     const { indices } = this;
-    if (indices.length === 0 || indices[indices.length - 1] !== index)
-      indices.push(index);
+    if (indices.length === 0 || indices[indices.length - 1] !== index) indices.push(index);
   }
   public clear() {
     this.indices.length = 0;
@@ -188,8 +173,7 @@ export class EdgeArgs {
 
   public init(meshEdges?: MeshEdges): boolean {
     this.clear();
-    if (undefined !== meshEdges && 0 < meshEdges.visible.length)
-      this.edges = meshEdges.visible;
+    if (undefined !== meshEdges && 0 < meshEdges.visible.length) this.edges = meshEdges.visible;
 
     return this.isValid;
   }

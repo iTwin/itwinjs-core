@@ -473,11 +473,7 @@ export interface UVSurface {
    * @param vFraction fractional coordinate in the v direction
    * @param result optional pre-allocated point
    */
-  uvFractionToPoint(
-    uFraction: number,
-    vFraction: number,
-    result?: Point3d
-  ): Point3d;
+  uvFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d;
   /**
    * Convert fractional u and v coordinates to surface point and in-surface tangent directions.
    * * Remark: the vectors are expected to be non-zero tangents which can be crossed to get a normal.

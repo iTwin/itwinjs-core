@@ -27,12 +27,11 @@ export class TestChangeSetUtility {
   }
 
   private async addTestModel(): Promise<void> {
-    [, this._modelId] =
-      IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
-        this._iModel,
-        IModelTestUtils.getUniqueModelCode(this._iModel, "TestPhysicalModel"),
-        true
-      );
+    [, this._modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
+      this._iModel,
+      IModelTestUtils.getUniqueModelCode(this._iModel, "TestPhysicalModel"),
+      true
+    );
     this._iModel.saveChanges("Added test model");
   }
 
@@ -50,18 +49,10 @@ export class TestChangeSetUtility {
 
   private async addTestElements(): Promise<void> {
     this._iModel.elements.insertElement(
-      IModelTestUtils.createPhysicalObject(
-        this._iModel,
-        this._modelId,
-        this._categoryId
-      ).toJSON()
+      IModelTestUtils.createPhysicalObject(this._iModel, this._modelId, this._categoryId).toJSON()
     );
     this._iModel.elements.insertElement(
-      IModelTestUtils.createPhysicalObject(
-        this._iModel,
-        this._modelId,
-        this._categoryId
-      ).toJSON()
+      IModelTestUtils.createPhysicalObject(this._iModel, this._modelId, this._categoryId).toJSON()
     );
     this._iModel.saveChanges("Added test elements");
   }
@@ -110,10 +101,7 @@ export class TestChangeSetUtility {
 
   public async deleteTestIModel(): Promise<void> {
     if (!this._iModel) throw new Error("Must first call createTestIModel");
-    await HubWrappers.closeAndDeleteBriefcaseDb(
-      this._accessToken,
-      this._iModel
-    );
+    await HubWrappers.closeAndDeleteBriefcaseDb(this._accessToken, this._iModel);
     await IModelHost.hubAccess.deleteIModel({
       accessToken: this._accessToken,
       iTwinId: this.iTwinId,

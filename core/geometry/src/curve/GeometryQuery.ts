@@ -75,10 +75,7 @@ export abstract class GeometryQuery {
   }
 
   /** extend rangeToExtend by the range of this geometry multiplied by the transform */
-  public abstract extendRange(
-    rangeToExtend: Range3d,
-    transform?: Transform
-  ): void;
+  public abstract extendRange(rangeToExtend: Range3d, transform?: Transform): void;
 
   /** Attempt to transform in place.
    *
@@ -88,18 +85,12 @@ export abstract class GeometryQuery {
   public abstract tryTransformInPlace(transform: Transform): boolean;
 
   /** try to move the geometry by dx,dy,dz */
-  public tryTranslateInPlace(
-    dx: number,
-    dy: number = 0.0,
-    dz: number = 0.0
-  ): boolean {
+  public tryTranslateInPlace(dx: number, dy: number = 0.0, dz: number = 0.0): boolean {
     return this.tryTransformInPlace(Transform.createTranslationXYZ(dx, dy, dz));
   }
   /** return a transformed clone.
    */
-  public abstract cloneTransformed(
-    transform: Transform
-  ): GeometryQuery | undefined;
+  public abstract cloneTransformed(transform: Transform): GeometryQuery | undefined;
   /** return a clone */
   public abstract clone(): GeometryQuery | undefined;
   /** return GeometryQuery children for recursive queries.
@@ -142,12 +133,8 @@ export abstract class GeometryQuery {
    * * both undefined returns true
    * * single defined returns false
    */
-  public static areAlmostEqual(
-    a: GeometryQuery | undefined,
-    b: GeometryQuery | undefined
-  ): boolean {
-    if (a instanceof GeometryQuery && b instanceof GeometryQuery)
-      return a.isAlmostEqual(b);
+  public static areAlmostEqual(a: GeometryQuery | undefined, b: GeometryQuery | undefined): boolean {
+    if (a instanceof GeometryQuery && b instanceof GeometryQuery) return a.isAlmostEqual(b);
     if (a === undefined && b === undefined) return true;
     return false;
   }

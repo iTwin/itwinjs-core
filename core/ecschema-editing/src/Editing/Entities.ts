@@ -20,11 +20,7 @@ import {
   SchemaKey,
   StrengthDirection,
 } from "@itwin/ecschema-metadata";
-import {
-  PropertyEditResults,
-  SchemaContextEditor,
-  SchemaItemEditResults,
-} from "./Editor";
+import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { ECClasses } from "./ECClasses";
 import { MutableEntityClass } from "./Mutable/MutableEntityClass";
 
@@ -45,9 +41,7 @@ export class Entities extends ECClasses {
     displayLabel?: string,
     mixins?: Mixin[]
   ): Promise<SchemaItemEditResults> {
-    const baseClass = await this._schemaEditor.schemaContext.getSchemaItem(
-      baseClassKey
-    );
+    const baseClass = await this._schemaEditor.schemaContext.getSchemaItem(baseClassKey);
     if (!baseClass)
       throw new Error(
         `The class ${name} could not be created because the specified base class ${baseClassKey.fullName} could be found.`
@@ -64,14 +58,7 @@ export class Entities extends ECClasses {
       );
     }
 
-    return this.create(
-      schemaKey,
-      name,
-      modifier,
-      displayLabel,
-      baseClassKey,
-      mixins
-    );
+    return this.create(schemaKey, name, modifier, displayLabel, baseClassKey, mixins);
   }
 
   public async createElementUniqueAspect(
@@ -82,9 +69,7 @@ export class Entities extends ECClasses {
     displayLabel?: string,
     mixins?: Mixin[]
   ): Promise<SchemaItemEditResults> {
-    const baseClass = await this._schemaEditor.schemaContext.getSchemaItem(
-      baseClassKey
-    );
+    const baseClass = await this._schemaEditor.schemaContext.getSchemaItem(baseClassKey);
     if (!baseClass)
       throw new Error(
         `The class ${name} could not be created because the specified base class ${baseClassKey.fullName} could be found.`
@@ -95,22 +80,13 @@ export class Entities extends ECClasses {
         `The class ${name} could not be created because the specified base class ${baseClassKey.fullName} is not an EntityClass.`
       );
 
-    if (
-      !(await (baseClass as EntityClass).is("ElementUniqueAspect", "BisCore"))
-    ) {
+    if (!(await (baseClass as EntityClass).is("ElementUniqueAspect", "BisCore"))) {
       throw new Error(
         `The class ${name} could not be created because the specified base class ${baseClassKey.fullName} is not an ElementUniqueAspect.`
       );
     }
 
-    return this.create(
-      schemaKey,
-      name,
-      modifier,
-      displayLabel,
-      baseClassKey,
-      mixins
-    );
+    return this.create(schemaKey, name, modifier, displayLabel, baseClassKey, mixins);
   }
 
   public async createElementMultiAspect(
@@ -121,9 +97,7 @@ export class Entities extends ECClasses {
     displayLabel?: string,
     mixins?: Mixin[]
   ): Promise<SchemaItemEditResults> {
-    const baseClass = await this._schemaEditor.schemaContext.getSchemaItem(
-      baseClassKey
-    );
+    const baseClass = await this._schemaEditor.schemaContext.getSchemaItem(baseClassKey);
     if (!baseClass)
       throw new Error(
         `The class ${name} could not be created because the specified base class ${baseClassKey.fullName} could be found.`
@@ -134,22 +108,13 @@ export class Entities extends ECClasses {
         `The class ${name} could not be created because the specified base class ${baseClassKey.fullName} is not an EntityClass.`
       );
 
-    if (
-      !(await (baseClass as EntityClass).is("ElementMultiAspect", "BisCore"))
-    ) {
+    if (!(await (baseClass as EntityClass).is("ElementMultiAspect", "BisCore"))) {
       throw new Error(
         `The class ${name} could not be created because the specified base class ${baseClassKey.fullName} is not an ElementMultiAspect.`
       );
     }
 
-    return this.create(
-      schemaKey,
-      name,
-      modifier,
-      displayLabel,
-      baseClassKey,
-      mixins
-    );
+    return this.create(schemaKey, name, modifier, displayLabel, baseClassKey, mixins);
   }
 
   public async create(
@@ -163,33 +128,22 @@ export class Entities extends ECClasses {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       return {
-        errorMessage: `Schema Key ${schemaKey.toString(
-          true
-        )} not found in context`,
+        errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context`,
       };
 
-    const newClass = (await schema.createEntityClass(
-      name,
-      modifier
-    )) as MutableEntityClass;
+    const newClass = (await schema.createEntityClass(name, modifier)) as MutableEntityClass;
     if (newClass === undefined)
       return {
-        errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(
-          true
-        )}.`,
+        errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.`,
       };
 
     // Add a deserializing method.
     if (baseClassKey !== undefined) {
       let baseClassSchema = schema;
       if (!baseClassKey.schemaKey.matches(schema.schemaKey))
-        baseClassSchema = await this._schemaEditor.getSchema(
-          baseClassKey.schemaKey
-        );
+        baseClassSchema = await this._schemaEditor.getSchema(baseClassKey.schemaKey);
 
-      const baseClassItem = await baseClassSchema.lookupItem<EntityClass>(
-        baseClassKey
-      );
+      const baseClassItem = await baseClassSchema.lookupItem<EntityClass>(baseClassKey);
       if (baseClassItem === undefined)
         return {
           errorMessage: `Unable to locate base class ${baseClassKey.fullName} in schema ${baseClassSchema.fullName}.`,
@@ -200,10 +154,10 @@ export class Entities extends ECClasses {
           errorMessage: `${baseClassItem.fullName} is not of type Entity Class.`,
         };
 
-      newClass.baseClass = new DelayedPromiseWithProps<
-        SchemaItemKey,
-        EntityClass
-      >(baseClassKey, async () => baseClassItem);
+      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(
+        baseClassKey,
+        async () => baseClassItem
+      );
     }
 
     if (mixins !== undefined) mixins.forEach((m) => newClass.addMixin(m));
@@ -218,46 +172,28 @@ export class Entities extends ECClasses {
    * @param schemaKey a SchemaKey of the Schema that will house the new object.
    * @param entityProps a json object that will be used to populate the new EntityClass. Needs a name value passed in.
    */
-  public async createFromProps(
-    schemaKey: SchemaKey,
-    entityProps: EntityClassProps
-  ): Promise<SchemaItemEditResults> {
+  public async createFromProps(schemaKey: SchemaKey, entityProps: EntityClassProps): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       return {
-        errorMessage: `Schema Key ${schemaKey.toString(
-          true
-        )} not found in context`,
+        errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context`,
       };
 
-    if (entityProps.name === undefined)
-      return { errorMessage: `No name was supplied within props.` };
+    if (entityProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
 
-    const newClass = (await schema.createEntityClass(
-      entityProps.name
-    )) as MutableEntityClass;
+    const newClass = (await schema.createEntityClass(entityProps.name)) as MutableEntityClass;
     if (newClass === undefined)
       return {
-        errorMessage: `Failed to create class ${
-          entityProps.name
-        } in schema ${schemaKey.toString(true)}.`,
+        errorMessage: `Failed to create class ${entityProps.name} in schema ${schemaKey.toString(true)}.`,
       };
 
     await newClass.fromJSON(entityProps);
 
     return { itemKey: newClass.key };
   }
-  public async addMixin(
-    entityKey: SchemaItemKey,
-    mixinKey: SchemaItemKey
-  ): Promise<void> {
-    const entity =
-      await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(
-        entityKey
-      );
-    const mixin = await this._schemaEditor.schemaContext.getSchemaItem<Mixin>(
-      mixinKey
-    );
+  public async addMixin(entityKey: SchemaItemKey, mixinKey: SchemaItemKey): Promise<void> {
+    const entity = await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(entityKey);
+    const mixin = await this._schemaEditor.schemaContext.getSchemaItem<Mixin>(mixinKey);
 
     // TODO: have a helpful returns
     if (!entity || entity.schemaItemType !== SchemaItemType.EntityClass) return;
@@ -273,10 +209,7 @@ export class Entities extends ECClasses {
     relationship: string | RelationshipClass,
     direction: string | StrengthDirection
   ): Promise<PropertyEditResults> {
-    const entity =
-      await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(
-        entityKey
-      );
+    const entity = await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(entityKey);
 
     if (entity === undefined)
       throw new ECObjectsError(

@@ -30,19 +30,13 @@ export class ModelClipGroup {
   /** The clip to apply to the group of models. `undefined` indicates the models are exempt from clipping. */
   public readonly clip?: ClipVector;
 
-  private constructor(
-    models: Id64Array | undefined,
-    clip: ClipVector | undefined
-  ) {
+  private constructor(models: Id64Array | undefined, clip: ClipVector | undefined) {
     this.models = models;
     this.clip = clip;
   }
 
   /** Create a new ModelClipGroup. The input arguments are captured as references and should not be subsequently modified. */
-  public static create(
-    clip: ClipVector | undefined,
-    models?: Id64Array
-  ): ModelClipGroup {
+  public static create(clip: ClipVector | undefined, models?: Id64Array): ModelClipGroup {
     return new ModelClipGroup(models, clip);
   }
 
@@ -61,10 +55,7 @@ export class ModelClipGroup {
   public static fromJSON(props: ModelClipGroupProps): ModelClipGroup {
     const models = props.models ? [...props.models] : undefined;
     const clip = props.clip ? ClipVector.fromJSON(props.clip) : undefined;
-    return new ModelClipGroup(
-      models,
-      undefined !== clip && clip.isValid ? clip : undefined
-    );
+    return new ModelClipGroup(models, undefined !== clip && clip.isValid ? clip : undefined);
   }
 
   /** Convert to JSON representation. */
@@ -122,9 +113,7 @@ export class ModelClipGroups {
   }
 
   /** Create from JSON representation. */
-  public static fromJSON(
-    props: ModelClipGroupProps[] | undefined
-  ): ModelClipGroups {
+  public static fromJSON(props: ModelClipGroupProps[] | undefined): ModelClipGroups {
     const groups = props?.map((prop) => ModelClipGroup.fromJSON(prop));
     return new ModelClipGroups(groups);
   }

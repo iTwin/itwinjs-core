@@ -44,28 +44,19 @@ function setMatrix(uniform: UniformHandle, matrix: Matrix4 | undefined): void {
 function addPatternTransforms(vert: VertexShaderBuilder): void {
   vert.addUniform("u_patOrg", VariableType.Mat4, (prog) =>
     prog.addGraphicUniform("u_patOrg", (uniform, params) =>
-      setMatrix(
-        uniform,
-        params.geometry.asInstanced?.patternTransforms?.orgTransform
-      )
+      setMatrix(uniform, params.geometry.asInstanced?.patternTransforms?.orgTransform)
     )
   );
 
   vert.addUniform("u_patLocalToModel", VariableType.Mat4, (prog) =>
     prog.addGraphicUniform("u_patLocalToModel", (uniform, params) =>
-      setMatrix(
-        uniform,
-        params.geometry.asInstanced?.patternTransforms?.localToModel
-      )
+      setMatrix(uniform, params.geometry.asInstanced?.patternTransforms?.localToModel)
     )
   );
 
   vert.addUniform("u_patSymbolToLocal", VariableType.Mat4, (prog) =>
     prog.addGraphicUniform("u_patSymbolToLocal", (uniform, params) =>
-      setMatrix(
-        uniform,
-        params.geometry.asInstanced?.patternTransforms?.symbolToLocal
-      )
+      setMatrix(uniform, params.geometry.asInstanced?.patternTransforms?.symbolToLocal)
     )
   );
 
@@ -117,10 +108,7 @@ export function addInstanceColor(vert: VertexShaderBuilder): void {
       let val = 1.0;
       if (
         params.geometry.isEdge &&
-        undefined !==
-          params.target.currentEdgeSettings.getColor(
-            params.target.currentViewFlags
-          )
+        undefined !== params.target.currentEdgeSettings.getColor(params.target.currentViewFlags)
       )
         val = 0.0;
 

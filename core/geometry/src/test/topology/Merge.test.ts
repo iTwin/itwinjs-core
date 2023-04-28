@@ -47,8 +47,7 @@ describe("GraphMerge", () => {
     let q;
     while ((q = edges.popQueueToArray()) !== undefined) {
       for (const p of edges.activeEdges) {
-        if (p !== q)
-          ck.testTrue(p.y < q.y, "low y moved to active edges first");
+        if (p !== q) ck.testTrue(p.y < q.y, "low y moved to active edges first");
       }
       edges.removeArrayMembersWithY1Below(q.faceSuccessor.y);
     }
@@ -94,11 +93,7 @@ describe("GraphMerge", () => {
 
       GeometryCoreTestIO.captureGeometry(
         allGeometry,
-        PolyfaceBuilder.graphToPolyface(
-          graph,
-          undefined,
-          HalfEdge.testFacePositiveAreaXY
-        ),
+        PolyfaceBuilder.graphToPolyface(graph, undefined, HalfEdge.testFacePositiveAreaXY),
         x0,
         (y0 += dy),
         0
@@ -107,32 +102,16 @@ describe("GraphMerge", () => {
       Triangulator.triangulateAllPositiveAreaFaces(graph);
       GeometryCoreTestIO.captureGeometry(
         allGeometry,
-        PolyfaceBuilder.graphToPolyface(
-          graph,
-          undefined,
-          HalfEdge.testFacePositiveAreaXY
-        ),
+        PolyfaceBuilder.graphToPolyface(graph, undefined, HalfEdge.testFacePositiveAreaXY),
         x0,
         (y0 += dy),
         0
       );
 
       const summary1 = HalfEdgeGraphSearch.collectFaceAreaSummary(graph, true);
-      ck.testExactNumber(
-        summary1.numNegative,
-        summary1.negativeItemArray!.length,
-        " negative face counts"
-      );
-      ck.testExactNumber(
-        summary1.numPositive,
-        summary1.positiveItemArray!.length,
-        " positive face counts"
-      );
-      ck.testExactNumber(
-        summary1.numZero,
-        summary1.zeroItemArray!.length,
-        " zero face counts"
-      );
+      ck.testExactNumber(summary1.numNegative, summary1.negativeItemArray!.length, " negative face counts");
+      ck.testExactNumber(summary1.numPositive, summary1.positiveItemArray!.length, " positive face counts");
+      ck.testExactNumber(summary1.numZero, summary1.zeroItemArray!.length, " zero face counts");
       GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "MergeQuadQuad");
       x0 += dy;
       y0 = 0.0;

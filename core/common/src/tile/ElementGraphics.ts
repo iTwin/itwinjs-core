@@ -129,8 +129,7 @@ export interface DynamicGraphicsRequestProps extends GraphicsRequestProps {
  * @public
  * @extensions
  */
-export interface DynamicGraphicsRequest2dProps
-  extends DynamicGraphicsRequestProps {
+export interface DynamicGraphicsRequest2dProps extends DynamicGraphicsRequestProps {
   /** Specifies the geometry is 2d. */
   readonly type: "2d";
   /** The origin and rotation of the geometry. */
@@ -142,8 +141,7 @@ export interface DynamicGraphicsRequest2dProps
  * @public
  * @extensions
  */
-export interface DynamicGraphicsRequest3dProps
-  extends DynamicGraphicsRequestProps {
+export interface DynamicGraphicsRequest3dProps extends DynamicGraphicsRequestProps {
   /** Specifies the geometry is 3d. */
   readonly type: "3d";
   /** The origin and rotation of the geometry. */

@@ -5,12 +5,7 @@
 import { KeyinField, parseArgs } from "@itwin/frontend-devtools";
 import { Range3d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
-import {
-  BlankConnection,
-  BlankConnectionProps,
-  IModelApp,
-  Tool,
-} from "@itwin/core-frontend";
+import { BlankConnection, BlankConnectionProps, IModelApp, Tool } from "@itwin/core-frontend";
 import { DisplayTestApp } from "./App";
 import { BrowserFileSelector, selectFileName } from "./FileOpen";
 import { FpsMonitor } from "./FpsMonitor";
@@ -19,13 +14,7 @@ import { addSnapModes } from "./SnapModes";
 import { TileLoadIndicator } from "./TileLoadIndicator";
 import { createToolButton, ToolBar } from "./ToolBar";
 import { Viewer, ViewerProps } from "./Viewer";
-import {
-  Dock,
-  NamedWindow,
-  NamedWindowProps,
-  Window,
-  WindowProps,
-} from "./Window";
+import { Dock, NamedWindow, NamedWindowProps, Window, WindowProps } from "./Window";
 import { openIModel, OpenIModelProps } from "./openIModel";
 import { setTitle } from "./Title";
 import { openAnalysisStyleExample } from "./AnalysisStyleExample";
@@ -65,9 +54,7 @@ export class Surface {
     this._toolbarDiv.appendChild(this._toolbar.element);
 
     addSnapModes(document.getElementById("snapModesContainer")!);
-    new TileLoadIndicator(
-      document.getElementById("tileLoadIndicatorContainer") as HTMLDivElement
-    );
+    new TileLoadIndicator(document.getElementById("tileLoadIndicatorContainer") as HTMLDivElement);
     new FpsMonitor({
       checkbox: document.getElementById("fps-checkbox") as HTMLInputElement,
       label: document.getElementById("fps-label") as HTMLLabelElement,
@@ -114,8 +101,7 @@ export class Surface {
     };
 
     IModelApp.viewManager.onSelectedViewportChanged.addListener((args) => {
-      if (null !== this._toolbarDiv.firstChild)
-        this._toolbarDiv.removeChild(this._toolbarDiv.firstChild);
+      if (null !== this._toolbarDiv.firstChild) this._toolbarDiv.removeChild(this._toolbarDiv.firstChild);
 
       if (undefined !== args.previous) {
         const previous = this.findViewerByViewportId(args.previous.viewportId);
@@ -194,9 +180,7 @@ export class Surface {
   }
 
   // create a new blank connection for testing backgroundMap and reality models.
-  private async openBlankConnection(
-    props?: Partial<BlankConnectionProps>
-  ): Promise<Viewer> {
+  private async openBlankConnection(props?: Partial<BlankConnectionProps>): Promise<Viewer> {
     const iModel = BlankConnection.create({
       location:
         props?.location ??
@@ -205,8 +189,7 @@ export class Surface {
           latitude: 40.065757,
           height: 0,
         }), // near Exton pa
-      extents:
-        props?.extents ?? new Range3d(-1000, -1000, -100, 1000, 1000, 100),
+      extents: props?.extents ?? new Range3d(-1000, -1000, -100, 1000, 1000, 100),
       name: props?.name ?? "blank connection test",
     });
 
@@ -237,22 +220,17 @@ export class Surface {
   }
 
   public get firstViewer(): Viewer | undefined {
-    for (const window of this._windows)
-      if (window instanceof Viewer) return window;
+    for (const window of this._windows) if (window instanceof Viewer) return window;
 
     return undefined;
   }
 
   public async openFile(filename?: string): Promise<void> {
     const viewer = this.firstViewer;
-    return undefined !== viewer
-      ? viewer.openFile(filename)
-      : this.openFileIModel(filename);
+    return undefined !== viewer ? viewer.openFile(filename) : this.openFileIModel(filename);
   }
 
-  private getKeyboardShortcutHandler(
-    e: KeyboardEvent
-  ): (() => void) | undefined {
+  private getKeyboardShortcutHandler(e: KeyboardEvent): (() => void) | undefined {
     if (e.repeat) return undefined;
 
     const key = e.key;
@@ -398,8 +376,7 @@ export class Surface {
 
   public findViewerByViewportId(id: number): Viewer | undefined {
     for (const window of this._windows)
-      if (window instanceof Viewer && window.viewport.viewportId === id)
-        return window;
+      if (window instanceof Viewer && window.viewport.viewportId === id) return window;
 
     return undefined;
   }
@@ -446,9 +423,7 @@ export class Surface {
   }
 
   public onResetIModel(viewer: Viewer): void {
-    for (const window of this._windows)
-      if (window instanceof Viewer && window !== viewer)
-        this.forceClose(window);
+    for (const window of this._windows) if (window instanceof Viewer && window !== viewer) this.forceClose(window);
   }
 
   public async selectFileName(): Promise<string | undefined> {
@@ -487,12 +462,7 @@ export class CreateWindowTool extends Tool {
     const title = args.get("title");
     if (undefined !== title) props.title = title;
 
-    const sides: Array<"top" | "left" | "width" | "height"> = [
-      "top",
-      "left",
-      "width",
-      "height",
-    ];
+    const sides: Array<"top" | "left" | "width" | "height"> = ["top", "left", "width", "height"];
     for (const key of sides) {
       const value = args.getInteger(key);
       if (undefined !== value) props[key] = value;
@@ -518,10 +488,7 @@ export abstract class WindowIdTool extends Tool {
   public abstract execute(_window: Window): void;
 
   public override async run(windowId?: string): Promise<boolean> {
-    const window =
-      undefined !== windowId
-        ? Surface.instance.findWindowById(windowId)
-        : Surface.instance.focusedWindow;
+    const window = undefined !== windowId ? Surface.instance.findWindowById(windowId) : Surface.instance.focusedWindow;
     if (undefined !== window) this.execute(window);
 
     return true;
@@ -568,15 +535,8 @@ export class ResizeWindowTool extends Tool {
     return 3;
   }
 
-  public override async run(
-    width: number,
-    height: number,
-    id?: string
-  ): Promise<boolean> {
-    const window =
-      undefined !== id
-        ? Surface.instance.findWindowById(id)
-        : Surface.instance.focusedWindow;
+  public override async run(width: number, height: number, id?: string): Promise<boolean> {
+    const window = undefined !== id ? Surface.instance.findWindowById(id) : Surface.instance.focusedWindow;
     if (undefined !== window) window.resizeContent(width, height);
 
     return true;
@@ -602,10 +562,7 @@ export class DockWindowTool extends Tool {
   }
 
   public override async run(dock: Dock, windowId?: string): Promise<boolean> {
-    const window =
-      undefined !== windowId
-        ? Surface.instance.findWindowById(windowId)
-        : Surface.instance.focusedWindow;
+    const window = undefined !== windowId ? Surface.instance.findWindowById(windowId) : Surface.instance.focusedWindow;
     if (undefined !== window) window.dock(dock);
 
     return true;
@@ -664,11 +621,7 @@ export class CloneViewportTool extends Tool {
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     const viewportId = parseInt(args[0], 10);
-    return (
-      undefined !== viewportId &&
-      !Number.isNaN(viewportId) &&
-      this.run(viewportId)
-    );
+    return undefined !== viewportId && !Number.isNaN(viewportId) && this.run(viewportId);
   }
 }
 

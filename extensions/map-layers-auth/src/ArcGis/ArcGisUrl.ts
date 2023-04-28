@@ -9,14 +9,10 @@ export class ArcGisUrl {
     const urlStr = url.toString();
     const searchStr = "/rest/";
     const restPos = urlStr.indexOf(searchStr);
-    return restPos === -1
-      ? undefined
-      : new URL(urlStr.substring(0, restPos + searchStr.length));
+    return restPos === -1 ? undefined : new URL(urlStr.substring(0, restPos + searchStr.length));
   }
 
-  public static async getRestUrlFromGenerateTokenUrl(
-    url: URL
-  ): Promise<URL | undefined> {
+  public static async getRestUrlFromGenerateTokenUrl(url: URL): Promise<URL | undefined> {
     const restUrl = ArcGisUrl.extractRestBaseUrl(url);
     if (restUrl === undefined) {
       return undefined;

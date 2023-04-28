@@ -28,12 +28,7 @@ export class PolishCubicEvaluator extends CubicEvaluator {
   public nominalRadius1: number;
 
   /** Constructor is private.  Caller responsible for cubicM validity. */
-  private constructor(
-    length1: number,
-    radius1: number,
-    axisLength: number,
-    cubicM: number
-  ) {
+  private constructor(length1: number, radius1: number, axisLength: number, cubicM: number) {
     super(axisLength, cubicM);
     this.nominalLength1 = length1;
     this.nominalRadius1 = radius1;
@@ -44,17 +39,10 @@ export class PolishCubicEvaluator extends CubicEvaluator {
     return 1.0 / (6.0 * length1 * radius1);
   }
 
-  public static create(
-    length1: number,
-    radius1: number
-  ): PolishCubicEvaluator | undefined {
+  public static create(length1: number, radius1: number): PolishCubicEvaluator | undefined {
     const m = this.computeCubicM(length1, radius1);
     if (m === undefined) return undefined;
-    const xMax = PolishCubicEvaluator.approximateDistanceAlongToX(
-      length1,
-      radius1,
-      length1
-    );
+    const xMax = PolishCubicEvaluator.approximateDistanceAlongToX(length1, radius1, length1);
     if (xMax === undefined) return undefined;
     return new PolishCubicEvaluator(length1, radius1, xMax, m);
   }
@@ -66,12 +54,7 @@ export class PolishCubicEvaluator extends CubicEvaluator {
   }
   /** return a deep copy of the evaluator */
   public clone(): PolishCubicEvaluator {
-    return new PolishCubicEvaluator(
-      this.nominalLength1,
-      this.nominalRadius1,
-      super._axisLength,
-      this.cubicM
-    );
+    return new PolishCubicEvaluator(this.nominalLength1, this.nominalRadius1, super._axisLength, this.cubicM);
   }
   /** Member by member matchup ... */
   public isAlmostEqual(other: any): boolean {
@@ -85,10 +68,7 @@ export class PolishCubicEvaluator extends CubicEvaluator {
   }
 
   /** Compute the coefficient of x^4 in the x-to-distance series expansion */
-  public static computeX4SeriesCoefficient(
-    length1: number,
-    radius1: number
-  ): number {
+  public static computeX4SeriesCoefficient(length1: number, radius1: number): number {
     return 1.0 / (4.0 * length1 * length1 * radius1 * radius1);
   }
   /**
@@ -98,22 +78,13 @@ export class PolishCubicEvaluator extends CubicEvaluator {
    * @param length1 nominal length along curve
    * @returns
    */
-  public static xToApproximateDistance(
-    x: number,
-    radius1: number,
-    length1: number
-  ): number {
+  public static xToApproximateDistance(x: number, radius1: number, length1: number): number {
     // C31 * ( 1 + 1 / 10 * E31 - 1 / 72 * E31^2 + 1 / 208 * E31^3 - 5 / 2176 * E31^4 )
     const a4 = this.computeX4SeriesCoefficient(length1, radius1);
     const ax2 = a4 * x * x;
     const ax3 = ax2 * x;
     const ax4 = ax3 * x;
-    const s0 =
-      x *
-      (1.0 +
-        ax4 *
-          (0.1 +
-            ax4 * (-1.0 / 72.0 + ax4 * (1.0 / 208.0 - (5.0 * ax4) / 2176.0))));
+    const s0 = x * (1.0 + ax4 * (0.1 + ax4 * (-1.0 / 72.0 + ax4 * (1.0 / 208.0 - (5.0 * ax4) / 2176.0))));
     return s0;
   }
 
@@ -124,11 +95,7 @@ export class PolishCubicEvaluator extends CubicEvaluator {
    * @param length1 nominal length along curve
    * @returns
    */
-  public static xToApproximateDistanceDerivative(
-    x: number,
-    radius1: number,
-    length1: number
-  ): number {
+  public static xToApproximateDistanceDerivative(x: number, radius1: number, length1: number): number {
     // C31 * ( 1 + 1 / 10 * E31 - 1 / 72 * E31^2 + 1 / 208 * E31^3 - 5 / 2176 * E31^4 )
     const a4 = this.computeX4SeriesCoefficient(length1, radius1);
     const ax2 = a4 * x * x;
@@ -141,19 +108,12 @@ export class PolishCubicEvaluator extends CubicEvaluator {
     // 1/72==> 9/72 = 1/8
     // 1/208==>13/208=1/16
     // 1/2176==>17/2176= 1/128
-    const ds =
-      1.0 +
-      ax4 *
-        (0.5 + ax4 * (-1.0 / 8.0 + ax4 * (1.0 / 16.0 - (5.0 * ax4) / 128.0)));
+    const ds = 1.0 + ax4 * (0.5 + ax4 * (-1.0 / 8.0 + ax4 * (1.0 / 16.0 - (5.0 * ax4) / 128.0)));
     return ds;
   }
 
   /** Invert the xToApproximateDistance function. */
-  public static approximateDistanceAlongToX(
-    s: number,
-    radius1: number,
-    length1: number
-  ): number | undefined {
+  public static approximateDistanceAlongToX(s: number, radius1: number, length1: number): number | undefined {
     const root = SimpleNewton.runNewton1D(
       s,
       (x: number) => this.xToApproximateDistance(x, radius1, length1) - s,

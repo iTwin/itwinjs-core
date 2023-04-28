@@ -6,20 +6,8 @@
  * @module Views
  */
 
-import {
-  Arc3d,
-  Geometry,
-  Point3d,
-  SmoothTransformBetweenFrusta,
-} from "@itwin/core-geometry";
-import {
-  Cartographic,
-  Easing,
-  Frustum,
-  GlobeMode,
-  Interpolation,
-  Tweens,
-} from "@itwin/core-common";
+import { Arc3d, Geometry, Point3d, SmoothTransformBetweenFrusta } from "@itwin/core-geometry";
+import { Cartographic, Easing, Frustum, GlobeMode, Interpolation, Tweens } from "@itwin/core-common";
 import {
   areaToEyeHeight,
   areaToEyeHeightFromGcs,
@@ -75,14 +63,8 @@ export class GlobeAnimator implements Animator {
     }
 
     // Possibly smooth the takeoff
-    if (
-      fraction < this._fixTakeoffFraction! &&
-      this._fixTakeoffInterpolator !== undefined
-    ) {
-      this._moveFixToFraction(
-        (1.0 / this._fixTakeoffFraction!) * fraction,
-        this._fixTakeoffInterpolator
-      );
+    if (fraction < this._fixTakeoffFraction! && this._fixTakeoffInterpolator !== undefined) {
+      this._moveFixToFraction((1.0 / this._fixTakeoffFraction!) * fraction, this._fixTakeoffInterpolator);
       return false;
     }
 
@@ -96,41 +78,26 @@ export class GlobeAnimator implements Animator {
         );
       }
       this._moveFixToFraction(
-        (1.0 / (1.0 - this._fixLandingFraction)) *
-          (fraction - this._fixLandingFraction),
+        (1.0 / (1.0 - this._fixLandingFraction)) * (fraction - this._fixLandingFraction),
         this._fixLandingInterpolator!
       );
       return false;
     }
 
     // Set the camera based on a fraction along the flight arc
-    const height: number = Interpolation.Bezier(
-      [this._startHeight, this._midHeight, this._endHeight],
-      fraction
-    );
+    const height: number = Interpolation.Bezier([this._startHeight, this._midHeight, this._endHeight], fraction);
     let targetPoint: Point3d;
     if (view.globeMode === GlobeMode.Plane)
-      targetPoint = this._columbusLine[0].interpolate(
-        fraction,
-        this._columbusLine[1]
-      );
+      targetPoint = this._columbusLine[0].interpolate(fraction, this._columbusLine[1]);
     else targetPoint = this._ellipsoidArc!.fractionToPoint(fraction);
-    view.lookAtGlobalLocation(
-      height,
-      ViewGlobalLocationConstants.birdPitchAngleRadians,
-      undefined,
-      targetPoint
-    );
+    view.lookAtGlobalLocation(height, ViewGlobalLocationConstants.birdPitchAngleRadians, undefined, targetPoint);
     vp.setupFromView();
 
     return false;
   }
 
   /** Apply a SmoothTransformBetweenFrusta interpolator to the view based on a fraction. */
-  protected _moveFixToFraction(
-    fract: number,
-    interpolator: SmoothTransformBetweenFrusta
-  ): boolean {
+  protected _moveFixToFraction(fract: number, interpolator: SmoothTransformBetweenFrusta): boolean {
     let done = false;
 
     if (fract >= 1.0) {
@@ -138,10 +105,7 @@ export class GlobeAnimator implements Animator {
       done = true;
     }
 
-    interpolator.fractionToWorldCorners(
-      Math.max(fract, 0),
-      this._scratchFrustum.points
-    );
+    interpolator.fractionToWorldCorners(Math.max(fract, 0), this._scratchFrustum.points);
     this._viewport.setupViewFromFrustum(this._scratchFrustum);
     return done;
   }
@@ -163,19 +127,11 @@ export class GlobeAnimator implements Animator {
 
     const endHeight =
       destination.area !== undefined
-        ? await areaToEyeHeightFromGcs(
-            view,
-            destination.area,
-            destination.center.height
-          )
+        ? await areaToEyeHeightFromGcs(view, destination.area, destination.center.height)
         : ViewGlobalLocationConstants.birdHeightAboveEarthInMeters;
 
     const beforeFrustum = viewport.getWorldFrustum();
-    await view.lookAtGlobalLocationFromGcs(
-      endHeight,
-      ViewGlobalLocationConstants.birdPitchAngleRadians,
-      destination
-    );
+    await view.lookAtGlobalLocationFromGcs(endHeight, ViewGlobalLocationConstants.birdPitchAngleRadians, destination);
     viewport.setupFromView();
     const afterLanding = viewport.getWorldFrustum();
     const afterFocus = view.camera.focusDist;
@@ -223,12 +179,8 @@ export class GlobeAnimator implements Animator {
     if (view.globeMode === GlobeMode.Plane) {
       // Calculate a line segment going from the starting cartographic coordinate to the ending cartographic coordinate
       this._columbusLine.push(view.cartographicToRoot(startCartographic)!);
-      this._columbusLine.push(
-        view.cartographicToRoot(this._endLocation.center)!
-      );
-      this._flightLength = this._columbusLine[0].distance(
-        this._columbusLine[1]
-      );
+      this._columbusLine.push(view.cartographicToRoot(this._endLocation.center)!);
+      this._flightLength = this._columbusLine[0].distance(this._columbusLine[1]);
       // Set a shorter flight duration in Plane mode
       maxFlightDuration = 7000.0;
     } else {
@@ -240,8 +192,7 @@ export class GlobeAnimator implements Animator {
         this._endLocation.center.longitude,
         this._endLocation.center.latitude
       )!;
-      if (this._ellipsoidArc !== undefined)
-        this._flightLength = this._ellipsoidArc.curveLength();
+      if (this._ellipsoidArc !== undefined) this._flightLength = this._ellipsoidArc.curveLength();
       // Set a longer flight duration in 3D mode
       maxFlightDuration = 13000.0;
     }
@@ -263,29 +214,18 @@ export class GlobeAnimator implements Animator {
     if (view.globeMode === GlobeMode.Plane) {
       /// Do not "fix" the take-off for plane mode; SmoothTransformBetweenFrusta can behave wrongly.
       // However, if within driving distance, still use SmoothTransformBetweenFrusta to navigate there without flight.
-      this._fixTakeoffFraction =
-        this._flightLength <= ViewGlobalLocationConstants.maximumDistanceToDrive
-          ? 1.0
-          : 0.0;
+      this._fixTakeoffFraction = this._flightLength <= ViewGlobalLocationConstants.maximumDistanceToDrive ? 1.0 : 0.0;
     } else {
       this._fixTakeoffFraction =
         this._flightLength <= ViewGlobalLocationConstants.maximumDistanceToDrive
           ? 1.0
-          : metersToRange(
-              this._startHeight,
-              0.1,
-              0.4,
-              ViewGlobalLocationConstants.birdHeightAboveEarthInMeters
-            );
+          : metersToRange(this._startHeight, 0.1, 0.4, ViewGlobalLocationConstants.birdHeightAboveEarthInMeters);
     }
 
     if (this._fixTakeoffFraction > 0.0) {
       this._moveFlightToFraction(this._fixTakeoffFraction);
       const afterTakeoff = viewport.getWorldFrustum();
-      this._fixTakeoffInterpolator = SmoothTransformBetweenFrusta.create(
-        beforeTakeoff.points,
-        afterTakeoff.points
-      );
+      this._fixTakeoffInterpolator = SmoothTransformBetweenFrusta.create(beforeTakeoff.points, afterTakeoff.points);
     }
 
     // The duration of the animation will increase the larger the distance to travel.

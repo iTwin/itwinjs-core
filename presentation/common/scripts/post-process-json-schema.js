@@ -18,10 +18,7 @@ function handleObject(obj) {
       obj[key] = handleArray(obj[key]);
     } else if (typeof obj[key] === "object") {
       obj[key] = handleObject(obj[key]);
-    } else if (
-      typeof obj[key] === "string" &&
-      (key === "description" || key === "deprecated")
-    ) {
+    } else if (typeof obj[key] === "string" && (key === "description" || key === "deprecated")) {
       obj[key] = handleDescription(obj[key]);
     }
   }
@@ -37,10 +34,7 @@ function handleDescription(descr) {
   descr = descr.replace(/\r\n/g, "\n"); // fix line endings
   descr = descr.replace(/\[\[([\w\d\.]+)\]\]/gi, "`$1`"); // replace [[something]] to: `something`
   descr = descr.replace(/\*\*([\w\d\.\:]+)\*\*/gi, "$1"); // replace **something** to: something
-  descr = descr.replace(
-    /\[([\w\d\s\.\:`]+)\]\(\$docs[\\\/\w\d-#\.]+\)/gi,
-    "$1"
-  ); // replace [something]($docs/link) to: something
+  descr = descr.replace(/\[([\w\d\s\.\:`]+)\]\(\$docs[\\\/\w\d-#\.]+\)/gi, "$1"); // replace [something]($docs/link) to: something
   return descr;
 }
 

@@ -3,13 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  ColorDef,
-  FeatureAppearance,
-  RenderMode,
-  ViewFlags,
-  WhiteOnWhiteReversalSettings,
-} from "@itwin/core-common";
+import { ColorDef, FeatureAppearance, RenderMode, ViewFlags, WhiteOnWhiteReversalSettings } from "@itwin/core-common";
 import {
   DecorateContext,
   FeatureSymbology,
@@ -54,8 +48,7 @@ describe("White-on-white reversal", async () => {
 
       const colors = vp.readUniqueColors();
       expect(colors.length).to.equal(expectedColors.length);
-      for (const color of expectedColors)
-        expect(colors.contains(color)).to.be.true;
+      for (const color of expectedColors) expect(colors.contains(color)).to.be.true;
     });
   }
 
@@ -72,8 +65,9 @@ describe("White-on-white reversal", async () => {
   });
 
   function ignoreBackground(vp: Viewport): void {
-    vp.displayStyle.settings.whiteOnWhiteReversal =
-      WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor: true });
+    vp.displayStyle.settings.whiteOnWhiteReversal = WhiteOnWhiteReversalSettings.fromJSON({
+      ignoreBackgroundColor: true,
+    });
   }
 
   it("should apply to non-white background if background color is ignored", async () => {
@@ -106,10 +100,7 @@ describe("White-on-white reversal", async () => {
 
   it("should not apply if geometry is not white", async () => {
     class ColorOverride {
-      public addFeatureOverrides(
-        ovrs: FeatureSymbology.Overrides,
-        _viewport: Viewport
-      ): void {
+      public addFeatureOverrides(ovrs: FeatureSymbology.Overrides, _viewport: Viewport): void {
         ovrs.setDefaultOverrides(FeatureAppearance.fromRgb(ColorDef.blue));
       }
     }
@@ -134,9 +125,7 @@ describe("White-on-white reversal", async () => {
         const vp = context.viewport;
         const rect = vp.viewRect;
 
-        const viewOverlay = context.createGraphicBuilder(
-          GraphicType.ViewOverlay
-        );
+        const viewOverlay = context.createGraphicBuilder(GraphicType.ViewOverlay);
         viewOverlay.setSymbology(ColorDef.white, ColorDef.white, 4);
         viewOverlay.addLineString([
           new Point3d(0, rect.height / 2, 0),
@@ -151,10 +140,7 @@ describe("White-on-white reversal", async () => {
 
         const viewBG = context.createGraphicBuilder(GraphicType.ViewBackground);
         viewBG.setSymbology(ColorDef.white, ColorDef.white, 4);
-        viewBG.addLineString([
-          new Point3d(rect.width / 2, 0, 0),
-          new Point3d(rect.width / 2, rect.height / 2, 0),
-        ]);
+        viewBG.addLineString([new Point3d(rect.width / 2, 0, 0), new Point3d(rect.width / 2, rect.height / 2, 0)]);
         viewBG.setSymbology(ColorDef.red, ColorDef.red, 4);
         viewBG.addLineString([
           new Point3d(rect.width / 2, rect.height / 2, 0),
@@ -162,35 +148,21 @@ describe("White-on-white reversal", async () => {
         ]);
         context.addDecorationFromBuilder(viewBG);
 
-        const worldOverlay = context.createGraphicBuilder(
-          GraphicType.WorldOverlay
-        );
+        const worldOverlay = context.createGraphicBuilder(GraphicType.WorldOverlay);
         worldOverlay.setSymbology(ColorDef.white, ColorDef.white, 4);
-        worldOverlay.addLineString([
-          vp.npcToWorld({ x: 0, y: 0, z: 0.5 }),
-          vp.npcToWorld({ x: 0.5, y: 0.5, z: 0.5 }),
-        ]);
+        worldOverlay.addLineString([vp.npcToWorld({ x: 0, y: 0, z: 0.5 }), vp.npcToWorld({ x: 0.5, y: 0.5, z: 0.5 })]);
 
         const greenDef = ColorDef.create(0x00ff00);
         worldOverlay.setSymbology(greenDef, greenDef, 4);
-        worldOverlay.addLineString([
-          vp.npcToWorld({ x: 0.5, y: 0.5, z: 0.5 }),
-          vp.npcToWorld({ x: 1, y: 1, z: 0.5 }),
-        ]);
+        worldOverlay.addLineString([vp.npcToWorld({ x: 0.5, y: 0.5, z: 0.5 }), vp.npcToWorld({ x: 1, y: 1, z: 0.5 })]);
         context.addDecorationFromBuilder(worldOverlay);
 
         const yellowDef = ColorDef.create(0x00ffff);
         const world = context.createGraphicBuilder(GraphicType.WorldDecoration);
         world.setSymbology(ColorDef.white, ColorDef.white, 4);
-        world.addLineString([
-          vp.npcToWorld({ x: 0, y: 1, z: 0.5 }),
-          vp.npcToWorld({ x: 0.5, y: 0.5, z: 0.5 }),
-        ]);
+        world.addLineString([vp.npcToWorld({ x: 0, y: 1, z: 0.5 }), vp.npcToWorld({ x: 0.5, y: 0.5, z: 0.5 })]);
         world.setSymbology(yellowDef, yellowDef, 4);
-        world.addLineString([
-          vp.npcToWorld({ x: 0.5, y: 0.5, z: 0.5 }),
-          vp.npcToWorld({ x: 1, y: 0, z: 0.5 }),
-        ]);
+        world.addLineString([vp.npcToWorld({ x: 0.5, y: 0.5, z: 0.5 }), vp.npcToWorld({ x: 1, y: 0, z: 0.5 })]);
         context.addDecorationFromBuilder(world);
       }
     }

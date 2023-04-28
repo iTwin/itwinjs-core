@@ -9,11 +9,7 @@
 import { IModelStatus } from "@itwin/core-bentley";
 import { IModelDb, IpcHandler, IpcHost } from "@itwin/core-backend";
 import { BackendError, IModelError } from "@itwin/core-common";
-import {
-  EditCommandIpc,
-  EditorIpc,
-  editorIpcStrings,
-} from "@itwin/editor-common";
+import { EditCommandIpc, EditorIpc, editorIpcStrings } from "@itwin/editor-common";
 
 /** @beta */
 export type EditCommandType = typeof EditCommand;
@@ -69,11 +65,7 @@ class EditorAppHandler extends IpcHandler implements EditorIpc {
     return editorIpcStrings.channel;
   }
 
-  public async startCommand(
-    commandId: string,
-    iModelKey: string,
-    ...args: any[]
-  ) {
+  public async startCommand(commandId: string, iModelKey: string, ...args: any[]) {
     await EditCommandAdmin.finishCommand();
     if (commandId === "")
       // just kill active command, don't start another
@@ -81,27 +73,18 @@ class EditorAppHandler extends IpcHandler implements EditorIpc {
 
     const commandClass = EditCommandAdmin.commands.get(commandId);
     if (undefined === commandClass)
-      throw new IModelError(
-        IModelStatus.NotRegistered,
-        `Command not registered [${commandId}]`
-      );
+      throw new IModelError(IModelStatus.NotRegistered, `Command not registered [${commandId}]`);
 
-    return EditCommandAdmin.runCommand(
-      new commandClass(IModelDb.findByKey(iModelKey), ...args)
-    );
+    return EditCommandAdmin.runCommand(new commandClass(IModelDb.findByKey(iModelKey), ...args));
   }
 
   public async callMethod(methodName: string, ...args: any[]) {
     const cmd = EditCommandAdmin.activeCommand;
-    if (!cmd)
-      throw new IModelError(IModelStatus.NoActiveCommand, `No active command`);
+    if (!cmd) throw new IModelError(IModelStatus.NoActiveCommand, `No active command`);
 
     const func = (cmd as any)[methodName];
     if (typeof func !== "function")
-      throw new IModelError(
-        IModelStatus.FunctionNotFound,
-        `Method ${methodName} not found on ${cmd.ctor.commandId}`
-      );
+      throw new IModelError(IModelStatus.FunctionNotFound, `Method ${methodName} not found on ${cmd.ctor.commandId}`);
 
     return func.call(cmd, ...args);
   }
@@ -128,11 +111,7 @@ export class EditCommandAdmin {
     if (this._activeCommand) {
       const finished = await this._activeCommand.requestFinish();
       if ("done" !== finished)
-        throw new BackendError(
-          IModelStatus.ServerTimeout,
-          editorIpcStrings.commandBusy,
-          finished
-        );
+        throw new BackendError(IModelStatus.ServerTimeout, editorIpcStrings.commandBusy, finished);
     }
     this._activeCommand = undefined;
   }
@@ -164,8 +143,7 @@ export class EditCommandAdmin {
       if (!IpcHost.isValid) throw new Error("Edit Commands require IpcHost");
       EditorAppHandler.register();
     }
-    if (commandType.commandId.length !== 0)
-      this.commands.set(commandType.commandId, commandType);
+    if (commandType.commandId.length !== 0) this.commands.set(commandType.commandId, commandType);
   }
 
   /**
@@ -183,8 +161,6 @@ export class EditCommandAdmin {
       }
     }
     if (!foundOne)
-      throw new Error(
-        `no EditCommands found - are you sure this is a module? Maybe you meant to call "register"?`
-      );
+      throw new Error(`no EditCommands found - are you sure this is a module? Maybe you meant to call "register"?`);
   }
 }

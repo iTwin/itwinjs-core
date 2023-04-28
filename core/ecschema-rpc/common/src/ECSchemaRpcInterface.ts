@@ -2,12 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import {
-  IModelRpcProps,
-  RpcInterface,
-  RpcManager,
-  RpcOperation,
-} from "@itwin/core-common";
+import { IModelRpcProps, RpcInterface, RpcManager, RpcOperation } from "@itwin/core-common";
 import { SchemaKeyProps, SchemaProps } from "@itwin/ecschema-metadata";
 
 /***
@@ -38,9 +33,7 @@ export abstract class ECSchemaRpcInterface extends RpcInterface {
    * @param tokenProps        The iModelToken props that hold the information which iModel is used.
    * @returns                 An array of SchemaKeyProps.
    */
-  public async getSchemaKeys(
-    _tokenProps: IModelRpcProps
-  ): Promise<SchemaKeyProps[]> {
+  public async getSchemaKeys(_tokenProps: IModelRpcProps): Promise<SchemaKeyProps[]> {
     return this.forward.apply(this, [arguments]) as Promise<SchemaKeyProps[]>;
   }
 
@@ -52,10 +45,7 @@ export abstract class ECSchemaRpcInterface extends RpcInterface {
    * @returns                 The SchemaProps.
    */
   @RpcOperation.setPolicy({ allowResponseCompression: true })
-  public async getSchemaJSON(
-    _tokenProps: IModelRpcProps,
-    _schemaName: string
-  ): Promise<SchemaProps> {
+  public async getSchemaJSON(_tokenProps: IModelRpcProps, _schemaName: string): Promise<SchemaProps> {
     return this.forward.apply(this, [arguments]) as Promise<SchemaProps>;
   }
 }

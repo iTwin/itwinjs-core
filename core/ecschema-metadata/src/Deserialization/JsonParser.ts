@@ -50,11 +50,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   constructor(rawSchema: Readonly<unknown>) {
     super();
 
-    if (!isObject(rawSchema))
-      throw new ECObjectsError(
-        ECObjectsStatus.InvalidECJson,
-        `Invalid JSON object.`
-      );
+    if (!isObject(rawSchema)) throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Invalid JSON object.`);
 
     this._rawSchema = rawSchema;
     this._schemaName = rawSchema.name as string | undefined;
@@ -67,10 +63,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
    */
   public parseSchema(): SchemaProps {
     if (undefined === this._rawSchema.name)
-      throw new ECObjectsError(
-        ECObjectsStatus.InvalidECJson,
-        `An ECSchema is missing the required 'name' attribute.`
-      );
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECSchema is missing the required 'name' attribute.`);
     if (typeof this._rawSchema.name !== "string")
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
@@ -140,9 +133,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
     }
   }
 
-  private checkSchemaReference(
-    jsonObj: Readonly<unknown>
-  ): SchemaReferenceProps {
+  private checkSchemaReference(jsonObj: Readonly<unknown>): SchemaReferenceProps {
     if (!isObject(jsonObj))
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
@@ -212,9 +203,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
     }
   }
 
-  public findItem(
-    itemName: string
-  ): [string, string, UnknownObject] | undefined {
+  public findItem(itemName: string): [string, string, UnknownObject] | undefined {
     const items = this._rawSchema.items;
     if (undefined !== items) {
       if (!isObject(items) || Array.isArray(items))
@@ -278,10 +267,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
     }
   }
 
-  public *getProperties(
-    jsonObj: UnknownObject,
-    itemName: string
-  ): Iterable<[string, string, UnknownObject]> {
+  public *getProperties(jsonObj: UnknownObject, itemName: string): Iterable<[string, string, UnknownObject]> {
     const properties = jsonObj.properties;
     if (undefined !== properties) {
       if (!Array.isArray(properties))
@@ -411,9 +397,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
    * @param jsonObj
    * @returns CustomAttributeClassProps
    */
-  public parseCustomAttributeClass(
-    jsonObj: UnknownObject
-  ): CustomAttributeClassProps {
+  public parseCustomAttributeClass(jsonObj: UnknownObject): CustomAttributeClassProps {
     this.checkClassProps(jsonObj);
     if (undefined === jsonObj.appliesTo)
       throw new ECObjectsError(
@@ -443,9 +427,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
    * @param jsonObj
    * @returns RelationshipClassProps
    */
-  public parseRelationshipClass(
-    jsonObj: UnknownObject
-  ): RelationshipClassProps {
+  public parseRelationshipClass(jsonObj: UnknownObject): RelationshipClassProps {
     this.checkClassProps(jsonObj);
     if (undefined === jsonObj.strength)
       throw new ECObjectsError(
@@ -502,13 +484,8 @@ export class JsonParser extends AbstractParser<UnknownObject> {
    * @param isSource For sake of error message, is this relationship constraint a source or target
    * @returns RelationshipConstraintProps
    */
-  private checkRelationshipConstraintProps(
-    jsonObj: UnknownObject,
-    isSource: boolean
-  ): void {
-    const constraintName = `${isSource ? "Source" : "Target"} Constraint of ${
-      this._currentItemFullName
-    }`; // most specific name to call RelationshipConstraint
+  private checkRelationshipConstraintProps(jsonObj: UnknownObject, isSource: boolean): void {
+    const constraintName = `${isSource ? "Source" : "Target"} Constraint of ${this._currentItemFullName}`; // most specific name to call RelationshipConstraint
 
     if (undefined === jsonObj.multiplicity)
       throw new ECObjectsError(
@@ -543,10 +520,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
         `The ${constraintName} has an invalid 'polymorphic' attribute. It should be of type 'boolean'.`
       );
 
-    if (
-      undefined !== jsonObj.abstractConstraint &&
-      typeof jsonObj.abstractConstraint !== "string"
-    )
+    if (undefined !== jsonObj.abstractConstraint && typeof jsonObj.abstractConstraint !== "string")
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `The ${constraintName} has an invalid 'abstractConstraint' attribute. It should be of type 'string'.`
@@ -571,10 +545,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
         );
     }
 
-    if (
-      undefined !== jsonObj.customAttributes &&
-      !Array.isArray(jsonObj.customAttributes)
-    )
+    if (undefined !== jsonObj.customAttributes && !Array.isArray(jsonObj.customAttributes))
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `The ${constraintName} has an invalid 'customAttributes' attribute. It should be of type 'array'.`
@@ -644,8 +615,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
 
       // TODO: Should this really be handled here?
       const expectedType = jsonObj.type;
-      const receivedType =
-        typeof enumerator.value === "number" ? "int" : typeof enumerator.value;
+      const receivedType = typeof enumerator.value === "number" ? "int" : typeof enumerator.value;
       if (!expectedType.includes(receivedType))
         // is receivedType a substring of expectedType? - easiest way to check "int" === "int" | "integer" && "string" === "string"
         throw new ECObjectsError(
@@ -703,10 +673,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
       );
 
     if (undefined !== jsonObj.presentationUnits) {
-      if (
-        !Array.isArray(jsonObj.presentationUnits) &&
-        typeof jsonObj.presentationUnits !== "string"
-      )
+      if (!Array.isArray(jsonObj.presentationUnits) && typeof jsonObj.presentationUnits !== "string")
         throw new ECObjectsError(
           ECObjectsStatus.InvalidECJson,
           `The KindOfQuantity ${this._currentItemFullName} has an invalid 'presentationUnits' attribute. It should be of type 'string' or 'string[]'.`
@@ -930,19 +897,13 @@ export class JsonParser extends AbstractParser<UnknownObject> {
         `The Format ${this._currentItemFullName} has an invalid 'type' attribute. It should be of type 'string'.`
       );
 
-    if (
-      undefined !== jsonObj.precision &&
-      typeof jsonObj.precision !== "number"
-    )
+    if (undefined !== jsonObj.precision && typeof jsonObj.precision !== "number")
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `The Format ${this._currentItemFullName} has an invalid 'precision' attribute. It should be of type 'number'.`
       );
 
-    if (
-      undefined !== jsonObj.roundFactor &&
-      typeof jsonObj.roundFactor !== "number"
-    )
+    if (undefined !== jsonObj.roundFactor && typeof jsonObj.roundFactor !== "number")
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `The Format ${this._currentItemFullName} has an invalid 'roundFactor' attribute. It should be of type 'number'.`
@@ -954,20 +915,14 @@ export class JsonParser extends AbstractParser<UnknownObject> {
         `The Format ${this._currentItemFullName} has an invalid 'minWidth' attribute. It should be of type 'number'.`
       );
 
-    if (
-      undefined !== jsonObj.showSignOption &&
-      typeof jsonObj.showSignOption !== "string"
-    )
+    if (undefined !== jsonObj.showSignOption && typeof jsonObj.showSignOption !== "string")
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `The Format ${this._currentItemFullName} has an invalid 'showSignOption' attribute. It should be of type 'string'.`
       );
 
     if (undefined !== jsonObj.formatTraits) {
-      if (
-        !Array.isArray(jsonObj.formatTraits) &&
-        typeof jsonObj.formatTraits !== "string"
-      )
+      if (!Array.isArray(jsonObj.formatTraits) && typeof jsonObj.formatTraits !== "string")
         // must be either an array of strings or a string
         throw new ECObjectsError(
           ECObjectsStatus.InvalidECJson,
@@ -975,55 +930,37 @@ export class JsonParser extends AbstractParser<UnknownObject> {
         );
     }
 
-    if (
-      undefined !== jsonObj.decimalSeparator &&
-      typeof jsonObj.decimalSeparator !== "string"
-    )
+    if (undefined !== jsonObj.decimalSeparator && typeof jsonObj.decimalSeparator !== "string")
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `The Format ${this._currentItemFullName} has an invalid 'decimalSeparator' attribute. It should be of type 'string'.`
       );
 
-    if (
-      undefined !== jsonObj.thousandSeparator &&
-      typeof jsonObj.thousandSeparator !== "string"
-    )
+    if (undefined !== jsonObj.thousandSeparator && typeof jsonObj.thousandSeparator !== "string")
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `The Format ${this._currentItemFullName} has an invalid 'thousandSeparator' attribute. It should be of type 'string'.`
       );
 
-    if (
-      undefined !== jsonObj.uomSeparator &&
-      typeof jsonObj.uomSeparator !== "string"
-    )
+    if (undefined !== jsonObj.uomSeparator && typeof jsonObj.uomSeparator !== "string")
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `The Format ${this._currentItemFullName} has an invalid 'uomSeparator' attribute. It should be of type 'string'.`
       );
 
-    if (
-      undefined !== jsonObj.scientificType &&
-      typeof jsonObj.scientificType !== "string"
-    )
+    if (undefined !== jsonObj.scientificType && typeof jsonObj.scientificType !== "string")
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `The Format ${this._currentItemFullName} has an invalid 'scientificType' attribute. It should be of type 'string'.`
       );
 
-    if (
-      undefined !== jsonObj.stationOffsetSize &&
-      typeof jsonObj.stationOffsetSize !== "number"
-    )
+    if (undefined !== jsonObj.stationOffsetSize && typeof jsonObj.stationOffsetSize !== "number")
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `The Format ${this._currentItemFullName} has an invalid 'stationOffsetSize' attribute. It should be of type 'number'.`
       );
 
-    if (
-      undefined !== jsonObj.stationSeparator &&
-      typeof jsonObj.stationSeparator !== "string"
-    )
+    if (undefined !== jsonObj.stationSeparator && typeof jsonObj.stationSeparator !== "string")
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `The Format ${this._currentItemFullName} has an invalid 'stationSeparator' attribute. It should be of type 'string'.`
@@ -1036,19 +973,13 @@ export class JsonParser extends AbstractParser<UnknownObject> {
           ECObjectsStatus.InvalidECJson,
           `The Format ${this._currentItemFullName} has an invalid 'composite' object.`
         );
-      if (
-        undefined !== jsonObj.composite.includeZero &&
-        typeof jsonObj.composite.includeZero !== "boolean"
-      )
+      if (undefined !== jsonObj.composite.includeZero && typeof jsonObj.composite.includeZero !== "boolean")
         throw new ECObjectsError(
           ECObjectsStatus.InvalidECJson,
           `The Format ${this._currentItemFullName} has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`
         );
 
-      if (
-        undefined !== jsonObj.composite.spacer &&
-        typeof jsonObj.composite.spacer !== "string"
-      )
+      if (undefined !== jsonObj.composite.spacer && typeof jsonObj.composite.spacer !== "string")
         throw new ECObjectsError(
           ECObjectsStatus.InvalidECJson,
           `The Format ${this._currentItemFullName} has a Composite with an invalid 'spacer' attribute. It should be of type 'string'.`
@@ -1085,10 +1016,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
             `The Format ${this._currentItemFullName} has a Composite with an invalid 'units' attribute. The object at position ${i} has an invalid 'name' attribute. It should be of type 'string'.`
           );
 
-        if (
-          undefined !== jsonObj.composite.units[i].label &&
-          typeof jsonObj.composite.units[i].label !== "string"
-        )
+        if (undefined !== jsonObj.composite.units[i].label && typeof jsonObj.composite.units[i].label !== "string")
           throw new ECObjectsError(
             ECObjectsStatus.InvalidECJson,
             `The Format ${this._currentItemFullName} has a Composite with an invalid 'units' attribute. The object at position ${i} has an invalid 'label' attribute. It should be of type 'string'.`
@@ -1123,10 +1051,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
         `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'label' attribute. It should be of type 'string'.`
       );
 
-    if (
-      undefined !== jsonObj.description &&
-      typeof jsonObj.description !== "string"
-    )
+    if (undefined !== jsonObj.description && typeof jsonObj.description !== "string")
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'description' attribute. It should be of type 'string'.`
@@ -1138,10 +1063,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
         `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'priority' attribute. It should be of type 'number'.`
       );
 
-    if (
-      undefined !== jsonObj.isReadOnly &&
-      typeof jsonObj.isReadOnly !== "boolean"
-    )
+    if (undefined !== jsonObj.isReadOnly && typeof jsonObj.isReadOnly !== "boolean")
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'isReadOnly' attribute. It should be of type 'boolean'.`
@@ -1153,28 +1075,19 @@ export class JsonParser extends AbstractParser<UnknownObject> {
         `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'category' attribute. It should be of type 'string'.`
       );
 
-    if (
-      undefined !== jsonObj.kindOfQuantity &&
-      typeof jsonObj.kindOfQuantity !== "string"
-    )
+    if (undefined !== jsonObj.kindOfQuantity && typeof jsonObj.kindOfQuantity !== "string")
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'kindOfQuantity' attribute. It should be of type 'string'.`
       );
 
-    if (
-      undefined !== jsonObj.inherited &&
-      typeof jsonObj.inherited !== "boolean"
-    )
+    if (undefined !== jsonObj.inherited && typeof jsonObj.inherited !== "boolean")
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'inherited' attribute. It should be of type 'boolean'.`
       );
 
-    if (
-      undefined !== jsonObj.customAttributes &&
-      !Array.isArray(jsonObj.customAttributes)
-    )
+    if (undefined !== jsonObj.customAttributes && !Array.isArray(jsonObj.customAttributes))
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'customAttributes' attribute. It should be of type 'array'.`
@@ -1198,18 +1111,12 @@ export class JsonParser extends AbstractParser<UnknownObject> {
 
   private checkPropertyMinAndMaxOccurs(jsonObj: UnknownObject): void {
     const propName = jsonObj.name;
-    if (
-      undefined !== jsonObj.minOccurs &&
-      typeof jsonObj.minOccurs !== "number"
-    )
+    if (undefined !== jsonObj.minOccurs && typeof jsonObj.minOccurs !== "number")
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'minOccurs' attribute. It should be of type 'number'.`
       );
-    if (
-      undefined !== jsonObj.maxOccurs &&
-      typeof jsonObj.maxOccurs !== "number"
-    )
+    if (undefined !== jsonObj.maxOccurs && typeof jsonObj.maxOccurs !== "number")
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'maxOccurs' attribute. It should be of type 'number'.`
@@ -1221,26 +1128,18 @@ export class JsonParser extends AbstractParser<UnknownObject> {
    * @param jsonObj
    * @returns PrimitiveOrEnumPropertyBaseProps
    */
-  private checkPrimitiveOrEnumPropertyBaseProps(
-    jsonObj: UnknownObject
-  ): PrimitiveOrEnumPropertyBaseProps {
+  private checkPrimitiveOrEnumPropertyBaseProps(jsonObj: UnknownObject): PrimitiveOrEnumPropertyBaseProps {
     this.checkPropertyProps(jsonObj);
     this.checkPropertyTypename(jsonObj);
     const propName = jsonObj.name;
 
-    if (
-      undefined !== jsonObj.minLength &&
-      typeof jsonObj.minLength !== "number"
-    )
+    if (undefined !== jsonObj.minLength && typeof jsonObj.minLength !== "number")
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'minLength' attribute. It should be of type 'number'.`
       );
 
-    if (
-      undefined !== jsonObj.maxLength &&
-      typeof jsonObj.maxLength !== "number"
-    )
+    if (undefined !== jsonObj.maxLength && typeof jsonObj.maxLength !== "number")
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'maxLength' attribute. It should be of type 'number'.`
@@ -1258,10 +1157,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
         `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'maxValue' attribute. It should be of type 'number'.`
       );
 
-    if (
-      undefined !== jsonObj.extendedTypeName &&
-      typeof jsonObj.extendedTypeName !== "string"
-    )
+    if (undefined !== jsonObj.extendedTypeName && typeof jsonObj.extendedTypeName !== "string")
       throw new ECObjectsError(
         ECObjectsStatus.InvalidECJson,
         `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'extendedTypeName' attribute. It should be of type 'string'.`
@@ -1274,9 +1170,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
    * @param jsonObj
    * @returns PrimitivePropertyProps
    */
-  public parsePrimitiveProperty(
-    jsonObj: UnknownObject
-  ): PrimitivePropertyProps {
+  public parsePrimitiveProperty(jsonObj: UnknownObject): PrimitivePropertyProps {
     this.checkPrimitiveOrEnumPropertyBaseProps(jsonObj);
     return jsonObj as unknown as PrimitivePropertyProps;
   }
@@ -1297,9 +1191,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
    * @param jsonObj
    * @returns PrimitiveArrayPropertyProps
    */
-  public parsePrimitiveArrayProperty(
-    jsonObj: UnknownObject
-  ): PrimitiveArrayPropertyProps {
+  public parsePrimitiveArrayProperty(jsonObj: UnknownObject): PrimitiveArrayPropertyProps {
     this.checkPrimitiveOrEnumPropertyBaseProps(jsonObj);
     this.checkPropertyMinAndMaxOccurs(jsonObj);
     return jsonObj as unknown as PrimitiveArrayPropertyProps;
@@ -1310,9 +1202,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
    * @param jsonObj
    * @returns StructArrayPropertyProps
    */
-  public parseStructArrayProperty(
-    jsonObj: UnknownObject
-  ): StructArrayPropertyProps {
+  public parseStructArrayProperty(jsonObj: UnknownObject): StructArrayPropertyProps {
     this.checkPropertyProps(jsonObj);
     this.checkPropertyTypename(jsonObj);
     this.checkPropertyMinAndMaxOccurs(jsonObj);
@@ -1324,9 +1214,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
    * @param jsonObj
    * @returns NavigationPropertyProps
    */
-  public parseNavigationProperty(
-    jsonObj: UnknownObject
-  ): NavigationPropertyProps {
+  public parseNavigationProperty(jsonObj: UnknownObject): NavigationPropertyProps {
     this.checkPropertyProps(jsonObj);
     const fullname = `${this._currentItemFullName}.${jsonObj.name}`;
 
@@ -1356,39 +1244,20 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   }
 
   public getSchemaCustomAttributeProviders(): Iterable<CAProviderTuple> {
-    return this.getCustomAttributeProviders(
-      this._rawSchema,
-      "Schema",
-      this._schemaName
-    );
+    return this.getCustomAttributeProviders(this._rawSchema, "Schema", this._schemaName);
   }
 
-  public getClassCustomAttributeProviders(
-    jsonObj: UnknownObject
-  ): Iterable<CAProviderTuple> {
-    return this.getCustomAttributeProviders(
-      jsonObj,
-      "ECClass",
-      this._currentItemFullName
-    );
+  public getClassCustomAttributeProviders(jsonObj: UnknownObject): Iterable<CAProviderTuple> {
+    return this.getCustomAttributeProviders(jsonObj, "ECClass", this._currentItemFullName);
   }
 
-  public getPropertyCustomAttributeProviders(
-    jsonObj: UnknownObject
-  ): Iterable<CAProviderTuple> {
-    return this.getCustomAttributeProviders(
-      jsonObj,
-      "ECProperty",
-      `${this._currentItemFullName}.${jsonObj.name}`
-    );
+  public getPropertyCustomAttributeProviders(jsonObj: UnknownObject): Iterable<CAProviderTuple> {
+    return this.getCustomAttributeProviders(jsonObj, "ECProperty", `${this._currentItemFullName}.${jsonObj.name}`);
   }
 
   public getRelationshipConstraintCustomAttributeProviders(
     jsonObj: UnknownObject
-  ): [
-    Iterable<CAProviderTuple> /* source */,
-    Iterable<CAProviderTuple> /* target */
-  ] {
+  ): [Iterable<CAProviderTuple> /* source */, Iterable<CAProviderTuple> /* target */] {
     const sourceCustomAttributes = this.getCustomAttributeProviders(
       jsonObj.source as UnknownObject,
       "Source Constraint of",
@@ -1402,11 +1271,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
     return [sourceCustomAttributes, targetCustomAttributes];
   }
 
-  private *getCustomAttributeProviders(
-    jsonObj: UnknownObject,
-    type: string,
-    name?: string
-  ): Iterable<CAProviderTuple> {
+  private *getCustomAttributeProviders(jsonObj: UnknownObject, type: string, name?: string): Iterable<CAProviderTuple> {
     if (undefined !== jsonObj.customAttributes) {
       if (!Array.isArray(jsonObj.customAttributes))
         throw new ECObjectsError(

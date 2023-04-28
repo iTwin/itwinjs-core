@@ -38,16 +38,11 @@ export class BackstageItemsManager {
     if (items) this.loadItemsInternal(items, true, false);
   }
 
-  private loadItemsInternal(
-    items: ReadonlyArray<BackstageItem>,
-    processConditions: boolean,
-    sendItemChanged: boolean
-  ) {
+  private loadItemsInternal(items: ReadonlyArray<BackstageItem>, processConditions: boolean, sendItemChanged: boolean) {
     if (processConditions && items) {
       const eventIds = BackstageItemsManager.getSyncIdsOfInterest(items);
       if (0 !== eventIds.length) {
-        const { itemsUpdated, updatedItems } =
-          this.internalRefreshAffectedItems(items, new Set(eventIds));
+        const { itemsUpdated, updatedItems } = this.internalRefreshAffectedItems(items, new Set(eventIds));
 
         // istanbul ignore else
         if (itemsUpdated) items = updatedItems;
@@ -68,9 +63,7 @@ export class BackstageItemsManager {
   /** Event raised when backstage items are changed.
    * @internal
    */
-  public readonly onItemsChanged = new BeEvent<
-    (args: BackstageItemsChangedArgs) => void
-  >();
+  public readonly onItemsChanged = new BeEvent<(args: BackstageItemsChangedArgs) => void>();
 
   public get items(): ReadonlyArray<BackstageItem> {
     return this._items;
@@ -87,23 +80,17 @@ export class BackstageItemsManager {
     if (isInstance(itemOrItems)) itemsToAdd = [itemOrItems];
     else {
       itemsToAdd = itemOrItems.filter(
-        (itemToAdd, index) =>
-          itemOrItems.findIndex((item) => item.id === itemToAdd.id) === index
+        (itemToAdd, index) => itemOrItems.findIndex((item) => item.id === itemToAdd.id) === index
       );
     }
-    itemsToAdd = itemsToAdd.filter(
-      (itemToAdd) =>
-        this._items.find((item) => item.id === itemToAdd.id) === undefined
-    );
+    itemsToAdd = itemsToAdd.filter((itemToAdd) => this._items.find((item) => item.id === itemToAdd.id) === undefined);
     if (itemsToAdd.length === 0) return;
     const items = [...this._items, ...itemsToAdd];
     this.items = items;
   }
 
   /** @internal */
-  public remove(
-    itemIdOrItemIds: BackstageItem["id"] | ReadonlyArray<BackstageItem["id"]>
-  ) {
+  public remove(itemIdOrItemIds: BackstageItem["id"] | ReadonlyArray<BackstageItem["id"]>) {
     const items = this._items.filter((item) => {
       return isInstance(itemIdOrItemIds)
         ? item.id !== itemIdOrItemIds
@@ -113,22 +100,14 @@ export class BackstageItemsManager {
   }
 
   /** @internal */
-  public static getSyncIdsOfInterest(
-    items: readonly BackstageItem[]
-  ): string[] {
+  public static getSyncIdsOfInterest(items: readonly BackstageItem[]): string[] {
     const eventIds = new Set<string>();
     items.forEach((item) => {
       for (const [, entry] of Object.entries(item)) {
         if (entry instanceof ConditionalBooleanValue) {
-          entry.syncEventIds.forEach((eventId: string) =>
-            eventIds.add(eventId.toLowerCase())
-          );
-        } /* istanbul ignore else */ else if (
-          entry instanceof ConditionalStringValue
-        ) {
-          entry.syncEventIds.forEach((eventId: string) =>
-            eventIds.add(eventId.toLowerCase())
-          );
+          entry.syncEventIds.forEach((eventId: string) => eventIds.add(eventId.toLowerCase()));
+        } /* istanbul ignore else */ else if (entry instanceof ConditionalStringValue) {
+          entry.syncEventIds.forEach((eventId: string) => eventIds.add(eventId.toLowerCase()));
         }
       }
     });
@@ -151,14 +130,10 @@ export class BackstageItemsManager {
       for (const [, entry] of Object.entries(updatedItem)) {
         if (entry instanceof ConditionalBooleanValue) {
           // istanbul ignore else
-          if (ConditionalBooleanValue.refreshValue(entry, eventIds))
-            updateRequired = true;
-        } /* istanbul ignore else */ else if (
-          entry instanceof ConditionalStringValue
-        ) {
+          if (ConditionalBooleanValue.refreshValue(entry, eventIds)) updateRequired = true;
+        } /* istanbul ignore else */ else if (entry instanceof ConditionalStringValue) {
           // istanbul ignore else
-          if (ConditionalStringValue.refreshValue(entry, eventIds))
-            updateRequired = true;
+          if (ConditionalStringValue.refreshValue(entry, eventIds)) updateRequired = true;
         }
       }
 
@@ -172,10 +147,7 @@ export class BackstageItemsManager {
     // istanbul ignore next
     if (0 === eventIds.size) return;
 
-    const { itemsUpdated, updatedItems } = this.internalRefreshAffectedItems(
-      this.items,
-      eventIds
-    );
+    const { itemsUpdated, updatedItems } = this.internalRefreshAffectedItems(this.items, eventIds);
 
     // istanbul ignore else
     if (itemsUpdated) this.loadItemsInternal(updatedItems, false, true);

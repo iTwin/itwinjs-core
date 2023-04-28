@@ -6,11 +6,7 @@ import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import {
-  initialize,
-  terminate,
-  testLocalization,
-} from "../../IntegrationTests";
+import { initialize, terminate, testLocalization } from "../../IntegrationTests";
 import { printRuleset } from "../Utils";
 
 describe("Learning Snippets", () => {
@@ -18,9 +14,7 @@ describe("Learning Snippets", () => {
 
   before(async () => {
     await initialize({ localization: testLocalization });
-    imodel = await SnapshotConnection.openFile(
-      "assets/datasets/Properties_60InstancesWithUrl2.ibim"
-    );
+    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {
@@ -268,8 +262,7 @@ describe("Learning Snippets", () => {
             { label: { displayValue: "Converted Sheets" } },
             {
               label: {
-                displayValue:
-                  "Definition Model For DgnV8Bridge:D:\\Temp\\Properties_60InstancesWithUrl2.dgn, Default",
+                displayValue: "Definition Model For DgnV8Bridge:D:\\Temp\\Properties_60InstancesWithUrl2.dgn, Default",
               },
             },
             { label: { displayValue: "DgnV8Bridge" } },
@@ -306,10 +299,7 @@ describe("Learning Snippets", () => {
                 {
                   specType: "Composite",
                   separator: "-",
-                  parts: [
-                    { spec: { specType: "String", value: "ECClass" } },
-                    { spec: { specType: "ClassName" } },
-                  ],
+                  parts: [{ spec: { specType: "String", value: "ECClass" } }, { spec: { specType: "ClassName" } }],
                 },
               ],
             },
@@ -325,9 +315,7 @@ describe("Learning Snippets", () => {
         });
         expect(nodes)
           .to.be.lengthOf(1)
-          .and.to.containSubset([
-            { label: { displayValue: "ECClass-PhysicalModel" } },
-          ]);
+          .and.to.containSubset([{ label: { displayValue: "ECClass-PhysicalModel" } }]);
       });
 
       it("uses property value specification", async () => {
@@ -549,9 +537,7 @@ describe("Learning Snippets", () => {
         });
         expect(nodes)
           .to.be.lengthOf(1)
-          .and.to.containSubset([
-            { label: { displayValue: "BisCore:PhysicalModel" } },
-          ]);
+          .and.to.containSubset([{ label: { displayValue: "BisCore:PhysicalModel" } }]);
       });
 
       it("uses class label value specification", async () => {
@@ -597,9 +583,7 @@ describe("Learning Snippets", () => {
         });
         expect(nodes)
           .to.be.lengthOf(1)
-          .and.to.containSubset([
-            { label: { displayValue: "Physical Model" } },
-          ]);
+          .and.to.containSubset([{ label: { displayValue: "Physical Model" } }]);
       });
 
       it("uses briefcaseId value specification", async () => {

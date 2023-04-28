@@ -11,9 +11,7 @@ export const getTokenCallbackName = "setBackendAccessToken";
 
 export type SerializedAccessToken = [string, any];
 
-export async function setBackendAccessToken(
-  user: TestUserCredentials
-): Promise<AccessToken> {
+export async function setBackendAccessToken(user: TestUserCredentials): Promise<AccessToken> {
   const accessToken = await executeBackendCallback(getTokenCallbackName, user);
   return accessToken;
 }

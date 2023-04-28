@@ -39,17 +39,9 @@ export class SQLiteDb implements IDisposable {
    */
   public createDb(dbName: string): void;
   /** @beta */
-  public createDb(
-    dbName: string,
-    container?: CloudSqlite.CloudContainer,
-    params?: SQLiteDb.CreateParams
-  ): void;
+  public createDb(dbName: string, container?: CloudSqlite.CloudContainer, params?: SQLiteDb.CreateParams): void;
   /** @internal */
-  public createDb(
-    dbName: string,
-    container?: CloudSqlite.CloudContainer,
-    params?: SQLiteDb.CreateParams
-  ): void {
+  public createDb(dbName: string, container?: CloudSqlite.CloudContainer, params?: SQLiteDb.CreateParams): void {
     this.nativeDb.createDb(dbName, container, params);
   }
 
@@ -61,11 +53,7 @@ export class SQLiteDb implements IDisposable {
    * @param container optional CloudContainer holding database
    * @beta
    */
-  public openDb(
-    dbName: string,
-    openMode: OpenMode | SQLiteDb.OpenParams,
-    container?: CloudSqlite.CloudContainer
-  ): void;
+  public openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void;
 
   /** @internal */
   public openDb(
@@ -112,11 +100,7 @@ export class SQLiteDb implements IDisposable {
 
     const save = () => this.closeDb(true),
       abandon = () => this.closeDb(false);
-    this.openDb(
-      args.dbName,
-      args.openMode ?? OpenMode.Readonly,
-      args.container
-    );
+    this.openDb(args.dbName, args.openMode ?? OpenMode.Readonly, args.container);
     try {
       const result = operation();
       result instanceof Promise ? result.then(save, abandon) : save();
@@ -140,15 +124,11 @@ export class SQLiteDb implements IDisposable {
    * @return value from operation
    * @internal
    */
-  public async withLockedContainer<T>(
-    args: CloudSqlite.LockAndOpenArgs,
-    operation: () => T
-  ) {
+  public async withLockedContainer<T>(args: CloudSqlite.LockAndOpenArgs, operation: () => T) {
     return CloudSqlite.withWriteLock(
       args.user,
       args.container,
-      () =>
-        this.withOpenDb({ ...args, openMode: OpenMode.ReadWrite }, operation),
+      () => this.withOpenDb({ ...args, openMode: OpenMode.ReadWrite }, operation),
       args.busyHandler
     );
   }
@@ -180,13 +160,8 @@ export class SQLiteDb implements IDisposable {
    * @param callback the callback to invoke on the prepared statement
    * @returns the value returned by `callback`.
    */
-  public withPreparedSqliteStatement<T>(
-    sql: string,
-    callback: (stmt: SqliteStatement) => T
-  ): T {
-    const stmt =
-      this._sqliteStatementCache.findAndRemove(sql) ??
-      this.prepareSqliteStatement(sql);
+  public withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
+    const stmt = this._sqliteStatementCache.findAndRemove(sql) ?? this.prepareSqliteStatement(sql);
     const release = () => this._sqliteStatementCache.addOrDispose(stmt);
     try {
       const val = callback(stmt);
@@ -206,10 +181,7 @@ export class SQLiteDb implements IDisposable {
    * @param callback the callback to invoke on the prepared statement
    * @returns the value returned by `callback`.
    */
-  public withSqliteStatement<T>(
-    sql: string,
-    callback: (stmt: SqliteStatement) => T
-  ): T {
+  public withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
     const stmt = this.prepareSqliteStatement(sql);
     const release = () => stmt.dispose();
     try {
@@ -245,10 +217,7 @@ export class SQLiteDb implements IDisposable {
    * @param logErrors Determine if errors are logged or not
    * @internal
    */
-  public prepareSqliteStatement(
-    sql: string,
-    logErrors = true
-  ): SqliteStatement {
+  public prepareSqliteStatement(sql: string, logErrors = true): SqliteStatement {
     const stmt = new SqliteStatement(sql);
     stmt.prepare(this.nativeDb, logErrors);
     return stmt;

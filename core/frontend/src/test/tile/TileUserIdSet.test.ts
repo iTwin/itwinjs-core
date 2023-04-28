@@ -14,14 +14,7 @@ function makeTileUserIdSet(ids: number[]): TileUserIdSet {
 
 describe("TileUserIdSet", () => {
   it("compares for equality", () => {
-    const idLists = [
-      [],
-      [1],
-      [2],
-      [1, 2],
-      [5, 199, 2, 4, 300],
-      [1, 1, 2, 2, 5, 4, 4, 3, 3, 1, 2],
-    ];
+    const idLists = [[], [1], [2], [1, 2], [5, 199, 2, 4, 300], [1, 1, 2, 2, 5, 4, 4, 3, 3, 1, 2]];
 
     for (let i = 0; i < idLists.length; i++) {
       const list = idLists[i];
@@ -31,8 +24,7 @@ describe("TileUserIdSet", () => {
       reverse.reverse();
       expect(set.equals(makeTileUserIdSet(reverse))).to.be.true;
 
-      for (let j = 0; j < idLists.length; j++)
-        expect(set.equals(makeTileUserIdSet(idLists[j]))).to.equal(i === j);
+      for (let j = 0; j < idLists.length; j++) expect(set.equals(makeTileUserIdSet(idLists[j]))).to.equal(i === j);
     }
   });
 });

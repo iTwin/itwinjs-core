@@ -6,11 +6,7 @@
  * @module Core
  */
 
-import {
-  GeometricElement,
-  GeometricElement3d,
-  IModelDb,
-} from "@itwin/core-backend";
+import { GeometricElement, GeometricElement3d, IModelDb } from "@itwin/core-backend";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import {
   ComputeSelectionRequestOptions,
@@ -36,38 +32,22 @@ export class SelectionScopesHelper {
   private constructor() {}
 
   public static getSelectionScopes(): SelectionScope[] {
-    const createSelectionScope = (
-      scopeId: string,
-      label: string,
-      description: string
-    ): SelectionScope => ({
+    const createSelectionScope = (scopeId: string, label: string, description: string): SelectionScope => ({
       id: scopeId,
       label,
       description,
     });
     return [
       createSelectionScope("element", "Element", "Select the picked element"),
-      createSelectionScope(
-        "assembly",
-        "Assembly",
-        "Select parent of the picked element"
-      ),
-      createSelectionScope(
-        "top-assembly",
-        "Top Assembly",
-        "Select the topmost parent of the picked element"
-      ),
+      createSelectionScope("assembly", "Assembly", "Select parent of the picked element"),
+      createSelectionScope("top-assembly", "Top Assembly", "Select the topmost parent of the picked element"),
       // WIP: temporarily comment-out "category" and "model" scopes since we can't hilite contents of them fast enough
       // createSelectionScope("category", "Category", "Select all elements in the picked element's category"),
       // createSelectionScope("model", "Model", "Select all elements in the picked element's model"),
     ];
   }
 
-  private static getElementKey(
-    iModel: IModelDb,
-    elementId: Id64String,
-    ancestorLevel: number
-  ) {
+  private static getElementKey(iModel: IModelDb, elementId: Id64String, ancestorLevel: number) {
     let currId = elementId;
     let parentId = iModel.elements.tryGetElementProps(currId)?.parent?.id;
     while (parentId && ancestorLevel !== 0) {
@@ -78,11 +58,7 @@ export class SelectionScopesHelper {
     return getElementKey(iModel, currId);
   }
 
-  private static computeElementSelection(
-    iModel: IModelDb,
-    elementIds: Id64String[],
-    ancestorLevel: number
-  ) {
+  private static computeElementSelection(iModel: IModelDb, elementIds: Id64String[], ancestorLevel: number) {
     const parentKeys = new KeySet();
     elementIds.forEach(
       skipTransients((id) => {
@@ -117,8 +93,7 @@ export class SelectionScopesHelper {
       skipTransients((id) => {
         const el = iModel.elements.tryGetElementProps(id);
         const model = el ? iModel.models.tryGetModelProps(el.model) : undefined;
-        if (model)
-          modelKeys.add({ className: model.classFullName, id: model.id! });
+        if (model) modelKeys.add({ className: model.classFullName, id: model.id! });
       })
     );
     return modelKeys;
@@ -138,22 +113,19 @@ export class SelectionScopesHelper {
         INNER JOIN meta.ECSchemaDef funcSchemaDef ON funcSchemaDef.ECInstanceId = funcClassDef.Schema.Id
        WHERE e.ECInstanceId = ?
       `;
-    return imodel.withPreparedStatement(
-      query,
-      (stmt): InstanceKey | undefined => {
-        stmt.bindId(1, graphicalElementId);
-        // istanbul ignore else
-        if (DbResult.BE_SQLITE_ROW === stmt.step()) {
-          const row = stmt.getRow();
-          if (row.funcElClassName && row.funcElId)
-            return {
-              className: row.funcElClassName.replace(".", ":"),
-              id: row.funcElId,
-            };
-        }
-        return undefined;
+    return imodel.withPreparedStatement(query, (stmt): InstanceKey | undefined => {
+      stmt.bindId(1, graphicalElementId);
+      // istanbul ignore else
+      if (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        const row = stmt.getRow();
+        if (row.funcElClassName && row.funcElId)
+          return {
+            className: row.funcElClassName.replace(".", ":"),
+            id: row.funcElId,
+          };
       }
-    );
+      return undefined;
+    });
   }
 
   private static findFirstRelatedFunctionalElementKey(
@@ -162,21 +134,14 @@ export class SelectionScopesHelper {
   ): InstanceKey | undefined {
     let currId: Id64String | undefined = graphicalElementId;
     while (currId) {
-      const relatedFunctionalKey = this.getRelatedFunctionalElementKey(
-        imodel,
-        currId
-      );
+      const relatedFunctionalKey = this.getRelatedFunctionalElementKey(imodel, currId);
       if (relatedFunctionalKey) return relatedFunctionalKey;
       currId = imodel.elements.tryGetElementProps(currId)?.parent?.id;
     }
     return undefined;
   }
 
-  private static elementClassDerivesFrom(
-    imodel: IModelDb,
-    elementId: Id64String,
-    baseClassFullName: string
-  ): boolean {
+  private static elementClassDerivesFrom(imodel: IModelDb, elementId: Id64String, baseClassFullName: string): boolean {
     const query = `
       SELECT 1
       FROM bis.Element e
@@ -192,24 +157,14 @@ export class SelectionScopesHelper {
     });
   }
 
-  private static computeFunctionalElementSelection(
-    iModel: IModelDb,
-    ids: Id64String[]
-  ) {
+  private static computeFunctionalElementSelection(iModel: IModelDb, ids: Id64String[]) {
     const keys = new KeySet();
     ids.forEach(
       skipTransients((id): void => {
-        const is3d = this.elementClassDerivesFrom(
-          iModel,
-          id,
-          GeometricElement3d.classFullName
-        );
+        const is3d = this.elementClassDerivesFrom(iModel, id, GeometricElement3d.classFullName);
         if (!is3d) {
           // if the input is not a 3d element, we try to find the first related functional element
-          const firstFunctionalKey = this.findFirstRelatedFunctionalElementKey(
-            iModel,
-            id
-          );
+          const firstFunctionalKey = this.findFirstRelatedFunctionalElementKey(iModel, id);
           if (firstFunctionalKey) {
             keys.add(firstFunctionalKey);
             return;
@@ -227,25 +182,15 @@ export class SelectionScopesHelper {
     return keys;
   }
 
-  private static computeFunctionalAssemblySelection(
-    iModel: IModelDb,
-    ids: Id64String[]
-  ) {
+  private static computeFunctionalAssemblySelection(iModel: IModelDb, ids: Id64String[]) {
     const keys = new KeySet();
     ids.forEach(
       skipTransients((id): void => {
         let idToGetAssemblyFor = id;
-        const is3d = this.elementClassDerivesFrom(
-          iModel,
-          id,
-          GeometricElement3d.classFullName
-        );
+        const is3d = this.elementClassDerivesFrom(iModel, id, GeometricElement3d.classFullName);
         if (!is3d) {
           // if the input is not a 3d element, we try to find the first related functional element
-          const firstFunctionalKey = this.findFirstRelatedFunctionalElementKey(
-            iModel,
-            id
-          );
+          const firstFunctionalKey = this.findFirstRelatedFunctionalElementKey(iModel, id);
           if (firstFunctionalKey) idToGetAssemblyFor = firstFunctionalKey.id;
         }
         // find the assembly of either the given element or the functional element
@@ -253,10 +198,7 @@ export class SelectionScopesHelper {
         let keyToAdd = assemblyKey;
         if (is3d && keyToAdd) {
           // if we're computing scope for a 3d element, try to switch to its related functional element
-          const relatedFunctionalKey = this.getRelatedFunctionalElementKey(
-            iModel,
-            keyToAdd.id
-          );
+          const relatedFunctionalKey = this.getRelatedFunctionalElementKey(iModel, keyToAdd.id);
           if (relatedFunctionalKey) keyToAdd = relatedFunctionalKey;
         }
         keyToAdd && keys.add(keyToAdd);
@@ -265,40 +207,23 @@ export class SelectionScopesHelper {
     return keys;
   }
 
-  private static computeFunctionalTopAssemblySelection(
-    iModel: IModelDb,
-    ids: Id64String[]
-  ) {
+  private static computeFunctionalTopAssemblySelection(iModel: IModelDb, ids: Id64String[]) {
     const keys = new KeySet();
     ids.forEach(
       skipTransients((id): void => {
         let idToGetAssemblyFor = id;
-        const is3d = this.elementClassDerivesFrom(
-          iModel,
-          id,
-          GeometricElement3d.classFullName
-        );
+        const is3d = this.elementClassDerivesFrom(iModel, id, GeometricElement3d.classFullName);
         if (!is3d) {
           // if the input is not a 3d element, we try to find the first related functional element
-          const firstFunctionalKey = this.findFirstRelatedFunctionalElementKey(
-            iModel,
-            id
-          );
+          const firstFunctionalKey = this.findFirstRelatedFunctionalElementKey(iModel, id);
           if (firstFunctionalKey) idToGetAssemblyFor = firstFunctionalKey.id;
         }
         // find the top assembly of either the given element or the functional element
-        const topAssemblyKey = this.getElementKey(
-          iModel,
-          idToGetAssemblyFor,
-          Number.MAX_SAFE_INTEGER
-        );
+        const topAssemblyKey = this.getElementKey(iModel, idToGetAssemblyFor, Number.MAX_SAFE_INTEGER);
         let keyToAdd = topAssemblyKey;
         if (is3d && keyToAdd) {
           // if we're computing scope for a 3d element, try to switch to its related functional element
-          const relatedFunctionalKey = this.getRelatedFunctionalElementKey(
-            iModel,
-            keyToAdd.id
-          );
+          const relatedFunctionalKey = this.getRelatedFunctionalElementKey(iModel, keyToAdd.id);
           if (relatedFunctionalKey) keyToAdd = relatedFunctionalKey;
         }
         keyToAdd && keys.add(keyToAdd);
@@ -312,13 +237,9 @@ export class SelectionScopesHelper {
     ids: Id64String[],
     scopeId: string
   ): Promise<KeySet>;
+  public static async computeSelection(requestOptions: ComputeSelectionRequestOptions<IModelDb>): Promise<KeySet>;
   public static async computeSelection(
-    requestOptions: ComputeSelectionRequestOptions<IModelDb>
-  ): Promise<KeySet>;
-  public static async computeSelection(
-    requestOptions:
-      | ComputeSelectionRequestOptions<IModelDb>
-      | SelectionScopeRequestOptions<IModelDb>,
+    requestOptions: ComputeSelectionRequestOptions<IModelDb> | SelectionScopeRequestOptions<IModelDb>,
     elementIds?: Id64String[],
     scopeId?: string
   ): Promise<KeySet> {
@@ -335,47 +256,23 @@ export class SelectionScopesHelper {
         return this.computeElementSelection(
           requestOptions.imodel,
           requestOptions.elementIds,
-          (requestOptions.scope as ElementSelectionScopeProps).ancestorLevel ??
-            0
+          (requestOptions.scope as ElementSelectionScopeProps).ancestorLevel ?? 0
         );
       case "assembly":
-        return this.computeElementSelection(
-          requestOptions.imodel,
-          requestOptions.elementIds,
-          1
-        );
+        return this.computeElementSelection(requestOptions.imodel, requestOptions.elementIds, 1);
       case "top-assembly":
-        return this.computeElementSelection(
-          requestOptions.imodel,
-          requestOptions.elementIds,
-          Number.MAX_SAFE_INTEGER
-        );
+        return this.computeElementSelection(requestOptions.imodel, requestOptions.elementIds, Number.MAX_SAFE_INTEGER);
       case "category":
-        return this.computeCategorySelection(
-          requestOptions.imodel,
-          requestOptions.elementIds
-        );
+        return this.computeCategorySelection(requestOptions.imodel, requestOptions.elementIds);
       case "model":
-        return this.computeModelSelection(
-          requestOptions.imodel,
-          requestOptions.elementIds
-        );
+        return this.computeModelSelection(requestOptions.imodel, requestOptions.elementIds);
       case "functional":
       case "functional-element":
-        return this.computeFunctionalElementSelection(
-          requestOptions.imodel,
-          requestOptions.elementIds
-        );
+        return this.computeFunctionalElementSelection(requestOptions.imodel, requestOptions.elementIds);
       case "functional-assembly":
-        return this.computeFunctionalAssemblySelection(
-          requestOptions.imodel,
-          requestOptions.elementIds
-        );
+        return this.computeFunctionalAssemblySelection(requestOptions.imodel, requestOptions.elementIds);
       case "functional-top-assembly":
-        return this.computeFunctionalTopAssemblySelection(
-          requestOptions.imodel,
-          requestOptions.elementIds
-        );
+        return this.computeFunctionalTopAssemblySelection(requestOptions.imodel, requestOptions.elementIds);
     }
     throw new PresentationError(PresentationStatus.InvalidArgument, "scopeId");
   }

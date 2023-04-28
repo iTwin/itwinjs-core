@@ -80,10 +80,7 @@ export abstract class MeshGeometry extends LUTGeometry {
     return params.target.computeEdgeWeight(params.renderPass, this.edgeWidth);
   }
   protected computeEdgeLineCode(params: ShaderProgramParams): number {
-    return params.target.computeEdgeLineCode(
-      params.renderPass,
-      this.edgeLineCode
-    );
+    return params.target.computeEdgeLineCode(params.renderPass, this.edgeLineCode);
   }
   protected computeEdgeColor(target: Target): ColorInfo {
     return target.computeEdgeColor(this.colorInfo);
@@ -92,14 +89,10 @@ export abstract class MeshGeometry extends LUTGeometry {
     if (target.isDrawingShadowMap) return "none";
 
     const vf = target.currentViewFlags;
-    if (RenderMode.SmoothShade === vf.renderMode && !vf.visibleEdges)
-      return "none";
+    if (RenderMode.SmoothShade === vf.renderMode && !vf.visibleEdges) return "none";
 
     // Only want translucent edges in wireframe mode.
-    const isTranslucent =
-      RenderMode.Wireframe === vf.renderMode &&
-      vf.transparency &&
-      this.colorInfo.hasTranslucency;
+    const isTranslucent = RenderMode.Wireframe === vf.renderMode && vf.transparency && this.colorInfo.hasTranslucency;
     return isTranslucent ? "translucent" : "opaque-linear";
   }
 }

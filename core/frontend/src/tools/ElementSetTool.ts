@@ -6,14 +6,7 @@
  * @module Tools
  */
 
-import {
-  CompressedId64Set,
-  Id64,
-  Id64Arg,
-  Id64Array,
-  Id64String,
-  OrderedId64Array,
-} from "@itwin/core-bentley";
+import { CompressedId64Set, Id64, Id64Arg, Id64Array, Id64String, OrderedId64Array } from "@itwin/core-bentley";
 import { ColorDef, QueryRowFormat } from "@itwin/core-common";
 import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
 import { AccuDrawHintBuilder } from "../AccuDraw";
@@ -21,10 +14,7 @@ import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import {
-  NotifyMessageDetails,
-  OutputMessagePriority,
-} from "../NotificationManager";
+import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
 import { Pixel } from "../render/Pixel";
 import { SelectionSet } from "../SelectionSet";
 import { DecorateContext } from "../ViewContext";
@@ -32,13 +22,7 @@ import { Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { SelectionMethod } from "./SelectTool";
-import {
-  BeButton,
-  BeButtonEvent,
-  BeModifierKeys,
-  CoreTools,
-  EventHandled,
-} from "./Tool";
+import { BeButton, BeButtonEvent, BeModifierKeys, CoreTools, EventHandled } from "./Tool";
 import {
   ToolAssistance,
   ToolAssistanceImage,
@@ -91,8 +75,7 @@ export class ElementAgenda {
 
   /** Set the source for the last group added to this agenda. */
   public setSource(val: ModifyElementSource) {
-    if (this.groupMarks.length > 0)
-      this.groupMarks[this.groupMarks.length - 1].source = val;
+    if (this.groupMarks.length > 0) this.groupMarks[this.groupMarks.length - 1].source = val;
   }
 
   public get isEmpty() {
@@ -128,9 +111,7 @@ export class ElementAgenda {
   private setEntriesHiliteState(onOff: boolean, groupStart = 0, groupEnd = 0) {
     if (!this.manageHiliteState) return;
 
-    const ss = this.iModel.selectionSet.isActive
-      ? this.iModel.selectionSet.elements
-      : undefined;
+    const ss = this.iModel.selectionSet.isActive ? this.iModel.selectionSet.elements : undefined;
     if (undefined === ss && 0 === groupEnd) {
       this.iModel.hilited.setHilite(this.elements, onOff);
       return;
@@ -141,9 +122,7 @@ export class ElementAgenda {
       return 0 === groupEnd || (index >= groupStart && index < groupEnd);
     };
 
-    const group = this.elements.filter((id, index) =>
-      shouldChangeHilite(id, index)
-    );
+    const group = this.elements.filter((id, index) => shouldChangeHilite(id, index));
     this.iModel.hilited.setHilite(group, onOff);
   }
 
@@ -171,8 +150,7 @@ export class ElementAgenda {
   /** Add elements to this agenda. */
   public add(arg: Id64Arg) {
     const groupStart = this.length;
-    for (const id of Id64.iterable(arg))
-      if (!this.has(id)) this.elements.push(id);
+    for (const id of Id64.iterable(arg)) if (!this.has(id)) this.elements.push(id);
 
     if (groupStart === this.length) return false;
 
@@ -201,9 +179,7 @@ export class ElementAgenda {
 
     if (
       1 === elements.length ||
-      (1 === groupMarks.length &&
-        ModifyElementSource.DragSelect !==
-          groupMarks[groupMarks.length - 1].source)
+      (1 === groupMarks.length && ModifyElementSource.DragSelect !== groupMarks[groupMarks.length - 1].source)
     ) {
       this.clear();
       return true;
@@ -219,17 +195,12 @@ export class ElementAgenda {
       if (0 === groupEnd) {
         if (iMark + 1 === groupMarks.length) {
           markToErase = iMark;
-          removeSingleEntry =
-            ModifyElementSource.DragSelect === groupMarks[iMark].source;
+          removeSingleEntry = ModifyElementSource.DragSelect === groupMarks[iMark].source;
           groupStart = groupMarks[iMark].start;
           groupEnd = elements.length;
-        } else if (
-          groupMarks[iMark].start <= groupIndex &&
-          groupMarks[iMark + 1].start > groupIndex
-        ) {
+        } else if (groupMarks[iMark].start <= groupIndex && groupMarks[iMark + 1].start > groupIndex) {
           markToErase = iMark;
-          removeSingleEntry =
-            ModifyElementSource.DragSelect === groupMarks[iMark].source;
+          removeSingleEntry = ModifyElementSource.DragSelect === groupMarks[iMark].source;
           groupStart = groupMarks[iMark].start;
           groupEnd = groupMarks[iMark + 1].start;
         }
@@ -266,8 +237,7 @@ export class ElementAgenda {
     if (0 === Id64.sizeOf(arg)) return false;
 
     let changed = false;
-    for (const elId of Id64.iterable(arg))
-      if (this.removeOne(elId)) changed = true; // NOTE: Removes group associated with this element, not just a single entry...
+    for (const elId of Id64.iterable(arg)) if (this.removeOne(elId)) changed = true; // NOTE: Removes group associated with this element, not just a single entry...
 
     return changed;
   }
@@ -333,8 +303,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
 
   /** Get the [[ElementAgenda]] the tool will operate on. */
   protected get agenda(): ElementAgenda {
-    if (undefined === this._agenda)
-      this._agenda = new ElementAgenda(this.iModel);
+    if (undefined === this._agenda) this._agenda = new ElementAgenda(this.iModel);
     return this._agenda;
   }
 
@@ -453,11 +422,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
     if (this.currentElementCount < this.requiredElementCount) return true;
 
     // A defined anchor indicates input collection phase has begun and ctrl should no longer extend selection...
-    return (
-      undefined === this.anchorPoint &&
-      this.controlKeyContinuesSelection &&
-      this.isControlDown
-    );
+    return undefined === this.anchorPoint && this.controlKeyContinuesSelection && this.isControlDown;
   }
 
   /** Whether the tool has gathered enough input to call [[ElementSetTool.processAgenda]].
@@ -483,10 +448,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
   protected setPreferredElementSource(): void {
     this._useSelectionSet = false;
     if (!this.iModel.selectionSet.isActive) return;
-    if (
-      this.allowSelectionSet &&
-      this.iModel.selectionSet.size >= this.requiredElementCount
-    )
+    if (this.allowSelectionSet && this.iModel.selectionSet.size >= this.requiredElementCount)
       this._useSelectionSet = true;
     else if (this.clearSelectionSet) this.iModel.selectionSet.emptyAll();
   }
@@ -494,13 +456,10 @@ export abstract class ElementSetTool extends PrimitiveTool {
   /** Get element ids to process from the active selection set.
    * Sub-classes may override to support selection scopes or apply tool specific filtering.
    */
-  protected async getSelectionSetCandidates(
-    ss: SelectionSet
-  ): Promise<Id64Arg> {
+  protected async getSelectionSetCandidates(ss: SelectionSet): Promise<Id64Arg> {
     const ids = new Set<Id64String>();
     ss.elements.forEach((val) => {
-      if (this.isElementIdValid(val, ModifyElementSource.SelectionSet))
-        ids.add(val);
+      if (this.isElementIdValid(val, ModifyElementSource.SelectionSet)) ids.add(val);
     });
 
     return ids;
@@ -512,15 +471,9 @@ export abstract class ElementSetTool extends PrimitiveTool {
   protected async buildSelectionSetAgenda(ss: SelectionSet): Promise<boolean> {
     const candidates = await this.getSelectionSetCandidates(ss);
 
-    if (
-      Id64.sizeOf(candidates) < this.requiredElementCount ||
-      !this.agenda.add(candidates)
-    ) {
+    if (Id64.sizeOf(candidates) < this.requiredElementCount || !this.agenda.add(candidates)) {
       IModelApp.notifications.outputMessage(
-        new NotifyMessageDetails(
-          OutputMessagePriority.Info,
-          CoreTools.translate("ElementSet.Error.NoSSElems")
-        )
+        new NotifyMessageDetails(OutputMessagePriority.Info, CoreTools.translate("ElementSet.Error.NoSSElems"))
       );
       return false;
     }
@@ -562,11 +515,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
    */
   protected async buildLocateAgenda(hit: HitDetail): Promise<boolean> {
     if (this.agenda.find(hit.sourceId)) {
-      if (
-        this.isControlDown &&
-        this.controlKeyInvertsSelection &&
-        this.agenda.remove(hit.sourceId)
-      ) {
+      if (this.isControlDown && this.controlKeyInvertsSelection && this.agenda.remove(hit.sourceId)) {
         await this.onAgendaModified();
         return true;
       }
@@ -596,14 +545,8 @@ export abstract class ElementSetTool extends PrimitiveTool {
 
     // TODO: Include option to use IModelConnection.getGeometryContainment instead of readPixels. No/Yes/2dOnly...
     const pts: Point2d[] = [];
-    pts[0] = new Point2d(
-      Math.floor(origin.x + 0.5),
-      Math.floor(origin.y + 0.5)
-    );
-    pts[1] = new Point2d(
-      Math.floor(corner.x + 0.5),
-      Math.floor(corner.y + 0.5)
-    );
+    pts[0] = new Point2d(Math.floor(origin.x + 0.5), Math.floor(origin.y + 0.5));
+    pts[1] = new Point2d(Math.floor(corner.x + 0.5), Math.floor(corner.y + 0.5));
     const range = Range2d.createArray(pts);
 
     const rect = new ViewRect();
@@ -616,16 +559,10 @@ export abstract class ElementSetTool extends PrimitiveTool {
 
         const sRange = Range2d.createNull();
         sRange.extendPoint(
-          Point2d.create(
-            vp.cssPixelsToDevicePixels(range.low.x),
-            vp.cssPixelsToDevicePixels(range.low.y)
-          )
+          Point2d.create(vp.cssPixelsToDevicePixels(range.low.x), vp.cssPixelsToDevicePixels(range.low.y))
         );
         sRange.extendPoint(
-          Point2d.create(
-            vp.cssPixelsToDevicePixels(range.high.x),
-            vp.cssPixelsToDevicePixels(range.high.y)
-          )
+          Point2d.create(vp.cssPixelsToDevicePixels(range.high.x), vp.cssPixelsToDevicePixels(range.high.y))
         );
 
         pts[0].x = vp.cssPixelsToDevicePixels(pts[0].x);
@@ -637,18 +574,11 @@ export abstract class ElementSetTool extends PrimitiveTool {
         const testPoint = Point2d.createZero();
 
         const getPixelElementId = (pixel: Pixel.Data) => {
-          if (undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
-            return undefined; // no geometry at this location...
+          if (undefined === pixel.elementId || Id64.isInvalid(pixel.elementId)) return undefined; // no geometry at this location...
 
           if (!vp.isPixelSelectable(pixel)) return undefined; // reality model, terrain, etc - not selectable
 
-          if (
-            !this.isElementIdValid(
-              pixel.elementId,
-              ModifyElementSource.DragSelect
-            )
-          )
-            return undefined;
+          if (!this.isElementIdValid(pixel.elementId, ModifyElementSource.DragSelect)) return undefined;
 
           return pixel.elementId;
         };
@@ -657,22 +587,13 @@ export abstract class ElementSetTool extends PrimitiveTool {
           const outline = overlap ? undefined : new Set<string>();
           const offset = sRange.clone();
           offset.expandInPlace(-2);
-          for (
-            testPoint.x = sRange.low.x;
-            testPoint.x <= sRange.high.x;
-            ++testPoint.x
-          ) {
-            for (
-              testPoint.y = sRange.low.y;
-              testPoint.y <= sRange.high.y;
-              ++testPoint.y
-            ) {
+          for (testPoint.x = sRange.low.x; testPoint.x <= sRange.high.x; ++testPoint.x) {
+            for (testPoint.y = sRange.low.y; testPoint.y <= sRange.high.y; ++testPoint.y) {
               const pixel = pixels.getPixel(testPoint.x, testPoint.y);
               const elementId = getPixelElementId(pixel);
               if (undefined === elementId) continue;
 
-              if (undefined !== outline && !offset.containsPoint(testPoint))
-                outline.add(elementId.toString());
+              if (undefined !== outline && !offset.containsPoint(testPoint)) outline.add(elementId.toString());
               else contents.add(elementId.toString());
             }
           }
@@ -686,28 +607,15 @@ export abstract class ElementSetTool extends PrimitiveTool {
           }
         } else {
           const closePoint = Point2d.createZero();
-          for (
-            testPoint.x = sRange.low.x;
-            testPoint.x <= sRange.high.x;
-            ++testPoint.x
-          ) {
-            for (
-              testPoint.y = sRange.low.y;
-              testPoint.y <= sRange.high.y;
-              ++testPoint.y
-            ) {
+          for (testPoint.x = sRange.low.x; testPoint.x <= sRange.high.x; ++testPoint.x) {
+            for (testPoint.y = sRange.low.y; testPoint.y <= sRange.high.y; ++testPoint.y) {
               const pixel = pixels.getPixel(testPoint.x, testPoint.y);
               const elementId = getPixelElementId(pixel);
               if (undefined === elementId) continue;
 
-              const fraction = testPoint.fractionOfProjectionToLine(
-                pts[0],
-                pts[1],
-                0.0
-              );
+              const fraction = testPoint.fractionOfProjectionToLine(pts[0], pts[1], 0.0);
               pts[0].interpolate(fraction, pts[1], closePoint);
-              if (closePoint.distance(testPoint) < 1.5)
-                contents.add(elementId.toString());
+              if (closePoint.distance(testPoint) < 1.5) contents.add(elementId.toString());
             }
           }
         }
@@ -728,13 +636,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
     method: SelectionMethod,
     overlap: boolean
   ): Promise<boolean> {
-    const candidates = await this.getDragSelectCandidates(
-      vp,
-      origin,
-      corner,
-      method,
-      overlap
-    );
+    const candidates = await this.getDragSelectCandidates(vp, origin, corner, method, overlap);
 
     if (!this.isControlDown || !this.controlKeyInvertsSelection) {
       if (!this.agenda.add(candidates)) return false;
@@ -742,73 +644,50 @@ export abstract class ElementSetTool extends PrimitiveTool {
       if (!this.agenda.invert(candidates)) return false;
     }
 
-    if (ModifyElementSource.Unknown === this.agenda.getSource())
-      this.agenda.setSource(ModifyElementSource.DragSelect); // Don't set source if invert only removed entries...
+    if (ModifyElementSource.Unknown === this.agenda.getSource()) this.agenda.setSource(ModifyElementSource.DragSelect); // Don't set source if invert only removed entries...
 
     await this.onAgendaModified();
     return true;
   }
 
   /** Quick id validity check. Sub-classes that wish to allow pickable decorations from selection sets can override. */
-  protected isElementIdValid(
-    id: Id64String,
-    source: ModifyElementSource
-  ): boolean {
+  protected isElementIdValid(id: Id64String, source: ModifyElementSource): boolean {
     switch (source) {
       case ModifyElementSource.Selected:
         return true; // Locate options already checked prior to calling isElementValidForOperation...
       case ModifyElementSource.SelectionSet:
         return !Id64.isInvalid(id) && !Id64.isTransient(id); // Locate options are invalid, locate isn't enabled when processing a selection set...
       case ModifyElementSource.DragSelect:
-        return (
-          !Id64.isInvalid(id) &&
-          (IModelApp.locateManager.options.allowDecorations ||
-            !Id64.isTransient(id))
-        ); // Locate options are valid but have not yet been checked...
+        return !Id64.isInvalid(id) && (IModelApp.locateManager.options.allowDecorations || !Id64.isTransient(id)); // Locate options are valid but have not yet been checked...
       default:
         return false;
     }
   }
 
   /** Sub-classes should override to apply tool specific filtering and to provide an explanation for rejection. */
-  protected async isElementValidForOperation(
-    hit: HitDetail,
-    _out?: LocateResponse
-  ): Promise<boolean> {
+  protected async isElementValidForOperation(hit: HitDetail, _out?: LocateResponse): Promise<boolean> {
     return this.isElementIdValid(hit.sourceId, ModifyElementSource.Selected);
   }
 
   /** Called from [[ElementSetTool.doLocate]] as well as auto-locate to accept or reject elements under the cursor. */
-  public override async filterHit(
-    hit: HitDetail,
-    out?: LocateResponse
-  ): Promise<LocateFilterStatus> {
+  public override async filterHit(hit: HitDetail, out?: LocateResponse): Promise<LocateFilterStatus> {
     // Support deselect using control key and don't show "not" cursor over an already selected element...
     if (undefined !== this._agenda && this._agenda.find(hit.sourceId)) {
       const status =
-        this.isControlDown || !this.controlKeyInvertsSelection
-          ? LocateFilterStatus.Accept
-          : LocateFilterStatus.Reject;
+        this.isControlDown || !this.controlKeyInvertsSelection ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
       if (out && LocateFilterStatus.Reject === status)
-        out.explanation = CoreTools.translate(
-          `ElementSet.Error.AlreadySelected`
-        );
+        out.explanation = CoreTools.translate(`ElementSet.Error.AlreadySelected`);
       return status;
     }
 
-    return (await this.isElementValidForOperation(hit, out))
-      ? LocateFilterStatus.Accept
-      : LocateFilterStatus.Reject;
+    return (await this.isElementValidForOperation(hit, out)) ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
   }
 
   /** Identify an element and update the element agenda.
    * @param newSearch true to locate new elements, false to cycle between elements within locate tolerance from a previous locate.
    * @return true if [[ElementSetTool.agenda]] was changed.
    */
-  protected async doLocate(
-    ev: BeButtonEvent,
-    newSearch: boolean
-  ): Promise<boolean> {
+  protected async doLocate(ev: BeButtonEvent, newSearch: boolean): Promise<boolean> {
     const hit = await IModelApp.locateManager.doLocate(
       new LocateResponse(),
       newSearch,
@@ -823,8 +702,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
     const addNext = undefined !== hit && !this.agenda.has(hit.sourceId);
     this.agenda.popGroup();
 
-    if (!addNext || !(await this.buildLocateAgenda(hit)))
-      await this.onAgendaModified(); // only change was popGroup...
+    if (!addNext || !(await this.buildLocateAgenda(hit))) await this.onAgendaModified(); // only change was popGroup...
 
     return true;
   }
@@ -834,8 +712,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
    * @note Inside/overlap is based on left/right direction of corner points (shift key inverts check).
    */
   protected useOverlapSelection(ev: BeButtonEvent): boolean {
-    if (undefined === ev.viewport || undefined === this.dragStartPoint)
-      return false;
+    if (undefined === ev.viewport || undefined === this.dragStartPoint) return false;
     const pt1 = ev.viewport.worldToView(this.dragStartPoint);
     const pt2 = ev.viewport.worldToView(ev.point);
     const overlapMode = pt1.x > pt2.x;
@@ -844,15 +721,9 @@ export abstract class ElementSetTool extends PrimitiveTool {
 
   /** Initiate tool state for start of drag selection. */
   protected async selectByPointsStart(ev: BeButtonEvent): Promise<boolean> {
-    if (BeButton.Data !== ev.button && BeButton.Reset !== ev.button)
-      return false;
+    if (BeButton.Data !== ev.button && BeButton.Reset !== ev.button) return false;
 
-    if (
-      !ev.isControlKey ||
-      !this.allowDragSelect ||
-      !this.wantAdditionalElements
-    )
-      return false;
+    if (!ev.isControlKey || !this.allowDragSelect || !this.wantAdditionalElements) return false;
 
     this.dragStartPoint = ev.point.clone();
     this.setupAndPromptForNextAction();
@@ -872,22 +743,8 @@ export abstract class ElementSetTool extends PrimitiveTool {
 
     const origin = vp.worldToView(this.dragStartPoint);
     const corner = vp.worldToView(ev.point);
-    if (BeButton.Reset === ev.button)
-      await this.buildDragSelectAgenda(
-        vp,
-        origin,
-        corner,
-        SelectionMethod.Line,
-        true
-      );
-    else
-      await this.buildDragSelectAgenda(
-        vp,
-        origin,
-        corner,
-        SelectionMethod.Box,
-        this.useOverlapSelection(ev)
-      );
+    if (BeButton.Reset === ev.button) await this.buildDragSelectAgenda(vp, origin, corner, SelectionMethod.Line, true);
+    else await this.buildDragSelectAgenda(vp, origin, corner, SelectionMethod.Box, this.useOverlapSelection(ev));
 
     this.dragStartPoint = undefined;
     this.setupAndPromptForNextAction();
@@ -904,8 +761,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
     if (undefined === ev.viewport) return;
 
     const vp = context.viewport;
-    const bestContrastIsBlack =
-      ColorDef.black === vp.getContrastToBackgroundColor();
+    const bestContrastIsBlack = ColorDef.black === vp.getContrastToBackgroundColor();
     const crossingLine = BeButton.Reset === ev.button;
     const overlapSelection = crossingLine || this.useOverlapSelection(ev);
 
@@ -929,9 +785,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
         ctx.stroke();
       } else {
         ctx.strokeRect(0, 0, offset.x, offset.y);
-        ctx.fillStyle = bestContrastIsBlack
-          ? "rgba(0,0,0,.06)"
-          : "rgba(255,255,255,.06)";
+        ctx.fillStyle = bestContrastIsBlack ? "rgba(0,0,0,.06)" : "rgba(255,255,255,.06)";
         ctx.fillRect(0, 0, offset.x, offset.y);
       }
     };
@@ -945,22 +799,17 @@ export abstract class ElementSetTool extends PrimitiveTool {
 
   /** Make sure drag selection graphics are updated when mouse moves. */
   public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
-    if (undefined !== ev.viewport && this.isSelectByPoints)
-      ev.viewport.invalidateDecorations();
+    if (undefined !== ev.viewport && this.isSelectByPoints) ev.viewport.invalidateDecorations();
   }
 
   /** Support initiating drag selection on mouse start drag event when [[ElementSetTool.allowDragSelect]] is true. */
-  public override async onMouseStartDrag(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
     if (await this.selectByPointsStart(ev)) return EventHandled.Yes;
     return super.onMouseStartDrag(ev);
   }
 
   /** Support completing active drag selection on mouse end drag event and update [[ElementSetTool.agenda]]. */
-  public override async onMouseEndDrag(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled> {
     if (await this.selectByPointsEnd(ev)) return EventHandled.Yes;
     return super.onMouseEndDrag(ev);
   }
@@ -973,23 +822,12 @@ export abstract class ElementSetTool extends PrimitiveTool {
   ): Promise<EventHandled> {
     if (this.isSelectionSetModify) return EventHandled.No;
 
-    if (this.isSelectByPoints)
-      return BeModifierKeys.Shift === modifier
-        ? EventHandled.Yes
-        : EventHandled.No;
+    if (this.isSelectByPoints) return BeModifierKeys.Shift === modifier ? EventHandled.Yes : EventHandled.No;
 
-    if (
-      BeModifierKeys.Control !== modifier ||
-      undefined !== this.anchorPoint ||
-      !this.controlKeyContinuesSelection
-    )
+    if (BeModifierKeys.Control !== modifier || undefined !== this.anchorPoint || !this.controlKeyContinuesSelection)
       return EventHandled.No;
 
-    if (
-      this.currentElementCount < this.requiredElementCount &&
-      !this.wantAccuSnap
-    )
-      return EventHandled.No; // Can only early return if AccuSnap doesn't need to be disabled for ctrl selection...
+    if (this.currentElementCount < this.requiredElementCount && !this.wantAccuSnap) return EventHandled.No; // Can only early return if AccuSnap doesn't need to be disabled for ctrl selection...
 
     this.setupAndPromptForNextAction(); // Enable/disable auto-locate, AccuSnap, update prompts...
     return EventHandled.Yes;
@@ -1013,10 +851,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
         const autoHit = IModelApp.accuSnap.currHit;
 
         // Choose next using auto-locate or normal locate?
-        if (
-          undefined !== autoHit &&
-          (undefined === lastHit || !autoHit.isSameHit(lastHit))
-        )
+        if (undefined !== autoHit && (undefined === lastHit || !autoHit.isSameHit(lastHit)))
           autoLocateChooseNext = true;
       }
 
@@ -1046,27 +881,18 @@ export abstract class ElementSetTool extends PrimitiveTool {
     return this.chooseNextHit(ev);
   }
 
-  public override async onResetButtonUp(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     return this.processResetButton(ev);
   }
 
-  public override async onResetButtonDown(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onResetButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     return this.processResetButton(ev);
   }
 
   /** Collect element input until tool has a sufficient number to complete. */
-  protected async gatherElements(
-    ev: BeButtonEvent
-  ): Promise<EventHandled | undefined> {
+  protected async gatherElements(ev: BeButtonEvent): Promise<EventHandled | undefined> {
     if (this.isSelectionSetModify) {
-      if (
-        this.agenda.isEmpty &&
-        !(await this.buildSelectionSetAgenda(this.iModel.selectionSet))
-      ) {
+      if (this.agenda.isEmpty && !(await this.buildSelectionSetAgenda(this.iModel.selectionSet))) {
         await this.onReinitialize();
         return EventHandled.Yes;
       }
@@ -1090,9 +916,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
   }
 
   /** Collect point input until tool has a sufficient number to complete. */
-  protected async gatherInput(
-    ev: BeButtonEvent
-  ): Promise<EventHandled | undefined> {
+  protected async gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined> {
     if (undefined === this.anchorPoint) {
       this.anchorPoint = ev.point.clone();
 
@@ -1133,15 +957,11 @@ export abstract class ElementSetTool extends PrimitiveTool {
     return EventHandled.Yes;
   }
 
-  public override async onDataButtonUp(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onDataButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     return this.processDataButton(ev);
   }
 
-  public override async onDataButtonDown(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     return this.processDataButton(ev);
   }
 
@@ -1175,12 +995,10 @@ export abstract class ElementSetTool extends PrimitiveTool {
   /** Support either [[ElementSetTool.requireAcceptForSelectionSetOperation]] or [[ElementSetTool.requireAcceptForSelectionSetDynamics]] returning false. */
   protected async doProcessSelectionSetImmediate(): Promise<void> {
     const buildImmediate =
-      !this.requireAcceptForSelectionSetOperation ||
-      (this.wantDynamics && !this.requireAcceptForSelectionSetDynamics);
+      !this.requireAcceptForSelectionSetOperation || (this.wantDynamics && !this.requireAcceptForSelectionSetDynamics);
     if (!buildImmediate) return;
 
-    if (!(await this.buildSelectionSetAgenda(this.iModel.selectionSet)))
-      return this.onReinitialize();
+    if (!(await this.buildSelectionSetAgenda(this.iModel.selectionSet))) return this.onReinitialize();
 
     if (!this.requireAcceptForSelectionSetOperation) {
       await this.processAgendaImmediate();
@@ -1226,9 +1044,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
     return this.isSelectByPoints
       ? false
       : this.wantAccuSnap &&
-          (!this.isControlDown ||
-            !this.controlKeyContinuesSelection ||
-            !this.wantAdditionalElements);
+          (!this.isControlDown || !this.controlKeyContinuesSelection || !this.wantAdditionalElements);
   }
 
   /** Setup auto-locate, AccuSnap, AccuDraw, and supply tool assistance. */
@@ -1238,10 +1054,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
   }
 
   /** Sub-classes should override to provide tool specific instructions. */
-  protected provideToolAssistance(
-    mainInstrText?: string,
-    additionalInstr?: ToolAssistanceInstruction[]
-  ): void {
+  protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void {
     let mainMsg;
     let leftMsg;
     let rightMsg;
@@ -1352,34 +1165,20 @@ export abstract class ElementSetTool extends PrimitiveTool {
 
     if (undefined !== additionalInstr) {
       for (const instr of additionalInstr) {
-        if (ToolAssistanceInputMethod.Touch === instr.inputMethod)
-          touchInstructions.push(instr);
+        if (ToolAssistanceInputMethod.Touch === instr.inputMethod) touchInstructions.push(instr);
         else mouseInstructions.push(instr);
       }
     }
 
     const sections: ToolAssistanceSection[] = [];
-    sections.push(
-      ToolAssistance.createSection(
-        mouseInstructions,
-        ToolAssistance.inputsLabel
-      )
-    );
-    sections.push(
-      ToolAssistance.createSection(
-        touchInstructions,
-        ToolAssistance.inputsLabel
-      )
-    );
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
 
     const mainInstruction = ToolAssistance.createInstruction(
       this.iconSpec,
       undefined !== mainInstrText ? mainInstrText : CoreTools.translate(mainMsg)
     );
-    const instructions = ToolAssistance.createInstructions(
-      mainInstruction,
-      sections
-    );
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
     IModelApp.notifications.setToolAssistance(instructions);
   }
 }

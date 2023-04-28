@@ -56,10 +56,7 @@ export class ElectronRpcManager extends RpcManager {
     const interfaces = rpcs ?? [];
     const config = class extends ElectronRpcConfiguration {
       public interfaces = () => interfaces;
-      public protocol: ElectronRpcProtocol = new ElectronRpcProtocol(
-        this,
-        ipcSocket
-      );
+      public protocol: ElectronRpcProtocol = new ElectronRpcProtocol(this, ipcSocket);
     };
 
     for (const def of interfaces) {

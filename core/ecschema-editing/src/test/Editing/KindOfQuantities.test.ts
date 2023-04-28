@@ -3,13 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  KindOfQuantity,
-  KindOfQuantityProps,
-  SchemaContext,
-  SchemaItemKey,
-  SchemaKey,
-} from "@itwin/ecschema-metadata";
+import { KindOfQuantity, KindOfQuantityProps, SchemaContext, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
 describe("KindOfQuantities tests", () => {
@@ -27,24 +21,11 @@ describe("KindOfQuantities tests", () => {
     const result = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
     testKey = result.schemaKey!;
 
-    const phenomRes = await testEditor.phenomenons.create(
-      testKey,
-      "testPhenomenon",
-      "testDefinition"
-    );
-    const unitSystemRes = await testEditor.unitSystems.create(
-      testKey,
-      "testUnitSystem"
-    );
+    const phenomRes = await testEditor.phenomenons.create(testKey, "testPhenomenon", "testDefinition");
+    const unitSystemRes = await testEditor.unitSystems.create(testKey, "testUnitSystem");
     phenomenonKey = phenomRes.itemKey!;
     unitSystemKey = unitSystemRes.itemKey!;
-    const unitRes = await testEditor.units.create(
-      testKey,
-      "testUnit",
-      "testDefinition",
-      phenomenonKey,
-      unitSystemKey
-    );
+    const unitRes = await testEditor.units.create(testKey, "testUnit", "testDefinition", phenomenonKey, unitSystemKey);
     unitKey = unitRes.itemKey!;
   });
 
@@ -60,16 +41,9 @@ describe("KindOfQuantities tests", () => {
       // ],
     };
 
-    const result = await testEditor.kindOfQuantities.createFromProps(
-      testKey,
-      koqProps
-    );
-    const kindOfQuantity = (await testEditor.schemaContext.getSchemaItem(
-      result.itemKey!
-    )) as KindOfQuantity;
+    const result = await testEditor.kindOfQuantities.createFromProps(testKey, koqProps);
+    const kindOfQuantity = (await testEditor.schemaContext.getSchemaItem(result.itemKey!)) as KindOfQuantity;
     expect(kindOfQuantity.fullName).to.eql("testSchema.testKoQ");
-    expect(await kindOfQuantity.persistenceUnit).to.eql(
-      await testEditor.schemaContext.getSchemaItem(unitKey)
-    );
+    expect(await kindOfQuantity.persistenceUnit).to.eql(await testEditor.schemaContext.getSchemaItem(unitKey));
   });
 });

@@ -50,11 +50,7 @@ export class Uint16Buffer {
    * Return the content as a native buffer
    */
   public toNativeBuffer(): Uint16Array {
-    return new Uint16Array(
-      this._buffer.toNativeBuffer(),
-      this._offset,
-      this._count
-    );
+    return new Uint16Array(this._buffer.toNativeBuffer(), this._offset, this._count);
   }
 
   /**
@@ -83,10 +79,6 @@ export class Uint16Buffer {
    * Set an element.
    */
   public set(index: int32, value: int32): void {
-    LittleEndian.writeBufferShort(
-      this._buffer,
-      this._offset + 2 * index,
-      value
-    );
+    LittleEndian.writeBufferShort(this._buffer, this._offset + 2 * index, value);
   }
 }

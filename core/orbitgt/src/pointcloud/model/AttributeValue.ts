@@ -31,11 +31,9 @@ import { AttributeTypes } from "./AttributeTypes";
 /** @internal */
 export class AttributeValue {
   /** The 'false' value */
-  public static readonly FALSE: AttributeValue =
-    AttributeValue.createBoolean(false);
+  public static readonly FALSE: AttributeValue = AttributeValue.createBoolean(false);
   /** The 'true' value */
-  public static readonly TRUE: AttributeValue =
-    AttributeValue.createBoolean(true);
+  public static readonly TRUE: AttributeValue = AttributeValue.createBoolean(true);
 
   /** The type */
   private _type: int32;
@@ -326,22 +324,14 @@ export class AttributeValue {
     /* Check the type */
     if (other._type != this._type) return false;
     /* Check the value */
-    if (this._type == AttributeTypes.TYPE_BOOLEAN)
-      return other._valueI4 == this._valueI4;
-    if (this._type == AttributeTypes.TYPE_INT1)
-      return other._valueI4 == this._valueI4;
-    if (this._type == AttributeTypes.TYPE_INT2)
-      return other._valueI4 == this._valueI4;
-    if (this._type == AttributeTypes.TYPE_INT4)
-      return other._valueI4 == this._valueI4;
-    if (this._type == AttributeTypes.TYPE_INT8)
-      return other._valueI8.same(this._valueI8);
-    if (this._type == AttributeTypes.TYPE_FLOAT4)
-      return other._valueF4 == this._valueF4;
-    if (this._type == AttributeTypes.TYPE_FLOAT8)
-      return other._valueF8 == this._valueF8;
-    if (this._type == AttributeTypes.TYPE_COLOR)
-      return other._valueI4 == this._valueI4;
+    if (this._type == AttributeTypes.TYPE_BOOLEAN) return other._valueI4 == this._valueI4;
+    if (this._type == AttributeTypes.TYPE_INT1) return other._valueI4 == this._valueI4;
+    if (this._type == AttributeTypes.TYPE_INT2) return other._valueI4 == this._valueI4;
+    if (this._type == AttributeTypes.TYPE_INT4) return other._valueI4 == this._valueI4;
+    if (this._type == AttributeTypes.TYPE_INT8) return other._valueI8.same(this._valueI8);
+    if (this._type == AttributeTypes.TYPE_FLOAT4) return other._valueF4 == this._valueF4;
+    if (this._type == AttributeTypes.TYPE_FLOAT8) return other._valueF8 == this._valueF8;
+    if (this._type == AttributeTypes.TYPE_COLOR) return other._valueI4 == this._valueI4;
     /* Empty value */
     return true;
   }
@@ -415,19 +405,14 @@ export class AttributeValue {
    * @return the string.
    */
   public asString(): string {
-    if (this._type == AttributeTypes.TYPE_BOOLEAN)
-      return "" + this.getBoolean();
+    if (this._type == AttributeTypes.TYPE_BOOLEAN) return "" + this.getBoolean();
     else if (this._type == AttributeTypes.TYPE_INT1) return "" + this.getInt1();
     else if (this._type == AttributeTypes.TYPE_INT2) return "" + this.getInt2();
     else if (this._type == AttributeTypes.TYPE_INT4) return "" + this.getInt4();
-    else if (this._type == AttributeTypes.TYPE_INT8)
-      return "" + this.getInt8().toString();
-    else if (this._type == AttributeTypes.TYPE_FLOAT4)
-      return "" + this.getFloat4();
-    else if (this._type == AttributeTypes.TYPE_FLOAT8)
-      return "" + this.getFloat8();
-    else if (this._type == AttributeTypes.TYPE_COLOR)
-      return Numbers.rgbToString(this.getColor());
+    else if (this._type == AttributeTypes.TYPE_INT8) return "" + this.getInt8().toString();
+    else if (this._type == AttributeTypes.TYPE_FLOAT4) return "" + this.getFloat4();
+    else if (this._type == AttributeTypes.TYPE_FLOAT8) return "" + this.getFloat8();
+    else if (this._type == AttributeTypes.TYPE_COLOR) return Numbers.rgbToString(this.getColor());
     return "";
   }
 
@@ -436,13 +421,7 @@ export class AttributeValue {
    * @see Object#toString
    */
   public toString(): string {
-    return (
-      "[AttributeValue:type=" +
-      AttributeTypes.getTypeName(this._type) +
-      ",value=" +
-      this.asString() +
-      "]"
-    );
+    return "[AttributeValue:type=" + AttributeTypes.getTypeName(this._type) + ",value=" + this.asString() + "]";
   }
 
   /**
@@ -451,17 +430,13 @@ export class AttributeValue {
    * @return a default value.
    */
   public static createDefault(type: int32): AttributeValue {
-    if (type == AttributeTypes.TYPE_BOOLEAN)
-      return AttributeValue.createBoolean(false);
+    if (type == AttributeTypes.TYPE_BOOLEAN) return AttributeValue.createBoolean(false);
     if (type == AttributeTypes.TYPE_INT1) return AttributeValue.createInt1(0);
     if (type == AttributeTypes.TYPE_INT2) return AttributeValue.createInt2(0);
     if (type == AttributeTypes.TYPE_INT4) return AttributeValue.createInt4(0);
-    if (type == AttributeTypes.TYPE_INT8)
-      return AttributeValue.createInt8(ALong.ZERO);
-    if (type == AttributeTypes.TYPE_FLOAT4)
-      return AttributeValue.createFloat4(0.0);
-    if (type == AttributeTypes.TYPE_FLOAT8)
-      return AttributeValue.createFloat8(0.0);
+    if (type == AttributeTypes.TYPE_INT8) return AttributeValue.createInt8(ALong.ZERO);
+    if (type == AttributeTypes.TYPE_FLOAT4) return AttributeValue.createFloat4(0.0);
+    if (type == AttributeTypes.TYPE_FLOAT8) return AttributeValue.createFloat8(0.0);
     if (type == AttributeTypes.TYPE_COLOR) return AttributeValue.createColor(0);
     ASystem.assertNot(true, "Cannot create attribute value of type " + type);
     return null;
@@ -486,8 +461,7 @@ export class AttributeValue {
       value.setInt1(LittleEndian.readBufferByte(buffer, bufferOffset));
     else if (attributeType == AttributeTypes.TYPE_INT2)
       value.setInt2(LittleEndian.readBufferShort(buffer, bufferOffset));
-    else if (attributeType == AttributeTypes.TYPE_INT4)
-      value.setInt4(LittleEndian.readBufferInt(buffer, bufferOffset));
+    else if (attributeType == AttributeTypes.TYPE_INT4) value.setInt4(LittleEndian.readBufferInt(buffer, bufferOffset));
     else if (attributeType == AttributeTypes.TYPE_INT8)
       value.setInt8(LittleEndian.readBufferLong(buffer, bufferOffset));
     else if (attributeType == AttributeTypes.TYPE_FLOAT4)
@@ -496,11 +470,7 @@ export class AttributeValue {
       value.setFloat8(LittleEndian.readBufferDouble(buffer, bufferOffset));
     else if (attributeType == AttributeTypes.TYPE_COLOR)
       value.setColor(LittleEndian.readBufferInt3(buffer, bufferOffset));
-    else
-      ASystem.assertNot(
-        true,
-        "Cannot read attribute value type " + attributeType
-      );
+    else ASystem.assertNot(true, "Cannot read attribute value type " + attributeType);
   }
 
   /**
@@ -509,32 +479,16 @@ export class AttributeValue {
    * @param attributeType the type of the attribute.
    * @param the value to read into.
    */
-  public static readFromStreamTo(
-    stream: InStream,
-    attributeType: int32,
-    value: AttributeValue
-  ): void {
-    if (attributeType == AttributeTypes.TYPE_BOOLEAN)
-      value.setBoolean(LittleEndian.readStreamByte(stream) != 0);
-    else if (attributeType == AttributeTypes.TYPE_INT1)
-      value.setInt1(LittleEndian.readStreamByte(stream));
-    else if (attributeType == AttributeTypes.TYPE_INT2)
-      value.setInt2(LittleEndian.readStreamShort(stream));
-    else if (attributeType == AttributeTypes.TYPE_INT4)
-      value.setInt4(LittleEndian.readStreamInt(stream));
-    else if (attributeType == AttributeTypes.TYPE_INT8)
-      value.setInt8(LittleEndian.readStreamLong(stream));
-    else if (attributeType == AttributeTypes.TYPE_FLOAT4)
-      value.setFloat4(LittleEndian.readStreamFloat(stream));
-    else if (attributeType == AttributeTypes.TYPE_FLOAT8)
-      value.setFloat8(LittleEndian.readStreamDouble(stream));
-    else if (attributeType == AttributeTypes.TYPE_COLOR)
-      value.setColor(LittleEndian.readStreamInt3(stream));
-    else
-      ASystem.assertNot(
-        true,
-        "Cannot read attribute value type " + attributeType
-      );
+  public static readFromStreamTo(stream: InStream, attributeType: int32, value: AttributeValue): void {
+    if (attributeType == AttributeTypes.TYPE_BOOLEAN) value.setBoolean(LittleEndian.readStreamByte(stream) != 0);
+    else if (attributeType == AttributeTypes.TYPE_INT1) value.setInt1(LittleEndian.readStreamByte(stream));
+    else if (attributeType == AttributeTypes.TYPE_INT2) value.setInt2(LittleEndian.readStreamShort(stream));
+    else if (attributeType == AttributeTypes.TYPE_INT4) value.setInt4(LittleEndian.readStreamInt(stream));
+    else if (attributeType == AttributeTypes.TYPE_INT8) value.setInt8(LittleEndian.readStreamLong(stream));
+    else if (attributeType == AttributeTypes.TYPE_FLOAT4) value.setFloat4(LittleEndian.readStreamFloat(stream));
+    else if (attributeType == AttributeTypes.TYPE_FLOAT8) value.setFloat8(LittleEndian.readStreamDouble(stream));
+    else if (attributeType == AttributeTypes.TYPE_COLOR) value.setColor(LittleEndian.readStreamInt3(stream));
+    else ASystem.assertNot(true, "Cannot read attribute value type " + attributeType);
   }
 
   /**
@@ -543,10 +497,7 @@ export class AttributeValue {
    * @param attributeType the type of the attribute.
    * @return the value.
    */
-  public static readFromStream(
-    stream: InStream,
-    attributeType: int32
-  ): AttributeValue {
+  public static readFromStream(stream: InStream, attributeType: int32): AttributeValue {
     let value: AttributeValue = new AttributeValue();
     AttributeValue.readFromStreamTo(stream, attributeType, value);
     return value;
@@ -558,31 +509,15 @@ export class AttributeValue {
    * @param attributeType the type of the attribute.
    * @param value the value of the attribute.
    */
-  public static writeToStream(
-    stream: OutStream,
-    attributeType: int32,
-    value: AttributeValue
-  ): void {
-    if (attributeType == AttributeTypes.TYPE_BOOLEAN)
-      LittleEndian.writeStreamByte(stream, value.getBooleanAsInt());
-    else if (attributeType == AttributeTypes.TYPE_INT1)
-      LittleEndian.writeStreamByte(stream, value.getInt1());
-    else if (attributeType == AttributeTypes.TYPE_INT2)
-      LittleEndian.writeStreamShort(stream, value.getInt2());
-    else if (attributeType == AttributeTypes.TYPE_INT4)
-      LittleEndian.writeStreamInt(stream, value.getInt4());
-    else if (attributeType == AttributeTypes.TYPE_INT8)
-      LittleEndian.writeStreamLong(stream, value.getInt8());
-    else if (attributeType == AttributeTypes.TYPE_FLOAT4)
-      LittleEndian.writeStreamFloat(stream, value.getFloat4());
-    else if (attributeType == AttributeTypes.TYPE_FLOAT8)
-      LittleEndian.writeStreamDouble(stream, value.getFloat8());
-    else if (attributeType == AttributeTypes.TYPE_COLOR)
-      LittleEndian.writeStreamInt3(stream, value.getColor());
-    else
-      ASystem.assertNot(
-        true,
-        "Cannot write attribute value type " + attributeType
-      );
+  public static writeToStream(stream: OutStream, attributeType: int32, value: AttributeValue): void {
+    if (attributeType == AttributeTypes.TYPE_BOOLEAN) LittleEndian.writeStreamByte(stream, value.getBooleanAsInt());
+    else if (attributeType == AttributeTypes.TYPE_INT1) LittleEndian.writeStreamByte(stream, value.getInt1());
+    else if (attributeType == AttributeTypes.TYPE_INT2) LittleEndian.writeStreamShort(stream, value.getInt2());
+    else if (attributeType == AttributeTypes.TYPE_INT4) LittleEndian.writeStreamInt(stream, value.getInt4());
+    else if (attributeType == AttributeTypes.TYPE_INT8) LittleEndian.writeStreamLong(stream, value.getInt8());
+    else if (attributeType == AttributeTypes.TYPE_FLOAT4) LittleEndian.writeStreamFloat(stream, value.getFloat4());
+    else if (attributeType == AttributeTypes.TYPE_FLOAT8) LittleEndian.writeStreamDouble(stream, value.getFloat8());
+    else if (attributeType == AttributeTypes.TYPE_COLOR) LittleEndian.writeStreamInt3(stream, value.getColor());
+    else ASystem.assertNot(true, "Cannot write attribute value type " + attributeType);
   }
 }

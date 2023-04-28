@@ -16,10 +16,7 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 function exerciseLineSegment3d(ck: Checker, segmentA: LineSegment3d) {
   const a = 4.2;
-  const scaleTransform = Transform.createFixedPointAndMatrix(
-    Point3d.create(4, 3),
-    Matrix3d.createScale(a, a, a)
-  );
+  const scaleTransform = Transform.createFixedPointAndMatrix(Point3d.create(4, 3), Matrix3d.createScale(a, a, a));
 
   const segment0 = LineSegment3d.create(Point3d.create(), Point3d.create());
   const segmentB = segment0.clone(); // zeros!!
@@ -39,17 +36,10 @@ function exerciseLineSegment3d(ck: Checker, segmentA: LineSegment3d) {
   segmentD.setRefs(segmentB.point0Ref, segmentB.point1Ref);
   // now segment B and segment D share points!!!  Confirm that transformInPlace affects both
   segmentB.tryTransformInPlace(scaleTransform);
-  ck.testTrue(
-    segmentB.isAlmostEqual(segmentD),
-    "shared pointers are transformed together"
-  );
+  ck.testTrue(segmentB.isAlmostEqual(segmentD), "shared pointers are transformed together");
   ck.testCoordinate(segmentB.curveLength(), a * segmentA.curveLength());
   // we expect quickLength to match curveLength ...
-  ck.testCoordinate(
-    segmentA.quickLength(),
-    segmentA.curveLength(),
-    "LineSegment quickLength is true curveLength"
-  );
+  ck.testCoordinate(segmentA.quickLength(), segmentA.curveLength(), "LineSegment quickLength is true curveLength");
 
   segmentC.setFrom(segmentA);
   segmentC.reverseInPlace();
@@ -63,13 +53,9 @@ function exerciseLineSegment3d(ck: Checker, segmentA: LineSegment3d) {
     const detailT = segmentA.closestPoint(spacePoint, true);
     const detailF = segmentA.closestPoint(spacePoint, false);
     if (Geometry.isIn01(f)) {
-      ck.testTrue(
-        Geometry.isSameCoordinate(detailT.fraction, detailF.fraction)
-      );
+      ck.testTrue(Geometry.isSameCoordinate(detailT.fraction, detailF.fraction));
     } else {
-      ck.testFalse(
-        Geometry.isSameCoordinate(detailT.fraction, detailF.fraction)
-      );
+      ck.testFalse(Geometry.isSameCoordinate(detailT.fraction, detailF.fraction));
     }
   }
 }
@@ -96,11 +82,7 @@ describe("LineSegment3d", () => {
     ck.testPointer(segmentE, segmentC, "reuse of optional arg");
     ck.testTrue(segmentD.isAlmostEqual(segmentE));
 
-    const segmentF = LineSegment3d.create(
-      segmentA.endPoint(),
-      segmentA.startPoint(),
-      segmentD
-    ); // another optional
+    const segmentF = LineSegment3d.create(segmentA.endPoint(), segmentA.startPoint(), segmentD); // another optional
     ck.testFalse(segmentF.isAlmostEqual(segmentA));
     segmentF.reverseInPlace();
     ck.testTrue(segmentF.isAlmostEqual(segmentA));
@@ -118,20 +100,10 @@ describe("LineSegment3d", () => {
     // A draw a line from pointA to pointB ...
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, myLine);
     // draw circles at some fractional coordinates along the line (and one beyond the end )
-    for (const fractionAlongLine of [
-      0.0, 0.1, 0.15, 0.2, 0.25, 0.5, 0.9, 1.0, 1.1,
-    ]) {
+    for (const fractionAlongLine of [0.0, 0.1, 0.15, 0.2, 0.25, 0.5, 0.9, 1.0, 1.1]) {
       const pointAlongLine = myLine.fractionToPoint(fractionAlongLine);
-      GeometryCoreTestIO.createAndCaptureXYCircle(
-        allGeometry,
-        pointAlongLine,
-        circleRadius
-      );
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pointAlongLine, circleRadius);
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "LineSegment3d",
-      "PointsAlongLine"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "LineSegment3d", "PointsAlongLine");
   });
 });

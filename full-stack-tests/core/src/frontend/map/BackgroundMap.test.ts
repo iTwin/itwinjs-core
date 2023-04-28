@@ -4,16 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import {
-  BackgroundMapProps,
-  BackgroundMapSettings,
-  ColorDef,
-} from "@itwin/core-common";
-import {
-  IModelConnection,
-  Pixel,
-  SnapshotConnection,
-} from "@itwin/core-frontend";
+import { BackgroundMapProps, BackgroundMapSettings, ColorDef } from "@itwin/core-common";
+import { IModelConnection, Pixel, SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
 
@@ -22,14 +14,8 @@ describe("Background map (#integration)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    assert.isDefined(
-      process.env.TEST_BING_MAPS_KEY,
-      "The test requires that a Bing Maps key is configured."
-    );
-    assert.isDefined(
-      process.env.TEST_MAPBOX_KEY,
-      "The test requires that a MapBox key is configured."
-    );
+    assert.isDefined(process.env.TEST_BING_MAPS_KEY, "The test requires that a Bing Maps key is configured.");
+    assert.isDefined(process.env.TEST_MAPBOX_KEY, "The test requires that a MapBox key is configured.");
 
     await TestUtility.startFrontend({
       ...TestUtility.iModelAppOptions,
@@ -87,12 +73,8 @@ describe("Background map (#integration)", () => {
       // Test what's rendered to the screen.
       const expectColor = (x: number, y: number, expectedColor: PixelType) => {
         const actualColor = vp.readColor(x, y);
-        expect(actualColor.equalsColorDef(ColorDef.white)).to.equal(
-          "model" === expectedColor
-        );
-        expect(actualColor.equalsColorDef(vp.view.backgroundColor)).to.equal(
-          "bg" === expectedColor
-        );
+        expect(actualColor.equalsColorDef(ColorDef.white)).to.equal("model" === expectedColor);
+        expect(actualColor.equalsColorDef(vp.view.backgroundColor)).to.equal("bg" === expectedColor);
       };
 
       expectColor(cx, cy, expectedCenterColor);
@@ -108,41 +90,21 @@ describe("Background map (#integration)", () => {
 
         expect(actualPixel.type).to.equal(Pixel.GeometryType.Surface);
         expect(actualPixel.modelId).not.to.be.undefined;
-        expect(Id64.isTransient(actualPixel.modelId!)).to.equal(
-          "map" === expectedPixel
-        );
+        expect(Id64.isTransient(actualPixel.modelId!)).to.equal("map" === expectedPixel);
       };
 
       expectPixel(cx, cy, expectedCenterFeature);
       expectPixel(1, 1, expectedCornerFeature);
     }
 
-    type Test = [
-      BackgroundMapProps | undefined,
-      PixelType,
-      PixelType,
-      PixelType,
-      PixelType
-    ];
+    type Test = [BackgroundMapProps | undefined, PixelType, PixelType, PixelType, PixelType];
     const tests: Test[] = [
       [undefined, "model", "bg", "model", "bg"],
 
       [{ groundBias: 10, nonLocatable: true }, "model", "map", "model", "bg"],
       [{ groundBias: -10, nonLocatable: true }, "model", "map", "model", "bg"],
-      [
-        { useDepthBuffer: true, groundBias: 10, nonLocatable: true },
-        "map",
-        "map",
-        "model",
-        "bg",
-      ],
-      [
-        { useDepthBuffer: true, groundBias: -10, nonLocatable: true },
-        "model",
-        "map",
-        "model",
-        "bg",
-      ],
+      [{ useDepthBuffer: true, groundBias: 10, nonLocatable: true }, "map", "map", "model", "bg"],
+      [{ useDepthBuffer: true, groundBias: -10, nonLocatable: true }, "model", "map", "model", "bg"],
 
       [{ nonLocatable: true }, "model", "map", "model", "bg"],
       [{}, "model", "map", "model", "map"],
@@ -150,13 +112,7 @@ describe("Background map (#integration)", () => {
       [{ groundBias: 10 }, "model", "map", "model", "map"],
       [{ groundBias: -10 }, "model", "map", "model", "map"],
       [{ useDepthBuffer: true, groundBias: 10 }, "map", "map", "map", "map"],
-      [
-        { useDepthBuffer: true, groundBias: -10 },
-        "model",
-        "map",
-        "model",
-        "map",
-      ],
+      [{ useDepthBuffer: true, groundBias: -10 }, "model", "map", "model", "map"],
 
       // ###TODO: Can't test with applyTerrain=true because ApproximateTerrainHeights.json not found...
     ];
@@ -165,8 +121,7 @@ describe("Background map (#integration)", () => {
       // Turn off lighting. Map is already off.
       vp.viewFlags = vp.viewFlags.with("lighting", false);
 
-      for (const test of tests)
-        await expectPixelTypes(vp, test[0], test[1], test[2], test[3], test[4]);
+      for (const test of tests) await expectPixelTypes(vp, test[0], test[1], test[2], test[3], test[4]);
     });
   });
 });

@@ -28,10 +28,7 @@ const testMapSubLayer1 = {
 };
 
 describe("MapSubLayerSettings", () => {
-  const expectMatch = (
-    output: MapSubLayerProps,
-    expected: MapSubLayerProps
-  ) => {
+  const expectMatch = (output: MapSubLayerProps, expected: MapSubLayerProps) => {
     expect(output.id).to.equal(expected.id);
     expect(output.name).to.equal(expected.name);
     expect(output.title).to.equal(expected.title);
@@ -41,18 +38,13 @@ describe("MapSubLayerSettings", () => {
     if (expected.children) {
       expect(output.children).not.to.be.undefined;
       expect(expected.children.length).to.equal(output.children!.length);
-      for (let i = 0; i < expected.children.length; i++)
-        expect(expected.children[i]).to.equal(output.children![i]);
+      for (let i = 0; i < expected.children.length; i++) expect(expected.children[i]).to.equal(output.children![i]);
     }
   };
 
   it("round-trips through JSON", () => {
-    const roundTrip = (
-      input: MapSubLayerProps,
-      expected: MapSubLayerProps | "input"
-    ) => {
-      if ("input" === expected)
-        expected = JSON.parse(JSON.stringify(input)) as MapSubLayerProps;
+    const roundTrip = (input: MapSubLayerProps, expected: MapSubLayerProps | "input") => {
+      if ("input" === expected) expected = JSON.parse(JSON.stringify(input)) as MapSubLayerProps;
       const settings = MapSubLayerSettings.fromJSON(input)!;
       expect(settings).not.to.be.undefined;
       const output = settings.toJSON();
@@ -63,22 +55,14 @@ describe("MapSubLayerSettings", () => {
   });
 
   it("clones", () => {
-    const clone = (
-      input: MapSubLayerProps,
-      changed: Partial<MapSubLayerProps>,
-      expected: MapSubLayerProps
-    ) => {
+    const clone = (input: MapSubLayerProps, changed: Partial<MapSubLayerProps>, expected: MapSubLayerProps) => {
       const settings = MapSubLayerSettings.fromJSON(input);
       const output = settings.clone(changed);
       expectMatch(output.toJSON(), expected);
     };
 
     // Turn off visibility
-    clone(
-      testMapSubLayer0,
-      { visible: false },
-      { name: "TestName", title: "TestTitle", visible: false }
-    );
+    clone(testMapSubLayer0, { visible: false }, { name: "TestName", title: "TestTitle", visible: false });
     clone(
       testMapSubLayer1,
       { visible: false },
@@ -142,17 +126,12 @@ const legacyMapLayer = BaseMapLayerSettings.fromBackgroundMapProps({
 });
 
 describe("ImageMapLayerSettings", () => {
-  const expectMatches = (
-    output: ImageMapLayerProps,
-    expected: ImageMapLayerProps
-  ) => {
+  const expectMatches = (output: ImageMapLayerProps, expected: ImageMapLayerProps) => {
     expect(output.name).to.equal(expected.name);
     expect(output.visible).to.equal(expected.visible);
     expect(output.url).to.equal(expected.url);
     expect(output.transparency).to.equal(expected.transparency);
-    expect(output.transparentBackground).to.equal(
-      expected.transparentBackground
-    );
+    expect(output.transparentBackground).to.equal(expected.transparentBackground);
 
     if (expected.subLayers) {
       expect(output.subLayers).not.to.be.undefined;
@@ -162,22 +141,15 @@ describe("ImageMapLayerSettings", () => {
     }
   };
 
-  const expectSettingsMatches = (
-    output: ImageMapLayerSettings,
-    expected: ImageMapLayerSettings
-  ) => {
+  const expectSettingsMatches = (output: ImageMapLayerSettings, expected: ImageMapLayerSettings) => {
     expectMatches(output.toJSON(), expected.toJSON());
     expect(output.userName).to.equal(expected.userName);
     expect(output.password).to.equal(expected.password);
   };
 
   it("round-trips through JSON", () => {
-    const roundTrip = (
-      input: ImageMapLayerProps,
-      expected: ImageMapLayerProps | "input"
-    ) => {
-      if ("input" === expected)
-        expected = JSON.parse(JSON.stringify(input)) as ImageMapLayerProps;
+    const roundTrip = (input: ImageMapLayerProps, expected: ImageMapLayerProps | "input") => {
+      if ("input" === expected) expected = JSON.parse(JSON.stringify(input)) as ImageMapLayerProps;
 
       const settings = ImageMapLayerSettings.fromJSON(input)!;
       expect(settings).not.to.be.undefined;
@@ -195,11 +167,7 @@ describe("ImageMapLayerSettings", () => {
   });
 
   it("clones", () => {
-    const clone = (
-      input: ImageMapLayerProps,
-      changed: Partial<ImageMapLayerProps>,
-      expected: ImageMapLayerProps
-    ) => {
+    const clone = (input: ImageMapLayerProps, changed: Partial<ImageMapLayerProps>, expected: ImageMapLayerProps) => {
       const settings = ImageMapLayerSettings.fromJSON(input);
       const output = settings.clone(changed);
       expectMatches(output.toJSON(), expected);

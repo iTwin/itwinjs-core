@@ -59,10 +59,7 @@ export class TypedArrayBuilder<T extends UintArray> {
   public readonly growthFactor: number;
 
   /** Constructs a new builder from the specified options, with a [[length]] of zero. */
-  protected constructor(
-    constructor: Constructor<T>,
-    options?: TypedArrayBuilderOptions
-  ) {
+  protected constructor(constructor: Constructor<T>, options?: TypedArrayBuilderOptions) {
     this._constructor = constructor;
     this._data = new constructor(options?.initialCapacity ?? 0);
     this.growthFactor = Math.max(1.0, options?.growthFactor ?? 1.5);
@@ -233,9 +230,7 @@ export class UintArrayBuilder extends TypedArrayBuilder<UintArray> {
    */
   protected ensureBytesPerElement(newValues: Iterable<number>): void {
     const curBytesPerElem = this.bytesPerElement;
-    assert(
-      curBytesPerElem === 1 || curBytesPerElem === 2 || curBytesPerElem === 4
-    );
+    assert(curBytesPerElem === 1 || curBytesPerElem === 2 || curBytesPerElem === 4);
     if (curBytesPerElem >= 4) return;
 
     let neededBytesPerElem = curBytesPerElem;
@@ -250,12 +245,7 @@ export class UintArrayBuilder extends TypedArrayBuilder<UintArray> {
 
     if (neededBytesPerElem <= curBytesPerElem) return;
 
-    this._constructor =
-      neededBytesPerElem === 1
-        ? Uint8Array
-        : neededBytesPerElem === 2
-        ? Uint16Array
-        : Uint32Array;
+    this._constructor = neededBytesPerElem === 1 ? Uint8Array : neededBytesPerElem === 2 ? Uint16Array : Uint32Array;
     this._data = new this._constructor(this._data);
   }
 

@@ -9,21 +9,9 @@ import { VertexKey } from "../../../render/primitives/VertexKey";
 
 describe("VertexKey", () => {
   it("comparisons work as expected", () => {
-    const key123 = new VertexKey(
-      new Point3d(1, 2, 3),
-      456,
-      new OctEncodedNormal(7)
-    );
-    const copy123 = new VertexKey(
-      new Point3d(1, 2, 3),
-      456,
-      new OctEncodedNormal(7)
-    );
-    const key456 = new VertexKey(
-      new Point3d(4, 5, 6),
-      456,
-      new OctEncodedNormal(7)
-    );
+    const key123 = new VertexKey(new Point3d(1, 2, 3), 456, new OctEncodedNormal(7));
+    const copy123 = new VertexKey(new Point3d(1, 2, 3), 456, new OctEncodedNormal(7));
+    const key456 = new VertexKey(new Point3d(4, 5, 6), 456, new OctEncodedNormal(7));
 
     const tolerance = { x: 0, y: 0, z: 0 };
     expect(key123.equals(copy123, tolerance)).to.be.true;

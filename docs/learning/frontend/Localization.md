@@ -92,14 +92,9 @@ Now, a locale-specific string can be requested with the [Localization.getLocaliz
 ```ts
 const myUsername = "John_Smith_123";
 
-IModelApp.localization.getLocalizedString(
-  "SafetyBaseMessages:info.login.notLoggedIn"
-);
+IModelApp.localization.getLocalizedString("SafetyBaseMessages:info.login.notLoggedIn");
 // returns "You are not currently logged in."
-IModelApp.localization.getLocalizedString(
-  "SafetyBaseMessages:info.login.loggedIn",
-  { username: myUsername }
-);
+IModelApp.localization.getLocalizedString("SafetyBaseMessages:info.login.loggedIn", { username: myUsername });
 // returns "You are logged in as John_Smith_123."
 ```
 
@@ -110,14 +105,9 @@ Specific to the [ITwinLocalization]($i18n) class, the browser is used to detect 
 ```ts
 await IModelApp.localization.changeLanguage("de");
 
-IModelApp.localization.getLocalizedString(
-  "SafetyBaseMessages:info.login.notLoggedIn"
-);
+IModelApp.localization.getLocalizedString("SafetyBaseMessages:info.login.notLoggedIn");
 // returns "Sie sind derzeit nicht eingeloggt."
-IModelApp.localization.getLocalizedString(
-  "SafetyBaseMessages:info.login.loggedIn",
-  { username: myUsername }
-);
+IModelApp.localization.getLocalizedString("SafetyBaseMessages:info.login.loggedIn", { username: myUsername });
 // returns "Sie sind angemeldet als John_Smith_123."
 ```
 
@@ -126,14 +116,10 @@ To interpolate a value in a custom string (i.e., a string not from a localizatio
 ```ts
 await IModelApp.localization.changeLanguage("en");
 
-IModelApp.localization.getLocalizedKeys(
-  "Please be aware: %{SafetyBaseMessages:error.offline}"
-);
+IModelApp.localization.getLocalizedKeys("Please be aware: %{SafetyBaseMessages:error.offline}");
 // returns "Please be aware: Network connection not available."
 
-IModelApp.localization.getLocalizedKeys(
-  "Hello, %{SafetyBaseMessages:info.login.loggedIn}."
-);
+IModelApp.localization.getLocalizedKeys("Hello, %{SafetyBaseMessages:info.login.loggedIn}.");
 // returns "Hello, You are logged in as {{username}}."
 ```
 
@@ -192,9 +178,7 @@ If you omit the "flyover" key, the keyin property is used for the flyover text. 
 In this example, the prompt1 and prompt2 keys are not used by the system - they could be used by your application during the operation of the Place Sprinkler command. They would be retrieved using this code:
 
 ```ts
-const firstPrompt: string = IModelApp.localization.getLocalizedString(
-  "SafetyBaseTools:Place.Sprinkler.prompt1"
-);
+const firstPrompt: string = IModelApp.localization.getLocalizedString("SafetyBaseTools:Place.Sprinkler.prompt1");
 // returns "Enter Sprinkler origin."
 ```
 

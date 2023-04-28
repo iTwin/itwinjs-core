@@ -7,12 +7,7 @@
  */
 import { BeDuration } from "@itwin/core-bentley";
 import { Point2d, XAndY } from "@itwin/core-geometry";
-import {
-  DisplayMessageType,
-  MessagePresenter,
-  MessageSeverity,
-  RelativePosition,
-} from "@itwin/appui-abstract";
+import { DisplayMessageType, MessagePresenter, MessageSeverity, RelativePosition } from "@itwin/appui-abstract";
 import { IModelApp } from "./IModelApp";
 import { ToolAssistanceInstructions } from "./tools/ToolAssistance";
 
@@ -257,10 +252,7 @@ export class NotificationManager implements MessagePresenter {
    * @param _percentComplete The percentage of completion.
    * @return true if the message was displayed, false if the message could not be displayed.
    */
-  public outputActivityMessage(
-    _messageText: HTMLElement | string,
-    _percentComplete: number
-  ) {
+  public outputActivityMessage(_messageText: HTMLElement | string, _percentComplete: number) {
     return true;
   }
 
@@ -317,10 +309,7 @@ export class NotificationManager implements MessagePresenter {
    * @param displayPoint        Point at which to display the Pointer type message.
    * @param relativePosition    Position relative to displayPoint at which to display the Pointer type message.
    */
-  public updatePointerMessage(
-    _displayPoint: XAndY,
-    _relativePosition = RelativePosition.TopRight
-  ): void {}
+  public updatePointerMessage(_displayPoint: XAndY, _relativePosition = RelativePosition.TopRight): void {}
 
   /** Close message created with [[OutputMessageType.Pointer]]. */
   public closePointerMessage(): void {}
@@ -331,9 +320,7 @@ export class NotificationManager implements MessagePresenter {
   /** Setup tool assistance instructions for a tool. The instructions include the main instruction, which includes the current prompt.
    * @param instructions The tool assistance instructions.
    */
-  public setToolAssistance(
-    instructions: ToolAssistanceInstructions | undefined
-  ) {
+  public setToolAssistance(instructions: ToolAssistanceInstructions | undefined) {
     this.outputPrompt(instructions ? instructions.mainInstruction.text : "");
   }
 
@@ -372,18 +359,12 @@ export class NotificationManager implements MessagePresenter {
     briefMessage: HTMLElement | string,
     detailedMessage?: HTMLElement | string
   ): void {
-    const details = new NotifyMessageDetails(
-      this.convertSeverityToPriority(severity),
-      briefMessage,
-      detailedMessage
-    );
+    const details = new NotifyMessageDetails(this.convertSeverityToPriority(severity), briefMessage, detailedMessage);
     details.setInputFieldTypeDetails(inputField);
     this.outputMessage(details);
   }
 
-  private convertSeverityToPriority(
-    severity: MessageSeverity
-  ): OutputMessagePriority {
+  private convertSeverityToPriority(severity: MessageSeverity): OutputMessagePriority {
     switch (severity) {
       case MessageSeverity.Information:
         return OutputMessagePriority.Info;
@@ -399,9 +380,7 @@ export class NotificationManager implements MessagePresenter {
     }
   }
 
-  private convertMessageType(
-    inMessageType?: DisplayMessageType
-  ): OutputMessageType | undefined {
+  private convertMessageType(inMessageType?: DisplayMessageType): OutputMessageType | undefined {
     switch (inMessageType) {
       case DisplayMessageType.Alert:
         return OutputMessageType.Alert;

@@ -21,12 +21,7 @@ import {
 import { IModelApp } from "../../IModelApp";
 import { AuxChannelTable } from "./AuxChannelTable";
 import { MeshArgs, Point3dList, PolylineArgs } from "./mesh/MeshPrimitives";
-import {
-  createSurfaceMaterial,
-  SurfaceMaterial,
-  SurfaceParams,
-  SurfaceType,
-} from "./SurfaceParams";
+import { createSurfaceMaterial, SurfaceMaterial, SurfaceParams, SurfaceType } from "./SurfaceParams";
 import { EdgeParams } from "./EdgeParams";
 
 /**
@@ -54,17 +49,12 @@ export class VertexIndices implements Iterable<number> {
   /** Convert an array of 24-bit unsigned integer values into a VertexIndices object. */
   public static fromArray(indices: number[]): VertexIndices {
     const bytes = new Uint8Array(indices.length * 3);
-    for (let i = 0; i < indices.length; i++)
-      this.encodeIndex(indices[i], bytes, i * 3);
+    for (let i = 0; i < indices.length; i++) this.encodeIndex(indices[i], bytes, i * 3);
 
     return new VertexIndices(bytes);
   }
 
-  public static encodeIndex(
-    index: number,
-    bytes: Uint8Array,
-    byteIndex: number
-  ): void {
+  public static encodeIndex(index: number, bytes: Uint8Array, byteIndex: number): void {
     assert(byteIndex + 2 < bytes.length);
     bytes[byteIndex + 0] = index & 0x000000ff;
     bytes[byteIndex + 1] = (index & 0x0000ff00) >> 8;
@@ -78,11 +68,7 @@ export class VertexIndices implements Iterable<number> {
   public decodeIndex(index: number): number {
     assert(index < this.length);
     const byteIndex = index * 3;
-    return (
-      this.data[byteIndex] |
-      (this.data[byteIndex + 1] << 8) |
-      (this.data[byteIndex + 2] << 16)
-    );
+    return this.data[byteIndex] | (this.data[byteIndex + 1] << 8) | (this.data[byteIndex + 2] << 16);
   }
 
   public decodeIndices(): number[] {
@@ -239,15 +225,8 @@ export class VertexTable implements VertexTableProps {
   ): VertexTable {
     const { numVertices, numRgbaPerVertex } = builder;
     const numColors = colorIndex.isUniform ? 0 : colorIndex.numColors;
-    const dimensions = computeDimensions(
-      numVertices,
-      numRgbaPerVertex,
-      numColors
-    );
-    assert(
-      0 === dimensions.width % numRgbaPerVertex ||
-        (0 < numColors && 1 === dimensions.height)
-    );
+    const dimensions = computeDimensions(numVertices, numRgbaPerVertex, numColors);
+    assert(0 === dimensions.width % numRgbaPerVertex || (0 < numColors && 1 === dimensions.height));
 
     const data = new Uint8Array(dimensions.width * dimensions.height * 4);
 
@@ -270,23 +249,13 @@ export class VertexTable implements VertexTableProps {
       numRgbaPerVertex,
       uvParams: builder.uvParams,
       featureIndexType: featureIndex.type,
-      uniformFeatureID:
-        featureIndex.type === FeatureIndexType.Uniform
-          ? featureIndex.featureID
-          : undefined,
+      uniformFeatureID: featureIndex.type === FeatureIndexType.Uniform ? featureIndex.featureID : undefined,
     });
   }
 
-  public static createForPolylines(
-    args: PolylineArgs
-  ): VertexTable | undefined {
+  public static createForPolylines(args: PolylineArgs): VertexTable | undefined {
     const polylines = args.polylines;
-    if (0 < polylines.length)
-      return this.buildFrom(
-        createPolylineBuilder(args),
-        args.colors,
-        args.features
-      );
+    if (0 < polylines.length) return this.buildFrom(createPolylineBuilder(args), args.colors, args.features);
     else return undefined;
   }
 }
@@ -345,9 +314,7 @@ export class MeshParams {
     };
 
     const channels =
-      undefined !== args.auxChannels
-        ? AuxChannelTable.fromChannels(args.auxChannels, vertices.numVertices)
-        : undefined;
+      undefined !== args.auxChannels ? AuxChannelTable.fromChannels(args.auxChannels, vertices.numVertices) : undefined;
     const edges = EdgeParams.fromMeshArgs(args);
     return new MeshParams(vertices, surface, edges, args.isPlanar, channels);
   }
@@ -446,9 +413,7 @@ namespace Quantized {
    *  featureIndex    08 (24 bits)
    *  materialIndex   0B (for meshes that use a material atlas; otherwise unused). NOTE: Currently front-end code does not produce material atlases.
    */
-  export class SimpleBuilder<
-    T extends Quantized<VertexData>
-  > extends VertexTableBuilder {
+  export class SimpleBuilder<T extends Quantized<VertexData>> extends VertexTableBuilder {
     public args: T;
     protected _qpoints: QPoint3dList;
 
@@ -511,8 +476,7 @@ namespace Quantized {
     }
 
     public static create(args: Quantized<MeshArgs>): MeshBuilder {
-      if (args.isVolumeClassifier)
-        return new MeshBuilder(args, SurfaceType.VolumeClassifier);
+      if (args.isVolumeClassifier) return new MeshBuilder(args, SurfaceType.VolumeClassifier);
 
       const isLit = undefined !== args.normals && 0 < args.normals.length;
       const isTextured = undefined !== args.textureMapping;
@@ -524,20 +488,13 @@ namespace Quantized {
         const fpts = args.textureMapping.uvParams;
         const pt2d = new Point2d();
         if (undefined !== fpts && fpts.length > 0)
-          for (let i = 0; i < args.points.length; i++)
-            uvRange.extendPoint(Point2d.create(fpts[i].x, fpts[i].y, pt2d));
+          for (let i = 0; i < args.points.length; i++) uvRange.extendPoint(Point2d.create(fpts[i].x, fpts[i].y, pt2d));
 
         uvParams = QParams2d.fromRange(uvRange);
       }
 
-      if (isLit)
-        return isTextured
-          ? new TexturedLitMeshBuilder(args, uvParams!)
-          : new LitMeshBuilder(args);
-      else
-        return isTextured
-          ? new TexturedMeshBuilder(args, uvParams!)
-          : new MeshBuilder(args, SurfaceType.Unlit);
+      if (isLit) return isTextured ? new TexturedLitMeshBuilder(args, uvParams!) : new LitMeshBuilder(args);
+      else return isTextured ? new TexturedMeshBuilder(args, uvParams!) : new MeshBuilder(args, SurfaceType.Unlit);
     }
   }
 
@@ -549,11 +506,7 @@ namespace Quantized {
     private _qparams: QParams2d;
     private _qpoint = new QPoint2d();
 
-    public constructor(
-      args: Quantized<MeshArgs>,
-      qparams: QParams2d,
-      type: SurfaceType = SurfaceType.Textured
-    ) {
+    public constructor(args: Quantized<MeshArgs>, qparams: QParams2d, type: SurfaceType = SurfaceType.Textured) {
       super(args, type);
       this._qparams = qparams;
       assert(undefined !== args.textureMapping);
@@ -578,10 +531,7 @@ namespace Quantized {
     } // no normal for unlit meshes
 
     protected appendUVParams(vertIndex: number) {
-      this._qpoint.init(
-        this.args.textureMapping!.uvParams[vertIndex],
-        this._qparams
-      );
+      this._qpoint.init(this.args.textureMapping!.uvParams[vertIndex], this._qparams);
       this.append16(this._qpoint.x);
       this.append16(this._qpoint.y);
     }
@@ -639,9 +589,7 @@ namespace Unquantized {
 
   // colorIndex:  10
   // unused:      12
-  export class SimpleBuilder<
-    T extends Unquantized<VertexData>
-  > extends VertexTableBuilder {
+  export class SimpleBuilder<T extends Unquantized<VertexData>> extends VertexTableBuilder {
     public args: T;
     protected _points: Point3d[];
     private _qparams3d: QParams3d;
@@ -689,9 +637,7 @@ namespace Unquantized {
       const x = this.convertFloat32(pt.x);
       const y = this.convertFloat32(pt.y);
       const z = this.convertFloat32(pt.z);
-      const featID = this.args.features.featureIDs
-        ? this.args.features.featureIDs[vertIndex]
-        : 0;
+      const featID = this.args.features.featureIDs ? this.args.features.featureIDs[vertIndex] : 0;
       this.append8(x & 0x000000ff);
       this.append8(y & 0x000000ff);
       this.append8(z & 0x000000ff);
@@ -718,14 +664,12 @@ namespace Unquantized {
     }
 
     protected appendFeatureIndex(vertIndex: number) {
-      if (this.args.features.featureIDs)
-        this.append32(this.args.features.featureIDs[vertIndex]);
+      if (this.args.features.featureIDs) this.append32(this.args.features.featureIDs[vertIndex]);
       else this.advance(4);
     }
 
     protected _appendColorIndex(vertIndex: number) {
-      if (undefined !== this.args.colors.nonUniform)
-        this.append16(this.args.colors.nonUniform.indices[vertIndex]);
+      if (undefined !== this.args.colors.nonUniform) this.append16(this.args.colors.nonUniform.indices[vertIndex]);
       else this.advance(2);
     }
 
@@ -744,8 +688,7 @@ namespace Unquantized {
     }
 
     public static create(args: Unquantized<MeshArgs>): MeshBuilder {
-      if (args.isVolumeClassifier)
-        return new MeshBuilder(args, SurfaceType.VolumeClassifier);
+      if (args.isVolumeClassifier) return new MeshBuilder(args, SurfaceType.VolumeClassifier);
 
       const isLit = undefined !== args.normals && 0 < args.normals.length;
       const isTextured = undefined !== args.textureMapping;
@@ -757,20 +700,13 @@ namespace Unquantized {
         const fpts = args.textureMapping.uvParams;
         const pt2d = new Point2d();
         if (undefined !== fpts && fpts.length > 0)
-          for (let i = 0; i < args.points.length; i++)
-            uvRange.extendPoint(Point2d.create(fpts[i].x, fpts[i].y, pt2d));
+          for (let i = 0; i < args.points.length; i++) uvRange.extendPoint(Point2d.create(fpts[i].x, fpts[i].y, pt2d));
 
         uvParams = QParams2d.fromRange(uvRange);
       }
 
-      if (isLit)
-        return isTextured
-          ? new TexturedLitMeshBuilder(args, uvParams!)
-          : new LitMeshBuilder(args);
-      else
-        return isTextured
-          ? new TexturedMeshBuilder(args, uvParams!)
-          : new MeshBuilder(args, SurfaceType.Unlit);
+      if (isLit) return isTextured ? new TexturedLitMeshBuilder(args, uvParams!) : new LitMeshBuilder(args);
+      else return isTextured ? new TexturedMeshBuilder(args, uvParams!) : new MeshBuilder(args, SurfaceType.Unlit);
     }
   }
 
@@ -780,11 +716,7 @@ namespace Unquantized {
     private _qparams: QParams2d;
     private _qpoint = new QPoint2d();
 
-    public constructor(
-      args: Unquantized<MeshArgs>,
-      qparams: QParams2d,
-      type = SurfaceType.Textured
-    ) {
+    public constructor(args: Unquantized<MeshArgs>, qparams: QParams2d, type = SurfaceType.Textured) {
       super(args, type);
       this._qparams = qparams;
       assert(undefined !== args.textureMapping);
@@ -797,10 +729,7 @@ namespace Unquantized {
     public override appendVertex(vertIndex: number) {
       super.appendVertex(vertIndex);
 
-      this._qpoint.init(
-        this.args.textureMapping!.uvParams[vertIndex],
-        this._qparams
-      );
+      this._qpoint.init(this.args.textureMapping!.uvParams[vertIndex], this._qparams);
       this.append16(this._qpoint.x);
       this.append16(this._qpoint.y);
     }
@@ -848,16 +777,12 @@ namespace Unquantized {
   }
 }
 
-function createMeshBuilder(
-  args: MeshArgs
-): VertexTableBuilder & { type: SurfaceType } {
-  if (args.points instanceof QPoint3dList)
-    return Quantized.MeshBuilder.create(args as Quantized<MeshArgs>);
+function createMeshBuilder(args: MeshArgs): VertexTableBuilder & { type: SurfaceType } {
+  if (args.points instanceof QPoint3dList) return Quantized.MeshBuilder.create(args as Quantized<MeshArgs>);
   else return Unquantized.MeshBuilder.create(args as Unquantized<MeshArgs>);
 }
 
 function createPolylineBuilder(args: PolylineArgs): VertexTableBuilder {
-  if (args.points instanceof QPoint3dList)
-    return new Quantized.SimpleBuilder(args as Quantized<PolylineArgs>);
+  if (args.points instanceof QPoint3dList) return new Quantized.SimpleBuilder(args as Quantized<PolylineArgs>);
   else return new Unquantized.SimpleBuilder(args as Unquantized<PolylineArgs>);
 }

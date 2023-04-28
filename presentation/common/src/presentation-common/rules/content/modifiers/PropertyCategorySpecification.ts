@@ -67,10 +67,7 @@ export interface IdCategoryIdentifier {
  * Category identifier used to assign properties to a category.
  * @public
  */
-export type CategoryIdentifier =
-  | ParentCategoryIdentifier
-  | RootCategoryIdentifier
-  | IdCategoryIdentifier;
+export type CategoryIdentifier = ParentCategoryIdentifier | RootCategoryIdentifier | IdCategoryIdentifier;
 
 /**
  * Content modifier for defining custom property categories. Custom categories are not present in the result unless

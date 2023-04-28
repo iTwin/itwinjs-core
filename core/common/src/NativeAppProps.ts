@@ -7,11 +7,7 @@
  */
 
 import { AccessToken, GuidString } from "@itwin/core-bentley";
-import {
-  BriefcaseProps,
-  LocalBriefcaseProps,
-  RequestNewBriefcaseProps,
-} from "./BriefcaseTypes";
+import { BriefcaseProps, LocalBriefcaseProps, RequestNewBriefcaseProps } from "./BriefcaseTypes";
 
 /** @internal */
 export const nativeAppChannel = "nativeApp";
@@ -62,10 +58,7 @@ export interface NativeAppFunctions {
   /** Manually override internet reachability for testing purposes.
    * @param _status New status to set on backend.
    */
-  overrideInternetConnectivity(
-    _overriddenBy: OverriddenBy,
-    _status: InternetConnectivityStatus
-  ): Promise<void>;
+  overrideInternetConnectivity(_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus): Promise<void>;
 
   /** Acquire a new BriefcaseId for the supplied iModelId from iModelHub */
   acquireNewBriefcaseId(_iModelId: GuidString): Promise<number>;
@@ -126,10 +119,7 @@ export interface NativeAppFunctions {
    * @param _key key identifier for value
    * @note returns key value or undefined
    */
-  storageGet(
-    _storageId: string,
-    _key: string
-  ): Promise<StorageValue | undefined>;
+  storageGet(_storageId: string, _key: string): Promise<StorageValue | undefined>;
 
   /**
    * Set a value for a key.
@@ -137,11 +127,7 @@ export interface NativeAppFunctions {
    * @param _key key identifier for value
    * @param _value value to be set
    */
-  storageSet(
-    _storageId: string,
-    _key: string,
-    _value: StorageValue
-  ): Promise<void>;
+  storageSet(_storageId: string, _key: string, _value: StorageValue): Promise<void>;
 
   /**
    * Remove a key/value pair.
@@ -167,7 +153,5 @@ export interface NativeAppFunctions {
   storageGetValueType(
     _storageId: string,
     _key: string
-  ): Promise<
-    "number" | "string" | "boolean" | "Uint8Array" | "null" | undefined
-  >;
+  ): Promise<"number" | "string" | "boolean" | "Uint8Array" | "null" | undefined>;
 }

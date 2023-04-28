@@ -5,14 +5,7 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import {
-  AccessToken,
-  DbResult,
-  GuidString,
-  Id64,
-  Id64String,
-  PerfLogger,
-} from "@itwin/core-bentley";
+import { AccessToken, DbResult, GuidString, Id64, Id64String, PerfLogger } from "@itwin/core-bentley";
 import {
   ChangedValueState,
   ChangeOpCode,
@@ -46,32 +39,19 @@ import { HubUtility, TestUserType } from "../HubUtility";
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 
 function setupTest(iModelId: string): void {
-  const cacheFilePath: string =
-    BriefcaseManager.getChangeCachePathName(iModelId);
-  if (IModelJsFs.existsSync(cacheFilePath))
-    IModelJsFs.removeSync(cacheFilePath);
+  const cacheFilePath: string = BriefcaseManager.getChangeCachePathName(iModelId);
+  if (IModelJsFs.existsSync(cacheFilePath)) IModelJsFs.removeSync(cacheFilePath);
 }
 
-async function purgeAcquiredBriefcases(
-  accessToken: string,
-  iModelId: GuidString
-) {
+async function purgeAcquiredBriefcases(accessToken: string, iModelId: GuidString) {
   await HubWrappers.purgeAcquiredBriefcasesById(accessToken, iModelId);
   // Purge briefcases that are close to reaching the acquire limit
-  const managerRequestContext = await HubUtility.getAccessToken(
-    TestUserType.Manager
-  );
-  await HubWrappers.purgeAcquiredBriefcasesById(
-    managerRequestContext,
-    iModelId
-  );
+  const managerRequestContext = await HubUtility.getAccessToken(TestUserType.Manager);
+  await HubWrappers.purgeAcquiredBriefcasesById(managerRequestContext, iModelId);
 }
 
 function getChangeSummaryAsJson(iModel: BriefcaseDb, changeSummaryId: string) {
-  const changeSummary: ChangeSummary = ChangeSummaryManager.queryChangeSummary(
-    iModel,
-    changeSummaryId
-  );
+  const changeSummary: ChangeSummary = ChangeSummaryManager.queryChangeSummary(iModel, changeSummaryId);
   const content = {
     id: changeSummary.id,
     changeSet: changeSummary.changeSet,
@@ -85,20 +65,13 @@ function getChangeSummaryAsJson(iModel: BriefcaseDb, changeSummaryId: string) {
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         const row = stmt.getRow();
 
-        const instanceChange: any = ChangeSummaryManager.queryInstanceChange(
-          iModel,
-          Id64.fromJSON(row.id)
-        );
+        const instanceChange: any = ChangeSummaryManager.queryInstanceChange(iModel, Id64.fromJSON(row.id));
 
         switch (instanceChange.opCode) {
           case ChangeOpCode.Insert: {
             const rows: any[] = IModelTestUtils.executeQuery(
               iModel,
-              ChangeSummaryManager.buildPropertyValueChangesECSql(
-                iModel,
-                instanceChange,
-                ChangedValueState.AfterInsert
-              )
+              ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.AfterInsert)
             );
             assert.equal(rows.length, 1);
             instanceChange.after = rows[0];
@@ -117,11 +90,7 @@ function getChangeSummaryAsJson(iModel: BriefcaseDb, changeSummaryId: string) {
             instanceChange.before = rows[0];
             rows = IModelTestUtils.executeQuery(
               iModel,
-              ChangeSummaryManager.buildPropertyValueChangesECSql(
-                iModel,
-                instanceChange,
-                ChangedValueState.AfterUpdate
-              )
+              ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.AfterUpdate)
             );
             assert.equal(rows.length, 1);
             instanceChange.after = rows[0];
@@ -141,9 +110,7 @@ function getChangeSummaryAsJson(iModel: BriefcaseDb, changeSummaryId: string) {
             break;
           }
           default:
-            throw new Error(
-              `Unexpected ChangedOpCode ${instanceChange.opCode}`
-            );
+            throw new Error(`Unexpected ChangedOpCode ${instanceChange.opCode}`);
         }
         content.instanceChanges.push(instanceChange);
       }
@@ -162,10 +129,7 @@ describe("ChangeSummary", () => {
     accessToken = await HubUtility.getAccessToken(TestUserType.Regular);
 
     iTwinId = await HubUtility.getTestITwinId(accessToken);
-    iModelId = await HubUtility.getTestIModelId(
-      accessToken,
-      HubUtility.testIModelNames.readOnly
-    );
+    iModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.readOnly);
 
     await purgeAcquiredBriefcases(accessToken, iModelId);
   });
@@ -230,10 +194,7 @@ describe("ChangeSummary", () => {
             const row: any = myStmt.getRow();
             assert.equal(row.className, "IModelChange.ChangeSet");
             assert.equal(row.summary.id, summaryIds[rowCount - 1]);
-            assert.equal(
-              row.summary.relClassName,
-              "IModelChange.ChangeSummaryIsExtractedFromChangeset"
-            );
+            assert.equal(row.summary.relClassName, "IModelChange.ChangeSummaryIsExtractedFromChangeset");
             assert.isDefined(
               row.pushDate,
               "IModelChange.ChangeSet.PushDate is expected to be set for the changesets used in this test."
@@ -253,10 +214,7 @@ describe("ChangeSummary", () => {
   });
 
   it("Extract ChangeSummary for a model with no changesets", async () => {
-    const emptyIModelId = await HubUtility.getTestIModelId(
-      accessToken,
-      HubUtility.testIModelNames.noVersions
-    );
+    const emptyIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.noVersions);
     setupTest(emptyIModelId);
     await purgeAcquiredBriefcases(accessToken, emptyIModelId);
 
@@ -281,11 +239,7 @@ describe("ChangeSummary", () => {
         range: { first: 0 },
       });
       assert.isTrue(summaryIds.every((id) => Id64.isValidId64(id)));
-      assert.isFalse(
-        IModelJsFs.existsSync(
-          BriefcaseManager.getChangeCachePathName(emptyIModelId)
-        )
-      );
+      assert.isFalse(IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(emptyIModelId)));
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
@@ -321,14 +275,9 @@ describe("ChangeSummary", () => {
       await iModel.pullChanges({ accessToken, toIndex: changeSets[1].index });
 
       // now extract change summary for that one changeset
-      const summaryId = await ChangeSummaryManager.createChangeSummary(
-        accessToken,
-        iModel
-      );
+      const summaryId = await ChangeSummaryManager.createChangeSummary(accessToken, iModel);
       assert.isTrue(Id64.isValidId64(summaryId));
-      assert.isTrue(
-        IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(iModelId))
-      );
+      assert.isTrue(IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(iModelId)));
       assert.exists(iModel);
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
@@ -377,9 +326,7 @@ describe("ChangeSummary", () => {
       range: { first: firstChangeSet.index, end: lastChangeSet.index },
     });
     assert.equal(summaryIds.length, 2);
-    assert.isTrue(
-      IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(iModelId))
-    );
+    assert.isTrue(IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(iModelId)));
 
     const iModel = await HubWrappers.downloadAndOpenBriefcase({
       accessToken,
@@ -453,13 +400,8 @@ describe("ChangeSummary", () => {
       await iModel.pullChanges({ accessToken, toIndex: changesets[0].index });
 
       // now extract change summary for that one changeset
-      const summaryId = await ChangeSummaryManager.createChangeSummary(
-        accessToken,
-        iModel
-      );
-      assert.isTrue(
-        IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(iModelId))
-      );
+      const summaryId = await ChangeSummaryManager.createChangeSummary(accessToken, iModel);
+      assert.isTrue(IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(iModelId)));
 
       assert.exists(iModel);
       ChangeSummaryManager.attachChangeCache(iModel);
@@ -514,8 +456,7 @@ describe("ChangeSummary", () => {
             const row: any = myStmt.getRow();
             assert.isDefined(row.changesetId);
             if (rowCount === 1) assert.equal(row.changesetId, firstChangesetId);
-            else if (rowCount === 2)
-              assert.equal(row.changesetId, lastChangesetId);
+            else if (rowCount === 2) assert.equal(row.changesetId, lastChangesetId);
           }
           assert.equal(rowCount, 2);
         }
@@ -557,15 +498,10 @@ describe("ChangeSummary", () => {
       iModel.withPreparedStatement(
         "SELECT ECInstanceId FROM ecchange.change.ChangeSummary ORDER BY ECInstanceId",
         (stmt) => {
-          perfLogger = new PerfLogger(
-            "ChangeSummaryManager.queryChangeSummary"
-          );
+          perfLogger = new PerfLogger("ChangeSummaryManager.queryChangeSummary");
           while (stmt.step() === DbResult.BE_SQLITE_ROW) {
             const row = stmt.getRow();
-            const csum: ChangeSummary = ChangeSummaryManager.queryChangeSummary(
-              iModel,
-              Id64.fromJSON(row.id)
-            );
+            const csum: ChangeSummary = ChangeSummaryManager.queryChangeSummary(iModel, Id64.fromJSON(row.id));
             changeSummaries.push(csum);
           }
           perfLogger.dispose();
@@ -594,11 +530,7 @@ describe("ChangeSummary", () => {
             while (stmt.step() === DbResult.BE_SQLITE_ROW) {
               const row = stmt.getRow();
 
-              const instanceChange: any =
-                ChangeSummaryManager.queryInstanceChange(
-                  iModel,
-                  Id64.fromJSON(row.id)
-                );
+              const instanceChange: any = ChangeSummaryManager.queryInstanceChange(iModel, Id64.fromJSON(row.id));
               switch (instanceChange.opCode) {
                 case ChangeOpCode.Insert: {
                   const rows: any[] = IModelTestUtils.executeQuery(
@@ -650,9 +582,7 @@ describe("ChangeSummary", () => {
                   break;
                 }
                 default:
-                  throw new Error(
-                    `Unexpected ChangedOpCode ${instanceChange.opCode}`
-                  );
+                  throw new Error(`Unexpected ChangedOpCode ${instanceChange.opCode}`);
               }
 
               content.instanceChanges.push(instanceChange);
@@ -671,14 +601,10 @@ describe("ChangeSummary", () => {
   // FIXME: "Must use HubMock for tests that modify iModels".
   it.skip("Create ChangeSummaries for changes to parent elements", async () => {
     // Generate a unique name for the iModel (so that this test can be run simultaneously by multiple users+hosts simultaneously)
-    const iModelName = IModelTestUtils.generateUniqueName(
-      "ParentElementChangeTest"
-    );
+    const iModelName = IModelTestUtils.generateUniqueName("ParentElementChangeTest");
 
     // Recreate iModel
-    const managerRequestContext = await HubUtility.getAccessToken(
-      TestUserType.Manager
-    );
+    const managerRequestContext = await HubUtility.getAccessToken(TestUserType.Manager);
     const testITwinId = await HubUtility.getTestITwinId(managerRequestContext);
     const testIModelId = await HubWrappers.recreateIModel({
       accessToken: managerRequestContext,
@@ -696,12 +622,11 @@ describe("ChangeSummary", () => {
       iTwinId: testITwinId,
       iModelId: testIModelId,
     });
-    const [, modelId] =
-      IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
-        iModel,
-        IModelTestUtils.getUniqueModelCode(iModel, "TestPhysicalModel"),
-        true
-      );
+    const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
+      iModel,
+      IModelTestUtils.getUniqueModelCode(iModel, "TestPhysicalModel"),
+      true
+    );
     iModel.saveChanges("Added test model");
     const categoryId = SpatialCategory.insert(
       iModel,
@@ -748,44 +673,31 @@ describe("ChangeSummary", () => {
 
     // Validate that the second change summary captures the change to the parent correctly
     try {
-      const changeSummaryIds =
-        await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel); // eslint-disable-line deprecation/deprecation
+      const changeSummaryIds = await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel); // eslint-disable-line deprecation/deprecation
       assert.strictEqual(2, changeSummaryIds.length);
 
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
-      const changeSummaryJson = getChangeSummaryAsJson(
-        iModel,
-        changeSummaryIds[0]
-      );
+      const changeSummaryJson = getChangeSummaryAsJson(iModel, changeSummaryIds[0]);
       // console.log(JSON.stringify(changeSummaryJson, undefined, 2));
 
       assert.strictEqual(changeSummaryJson.instanceChanges.length, 3);
 
       const instanceChange = changeSummaryJson.instanceChanges[0];
       assert.strictEqual(instanceChange.changedInstance.id, elementId3);
-      assert.strictEqual(
-        instanceChange.changedInstance.className,
-        "[Generic].[PhysicalObject]"
-      );
+      assert.strictEqual(instanceChange.changedInstance.className, "[Generic].[PhysicalObject]");
       assert.strictEqual(instanceChange.before["parent.id"], elementId1);
       assert.strictEqual(instanceChange.after["parent.id"], elementId2);
 
       const modelChange = changeSummaryJson.instanceChanges[1];
       assert.strictEqual(modelChange.changedInstance.id, modelId);
-      assert.strictEqual(
-        modelChange.changedInstance.className,
-        "[BisCore].[PhysicalModel]"
-      );
+      assert.strictEqual(modelChange.changedInstance.className, "[BisCore].[PhysicalModel]");
       assert.exists(modelChange.before.lastMod);
       assert.exists(modelChange.after.lastMod);
 
       const relInstanceChange = changeSummaryJson.instanceChanges[2];
-      assert.strictEqual(
-        relInstanceChange.changedInstance.className,
-        "[BisCore].[ElementOwnsChildElements]"
-      );
+      assert.strictEqual(relInstanceChange.changedInstance.className, "[BisCore].[ElementOwnsChildElements]");
       assert.strictEqual(relInstanceChange.before.sourceId, elementId1);
       assert.strictEqual(relInstanceChange.before.targetId, elementId3);
       assert.strictEqual(relInstanceChange.after.sourceId, elementId2);
@@ -804,15 +716,10 @@ describe("ChangeSummary", () => {
   // FIXME: Failed OIDC signin for TestUserType.SuperManager.
   it.skip("should be able to extract the last change summary right after applying a change set", async () => {
     const userContext1 = await HubUtility.getAccessToken(TestUserType.Manager);
-    const userContext2 = await HubUtility.getAccessToken(
-      TestUserType.SuperManager
-    );
+    const userContext2 = await HubUtility.getAccessToken(TestUserType.SuperManager);
 
     // User1 creates an iModel (on the Hub)
-    const testUtility = new TestChangeSetUtility(
-      userContext1,
-      "ChangeSummaryTest"
-    );
+    const testUtility = new TestChangeSetUtility(userContext1, "ChangeSummaryTest");
     await testUtility.createTestIModel();
 
     // User2 opens the iModel
@@ -832,14 +739,11 @@ describe("ChangeSummary", () => {
     // User2 applies the change set and extracts the change summary
     await iModel.pullChanges({ accessToken: userContext2 });
 
-    const changeSummariesIds =
-      await ChangeSummaryManager.extractChangeSummaries(userContext2, iModel, {
-        currentVersionOnly: true,
-      }); // eslint-disable-line deprecation/deprecation
+    const changeSummariesIds = await ChangeSummaryManager.extractChangeSummaries(userContext2, iModel, {
+      currentVersionOnly: true,
+    }); // eslint-disable-line deprecation/deprecation
     if (changeSummariesIds.length !== 1)
-      throw new Error(
-        "ChangeSet summary extraction returned invalid ChangeSet summary IDs."
-      );
+      throw new Error("ChangeSet summary extraction returned invalid ChangeSet summary IDs.");
 
     const changeSummaryId = changeSummariesIds[0];
     // const changeSummaryJson = getChangeSummaryAsJson(iModel, changeSummaryId);
@@ -851,24 +755,13 @@ describe("ChangeSummary", () => {
         sqlStatement.bindId(1, changeSummaryId);
         while (sqlStatement.step() === DbResult.BE_SQLITE_ROW) {
           const instanceChangeId = Id64.fromJSON(sqlStatement.getRow().id);
-          const instanceChange = ChangeSummaryManager.queryInstanceChange(
-            iModel,
-            instanceChangeId
-          );
+          const instanceChange = ChangeSummaryManager.queryInstanceChange(iModel, instanceChangeId);
           const changedInstanceClass = instanceChange.changedInstance.className;
-          const isModelChange =
-            changedInstanceClass === "[BisCore].[PhysicalModel]";
+          const isModelChange = changedInstanceClass === "[BisCore].[PhysicalModel]";
           const changedInstanceOp = instanceChange.opCode;
-          const changedPropertyValueNames =
-            ChangeSummaryManager.getChangedPropertyValueNames(
-              iModel,
-              instanceChangeId
-            );
+          const changedPropertyValueNames = ChangeSummaryManager.getChangedPropertyValueNames(iModel, instanceChangeId);
           assert.isNotEmpty(changedInstanceClass);
-          assert.strictEqual(
-            isModelChange ? ChangeOpCode.Update : ChangeOpCode.Insert,
-            changedInstanceOp
-          );
+          assert.strictEqual(isModelChange ? ChangeOpCode.Update : ChangeOpCode.Insert, changedInstanceOp);
           assert.isAbove(changedPropertyValueNames.length, 0);
         }
       }
@@ -892,10 +785,7 @@ describe("ChangeSummary", () => {
       for (const changeset of changesets) {
         await iModel.pullChanges({ accessToken, toIndex: changeset.index });
 
-        const changeSummaryId = await ChangeSummaryManager.createChangeSummary(
-          accessToken,
-          iModel
-        );
+        const changeSummaryId = await ChangeSummaryManager.createChangeSummary(accessToken, iModel);
 
         ChangeSummaryManager.attachChangeCache(iModel);
         assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
@@ -1003,10 +893,7 @@ describe("ChangeSummary", () => {
             const row: any = myStmt.getRow();
             assert.equal(row.className, "IModelChange.ChangeSet");
             assert.equal(row.summary.id, summaryIds[rowCount - 1]);
-            assert.equal(
-              row.summary.relClassName,
-              "IModelChange.ChangeSummaryIsExtractedFromChangeset"
-            );
+            assert.equal(row.summary.relClassName, "IModelChange.ChangeSummaryIsExtractedFromChangeset");
           }
           assert.isAtLeast(rowCount, 4);
         }

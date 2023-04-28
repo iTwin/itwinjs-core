@@ -7,11 +7,7 @@
  */
 
 import { UnitSystemKey } from "@itwin/core-quantity";
-import {
-  OverrideFormatEntry,
-  QuantityFormatter,
-  QuantityTypeKey,
-} from "./QuantityFormatter";
+import { OverrideFormatEntry, QuantityFormatter, QuantityTypeKey } from "./QuantityFormatter";
 import { BaseUnitFormattingSettingsProvider } from "./BaseUnitFormattingSettingsProvider";
 
 /** Implementation of BaseUnitFormattingSettingsProvider that stores and retrieves data in local storage.
@@ -20,22 +16,16 @@ import { BaseUnitFormattingSettingsProvider } from "./BaseUnitFormattingSettings
 export class LocalUnitFormatProvider extends BaseUnitFormattingSettingsProvider {
   /** If `maintainOverridesPerIModel` is true, the base class will set up listeners to monitor active iModel
    *  changes so the overrides for the QuantityFormatter properly match the overrides set up by the user. */
-  constructor(
-    quantityFormatter: QuantityFormatter,
-    maintainOverridesPerIModel?: boolean
-  ) {
+  constructor(quantityFormatter: QuantityFormatter, maintainOverridesPerIModel?: boolean) {
     super(quantityFormatter, maintainOverridesPerIModel);
   }
 
   private buildUnitSystemKey() {
-    if (this.imodelConnection)
-      return `unitsystem#i:${this.imodelConnection.iModelId}`;
+    if (this.imodelConnection) return `unitsystem#i:${this.imodelConnection.iModelId}`;
     return `unitsystem#user`;
   }
 
-  public async retrieveUnitSystem(
-    defaultKey: UnitSystemKey
-  ): Promise<UnitSystemKey> {
+  public async retrieveUnitSystem(defaultKey: UnitSystemKey): Promise<UnitSystemKey> {
     const readUnitSystem = localStorage.getItem(this.buildUnitSystemKey());
     if (readUnitSystem && readUnitSystem.length) {
       return readUnitSystem as UnitSystemKey;
@@ -44,9 +34,7 @@ export class LocalUnitFormatProvider extends BaseUnitFormattingSettingsProvider 
     return defaultKey;
   }
 
-  public async storeUnitSystemKey(
-    unitSystemKey: UnitSystemKey
-  ): Promise<boolean> {
+  public async storeUnitSystemKey(unitSystemKey: UnitSystemKey): Promise<boolean> {
     try {
       localStorage.setItem(this.buildUnitSystemKey(), unitSystemKey);
       return true;
@@ -56,32 +44,21 @@ export class LocalUnitFormatProvider extends BaseUnitFormattingSettingsProvider 
   }
 
   private buildOverridesKey(quantityTypeKey: QuantityTypeKey) {
-    if (this.imodelConnection)
-      return `quantityTypeFormat#i:${this.imodelConnection.iModelId}#q:${quantityTypeKey}`;
+    if (this.imodelConnection) return `quantityTypeFormat#i:${this.imodelConnection.iModelId}#q:${quantityTypeKey}`;
     return `quantityTypeFormat#user#q:${quantityTypeKey}`;
   }
 
-  public async store(
-    quantityTypeKey: QuantityTypeKey,
-    overrideProps: OverrideFormatEntry
-  ): Promise<boolean> {
+  public async store(quantityTypeKey: QuantityTypeKey, overrideProps: OverrideFormatEntry): Promise<boolean> {
     try {
-      localStorage.setItem(
-        this.buildOverridesKey(quantityTypeKey),
-        JSON.stringify(overrideProps)
-      );
+      localStorage.setItem(this.buildOverridesKey(quantityTypeKey), JSON.stringify(overrideProps));
       return true;
     } catch (_e) {
       return false;
     }
   }
 
-  public async retrieve(
-    quantityTypeKey: QuantityTypeKey
-  ): Promise<OverrideFormatEntry | undefined> {
-    const storedFormat = localStorage.getItem(
-      this.buildOverridesKey(quantityTypeKey)
-    );
+  public async retrieve(quantityTypeKey: QuantityTypeKey): Promise<OverrideFormatEntry | undefined> {
+    const storedFormat = localStorage.getItem(this.buildOverridesKey(quantityTypeKey));
     if (storedFormat) {
       return JSON.parse(storedFormat);
     }

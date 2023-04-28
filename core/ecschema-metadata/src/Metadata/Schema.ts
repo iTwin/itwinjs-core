@@ -93,10 +93,7 @@ export class Schema implements CustomAttributeContainerProps {
   ) {
     this._schemaKey =
       typeof nameOrKey === "string"
-        ? new SchemaKey(
-            nameOrKey,
-            new ECVersion(readVer as number, writeVer, minorVer)
-          )
+        ? new SchemaKey(nameOrKey, new ECVersion(readVer as number, writeVer, minorVer))
         : nameOrKey;
     this._context = context;
     this.references = [];
@@ -114,10 +111,7 @@ export class Schema implements CustomAttributeContainerProps {
 
   public get schemaKey() {
     if (undefined === this._schemaKey)
-      throw new ECObjectsError(
-        ECObjectsStatus.InvalidECJson,
-        `The schema '${this.name}' has an invalid SchemaKey.`
-      );
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema '${this.name}' has an invalid SchemaKey.`);
     return this._schemaKey;
   }
 
@@ -208,11 +202,7 @@ export class Schema implements CustomAttributeContainerProps {
    * @alpha
    */
   protected createClass<T extends AnyClass>(
-    type: new (
-      _schema: Schema,
-      _name: string,
-      _modifier?: ECClassModifier
-    ) => T,
+    type: new (_schema: Schema, _name: string, _modifier?: ECClassModifier) => T,
     name: string,
     modifier?: ECClassModifier
   ): T {
@@ -246,18 +236,14 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * @alpha
    */
-  protected createItem<T extends AnySchemaItem>(
-    type: new (_schema: Schema, _name: string) => T,
-    name: string
-  ): T {
+  protected createItem<T extends AnySchemaItem>(type: new (_schema: Schema, _name: string) => T, name: string): T {
     const item = new type(this, name);
     this.addItem(item);
     return item;
   }
 
   protected addCustomAttribute(customAttribute: CustomAttribute) {
-    if (!this._customAttributes)
-      this._customAttributes = new Map<string, CustomAttribute>();
+    if (!this._customAttributes) this._customAttributes = new Map<string, CustomAttribute>();
 
     this._customAttributes.set(customAttribute.className, customAttribute);
   }
@@ -267,17 +253,11 @@ export class Schema implements CustomAttributeContainerProps {
    * @param name
    * @param modifier
    */
-  protected async createEntityClass(
-    name: string,
-    modifier?: ECClassModifier
-  ): Promise<EntityClass> {
+  protected async createEntityClass(name: string, modifier?: ECClassModifier): Promise<EntityClass> {
     return this.createClass<EntityClass>(EntityClass, name, modifier);
   }
 
-  protected createEntityClassSync(
-    name: string,
-    modifier?: ECClassModifier
-  ): EntityClass {
+  protected createEntityClassSync(name: string, modifier?: ECClassModifier): EntityClass {
     return this.createClass<EntityClass>(EntityClass, name, modifier);
   }
 
@@ -297,17 +277,11 @@ export class Schema implements CustomAttributeContainerProps {
    * @param name
    * @param modifier
    */
-  protected async createStructClass(
-    name: string,
-    modifier?: ECClassModifier
-  ): Promise<StructClass> {
+  protected async createStructClass(name: string, modifier?: ECClassModifier): Promise<StructClass> {
     return this.createClass<StructClass>(StructClass, name, modifier);
   }
 
-  protected createStructClassSync(
-    name: string,
-    modifier?: ECClassModifier
-  ): StructClass {
+  protected createStructClassSync(name: string, modifier?: ECClassModifier): StructClass {
     return this.createClass<StructClass>(StructClass, name, modifier);
   }
 
@@ -316,26 +290,12 @@ export class Schema implements CustomAttributeContainerProps {
    * @param name
    * @param modifier
    */
-  protected async createCustomAttributeClass(
-    name: string,
-    modifier?: ECClassModifier
-  ): Promise<CustomAttributeClass> {
-    return this.createClass<CustomAttributeClass>(
-      CustomAttributeClass,
-      name,
-      modifier
-    );
+  protected async createCustomAttributeClass(name: string, modifier?: ECClassModifier): Promise<CustomAttributeClass> {
+    return this.createClass<CustomAttributeClass>(CustomAttributeClass, name, modifier);
   }
 
-  protected createCustomAttributeClassSync(
-    name: string,
-    modifier?: ECClassModifier
-  ): CustomAttributeClass {
-    return this.createClass<CustomAttributeClass>(
-      CustomAttributeClass,
-      name,
-      modifier
-    );
+  protected createCustomAttributeClassSync(name: string, modifier?: ECClassModifier): CustomAttributeClass {
+    return this.createClass<CustomAttributeClass>(CustomAttributeClass, name, modifier);
   }
 
   /**
@@ -343,22 +303,12 @@ export class Schema implements CustomAttributeContainerProps {
    * @param name
    * @param modifier
    */
-  protected async createRelationshipClass(
-    name: string,
-    modifier?: ECClassModifier
-  ): Promise<RelationshipClass> {
+  protected async createRelationshipClass(name: string, modifier?: ECClassModifier): Promise<RelationshipClass> {
     return this.createRelationshipClassSync(name, modifier);
   }
 
-  protected createRelationshipClassSync(
-    name: string,
-    modifier?: ECClassModifier
-  ): RelationshipClass {
-    return this.createClass<RelationshipClass>(
-      RelationshipClass,
-      name,
-      modifier
-    );
+  protected createRelationshipClassSync(name: string, modifier?: ECClassModifier): RelationshipClass {
+    return this.createClass<RelationshipClass>(RelationshipClass, name, modifier);
   }
 
   /**
@@ -469,9 +419,7 @@ export class Schema implements CustomAttributeContainerProps {
    * Creates an PropertyCategory with the provided name in this schema.
    * @param name
    */
-  protected async createPropertyCategory(
-    name: string
-  ): Promise<PropertyCategory> {
+  protected async createPropertyCategory(name: string): Promise<PropertyCategory> {
     return this.createItem<PropertyCategory>(PropertyCategory, name);
   }
 
@@ -504,16 +452,9 @@ export class Schema implements CustomAttributeContainerProps {
    * @param writeVersion The write version of the schema. If undefined, the value from the existing SchemaKey will be used.
    * @param minorVersion The minor version of the schema. If undefined, the value from the existing SchemaKey will be used.
    */
-  public setVersion(
-    readVersion?: number,
-    writeVersion?: number,
-    minorVersion?: number
-  ): void {
+  public setVersion(readVersion?: number, writeVersion?: number, minorVersion?: number): void {
     if (!this._schemaKey)
-      throw new ECObjectsError(
-        ECObjectsStatus.InvalidSchemaKey,
-        `The schema '${this.name}' has an invalid SchemaKey.`
-      );
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaKey, `The schema '${this.name}' has an invalid SchemaKey.`);
 
     const newVersion = new ECVersion(
       readVersion ?? this._schemaKey.readVersion,
@@ -527,9 +468,7 @@ export class Schema implements CustomAttributeContainerProps {
    * Gets an item from within this schema. To get by full name use lookupItem instead.
    * @param key the local (unqualified) name, lookup is case-insensitive
    */
-  public async getItem<T extends SchemaItem>(
-    name: string
-  ): Promise<T | undefined> {
+  public async getItem<T extends SchemaItem>(name: string): Promise<T | undefined> {
     // this method exists so we can rewire it later when we load partial schemas, for now it is identical to the sync version
     return this.getItemSync<T>(name);
   }
@@ -547,9 +486,7 @@ export class Schema implements CustomAttributeContainerProps {
    * Attempts to find a schema item within this schema or a (directly) referenced schema
    * @param key The full name or a SchemaItemKey identifying the desired item.
    */
-  public async lookupItem<T extends SchemaItem>(
-    key: Readonly<SchemaItemKey> | string
-  ): Promise<T | undefined> {
+  public async lookupItem<T extends SchemaItem>(key: Readonly<SchemaItemKey> | string): Promise<T | undefined> {
     let schemaName, itemName: string;
     if (typeof key === "string") {
       [schemaName, itemName] = SchemaItem.parseFullName(key);
@@ -572,9 +509,7 @@ export class Schema implements CustomAttributeContainerProps {
    * Attempts to find a schema item within this schema or a (directly) referenced schema
    * @param key The full name or a SchemaItemKey identifying the desired item.
    */
-  public lookupItemSync<T extends SchemaItem>(
-    key: Readonly<SchemaItemKey> | string
-  ): T | undefined {
+  public lookupItemSync<T extends SchemaItem>(key: Readonly<SchemaItemKey> | string): T | undefined {
     let schemaName, itemName: string;
     if (typeof key === "string") {
       [schemaName, itemName] = SchemaItem.parseFullName(key);
@@ -594,8 +529,7 @@ export class Schema implements CustomAttributeContainerProps {
   }
 
   public getItems<T extends AnySchemaItem>(): IterableIterator<T> {
-    if (!this._items)
-      return new Map<string, SchemaItem>().values() as IterableIterator<T>;
+    if (!this._items) return new Map<string, SchemaItem>().values() as IterableIterator<T>;
 
     return this._items.values() as IterableIterator<T>;
   }
@@ -606,33 +540,23 @@ export class Schema implements CustomAttributeContainerProps {
     }
   }
 
-  public async getReference<T extends Schema>(
-    refSchemaName: string
-  ): Promise<T | undefined> {
+  public async getReference<T extends Schema>(refSchemaName: string): Promise<T | undefined> {
     if (this.references.length === 0) return undefined;
 
-    return this.references.find(
-      (ref) => ref.name.toLowerCase() === refSchemaName.toLowerCase()
-    ) as T;
+    return this.references.find((ref) => ref.name.toLowerCase() === refSchemaName.toLowerCase()) as T;
   }
 
   public getReferenceNameByAlias(alias: string): string | undefined {
     if (this.references.length === 0) return undefined;
 
-    const schema = this.references.find((ref) =>
-      ref.alias ? ref.alias.toLowerCase() === alias.toLowerCase() : false
-    );
+    const schema = this.references.find((ref) => (ref.alias ? ref.alias.toLowerCase() === alias.toLowerCase() : false));
     return schema ? schema.name : undefined;
   }
 
-  public getReferenceSync<T extends Schema>(
-    refSchemaName: string
-  ): T | undefined {
+  public getReferenceSync<T extends Schema>(refSchemaName: string): T | undefined {
     if (this.references.length === 0) return undefined;
 
-    return this.references.find(
-      (ref) => ref.name.toLowerCase() === refSchemaName.toLowerCase()
-    ) as T;
+    return this.references.find((ref) => ref.name.toLowerCase() === refSchemaName.toLowerCase()) as T;
   }
 
   /**
@@ -658,8 +582,7 @@ export class Schema implements CustomAttributeContainerProps {
       }));
 
     const customAttributes = serializeCustomAttributes(this.customAttributes);
-    if (undefined !== customAttributes)
-      schemaJson.customAttributes = customAttributes;
+    if (undefined !== customAttributes) schemaJson.customAttributes = customAttributes;
     if (this._items.size > 0) {
       schemaJson.items = {};
       this._items.forEach((schemaItem: SchemaItem) => {
@@ -679,10 +602,8 @@ export class Schema implements CustomAttributeContainerProps {
     schemaMetadata.setAttribute("version", this.schemaKey.version.toString());
     schemaMetadata.setAttribute("schemaName", this.name);
     schemaMetadata.setAttribute("alias", this.alias ? this.alias : "");
-    if (undefined !== this.label)
-      schemaMetadata.setAttribute("displayLabel", this.label);
-    if (undefined !== this.description)
-      schemaMetadata.setAttribute("description", this.description);
+    if (undefined !== this.label) schemaMetadata.setAttribute("displayLabel", this.label);
+    if (undefined !== this.description) schemaMetadata.setAttribute("description", this.description);
 
     // Map used for CA serialization
     const refSchemaMap = new Map<string, string>();
@@ -699,12 +620,7 @@ export class Schema implements CustomAttributeContainerProps {
     if (this._customAttributes) {
       const parentElem = schemaXml.createElement("ECCustomAttributes");
       for (const [name, attribute] of this._customAttributes) {
-        const caElem = await XmlSerializationUtils.writeCustomAttribute(
-          name,
-          attribute,
-          schemaXml,
-          this
-        );
+        const caElem = await XmlSerializationUtils.writeCustomAttribute(name, attribute, schemaXml, this);
         parentElem.appendChild(caElem);
       }
       schemaMetadata.appendChild(parentElem);
@@ -730,21 +646,14 @@ export class Schema implements CustomAttributeContainerProps {
           ECObjectsStatus.InvalidECJson,
           `The Schema ${this.name} does not match the provided name, '${schemaProps.name}'.`
         );
-      if (
-        this.schemaKey.version.compare(
-          ECVersion.fromString(schemaProps.version)
-        )
-      )
+      if (this.schemaKey.version.compare(ECVersion.fromString(schemaProps.version)))
         throw new ECObjectsError(
           ECObjectsStatus.InvalidECJson,
           `The Schema ${this.name} has the version '${this.schemaKey.version}' that does not match the provided version '${schemaProps.version}'.`
         );
     }
 
-    if (
-      SCHEMAURL3_2_JSON !== schemaProps.$schema &&
-      SCHEMAURL3_2_XML !== schemaProps.$schema
-    )
+    if (SCHEMAURL3_2_JSON !== schemaProps.$schema && SCHEMAURL3_2_XML !== schemaProps.$schema)
       // TODO: Allow for 3.x URI versions to allow the API to read newer specs. (Start at 3.2 though)
       throw new ECObjectsError(
         ECObjectsStatus.MissingSchemaUrl,
@@ -762,37 +671,28 @@ export class Schema implements CustomAttributeContainerProps {
 
     if (undefined !== schemaProps.label) this._label = schemaProps.label;
 
-    if (undefined !== schemaProps.description)
-      this._description = schemaProps.description;
+    if (undefined !== schemaProps.description) this._description = schemaProps.description;
   }
 
   public async fromJSON(schemaProps: SchemaProps) {
     this.fromJSONSync(schemaProps);
   }
 
-  public static async fromJson(
-    jsonObj: object | string,
-    context: SchemaContext
-  ): Promise<Schema> {
+  public static async fromJson(jsonObj: object | string, context: SchemaContext): Promise<Schema> {
     let schema: Schema = new Schema(context);
 
     const reader = new SchemaReadHelper(JsonParser, context);
-    const rawSchema =
-      typeof jsonObj === "string" ? JSON.parse(jsonObj) : jsonObj;
+    const rawSchema = typeof jsonObj === "string" ? JSON.parse(jsonObj) : jsonObj;
     schema = await reader.readSchema(schema, rawSchema);
 
     return schema;
   }
 
-  public static fromJsonSync(
-    jsonObj: object | string,
-    context: SchemaContext
-  ): Schema {
+  public static fromJsonSync(jsonObj: object | string, context: SchemaContext): Schema {
     let schema: Schema = new Schema(context);
 
     const reader = new SchemaReadHelper(JsonParser, context);
-    const rawSchema =
-      typeof jsonObj === "string" ? JSON.parse(jsonObj) : jsonObj;
+    const rawSchema = typeof jsonObj === "string" ? JSON.parse(jsonObj) : jsonObj;
     schema = reader.readSchemaSync(schema, rawSchema);
 
     return schema;
@@ -804,11 +704,7 @@ export class Schema implements CustomAttributeContainerProps {
   public static isSchema(object: any): object is Schema {
     const schema = object as Schema;
 
-    return (
-      schema !== undefined &&
-      schema.schemaKey !== undefined &&
-      schema.context !== undefined
-    );
+    return schema !== undefined && schema.schemaKey !== undefined && schema.context !== undefined;
   }
 }
 
@@ -819,27 +715,13 @@ export class Schema implements CustomAttributeContainerProps {
  * @internal
  */
 export abstract class MutableSchema extends Schema {
-  public abstract override addCustomAttribute(
-    customAttribute: CustomAttribute
-  ): void;
-  public abstract override createEntityClass(
-    name: string,
-    modifier?: ECClassModifier
-  ): Promise<EntityClass>;
-  public abstract override createEntityClassSync(
-    name: string,
-    modifier?: ECClassModifier
-  ): EntityClass;
+  public abstract override addCustomAttribute(customAttribute: CustomAttribute): void;
+  public abstract override createEntityClass(name: string, modifier?: ECClassModifier): Promise<EntityClass>;
+  public abstract override createEntityClassSync(name: string, modifier?: ECClassModifier): EntityClass;
   public abstract override createMixinClass(name: string): Promise<Mixin>;
   public abstract override createMixinClassSync(name: string): Mixin;
-  public abstract override createStructClass(
-    name: string,
-    modifier?: ECClassModifier
-  ): Promise<StructClass>;
-  public abstract override createStructClassSync(
-    name: string,
-    modifier?: ECClassModifier
-  ): StructClass;
+  public abstract override createStructClass(name: string, modifier?: ECClassModifier): Promise<StructClass>;
+  public abstract override createStructClassSync(name: string, modifier?: ECClassModifier): StructClass;
   public abstract override createCustomAttributeClass(
     name: string,
     modifier?: ECClassModifier
@@ -852,10 +734,7 @@ export abstract class MutableSchema extends Schema {
     name: string,
     modifier?: ECClassModifier
   ): Promise<RelationshipClass>;
-  public abstract override createRelationshipClassSync(
-    name: string,
-    modifier?: ECClassModifier
-  ): RelationshipClass;
+  public abstract override createRelationshipClassSync(name: string, modifier?: ECClassModifier): RelationshipClass;
   public abstract override createEnumeration(
     name: string,
     primitiveType?: PrimitiveType.Integer | PrimitiveType.String
@@ -864,19 +743,13 @@ export abstract class MutableSchema extends Schema {
     name: string,
     primitiveType?: PrimitiveType.Integer | PrimitiveType.String
   ): Enumeration;
-  public abstract override createKindOfQuantity(
-    name: string
-  ): Promise<KindOfQuantity>;
-  public abstract override createKindOfQuantitySync(
-    name: string
-  ): KindOfQuantity;
+  public abstract override createKindOfQuantity(name: string): Promise<KindOfQuantity>;
+  public abstract override createKindOfQuantitySync(name: string): KindOfQuantity;
   public abstract override createUnit(name: string): Promise<Unit>;
   public abstract override createUnitSync(name: string): Unit;
   public abstract override createConstant(name: string): Promise<Constant>;
   public abstract override createConstantSync(name: string): Constant;
-  public abstract override createInvertedUnit(
-    name: string
-  ): Promise<InvertedUnit>;
+  public abstract override createInvertedUnit(name: string): Promise<InvertedUnit>;
   public abstract override createInvertedUnitSync(name: string): InvertedUnit;
   public abstract override createPhenomenon(name: string): Promise<Phenomenon>;
   public abstract override createPhenomenonSync(name: string): Phenomenon;
@@ -884,12 +757,8 @@ export abstract class MutableSchema extends Schema {
   public abstract override createFormatSync(name: string): Format;
   public abstract override createUnitSystem(name: string): Promise<UnitSystem>;
   public abstract override createUnitSystemSync(name: string): UnitSystem;
-  public abstract override createPropertyCategory(
-    name: string
-  ): Promise<PropertyCategory>;
-  public abstract override createPropertyCategorySync(
-    name: string
-  ): PropertyCategory;
+  public abstract override createPropertyCategory(name: string): Promise<PropertyCategory>;
+  public abstract override createPropertyCategorySync(name: string): PropertyCategory;
   public abstract override addItem<T extends SchemaItem>(item: T): void;
   public abstract override addReference(refSchema: Schema): Promise<void>;
   public abstract override addReferenceSync(refSchema: Schema): void;

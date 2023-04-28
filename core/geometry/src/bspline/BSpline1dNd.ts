@@ -67,12 +67,7 @@ export class BSpline1dNd {
    * @param order number of poles in support for a section of the bspline
    * @param knots KnotVector.  This is captured, not cloned.
    */
-  protected constructor(
-    numPoles: number,
-    poleLength: number,
-    order: number,
-    knots: KnotVector
-  ) {
+  protected constructor(numPoles: number, poleLength: number, order: number, knots: KnotVector) {
     this.knots = knots;
     this.packedData = new Float64Array(numPoles * poleLength);
     this.poleLength = poleLength;
@@ -115,10 +110,7 @@ export class BSpline1dNd {
     if (spanIndex < 0) spanIndex = 0;
     if (spanIndex >= this.numSpan) spanIndex = this.numSpan - 1;
     const knotIndex0 = spanIndex + this.degree - 1;
-    const globalKnot = this.knots.baseKnotFractionToKnot(
-      knotIndex0,
-      spanFraction
-    );
+    const globalKnot = this.knots.baseKnotFractionToKnot(knotIndex0, spanFraction);
     return df
       ? this.knots.evaluateBasisFunctions1(knotIndex0, globalKnot, f, df, ddf)
       : this.knots.evaluateBasisFunctions(knotIndex0, globalKnot, f);
@@ -130,11 +122,7 @@ export class BSpline1dNd {
    *   * Summations are stored in the preallocated `this.poleBuffer`
    * */
   public evaluateBuffersInSpan(spanIndex: number, spanFraction: number) {
-    this.evaluateBasisFunctionsInSpan(
-      spanIndex,
-      spanFraction,
-      this.basisBuffer
-    );
+    this.evaluateBasisFunctionsInSpan(spanIndex, spanFraction, this.basisBuffer);
     this.sumPoleBufferForSpan(spanIndex);
   }
   /**
@@ -144,12 +132,7 @@ export class BSpline1dNd {
    *   * Summations are stored in the preallocated `this.poleBuffer` and `this.poleBuffer1`
    * */
   public evaluateBuffersInSpan1(spanIndex: number, spanFraction: number) {
-    this.evaluateBasisFunctionsInSpan(
-      spanIndex,
-      spanFraction,
-      this.basisBuffer,
-      this.basisBuffer1
-    );
+    this.evaluateBasisFunctionsInSpan(spanIndex, spanFraction, this.basisBuffer, this.basisBuffer1);
     this.sumPoleBufferForSpan(spanIndex);
     this.sumPoleBuffer1ForSpan(spanIndex);
   }
@@ -190,22 +173,11 @@ export class BSpline1dNd {
       this.knots.evaluateBasisFunctions(knotIndex0, u, this.basisBuffer);
       this.sumPoleBufferForSpan(knotIndex0 - this.degree + 1);
     } else if (numDerivative === 1) {
-      this.knots.evaluateBasisFunctions1(
-        knotIndex0,
-        u,
-        this.basisBuffer,
-        this.basisBuffer1
-      );
+      this.knots.evaluateBasisFunctions1(knotIndex0, u, this.basisBuffer, this.basisBuffer1);
       this.sumPoleBufferForSpan(knotIndex0 - this.degree + 1);
       this.sumPoleBuffer1ForSpan(knotIndex0 - this.degree + 1);
     } else {
-      this.knots.evaluateBasisFunctions1(
-        knotIndex0,
-        u,
-        this.basisBuffer,
-        this.basisBuffer1,
-        this.basisBuffer2
-      );
+      this.knots.evaluateBasisFunctions1(knotIndex0, u, this.basisBuffer, this.basisBuffer1, this.basisBuffer2);
       this.sumPoleBufferForSpan(knotIndex0 - this.degree + 1);
       this.sumPoleBuffer1ForSpan(knotIndex0 - this.degree + 1);
       this.sumPoleBuffer2ForSpan(knotIndex0 - this.degree + 1);
@@ -243,8 +215,7 @@ export class BSpline1dNd {
       // expect {degree} matched points.
       const numValuesToTest = degree * blockSize;
       for (let i0 = 0; i0 < numValuesToTest; i0++) {
-        if (!Geometry.isSameCoordinate(data[i0], data[i0 + indexDelta]))
-          return false;
+        if (!Geometry.isSameCoordinate(data[i0], data[i0 + indexDelta])) return false;
       }
       return true;
     }
@@ -266,21 +237,14 @@ export class BSpline1dNd {
     let iLeftKnot = this.knots.knotToLeftKnotIndex(knot);
 
     // snap input if too close to an existing knot
-    if (
-      Math.abs(knot - this.knots.knots[iLeftKnot]) < KnotVector.knotTolerance
-    ) {
+    if (Math.abs(knot - this.knots.knots[iLeftKnot]) < KnotVector.knotTolerance) {
       knot = this.knots.knots[iLeftKnot]; // snap to left knot of bracket
-    } else if (
-      Math.abs(knot - this.knots.knots[iLeftKnot + 1]) <
-      KnotVector.knotTolerance
-    ) {
+    } else if (Math.abs(knot - this.knots.knots[iLeftKnot + 1]) < KnotVector.knotTolerance) {
       iLeftKnot += this.knots.getKnotMultiplicityAtIndex(iLeftKnot + 1);
       if (iLeftKnot > this.knots.rightKnotIndex) return true; // nothing to do
       knot = this.knots.knots[iLeftKnot]; // snap to left knot of next bracket
     }
-    const numKnotsToAdd =
-      Math.min(totalMultiplicity, this.degree) -
-      this.knots.getKnotMultiplicity(knot);
+    const numKnotsToAdd = Math.min(totalMultiplicity, this.degree) - this.knots.getKnotMultiplicity(knot);
     if (numKnotsToAdd <= 0) return true; // nothing to do
 
     // working arrays and pole buffer
@@ -288,11 +252,8 @@ export class BSpline1dNd {
     const newKnots = new Float64Array(currKnotCount + numKnotsToAdd);
     for (let i = 0; i < currKnotCount; ++i) newKnots[i] = this.knots.knots[i];
     let currPoleCount = this.numPoles;
-    const newPackedData = new Float64Array(
-      this.packedData.length + numKnotsToAdd * this.poleLength
-    );
-    for (let i = 0; i < this.packedData.length; ++i)
-      newPackedData[i] = this.packedData[i];
+    const newPackedData = new Float64Array(this.packedData.length + numKnotsToAdd * this.poleLength);
+    for (let i = 0; i < this.packedData.length; ++i) newPackedData[i] = this.packedData[i];
     const dataBuf = new Float64Array(this.degree * this.poleLength); // holds degree poles
 
     // each iteration adds one knot and one pole to the working arrays (cf. Farin 4e)
@@ -301,15 +262,9 @@ export class BSpline1dNd {
       let iBuf = 0;
       const iStart = iLeftKnot - this.degree + 2;
       for (let i = iStart; i < iStart + this.degree; ++i) {
-        const fraction =
-          (knot - newKnots[i - 1]) /
-          (newKnots[i + this.degree - 1] - newKnots[i - 1]);
+        const fraction = (knot - newKnots[i - 1]) / (newKnots[i + this.degree - 1] - newKnots[i - 1]);
         for (let j = i * this.poleLength; j < (i + 1) * this.poleLength; ++j) {
-          dataBuf[iBuf++] = Geometry.interpolate(
-            newPackedData[j - this.poleLength],
-            fraction,
-            newPackedData[j]
-          );
+          dataBuf[iBuf++] = Geometry.interpolate(newPackedData[j - this.poleLength], fraction, newPackedData[j]);
         }
       }
 

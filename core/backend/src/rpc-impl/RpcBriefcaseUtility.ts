@@ -6,14 +6,7 @@
  * @module RpcInterface
  */
 
-import {
-  AccessToken,
-  assert,
-  BeDuration,
-  BentleyError,
-  IModelStatus,
-  Logger,
-} from "@itwin/core-bentley";
+import { AccessToken, assert, BeDuration, BentleyError, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
   BriefcaseProps,
   IModelConnectionProps,
@@ -26,11 +19,7 @@ import {
 } from "@itwin/core-common";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager, RequestNewBriefcaseArg } from "../BriefcaseManager";
-import {
-  CheckpointManager,
-  CheckpointProps,
-  V1CheckpointManager,
-} from "../CheckpointManager";
+import { CheckpointManager, CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
@@ -51,9 +40,7 @@ export interface DownloadAndOpenArgs {
  * @internal
  */
 export class RpcBriefcaseUtility {
-  private static async downloadAndOpen(
-    args: DownloadAndOpenArgs
-  ): Promise<BriefcaseDb> {
+  private static async downloadAndOpen(args: DownloadAndOpenArgs): Promise<BriefcaseDb> {
     const { activity, tokenProps } = args;
     const accessToken = activity.accessToken;
     assert(undefined !== tokenProps.iModelId);
@@ -70,9 +57,7 @@ export class RpcBriefcaseUtility {
       });
     }
 
-    const resolvers = args.fileNameResolvers ?? [
-      (arg) => BriefcaseManager.getFileName(arg),
-    ];
+    const resolvers = args.fileNameResolvers ?? [(arg) => BriefcaseManager.getFileName(arg)];
 
     // see if we can open any of the briefcaseIds we already acquired from iModelHub
     if (resolvers) {
@@ -93,9 +78,7 @@ export class RpcBriefcaseUtility {
                     await IModelHost.hubAccess.getChangesetFromVersion({
                       accessToken,
                       iModelId,
-                      version: IModelVersion.asOfChangeSet(
-                        tokenProps.changeset.id
-                      ),
+                      version: IModelVersion.asOfChangeSet(tokenProps.changeset.id),
                     })
                   ).index;
                 await BriefcaseManager.pullAndApplyChangesets(db, {
@@ -107,10 +90,7 @@ export class RpcBriefcaseUtility {
             } catch (error: any) {
               if (!(error.errorNumber === IModelStatus.AlreadyOpen))
                 // somehow we have this briefcaseId and the file exists, but we can't open it. Delete it.
-                await BriefcaseManager.deleteBriefcaseFiles(
-                  fileName,
-                  accessToken
-                );
+                await BriefcaseManager.deleteBriefcaseFiles(fileName, accessToken);
             }
           }
         }
@@ -131,9 +111,7 @@ export class RpcBriefcaseUtility {
   }
 
   private static _briefcasePromise: Promise<BriefcaseDb> | undefined;
-  private static async openBriefcase(
-    args: DownloadAndOpenArgs
-  ): Promise<BriefcaseDb> {
+  private static async openBriefcase(args: DownloadAndOpenArgs): Promise<BriefcaseDb> {
     if (this._briefcasePromise) return this._briefcasePromise;
 
     try {
@@ -149,10 +127,7 @@ export class RpcBriefcaseUtility {
    * to refresh the daemon, even though it will be used for all authorized users.
    * @param the IModelRpcProps to locate the opened iModel.
    */
-  public static async findOpenIModel(
-    accessToken: AccessToken,
-    iModel: IModelRpcProps
-  ) {
+  public static async findOpenIModel(accessToken: AccessToken, iModel: IModelRpcProps) {
     const iModelDb = IModelDb.findByKey(iModel.key);
 
     // call refreshContainerSas, just in case this is a V2 checkpoint whose sasToken is about to expire.
@@ -172,10 +147,7 @@ export class RpcBriefcaseUtility {
 
     const timeout = args.timeout ?? 1000;
     if (syncMode === SyncMode.PullOnly || syncMode === SyncMode.PullAndPush) {
-      const briefcaseDb = await BeDuration.race(
-        timeout,
-        this.openBriefcase(args)
-      );
+      const briefcaseDb = await BeDuration.race(timeout, this.openBriefcase(args));
 
       if (briefcaseDb === undefined) {
         Logger.logTrace(loggerCategory, "Open briefcase - pending", () => ({
@@ -217,11 +189,10 @@ export class RpcBriefcaseUtility {
         ...tokenProps,
       }));
     } catch (e) {
-      Logger.logTrace(
-        loggerCategory,
-        "unable to open V2 checkpoint - falling back to V1 checkpoint",
-        () => ({ error: BentleyError.getErrorProps(e), ...tokenProps })
-      );
+      Logger.logTrace(loggerCategory, "unable to open V2 checkpoint - falling back to V1 checkpoint", () => ({
+        error: BentleyError.getErrorProps(e),
+        ...tokenProps,
+      }));
 
       // this isn't a v2 checkpoint. Set up a race between the specified timeout period and the open. Throw an RpcPendingResponse exception if the timeout happens first.
       const request = {
@@ -229,10 +200,7 @@ export class RpcBriefcaseUtility {
         localFile: V1CheckpointManager.getFileName(checkpoint),
         aliasFiles: [],
       };
-      db = await BeDuration.race(
-        timeout,
-        V1CheckpointManager.getCheckpointDb(request)
-      );
+      db = await BeDuration.race(timeout, V1CheckpointManager.getCheckpointDb(request));
 
       if (db === undefined) {
         Logger.logTrace(loggerCategory, "Open V1 checkpoint - pending", () => ({
@@ -256,10 +224,7 @@ export class RpcBriefcaseUtility {
     timeout: number = 1000
   ): Promise<IModelConnectionProps> {
     // eslint-disable-line deprecation/deprecation
-    if (tokenProps.iModelId)
-      await IModelHost.tileStorage?.initialize(tokenProps.iModelId);
-    return (
-      await this.open({ activity, tokenProps, syncMode, timeout })
-    ).toJSON();
+    if (tokenProps.iModelId) await IModelHost.tileStorage?.initialize(tokenProps.iModelId);
+    return (await this.open({ activity, tokenProps, syncMode, timeout })).toJSON();
   }
 }

@@ -3,12 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { DbResult, Id64String } from "@itwin/core-bentley";
-import {
-  ECSqlStatement,
-  ECSqlValue,
-  IModelDb,
-  SnapshotDb,
-} from "@itwin/core-backend";
+import { ECSqlStatement, ECSqlValue, IModelDb, SnapshotDb } from "@itwin/core-backend";
 import { NavigationValue } from "@itwin/core-common";
 
 /* eslint-disable no-console, @typescript-eslint/naming-convention */
@@ -69,63 +64,45 @@ function executeECSql_Binding(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_Navigation_ByParameter
-  iModel.withPreparedStatement(
-    "SELECT ECInstanceId FROM bis.Element WHERE Parent=?",
-    (stmt: ECSqlStatement) => {
-      stmt.bindNavigation(1, { id: "0x132" });
-      // ...
-    }
-  );
+  iModel.withPreparedStatement("SELECT ECInstanceId FROM bis.Element WHERE Parent=?", (stmt: ECSqlStatement) => {
+    stmt.bindNavigation(1, { id: "0x132" });
+    // ...
+  });
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_Navigation
-  iModel.withPreparedStatement(
-    "SELECT ECInstanceId FROM bis.Element WHERE Parent=?",
-    (stmt: ECSqlStatement) => {
-      stmt.bindValues([{ id: "0x132" }]);
-      // ...
-    }
-  );
+  iModel.withPreparedStatement("SELECT ECInstanceId FROM bis.Element WHERE Parent=?", (stmt: ECSqlStatement) => {
+    stmt.bindValues([{ id: "0x132" }]);
+    // ...
+  });
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_NavigationId_ByParameter
-  iModel.withPreparedStatement(
-    "SELECT ECInstanceId FROM bis.Element WHERE Parent.Id=?",
-    (stmt: ECSqlStatement) => {
-      stmt.bindId(1, "0x132");
-      // ...
-    }
-  );
+  iModel.withPreparedStatement("SELECT ECInstanceId FROM bis.Element WHERE Parent.Id=?", (stmt: ECSqlStatement) => {
+    stmt.bindId(1, "0x132");
+    // ...
+  });
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_NavigationId
-  iModel.withPreparedStatement(
-    "SELECT ECInstanceId FROM bis.Element WHERE Parent.Id=?",
-    (stmt: ECSqlStatement) => {
-      stmt.bindValues(["0x132"]);
-      // ...
-    }
-  );
+  iModel.withPreparedStatement("SELECT ECInstanceId FROM bis.Element WHERE Parent.Id=?", (stmt: ECSqlStatement) => {
+    stmt.bindValues(["0x132"]);
+    // ...
+  });
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_Struct_ByParameter
-  iModel.withPreparedStatement(
-    "SELECT Name FROM myschema.Company WHERE Location=?",
-    (stmt: ECSqlStatement) => {
-      stmt.bindStruct(1, { street: "7123 Main Street", zip: 30211 });
-      // ...
-    }
-  );
+  iModel.withPreparedStatement("SELECT Name FROM myschema.Company WHERE Location=?", (stmt: ECSqlStatement) => {
+    stmt.bindStruct(1, { street: "7123 Main Street", zip: 30211 });
+    // ...
+  });
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_Struct
-  iModel.withPreparedStatement(
-    "SELECT Name FROM myschema.Company WHERE Location=?",
-    (stmt: ECSqlStatement) => {
-      stmt.bindValues([{ street: "7123 Main Street", zip: 30211 }]);
-      // ...
-    }
-  );
+  iModel.withPreparedStatement("SELECT Name FROM myschema.Company WHERE Location=?", (stmt: ECSqlStatement) => {
+    stmt.bindValues([{ street: "7123 Main Street", zip: 30211 }]);
+    // ...
+  });
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_StructMembers_ByParameter
@@ -150,23 +127,17 @@ function executeECSql_Binding(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_Array_ByParameter
-  iModel.withPreparedStatement(
-    "SELECT Name FROM myschema.Company WHERE PhoneNumbers=?",
-    (stmt: ECSqlStatement) => {
-      stmt.bindArray(1, ["+16134584201", "+16134584202", "+16134584222"]);
-      // ...
-    }
-  );
+  iModel.withPreparedStatement("SELECT Name FROM myschema.Company WHERE PhoneNumbers=?", (stmt: ECSqlStatement) => {
+    stmt.bindArray(1, ["+16134584201", "+16134584202", "+16134584222"]);
+    // ...
+  });
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_Array
-  iModel.withPreparedStatement(
-    "SELECT Name FROM myschema.Company WHERE PhoneNumbers=?",
-    (stmt: ECSqlStatement) => {
-      stmt.bindValues([["+16134584201", "+16134584202", "+16134584222"]]);
-      // ...
-    }
-  );
+  iModel.withPreparedStatement("SELECT Name FROM myschema.Company WHERE PhoneNumbers=?", (stmt: ECSqlStatement) => {
+    stmt.bindValues([["+16134584201", "+16134584202", "+16134584222"]]);
+    // ...
+  });
   // __PUBLISH_EXTRACT_END__
 }
 
@@ -191,9 +162,7 @@ function executeECSql_QueryResult(iModel: IModelDb) {
     (stmt: ECSqlStatement) => {
       stmt.bindId(1, "0x113");
 
-      console.log(
-        "ECInstanceId | ClassName | Parent Id | Parent RelClassName | LastMod"
-      );
+      console.log("ECInstanceId | ClassName | Parent Id | Parent RelClassName | LastMod");
 
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         const row: any = stmt.getRow();
@@ -202,9 +171,7 @@ function executeECSql_QueryResult(iModel: IModelDb) {
         const parent: NavigationValue = row.parent;
         const lastMod: string = row.lastMod;
 
-        console.log(
-          `${id}|${className}|${parent.id}|${parent.relClassName}|${lastMod}`
-        );
+        console.log(`${id}|${className}|${parent.id}|${parent.relClassName}|${lastMod}`);
       }
     }
   );
@@ -216,9 +183,7 @@ function executeECSql_QueryResult(iModel: IModelDb) {
     (stmt: ECSqlStatement) => {
       stmt.bindId(1, "0x113");
 
-      console.log(
-        "ECInstanceId | ClassName | Parent Id | Parent RelClassName | LastMod"
-      );
+      console.log("ECInstanceId | ClassName | Parent Id | Parent RelClassName | LastMod");
 
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         const idValue: ECSqlValue = stmt.getValue(0);
@@ -231,9 +196,7 @@ function executeECSql_QueryResult(iModel: IModelDb) {
         const parent: NavigationValue = parentValue.getNavigation();
         const lastMod: string = lastModValue.getDateTime();
 
-        console.log(
-          `${id}|${className}|${parent.id}|${parent.relClassName}|${lastMod}`
-        );
+        console.log(`${id}|${className}|${parent.id}|${parent.relClassName}|${lastMod}`);
       }
     }
   );

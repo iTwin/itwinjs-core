@@ -3,12 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  Tile,
-  TileContentDecodingStatistics,
-  TileRequestChannel,
-  TileRequestChannels,
-} from "../../tile/internal";
+import { Tile, TileContentDecodingStatistics, TileRequestChannel, TileRequestChannels } from "../../tile/internal";
 
 // Assumes no minification or uglification.
 function expectClassName(obj: Object, name: string): void {
@@ -21,12 +16,8 @@ describe("TileRequestChannels", () => {
 
     let channels = new TileRequestChannels(undefined, false);
     expect(channels.rpcConcurrency).to.equal(channels.httpConcurrency);
-    expect(channels.elementGraphicsRpc.concurrency).to.equal(
-      channels.httpConcurrency
-    );
-    expect(channels.iModelChannels.rpc.concurrency).to.equal(
-      channels.httpConcurrency
-    );
+    expect(channels.elementGraphicsRpc.concurrency).to.equal(channels.httpConcurrency);
+    expect(channels.iModelChannels.rpc.concurrency).to.equal(channels.httpConcurrency);
     expect(isCustomChannel(channels.elementGraphicsRpc)).to.be.false;
     expect(isCustomChannel(channels.iModelChannels.rpc)).to.be.false;
     expectClassName(channels.elementGraphicsRpc, "TileRequestChannel");
@@ -34,12 +25,8 @@ describe("TileRequestChannels", () => {
 
     channels = new TileRequestChannels(42, false);
     expect(channels.rpcConcurrency).to.equal(42);
-    expect(channels.elementGraphicsRpc.concurrency).to.equal(
-      channels.rpcConcurrency
-    );
-    expect(channels.iModelChannels.rpc.concurrency).to.equal(
-      channels.rpcConcurrency
-    );
+    expect(channels.elementGraphicsRpc.concurrency).to.equal(channels.rpcConcurrency);
+    expect(channels.iModelChannels.rpc.concurrency).to.equal(channels.rpcConcurrency);
     expect(isCustomChannel(channels.elementGraphicsRpc)).to.be.true;
     expect(isCustomChannel(channels.iModelChannels.rpc)).to.be.true;
     expectClassName(channels.elementGraphicsRpc, "ElementGraphicsChannel");
@@ -49,18 +36,12 @@ describe("TileRequestChannels", () => {
   it("requires unique channel names", () => {
     const channels = new TileRequestChannels(undefined, false);
     channels.add(new TileRequestChannel("abc", 123));
-    expect(() => channels.add(new TileRequestChannel("abc", 456))).to.throw(
-      Error
-    );
+    expect(() => channels.add(new TileRequestChannel("abc", 456))).to.throw(Error);
     expect(channels.get("abc")!.concurrency).to.equal(123);
 
     channels.getForHttp("xyz");
-    expect(() => channels.add(new TileRequestChannel("xyz", 999))).to.throw(
-      Error
-    );
-    expect(channels.getForHttp("xyz").concurrency).to.equal(
-      channels.httpConcurrency
-    );
+    expect(() => channels.add(new TileRequestChannel("xyz", 999))).to.throw(Error);
+    expect(channels.getForHttp("xyz").concurrency).to.equal(channels.httpConcurrency);
   });
 
   it("allocates http channel on first request", () => {
@@ -78,13 +59,8 @@ describe("TileRequestChannels", () => {
   it("always enables cloud storage cache", () => {
     const channels = new TileRequestChannels(undefined, false);
     expect(channels.iModelChannels.cloudStorage).not.to.be.undefined;
-    expect(channels.iModelChannels.cloudStorage.concurrency).to.equal(
-      channels.httpConcurrency
-    );
-    expectClassName(
-      channels.iModelChannels.cloudStorage,
-      "CloudStorageCacheChannel"
-    );
+    expect(channels.iModelChannels.cloudStorage.concurrency).to.equal(channels.httpConcurrency);
+    expectClassName(channels.iModelChannels.cloudStorage, "CloudStorageCacheChannel");
   });
 
   it("returns whether channel is registered", () => {
@@ -97,23 +73,15 @@ describe("TileRequestChannels", () => {
   });
 
   it("extracts hostname from url", () => {
-    expect(
-      TileRequestChannels.getNameFromUrl("https://www.google.com/stuff")
-    ).to.equal("www.google.com");
-    expect(() => TileRequestChannels.getNameFromUrl("not a url")).to.throw(
-      TypeError
-    );
+    expect(TileRequestChannels.getNameFromUrl("https://www.google.com/stuff")).to.equal("www.google.com");
+    expect(() => TileRequestChannels.getNameFromUrl("not a url")).to.throw(TypeError);
   });
 
   it("changes RPC concurrency", () => {
     const channels = new TileRequestChannels(undefined, false);
     expect(channels.rpcConcurrency).to.equal(channels.httpConcurrency);
-    expect(channels.elementGraphicsRpc.concurrency).to.equal(
-      channels.rpcConcurrency
-    );
-    expect(channels.iModelChannels.rpc.concurrency).to.equal(
-      channels.rpcConcurrency
-    );
+    expect(channels.elementGraphicsRpc.concurrency).to.equal(channels.rpcConcurrency);
+    expect(channels.iModelChannels.rpc.concurrency).to.equal(channels.rpcConcurrency);
 
     const concurrency = channels.rpcConcurrency + 1;
     channels.setRpcConcurrency(concurrency);

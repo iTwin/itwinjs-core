@@ -8,11 +8,7 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcInterface, RpcOperation } from "@itwin/core-common";
-import {
-  DescriptorJSON,
-  DescriptorOverrides,
-  SelectClassInfoJSON,
-} from "./content/Descriptor";
+import { DescriptorJSON, DescriptorOverrides, SelectClassInfoJSON } from "./content/Descriptor";
 import { ItemJSON } from "./content/Item";
 import { DisplayValueGroupJSON } from "./content/Value";
 import { ClientDiagnostics, ClientDiagnosticsOptions } from "./Diagnostics";
@@ -90,9 +86,7 @@ export type RpcDiagnosticsOptions = Omit<ClientDiagnosticsOptions, "handler">;
  * A promise of [[PresentationRpcResponseData]].
  * @public
  */
-export type PresentationRpcResponse<TResult = undefined> = Promise<
-  PresentationRpcResponseData<TResult>
->;
+export type PresentationRpcResponse<TResult = undefined> = Promise<PresentationRpcResponseData<TResult>>;
 
 /**
  * Data structure for hierarchy request options.
@@ -106,36 +100,31 @@ export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions<
  * Data structure for hierarchy level descriptor RPC request options.
  * @beta
  */
-export type HierarchyLevelDescriptorRpcRequestOptions =
-  PresentationRpcRequestOptions<
-    HierarchyLevelDescriptorRequestOptions<never, NodeKey, RulesetVariableJSON>
-  >;
+export type HierarchyLevelDescriptorRpcRequestOptions = PresentationRpcRequestOptions<
+  HierarchyLevelDescriptorRequestOptions<never, NodeKey, RulesetVariableJSON>
+>;
 
 /**
  * Data structure for filtering hierarchy by ECInstance paths request options.
  * @public
  */
-export type FilterByInstancePathsHierarchyRpcRequestOptions =
-  PresentationRpcRequestOptions<
-    FilterByInstancePathsHierarchyRequestOptions<never, RulesetVariableJSON>
-  >;
+export type FilterByInstancePathsHierarchyRpcRequestOptions = PresentationRpcRequestOptions<
+  FilterByInstancePathsHierarchyRequestOptions<never, RulesetVariableJSON>
+>;
 
 /**
  * Data structure for filtering hierarchy by text request options.
  * @public
  */
-export type FilterByTextHierarchyRpcRequestOptions =
-  PresentationRpcRequestOptions<
-    FilterByTextHierarchyRequestOptions<never, RulesetVariableJSON>
-  >;
+export type FilterByTextHierarchyRpcRequestOptions = PresentationRpcRequestOptions<
+  FilterByTextHierarchyRequestOptions<never, RulesetVariableJSON>
+>;
 
 /**
  * Data structure for content sources RPC request options.
  * @public
  */
-export type ContentSourcesRpcRequestOptions = PresentationRpcRequestOptions<
-  ContentSourcesRequestOptions<never>
->;
+export type ContentSourcesRpcRequestOptions = PresentationRpcRequestOptions<ContentSourcesRequestOptions<never>>;
 /**
  * Data structure for content sources RPC response.
  * @public
@@ -160,42 +149,32 @@ export type ContentDescriptorRpcRequestOptions = PresentationRpcRequestOptions<
  * @public
  */
 export type ContentRpcRequestOptions = PresentationRpcRequestOptions<
-  ContentRequestOptions<
-    never,
-    DescriptorOverrides,
-    KeySetJSON,
-    RulesetVariableJSON
-  >
+  ContentRequestOptions<never, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>
 >;
 
 /**
  * Data structure for single element properties RPC request options.
  * @public
  */
-export type SingleElementPropertiesRpcRequestOptions =
-  PresentationRpcRequestOptions<SingleElementPropertiesRequestOptions<never>>;
+export type SingleElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions<
+  SingleElementPropertiesRequestOptions<never>
+>;
 
 /**
  * Data structure for distinct values' request options.
  * @public
  */
 export type DistinctValuesRpcRequestOptions = PresentationRpcRequestOptions<
-  DistinctValuesRequestOptions<
-    never,
-    DescriptorOverrides,
-    KeySetJSON,
-    RulesetVariableJSON
-  >
+  DistinctValuesRequestOptions<never, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>
 >;
 
 /**
  * Data structure for content instance keys' request options.
  * @public
  */
-export type ContentInstanceKeysRpcRequestOptions =
-  PresentationRpcRequestOptions<
-    ContentInstanceKeysRequestOptions<never, KeySetJSON, RulesetVariableJSON>
-  >;
+export type ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions<
+  ContentInstanceKeysRequestOptions<never, KeySetJSON, RulesetVariableJSON>
+>;
 
 /**
  * Data structure for label request options.
@@ -217,17 +196,13 @@ export type DisplayLabelsRpcRequestOptions = PresentationRpcRequestOptions<
  * Data structure for selection scope request options.
  * @public
  */
-export type SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions<
-  SelectionScopeRequestOptions<never>
->;
+export type SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions<SelectionScopeRequestOptions<never>>;
 
 /**
  * Request options data structure for computing selection based on given selection scope and element IDs.
  * @public
  */
-export type ComputeSelectionRpcRequestOptions = PresentationRpcRequestOptions<
-  ComputeSelectionRequestOptions<never>
->;
+export type ComputeSelectionRpcRequestOptions = PresentationRpcRequestOptions<ComputeSelectionRequestOptions<never>>;
 
 /**
  * Interface used for communication between Presentation backend and frontend.
@@ -305,13 +280,8 @@ export class PresentationRpcInterface extends RpcInterface {
     _options: ContentDescriptorRpcRequestOptions
   ): PresentationRpcResponse<DescriptorJSON | undefined> {
     arguments[1] = { ...arguments[1], transport: "unparsed-json" };
-    const response: PresentationRpcResponseData<
-      DescriptorJSON | string | undefined
-    > = await this.forward(arguments);
-    if (
-      response.statusCode === PresentationStatus.Success &&
-      typeof response.result === "string"
-    ) {
+    const response: PresentationRpcResponseData<DescriptorJSON | string | undefined> = await this.forward(arguments);
+    if (response.statusCode === PresentationStatus.Success && typeof response.result === "string") {
       response.result = JSON.parse(response.result);
     }
     return response as PresentationRpcResponseData<DescriptorJSON | undefined>;
@@ -328,10 +298,7 @@ export class PresentationRpcInterface extends RpcInterface {
   public async getPagedContent(
     _token: IModelRpcProps,
     _options: Paged<ContentRpcRequestOptions>
-  ): PresentationRpcResponse<
-    | { descriptor: DescriptorJSON; contentSet: PagedResponse<ItemJSON> }
-    | undefined
-  > {
+  ): PresentationRpcResponse<{ descriptor: DescriptorJSON; contentSet: PagedResponse<ItemJSON> } | undefined> {
     return this.forward(arguments);
   }
 
@@ -403,9 +370,7 @@ export class PresentationRpcInterface extends RpcInterface {
   @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async computeSelection(
     _token: IModelRpcProps,
-    _options:
-      | ComputeSelectionRpcRequestOptions
-      | SelectionScopeRpcRequestOptions,
+    _options: ComputeSelectionRpcRequestOptions | SelectionScopeRpcRequestOptions,
     _ids?: Id64String[],
     _scopeId?: string
   ): PresentationRpcResponse<KeySetJSON> {

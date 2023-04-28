@@ -22,10 +22,7 @@ interface BufferHandleLinkage {
 /** Provides convenience methods for creating a BufferHandleLinkage interface. */
 class BufferHandleLinkage {
   private constructor() {}
-  public static create(
-    buffer: BufferHandle,
-    params: BufferParameters[]
-  ): BufferHandleLinkage {
+  public static create(buffer: BufferHandle, params: BufferParameters[]): BufferHandleLinkage {
     return { buffer, params };
   }
   public static clone(linkage: BufferHandleLinkage): BufferHandleLinkage {
@@ -267,10 +264,7 @@ export class BufferHandle implements WebGLDisposable {
   }
 
   /** Binds this buffer to the target specified at construction and sets the buffer's data store. */
-  public bindData(
-    data: BufferSource,
-    usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw
-  ): void {
+  public bindData(data: BufferSource, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw): void {
     this.bind();
     System.instance.context.bufferData(this._target, data, usage);
     this.unbind();
@@ -292,10 +286,7 @@ export class BufferHandle implements WebGLDisposable {
     return handle;
   }
   /** Creates a BufferHandle and binds its data */
-  public static createArrayBuffer(
-    data: BufferSource,
-    usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw
-  ) {
+  public static createArrayBuffer(data: BufferSource, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw) {
     return BufferHandle.createBuffer(GL.Buffer.Target.ArrayBuffer, data, usage);
   }
 
@@ -368,10 +359,7 @@ export class QBufferHandle2d extends BufferHandle {
     this.params = qparams2dToArray(qParams);
   }
 
-  public static create(
-    qParams: QParams2d,
-    data: Uint16Array
-  ): QBufferHandle2d | undefined {
+  public static create(qParams: QParams2d, data: Uint16Array): QBufferHandle2d | undefined {
     const handle = new QBufferHandle2d(qParams);
     if (handle.isDisposed) {
       return undefined;
@@ -397,10 +385,7 @@ export class QBufferHandle3d extends BufferHandle {
     this.scale = qscale3dToArray(qParams.scale);
   }
 
-  public static create(
-    qParams: QParams3d,
-    data: Uint16Array | Uint8Array | Float32Array
-  ): QBufferHandle3d | undefined {
+  public static create(qParams: QParams3d, data: Uint16Array | Uint8Array | Float32Array): QBufferHandle3d | undefined {
     const handle = new QBufferHandle3d(qParams);
     if (handle.isDisposed) {
       return undefined;

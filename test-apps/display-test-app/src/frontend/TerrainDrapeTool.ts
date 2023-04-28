@@ -46,25 +46,15 @@ class DrapeLineStringCollector extends TileGeometryCollector {
 
   public override collectTile(tile: Tile): CollectTileStatus {
     let status = super.collectTile(tile);
-    if ("reject" !== status && !this.rangeOverlapsLineString(tile.range))
-      status = "reject";
+    if ("reject" !== status && !this.rangeOverlapsLineString(tile.range)) status = "reject";
 
     return status;
   }
 
   private rangeOverlapsLineString(range: Range3d) {
     let inside = false;
-    const clipper = ConvexClipPlaneSet.createRange3dPlanes(
-      range,
-      true,
-      true,
-      true,
-      true,
-      false,
-      false
-    );
-    if (this._options.transform)
-      clipper.transformInPlace(this._options.transform);
+    const clipper = ConvexClipPlaneSet.createRange3dPlanes(range, true, true, true, true, false, false);
+    if (this._options.transform) clipper.transformInPlace(this._options.transform);
 
     for (let i = 0; i < this._points.length - 1 && !inside; i++)
       inside = clipper.announceClippedSegmentIntervals(
@@ -81,10 +71,7 @@ class DrapeLineStringCollector extends TileGeometryCollector {
 class TerrainDraper implements TileUser {
   public readonly tileUserId: number;
 
-  public constructor(
-    public readonly viewport: Viewport,
-    public readonly treeRef: GeometryTileTreeReference
-  ) {
+  public constructor(public readonly viewport: Viewport, public readonly treeRef: GeometryTileTreeReference) {
     this.tileUserId = TileUser.generateId();
     IModelApp.tileAdmin.registerUser(this);
   }
@@ -119,23 +106,12 @@ class TerrainDraper implements TileUser {
     range.extendZOnly(-maxDistance); // Expand - but not so much that we get opposite side of globe.
     range.extendZOnly(maxDistance);
 
-    const collector = new DrapeLineStringCollector(
-      this,
-      tolerance,
-      range,
-      tree.iModelTransform,
-      inPoints
-    );
+    const collector = new DrapeLineStringCollector(this, tolerance, range, tree.iModelTransform, inPoints);
     this.treeRef.collectTileGeometry(collector);
     collector.requestMissingTiles();
 
     for (const polyface of collector.polyfaces)
-      outStrings.push(
-        ...PolyfaceQuery.sweepLinestringToFacetsXYReturnChains(
-          inPoints,
-          polyface
-        )
-      );
+      outStrings.push(...PolyfaceQuery.sweepLinestringToFacetsXYReturnChains(inPoints, polyface));
 
     return collector.isAllGeometryLoaded ? "complete" : "loading";
   }
@@ -186,17 +162,10 @@ export class TerrainDrapeTool extends PrimitiveTool {
         drapeRange.extendArray(this._drapePoints);
 
         const tolerance = drapeRange.diagonal().magnitude() / 5000;
-        loading =
-          "loading" ===
-          this._draper.drapeLineString(
-            this._drapedStrings,
-            this._drapePoints,
-            tolerance
-          );
+        loading = "loading" === this._draper.drapeLineString(this._drapedStrings, this._drapePoints, tolerance);
       }
 
-      for (const lineString of this._drapedStrings)
-        builder.addLineString(lineString.points);
+      for (const lineString of this._drapedStrings) builder.addLineString(lineString.points);
 
       if (loading) this._drapedStrings = undefined;
 
@@ -207,9 +176,7 @@ export class TerrainDrapeTool extends PrimitiveTool {
       const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
       builder.setSymbology(ColorDef.white, ColorDef.white, 1, LinePixels.Code0);
       builder.addLineString([
-        this._drapePoints.getPoint3dAtUncheckedPointIndex(
-          this._drapePoints.length - 1
-        ),
+        this._drapePoints.getPoint3dAtUncheckedPointIndex(this._drapePoints.length - 1),
         this._motionPoint,
       ]);
       context.addDecorationFromBuilder(builder);
@@ -233,40 +200,29 @@ export class TerrainDrapeTool extends PrimitiveTool {
   private showPrompt(): void {
     IModelApp.notifications.outputPromptByKey(
       `SVTTools:tools.TerrainDrape.Prompts.${
-        undefined === this._draper
-          ? "SelectDrapeRealityModel"
-          : "EnterDrapePoint"
+        undefined === this._draper ? "SelectDrapeRealityModel" : "EnterDrapePoint"
       }`
     );
   }
 
-  private getGeometryTreeRef(
-    vp: Viewport,
-    modelId: string
-  ): GeometryTileTreeReference | undefined {
+  private getGeometryTreeRef(vp: Viewport, modelId: string): GeometryTileTreeReference | undefined {
     let treeRef: GeometryTileTreeReference | undefined;
     vp.forEachTileTreeRef((ref) => {
       if (!treeRef) {
         const tree = ref.treeOwner.load();
-        if (tree?.modelId === modelId)
-          treeRef = ref.createGeometryTreeReference();
+        if (tree?.modelId === modelId) treeRef = ref.createGeometryTreeReference();
       }
     });
 
     return treeRef;
   }
 
-  public override async filterHit(
-    hit: HitDetail,
-    _out?: LocateResponse
-  ): Promise<LocateFilterStatus> {
+  public override async filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus> {
     if (undefined !== this._draper) return LocateFilterStatus.Accept;
 
     if (!hit.modelId) return LocateFilterStatus.Reject;
 
-    return this.getGeometryTreeRef(hit.viewport, hit.modelId)
-      ? LocateFilterStatus.Accept
-      : LocateFilterStatus.Reject;
+    return this.getGeometryTreeRef(hit.viewport, hit.modelId) ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
   }
 
   public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
@@ -274,9 +230,7 @@ export class TerrainDrapeTool extends PrimitiveTool {
     if (ev.viewport) ev.viewport.invalidateDecorations();
   }
 
-  public override async onResetButtonUp(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     this._drapedStrings = undefined;
     if (this._drapePoints.length) this._drapePoints.pop();
     else this.disposeDraper();
@@ -287,9 +241,7 @@ export class TerrainDrapeTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public override async onDataButtonDown(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     this._motionPoint = undefined;
     const hit = await IModelApp.locateManager.doLocate(
       new LocateResponse(),
@@ -302,8 +254,7 @@ export class TerrainDrapeTool extends PrimitiveTool {
       if (hit?.modelId) {
         this._drapePoints.push(hit.hitPoint);
         const drapeTreeRef = this.getGeometryTreeRef(hit.viewport, hit.modelId);
-        if (drapeTreeRef)
-          this._draper = new TerrainDraper(hit.viewport, drapeTreeRef);
+        if (drapeTreeRef) this._draper = new TerrainDraper(hit.viewport, drapeTreeRef);
       }
     } else {
       this._drapePoints.push(hit ? hit.hitPoint : ev.point);

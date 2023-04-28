@@ -236,10 +236,7 @@ describe("BeEvent tests", () => {
       dispatcher.addListener(fn);
       dispatcher.removeListener(fn);
       const result = dispatcher.has(fn);
-      expect(
-        result,
-        "Handler should not be present because of unsubscribe."
-      ).to.equal(false);
+      expect(result, "Handler should not be present because of unsubscribe.").to.equal(false);
     });
 
     it("Clear subscriptions.", () => {
@@ -271,14 +268,8 @@ describe("BeEvent tests", () => {
       dispatcher.raiseEvent(new Dummy("a"), 10);
       const hasFn = dispatcher.has(fn);
       const hasOnceFn = dispatcher.has(fnOnce);
-      expect(
-        hasFn,
-        "Handler should be present because it was not dropped."
-      ).to.equal(true);
-      expect(
-        hasOnceFn,
-        "Handler should not be present because it was dropped."
-      ).to.equal(false);
+      expect(hasFn, "Handler should be present because it was not dropped.").to.equal(true);
+      expect(hasOnceFn, "Handler should not be present because it was dropped.").to.equal(false);
     });
   });
 
@@ -302,9 +293,7 @@ describe("BeEvent tests", () => {
       list.get(event).removeListener(fn);
 
       const result = list.get(event).has(fn);
-      expect(result, "result should be false due to unsubscribe.").to.equals(
-        false
-      );
+      expect(result, "result should be false due to unsubscribe.").to.equals(false);
     });
 
     it("Test firing two events in one list", () => {
@@ -312,12 +301,10 @@ describe("BeEvent tests", () => {
       let result: string | undefined;
 
       const event1 = "ev1";
-      const fn1 = (_dummy: Dummy | undefined, nr: number) =>
-        (result = `ev1:${nr}`);
+      const fn1 = (_dummy: Dummy | undefined, nr: number) => (result = `ev1:${nr}`);
 
       const event2 = "ev2";
-      const fn2 = (_dummy: Dummy | undefined, nr: number) =>
-        (result = `ev2:${nr}`);
+      const fn2 = (_dummy: Dummy | undefined, nr: number) => (result = `ev2:${nr}`);
 
       list.get(event1).addListener(fn1);
       list.get(event2).addListener(fn2);

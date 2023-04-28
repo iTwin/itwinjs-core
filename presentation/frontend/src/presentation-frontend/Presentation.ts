@@ -8,10 +8,7 @@
 
 import { IModelApp } from "@itwin/core-frontend";
 import { Localization } from "@itwin/core-common";
-import {
-  PresentationError,
-  PresentationStatus,
-} from "@itwin/presentation-common";
+import { PresentationError, PresentationStatus } from "@itwin/presentation-common";
 import {
   FavoritePropertiesManager,
   FavoritePropertiesManagerProps,
@@ -21,14 +18,8 @@ import {
   DefaultFavoritePropertiesStorageTypes,
 } from "./favorite-properties/FavoritePropertiesStorage";
 import { FrontendLocalizationHelper } from "./LocalizationHelper";
-import {
-  PresentationManager,
-  PresentationManagerProps,
-} from "./PresentationManager";
-import {
-  SelectionManager,
-  SelectionManagerProps,
-} from "./selection/SelectionManager";
+import { PresentationManager, PresentationManagerProps } from "./PresentationManager";
+import { SelectionManager, SelectionManagerProps } from "./selection/SelectionManager";
 import { SelectionScopesManager } from "./selection/SelectionScopesManager";
 
 let localization: Localization | undefined;
@@ -108,16 +99,12 @@ export class Presentation {
       favoritePropertiesManager = new FavoritePropertiesManager({
         storage: props?.favorites
           ? props.favorites.storage
-          : createFavoritePropertiesStorage(
-              DefaultFavoritePropertiesStorageTypes.Noop
-            ),
+          : createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.Noop),
       });
     }
     // eslint-disable-next-line @typescript-eslint/unbound-method
     presentationManager.onNewiModelConnection =
-      favoritePropertiesManager.initializeConnection.bind(
-        favoritePropertiesManager
-      );
+      favoritePropertiesManager.initializeConnection.bind(favoritePropertiesManager);
     await FrontendLocalizationHelper.registerNamespaces();
     for (const handler of initializationHandlers) {
       const cleanup = await handler();
@@ -149,18 +136,14 @@ export class Presentation {
    * Registers an additional handler which will be invoked during Presentation library frontend
    * initialization.
    */
-  public static registerInitializationHandler(
-    handler: () => Promise<() => void>
-  ): void {
+  public static registerInitializationHandler(handler: () => Promise<() => void>): void {
     initializationHandlers.push(handler);
   }
 
   /** The singleton [[PresentationManager]] */
   public static get presentation(): PresentationManager {
     if (!presentationManager)
-      throw new Error(
-        "Presentation must be first initialized by calling Presentation.initialize"
-      );
+      throw new Error("Presentation must be first initialized by calling Presentation.initialize");
     return presentationManager;
   }
 
@@ -172,10 +155,7 @@ export class Presentation {
 
   /** The singleton [[SelectionManager]] */
   public static get selection(): SelectionManager {
-    if (!selectionManager)
-      throw new Error(
-        "Presentation must be first initialized by calling Presentation.initialize"
-      );
+    if (!selectionManager) throw new Error("Presentation must be first initialized by calling Presentation.initialize");
     return selectionManager;
   }
 
@@ -190,9 +170,7 @@ export class Presentation {
    */
   public static get favoriteProperties(): FavoritePropertiesManager {
     if (!favoritePropertiesManager)
-      throw new Error(
-        "Favorite Properties must be first initialized by calling Presentation.initialize"
-      );
+      throw new Error("Favorite Properties must be first initialized by calling Presentation.initialize");
     return favoritePropertiesManager;
   }
 
@@ -206,10 +184,7 @@ export class Presentation {
    * The localization manager used by Presentation frontend. Returns the result of `IModelApp.i18n`.
    */
   public static get localization(): Localization {
-    if (!localization)
-      throw new Error(
-        "Presentation must be first initialized by calling Presentation.initialize"
-      );
+    if (!localization) throw new Error("Presentation must be first initialized by calling Presentation.initialize");
     return localization;
   }
 

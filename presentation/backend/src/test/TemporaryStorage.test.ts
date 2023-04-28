@@ -7,10 +7,7 @@ import * as lolex from "lolex";
 import * as sinon from "sinon";
 import { using } from "@itwin/core-bentley";
 import { PresentationError } from "@itwin/presentation-common";
-import {
-  FactoryBasedTemporaryStorage,
-  TemporaryStorage,
-} from "../presentation-backend/TemporaryStorage";
+import { FactoryBasedTemporaryStorage, TemporaryStorage } from "../presentation-backend/TemporaryStorage";
 
 describe("TemporaryStorage", () => {
   let clock: lolex.Clock;
@@ -64,21 +61,9 @@ describe("TemporaryStorage", () => {
       storage.dispose();
 
       expect(cleanupHandler.callCount).to.eq(values.length);
-      expect(cleanupHandler.getCall(0)).to.be.calledWithExactly(
-        "a",
-        "a",
-        "dispose"
-      );
-      expect(cleanupHandler.getCall(1)).to.be.calledWithExactly(
-        "b",
-        "b",
-        "dispose"
-      );
-      expect(cleanupHandler.getCall(2)).to.be.calledWithExactly(
-        "c",
-        "c",
-        "dispose"
-      );
+      expect(cleanupHandler.getCall(0)).to.be.calledWithExactly("a", "a", "dispose");
+      expect(cleanupHandler.getCall(1)).to.be.calledWithExactly("b", "b", "dispose");
+      expect(cleanupHandler.getCall(2)).to.be.calledWithExactly("c", "c", "dispose");
     });
 
     it("calls `onDisposedAll` callback", () => {

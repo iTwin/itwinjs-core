@@ -38,10 +38,7 @@ describe("Example Code", () => {
     // __PUBLISH_EXTRACT_START__ IModelDb.updateProjectExtents
     // This is an example of how to expand an iModel's project extents.
     const originalExtents = iModel.projectExtents;
-    const newExtents = Range3d.create(
-      originalExtents.low,
-      originalExtents.high
-    );
+    const newExtents = Range3d.create(originalExtents.low, originalExtents.high);
     newExtents.low.x -= 50;
     newExtents.low.y -= 25;
     newExtents.low.z -= 189;
@@ -67,11 +64,7 @@ describe("Example Code", () => {
       const briefcaseDb = iModel as any as BriefcaseDb; // just to eliminate all of the distracting if (iModel.isBriefcase) stuff from the code snippets
 
       // Make some local changes. In this example, we'll create a modeled element and a model.
-      const newModeledElementId = PhysicalModel.insert(
-        iModel,
-        IModel.rootSubjectId,
-        "newModelCode"
-      );
+      const newModeledElementId = PhysicalModel.insert(iModel, IModel.rootSubjectId, "newModelCode");
       assert.isTrue(newModeledElementId !== undefined);
 
       // If we do get the resources we need, we can commit the local changes to a local transaction in the IModelDb.
@@ -91,21 +84,13 @@ describe("Example Code", () => {
 
     // __PUBLISH_EXTRACT_START__ CodeSpecs.insert
     // Create and insert a new CodeSpec with the name "CodeSpec1". In this example, we choose to make a model-scoped CodeSpec.
-    const codeSpec: CodeSpec = CodeSpec.create(
-      testImodel,
-      "CodeSpec1",
-      CodeScopeSpec.Type.Model
-    );
+    const codeSpec: CodeSpec = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
     const codeSpecId: Id64String = testImodel.codeSpecs.insert(codeSpec);
     assert.deepEqual(codeSpecId, codeSpec.id);
 
     // Should not be able to insert a duplicate.
     try {
-      const codeSpecDup: CodeSpec = CodeSpec.create(
-        testImodel,
-        "CodeSpec1",
-        CodeScopeSpec.Type.Model
-      );
+      const codeSpecDup: CodeSpec = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
       testImodel.codeSpecs.insert(codeSpecDup); // throws in case of error
       assert.fail();
     } catch (err) {
@@ -165,11 +150,7 @@ describe("Example Code", () => {
     // __PUBLISH_EXTRACT_START__ Settings.addDictionary
     let workspace = IModelHost.appWorkspace;
     let settings = workspace.settings;
-    settings.addDictionary(
-      "initial values",
-      SettingsPriority.defaults,
-      defaultsDict
-    );
+    settings.addDictionary("initial values", SettingsPriority.defaults, defaultsDict);
     let defaultTool = settings.getString("core/default-tool"); // returns "select"
     const leftPane = settings.getBoolean("samples/start/leftPane"); // returns true
     const categories = settings.getArray<string>("myApp/categories"); // returns ["category1", "lowest", "upper"]
@@ -224,19 +205,13 @@ describe("Example Code", () => {
     settings.addDictionary("iTwin", SettingsPriority.iTwin, iTwinDict);
     settings.addDictionary("iModel", SettingsPriority.iModel, iModelDict);
 
-    expect(workspace.resolveContainer(fontContainerName).containerId).equals(
-      "fonts-02"
-    ); // iModel has higher priority than iTwin
+    expect(workspace.resolveContainer(fontContainerName).containerId).equals("fonts-02"); // iModel has higher priority than iTwin
 
     settings.dropDictionary("iModel"); // drop iModel dict
-    expect(workspace.resolveContainer(fontContainerName).containerId).equals(
-      "fonts-01"
-    ); // now resolves to iTwin value
+    expect(workspace.resolveContainer(fontContainerName).containerId).equals("fonts-01"); // now resolves to iTwin value
 
     settings.dropDictionary("iTwin"); // drop iTwin dict
-    expect(() => workspace.resolveContainer(fontContainerName)).to.throw(
-      "no setting"
-    );
+    expect(() => workspace.resolveContainer(fontContainerName)).to.throw("no setting");
     // __PUBLISH_EXTRACT_END__
   });
 });
@@ -248,10 +223,7 @@ namespace Snippets {
     const elementId = Id64.invalid;
     // __PUBLISH_EXTRACT_START__ Elements.getAspects
     const elementAspectClassFullName = "SomeDomain:SomeAspectClass";
-    const elementAspects = iModel.elements.getAspects(
-      elementId,
-      elementAspectClassFullName
-    );
+    const elementAspects = iModel.elements.getAspects(elementId, elementAspectClassFullName);
     // __PUBLISH_EXTRACT_END__
     elementAspects;
 

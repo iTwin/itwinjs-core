@@ -84,11 +84,7 @@ export namespace RenderTexture {
      */
     public readonly isOwned: boolean;
 
-    public constructor(
-      key?: string,
-      type: RenderTexture.Type = RenderTexture.Type.Normal,
-      isOwned: boolean = false
-    ) {
+    public constructor(key?: string, type: RenderTexture.Type = RenderTexture.Type.Normal, isOwned: boolean = false) {
       this.key = key;
       this.type = type;
       this.isOwned = isOwned;

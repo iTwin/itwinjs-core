@@ -9,16 +9,10 @@
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { Field, PropertiesField } from "./content/Fields";
 import { Item } from "./content/Item";
-import {
-  PrimitiveTypeDescription,
-  PropertyValueFormat,
-} from "./content/TypeDescription";
+import { PrimitiveTypeDescription, PropertyValueFormat } from "./content/TypeDescription";
 import { DisplayValue, Value } from "./content/Value";
 import { ClassInfo, InstanceKey, RelationshipPath } from "./EC";
-import {
-  MultiSchemaClassesSpecification,
-  SingleSchemaClassSpecification,
-} from "./rules/ClassSpecifications";
+import { MultiSchemaClassesSpecification, SingleSchemaClassSpecification } from "./rules/ClassSpecifications";
 import { ContentSpecificationTypes } from "./rules/content/ContentSpecification";
 import { RelatedInstanceSpecification } from "./rules/RelatedInstanceSpecification";
 import { RelationshipDirection } from "./rules/RelationshipDirection";
@@ -34,23 +28,13 @@ import { Ruleset } from "./rules/Ruleset";
 export class RulesetsFactory {
   private createSimilarInstancesRulesetInfo(field: Field, record: Item) {
     if (!field.isPropertiesField())
-      throw new Error(
-        "Can only create 'similar instances' ruleset for properties-based records"
-      );
+      throw new Error("Can only create 'similar instances' ruleset for properties-based records");
     if (field.type.valueFormat !== PropertyValueFormat.Primitive)
-      throw new Error(
-        "Can only create 'similar instances' ruleset for primitive properties"
-      );
-    if (field.properties.length === 0)
-      throw new Error("Invalid properties' field with no properties");
-    if (record.isFieldMerged(field.name))
-      throw new Error(
-        "Can't create 'similar instances' ruleset for merged values"
-      );
+      throw new Error("Can only create 'similar instances' ruleset for primitive properties");
+    if (field.properties.length === 0) throw new Error("Invalid properties' field with no properties");
+    if (record.isFieldMerged(field.name)) throw new Error("Can't create 'similar instances' ruleset for merged values");
     if (!record.classInfo)
-      throw new Error(
-        "Can't create 'similar instances' for records based on multiple different ECClass instances"
-      );
+      throw new Error("Can't create 'similar instances' for records based on multiple different ECClass instances");
     const propertyName = getPropertyName(field);
     const propertyValue = getPropertyValue(record, field);
     const relatedInstanceInfo = createRelatedInstanceSpecInfo(field);
@@ -66,15 +50,8 @@ export class RulesetsFactory {
           specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: createMultiClassSpecification(record.classInfo),
           handleInstancesPolymorphically: true,
-          relatedInstances: relatedInstanceInfo
-            ? [relatedInstanceInfo.spec]
-            : [],
-          instanceFilter: createInstanceFilter(
-            relatedInstanceInfo?.spec,
-            field.type,
-            propertyName,
-            propertyValue.raw
-          ),
+          relatedInstances: relatedInstanceInfo ? [relatedInstanceInfo.spec] : [],
+          instanceFilter: createInstanceFilter(relatedInstanceInfo?.spec, field.type, propertyName, propertyValue.raw),
         },
       ],
     });
@@ -125,13 +102,7 @@ interface PrimitiveValueDef {
  * Value of a primitive property.
  * @public
  */
-export type PrimitivePropertyValue =
-  | string
-  | number
-  | boolean
-  | Point
-  | InstanceKey
-  | undefined;
+export type PrimitivePropertyValue = string | number | boolean | Point | InstanceKey | undefined;
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 type Point = { x: number; y: number; z?: number };
@@ -141,12 +112,7 @@ const toString = (displayValue: Value | DisplayValue): string => {
   return displayValue.toString();
 };
 
-const createDescription = (
-  record: Item,
-  relatedClass: ClassInfo | undefined,
-  field: Field,
-  value: string
-): string => {
+const createDescription = (record: Item, relatedClass: ClassInfo | undefined, field: Field, value: string): string => {
   const classInfo = relatedClass ?? record.classInfo!;
   return `[${classInfo.label}].[${field.label}] = ${value}`;
 };
@@ -170,9 +136,7 @@ const getPropertyName = (field: PropertiesField) => {
   return name;
 };
 
-const isPrimitivePropertyValue = (
-  value: Value
-): value is PrimitivePropertyValue => {
+const isPrimitivePropertyValue = (value: Value): value is PrimitivePropertyValue => {
   if (Value.isPrimitive(value)) {
     return true;
   }
@@ -206,24 +170,19 @@ const getPropertyValue = (record: Item, field: Field): PrimitiveValueDef => {
   let value: Value = record.values[currFieldName!];
   currFieldName = fieldNamesStack.pop();
   while (currFieldName) {
-    if (!Value.isNestedContent(value) || value.length === 0)
-      throw new Error("Invalid record value");
+    if (!Value.isNestedContent(value) || value.length === 0) throw new Error("Invalid record value");
     if (value.length > 1)
       throw new Error(
         "Can't create 'similar instances' for records related through many part of *-to-many relationship"
       );
     if (value[0].mergedFieldNames.indexOf(currFieldName) !== -1)
-      throw new Error(
-        "Can't create 'similar instances' ruleset for merged values"
-      );
+      throw new Error("Can't create 'similar instances' ruleset for merged values");
     displayValue = value[0].displayValues[currFieldName];
     value = value[0].values[currFieldName];
     currFieldName = fieldNamesStack.pop();
   }
   if (!isPrimitivePropertyValue(value))
-    throw new Error(
-      "Can only create 'similar instances' ruleset for primitive values"
-    );
+    throw new Error("Can only create 'similar instances' ruleset for primitive values");
   return { raw: value, display: toString(displayValue) };
 };
 
@@ -234,12 +193,7 @@ const createInstanceFilter = (
   propertyValue: PrimitivePropertyValue
 ): string => {
   const alias = relatedInstanceSpec ? relatedInstanceSpec.alias : "this";
-  return createComparison(
-    propertyType,
-    `${alias}.${propertyName}`,
-    "=",
-    propertyValue
-  );
+  return createComparison(propertyType, `${alias}.${propertyName}`, "=", propertyValue);
 };
 
 type Operator = "=" | "!=" | ">" | ">=" | "<" | "<=";
@@ -265,17 +219,12 @@ const createComparison = (
       break;
   }
 
-  if (
-    type.typeName === "navigation" &&
-    typeof value === "object" &&
-    Id64.isId64((value as InstanceKey).id)
-  )
+  if (type.typeName === "navigation" && typeof value === "object" && Id64.isId64((value as InstanceKey).id))
     // note: this is temporary until we support hex ids in instance filters
     compareValue = hexToDec((value as InstanceKey).id);
 
   if (type.typeName === "point2d" || type.typeName === "point3d") {
-    if (typeof value !== "object")
-      throw new Error("Expecting point values to be supplied as objects");
+    if (typeof value !== "object") throw new Error("Expecting point values to be supplied as objects");
 
     const dimensionType: PrimitiveTypeDescription = {
       valueFormat: PropertyValueFormat.Primitive,
@@ -283,48 +232,27 @@ const createComparison = (
     };
 
     const pointValue = value as Point;
-    let comparison = `${createComparison(
-      dimensionType,
-      `${name}.x`,
-      operator,
-      pointValue.x
-    )}`;
-    comparison += ` AND ${createComparison(
-      dimensionType,
-      `${name}.y`,
-      operator,
-      pointValue.y
-    )}`;
+    let comparison = `${createComparison(dimensionType, `${name}.x`, operator, pointValue.x)}`;
+    comparison += ` AND ${createComparison(dimensionType, `${name}.y`, operator, pointValue.y)}`;
     if (type.typeName === "point3d" && pointValue.z !== undefined)
-      comparison += ` AND ${createComparison(
-        dimensionType,
-        `${name}.z`,
-        operator,
-        pointValue.z
-      )}`;
+      comparison += ` AND ${createComparison(dimensionType, `${name}.z`, operator, pointValue.z)}`;
 
     return comparison;
   }
 
-  if (type.typeName === "double")
-    return `CompareDoubles(${name}, ${compareValue}) ${operator} 0`;
+  if (type.typeName === "double") return `CompareDoubles(${name}, ${compareValue}) ${operator} 0`;
 
-  if (type.typeName === "dateTime")
-    return `CompareDateTimes(${name}, ${compareValue}) ${operator} 0`;
+  if (type.typeName === "dateTime") return `CompareDateTimes(${name}, ${compareValue}) ${operator} 0`;
 
   return `${name} ${operator} ${compareValue}`;
 };
 
-const createMultiClassSpecification = (
-  classInfo: Readonly<ClassInfo>
-): MultiSchemaClassesSpecification => {
+const createMultiClassSpecification = (classInfo: Readonly<ClassInfo>): MultiSchemaClassesSpecification => {
   const [schemaName, className] = classInfo.name.split(":");
   return { schemaName, classNames: [className] };
 };
 
-const createSingleClassSpecification = (
-  classInfo: Readonly<ClassInfo>
-): SingleSchemaClassSpecification => {
+const createSingleClassSpecification = (classInfo: Readonly<ClassInfo>): SingleSchemaClassSpecification => {
   const [schemaName, className] = classInfo.name.split(":");
   return { schemaName, className };
 };
@@ -336,22 +264,16 @@ const createRelatedInstanceSpec = (
   spec: {
     relationshipPath: pathFromSelectToPropertyClass.map((step) => ({
       relationship: createSingleClassSpecification(step.relationshipInfo),
-      direction: step.isForwardRelationship
-        ? RelationshipDirection.Forward
-        : RelationshipDirection.Backward,
+      direction: step.isForwardRelationship ? RelationshipDirection.Forward : RelationshipDirection.Backward,
       targetClass: createSingleClassSpecification(step.targetClassInfo),
     })),
     isRequired: true,
     alias: `related_${index}`,
   },
-  class:
-    pathFromSelectToPropertyClass[pathFromSelectToPropertyClass.length - 1]
-      .targetClassInfo,
+  class: pathFromSelectToPropertyClass[pathFromSelectToPropertyClass.length - 1].targetClassInfo,
 });
 
-const createPathFromSelectToPropertyClass = (
-  field: PropertiesField
-): RelationshipPath => {
+const createPathFromSelectToPropertyClass = (field: PropertiesField): RelationshipPath => {
   let currField: Field = field;
   const pathFromPropertyToSelectClass: RelationshipPath = [];
   while (currField.parent) {

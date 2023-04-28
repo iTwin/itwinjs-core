@@ -53,14 +53,8 @@ export class TextureMapping {
   }
 
   /** @internal */
-  public computeUVParams(
-    visitor: PolyfaceVisitor,
-    transformToImodel: Transform
-  ): Point2d[] | undefined {
-    return this.params.computeUVParams(
-      visitor as IndexedPolyfaceVisitor,
-      transformToImodel
-    );
+  public computeUVParams(visitor: PolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined {
+    return this.params.computeUVParams(visitor as IndexedPolyfaceVisitor, transformToImodel);
   }
 }
 
@@ -104,26 +98,9 @@ export namespace TextureMapping {
      *  | 0   0   1 0       |
      * ```
      */
-    public constructor(
-      m00 = 1,
-      m01 = 0,
-      originX = 0,
-      m10 = 0,
-      m11 = 1,
-      originY = 0
-    ) {
+    public constructor(m00 = 1, m01 = 0, originX = 0, m10 = 0, m11 = 1, originY = 0) {
       const origin = new Point3d(originX, originY, 0);
-      const matrix = Matrix3d.createRowValues(
-        m00,
-        m01,
-        0,
-        m10,
-        m11,
-        0,
-        0,
-        0,
-        1
-      );
+      const matrix = Matrix3d.createRowValues(m00, m01, 0, m10, m11, 0, 0, 0, 1);
       this.transform = Transform.createRefs(origin, matrix);
     }
 
@@ -205,8 +182,7 @@ export namespace TextureMapping {
         repetitions: props?.constantLodProps?.repetitions ?? 1,
         offset: props?.constantLodProps?.offset ?? { x: 0, y: 0 },
         minDistClamp: props?.constantLodProps?.minDistClamp ?? 1,
-        maxDistClamp:
-          props?.constantLodProps?.maxDistClamp ?? 4096 * 1024 * 1024,
+        maxDistClamp: props?.constantLodProps?.maxDistClamp ?? 4096 * 1024 * 1024,
       };
     }
 
@@ -214,18 +190,11 @@ export namespace TextureMapping {
      * Generates UV parameters for textured surfaces. Returns undefined on failure.
      * @internal
      */
-    public computeUVParams(
-      visitor: IndexedPolyfaceVisitor,
-      transformToImodel: Transform
-    ): Point2d[] | undefined {
+    public computeUVParams(visitor: IndexedPolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined {
       switch (this.mode) {
         default: // Fall through to parametric in default case
         case TextureMapping.Mode.Parametric: {
-          return this.computeParametricUVParams(
-            visitor,
-            this.textureMatrix.transform,
-            !this.worldMapping
-          );
+          return this.computeParametricUVParams(visitor, this.textureMatrix.transform, !this.worldMapping);
         }
         case TextureMapping.Mode.Planar: {
           const normalIndices = visitor.normalIndex;
@@ -235,27 +204,15 @@ export namespace TextureMapping {
           if (
             !this.worldMapping ||
             (visitor.normalIndex !== undefined &&
-              (normalIndices[0] !== normalIndices[1] ||
-                normalIndices[0] !== normalIndices[2]))
+              (normalIndices[0] !== normalIndices[1] || normalIndices[0] !== normalIndices[2]))
           ) {
-            return this.computeParametricUVParams(
-              visitor,
-              this.textureMatrix.transform,
-              !this.worldMapping
-            );
+            return this.computeParametricUVParams(visitor, this.textureMatrix.transform, !this.worldMapping);
           } else {
-            return this.computePlanarUVParams(
-              visitor,
-              this.textureMatrix.transform
-            );
+            return this.computePlanarUVParams(visitor, this.textureMatrix.transform);
           }
         }
         case TextureMapping.Mode.ElevationDrape: {
-          return this.computeElevationDrapeUVParams(
-            visitor,
-            this.textureMatrix.transform,
-            transformToImodel
-          );
+          return this.computeElevationDrapeUVParams(visitor, this.textureMatrix.transform, transformToImodel);
         }
       }
     }
@@ -283,10 +240,7 @@ export namespace TextureMapping {
     }
 
     /** Computes UV parameters given a texture mapping mode of planar. The result is stored in the Point2d array given. */
-    private computePlanarUVParams(
-      visitor: IndexedPolyfaceVisitor,
-      uvTransform: Transform
-    ): Point2d[] | undefined {
+    private computePlanarUVParams(visitor: IndexedPolyfaceVisitor, uvTransform: Transform): Point2d[] | undefined {
       const params: Point2d[] = [];
       const points = visitor.point;
       let normal: Vector3d;
@@ -294,10 +248,7 @@ export namespace TextureMapping {
       if (visitor.normal === undefined)
         normal = points
           .getPoint3dAtUncheckedPointIndex(0)
-          .crossProductToPoints(
-            points.getPoint3dAtUncheckedPointIndex(1),
-            points.getPoint3dAtUncheckedPointIndex(2)
-          );
+          .crossProductToPoints(points.getPoint3dAtUncheckedPointIndex(1), points.getPoint3dAtUncheckedPointIndex(2));
       else normal = visitor.normal.getVector3dAtCheckedVectorIndex(0)!;
 
       if (!normal.normalize(normal)) return undefined;
@@ -327,16 +278,9 @@ export namespace TextureMapping {
 
       const numEdges = visitor.numEdgesThisFacet;
       for (let i = 0; i < numEdges; i++) {
-        const vector = Vector3d.createFrom(
-          points.getPoint3dAtUncheckedPointIndex(i)
-        );
+        const vector = Vector3d.createFrom(points.getPoint3dAtUncheckedPointIndex(i));
 
-        params.push(
-          Point2d.create(
-            vector.dotProduct(sideVector),
-            vector.dotProduct(upVector)
-          )
-        );
+        params.push(Point2d.create(vector.dotProduct(sideVector), vector.dotProduct(upVector)));
         uvTransform.multiplyPoint2d(params[i], params[i]);
       }
       return params;
@@ -353,8 +297,7 @@ export namespace TextureMapping {
       for (let i = 0; i < numEdges; i++) {
         const point = visitor.point.getPoint3dAtUncheckedPointIndex(i);
 
-        if (transformToIModel !== undefined)
-          transformToIModel.multiplyPoint3d(point, point);
+        if (transformToIModel !== undefined) transformToIModel.multiplyPoint3d(point, point);
 
         params.push(Point2d.createFrom(point));
         uvTransform.multiplyPoint2d(params[i], params[i]);

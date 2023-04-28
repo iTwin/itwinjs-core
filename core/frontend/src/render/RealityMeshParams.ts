@@ -6,12 +6,7 @@
  * @module Rendering
  */
 
-import {
-  assert,
-  Uint16ArrayBuilder,
-  UintArray,
-  UintArrayBuilder,
-} from "@itwin/core-bentley";
+import { assert, Uint16ArrayBuilder, UintArray, UintArrayBuilder } from "@itwin/core-bentley";
 import {
   IndexedPolyface,
   Point2d,
@@ -37,10 +32,7 @@ import {
 import { GltfMeshData } from "../tile/internal";
 import { Mesh } from "./primitives/mesh/MeshPrimitives";
 
-function precondition(
-  condition: boolean,
-  message: string | (() => string)
-): asserts condition {
+function precondition(condition: boolean, message: string | (() => string)): asserts condition {
   if (condition) return;
 
   if ("string" !== typeof message) message = message();
@@ -73,9 +65,7 @@ export interface RealityMeshParams {
 /** @public */
 export namespace RealityMeshParams {
   /** @internal */
-  export function fromGltfMesh(
-    mesh: GltfMeshData
-  ): RealityMeshParams | undefined {
+  export function fromGltfMesh(mesh: GltfMeshData): RealityMeshParams | undefined {
     // The specialized reality mesh shaders expect a mesh with uvs and no edges.
     if (
       mesh.primitive.type !== Mesh.PrimitiveType.Mesh ||
@@ -122,28 +112,20 @@ export namespace RealityMeshParams {
     const point = new Point3d();
     const transform = options?.transform;
     for (let i = 0; i < positions.points.length; i += 3) {
-      positions.params.unquantize(
-        points[i],
-        points[i + 1],
-        points[i + 2],
-        point
-      );
+      positions.params.unquantize(points[i], points[i + 1], points[i + 2], point);
       transform?.multiplyPoint3d(point, point);
       polyface.addPoint(point);
     }
 
     if (includeNormals) {
       const normal = new Vector3d();
-      for (const oen of normals)
-        polyface.addNormal(OctEncodedNormal.decodeValue(oen, normal));
+      for (const oen of normals) polyface.addNormal(OctEncodedNormal.decodeValue(oen, normal));
     }
 
     if (includeParams) {
       const uv = new Point2d();
       for (let i = 0; i < uvs.points.length; i += 2)
-        polyface.addParam(
-          uvs.params.unquantize(uvs.points[i], uvs.points[i + 1], uv)
-        );
+        polyface.addParam(uvs.params.unquantize(uvs.points[i], uvs.points[i + 1], uv));
     }
 
     let j = 0;
@@ -223,12 +205,8 @@ export class RealityMeshParamsBuilder {
   /** Construct a builder from the specified options. */
   public constructor(options: RealityMeshParamsBuilderOptions) {
     let initialType;
-    if (
-      undefined !== options.initialVertexCapacity &&
-      options.initialVertexCapacity > 0xff
-    )
-      initialType =
-        options.initialVertexCapacity > 0xffff ? Uint32Array : Uint16Array;
+    if (undefined !== options.initialVertexCapacity && options.initialVertexCapacity > 0xff)
+      initialType = options.initialVertexCapacity > 0xffff ? Uint32Array : Uint16Array;
 
     this.indices = new UintArrayBuilder({
       initialCapacity: options.initialIndexCapacity,
@@ -258,11 +236,7 @@ export class RealityMeshParamsBuilder {
    * @see [[addQuantizedVertex]] if your vertex data is already quantized.
    * @returns the index of the new vertex in [[positions]].
    */
-  public addUnquantizedVertex(
-    position: XYAndZ,
-    uv: XAndY,
-    normal?: XYAndZ
-  ): number {
+  public addUnquantizedVertex(position: XYAndZ, uv: XAndY, normal?: XYAndZ): number {
     this._q3d.init(position, this.positions.params);
     this._q2d.init(uv, this.uvs.params);
     const oen = normal ? OctEncodedNormal.encode(normal) : undefined;
@@ -286,11 +260,7 @@ export class RealityMeshParamsBuilder {
    * @returns the index of the new vertex in [[positions]].
    * @throws Error if `normal` is `undefined` but `wantNormals` was specified at construction of the builder, or vice-versa.
    */
-  public addQuantizedVertex(
-    position: XYAndZ,
-    uv: XAndY,
-    normal?: number
-  ): number {
+  public addQuantizedVertex(position: XYAndZ, uv: XAndY, normal?: number): number {
     precondition(
       (undefined === normal) === (undefined === this.normals),
       "RealityMeshParams requires all vertices to have normals, or none."

@@ -33,32 +33,19 @@ export class CurveOffsetXYHandler implements IStrokeHandler {
   public constructor(cp: CurvePrimitive, offsetDistance: number) {
     this._offsetDistance = offsetDistance;
     this._fitOptions = new InterpolationCurve3dOptions();
-    const startTangent = cp
-      .fractionToPointAndUnitTangent(0.0, this._r0)
-      .direction.clone();
-    const endTangent = cp
-      .fractionToPointAndUnitTangent(1.0, this._r0)
-      .direction.negate(); // points into curve
+    const startTangent = cp.fractionToPointAndUnitTangent(0.0, this._r0).direction.clone();
+    const endTangent = cp.fractionToPointAndUnitTangent(1.0, this._r0).direction.negate(); // points into curve
     this._fitOptions.startTangent = startTangent;
     this._fitOptions.endTangent = endTangent;
     if (
       (this._fitOptions.closed =
-        cp.startPoint(this._p0).isAlmostEqual(cp.endPoint(this._p1)) &&
-        startTangent.isParallelTo(endTangent, true))
+        cp.startPoint(this._p0).isAlmostEqual(cp.endPoint(this._p1)) && startTangent.isParallelTo(endTangent, true))
     )
       this._fitOptions.isChordLenKnots = 1;
   }
   private pushOffsetPoint(xyz: Point3d, tangent: Vector3d) {
-    if (
-      !Geometry.isSmallMetricDistance(tangent.x) ||
-      !Geometry.isSmallMetricDistance(tangent.y)
-    )
-      this._fitOptions.fitPoints.push(
-        xyz.plusScaled(
-          tangent.unitPerpendicularXY(this._v0),
-          this._offsetDistance
-        )
-      );
+    if (!Geometry.isSmallMetricDistance(tangent.x) || !Geometry.isSmallMetricDistance(tangent.y))
+      this._fitOptions.fitPoints.push(xyz.plusScaled(tangent.unitPerpendicularXY(this._v0), this._offsetDistance));
   }
   public needPrimaryGeometryForStrokes() {
     return true;
@@ -75,11 +62,7 @@ export class CurveOffsetXYHandler implements IStrokeHandler {
   ): void {
     for (let i = 0; i <= numStrokes; ++i) {
       // announce both start and end; adjacent duplicates will be filtered by c2 cubic fit logic
-      const fraction = Geometry.interpolate(
-        fraction0,
-        i / numStrokes,
-        fraction1
-      );
+      const fraction = Geometry.interpolate(fraction0, i / numStrokes, fraction1);
       const ray = cp.fractionToPointAndDerivative(fraction, this._r0);
       this.pushOffsetPoint(ray.origin, ray.direction);
     }
@@ -96,18 +79,11 @@ export class CurveOffsetXYHandler implements IStrokeHandler {
       const tangent = Vector3d.createStartEnd(point0, point1, this._v1);
       for (let i = 0; i <= numStrokes; ++i) {
         // announce both start and end; adjacent duplicates will be filtered by c2 cubic fit logic
-        this.pushOffsetPoint(
-          point0.interpolate(i / numStrokes, point1, this._p0),
-          tangent
-        );
+        this.pushOffsetPoint(point0.interpolate(i / numStrokes, point1, this._p0), tangent);
       }
     }
   }
-  public announcePointTangent(
-    xyz: Point3d,
-    _fraction: number,
-    tangent: Vector3d
-  ): void {
+  public announcePointTangent(xyz: Point3d, _fraction: number, tangent: Vector3d): void {
     this.pushOffsetPoint(xyz, tangent);
   }
   /**

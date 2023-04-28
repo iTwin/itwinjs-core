@@ -11,12 +11,7 @@ import { ArcGisFeatureGeometryType } from "./ArcGisFeatureQuery";
 function colorFromArray(channels?: number[]) {
   if (channels && channels.length === 4) {
     // Alpha channel is reversed, 255 = opaque
-    return ColorDef.from(
-      channels[0],
-      channels[1],
-      channels[2],
-      255 - channels[3]
-    );
+    return ColorDef.from(channels[0], channels[1], channels[2], 255 - channels[3]);
   }
   return undefined;
 }
@@ -24,13 +19,7 @@ function colorFromArray(channels?: number[]) {
 const loggerCategory = "MapLayersFormats.ArcGISFeature";
 
 /** @internal */
-export type EsriSymbolType =
-  | "esriSFS"
-  | "esriPMS"
-  | "esriSLS"
-  | "esriSMS"
-  | "esriTS"
-  | "CIMSymbolReference";
+export type EsriSymbolType = "esriSFS" | "esriPMS" | "esriSLS" | "esriSMS" | "esriTS" | "CIMSymbolReference";
 interface EsriSymbol {
   type: EsriSymbolType;
 }
@@ -218,10 +207,7 @@ export class ArcGisSymbologyRenderer {
     style: "esriSFSSolid",
   };
 
-  constructor(
-    geometryType: ArcGisFeatureGeometryType,
-    rendererDefinition: any
-  ) {
+  constructor(geometryType: ArcGisFeatureGeometryType, rendererDefinition: any) {
     let symbol;
     if (rendererDefinition?.symbol !== undefined) {
       symbol = rendererDefinition.symbol;
@@ -243,27 +229,15 @@ export class ArcGisSymbologyRenderer {
     // any symbology definition from the metadata, let's use some default symbology
     // so that we display at least something.
     if (this._symbol === undefined) {
-      Logger.logWarning(
-        loggerCategory,
-        "Symbology definition not supported, using default symbology"
-      );
-      if (
-        geometryType === "esriGeometryPoint" ||
-        geometryType === "esriGeometryMultipoint"
-      ) {
+      Logger.logWarning(loggerCategory, "Symbology definition not supported, using default symbology");
+      if (geometryType === "esriGeometryPoint" || geometryType === "esriGeometryMultipoint") {
         this._symbol = EsriPMS.fromJSON(ArcGisSymbologyRenderer.defaultPMS);
-      } else if (
-        geometryType === "esriGeometryLine" ||
-        geometryType === "esriGeometryPolyline"
-      ) {
+      } else if (geometryType === "esriGeometryLine" || geometryType === "esriGeometryPolyline") {
         this._symbol = EsriSLS.fromJSON(ArcGisSymbologyRenderer.defaultSLS);
       } else if (geometryType === "esriGeometryPolygon") {
         this._symbol = EsriSFS.fromJSON(ArcGisSymbologyRenderer.defaultSFS);
       } else {
-        Logger.logError(
-          loggerCategory,
-          "Could not determine default symbology: geometry type not supported"
-        );
+        Logger.logError(loggerCategory, "Could not determine default symbology: geometry type not supported");
       }
     }
   }
@@ -300,11 +274,7 @@ export class ArcGisSymbologyRenderer {
     }
   }
 
-  public drawPoint(
-    context: CanvasRenderingContext2D,
-    ptX: number,
-    ptY: number
-  ) {
+  public drawPoint(context: CanvasRenderingContext2D, ptX: number, ptY: number) {
     if (!context) return;
 
     if (this._symbol?.type === "esriPMS") {
@@ -318,13 +288,7 @@ export class ArcGisSymbologyRenderer {
       else if (pms.height) yOffset = pms.height * -0.5; // if no offset center in the middle
 
       if (pms.width && pms.height) {
-        context.drawImage(
-          pms.image,
-          ptX + xOffset,
-          ptY + yOffset,
-          pms.width,
-          pms.height
-        );
+        context.drawImage(pms.image, ptX + xOffset, ptY + yOffset, pms.width, pms.height);
       } else {
         context.drawImage(pms.image, ptX + xOffset, ptY + yOffset);
       }

@@ -7,10 +7,7 @@
  */
 
 import { RepeatableRelationshipPathSpecification } from "../RelationshipPathSpecification";
-import {
-  ChildNodeSpecificationBase,
-  DefaultGroupingPropertiesContainer,
-} from "./ChildNodeSpecification";
+import { ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
 
 /**
  * Produces ECInstance nodes that are related to some source ECInstance. The source instance is determined

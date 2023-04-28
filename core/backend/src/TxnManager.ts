@@ -103,19 +103,12 @@ class ChangedEntitiesArray {
     this._classIndices.length = 0;
   }
 
-  public addToChangedEntities(
-    entities: ChangedEntities,
-    type: "deleted" | "inserted" | "updated"
-  ): void {
-    if (this.entityIds.length > 0)
-      entities[type] = CompressedId64Set.compressIds(this.entityIds);
+  public addToChangedEntities(entities: ChangedEntities, type: "deleted" | "inserted" | "updated"): void {
+    if (this.entityIds.length > 0) entities[type] = CompressedId64Set.compressIds(this.entityIds);
   }
 
   public iterable(classIds: Id64Array): EntityIdAndClassIdIterable {
-    function* iterator(
-      entityIds: ReadonlyArray<Id64String>,
-      classIndices: number[]
-    ) {
+    function* iterator(entityIds: ReadonlyArray<Id64String>, classIndices: number[]) {
       const entity = { id: "", classId: "" };
       for (let i = 0; i < entityIds.length; i++) {
         entity.id = entityIds[i];
@@ -125,16 +118,13 @@ class ChangedEntitiesArray {
     }
 
     return {
-      [Symbol.iterator]: () =>
-        iterator(this.entityIds.array, this._classIndices),
+      [Symbol.iterator]: () => iterator(this.entityIds.array, this._classIndices),
     };
   }
 }
 
 class ChangedEntitiesProc {
-  private readonly _classIds = new IndexMap<Id64String>((lhs, rhs) =>
-    compareStrings(lhs, rhs)
-  );
+  private readonly _classIds = new IndexMap<Id64String>((lhs, rhs) => compareStrings(lhs, rhs));
   private readonly _inserted = new ChangedEntitiesArray(this._classIds);
   private readonly _deleted = new ChangedEntitiesArray(this._classIds);
   private readonly _updated = new ChangedEntitiesArray(this._classIds);
@@ -142,10 +132,7 @@ class ChangedEntitiesProc {
 
   public static maxPerEvent = 1000;
 
-  public static process(
-    iModel: BriefcaseDb | StandaloneDb,
-    mgr: TxnManager
-  ): void {
+  public static process(iModel: BriefcaseDb | StandaloneDb, mgr: TxnManager): void {
     if (mgr.isDisposed) {
       // The iModel is being closed. Do not prepare new sqlite statements.
       return;
@@ -216,17 +203,13 @@ class ChangedEntitiesProc {
               break;
           }
 
-          if (++changes._currSize >= maxSize)
-            changes.sendEvent(iModel, changedEvent, evtName);
+          if (++changes._currSize >= maxSize) changes.sendEvent(iModel, changedEvent, evtName);
         }
       });
 
       changes.sendEvent(iModel, changedEvent, evtName);
     } catch (err) {
-      Logger.logError(
-        BackendLoggerCategory.IModelDb,
-        BentleyError.getErrorMessage(err)
-      );
+      Logger.logError(BackendLoggerCategory.IModelDb, BentleyError.getErrorMessage(err));
     }
   }
 }
@@ -263,35 +246,20 @@ export class TxnManager {
     return this._iModel.getJsClass<typeof Relationship>(relClassName);
   }
   /** @internal */
-  protected _onBeforeOutputsHandled(
-    elClassName: string,
-    elId: Id64String
-  ): void {
-    (this._getElementClass(elClassName) as any).onBeforeOutputsHandled(
-      elId,
-      this._iModel
-    );
+  protected _onBeforeOutputsHandled(elClassName: string, elId: Id64String): void {
+    (this._getElementClass(elClassName) as any).onBeforeOutputsHandled(elId, this._iModel);
   }
   /** @internal */
   protected _onAllInputsHandled(elClassName: string, elId: Id64String): void {
-    (this._getElementClass(elClassName) as any).onAllInputsHandled(
-      elId,
-      this._iModel
-    );
+    (this._getElementClass(elClassName) as any).onAllInputsHandled(elId, this._iModel);
   }
   /** @internal */
   protected _onRootChanged(props: RelationshipProps): void {
-    this._getRelationshipClass(props.classFullName).onRootChanged(
-      props,
-      this._iModel
-    );
+    this._getRelationshipClass(props.classFullName).onRootChanged(props, this._iModel);
   }
   /** @internal */
   protected _onDeletedDependency(props: RelationshipProps): void {
-    this._getRelationshipClass(props.classFullName).onDeletedDependency(
-      props,
-      this._iModel
-    );
+    this._getRelationshipClass(props.classFullName).onDeletedDependency(props, this._iModel);
   }
   /** @internal */
   protected _onBeginValidate() {
@@ -310,11 +278,7 @@ export class TxnManager {
   /** @internal */
   protected _onGeometryChanged(modelProps: ModelGeometryChangesProps[]) {
     this.onGeometryChanged.raiseEvent(modelProps);
-    IpcHost.notifyEditingScope(
-      this._iModel,
-      "notifyGeometryChanged",
-      modelProps
-    ); // send to frontend
+    IpcHost.notifyEditingScope(this._iModel, "notifyGeometryChanged", modelProps); // send to frontend
   }
 
   /** @internal */
@@ -332,12 +296,7 @@ export class TxnManager {
   /** @internal */
   protected _onCommitted() {
     this.onCommitted.raiseEvent();
-    IpcHost.notifyTxns(
-      this._iModel,
-      "notifyCommitted",
-      this.hasPendingTxns,
-      Date.now()
-    );
+    IpcHost.notifyTxns(this._iModel, "notifyCommitted", this.hasPendingTxns, Date.now());
   }
 
   /** @internal */
@@ -379,17 +338,13 @@ export class TxnManager {
    * The argument to the event holds the list of elements that were inserted, updated, and deleted.
    * @note If there are many changed elements in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
    */
-  public readonly onElementsChanged = new BeEvent<
-    (changes: TxnChangedEntities) => void
-  >();
+  public readonly onElementsChanged = new BeEvent<(changes: TxnChangedEntities) => void>();
 
   /** Called after validation completes from [[IModelDb.saveChanges]].
    * The argument to the event holds the list of models that were inserted, updated, and deleted.
    * @note If there are many changed models in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
    */
-  public readonly onModelsChanged = new BeEvent<
-    (changes: TxnChangedEntities) => void
-  >();
+  public readonly onModelsChanged = new BeEvent<(changes: TxnChangedEntities) => void>();
 
   /** Event raised after the geometry within one or more [[GeometricModel]]s is modified by applying a changeset or validation of a transaction.
    * A model's geometry can change as a result of:
@@ -397,13 +352,9 @@ export class TxnManager {
    *  - Modification of an existing element's geometric properties; or
    *  - An explicit request to flag it as changed via [[IModelDb.Models.updateModel]].
    */
-  public readonly onModelGeometryChanged = new BeEvent<
-    (changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void
-  >();
+  public readonly onModelGeometryChanged = new BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>();
 
-  public readonly onGeometryChanged = new BeEvent<
-    (models: ModelGeometryChangesProps[]) => void
-  >();
+  public readonly onGeometryChanged = new BeEvent<(models: ModelGeometryChangesProps[]) => void>();
   /** Event raised before a commit operation is performed. Initiated by a call to [[IModelDb.saveChanges]], unless there are no changes to save. */
   public readonly onCommit = new BeEvent<() => void>();
   /** Event raised after a commit operation has been performed. Initiated by a call to [[IModelDb.saveChanges]], even if there were no changes to save. */

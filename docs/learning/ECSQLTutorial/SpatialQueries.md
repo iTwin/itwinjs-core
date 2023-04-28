@@ -35,9 +35,7 @@ See also other [ECSQL built-in geometry functions](../GeometrySqlFuncs.md) which
 > _Sample code_
 >
 > ```ts
-> const spaceElement: SpatialElement = iModelDb.elements.getElement(
->   "0x1000000001f"
-> ) as SpatialElement;
+> const spaceElement: SpatialElement = iModelDb.elements.getElement("0x1000000001f") as SpatialElement;
 >
 > iModelDb.withPreparedStatement(
 >   "SELECT e.ECInstanceId, e.ECClassId, e.CodeValue FROM bis.SpatialElement e JOIN bis.SpatialIndex i ON e.ECInstanceId=i.ECInstanceId WHERE i.ECInstanceId MATCH iModel_spatial_overlap_aabb(?) AND e.Category.Id=0x1000000000a",

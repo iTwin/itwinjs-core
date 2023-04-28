@@ -23,9 +23,7 @@ const argv = yargs
   .command(require("../scripts/start"))
   .command(require("../scripts/build"))
   .epilogue(
-    `${chalk.cyan(
-      "For more information on a particular command, run:"
-    )}\n\n    ${chalk.bold("backend-webpack-tools")} ${chalk.yellow(
-      "<command>"
-    )} ${chalk.green("--help")}`
+    `${chalk.cyan("For more information on a particular command, run:")}\n\n    ${chalk.bold(
+      "backend-webpack-tools"
+    )} ${chalk.yellow("<command>")} ${chalk.green("--help")}`
   ).argv;

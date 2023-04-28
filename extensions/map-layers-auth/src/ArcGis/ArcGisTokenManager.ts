@@ -33,32 +33,20 @@ export class ArcGisTokenManager {
     password: string,
     options: ArcGisGenerateTokenOptions
   ): Promise<ArcGisToken | undefined> {
-    if (!ArcGisTokenManager._generator)
-      ArcGisTokenManager._generator = new ArcGisTokenGenerator();
+    if (!ArcGisTokenManager._generator) ArcGisTokenManager._generator = new ArcGisTokenGenerator();
 
-    const tokenCacheKey = `${encodeURIComponent(
-      userName
-    )}@${arcGisRestServiceUrl}`;
+    const tokenCacheKey = `${encodeURIComponent(userName)}@${arcGisRestServiceUrl}`;
 
     // First check in the session cache
     const cachedToken = ArcGisTokenManager._cache.get(tokenCacheKey);
 
     // Check if token is in cached and is valid within the threshold, if not, generate a new token immediately.
-    if (
-      cachedToken !== undefined &&
-      cachedToken.expires - +new Date() >
-        ArcGisTokenManager.tokenExpiryThreshold
-    ) {
+    if (cachedToken !== undefined && cachedToken.expires - +new Date() > ArcGisTokenManager.tokenExpiryThreshold) {
       return cachedToken;
     }
 
     // Nothing in cache, generate a new token
-    const newToken = await ArcGisTokenManager._generator.generate(
-      arcGisRestServiceUrl,
-      userName,
-      password,
-      options
-    );
+    const newToken = await ArcGisTokenManager._generator.generate(arcGisRestServiceUrl, userName, password, options);
     if (newToken.token) {
       const token = newToken as ArcGisToken;
       ArcGisTokenManager._cache.set(tokenCacheKey, token);
@@ -70,8 +58,7 @@ export class ArcGisTokenManager {
 
   public static invalidateToken(token: MapLayerAccessToken): boolean {
     for (const [key, value] of ArcGisTokenManager._cache) {
-      if (value.token === token.token)
-        return ArcGisTokenManager._cache.delete(key);
+      if (value.token === token.token) return ArcGisTokenManager._cache.delete(key);
     }
 
     return false;
@@ -86,11 +73,7 @@ export class ArcGisTokenManager {
     const cachedToken = ArcGisTokenManager._oauth2Cache.get(key);
 
     // If cached token has expired (or about to expire), invalidate don't return it.
-    if (
-      cachedToken !== undefined &&
-      cachedToken.expiresAt - +new Date() <
-        ArcGisTokenManager.tokenExpiryThreshold
-    ) {
+    if (cachedToken !== undefined && cachedToken.expiresAt - +new Date() < ArcGisTokenManager.tokenExpiryThreshold) {
       ArcGisTokenManager._oauth2Cache.delete(key);
       return undefined;
     }
@@ -137,12 +120,8 @@ export class ArcGisTokenManager {
       }
     };
 
-    loadEntries(
-      window.sessionStorage.getItem(this._browserStorageKey) ?? undefined
-    );
-    loadEntries(
-      window.localStorage.getItem(this._browserStorageKey) ?? undefined
-    );
+    loadEntries(window.sessionStorage.getItem(this._browserStorageKey) ?? undefined);
+    loadEntries(window.localStorage.getItem(this._browserStorageKey) ?? undefined);
   }
 
   public static saveToBrowserStorage() {
@@ -152,24 +131,16 @@ export class ArcGisTokenManager {
     const sessionTokens: ArcGisTokenProps = {};
     const storageTokens: ArcGisTokenProps = {};
 
-    ArcGisTokenManager._oauth2Cache.forEach(
-      (value: ArcGisOAuth2Token, key: string) => {
-        // ignore the persist flag for now, and only save to session storage
-        // if (value.persist === true) {
-        //   storageTokens[key] = value;
-        // } else {
-        //   sessionTokens[key] = value;
-        // }
-        sessionTokens[key] = value;
-      }
-    );
-    window.sessionStorage.setItem(
-      this._browserStorageKey,
-      JSON.stringify(sessionTokens)
-    );
-    window.localStorage.setItem(
-      this._browserStorageKey,
-      JSON.stringify(storageTokens)
-    );
+    ArcGisTokenManager._oauth2Cache.forEach((value: ArcGisOAuth2Token, key: string) => {
+      // ignore the persist flag for now, and only save to session storage
+      // if (value.persist === true) {
+      //   storageTokens[key] = value;
+      // } else {
+      //   sessionTokens[key] = value;
+      // }
+      sessionTokens[key] = value;
+    });
+    window.sessionStorage.setItem(this._browserStorageKey, JSON.stringify(sessionTokens));
+    window.localStorage.setItem(this._browserStorageKey, JSON.stringify(storageTokens));
   }
 }

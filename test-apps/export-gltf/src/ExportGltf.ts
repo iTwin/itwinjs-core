@@ -5,13 +5,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as yargs from "yargs";
-import {
-  DbResult,
-  Id64Array,
-  Id64String,
-  Logger,
-  LogLevel,
-} from "@itwin/core-bentley";
+import { DbResult, Id64Array, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import { Angle, Geometry, Matrix3d, Point3d } from "@itwin/core-geometry";
 import {
   ECSqlStatement,
@@ -52,10 +46,7 @@ class GltfGlobals {
 
     const gltfPathParts = path.parse(gltfName);
     const binName = `${gltfPathParts.name}.bin`;
-    GltfGlobals.binFile = fs.openSync(
-      path.join(gltfPathParts.dir, binName),
-      "w"
-    );
+    GltfGlobals.binFile = fs.openSync(path.join(gltfPathParts.dir, binName), "w");
     GltfGlobals.texturesDir = gltfPathParts.dir;
     process.stdout.write(`Writing to ${gltfName} and ${binName}...\n`);
 
@@ -90,11 +81,8 @@ function findOrAddMaterialIndexForTexture(textureId: Id64String): number {
     GltfGlobals.gltf.samplers = [{}]; // Just use default sampler values
   }
 
-  const textureInfo =
-    GltfGlobals.iModel.elements.getElement<Texture>(textureId);
-  const textureName =
-    textureId +
-    (textureInfo.format === ImageSourceFormat.Jpeg ? ".jpg" : ".png");
+  const textureInfo = GltfGlobals.iModel.elements.getElement<Texture>(textureId);
+  const textureName = textureId + (textureInfo.format === ImageSourceFormat.Jpeg ? ".jpg" : ".png");
   const texturePath = path.join(GltfGlobals.texturesDir, textureName);
   fs.writeFile(texturePath, textureInfo.data, () => {}); // async is fine
 
@@ -125,12 +113,7 @@ function findOrAddMaterialIndexForColor(color: number): number {
 
   const rgb = ColorDef.getColors(color);
   const pbrMetallicRoughness: GltfMaterialPbrMetallicRoughness = {
-    baseColorFactor: [
-      rgb.r / 255,
-      rgb.g / 255,
-      rgb.b / 255,
-      (255 - rgb.t) / 255,
-    ],
+    baseColorFactor: [rgb.r / 255, rgb.g / 255, rgb.b / 255, (255 - rgb.t) / 255],
     metallicFactor: 0,
     roughnessFactor: 1,
   };
@@ -161,11 +144,7 @@ function addMeshIndices(indices: Int32Array) {
   fs.writeSync(GltfGlobals.binFile, indices);
 }
 
-function addMeshPointsAndNormals(
-  points: Float64Array,
-  normals: Float32Array,
-  translation: Point3d
-) {
+function addMeshPointsAndNormals(points: Float64Array, normals: Float32Array, translation: Point3d) {
   const outPoints = new Float32Array(points.length);
   for (let i = 0; i < points.length; i += 3) {
     // GLTF is RHS with Y-up, iModel.js is RHS with Z-up
@@ -246,16 +225,9 @@ function addMeshParams(params: Float32Array) {
   });
 }
 
-function addMesh(
-  mesh: ExportGraphicsMesh,
-  translation: Point3d,
-  color: number,
-  textureId?: Id64String
-) {
+function addMesh(mesh: ExportGraphicsMesh, translation: Point3d, color: number, textureId?: Id64String) {
   const material =
-    textureId !== undefined
-      ? findOrAddMaterialIndexForTexture(textureId)
-      : findOrAddMaterialIndexForColor(color);
+    textureId !== undefined ? findOrAddMaterialIndexForTexture(textureId) : findOrAddMaterialIndexForColor(color);
 
   const primitive: GltfMeshPrimitive = {
     mode: MeshPrimitiveMode.GlTriangles,
@@ -268,8 +240,7 @@ function addMesh(
       NORMAL: GltfGlobals.gltf.accessors.length + 2,
     },
   };
-  if (textureId !== undefined)
-    primitive.attributes.TEXCOORD_0 = GltfGlobals.gltf.accessors.length + 3;
+  if (textureId !== undefined) primitive.attributes.TEXCOORD_0 = GltfGlobals.gltf.accessors.length + 3;
   GltfGlobals.gltf.meshes.push({ primitives: [primitive] });
 
   addMeshIndices(mesh.indices);
@@ -282,11 +253,7 @@ function addMeshNode(name: string) {
   GltfGlobals.gltf.nodes.push({ name, mesh: GltfGlobals.gltf.meshes.length });
 }
 
-function addLines(
-  lines: ExportGraphicsLines,
-  translation: Point3d,
-  color: number
-) {
+function addLines(lines: ExportGraphicsLines, translation: Point3d, color: number) {
   const primitive: GltfMeshPrimitive = {
     mode: MeshPrimitiveMode.GlLines,
     material: findOrAddMaterialIndexForColor(color),
@@ -359,9 +326,7 @@ function exportElements(
   });
 }
 
-function getInstancesByPart(
-  instances: ExportPartInstanceInfo[]
-): Map<Id64String, ExportPartInstanceInfo[]> {
+function getInstancesByPart(instances: ExportPartInstanceInfo[]): Map<Id64String, ExportPartInstanceInfo[]> {
   const partMap = new Map<Id64String, ExportPartInstanceInfo[]>();
   for (const instance of instances) {
     const instancesForThisPart = partMap.get(instance.partId);
@@ -385,11 +350,7 @@ class TranslationRotationScale {
   public readonly scale?: number[];
   constructor(recenterTranslation: Point3d, xform?: Float64Array) {
     // GLTF = RHS Y-up, iModel.js = RHS Z-up
-    this.translation = [
-      recenterTranslation.x,
-      recenterTranslation.z,
-      -recenterTranslation.y,
-    ];
+    this.translation = [recenterTranslation.x, recenterTranslation.z, -recenterTranslation.y];
     if (!xform) return;
 
     if (!almostEqual(0, xform[3], xform[7], xform[11])) {
@@ -399,13 +360,8 @@ class TranslationRotationScale {
     }
 
     // Uniform and positive scale guaranteed by exportGraphics
-    const xColumnMagnitude = Geometry.hypotenuseXYZ(
-      xform[0],
-      xform[4],
-      xform[8]
-    );
-    if (!almostEqual(1, xColumnMagnitude))
-      this.scale = [xColumnMagnitude, xColumnMagnitude, xColumnMagnitude];
+    const xColumnMagnitude = Geometry.hypotenuseXYZ(xform[0], xform[4], xform[8]);
+    if (!almostEqual(1, xColumnMagnitude)) this.scale = [xColumnMagnitude, xColumnMagnitude, xColumnMagnitude];
 
     const invScale = 1.0 / xColumnMagnitude;
     const matrix = Matrix3d.createRowValues(
@@ -426,22 +382,15 @@ class TranslationRotationScale {
   }
 }
 
-function exportInstances(
-  partInstanceArray: ExportPartInstanceInfo[],
-  recenterTranslation: Point3d
-) {
-  const partMap: Map<Id64String, ExportPartInstanceInfo[]> =
-    getInstancesByPart(partInstanceArray);
-  process.stdout.write(
-    `Found ${partInstanceArray.length} instances for ${partMap.size} parts...\n`
-  );
+function exportInstances(partInstanceArray: ExportPartInstanceInfo[], recenterTranslation: Point3d) {
+  const partMap: Map<Id64String, ExportPartInstanceInfo[]> = getInstancesByPart(partInstanceArray);
+  process.stdout.write(`Found ${partInstanceArray.length} instances for ${partMap.size} parts...\n`);
 
   const zeroTranslation = Point3d.createZero(); // Apply recenterTranslation to instance xform, not actual geometry
-  const onPartLineGraphics =
-    (meshIndices: number[]) => (info: ExportPartLinesInfo) => {
-      meshIndices.push(GltfGlobals.gltf.meshes.length);
-      addLines(info.lines, zeroTranslation, info.color);
-    };
+  const onPartLineGraphics = (meshIndices: number[]) => (info: ExportPartLinesInfo) => {
+    meshIndices.push(GltfGlobals.gltf.meshes.length);
+    addLines(info.lines, zeroTranslation, info.color);
+  };
   const onPartGraphics = (meshIndices: number[]) => (info: ExportPartInfo) => {
     meshIndices.push(GltfGlobals.gltf.meshes.length);
     addMesh(info.mesh, zeroTranslation, info.color, info.textureId);
@@ -464,20 +413,10 @@ function exportInstances(
       // display properties. This can lead to different colors, materials or textures so an exporter
       // that is concerned about matching the appearance of the original iModel should not reuse a
       // GeometryPart exported with different display properties.
-      if (
-        !ExportGraphics.arePartDisplayInfosEqual(
-          baseDisplayProps,
-          instance.displayProps
-        )
-      )
-        process.stdout.write(
-          "Warning: GeometryPartInstances found using different display properties.\n"
-        );
+      if (!ExportGraphics.arePartDisplayInfosEqual(baseDisplayProps, instance.displayProps))
+        process.stdout.write("Warning: GeometryPartInstances found using different display properties.\n");
 
-      const trs = new TranslationRotationScale(
-        recenterTranslation,
-        instance.transform
-      );
+      const trs = new TranslationRotationScale(recenterTranslation, instance.transform);
       for (const meshIndex of meshIndices) {
         nodeIndices.push(nodes.length);
         nodes.push({
@@ -515,8 +454,7 @@ const exportGltfArgs = yargs
   const sql =
     "SELECT e.ECInstanceId FROM bis.GeometricElement3d e JOIN bis.Model m ON e.Model.Id=m.ECInstanceId WHERE m.isTemplate=false AND m.isPrivate=false";
   GltfGlobals.iModel.withPreparedStatement(sql, (stmt: ECSqlStatement) => {
-    while (stmt.step() === DbResult.BE_SQLITE_ROW)
-      elementIdArray.push(stmt.getValue(0).getId());
+    while (stmt.step() === DbResult.BE_SQLITE_ROW) elementIdArray.push(stmt.getValue(0).getId());
   });
   process.stdout.write(`Found ${elementIdArray.length} 3D elements...\n`);
   if (elementIdArray.length === 0) return;
@@ -531,14 +469,9 @@ const exportGltfArgs = yargs
   exportInstances(partInstanceArray, recenterTranslation);
 
   GltfGlobals.gltf.buffers[0].byteLength = GltfGlobals.binBytesWritten;
-  fs.writeFileSync(
-    exportGltfArgs.output,
-    JSON.stringify(GltfGlobals.gltf, undefined, 2)
-  );
+  fs.writeFileSync(exportGltfArgs.output, JSON.stringify(GltfGlobals.gltf, undefined, 2));
   fs.closeSync(GltfGlobals.binFile);
-  process.stdout.write(
-    `Export successful, wrote ${GltfGlobals.binBytesWritten} bytes.\n`
-  );
+  process.stdout.write(`Export successful, wrote ${GltfGlobals.binBytesWritten} bytes.\n`);
 })().catch((error) => {
   process.stdout.write(`${error.message}\n${error.stack}\n`);
 });

@@ -24,12 +24,7 @@ class SampleGridBuilder {
   private _numXEdge: number;
   private _numYEdge: number;
   private _data: Point3d[][];
-  public constructor(
-    range: Range3d,
-    numXEdge: number,
-    numYEdge: number,
-    initialZ: number
-  ) {
+  public constructor(range: Range3d, numXEdge: number, numYEdge: number, initialZ: number) {
     this._numXEdge = Math.max(10, numXEdge);
     this._numYEdge = Math.max(5, numYEdge);
     this._range = range.clone();
@@ -48,22 +43,12 @@ class SampleGridBuilder {
   }
   /** Return the closest x index for given x value */
   public closestXIndex(x: number): number {
-    return this.closestGridIndex(
-      x,
-      this._range.low.x,
-      this._range.high.x,
-      this._numXEdge
-    );
+    return this.closestGridIndex(x, this._range.low.x, this._range.high.x, this._numXEdge);
   }
 
   /** Return the closest y index for given y value */
   public closestYIndex(y: number): number {
-    return this.closestGridIndex(
-      y,
-      this._range.low.y,
-      this._range.high.y,
-      this._numYEdge
-    );
+    return this.closestGridIndex(y, this._range.low.y, this._range.high.y, this._numYEdge);
   }
   public closestGridIndex(q: number, q0: number, q1: number, numEdge: number) {
     if (q < q0) return 0;
@@ -94,23 +79,14 @@ class SampleGridBuilder {
    * @param zNew
    * @param pyramidDropToZeroCount INTEGER count of grid edges.
    */
-  public setGridBlockZToPyramidMax(
-    iMid: number,
-    jMid: number,
-    zNew: number,
-    pyramidDropToZeroCount: number
-  ) {
+  public setGridBlockZToPyramidMax(iMid: number, jMid: number, zNew: number, pyramidDropToZeroCount: number) {
     this.setGridZToMax(iMid, jMid, zNew);
     const n = Math.ceil(pyramidDropToZeroCount);
     if (pyramidDropToZeroCount > 1) {
       for (let j = -n; j <= n; j++) {
         for (let i = -n; i <= n; i++) {
           const k = Math.abs(i) >= Math.abs(j) ? Math.abs(i) : Math.abs(j);
-          this.setGridZToMax(
-            iMid + i,
-            jMid + j,
-            zNew * (1.0 - k / pyramidDropToZeroCount)
-          );
+          this.setGridZToMax(iMid + i, jMid + j, zNew * (1.0 - k / pyramidDropToZeroCount));
         }
       }
     }
@@ -124,24 +100,14 @@ class SampleGridBuilder {
    * @param zNew
    * @param pyramidDropToZeroCount INTEGER count of grid edges.
    */
-  public setGridZToConeMax(
-    iMid: number,
-    jMid: number,
-    zNew: number,
-    coneRadius: number
-  ) {
+  public setGridZToConeMax(iMid: number, jMid: number, zNew: number, coneRadius: number) {
     const n = Math.ceil(coneRadius);
     this.setGridZToMax(iMid, jMid, zNew);
     if (n > 1) {
       for (let j = -n; j <= n; j++) {
         for (let i = -n; i <= n; i++) {
           const r = Geometry.hypotenuseXY(i, j);
-          if (r < coneRadius)
-            this.setGridZToMax(
-              iMid + i,
-              jMid + j,
-              zNew * (1.0 - r / coneRadius)
-            );
+          if (r < coneRadius) this.setGridZToMax(iMid + i, jMid + j, zNew * (1.0 - r / coneRadius));
         }
       }
     }
@@ -154,12 +120,7 @@ class SampleGridBuilder {
    * @param zNew
    * @param baseRadius radius of base circle
    */
-  public setGridZToCubicMax(
-    iMid: number,
-    jMid: number,
-    zNew: number,
-    baseRadius: number
-  ) {
+  public setGridZToCubicMax(iMid: number, jMid: number, zNew: number, baseRadius: number) {
     const n = Math.ceil(baseRadius);
     this.setGridZToMax(iMid, jMid, zNew);
     let u, v, f;
@@ -258,27 +219,20 @@ function buildSampledGrid(
   let numYEdge = numLongDirectionEdge;
   if (range.xLength() > range.yLength()) {
     const tileSize = range.xLength() / numXEdge;
-    numYEdge = Math.ceil(
-      (numLongDirectionEdge * range.yLength()) / range.xLength()
-    );
+    numYEdge = Math.ceil((numLongDirectionEdge * range.yLength()) / range.xLength());
     range.high.y = range.low.y + numYEdge * tileSize;
   } else {
     const tileSize = range.yLength() / numXEdge;
-    numXEdge = Math.ceil(
-      (numLongDirectionEdge * range.xLength()) / range.yLength()
-    );
+    numXEdge = Math.ceil((numLongDirectionEdge * range.xLength()) / range.yLength());
     range.high.x = range.low.x + numXEdge * tileSize;
   }
   const grid = new SampleGridBuilder(range, numXEdge, numYEdge, 0.0);
   for (const point of points) {
     const i = grid.closestXIndex(point.x);
     const j = grid.closestYIndex(point.y);
-    if (templateType === 3)
-      grid.setGridZToCubicMax(i, j, point.z, templateWidth);
-    if (templateType === 2)
-      grid.setGridZToConeMax(i, j, point.z, templateWidth);
-    else if (templateType === 1)
-      grid.setGridBlockZToPyramidMax(i, j, point.z, templateWidth);
+    if (templateType === 3) grid.setGridZToCubicMax(i, j, point.z, templateWidth);
+    if (templateType === 2) grid.setGridZToConeMax(i, j, point.z, templateWidth);
+    else if (templateType === 1) grid.setGridBlockZToPyramidMax(i, j, point.z, templateWidth);
     else grid.setGridZToMax(i, j, point.z);
   }
   return grid.createPolyface();
@@ -325,13 +279,7 @@ describe("GridSampling", () => {
     points.push(Point3d.create(maxX, minY, 0.0));
     points.push(Point3d.create(maxX, maxY, 0.0));
     points.push(Point3d.create(minX, maxY, 0.0));
-    points.push(
-      Point3d.create(
-        Geometry.interpolate(minX, 0.75, maxX),
-        Geometry.interpolate(minY, 0.8, maxY),
-        1.0
-      )
-    );
+    points.push(Point3d.create(Geometry.interpolate(minX, 0.75, maxX), Geometry.interpolate(minY, 0.8, maxY), 1.0));
 
     const pointA = Point3d.create(1.5, 3.0, 0.25);
     const pointB = Point3d.create(6.0, 4.0, 1.0);
@@ -348,22 +296,13 @@ describe("GridSampling", () => {
     for (const templateType of [1, 2, 3]) {
       let x0 = 0;
       for (const templateWidth of [0, 1.5, 2, 2.5, 3, 4.5]) {
-        const polyface = buildSampledGrid(
-          points,
-          50,
-          templateWidth,
-          templateType
-        );
+        const polyface = buildSampledGrid(points, 50, templateWidth, templateType);
         GeometryCoreTestIO.captureGeometry(allGeometry, polyface, x0, y0);
         x0 += 20.0;
       }
       y0 += 10.0;
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "GridSampling",
-      "Hello5Points"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "GridSampling", "Hello5Points");
     expect(ck.getNumErrors()).equals(0);
   });
 });

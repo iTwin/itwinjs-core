@@ -85,14 +85,10 @@ export function disposeArray(list?: IDisposable[]): undefined {
  * disposing the resource).
  * @public
  */
-export function using<T extends IDisposable, TResult>(
-  resources: T | T[],
-  func: (...r: T[]) => TResult
-): TResult {
+export function using<T extends IDisposable, TResult>(resources: T | T[], func: (...r: T[]) => TResult): TResult {
   if (!Array.isArray(resources)) return using([resources], func);
 
-  const doDispose = () =>
-    resources.forEach((disposable) => disposable.dispose());
+  const doDispose = () => resources.forEach((disposable) => disposable.dispose());
   let shouldDisposeImmediately = true;
 
   try {

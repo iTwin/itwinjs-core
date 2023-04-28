@@ -58,15 +58,7 @@ describe("ModelState", () => {
   });
 
   it("should be able to load ModelState", async () => {
-    await imodel.models.load([
-      "0x24",
-      "0x28",
-      "0x2c",
-      "0x11",
-      "0x34",
-      "0x24",
-      "nonsense",
-    ]);
+    await imodel.models.load(["0x24", "0x28", "0x2c", "0x11", "0x34", "0x24", "nonsense"]);
     const models = imodel.models.loaded;
     assert.equal(models.size, 5);
     assert.instanceOf(models.get("0x24"), DrawingModelState);
@@ -81,19 +73,9 @@ describe("ModelState", () => {
       expect(geomModel.is2d).to.equal(!geomModel.is3d);
     });
 
-    models.forEach((model) =>
-      assert.deepEqual(model.clone(), model, "clone of ModelState should work")
-    );
+    models.forEach((model) => assert.deepEqual(model.clone(), model, "clone of ModelState should work"));
 
-    await imodel.models.load([
-      "0x24",
-      "0x28",
-      "0x2c",
-      "0x11",
-      "0x34",
-      "0x24",
-      "nonsense",
-    ]);
+    await imodel.models.load(["0x24", "0x28", "0x2c", "0x11", "0x34", "0x24", "nonsense"]);
     assert.equal(models.size, 5);
 
     const testDrawing = models.get("0x24") as DrawingModelState;
@@ -114,10 +96,7 @@ describe("ModelState", () => {
     assert.equal(modelProps[0].classFullName, "BisCore:PhysicalModel");
     assert.equal(modelProps[0].id, "0x11");
     assert.equal(modelProps[0].modeledElement.id, "0x11");
-    assert.equal(
-      modelProps[0].modeledElement.relClassName,
-      "BisCore:ModelModelsElement"
-    );
+    assert.equal(modelProps[0].modeledElement.relClassName, "BisCore:ModelModelsElement");
     assert.equal(modelProps[0].name, "DefaultModel");
     assert.equal(modelProps[0].parentModel, IModel.repositoryModelId);
     assert.equal(modelProps[0].jsonProperties.formatter.fmtFlags.angMode, 1);
@@ -127,10 +106,7 @@ describe("ModelState", () => {
     assert.equal(modelProps[1].classFullName, "BisCore:PhysicalModel");
     assert.equal(modelProps[1].id, "0x1c");
     assert.equal(modelProps[1].modeledElement.id, "0x1c");
-    assert.equal(
-      modelProps[1].modeledElement.relClassName,
-      "BisCore:ModelModelsElement"
-    );
+    assert.equal(modelProps[1].modeledElement.relClassName, "BisCore:ModelModelsElement");
     assert.equal(modelProps[1].name, "Physical");
     assert.equal(modelProps[1].parentModel, IModel.repositoryModelId);
     assert.equal(modelProps[1].jsonProperties.formatter.fmtFlags.angMode, 1);
@@ -148,10 +124,7 @@ describe("ModelState", () => {
       assert.equal(props.classFullName, "BisCore:DictionaryModel");
       assert.equal(props.id, "0x10");
       assert.equal(props.modeledElement.id, "0x10");
-      assert.equal(
-        props.modeledElement.relClassName,
-        "BisCore:ModelModelsElement"
-      );
+      assert.equal(props.modeledElement.relClassName, "BisCore:ModelModelsElement");
       assert.equal(props.name, "BisCore.DictionaryModel");
       assert.equal(props.parentModel, IModel.repositoryModelId);
       assert.isTrue(props.isPrivate);
@@ -162,21 +135,13 @@ describe("ModelState", () => {
     await imodel2.models.load(["0x28", "0x1c"]);
     assert.equal(imodel2.models.loaded.size, 2);
     const scalableMesh = imodel2.models.getLoaded("0x28");
-    assert.instanceOf(
-      scalableMesh,
-      SpatialModelState,
-      "ScalableMeshModel should be SpatialModel"
-    );
+    assert.instanceOf(scalableMesh, SpatialModelState, "ScalableMeshModel should be SpatialModel");
     assert.equal(scalableMesh!.classFullName, "ScalableMesh:ScalableMeshModel");
 
     testSpatial = imodel2.models.getLoaded("0x1c") as SpatialModelState;
     range = await testSpatial.queryModelRange();
-    assert.isTrue(
-      range.low.isAlmostEqual({ x: 288874.09375, y: 3803760.75, z: -0.0005 })
-    );
-    assert.isTrue(
-      range.high.isAlmostEqual({ x: 289160.84375, y: 3803959.5, z: 0.0005 })
-    );
+    assert.isTrue(range.low.isAlmostEqual({ x: 288874.09375, y: 3803760.75, z: -0.0005 }));
+    assert.isTrue(range.high.isAlmostEqual({ x: 289160.84375, y: 3803959.5, z: 0.0005 }));
   });
 
   it("view thumbnails", async () => {

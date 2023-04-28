@@ -15,9 +15,7 @@ describe("Learning Snippets", () => {
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile(
-      "assets/datasets/Properties_60InstancesWithUrl2.ibim"
-    );
+    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {
@@ -64,17 +62,12 @@ describe("Learning Snippets", () => {
         const content = await Presentation.presentation.getContent({
           imodel,
           rulesetOrId: ruleset,
-          keys: new KeySet([
-            { className: "BisCore:PhysicalModel", id: "0x1c" },
-          ]),
+          keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
           descriptor: {},
         });
 
         content!.contentSet.forEach((record) => {
-          expect(record.primaryKeys[0].className).to.be.oneOf([
-            "Generic:PhysicalObject",
-            "PCJ_TestSchema:TestClass",
-          ]);
+          expect(record.primaryKeys[0].className).to.be.oneOf(["Generic:PhysicalObject", "PCJ_TestSchema:TestClass"]);
         });
       });
 
@@ -110,16 +103,12 @@ describe("Learning Snippets", () => {
         const content = await Presentation.presentation.getContent({
           imodel,
           rulesetOrId: ruleset,
-          keys: new KeySet([
-            { className: "BisCore:ModelSelector", id: "0x30" },
-          ]),
+          keys: new KeySet([{ className: "BisCore:ModelSelector", id: "0x30" }]),
           descriptor: {},
         });
 
         expect(content!.contentSet.length).to.eq(1);
-        expect(content!.contentSet[0].primaryKeys[0].className).to.eq(
-          "BisCore:SpatialViewDefinition"
-        );
+        expect(content!.contentSet[0].primaryKeys[0].className).to.eq("BisCore:SpatialViewDefinition");
         const field = getFieldByLabel(content!.descriptor.fields, "Pitch");
         expect(content!.contentSet[0].values[field.name]).to.be.not.below(0);
       });

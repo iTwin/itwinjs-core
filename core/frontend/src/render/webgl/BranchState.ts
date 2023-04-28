@@ -109,11 +109,7 @@ export class BranchState {
     this._opts.symbologyOverrides = ovrs;
   }
 
-  public changeRenderPlan(
-    viewFlags: ViewFlags,
-    is3d: boolean,
-    hline: HiddenLine.Settings | undefined
-  ): void {
+  public changeRenderPlan(viewFlags: ViewFlags, is3d: boolean, hline: HiddenLine.Settings | undefined): void {
     this.viewFlags = viewFlags;
     this._opts.is3d = is3d;
     this.edgeSettings.init(hline);
@@ -123,15 +119,11 @@ export class BranchState {
   public static fromBranch(prev: BranchState, branch: Branch): BranchState {
     return new BranchState({
       viewFlags: branch.branch.getViewFlags(prev.viewFlags),
-      transform: prev.transform.multiplyTransformTransform(
-        branch.localToWorldTransform
-      ),
-      symbologyOverrides:
-        branch.branch.symbologyOverrides ?? prev.symbologyOverrides,
+      transform: prev.transform.multiplyTransformTransform(branch.localToWorldTransform),
+      symbologyOverrides: branch.branch.symbologyOverrides ?? prev.symbologyOverrides,
       iModel: branch.iModel ?? prev.iModel,
       planarClassifier:
-        undefined !== branch.planarClassifier &&
-        undefined !== branch.planarClassifier.texture
+        undefined !== branch.planarClassifier && undefined !== branch.planarClassifier.texture
           ? branch.planarClassifier
           : prev.planarClassifier,
       textureDrape: branch.textureDrape ?? prev.textureDrape,
@@ -140,17 +132,11 @@ export class BranchState {
       edgeSettings: branch.edgeSettings ?? prev.edgeSettings,
       is3d: branch.frustum?.is3d ?? prev.is3d,
       frustumScale: branch.frustum?.scale ?? prev.frustumScale,
-      secondaryClassifiers:
-        branch.secondaryClassifiers ?? prev.secondaryClassifiers,
+      secondaryClassifiers: branch.secondaryClassifiers ?? prev.secondaryClassifiers,
       // The branch can augment the symbology overrides. If it doesn't want to, allow its parent to do so, unless this branch supplies its own symbology overrides.
       appearanceProvider:
-        branch.appearanceProvider ??
-        (branch.branch.symbologyOverrides
-          ? undefined
-          : prev.appearanceProvider),
-      realityModelDisplaySettings:
-        branch.branch.realityModelDisplaySettings ??
-        prev.realityModelDisplaySettings,
+        branch.appearanceProvider ?? (branch.branch.symbologyOverrides ? undefined : prev.appearanceProvider),
+      realityModelDisplaySettings: branch.branch.realityModelDisplaySettings ?? prev.realityModelDisplaySettings,
     });
   }
 

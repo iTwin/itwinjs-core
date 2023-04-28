@@ -7,10 +7,7 @@
  */
 
 import { Range1d, Range1dProps } from "@itwin/core-geometry";
-import {
-  ThematicGradientSettings,
-  ThematicGradientSettingsProps,
-} from "./ThematicDisplay";
+import { ThematicGradientSettings, ThematicGradientSettingsProps } from "./ThematicDisplay";
 import { Gradient } from "./Gradient";
 
 /** JSON representation of an [[AnalysisStyleDisplacement]].
@@ -46,9 +43,7 @@ export class AnalysisStyleDisplacement {
   }
 
   /** Create from JSON representation. */
-  public static fromJSON(
-    props: AnalysisStyleDisplacementProps
-  ): AnalysisStyleDisplacement {
+  public static fromJSON(props: AnalysisStyleDisplacementProps): AnalysisStyleDisplacement {
     return new this(props.channelName, props.scale);
   }
 
@@ -105,15 +100,11 @@ export class AnalysisStyleThematic {
   private constructor(props: AnalysisStyleThematicProps) {
     this.channelName = props.channelName;
     this.range = Range1d.fromJSON(props.range);
-    this.thematicSettings = ThematicGradientSettings.fromJSON(
-      props.thematicSettings
-    );
+    this.thematicSettings = ThematicGradientSettings.fromJSON(props.thematicSettings);
   }
 
   /** Create from JSON representation. */
-  public static fromJSON(
-    props: AnalysisStyleThematicProps
-  ): AnalysisStyleThematic {
+  public static fromJSON(props: AnalysisStyleThematicProps): AnalysisStyleThematic {
     return new this(props);
   }
 
@@ -132,8 +123,7 @@ export class AnalysisStyleThematic {
 
   /** The gradient computed from [[thematicSettings]]. */
   public get gradient(): Gradient.Symb {
-    if (!this._gradient)
-      this._gradient = Gradient.Symb.createThematic(this.thematicSettings);
+    if (!this._gradient) this._gradient = Gradient.Symb.createThematic(this.thematicSettings);
 
     return this._gradient;
   }
@@ -181,11 +171,7 @@ function tryConvertLegacyProps(input: AnalysisStyleProps): AnalysisStyleProps {
   if (input.displacement || input.scalar) return input;
 
   const legacy = input as LegacyAnalysisStyleProps;
-  if (
-    undefined === legacy.displacementChannelName &&
-    undefined === legacy.scalarChannelName
-  )
-    return input;
+  if (undefined === legacy.displacementChannelName && undefined === legacy.scalarChannelName) return input;
 
   const output: AnalysisStyleProps = {
     normalChannelName: input.normalChannelName,
@@ -198,10 +184,7 @@ function tryConvertLegacyProps(input: AnalysisStyleProps): AnalysisStyleProps {
     };
   }
 
-  if (
-    undefined !== legacy.scalarChannelName &&
-    undefined !== legacy.scalarRange
-  ) {
+  if (undefined !== legacy.scalarChannelName && undefined !== legacy.scalarRange) {
     output.scalar = {
       channelName: legacy.scalarChannelName,
       range: legacy.scalarRange,
@@ -232,12 +215,7 @@ export class AnalysisStyle {
     if (!props) return this.defaults;
 
     props = tryConvertLegacyProps(props);
-    if (
-      !props.displacement &&
-      !props.scalar &&
-      undefined === props.normalChannelName
-    )
-      return this.defaults;
+    if (!props.displacement && !props.scalar && undefined === props.normalChannelName) return this.defaults;
 
     return new AnalysisStyle(props);
   }
@@ -245,13 +223,9 @@ export class AnalysisStyle {
   /** @internal */
   private constructor(props: AnalysisStyleProps) {
     this.normalChannelName = props.normalChannelName;
-    if (props.displacement)
-      this.displacement = AnalysisStyleDisplacement.fromJSON(
-        props.displacement
-      );
+    if (props.displacement) this.displacement = AnalysisStyleDisplacement.fromJSON(props.displacement);
 
-    if (props.scalar)
-      this.thematic = AnalysisStyleThematic.fromJSON(props.scalar);
+    if (props.scalar) this.thematic = AnalysisStyleThematic.fromJSON(props.scalar);
   }
 
   /** Convert this style to its JSON representation. */
@@ -263,8 +237,7 @@ export class AnalysisStyle {
 
     if (this.thematic) props.scalar = this.thematic.toJSON();
 
-    if (undefined !== this.normalChannelName)
-      props.normalChannelName = this.normalChannelName;
+    if (undefined !== this.normalChannelName) props.normalChannelName = this.normalChannelName;
 
     return props;
   }
@@ -281,19 +254,10 @@ export class AnalysisStyle {
   public equals(other: AnalysisStyle): boolean {
     if (this.normalChannelName !== other.normalChannelName) return false;
 
-    if (
-      (undefined === this.displacement) !==
-      (undefined === other.displacement)
-    )
-      return false;
-    else if (
-      this.displacement &&
-      !this.displacement.equals(other.displacement!)
-    )
-      return false;
+    if ((undefined === this.displacement) !== (undefined === other.displacement)) return false;
+    else if (this.displacement && !this.displacement.equals(other.displacement!)) return false;
 
-    if ((undefined === this.thematic) !== (undefined === other.thematic))
-      return false;
+    if ((undefined === this.thematic) !== (undefined === other.thematic)) return false;
 
     return undefined === this.thematic || this.thematic.equals(other.thematic!);
   }

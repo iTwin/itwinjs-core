@@ -7,11 +7,7 @@ import { assert } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
-import {
-  CheckpointManager,
-  V1CheckpointManager,
-  V2CheckpointManager,
-} from "../../CheckpointManager";
+import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
 import { IModelHost } from "../../core-backend";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelJsFs } from "../../IModelJsFs";
@@ -63,13 +59,7 @@ describe("V1 Checkpoint Manager", () => {
     };
     assert.equal(
       V1CheckpointManager.getFileName(props),
-      path.join(
-        IModelHost.cacheDir,
-        "imodels",
-        "910",
-        "checkpoints",
-        "1234.bim"
-      )
+      path.join(IModelHost.cacheDir, "imodels", "910", "checkpoints", "1234.bim")
     );
   });
 
@@ -78,17 +68,11 @@ describe("V1 Checkpoint Manager", () => {
       V1CheckpointManager.getFolder("1234"),
       path.join(IModelHost.cacheDir, "imodels", "1234", "checkpoints")
     );
-    assert.equal(
-      V1CheckpointManager.getFolder(""),
-      path.join(IModelHost.cacheDir, "imodels", "checkpoints")
-    );
+    assert.equal(V1CheckpointManager.getFolder(""), path.join(IModelHost.cacheDir, "imodels", "checkpoints"));
   });
 
   it("should fix invalid dbGuid during download", async () => {
-    const dbPath = IModelTestUtils.prepareOutputFile(
-      "IModel",
-      "TestCheckpoint.bim"
-    );
+    const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
     const snapshot = SnapshotDb.createEmpty(dbPath, {
       rootSubject: { name: "test" },
     });
@@ -102,17 +86,12 @@ describe("V1 Checkpoint Manager", () => {
     assert.notEqual(iModelId, snapshot.nativeDb.getIModelId()); // Ensure the Snapshot dbGuid and iModelId are different
     snapshot.close();
 
-    sinon
-      .stub(V2CheckpointManager, "downloadCheckpoint")
-      .callsFake(async (arg) => {
-        IModelJsFs.copySync(dbPath, arg.localFile);
-        return changeset.id;
-      });
+    sinon.stub(V2CheckpointManager, "downloadCheckpoint").callsFake(async (arg) => {
+      IModelJsFs.copySync(dbPath, arg.localFile);
+      return changeset.id;
+    });
 
-    const localFile = IModelTestUtils.prepareOutputFile(
-      "IModel",
-      "TestCheckpoint2.bim"
-    );
+    const localFile = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
 
     const request = { localFile, checkpoint: { iTwinId, iModelId, changeset } };
     await CheckpointManager.downloadCheckpoint(request);
@@ -171,10 +150,7 @@ describe("Checkpoint Manager", () => {
   });
 
   it("downloadCheckpoint should fall back to use v1 checkpoints if v2 checkpoints are not enabled", async () => {
-    const dbPath = IModelTestUtils.prepareOutputFile(
-      "IModel",
-      "TestCheckpoint.bim"
-    );
+    const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
     const snapshot = SnapshotDb.createEmpty(dbPath, {
       rootSubject: { name: "test" },
     });
@@ -187,21 +163,14 @@ describe("Checkpoint Manager", () => {
     snapshot.close();
 
     sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
-    sinon
-      .stub(IModelHost.hubAccess, "queryV2Checkpoint")
-      .callsFake(async () => undefined);
+    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => undefined);
 
-    const v1Spy = sinon
-      .stub(V1CheckpointManager, "downloadCheckpoint")
-      .callsFake(async (arg) => {
-        IModelJsFs.copySync(dbPath, arg.localFile);
-        return changeset.id;
-      });
+    const v1Spy = sinon.stub(V1CheckpointManager, "downloadCheckpoint").callsFake(async (arg) => {
+      IModelJsFs.copySync(dbPath, arg.localFile);
+      return changeset.id;
+    });
 
-    const localFile = IModelTestUtils.prepareOutputFile(
-      "IModel",
-      "TestCheckpoint2.bim"
-    );
+    const localFile = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
 
     const request = {
       localFile,

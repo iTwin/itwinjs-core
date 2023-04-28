@@ -52,8 +52,7 @@ export class HSVColor {
     let weightedDelta;
     if (darkenColor) {
       weightedDelta = delta * HSVConstants.HSV_VALUE_WEIGHT;
-      if (this.v >= weightedDelta)
-        return new HSVColor(this.h, this.s, this.v - weightedDelta);
+      if (this.v >= weightedDelta) return new HSVColor(this.h, this.s, this.v - weightedDelta);
 
       weightedDelta -= this.v;
       const s = Math.min(this.s + weightedDelta, 100);
@@ -61,8 +60,7 @@ export class HSVColor {
     }
 
     weightedDelta = delta * HSVConstants.HSV_SATURATION_WEIGHT;
-    if (this.s >= weightedDelta)
-      return new HSVColor(this.h, this.s - weightedDelta, this.v);
+    if (this.s >= weightedDelta) return new HSVColor(this.h, this.s - weightedDelta, this.v);
 
     weightedDelta -= this.s;
     const v = Math.min(this.v + weightedDelta, 100);

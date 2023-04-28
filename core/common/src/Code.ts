@@ -73,9 +73,7 @@ export class Code implements CodeProps {
   }
   /** @internal */
   public static equalCodes(c1: CodeProps, c2: CodeProps): boolean {
-    return (
-      c1.spec === c2.spec && c1.scope === c2.scope && c1.value === c2.value
-    );
+    return c1.spec === c2.spec && c1.scope === c2.scope && c1.value === c2.value;
   }
   /** Determine whether this Code is valid. */
   public static isValid(c: CodeProps): boolean {
@@ -291,12 +289,7 @@ export class CodeSpec {
    */
   public properties: CodeSpecProperties;
 
-  private constructor(
-    iModel: IModel,
-    id: Id64String,
-    name: string,
-    properties?: CodeSpecProperties
-  ) {
+  private constructor(iModel: IModel, id: Id64String, name: string, properties?: CodeSpecProperties) {
     this.iModel = iModel;
     this.id = id;
     this.name = name;
@@ -316,9 +309,7 @@ export class CodeSpec {
     scopeReq?: CodeScopeSpec.ScopeRequirement
   ): CodeSpec {
     const props: CodeSpecProperties = { scopeSpec: { type: scopeType } };
-    if (scopeReq)
-      props.scopeSpec.fGuidRequired =
-        scopeReq === CodeScopeSpec.ScopeRequirement.FederationGuid;
+    if (scopeReq) props.scopeSpec.fGuidRequired = scopeReq === CodeScopeSpec.ScopeRequirement.FederationGuid;
 
     return new CodeSpec(iModel, Id64.invalid, name, props);
   }
@@ -360,8 +351,7 @@ export class CodeSpec {
       : CodeScopeSpec.ScopeRequirement.ElementId;
   }
   public set scopeReq(req: CodeScopeSpec.ScopeRequirement) {
-    if (CodeScopeSpec.ScopeRequirement.FederationGuid === req)
-      this.properties.scopeSpec.fGuidRequired = true;
+    if (CodeScopeSpec.ScopeRequirement.FederationGuid === req) this.properties.scopeSpec.fGuidRequired = true;
     else this.properties.scopeSpec.fGuidRequired = undefined;
   }
 

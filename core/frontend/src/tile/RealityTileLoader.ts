@@ -8,12 +8,7 @@
 
 import { assert, ByteStream } from "@itwin/core-bentley";
 import { Point2d, Point3d, Transform } from "@itwin/core-geometry";
-import {
-  BatchType,
-  CompositeTileHeader,
-  TileFormat,
-  ViewFlagOverrides,
-} from "@itwin/core-common";
+import { BatchType, CompositeTileHeader, TileFormat, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderSystem } from "../render/RenderSystem";
@@ -54,31 +49,18 @@ export abstract class RealityTileLoader {
   public readonly preloadRealityParentSkip: number;
 
   public constructor(private _produceGeometry?: boolean) {
-    this.preloadRealityParentDepth =
-      IModelApp.tileAdmin.contextPreloadParentDepth;
-    this.preloadRealityParentSkip =
-      IModelApp.tileAdmin.contextPreloadParentSkip;
+    this.preloadRealityParentDepth = IModelApp.tileAdmin.contextPreloadParentDepth;
+    this.preloadRealityParentSkip = IModelApp.tileAdmin.contextPreloadParentSkip;
   }
 
-  public computeTilePriority(
-    tile: Tile,
-    viewports: Iterable<Viewport>,
-    _users: Iterable<TileUser>
-  ): number {
+  public computeTilePriority(tile: Tile, viewports: Iterable<Viewport>, _users: Iterable<TileUser>): number {
     // ###TODO: Handle case where tile tree reference(s) have a transform different from tree's (background map with ground bias).
-    return RealityTileLoader.computeTileLocationPriority(
-      tile,
-      viewports,
-      tile.tree.iModelTransform
-    );
+    return RealityTileLoader.computeTileLocationPriority(tile, viewports, tile.tree.iModelTransform);
   }
 
   public abstract loadChildren(tile: RealityTile): Promise<Tile[] | undefined>;
   public abstract getRequestChannel(tile: Tile): TileRequestChannel;
-  public abstract requestTileContent(
-    tile: Tile,
-    isCanceled: () => boolean
-  ): Promise<TileRequest.Response>;
+  public abstract requestTileContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response>;
   public get wantDeduplicatedVertices(): boolean {
     return false;
   }
@@ -127,12 +109,7 @@ export abstract class RealityTileLoader {
     const realityTile = tile as RealityTile;
     return this._produceGeometry
       ? this.loadGeometryFromStream(realityTile, streamBuffer, system)
-      : this.loadGraphicsFromStream(
-          realityTile,
-          streamBuffer,
-          system,
-          isCanceled
-        );
+      : this.loadGraphicsFromStream(realityTile, streamBuffer, system, isCanceled);
   }
 
   private _getFormat(streamBuffer: ByteStream) {
@@ -196,26 +173,14 @@ export abstract class RealityTileLoader {
         break;
       case TileFormat.Pnts:
         this._containsPointClouds = true;
-        const res = await readPointCloudTileContent(
-          streamBuffer,
-          iModel,
-          modelId,
-          is3d,
-          tile,
-          system
-        );
+        const res = await readPointCloudTileContent(streamBuffer, iModel, modelId, is3d, tile, system);
         let graphic = res.graphic;
         const rtcCenter = res.rtcCenter;
-        if (
-          graphic &&
-          (rtcCenter ||
-            (tile.transformToRoot && !tile.transformToRoot.isIdentity))
-        ) {
+        if (graphic && (rtcCenter || (tile.transformToRoot && !tile.transformToRoot.isIdentity))) {
           const transformBranch = new GraphicBranch(true);
           transformBranch.add(graphic);
           let xform: Transform;
-          if (!tile.transformToRoot && rtcCenter)
-            xform = Transform.createTranslation(rtcCenter);
+          if (!tile.transformToRoot && rtcCenter) xform = Transform.createTranslation(rtcCenter);
           else {
             if (rtcCenter)
               xform = Transform.createOriginAndMatrix(
@@ -261,10 +226,7 @@ export abstract class RealityTileLoader {
         );
         break;
       case TileFormat.Gltf:
-        const props = GltfReaderProps.create(
-          streamBuffer.nextBytes(streamBuffer.arrayBuffer.byteLength),
-          yAxisUp
-        );
+        const props = GltfReaderProps.create(streamBuffer.nextBytes(streamBuffer.arrayBuffer.byteLength), yAxisUp);
         if (props) {
           reader = new GltfGraphicsReader(props, {
             iModel,
@@ -286,19 +248,12 @@ export abstract class RealityTileLoader {
           streamBuffer.advance(8); // Skip magic and version.
           const tileBytes = streamBuffer.readUint32();
           streamBuffer.curPos = tilePosition;
-          const result = await this.loadGraphicsFromStream(
-            tile,
-            streamBuffer,
-            system,
-            isCanceled
-          );
+          const result = await this.loadGraphicsFromStream(tile, streamBuffer, system, isCanceled);
           if (result.graphic) branch.add(result.graphic);
           streamBuffer.curPos = tilePosition + tileBytes;
         }
         return {
-          graphic: branch.isEmpty
-            ? undefined
-            : system.createBranch(branch, Transform.createIdentity()),
+          graphic: branch.isEmpty ? undefined : system.createBranch(branch, Transform.createIdentity()),
           isLeaf: tile.isLeaf,
         };
 
@@ -311,8 +266,7 @@ export abstract class RealityTileLoader {
     if (undefined !== reader) {
       // glTF spec defaults wrap mode to "repeat" but many reality tiles omit the wrap mode and should not repeat.
       // The render system also currently only produces mip-maps for repeating textures, and we don't want mip-maps for reality tile textures.
-      if (reader instanceof GltfReader)
-        reader.defaultWrapMode = GltfWrapMode.ClampToEdge;
+      if (reader instanceof GltfReader) reader.defaultWrapMode = GltfWrapMode.ClampToEdge;
       try {
         content = await reader.read();
       } catch (_err) {
@@ -328,11 +282,7 @@ export abstract class RealityTileLoader {
     return defaultViewFlagOverrides;
   }
 
-  public static computeTileLocationPriority(
-    tile: Tile,
-    viewports: Iterable<Viewport>,
-    location: Transform
-  ): number {
+  public static computeTileLocationPriority(tile: Tile, viewports: Iterable<Viewport>, location: Transform): number {
     // Compute a priority value for tiles that are:
     // * Closer to the eye;
     // * Closer to the center of attention (center of the screen or zoom target).
@@ -345,26 +295,17 @@ export abstract class RealityTileLoader {
     const wheelEventRelevanceTimeout = 1000; // Wheel events older than this value will not be considered
 
     for (const viewport of viewports) {
-      center =
-        center ?? location.multiplyPoint3d(tile.center, scratchTileCenterWorld);
+      center = center ?? location.multiplyPoint3d(tile.center, scratchTileCenterWorld);
       const npc = viewport.worldToNpc(center, scratchTileCenterView);
 
       let focusPoint = new Point2d(0.5, 0.5);
 
-      if (
-        currentInputState.viewport === viewport &&
-        viewport instanceof ScreenViewport
-      ) {
+      if (currentInputState.viewport === viewport && viewport instanceof ScreenViewport) {
         // Try to get a better target point from the last zoom target
         const { lastWheelEvent } = currentInputState;
 
-        if (
-          lastWheelEvent !== undefined &&
-          now - lastWheelEvent.time < wheelEventRelevanceTimeout
-        ) {
-          const focusPointCandidate = Point2d.fromJSON(
-            viewport.worldToNpc(lastWheelEvent.point)
-          );
+        if (lastWheelEvent !== undefined && now - lastWheelEvent.time < wheelEventRelevanceTimeout) {
+          const focusPointCandidate = Point2d.fromJSON(viewport.worldToNpc(lastWheelEvent.point));
 
           if (
             focusPointCandidate.x > 0 &&
@@ -378,17 +319,12 @@ export abstract class RealityTileLoader {
 
       // NB: In NPC coords, 0 = far plane, 1 = near plane.
       const distanceToEye = 1.0 - npc.z;
-      const distanceToCenter = Math.min(
-        npc.distanceXY(focusPoint) / 0.707,
-        1.0
-      ); // Math.sqrt(0.5) = 0.707
+      const distanceToCenter = Math.min(npc.distanceXY(focusPoint) / 0.707, 1.0); // Math.sqrt(0.5) = 0.707
 
       // Distance is a mix of the two previously computed values, still in range [0; 1]
       // We use this factor to determine how much the distance to the center of attention is important compared to distance to the eye
       const distanceToCenterWeight = 0.3;
-      const distance =
-        distanceToEye * (1.0 - distanceToCenterWeight) +
-        distanceToCenter * distanceToCenterWeight;
+      const distance = distanceToEye * (1.0 - distanceToCenterWeight) + distanceToCenter * distanceToCenterWeight;
 
       minDistance = Math.min(distance, minDistance);
     }

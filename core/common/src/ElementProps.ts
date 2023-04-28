@@ -19,10 +19,7 @@ import {
 } from "@itwin/core-geometry";
 import { CodeProps } from "./Code";
 import { EntityProps } from "./EntityProps";
-import {
-  ElementGeometryBuilderParams,
-  ElementGeometryBuilderParamsForPart,
-} from "./geometry/ElementGeometry";
+import { ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart } from "./geometry/ElementGeometry";
 import { GeometryStreamProps } from "./geometry/GeometryStream";
 import { IModelError, IModelStatus } from "./IModelError";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
@@ -75,9 +72,7 @@ export class RelatedElement implements RelatedElementProps {
     this.relClassName = props.relClassName;
   }
 
-  public static fromJSON(
-    json?: RelatedElementProps
-  ): RelatedElement | undefined {
+  public static fromJSON(json?: RelatedElementProps): RelatedElement | undefined {
     return json ? new RelatedElement(json) : undefined;
   }
 
@@ -88,11 +83,7 @@ export class RelatedElement implements RelatedElementProps {
   public static idFromJson(json: any): Id64String {
     if (typeof json === "object" && "id" in json) {
       const r = RelatedElement.fromJSON(json);
-      if (r === undefined)
-        throw new IModelError(
-          IModelStatus.BadArg,
-          "Problem parsing Id64 from json"
-        );
+      if (r === undefined) throw new IModelError(IModelStatus.BadArg, "Problem parsing Id64 from json");
       return r.id;
     }
     return Id64.fromJSON(json);
@@ -157,18 +148,14 @@ export type PlacementProps = Placement2dProps | Placement3dProps;
 /** determine if this is Placement2dProps
  * @public
  */
-export function isPlacement2dProps(
-  props: PlacementProps
-): props is Placement2dProps {
+export function isPlacement2dProps(props: PlacementProps): props is Placement2dProps {
   return (props as Placement2dProps).angle !== undefined;
 }
 
 /** determine if this is Placement3dProps
  * @public
  */
-export function isPlacement3dProps(
-  props: PlacementProps
-): props is Placement3dProps {
+export function isPlacement3dProps(props: PlacementProps): props is Placement3dProps {
   return !isPlacement2dProps(props);
 }
 

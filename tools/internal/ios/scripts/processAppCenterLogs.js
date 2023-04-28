@@ -15,10 +15,7 @@ const app_name = process.argv[3]; // app_center_app;
 const api_token = process.argv[4]; // app_center_token;
 const lib_directory = process.argv[5]; // lib_directory (for output)
 
-const test_id = require(path.relative(
-  __dirname,
-  `${lib_directory}/run_output.json`
-))[0].testRunId;
+const test_id = require(path.relative(__dirname, `${lib_directory}/run_output.json`))[0].testRunId;
 
 const xmlFilter = "[Mocha_Result_XML]: ";
 const deviceLogsPath = "device_logs.txt";

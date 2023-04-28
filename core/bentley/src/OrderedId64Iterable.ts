@@ -55,10 +55,7 @@ export namespace OrderedId64Iterable {
   /** Given two ordered collections of [[Id64String]]s, determine whether they are identical sets. Duplicate Ids are ignored.
    * @note If the inputs are not ordered as required by [[OrderedId64Iterable]], the results are unpredictable.
    */
-  export function areEqualSets(
-    ids1: OrderedId64Iterable,
-    ids2: OrderedId64Iterable
-  ): boolean {
+  export function areEqualSets(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable): boolean {
     const leftIter = uniqueIterator(ids1);
     const rightIter = uniqueIterator(ids2);
     let leftState = leftIter.next();
@@ -82,9 +79,7 @@ export namespace OrderedId64Iterable {
    * @param ids A well-formed, ordered collection of zero or more valid Ids.
    * @returns true if the input represents an empty set of Ids. The result is unspecified if the input does not meet the criteria for the input type.
    */
-  export function isEmptySet(
-    ids: OrderedId64Iterable | CompressedId64Set
-  ): boolean {
+  export function isEmptySet(ids: OrderedId64Iterable | CompressedId64Set): boolean {
     if (typeof ids === "string") return "" === ids;
 
     return true === ids[Symbol.iterator]().next().done;
@@ -118,40 +113,28 @@ export namespace OrderedId64Iterable {
   /** Given two ordered collections of [[Id64String]]s, produce a collection representing their union - i.e., the Ids that are present in either or both collections.
    * @note If the inputs are not ordered as required by [[OrderedId64Iterable]], the results are unpredictable.
    */
-  export function union(
-    ids1: OrderedId64Iterable,
-    ids2: OrderedId64Iterable
-  ): OrderedId64Iterable {
+  export function union(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable): OrderedId64Iterable {
     return { [Symbol.iterator]: () => unionIterator(ids1, ids2) };
   }
 
   /** Given two ordered collections of [[Id64String]]s, produce an iterator representing their intersection - i.e., the Ids that are present in both collections.
    * @note If the inputs are not ordered as required by [[OrderedId64Iterable]], the results are unpredictable.
    */
-  export function intersection(
-    ids1: OrderedId64Iterable,
-    ids2: OrderedId64Iterable
-  ): OrderedId64Iterable {
+  export function intersection(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable): OrderedId64Iterable {
     return { [Symbol.iterator]: () => intersectionIterator(ids1, ids2) };
   }
 
   /** Given two ordered collections of [[Id64String]]s, produce an iterator representing their difference - i.e., the Ids that are present in `ids1` but not present in `ids2`.
    * @note If the inputs are not ordered as required by [[OrderedId64Iterable]], the results are unpredictable.
    */
-  export function difference(
-    ids1: OrderedId64Iterable,
-    ids2: OrderedId64Iterable
-  ): OrderedId64Iterable {
+  export function difference(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable): OrderedId64Iterable {
     return { [Symbol.iterator]: () => differenceIterator(ids1, ids2) };
   }
 
   /** Given two ordered collections of [[Id64String]]s, produce an iterator representing their union - i.e., the Ids that are present in either or both collections.
    * @note If the inputs are not ordered as required by [[OrderedId64Iterable]], the results are unpredictable.
    */
-  export function* unionIterator(
-    ids1: OrderedId64Iterable,
-    ids2: OrderedId64Iterable
-  ) {
+  export function* unionIterator(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable) {
     const leftIter = ids1[Symbol.iterator]();
     const rightIter = ids2[Symbol.iterator]();
     let leftState = leftIter.next();
@@ -195,10 +178,7 @@ export namespace OrderedId64Iterable {
   /** Given two ordered collections of [[Id64String]]s, produce an iterator representing their intersection - i.e., the Ids that are present in both collections.
    * @note If the inputs are not ordered as required by [[OrderedId64Iterable]], the results are unpredictable.
    */
-  export function* intersectionIterator(
-    ids1: OrderedId64Iterable,
-    ids2: OrderedId64Iterable
-  ) {
+  export function* intersectionIterator(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable) {
     const leftIter = ids1[Symbol.iterator]();
     const rightIter = ids2[Symbol.iterator]();
     let leftState = leftIter.next();
@@ -229,10 +209,7 @@ export namespace OrderedId64Iterable {
   /** Given two ordered collections of [[Id64String]]s, produce an iterator representing their difference - i.e., the Ids that are present in `ids1` but not present in `ids2`.
    * @note If the inputs are not ordered as required by [[OrderedId64Iterable]], the results are unpredictable.
    */
-  export function* differenceIterator(
-    ids1: OrderedId64Iterable,
-    ids2: OrderedId64Iterable
-  ) {
+  export function* differenceIterator(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable) {
     const leftIter = ids1[Symbol.iterator]();
     const rightIter = ids2[Symbol.iterator]();
     let leftState = leftIter.next();

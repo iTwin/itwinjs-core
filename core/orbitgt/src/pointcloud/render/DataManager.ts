@@ -86,18 +86,13 @@ export class DataManager {
    * @param pointCloudCRS the CRS of the point cloud.
    * @param dataFormat the requested data format to load point data (PointDataRaw.TYPE for example).
    */
-  public constructor(
-    pointCloudReader: PointCloudReader,
-    pointCloudCRS: string,
-    dataFormat: int32
-  ) {
+  public constructor(pointCloudReader: PointCloudReader, pointCloudCRS: string, dataFormat: int32) {
     /* Store the parameters */
     this._pointCloudReader = pointCloudReader;
     this._pointCloudCRS = pointCloudCRS;
     this._dataFormat = dataFormat;
     /* Initialize */
-    if (this._pointCloudCRS == null)
-      this._pointCloudCRS = this._pointCloudReader.getFileCRS();
+    if (this._pointCloudCRS == null) this._pointCloudCRS = this._pointCloudReader.getFileCRS();
     /* Clear */
     this._fileTileIndex = this.createSpatialIndex();
     this._dataPool = new StringMap<PointData>();
@@ -112,10 +107,7 @@ export class DataManager {
     this._dataLoadSize = ALong.ZERO;
     this._lastGarbageCollectTime = 0.0;
     /* Log */
-    Message.print(
-      DataManager.MODULE,
-      "Pointcloud CRS is " + this._pointCloudCRS
-    );
+    Message.print(DataManager.MODULE, "Pointcloud CRS is " + this._pointCloudCRS);
   }
 
   /**
@@ -143,25 +135,18 @@ export class DataManager {
   private createSpatialIndex(): ViewTree {
     /* Create the levels */
     Message.print(DataManager.MODULE, "Creating pointcloud spatial index");
-    let levels: Array<Level> = new Array<Level>(
-      this._pointCloudReader.getLevelCount()
-    );
+    let levels: Array<Level> = new Array<Level>(this._pointCloudReader.getLevelCount());
     for (let i: number = 0; i < levels.length; i++) {
       /* Get the grids */
       let blockGrid: Grid = this._pointCloudReader.getLevelBlockGrid(i);
       let tileGrid: Grid = this._pointCloudReader.getLevelTileGrid(i);
       /* Get the blocks */
-      let blockIndexes: Array<BlockIndex> =
-        this._pointCloudReader.peekBlockIndexes(i);
+      let blockIndexes: Array<BlockIndex> = this._pointCloudReader.peekBlockIndexes(i);
       let blockList: Array<Block> = new Array<Block>(blockIndexes.length);
-      for (let j: number = 0; j < blockList.length; j++)
-        blockList[j] = new Block(blockIndexes[j]);
+      for (let j: number = 0; j < blockList.length; j++) blockList[j] = new Block(blockIndexes[j]);
       /* Create the level */
       levels[i] = new Level(i, blockGrid, tileGrid, blockList);
-      Message.print(
-        DataManager.MODULE,
-        "Level " + i + " has " + blockList.length + " blocks"
-      );
+      Message.print(DataManager.MODULE, "Level " + i + " has " + blockList.length + " blocks");
     }
     /* Get the data bounds */
     let dataBounds: Bounds = this._pointCloudReader.getFileBounds();
@@ -326,23 +311,14 @@ export class DataManager {
       /* Prepare to load the tile */
       let tileIndex: TileIndex = tileList.get(i);
       this._tilesLoading.set(tileIndex.key, tileIndex);
-      this._pointCloudReader.readPointData(
-        tileIndex,
-        this._dataFormat,
-        loadTime,
-        fileContents
-      );
+      this._pointCloudReader.readPointData(tileIndex, this._dataFormat, loadTime, fileContents);
       loadTileCount++;
       /* Do not load too many tiles at once */
-      if (
-        fileContents.getTotalRequestSize() > DataManager.MAX_FILE_CONTENT_SIZE
-      ) {
+      if (fileContents.getTotalRequestSize() > DataManager.MAX_FILE_CONTENT_SIZE) {
         /* Stop loading tiles */
         Message.print(
           DataManager.MODULE,
-          "Limited pointcloud content load request to " +
-            fileContents.getTotalRequestSize() +
-            " bytes"
+          "Limited pointcloud content load request to " + fileContents.getTotalRequestSize() + " bytes"
         );
         break;
       }
@@ -361,9 +337,7 @@ export class DataManager {
         " bytes"
     );
     /* Load the data */
-    this._dataLoadSize = this._dataLoadSize.addInt(
-      fileContents.getTotalRequestSize()
-    );
+    this._dataLoadSize = this._dataLoadSize.addInt(fileContents.getTotalRequestSize());
     fileContents = await fileContents.load();
     //Message.print(MODULE,"Creating "+blockList.size()+" blocks and "+tileList.size()+" tiles");
     /* Load the levels */
@@ -372,8 +346,7 @@ export class DataManager {
       let level: Level = levelList.get(i);
       this._levelsLoaded.set(level.getKey(), level);
       this._levelsLoading.remove(level.getKey());
-      let blockIndexes: Array<BlockIndex> =
-        this._pointCloudReader.readBlockIndexes(level.getIndex(), fileContents);
+      let blockIndexes: Array<BlockIndex> = this._pointCloudReader.readBlockIndexes(level.getIndex(), fileContents);
       /* Add the blocks */
       this._fileTileIndex.setLevelBlocks(level, blockIndexes);
     }
@@ -383,8 +356,7 @@ export class DataManager {
       let blockIndex: BlockIndex = blockList.get(i);
       this._blocksLoaded.set(blockIndex.key, blockIndex);
       this._blocksLoading.remove(blockIndex.key);
-      let tileIndexes: Array<TileIndex> =
-        this._pointCloudReader.readTileIndexes(blockIndex, fileContents);
+      let tileIndexes: Array<TileIndex> = this._pointCloudReader.readTileIndexes(blockIndex, fileContents);
       /* Add the block */
       this._fileTileIndex.setBlockTiles(blockIndex, tileIndexes);
     }
@@ -410,10 +382,7 @@ export class DataManager {
     this._loadingData = false;
     this._loadedDataTime = ASystem.time();
     /* Log */
-    Message.print(
-      DataManager.MODULE,
-      "Created " + blockList.size() + " blocks and " + loadTileCount + " tiles"
-    );
+    Message.print(DataManager.MODULE, "Created " + blockList.size() + " blocks and " + loadTileCount + " tiles");
     /* Return the frame data */
     return frameData;
   }
@@ -424,8 +393,7 @@ export class DataManager {
    */
   public doGarbageCollect(time: float64): void {
     /* First call? */
-    if (this._lastGarbageCollectTime == 0.0)
-      this._lastGarbageCollectTime = time;
+    if (this._lastGarbageCollectTime == 0.0) this._lastGarbageCollectTime = time;
     /* Throttle to one per minute */
     if (time < this._lastGarbageCollectTime + 60.0) return;
     this._lastGarbageCollectTime = time;
@@ -446,10 +414,6 @@ export class DataManager {
       }
     }
     /* Log? */
-    if (dropCount > 0)
-      Message.print(
-        DataManager.MODULE,
-        "Dropped the point data of " + dropCount + " tiles"
-      );
+    if (dropCount > 0) Message.print(DataManager.MODULE, "Dropped the point data of " + dropCount + " tiles");
   }
 }

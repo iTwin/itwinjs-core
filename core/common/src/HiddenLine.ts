@@ -63,14 +63,10 @@ export namespace HiddenLine {
       }
 
       json = json as StyleProps; // per JsonUtils.isEmptyObjectOrUndefined()
-      if (undefined !== json.color && false !== json.ovrColor)
-        this.color = ColorDef.fromJSON(json.color);
+      if (undefined !== json.color && false !== json.ovrColor) this.color = ColorDef.fromJSON(json.color);
 
       if (undefined !== json.pattern) {
-        const pattern = JsonUtils.asInt(
-          json.pattern,
-          hidden ? LinePixels.HiddenLine : LinePixels.Invalid
-        );
+        const pattern = JsonUtils.asInt(json.pattern, hidden ? LinePixels.HiddenLine : LinePixels.Invalid);
         if (LinePixels.Invalid !== pattern) this.pattern = pattern;
       } else if (hidden) {
         this.pattern = LinePixels.HiddenLine;
@@ -98,12 +94,7 @@ export namespace HiddenLine {
     public overrideColor(color: ColorDef | undefined): Style {
       if (undefined === this.color && undefined === color) return this;
 
-      if (
-        undefined !== this.color &&
-        undefined !== color &&
-        this.color.equals(color)
-      )
-        return this;
+      if (undefined !== this.color && undefined !== color && this.color.equals(color)) return this;
 
       return Style.fromJSON({
         color: color?.toJSON(),
@@ -140,11 +131,7 @@ export namespace HiddenLine {
     /** Returns true if this Style is equivalent to the supplied Style. */
     public equals(other: Style): boolean {
       if (this === other) return true;
-      else if (
-        this.ovrColor !== other.ovrColor ||
-        this.pattern !== other.pattern ||
-        this.width !== other.width
-      )
+      else if (this.ovrColor !== other.ovrColor || this.pattern !== other.pattern || this.width !== other.width)
         return false;
       else return undefined === this.color || this.color.equals(other.color!);
     }
@@ -217,10 +204,7 @@ export namespace HiddenLine {
       return Settings.fromJSON({
         visible: undefined !== visible ? visible : this.visible.toJSON(),
         hidden: undefined !== hidden ? hidden : this.hidden.toJSON(),
-        transThreshold:
-          undefined !== transparencyThreshold
-            ? transparencyThreshold
-            : this.transparencyThreshold,
+        transThreshold: undefined !== transparencyThreshold ? transparencyThreshold : this.transparencyThreshold,
       });
     }
 

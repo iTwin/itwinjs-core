@@ -33,13 +33,8 @@ export class FpsMonitor {
     this._label = props.label;
     this._output = props.output;
 
-    IModelApp.viewManager.onViewOpen.addListener((vp: ScreenViewport) =>
-      this.onViewOpen(vp)
-    );
-    this._checkbox.addEventListener(
-      "click",
-      () => (this.enabled = this._checkbox.checked)
-    );
+    IModelApp.viewManager.onViewOpen.addListener((vp: ScreenViewport) => this.onViewOpen(vp));
+    this._checkbox.addEventListener("click", () => (this.enabled = this._checkbox.checked));
   }
 
   private onViewOpen(vp: ScreenViewport): void {
@@ -107,13 +102,9 @@ export class RecordFpsTool extends Tool {
     this._metrics = new PerformanceMetrics(false, true);
     (vp.target as Target).performanceMetrics = this._metrics;
 
-    this._dispose = vp.onRender.addListener((viewport) =>
-      this.update(viewport)
-    );
+    this._dispose = vp.onRender.addListener((viewport) => this.update(viewport));
 
-    IModelApp.notifications.outputMessage(
-      new NotifyMessageDetails(OutputMessagePriority.Info, "Recording...")
-    );
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Recording..."));
     return true;
   }
 
@@ -138,10 +129,7 @@ export class RecordFpsTool extends Tool {
     const metrics = this._metrics!;
     const fps = (metrics.spfTimes.length / metrics.spfSum).toFixed(2);
 
-    const msg = new NotifyMessageDetails(
-      OutputMessagePriority.Info,
-      `FPS ${fps}`
-    );
+    const msg = new NotifyMessageDetails(OutputMessagePriority.Info, `FPS ${fps}`);
     IModelApp.notifications.outputMessage(msg);
   }
 }

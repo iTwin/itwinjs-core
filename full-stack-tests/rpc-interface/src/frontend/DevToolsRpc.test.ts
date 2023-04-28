@@ -41,17 +41,11 @@ describe("DevTools", () => {
     await devTools.setLogLevel(loggerCategory, firstLevel);
 
     const secondLevel = LogLevel.Warning;
-    const actualFirstLevel = await devTools.setLogLevel(
-      loggerCategory,
-      secondLevel
-    );
+    const actualFirstLevel = await devTools.setLogLevel(loggerCategory, secondLevel);
     assert.equal(actualFirstLevel, firstLevel);
 
     const thirdLevel = LogLevel.Error;
-    const acutalSecondLevel = await devTools.setLogLevel(
-      loggerCategory,
-      thirdLevel
-    );
+    const acutalSecondLevel = await devTools.setLogLevel(loggerCategory, thirdLevel);
     assert.equal(acutalSecondLevel, secondLevel);
   });
 

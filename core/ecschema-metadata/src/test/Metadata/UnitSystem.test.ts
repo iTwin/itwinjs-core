@@ -17,9 +17,7 @@ describe("UnitSystem tests", () => {
     testUnitSystem = new UnitSystem(schema, "Test");
     it("should return correct item type and string", () => {
       expect(testUnitSystem.schemaItemType).to.equal(SchemaItemType.UnitSystem);
-      expect(schemaItemTypeToString(testUnitSystem.schemaItemType)).to.equal(
-        "UnitSystem"
-      );
+      expect(schemaItemTypeToString(testUnitSystem.schemaItemType)).to.equal("UnitSystem");
     });
   });
 
@@ -46,14 +44,7 @@ describe("UnitSystem tests", () => {
 
   describe("Async fromJson", () => {
     beforeEach(() => {
-      const schema = new Schema(
-        new SchemaContext(),
-        "ExampleSchema",
-        "es",
-        1,
-        0,
-        0
-      );
+      const schema = new Schema(new SchemaContext(), "ExampleSchema", "es", 1, 0, 0);
       testUnitSystem = new UnitSystem(schema, "IMPERIAL");
     });
     it("Basic test", async () => {
@@ -70,14 +61,7 @@ describe("UnitSystem tests", () => {
 
     describe("Sync fromJson", () => {
       beforeEach(() => {
-        const schema = new Schema(
-          new SchemaContext(),
-          "ExampleSchema",
-          "es",
-          1,
-          0,
-          0
-        );
+        const schema = new Schema(new SchemaContext(), "ExampleSchema", "es", 1, 0, 0);
         testUnitSystem = new UnitSystem(schema, "IMPERIAL");
       });
       it("Basic test", () => {

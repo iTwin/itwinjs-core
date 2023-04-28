@@ -59,12 +59,7 @@ export class MeshBuilder {
     return this._triangleSet;
   }
 
-  private constructor(
-    mesh: Mesh,
-    tolerance: number,
-    areaTolerance: number,
-    tileRange: Range3d
-  ) {
+  private constructor(mesh: Mesh, tolerance: number, areaTolerance: number, tileRange: Range3d) {
     this.mesh = mesh;
     this.tolerance = tolerance;
     this.areaTolerance = areaTolerance;
@@ -102,8 +97,7 @@ export class MeshBuilder {
     feature: Feature | undefined
   ): void {
     for (const strokePoints of strokes) {
-      if (isDisjoint)
-        this.addPointString(strokePoints.points, fillColor, feature);
+      if (isDisjoint) this.addPointString(strokePoints.points, fillColor, feature);
       else this.addPolyline(strokePoints.points, fillColor, feature);
     }
   }
@@ -153,17 +147,8 @@ export class MeshBuilder {
 
     // The face represented by this visitor should be convex (we request that in facet options) - so we do a simple fan triangulation.
     const polyfaceVisitorOptions = { ...options, triangleCount, haveParam };
-    for (
-      let triangleIndex = 0;
-      triangleIndex < triangleCount;
-      triangleIndex++
-    ) {
-      const triangle = this.createTriangle(
-        triangleIndex,
-        visitor,
-        polyfaceVisitorOptions,
-        feature
-      );
+    for (let triangleIndex = 0; triangleIndex < triangleCount; triangleIndex++) {
+      const triangle = this.createTriangle(triangleIndex, visitor, polyfaceVisitorOptions, feature);
       if (undefined !== triangle) this.addTriangle(triangle);
     }
   }
@@ -183,8 +168,7 @@ export class MeshBuilder {
       assert(this.mesh.points.length === 0 || this.mesh.uvParams.length !== 0);
       const mappedTexture = options.mappedTexture;
       const transformToImodel = mappedTexture.params.textureMatrix.transform;
-      if (transformToImodel)
-        params = mappedTexture.computeUVParams(visitor, transformToImodel);
+      if (transformToImodel) params = mappedTexture.computeUVParams(visitor, transformToImodel);
       assert(params !== undefined);
     }
 
@@ -192,12 +176,8 @@ export class MeshBuilder {
     for (let i = 0; i < 3; ++i) {
       const vertexIndex = 0 === i ? 0 : triangleIndex + i;
       const position = point.getPoint3dAtUncheckedPointIndex(vertexIndex);
-      const normal = requireNormals
-        ? OctEncodedNormal.fromVector(visitor.getNormal(vertexIndex)!)
-        : undefined;
-      const uvParam: Point2d | undefined = params
-        ? params[vertexIndex]
-        : undefined;
+      const normal = requireNormals ? OctEncodedNormal.fromVector(visitor.getNormal(vertexIndex)!) : undefined;
+      const uvParam: Point2d | undefined = params ? params[vertexIndex] : undefined;
       vertices[i] = {
         position,
         fillColor,
@@ -228,12 +208,7 @@ export class MeshBuilder {
     feature: Feature | undefined
   ): Triangle | undefined {
     // generate vertex key properties for each of the three sides of the triangle
-    const vertices = this.createTriangleVertices(
-      triangleIndex,
-      visitor,
-      options,
-      feature
-    );
+    const vertices = this.createTriangleVertices(triangleIndex, visitor, options, feature);
 
     // avoid creating degenerate triangles
     if (undefined === vertices) return undefined;
@@ -245,9 +220,7 @@ export class MeshBuilder {
     triangle.setEdgeVisibility(
       0 === triangleIndex ? edgeVisible[0] : false,
       edgeVisible[triangleIndex + 1],
-      triangleIndex === options.triangleCount - 1
-        ? edgeVisible[triangleIndex + 2]
-        : false
+      triangleIndex === options.triangleCount - 1 ? edgeVisible[triangleIndex + 2] : false
     );
 
     // set each triangle index to the index associated with the vertex key location in the vertex map
@@ -256,10 +229,7 @@ export class MeshBuilder {
       if (visitor.auxData) {
         // No deduplication with auxData (for now...)
         vertexKeyIndex = this.mesh.addVertex(vertexProps);
-        this.mesh.addAuxChannels(
-          visitor.auxData.channels,
-          vertexProps.sourceIndex
-        );
+        this.mesh.addAuxChannels(visitor.auxData.channels, vertexProps.sourceIndex);
       } else {
         vertexKeyIndex = this.addVertex(vertexProps);
       }
@@ -268,49 +238,33 @@ export class MeshBuilder {
 
       // if the current polyface exists, map the vertex key index to the visitor's client point index
       if (this.currentPolyface !== undefined)
-        this.currentPolyface.vertexIndexMap.set(
-          vertexKeyIndex,
-          visitor.clientPointIndex(vertexProps.sourceIndex)
-        );
+        this.currentPolyface.vertexIndexMap.set(vertexKeyIndex, visitor.clientPointIndex(vertexProps.sourceIndex));
     });
 
     return triangle;
   }
 
   /** removed Feature for now */
-  public addPolyline(
-    points: Point3d[],
-    fillColor: number,
-    feature: Feature | undefined
-  ): void {
+  public addPolyline(points: Point3d[], fillColor: number, feature: Feature | undefined): void {
     const { mesh } = this;
 
     const poly = new MeshPolyline();
-    for (const position of points)
-      poly.addIndex(this.addVertex({ position, fillColor, feature }));
+    for (const position of points) poly.addIndex(this.addVertex({ position, fillColor, feature }));
 
     mesh.addPolyline(poly);
   }
 
   /** removed Feature for now */
-  public addPointString(
-    points: Point3d[],
-    fillColor: number,
-    feature: Feature | undefined
-  ): void {
+  public addPointString(points: Point3d[], fillColor: number, feature: Feature | undefined): void {
     const { mesh } = this;
     const poly = new MeshPolyline();
 
-    for (const position of points)
-      poly.addIndex(this.addVertex({ position, fillColor, feature }));
+    for (const position of points) poly.addIndex(this.addVertex({ position, fillColor, feature }));
 
     mesh.addPolyline(poly);
   }
 
-  public beginPolyface(
-    polyface: Polyface,
-    options: MeshEdgeCreationOptions
-  ): void {
+  public beginPolyface(polyface: Polyface, options: MeshEdgeCreationOptions): void {
     if (!options.generateNoEdges) {
       const triangles = this.mesh.triangles;
       this._currentPolyface = new MeshBuilderPolyface(
@@ -332,10 +286,7 @@ export class MeshBuilder {
   public addVertex(vertex: VertexKeyProps, addToMeshOnInsert = true): number {
     // if vertex key isn't duplicate, then also insert properties into mesh
     const onInsert = (vk: VertexKey) => this.mesh.addVertex(vk);
-    return this.vertexMap.insertKey(
-      vertex,
-      addToMeshOnInsert ? onInsert : undefined
-    );
+    return this.vertexMap.insertKey(vertex, addToMeshOnInsert ? onInsert : undefined);
   }
 
   public addTriangle(triangle: Triangle): void {
@@ -406,16 +357,9 @@ export namespace MeshEdgeCreationOptions {
 export class MeshBuilderPolyface {
   public readonly polyface: Polyface;
   public readonly edgeOptions: MeshEdgeCreationOptions;
-  public readonly vertexIndexMap: Map<number, number> = new Map<
-    number,
-    number
-  >();
+  public readonly vertexIndexMap: Map<number, number> = new Map<number, number>();
   public readonly baseTriangleIndex: number;
-  constructor(
-    polyface: Polyface,
-    edgeOptions: MeshEdgeCreationOptions,
-    baseTriangleIndex: number
-  ) {
+  constructor(polyface: Polyface, edgeOptions: MeshEdgeCreationOptions, baseTriangleIndex: number) {
     this.polyface = polyface;
     this.edgeOptions = edgeOptions;
     this.baseTriangleIndex = baseTriangleIndex;
@@ -444,9 +388,7 @@ class EdgeInfo {
 function buildMeshEdges(mesh: Mesh, polyface: MeshBuilderPolyface): void {
   if (!mesh.triangles) return;
 
-  const edgeMap = new Dictionary<MeshEdge, EdgeInfo>((lhs, rhs) =>
-    lhs.compareTo(rhs)
-  );
+  const edgeMap = new Dictionary<MeshEdge, EdgeInfo>((lhs, rhs) => lhs.compareTo(rhs));
   const triangleNormals: Vector3d[] = [];
 
   // We need to detect the edge pairs -- Can't do that from the Mesh indices as these are not shared - so we'll
@@ -456,17 +398,11 @@ function buildMeshEdges(mesh: Mesh, polyface: MeshBuilderPolyface): void {
   const polyfacePoints = [new Point3d(), new Point3d(), new Point3d()];
   const polyfaceIndices = [0, 0, 0];
 
-  for (
-    let triangleIndex = polyface.baseTriangleIndex;
-    triangleIndex < mesh.triangles.length;
-    triangleIndex++
-  ) {
+  for (let triangleIndex = polyface.baseTriangleIndex; triangleIndex < mesh.triangles.length; triangleIndex++) {
     let indexNotFound = false;
     mesh.triangles.getTriangle(triangleIndex, triangle);
     for (let j = 0; j < 3; j++) {
-      const foundPolyfaceIndex = polyface.vertexIndexMap.get(
-        triangle.indices[j]
-      );
+      const foundPolyfaceIndex = polyface.vertexIndexMap.get(triangle.indices[j]);
       assert(undefined !== foundPolyfaceIndex);
       if (undefined === foundPolyfaceIndex) {
         indexNotFound = true;
@@ -482,14 +418,8 @@ function buildMeshEdges(mesh: Mesh, polyface: MeshBuilderPolyface): void {
     for (let j = 0; j < 3; j++) {
       const jNext = (j + 1) % 3;
       const triangleNormalIndex = triangleNormals.length;
-      const meshEdge = new MeshEdge(
-        triangle.indices[j],
-        triangle.indices[jNext]
-      );
-      const polyfaceEdge = new MeshEdge(
-        polyfaceIndices[j],
-        polyfaceIndices[jNext]
-      );
+      const meshEdge = new MeshEdge(triangle.indices[j], triangle.indices[jNext]);
+      const polyfaceEdge = new MeshEdge(polyfaceIndices[j], polyfaceIndices[jNext]);
       const edgeInfo = new EdgeInfo(
         triangle.isEdgeVisible(j),
         triangleNormalIndex,
@@ -499,15 +429,10 @@ function buildMeshEdges(mesh: Mesh, polyface: MeshBuilderPolyface): void {
       );
 
       const findOrInsert = edgeMap.findOrInsert(polyfaceEdge, edgeInfo);
-      if (!findOrInsert.inserted)
-        findOrInsert.value.addFace(edgeInfo.visible, triangleNormalIndex);
+      if (!findOrInsert.inserted) findOrInsert.value.addFace(edgeInfo.visible, triangleNormalIndex);
     }
 
-    const normal = Vector3d.createCrossProductToPoints(
-      polyfacePoints[0],
-      polyfacePoints[1],
-      polyfacePoints[2]
-    );
+    const normal = Vector3d.createCrossProductToPoints(polyfacePoints[0], polyfacePoints[1], polyfacePoints[2]);
     normal.normalizeInPlace();
     triangleNormals.push(normal);
   }
@@ -519,8 +444,7 @@ function buildMeshEdges(mesh: Mesh, polyface: MeshBuilderPolyface): void {
       if (undefined !== edgeInfo.faceIndex1) {
         const normal0 = triangleNormals[edgeInfo.faceIndex0];
         const normal1 = triangleNormals[edgeInfo.faceIndex1];
-        if (Math.abs(normal0.dotProduct(normal1)) > minEdgeDot)
-          edgeInfo.visible = false;
+        if (Math.abs(normal0.dotProduct(normal1)) > minEdgeDot) edgeInfo.visible = false;
       }
     }
   }
@@ -539,10 +463,7 @@ function buildMeshEdges(mesh: Mesh, polyface: MeshBuilderPolyface): void {
       if (Math.abs(normal0.dotProduct(normal1)) < maxPlanarDot) {
         mesh.edges.silhouette.push(edgeInfo.edge);
         mesh.edges.silhouetteNormals.push(
-          new OctEncodedNormalPair(
-            OctEncodedNormal.fromVector(normal0),
-            OctEncodedNormal.fromVector(normal1)
-          )
+          new OctEncodedNormalPair(OctEncodedNormal.fromVector(normal0), OctEncodedNormal.fromVector(normal1))
         );
       }
     }

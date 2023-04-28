@@ -8,8 +8,7 @@
 
 /** @public */
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-export const ITWINJS_CORE_VERSION = require("../../package.json")
-  .version as string; // require resolves from the lib/{cjs,esm} dir
+export const ITWINJS_CORE_VERSION = require("../../package.json").version as string; // require resolves from the lib/{cjs,esm} dir
 const COPYRIGHT_NOTICE =
   'Copyright © 2017-2023 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
@@ -38,10 +37,7 @@ import {
 } from "@itwin/core-common";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { TelemetryManager } from "@itwin/core-telemetry";
-import {
-  queryRenderCompatibility,
-  WebGLRenderCompatibilityInfo,
-} from "@itwin/webgl-compatibility";
+import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@itwin/webgl-compatibility";
 import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
 import * as auxCoordState from "./AuxCoordSys";
@@ -63,12 +59,7 @@ import * as sheetState from "./SheetViewState";
 import * as spatialViewState from "./SpatialViewState";
 import { TentativePoint } from "./TentativePoint";
 import { RealityDataSourceProviderRegistry } from "./RealityDataSource";
-import {
-  MapLayerFormatRegistry,
-  MapLayerOptions,
-  TerrainProviderRegistry,
-  TileAdmin,
-} from "./tile/internal";
+import { MapLayerFormatRegistry, MapLayerOptions, TerrainProviderRegistry, TileAdmin } from "./tile/internal";
 import * as accudrawTool from "./tools/AccuDrawTool";
 import * as clipViewTool from "./tools/ClipViewTool";
 import * as idleTool from "./tools/IdleTool";
@@ -228,8 +219,7 @@ export class IModelApp {
   private static _noRender: boolean;
   private static _wantEventLoop = false;
   private static _animationRequested = false;
-  private static _animationInterval: BeDuration | undefined =
-    BeDuration.fromSeconds(1);
+  private static _animationInterval: BeDuration | undefined = BeDuration.fromSeconds(1);
   private static _animationIntervalId?: number;
   private static _securityOptions: FrontendSecurityOptions;
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
@@ -382,10 +372,7 @@ export class IModelApp {
       // eslint-disable-line guard-for-in
       const thisEntityState = moduleObj[thisMember];
       if (thisEntityState.prototype instanceof EntityState) {
-        this.registerEntityState(
-          thisEntityState.classFullName,
-          thisEntityState
-        );
+        this.registerEntityState(thisEntityState.classFullName, thisEntityState);
       }
     }
   }
@@ -393,10 +380,7 @@ export class IModelApp {
   /** Register an EntityState class by its classFullName
    * @internal
    */
-  public static registerEntityState(
-    classFullName: string,
-    classType: typeof EntityState
-  ) {
+  public static registerEntityState(classFullName: string, classType: typeof EntityState) {
     const lowerName = classFullName.toLowerCase();
     if (this._entityClasses.has(lowerName)) {
       const errMsg = `Class ${classFullName} is already registered. Make sure static schemaName and className members are correct on class ${classType.name}`;
@@ -454,14 +438,9 @@ export class IModelApp {
     this._localization = opts.localization ?? new ITwinLocalization();
     const toolsNs = "CoreTools";
     await this.localization.initialize(["iModelJs", toolsNs]);
-    [
-      selectTool,
-      idleTool,
-      viewTool,
-      clipViewTool,
-      measureTool,
-      accudrawTool,
-    ].forEach((tool) => this.tools.registerModule(tool, toolsNs));
+    [selectTool, idleTool, viewTool, clipViewTool, measureTool, accudrawTool].forEach((tool) =>
+      this.tools.registerModule(tool, toolsNs)
+    );
 
     this.registerEntityState(EntityState.classFullName, EntityState);
     [
@@ -476,10 +455,7 @@ export class IModelApp {
       auxCoordState,
     ].forEach((module) => this.registerModuleEntities(module));
 
-    this._renderSystem =
-      opts.renderSys instanceof RenderSystem
-        ? opts.renderSys
-        : this.createRenderSys(opts.renderSys);
+    this._renderSystem = opts.renderSys instanceof RenderSystem ? opts.renderSys : this.createRenderSys(opts.renderSys);
     if (opts.userPreferences) this._userPreferences = opts.userPreferences;
     this._viewManager = opts.viewManager ?? new ViewManager();
     this._tileAdmin = await TileAdmin.create(opts.tileAdmin);
@@ -491,9 +467,7 @@ export class IModelApp {
     this._tentativePoint = opts.tentativePoint ?? new TentativePoint();
     this._quantityFormatter = opts.quantityFormatter ?? new QuantityFormatter();
     this._uiAdmin = opts.uiAdmin ?? new UiAdmin();
-    this._mapLayerFormatRegistry = new MapLayerFormatRegistry(
-      opts.mapLayerOptions
-    );
+    this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
     this._terrainProviderRegistry = new TerrainProviderRegistry();
     this._realityDataSourceProviders = new RealityDataSourceProviderRegistry();
     this._realityDataAccess = opts.realityDataAccess;
@@ -529,9 +503,7 @@ export class IModelApp {
     this._wantEventLoop = false;
     window.removeEventListener("resize", IModelApp.requestNextAnimation);
     this.clearIntervalAnimation();
-    [this.toolAdmin, this.viewManager, this.tileAdmin].forEach((sys) =>
-      sys.onShutDown()
-    );
+    [this.toolAdmin, this.viewManager, this.tileAdmin].forEach((sys) => sys.onShutDown());
     this.tools.shutdown();
     this._renderSystem = dispose(this._renderSystem);
     this._entityClasses.clear();
@@ -646,9 +618,7 @@ export class IModelApp {
       return Guid.createValue();
     };
 
-    RpcConfiguration.requestContext.serialize = async (
-      _request: RpcRequest
-    ): Promise<SerializedRpcActivity> => {
+    RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedRpcActivity> => {
       // eslint-disable-line deprecation/deprecation
       const id = _request.id;
       const serialized: SerializedRpcActivity = {
@@ -657,17 +627,13 @@ export class IModelApp {
         applicationId: this.applicationId,
         applicationVersion: this.applicationVersion,
         sessionId: this.sessionId,
-        authorization: ProcessDetector.isMobileAppFrontend
-          ? ""
-          : await this.getAccessToken(),
+        authorization: ProcessDetector.isMobileAppFrontend ? "" : await this.getAccessToken(),
       };
 
       const csrf = IModelApp.securityOptions.csrfProtection;
       if (csrf && csrf.enabled) {
         const cookieName = csrf.cookieName || "XSRF-TOKEN";
-        const cookieValue = document.cookie
-          .split("; ")
-          .find((r) => r.startsWith(`${cookieName}=`));
+        const cookieValue = document.cookie.split("; ").find((r) => r.startsWith(`${cookieName}=`));
 
         if (cookieValue) {
           const headerName = csrf.headerName || "X-XSRF-TOKEN";
@@ -841,9 +807,7 @@ export class IModelApp {
    */
   public static formatElementToolTip(msg: string[]): HTMLElement {
     let out = "";
-    msg.forEach(
-      (line) => (out += `${IModelApp.localization?.getLocalizedKeys(line)}<br>`)
-    );
+    msg.forEach((line) => (out += `${IModelApp.localization?.getLocalizedKeys(line)}<br>`));
     const div = document.createElement("div");
     div.innerHTML = out;
     return div;
@@ -862,14 +826,10 @@ export class IModelApp {
       key = { scope: "BentleyStatus", val: BentleyStatus[status] };
       if (!key.val) key = { scope: "IModelStatus", val: IModelStatus[status] };
       if (!key.val) key = { scope: "DbResult", val: DbResult[status] };
-      if (!key.val)
-        key = { scope: "Errors", val: "Status", status: status.toString() };
+      if (!key.val) key = { scope: "Errors", val: "Status", status: status.toString() };
     }
 
-    return this.localization.getLocalizedString(
-      `iModelJs:${key.scope}.${key.val}`,
-      key
-    );
+    return this.localization.getLocalizedString(`iModelJs:${key.scope}.${key.val}`, key);
   }
 
   /**

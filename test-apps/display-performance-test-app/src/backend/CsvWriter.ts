@@ -18,11 +18,7 @@ export function createFilePath(filePath: string) {
   }
 }
 
-export function createNewCsvFile(
-  filePath: string,
-  fileName: string,
-  data: Map<string, number | string>
-): boolean {
+export function createNewCsvFile(filePath: string, fileName: string, data: Map<string, number | string>): boolean {
   const file = path.join(filePath, fileName);
   if (!IModelJsFs.existsSync(filePath)) createFilePath(filePath);
 
@@ -43,11 +39,7 @@ export function createNewCsvFile(
   }
 }
 
-function addColumn(
-  origFile: string,
-  newName: string,
-  columnsIndex: number
-): string {
+function addColumn(origFile: string, newName: string, columnsIndex: number): string {
   let newFile = "";
   const lines = origFile.split(/[\r\n]+/);
   lines.forEach((line, lineIndex) => {
@@ -63,11 +55,7 @@ function addColumn(
       newFile += `${
         line.slice(0, pos) +
         (pos !== 0 ? "," : "") +
-        (lineIndex === 0
-          ? newName
-          : newName === "ReadPixels Selector" || newName === "Other Props"
-          ? ""
-          : 0) +
+        (lineIndex === 0 ? newName : newName === "ReadPixels Selector" || newName === "Other Props" ? "" : 0) +
         (line[pos] !== "," ? "," : "") +
         line.slice(pos)
       }\r\n`;
@@ -76,10 +64,7 @@ function addColumn(
   return newFile;
 }
 
-export function addColumnsToCsvFile(
-  filePath: string,
-  rowData: Map<string, number | string>
-) {
+export function addColumnsToCsvFile(filePath: string, rowData: Map<string, number | string>) {
   let origFile = IModelJsFs.readFileSync(filePath).toString();
   const columns = origFile.split(/[\r\n]+/)[0].split(",");
   const opNamesIter = rowData.keys();
@@ -94,10 +79,7 @@ export function addColumnsToCsvFile(
       opNames[opNamesIndex].trim() !== columns[columnsIndex].trim()
     ) {
       let count = 1;
-      while (
-        opNames[opNamesIndex + count] !== columns[columnsIndex] &&
-        opNamesIndex + count < opNames.length
-      ) {
+      while (opNames[opNamesIndex + count] !== columns[columnsIndex] && opNamesIndex + count < opNames.length) {
         count++;
       }
       if (opNames[opNamesIndex + count] === columns[columnsIndex]) {
@@ -109,13 +91,9 @@ export function addColumnsToCsvFile(
         }
       } else {
         count = 1;
-        while (
-          opNames[opNamesIndex] !== columns[columnsIndex + count] &&
-          columnsIndex + count < columns.length
-        )
+        while (opNames[opNamesIndex] !== columns[columnsIndex + count] && columnsIndex + count < columns.length)
           count++;
-        if (opNames[opNamesIndex] === columns[columnsIndex + count])
-          columnsIndex += count;
+        if (opNames[opNamesIndex] === columns[columnsIndex + count]) columnsIndex += count;
         else {
           origFile = addColumn(origFile, opNames[opNamesIndex], columnsIndex);
           columns.splice(columnsIndex, 0, opNames[opNamesIndex]);
@@ -131,10 +109,7 @@ export function addColumnsToCsvFile(
   IModelJsFs.writeFileSync(filePath, origFile);
 }
 
-export function addDataToCsvFile(
-  file: string,
-  data: Map<string, number | string>
-) {
+export function addDataToCsvFile(file: string, data: Map<string, number | string>) {
   try {
     const columns = IModelJsFs.readFileSync(file)
       .toString()
@@ -144,12 +119,7 @@ export function addDataToCsvFile(
     columns.forEach((colName, index) => {
       let value = data.get(colName);
       if (value === undefined) {
-        if (
-          index < 2 ||
-          colName === "ReadPixels Selector" ||
-          colName === "Other Props"
-        )
-          value = "";
+        if (index < 2 || colName === "ReadPixels Selector" || colName === "Other Props") value = "";
         else value = 0;
       }
       if (
@@ -162,8 +132,7 @@ export function addDataToCsvFile(
         colName === "Other Props"
       )
         stringData += `"${value}",`;
-      else if (colName !== "" || index !== columns.length - 1)
-        stringData += `${value},`;
+      else if (colName !== "" || index !== columns.length - 1) stringData += `${value},`;
     });
     stringData += "\r\n";
     IModelJsFs.appendFileSync(file, stringData);

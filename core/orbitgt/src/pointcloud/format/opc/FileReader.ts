@@ -63,12 +63,7 @@ export class FileReader {
    * @param container the container file.
    * @param fileRecord the file record.
    */
-  private constructor(
-    fileStorage: FileStorage,
-    fileName: string,
-    container: ContainerFile,
-    fileRecord: FileRecord
-  ) {
+  private constructor(fileStorage: FileStorage, fileName: string, container: ContainerFile, fileRecord: FileRecord) {
     /* Store the parameters */
     this._fileStorage = fileStorage;
     this._fileName = fileName;
@@ -86,17 +81,9 @@ export class FileReader {
    * @param lazyLoading avoid early loading to keep a low memory profile?
    * @return the reader.
    */
-  public static async openFile(
-    fileStorage: FileStorage,
-    fileName: string,
-    lazyLoading: boolean
-  ): Promise<FileReader> {
+  public static async openFile(fileStorage: FileStorage, fileName: string, lazyLoading: boolean): Promise<FileReader> {
     /* Open the container file */
-    let container: ContainerFile = await ContainerFile.read(
-      fileStorage,
-      fileName,
-      "OPC3"
-    );
+    let container: ContainerFile = await ContainerFile.read(fileStorage, fileName, "OPC3");
     /* Read the file record */
     let filePart: ContainerFilePart = container.getPart("file");
     let fileRecord: FileRecord = await FileRecord.readNew(
@@ -106,12 +93,7 @@ export class FileReader {
       filePart.getSize()
     );
     /* Create a reader */
-    let fileReader: FileReader = new FileReader(
-      fileStorage,
-      fileName,
-      container,
-      fileRecord
-    );
+    let fileReader: FileReader = new FileReader(fileStorage, fileName, container, fileRecord);
     /* Open the reader */
     fileReader = await fileReader.open(lazyLoading);
     /* Return the reader */
@@ -135,10 +117,7 @@ export class FileReader {
         lazyLoading +
         ")"
     );
-    Message.print(
-      FileReader.MODULE,
-      "Container has " + this._container.getPartCount() + " parts"
-    );
+    Message.print(FileReader.MODULE, "Container has " + this._container.getPartCount() + " parts");
     //        for(ContainerFilePart part: this._container.getParts()) Message.print(MODULE,"Part '"+part.getName()+"'");
     /* Define the content we are going to need (dozens of parts) */
     Message.print(
@@ -149,22 +128,14 @@ export class FileReader {
         this._fileRecord.getAttributeCount() +
         " attributes"
     );
-    let fileContents: ContentLoader = new ContentLoader(
-      this._fileStorage,
-      this._fileName
-    );
+    let fileContents: ContentLoader = new ContentLoader(this._fileStorage, this._fileName);
     /* Only read the block list for the top levels? (to save memory) */
     let prefetchLevelIndex: int32 = this._fileRecord.getLevelCount() - 6;
     if (prefetchLevelIndex < 0) prefetchLevelIndex = 0;
     if (lazyLoading == false) prefetchLevelIndex = 0;
-    Message.print(
-      FileReader.MODULE,
-      "Prefetching from level " + prefetchLevelIndex
-    );
+    Message.print(FileReader.MODULE, "Prefetching from level " + prefetchLevelIndex);
     /* Read the directory */
-    this._directoryReaders = new Array<DirectoryReader>(
-      this._fileRecord.getLevelCount()
-    );
+    this._directoryReaders = new Array<DirectoryReader>(this._fileRecord.getLevelCount());
     for (let i: number = 0; i < this._directoryReaders.length; i++) {
       let directoryReader: DirectoryReader = new DirectoryReader(this, i);
       let readBlockList: boolean = i >= prefetchLevelIndex;
@@ -172,25 +143,20 @@ export class FileReader {
       this._directoryReaders[i] = directoryReader;
     }
     /* Read the geometry */
-    this._geometryReaders = new Array<GeometryReader>(
-      this._fileRecord.getLevelCount()
-    );
+    this._geometryReaders = new Array<GeometryReader>(this._fileRecord.getLevelCount());
     for (let i: number = 0; i < this._geometryReaders.length; i++) {
       let geometryReader: GeometryReader = new GeometryReader(this, i);
       geometryReader.loadData(fileContents);
       this._geometryReaders[i] = geometryReader;
     }
     /* Read the attributes */
-    this._attributeReaders = new Array<AttributeReader>(
-      this._fileRecord.getAttributeCount()
-    );
+    this._attributeReaders = new Array<AttributeReader>(this._fileRecord.getAttributeCount());
     for (let i: number = 0; i < this._fileRecord.getAttributeCount(); i++) {
-      let attributeReader: EmbeddedAttributeReader =
-        new EmbeddedAttributeReader(
-          this._container,
-          i,
-          this._fileRecord.getLevelCount()
-        );
+      let attributeReader: EmbeddedAttributeReader = new EmbeddedAttributeReader(
+        this._container,
+        i,
+        this._fileRecord.getLevelCount()
+      );
       attributeReader.loadData(fileContents);
       this._attributeReaders[i] = attributeReader;
     }
@@ -207,36 +173,21 @@ export class FileReader {
     }
     /* Read the attributes */
     for (let i: number = 0; i < this._fileRecord.getAttributeCount(); i++) {
-      let attributeReader: EmbeddedAttributeReader = <EmbeddedAttributeReader>(
-        (<unknown>this._attributeReaders[i])
-      );
+      let attributeReader: EmbeddedAttributeReader = <EmbeddedAttributeReader>(<unknown>this._attributeReaders[i]);
       attributeReader.loadData(fileContents);
     }
     /* Log file info */
+    Message.print(FileReader.MODULE, "OPC bounds are " + this._geometryReaders[0].getGeometryRecord().getBounds());
+    let tileGridSize0: Coordinate = this._geometryReaders[0].getGeometryRecord().getTileGrid().size;
     Message.print(
       FileReader.MODULE,
-      "OPC bounds are " +
-        this._geometryReaders[0].getGeometryRecord().getBounds()
-    );
-    let tileGridSize0: Coordinate = this._geometryReaders[0]
-      .getGeometryRecord()
-      .getTileGrid().size;
-    Message.print(
-      FileReader.MODULE,
-      "OPC level0 tile size is (" +
-        tileGridSize0.x +
-        "," +
-        tileGridSize0.y +
-        "," +
-        tileGridSize0.z +
-        ")"
+      "OPC level0 tile size is (" + tileGridSize0.x + "," + tileGridSize0.y + "," + tileGridSize0.z + ")"
     );
     let totalPointCount: ALong = ALong.ZERO;
     let totalTileCount: int32 = 0;
     let totalBlockCount: int32 = 0;
     for (let i: number = 0; i < this._fileRecord.getLevelCount(); i++) {
-      let directoryRecord: DirectoryRecord =
-        this._directoryReaders[i].getDirectoryRecord();
+      let directoryRecord: DirectoryRecord = this._directoryReaders[i].getDirectoryRecord();
       Message.print(
         FileReader.MODULE,
         "Level " +
@@ -255,32 +206,14 @@ export class FileReader {
     }
     Message.print(
       FileReader.MODULE,
-      "Pointcloud has " +
-        totalPointCount +
-        " points, " +
-        totalTileCount +
-        " tiles, " +
-        totalBlockCount +
-        " blocks"
+      "Pointcloud has " + totalPointCount + " points, " + totalTileCount + " tiles, " + totalBlockCount + " blocks"
     );
     /* Get the attributes */
-    Message.print(
-      FileReader.MODULE,
-      "Pointcloud has " + this._attributeReaders.length + " static attributes:"
-    );
+    Message.print(FileReader.MODULE, "Pointcloud has " + this._attributeReaders.length + " static attributes:");
     for (let i: number = 0; i < this._attributeReaders.length; i++) {
-      Message.print(
-        FileReader.MODULE,
-        "Attribute " + i + ": " + this._attributeReaders[i].getAttribute()
-      );
-      Message.print(
-        FileReader.MODULE,
-        " min: " + this._attributeReaders[i].getMinimumValue()
-      );
-      Message.print(
-        FileReader.MODULE,
-        " max: " + this._attributeReaders[i].getMaximumValue()
-      );
+      Message.print(FileReader.MODULE, "Attribute " + i + ": " + this._attributeReaders[i].getAttribute());
+      Message.print(FileReader.MODULE, " min: " + this._attributeReaders[i].getMinimumValue());
+      Message.print(FileReader.MODULE, " max: " + this._attributeReaders[i].getMaximumValue());
     }
     /* Return the reader */
     return this;
@@ -374,11 +307,8 @@ export class FileReader {
    * @return the attributes.
    */
   public getAttributes(): Array<PointAttribute> {
-    let list: Array<PointAttribute> = new Array<PointAttribute>(
-      this._attributeReaders.length
-    );
-    for (let i: number = 0; i < this._attributeReaders.length; i++)
-      list[i] = this._attributeReaders[i].getAttribute();
+    let list: Array<PointAttribute> = new Array<PointAttribute>(this._attributeReaders.length);
+    for (let i: number = 0; i < this._attributeReaders.length; i++) list[i] = this._attributeReaders[i].getAttribute();
     return list;
   }
 
@@ -390,13 +320,7 @@ export class FileReader {
   public findAttributeReader(attributeName: string): AttributeReader {
     /* Check the static attributes */
     for (let attributeReader of this._attributeReaders) {
-      if (
-        Strings.equalsIgnoreCase(
-          attributeReader.getAttribute().getName(),
-          attributeName
-        )
-      )
-        return attributeReader;
+      if (Strings.equalsIgnoreCase(attributeReader.getAttribute().getName(), attributeName)) return attributeReader;
     }
     /* Not found */
     return null;

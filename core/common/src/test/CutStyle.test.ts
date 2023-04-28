@@ -9,10 +9,7 @@ import { FeatureAppearance } from "../FeatureSymbology";
 
 describe("CutStyle", () => {
   it("should round-trip through JSON", () => {
-    const roundTrip = (
-      props: CutStyleProps | undefined,
-      expected: CutStyleProps | undefined | "input"
-    ) => {
+    const roundTrip = (props: CutStyleProps | undefined, expected: CutStyleProps | undefined | "input") => {
       if ("input" === expected) expected = props;
 
       const style = CutStyle.fromJSON(props);
@@ -24,19 +21,9 @@ describe("CutStyle", () => {
 
     roundTrip(undefined, undefined);
     roundTrip({}, undefined);
-    roundTrip(
-      { viewflags: undefined, hiddenLine: undefined, appearance: undefined },
-      undefined
-    );
+    roundTrip({ viewflags: undefined, hiddenLine: undefined, appearance: undefined }, undefined);
     roundTrip(CutStyle.create().toJSON(), undefined);
-    roundTrip(
-      CutStyle.create(
-        {},
-        HiddenLine.Settings.defaults,
-        FeatureAppearance.defaults
-      ).toJSON(),
-      undefined
-    );
+    roundTrip(CutStyle.create({}, HiddenLine.Settings.defaults, FeatureAppearance.defaults).toJSON(), undefined);
 
     const hiddenLine = {
       ...HiddenLine.Settings.defaults.toJSON(),

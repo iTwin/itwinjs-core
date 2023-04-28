@@ -8,11 +8,7 @@
 import * as path from "path";
 import { IModelJsExpressServer } from "@itwin/express-server";
 import { IModelHost } from "@itwin/core-backend";
-import {
-  BentleyCloudRpcManager,
-  RpcConfiguration,
-  RpcManager,
-} from "@itwin/core-common";
+import { BentleyCloudRpcManager, RpcConfiguration, RpcManager } from "@itwin/core-common";
 import { getRpcInterfaces } from "../common/Settings";
 import * as fs from "fs";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
@@ -41,9 +37,7 @@ void (async () => {
   // Start the backend
   const iModelClient = new IModelsClient({
     api: {
-      baseUrl: `https://${
-        process.env.IMJS_URL_PREFIX ?? ""
-      }api.bentley.com/imodels`,
+      baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`,
     },
   });
   const hubAccess = new BackendIModelsAccess(iModelClient);

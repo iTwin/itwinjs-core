@@ -73,10 +73,6 @@ export class Float32Buffer {
    * Set an element.
    */
   public set(index: int32, value: float32): void {
-    LittleEndian.writeBufferFloat(
-      this._buffer,
-      this._offset + 4 * index,
-      value
-    );
+    LittleEndian.writeBufferFloat(this._buffer, this._offset + 4 * index, value);
   }
 }

@@ -48,11 +48,7 @@ export class SchemaCompareResultDelegate {
    * Initializes a new SchemaCompareResultDelegate instance.
    * @param reporters The [[ISchemaCompareReporter]] objects to use to report schema differences.
    */
-  constructor(
-    schemaA: Schema,
-    schemaB: Schema,
-    ...reporters: ISchemaCompareReporter[]
-  ) {
+  constructor(schemaA: Schema, schemaB: Schema, ...reporters: ISchemaCompareReporter[]) {
     this._schemaChangeReporters = reporters;
     const keyMismatch = !schemaA.schemaKey.matches(schemaB.schemaKey);
     this._schemaAChanges = new SchemaChanges(schemaA);
@@ -68,10 +64,7 @@ export class SchemaCompareResultDelegate {
    */
   public compareComplete() {
     this.schemaChangeReporters.forEach((r) => r.report(this._schemaAChanges));
-    if (this._schemaBChanges)
-      this.schemaChangeReporters.forEach((r) =>
-        r.report(this._schemaBChanges!)
-      );
+    if (this._schemaBChanges) this.schemaChangeReporters.forEach((r) => r.report(this._schemaBChanges!));
   }
 
   /**
@@ -88,11 +81,7 @@ export class SchemaCompareResultDelegate {
     valueB: any,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.SchemaDelta(schemaA, [
-      propertyName,
-      valueA,
-      valueB,
-    ]);
+    const diag = new SchemaCompareDiagnostics.SchemaDelta(schemaA, [propertyName, valueA, valueB]);
     await this.reportDiagnostic(diag);
   }
 
@@ -106,9 +95,7 @@ export class SchemaCompareResultDelegate {
     referenceSchema: Schema,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.SchemaReferenceMissing(schemaA, [
-      referenceSchema,
-    ]);
+    const diag = new SchemaCompareDiagnostics.SchemaReferenceMissing(schemaA, [referenceSchema]);
     await this.reportDiagnostic(diag);
   }
 
@@ -124,11 +111,7 @@ export class SchemaCompareResultDelegate {
     versionB: string,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.SchemaReferenceDelta(schemaA, [
-      referenceSchema,
-      versionA,
-      versionB,
-    ]);
+    const diag = new SchemaCompareDiagnostics.SchemaReferenceDelta(schemaA, [referenceSchema, versionA, versionB]);
     await this.reportDiagnostic(diag);
   }
 
@@ -140,10 +123,7 @@ export class SchemaCompareResultDelegate {
     schemaItemA: SchemaItem,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.SchemaItemMissing(
-      schemaItemA,
-      []
-    );
+    const diag = new SchemaCompareDiagnostics.SchemaItemMissing(schemaItemA, []);
     await this.reportDiagnostic(diag);
   }
 
@@ -161,11 +141,7 @@ export class SchemaCompareResultDelegate {
     valueB: any,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.SchemaItemDelta(schemaItemA, [
-      propertyName,
-      valueA,
-      valueB,
-    ]);
+    const diag = new SchemaCompareDiagnostics.SchemaItemDelta(schemaItemA, [propertyName, valueA, valueB]);
     await this.reportDiagnostic(diag);
   }
 
@@ -183,11 +159,7 @@ export class SchemaCompareResultDelegate {
     valueB: any,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.ClassDelta(classA, [
-      propertyName,
-      valueA,
-      valueB,
-    ]);
+    const diag = new SchemaCompareDiagnostics.ClassDelta(classA, [propertyName, valueA, valueB]);
     await this.reportDiagnostic(diag);
   }
 
@@ -203,10 +175,7 @@ export class SchemaCompareResultDelegate {
     baseClassB: AnyClass | undefined,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.BaseClassDelta(classA, [
-      baseClassA,
-      baseClassB,
-    ]);
+    const diag = new SchemaCompareDiagnostics.BaseClassDelta(classA, [baseClassA, baseClassB]);
     await this.reportDiagnostic(diag);
   }
 
@@ -224,11 +193,7 @@ export class SchemaCompareResultDelegate {
     valueB: any,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.PropertyDelta(propertyA, [
-      propertyName,
-      valueA,
-      valueB,
-    ]);
+    const diag = new SchemaCompareDiagnostics.PropertyDelta(propertyA, [propertyName, valueA, valueB]);
     await this.reportDiagnostic(diag);
   }
 
@@ -236,10 +201,7 @@ export class SchemaCompareResultDelegate {
    * Reports that an ECProperty found in the first ECClass could not be found in the second.
    * @param propertyA The ECProperty supplied for comparison.
    */
-  public async reportPropertyMissing(
-    propertyA: AnyProperty,
-    _compareDirection: SchemaCompareDirection
-  ): Promise<void> {
+  public async reportPropertyMissing(propertyA: AnyProperty, _compareDirection: SchemaCompareDirection): Promise<void> {
     const diag = new SchemaCompareDiagnostics.PropertyMissing(propertyA, []);
     await this.reportDiagnostic(diag);
   }
@@ -254,9 +216,7 @@ export class SchemaCompareResultDelegate {
     mixinA: Mixin,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.EntityMixinMissing(entityClassA, [
-      mixinA,
-    ]);
+    const diag = new SchemaCompareDiagnostics.EntityMixinMissing(entityClassA, [mixinA]);
     await this.reportDiagnostic(diag);
   }
 
@@ -274,11 +234,7 @@ export class SchemaCompareResultDelegate {
     valueB: any,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.MixinDelta(mixinA, [
-      propertyName,
-      valueA,
-      valueB,
-    ]);
+    const diag = new SchemaCompareDiagnostics.MixinDelta(mixinA, [propertyName, valueA, valueB]);
     await this.reportDiagnostic(diag);
   }
 
@@ -296,10 +252,7 @@ export class SchemaCompareResultDelegate {
     valueB: any,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.RelationshipDelta(
-      relationshipClassA,
-      [propertyName, valueA, valueB]
-    );
+    const diag = new SchemaCompareDiagnostics.RelationshipDelta(relationshipClassA, [propertyName, valueA, valueB]);
     await this.reportDiagnostic(diag);
   }
 
@@ -317,10 +270,7 @@ export class SchemaCompareResultDelegate {
     valueB: any,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.RelationshipConstraintDelta(
-      constraintA,
-      [propertyName, valueA, valueB]
-    );
+    const diag = new SchemaCompareDiagnostics.RelationshipConstraintDelta(constraintA, [propertyName, valueA, valueB]);
     await this.reportDiagnostic(diag);
   }
 
@@ -334,11 +284,7 @@ export class SchemaCompareResultDelegate {
     constraintClass: EntityClass | Mixin | RelationshipClass,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag =
-      new SchemaCompareDiagnostics.RelationshipConstraintClassMissing(
-        constraintA,
-        [constraintClass]
-      );
+    const diag = new SchemaCompareDiagnostics.RelationshipConstraintClassMissing(constraintA, [constraintClass]);
     await this.reportDiagnostic(diag);
   }
 
@@ -356,10 +302,11 @@ export class SchemaCompareResultDelegate {
     valueB: any,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.CustomAttributeClassDelta(
-      customAttributeA,
-      [propertyName, valueA, valueB]
-    );
+    const diag = new SchemaCompareDiagnostics.CustomAttributeClassDelta(customAttributeA, [
+      propertyName,
+      valueA,
+      valueB,
+    ]);
     await this.reportDiagnostic(diag);
   }
 
@@ -373,11 +320,9 @@ export class SchemaCompareResultDelegate {
     customAttribute: CustomAttribute,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag =
-      new SchemaCompareDiagnostics.CustomAttributeInstanceClassMissing(
-        customAttributeContainerA,
-        [customAttribute]
-      );
+    const diag = new SchemaCompareDiagnostics.CustomAttributeInstanceClassMissing(customAttributeContainerA, [
+      customAttribute,
+    ]);
     await this.reportDiagnostic(diag);
   }
 
@@ -395,11 +340,7 @@ export class SchemaCompareResultDelegate {
     valueB: any,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.EnumerationDelta(enumerationA, [
-      propertyName,
-      valueA,
-      valueB,
-    ]);
+    const diag = new SchemaCompareDiagnostics.EnumerationDelta(enumerationA, [propertyName, valueA, valueB]);
     await this.reportDiagnostic(diag);
   }
 
@@ -413,9 +354,7 @@ export class SchemaCompareResultDelegate {
     enumerator: AnyEnumerator,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.EnumeratorMissing(enumerationA, [
-      enumerator,
-    ]);
+    const diag = new SchemaCompareDiagnostics.EnumeratorMissing(enumerationA, [enumerator]);
     await this.reportDiagnostic(diag);
   }
 
@@ -435,12 +374,7 @@ export class SchemaCompareResultDelegate {
     valueB: any,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.EnumeratorDelta(enumerationA, [
-      enumerator,
-      propertyName,
-      valueA,
-      valueB,
-    ]);
+    const diag = new SchemaCompareDiagnostics.EnumeratorDelta(enumerationA, [enumerator, propertyName, valueA, valueB]);
     await this.reportDiagnostic(diag);
   }
 
@@ -458,11 +392,7 @@ export class SchemaCompareResultDelegate {
     valueB: any,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.KoqDelta(koqA, [
-      propertyName,
-      valueA,
-      valueB,
-    ]);
+    const diag = new SchemaCompareDiagnostics.KoqDelta(koqA, [propertyName, valueA, valueB]);
     await this.reportDiagnostic(diag);
   }
 
@@ -476,9 +406,7 @@ export class SchemaCompareResultDelegate {
     unit: Format | OverrideFormat,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.PresentationUnitMissing(koqA, [
-      unit,
-    ]);
+    const diag = new SchemaCompareDiagnostics.PresentationUnitMissing(koqA, [unit]);
     await this.reportDiagnostic(diag);
   }
 
@@ -496,11 +424,7 @@ export class SchemaCompareResultDelegate {
     valueB: any,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.PropertyCategoryDelta(categoryA, [
-      propertyName,
-      valueA,
-      valueB,
-    ]);
+    const diag = new SchemaCompareDiagnostics.PropertyCategoryDelta(categoryA, [propertyName, valueA, valueB]);
     await this.reportDiagnostic(diag);
   }
 
@@ -518,11 +442,7 @@ export class SchemaCompareResultDelegate {
     valueB: any,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.FormatDelta(formatA, [
-      propertyName,
-      valueA,
-      valueB,
-    ]);
+    const diag = new SchemaCompareDiagnostics.FormatDelta(formatA, [propertyName, valueA, valueB]);
     await this.reportDiagnostic(diag);
   }
 
@@ -536,9 +456,7 @@ export class SchemaCompareResultDelegate {
     unit: Unit | InvertedUnit,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.FormatUnitMissing(formatA, [
-      unit,
-    ]);
+    const diag = new SchemaCompareDiagnostics.FormatUnitMissing(formatA, [unit]);
     await this.reportDiagnostic(diag);
   }
 
@@ -556,11 +474,7 @@ export class SchemaCompareResultDelegate {
     labelB: string | undefined,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.UnitLabelOverrideDelta(formatA, [
-      unit,
-      labelA,
-      labelB,
-    ]);
+    const diag = new SchemaCompareDiagnostics.UnitLabelOverrideDelta(formatA, [unit, labelA, labelB]);
     await this.reportDiagnostic(diag);
   }
 
@@ -578,11 +492,7 @@ export class SchemaCompareResultDelegate {
     valueB: any,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.UnitDelta(unitA, [
-      propertyName,
-      valueA,
-      valueB,
-    ]);
+    const diag = new SchemaCompareDiagnostics.UnitDelta(unitA, [propertyName, valueA, valueB]);
     await this.reportDiagnostic(diag);
   }
 
@@ -600,11 +510,7 @@ export class SchemaCompareResultDelegate {
     valueB: any,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.InvertedUnitDelta(invertedUnitA, [
-      propertyName,
-      valueA,
-      valueB,
-    ]);
+    const diag = new SchemaCompareDiagnostics.InvertedUnitDelta(invertedUnitA, [propertyName, valueA, valueB]);
     await this.reportDiagnostic(diag);
   }
 
@@ -622,11 +528,7 @@ export class SchemaCompareResultDelegate {
     valueB: any,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.PhenomenonDelta(phenomenonA, [
-      propertyName,
-      valueA,
-      valueB,
-    ]);
+    const diag = new SchemaCompareDiagnostics.PhenomenonDelta(phenomenonA, [propertyName, valueA, valueB]);
     await this.reportDiagnostic(diag);
   }
 
@@ -644,19 +546,12 @@ export class SchemaCompareResultDelegate {
     valueB: any,
     _compareDirection: SchemaCompareDirection
   ): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.ConstantDelta(constantA, [
-      propertyName,
-      valueA,
-      valueB,
-    ]);
+    const diag = new SchemaCompareDiagnostics.ConstantDelta(constantA, [propertyName, valueA, valueB]);
     await this.reportDiagnostic(diag);
   }
 
   private async reportDiagnostic(diagnostic: AnyDiagnostic): Promise<void> {
-    if (
-      !this._schemaBChanges ||
-      this._schemaAChanges.schema === diagnostic.schema
-    ) {
+    if (!this._schemaBChanges || this._schemaAChanges.schema === diagnostic.schema) {
       this._schemaAChanges.addDiagnostic(diagnostic);
       return;
     }

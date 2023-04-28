@@ -8,22 +8,13 @@
  */
 
 import { Arc3d } from "../curve/Arc3d";
-import {
-  AnnounceNumberNumber,
-  AnnounceNumberNumberCurvePrimitive,
-  CurvePrimitive,
-} from "../curve/CurvePrimitive";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Range1d } from "../geometry3d/Range";
 import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 import { Range1dArray } from "../numerics/Range1dArray";
-import {
-  Clipper,
-  ClipStepAction,
-  ClipUtilities,
-  PolygonClipper,
-} from "./ClipUtils";
+import { Clipper, ClipStepAction, ClipUtilities, PolygonClipper } from "./ClipUtils";
 
 /** BooleanClipNode is an abstract base class for boolean actions by an array of clippers.
  * * Derived class must implement
@@ -54,10 +45,7 @@ export abstract class BooleanClipNode implements Clipper {
     this._intervalsB = [];
   }
   protected abstract isPointOnOrInsideChildren(point: Point3d): boolean;
-  protected abstract combineIntervals(
-    operandA: Range1d[],
-    operandB: Range1d[]
-  ): Range1d[];
+  protected abstract combineIntervals(operandA: Range1d[], operandB: Range1d[]): Range1d[];
   public abstract get operationName(): string;
   public toJSON(): any {
     const data = [];
@@ -94,11 +82,7 @@ export abstract class BooleanClipNode implements Clipper {
    * * Conditionally (if a1 > a0 strictly) call announce (a0, a1).
    * * Return 0 if not called, 1 if called.
    */
-  protected testedAnnounceNN(
-    a0: number,
-    a1: number,
-    announce?: AnnounceNumberNumber
-  ): number {
+  protected testedAnnounceNN(a0: number, a1: number, announce?: AnnounceNumberNumber): number {
     if (a0 < a1) {
       if (announce) announce(a0, a1);
       return 1;
@@ -142,22 +126,14 @@ export abstract class BooleanClipNode implements Clipper {
     if (!keepInside) {
       let lowFraction = f0;
       for (const interval of intervals) {
-        numAnnounce += this.testedAnnounceNN(
-          lowFraction,
-          interval.low,
-          announce
-        );
+        numAnnounce += this.testedAnnounceNN(lowFraction, interval.low, announce);
         lowFraction = interval.high;
       }
       numAnnounce += this.testedAnnounceNN(lowFraction, f1, announce);
     } else {
       for (const interval of intervals) {
         // use f0..f1 ?
-        numAnnounce += this.testedAnnounceNN(
-          interval.low,
-          interval.high,
-          announce
-        );
+        numAnnounce += this.testedAnnounceNN(interval.low, interval.high, announce);
       }
     }
     return numAnnounce > 0;
@@ -178,24 +154,14 @@ export abstract class BooleanClipNode implements Clipper {
     if (!keepInside) {
       let lowFraction = f0;
       for (const interval of intervals) {
-        numAnnounce += this.testedAnnounceNNC(
-          lowFraction,
-          interval.low,
-          cp,
-          announce
-        );
+        numAnnounce += this.testedAnnounceNNC(lowFraction, interval.low, cp, announce);
         lowFraction = interval.high;
       }
       numAnnounce += this.testedAnnounceNNC(lowFraction, f1, cp, announce);
     } else {
       for (const interval of intervals) {
         // use f0..f1 ?
-        numAnnounce += this.testedAnnounceNNC(
-          interval.low,
-          interval.high,
-          cp,
-          announce
-        );
+        numAnnounce += this.testedAnnounceNNC(interval.low, interval.high, cp, announce);
       }
     }
     return numAnnounce > 0;
@@ -227,37 +193,19 @@ export abstract class BooleanClipNode implements Clipper {
     let i = 0;
     for (const c of this._clippers) {
       this._intervalsB.length = 0;
-      c.announceClippedSegmentIntervals(
-        f0,
-        f1,
-        pointA,
-        pointB,
-        announceIntervalB
-      );
+      c.announceClippedSegmentIntervals(f0, f1, pointA, pointB, announceIntervalB);
       Range1dArray.simplifySortUnion(this._intervalsB);
       if (i === 0) {
         this.swapAB();
       } else {
-        this._intervalsA = this.combineIntervals(
-          this._intervalsA,
-          this._intervalsB
-        );
+        this._intervalsA = this.combineIntervals(this._intervalsA, this._intervalsB);
       }
       i++;
     }
-    return this.announcePartsNN(
-      this._keepInside,
-      this._intervalsA,
-      f0,
-      f1,
-      announce
-    );
+    return this.announcePartsNN(this._keepInside, this._intervalsA, f0, f1, announce);
   }
   /** Announce "in" portions of a line segment.  See `Clipper.announceClippedSegmentIntervals` */
-  public announceClippedArcIntervals(
-    arc: Arc3d,
-    announce?: AnnounceNumberNumberCurvePrimitive
-  ): boolean {
+  public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     this._intervalsA.length = 0;
     const announceIntervalB = (a0: number, a1: number) => {
       this._intervalsB.push(Range1d.createXX(a0, a1));
@@ -270,21 +218,11 @@ export abstract class BooleanClipNode implements Clipper {
       if (i === 0) {
         this.swapAB();
       } else {
-        this._intervalsA = this.combineIntervals(
-          this._intervalsA,
-          this._intervalsB
-        );
+        this._intervalsA = this.combineIntervals(this._intervalsA, this._intervalsB);
       }
       i++;
     }
-    return this.announcePartsNNC(
-      this._keepInside,
-      this._intervalsA,
-      0,
-      1,
-      arc,
-      announce
-    );
+    return this.announcePartsNNC(this._keepInside, this._intervalsA, 0, 1, arc, announce);
   }
 }
 /**
@@ -369,10 +307,7 @@ export class BooleanClipNodeParity extends BooleanClipNode {
  * Implement [BooleanClipNode] virtual methods for intersection (boolean OR) among children
  * @internal
  */
-export class BooleanClipNodeIntersection
-  extends BooleanClipNode
-  implements PolygonClipper
-{
+export class BooleanClipNodeIntersection extends BooleanClipNode implements PolygonClipper {
   public get operationName(): string {
     return this._keepInside ? "AND" : "NAND";
   }

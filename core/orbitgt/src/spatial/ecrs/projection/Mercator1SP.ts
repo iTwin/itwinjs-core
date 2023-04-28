@@ -82,13 +82,7 @@ export class Mercator1SP extends OperationMethod {
    * @param fN false northing.
    * @return the projection.
    */
-  public static create(
-    latN: float64,
-    lonN: float64,
-    k0: float64,
-    fE: float64,
-    fN: float64
-  ): Mercator1SP {
+  public static create(latN: float64, lonN: float64, k0: float64, fE: float64, fN: float64): Mercator1SP {
     let projection: Mercator1SP = new Mercator1SP(null);
     projection._latN = latN;
     projection._lonN = lonN;
@@ -102,12 +96,7 @@ export class Mercator1SP extends OperationMethod {
    * OperationMethod interface method.
    * @see OperationMethod#forward
    */
-  public forward(
-    sourceCRS: CRS,
-    source: Coordinate,
-    targetCRS: CRS,
-    target: Coordinate
-  ): void {
+  public forward(sourceCRS: CRS, source: Coordinate, targetCRS: CRS, target: Coordinate): void {
     /* Get the geographic parameters (radians) */
     let lon: float64 = source.getX();
     let lat: float64 = source.getY();
@@ -129,12 +118,7 @@ export class Mercator1SP extends OperationMethod {
    * OperationMethod interface method.
    * @see OperationMethod#reverse
    */
-  public reverse(
-    sourceCRS: CRS,
-    source: Coordinate,
-    targetCRS: CRS,
-    target: Coordinate
-  ): void {
+  public reverse(sourceCRS: CRS, source: Coordinate, targetCRS: CRS, target: Coordinate): void {
     /* Get the parameters */
     let E: float64 = target.getX();
     let N: float64 = target.getY();

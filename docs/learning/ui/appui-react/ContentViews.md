@@ -24,10 +24,7 @@ The following shows a sample Viewport content control that subclasses ViewportCo
 ```ts
 import * as React from "react";
 
-import {
-  ConfigurableCreateInfo,
-  ViewportContentControl,
-} from "@itwin/appui-react";
+import { ConfigurableCreateInfo, ViewportContentControl } from "@itwin/appui-react";
 
 import { ScreenViewport } from "@itwin/core-frontend";
 
@@ -82,12 +79,7 @@ export class TableContent extends ContentControl {
     super(info, options);
 
     if (options.iModelConnection) {
-      this.reactNode = (
-        <SimpleTableComponent
-          imodel={options.iModelConnection}
-          rulesetId={options.rulesetId}
-        />
-      );
+      this.reactNode = <SimpleTableComponent imodel={options.iModelConnection} rulesetId={options.rulesetId} />;
     }
   }
 }

@@ -50,24 +50,15 @@ async function tryCopyDirectoryContents(source: string, target: string) {
     errorOnExist: false,
   };
   try {
-    if (
-      (await isDirectory(source)) &&
-      fs.existsSync(target) &&
-      (await isDirectory(target))
-    ) {
+    if ((await isDirectory(source)) && fs.existsSync(target) && (await isDirectory(target))) {
       for (const name of await fs.readdir(source)) {
-        await tryCopyDirectoryContents(
-          path.join(source, name),
-          path.join(target, name)
-        );
+        await tryCopyDirectoryContents(path.join(source, name), path.join(target, name));
       }
     } else {
       await fs.copy(source, target, copyOptions);
     }
   } catch (err: any) {
-    console.log(
-      `Error trying to copy '${source}' to '${target}': ${err.toString()}`
-    );
+    console.log(`Error trying to copy '${source}' to '${target}': ${err.toString()}`);
   }
 }
 
@@ -79,8 +70,7 @@ export class CopyBentleyStaticResourcesPlugin extends AbstractAsyncStartupPlugin
   constructor(directoryNames: string[], useDirectoryName?: boolean) {
     super("CopyBentleyStaticResourcesPlugin");
     this._directoryNames = directoryNames;
-    this._useDirectoryName =
-      undefined === useDirectoryName ? false : useDirectoryName;
+    this._useDirectoryName = undefined === useDirectoryName ? false : useDirectoryName;
   }
 
   public async runAsync(compiler: Compiler) {
@@ -100,9 +90,7 @@ export class CopyBentleyStaticResourcesPlugin extends AbstractAsyncStartupPlugin
         for (const staticAssetsDirectoryName of this._directoryNames) {
           await tryCopyDirectoryContents(
             path.join(fullDirName, "lib", staticAssetsDirectoryName),
-            this._useDirectoryName
-              ? compiler.outputPath
-              : path.join(compiler.outputPath, staticAssetsDirectoryName)
+            this._useDirectoryName ? compiler.outputPath : path.join(compiler.outputPath, staticAssetsDirectoryName)
           );
         }
       }
@@ -134,11 +122,7 @@ export class CopyStaticAssetsPlugin {
   private _fromTo: string;
   private _useDirectoryName: boolean;
 
-  constructor({
-    scopes = ["@bentley", "@itwin"],
-    fromTo = "public",
-    useDirectoryName = false,
-  }) {
+  constructor({ scopes = ["@bentley", "@itwin"], fromTo = "public", useDirectoryName = false }) {
     this._scopes = scopes;
     this._fromTo = fromTo;
     this._useDirectoryName = useDirectoryName;

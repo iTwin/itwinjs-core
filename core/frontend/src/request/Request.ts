@@ -31,25 +31,13 @@ export interface RequestOptions {
 }
 
 /** @internal */
-export async function request(
-  url: string,
-  responseType: "arraybuffer",
-  options?: RequestOptions
-): Promise<ArrayBuffer>;
+export async function request(url: string, responseType: "arraybuffer", options?: RequestOptions): Promise<ArrayBuffer>;
 
 /** @internal */
-export async function request(
-  url: string,
-  responseType: "json",
-  options?: RequestOptions
-): Promise<any>;
+export async function request(url: string, responseType: "json", options?: RequestOptions): Promise<any>;
 
 /** @internal */
-export async function request(
-  url: string,
-  responseType: "text",
-  options?: RequestOptions
-): Promise<string>;
+export async function request(url: string, responseType: "text", options?: RequestOptions): Promise<string>;
 
 /** @internal */
 export async function request(
@@ -61,10 +49,7 @@ export async function request(
     ...options?.headers,
   };
 
-  if (options?.auth)
-    headers.authorization = `Basic ${window.btoa(
-      `${options.auth.user}:${options.auth.password}`
-    )}`;
+  if (options?.auth) headers.authorization = `Basic ${window.btoa(`${options.auth.user}:${options.auth.password}`)}`;
 
   const controller = new AbortController();
   if (options?.timeout) setTimeout(() => controller.abort(), options.timeout);
@@ -77,8 +62,7 @@ export async function request(
   const fetchFunc = async () => fetch(url, fetchOptions);
   const response = await fetchWithRetry(fetchFunc, options?.retryCount ?? 4);
 
-  if (!response.ok)
-    throw new HttpResponseError(response.status, await response.text());
+  if (!response.ok) throw new HttpResponseError(response.status, await response.text());
 
   switch (responseType) {
     case "arraybuffer":
@@ -90,10 +74,7 @@ export async function request(
   }
 }
 
-async function fetchWithRetry(
-  fetchFunc: () => Promise<Response>,
-  remainingRetries: number
-): Promise<Response> {
+async function fetchWithRetry(fetchFunc: () => Promise<Response>, remainingRetries: number): Promise<Response> {
   try {
     return await fetchFunc();
   } catch (error: unknown) {

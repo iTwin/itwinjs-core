@@ -9,12 +9,7 @@
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { EntityClassProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import {
-  ECClassModifier,
-  parseStrengthDirection,
-  SchemaItemType,
-  StrengthDirection,
-} from "../ECObjects";
+import { ECClassModifier, parseStrengthDirection, SchemaItemType, StrengthDirection } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { LazyLoadedMixin } from "../Interfaces";
 import { SchemaItemKey } from "../SchemaKey";
@@ -60,9 +55,7 @@ export class EntityClass extends ECClass {
   protected addMixin(mixin: Mixin) {
     if (!this._mixins) this._mixins = [];
 
-    this._mixins.push(
-      new DelayedPromiseWithProps(mixin.key, async () => mixin)
-    );
+    this._mixins.push(new DelayedPromiseWithProps(mixin.key, async () => mixin));
     return;
   }
 
@@ -70,15 +63,11 @@ export class EntityClass extends ECClass {
    * Searches the base class, if one exists, first then any mixins that exist for the property with the name provided.
    * @param name The name of the property to find.
    */
-  public override async getInheritedProperty(
-    name: string
-  ): Promise<AnyProperty | undefined> {
+  public override async getInheritedProperty(name: string): Promise<AnyProperty | undefined> {
     let inheritedProperty = await super.getInheritedProperty(name);
 
     if (!inheritedProperty && this._mixins) {
-      const mixinProps = await Promise.all(
-        this._mixins.map(async (mixin) => (await mixin).getProperty(name))
-      );
+      const mixinProps = await Promise.all(this._mixins.map(async (mixin) => (await mixin).getProperty(name)));
       mixinProps.some((prop) => {
         inheritedProperty = prop as AnyProperty;
         return inheritedProperty !== undefined;
@@ -132,12 +121,7 @@ export class EntityClass extends ECClass {
     }
 
     for (const mixin of this.mixins) {
-      ECClass.mergeProperties(
-        result,
-        existingValues,
-        await (await mixin).getProperties(resetBaseCaches),
-        false
-      );
+      ECClass.mergeProperties(result, existingValues, await (await mixin).getProperties(resetBaseCaches), false);
     }
 
     if (!this.properties) return;
@@ -156,21 +140,11 @@ export class EntityClass extends ECClass {
 
     const baseClass = this.getBaseClassSync();
     if (baseClass) {
-      ECClass.mergeProperties(
-        result,
-        existingValues,
-        baseClass.getPropertiesSync(resetBaseCaches),
-        false
-      );
+      ECClass.mergeProperties(result, existingValues, baseClass.getPropertiesSync(resetBaseCaches), false);
     }
 
     for (const mixin of this.getMixinsSync()) {
-      ECClass.mergeProperties(
-        result,
-        existingValues,
-        mixin.getPropertiesSync(resetBaseCaches),
-        false
-      );
+      ECClass.mergeProperties(result, existingValues, mixin.getPropertiesSync(resetBaseCaches), false);
     }
 
     if (!this.properties) return;
@@ -189,9 +163,7 @@ export class EntityClass extends ECClass {
     relationship: string | RelationshipClass,
     direction: string | StrengthDirection
   ): Promise<NavigationProperty> {
-    return this.addProperty(
-      await createNavigationProperty(this, name, relationship, direction)
-    );
+    return this.addProperty(await createNavigationProperty(this, name, relationship, direction));
   }
 
   /**
@@ -205,9 +177,7 @@ export class EntityClass extends ECClass {
     relationship: string | RelationshipClass,
     direction: string | StrengthDirection
   ): NavigationProperty {
-    return this.addProperty(
-      createNavigationPropertySync(this, name, relationship, direction)
-    );
+    return this.addProperty(createNavigationPropertySync(this, name, relationship, direction));
   }
 
   /**
@@ -215,13 +185,9 @@ export class EntityClass extends ECClass {
    * @param standalone Serialization includes only this object (as opposed to the full schema).
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
    */
-  public override toJSON(
-    standalone: boolean = false,
-    includeSchemaVersion: boolean = false
-  ): EntityClassProps {
+  public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): EntityClassProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
-    if (this.mixins.length > 0)
-      schemaJson.mixins = this.mixins.map((mixin) => mixin.fullName);
+    if (this.mixins.length > 0) schemaJson.mixins = this.mixins.map((mixin) => mixin.fullName);
     return schemaJson;
   }
 
@@ -231,11 +197,7 @@ export class EntityClass extends ECClass {
 
     for (const mixin of this.getMixinsSync()) {
       const mixinElement = schemaXml.createElement("BaseClass");
-      const mixinName = XmlSerializationUtils.createXmlTypedName(
-        this.schema,
-        mixin.schema,
-        mixin.name
-      );
+      const mixinName = XmlSerializationUtils.createXmlTypedName(this.schema, mixin.schema, mixin.name);
       mixinElement.textContent = mixinName;
       itemElement.appendChild(mixinElement);
     }
@@ -259,20 +221,15 @@ export class EntityClass extends ECClass {
             `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`
           );
         this._mixins.push(
-          new DelayedPromiseWithProps<SchemaItemKey, Mixin>(
-            mixinSchemaItemKey,
-            async () => {
-              const mixin = await this.schema.lookupItem<Mixin>(
-                mixinSchemaItemKey
+          new DelayedPromiseWithProps<SchemaItemKey, Mixin>(mixinSchemaItemKey, async () => {
+            const mixin = await this.schema.lookupItem<Mixin>(mixinSchemaItemKey);
+            if (undefined === mixin)
+              throw new ECObjectsError(
+                ECObjectsStatus.InvalidECJson,
+                `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`
               );
-              if (undefined === mixin)
-                throw new ECObjectsError(
-                  ECObjectsStatus.InvalidECJson,
-                  `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`
-                );
-              return mixin;
-            }
-          )
+            return mixin;
+          })
         );
       }
     }
@@ -313,9 +270,7 @@ export async function createNavigationProperty(
 
   let resolvedRelationship: RelationshipClass | undefined;
   if (typeof relationship === "string") {
-    resolvedRelationship = await ecClass.schema.lookupItem<RelationshipClass>(
-      relationship
-    );
+    resolvedRelationship = await ecClass.schema.lookupItem<RelationshipClass>(relationship);
   } else resolvedRelationship = relationship;
 
   if (!resolvedRelationship)
@@ -334,10 +289,7 @@ export async function createNavigationProperty(
     direction = tmpDirection;
   }
 
-  const lazyRelationship = new DelayedPromiseWithProps(
-    resolvedRelationship.key,
-    async () => resolvedRelationship!
-  );
+  const lazyRelationship = new DelayedPromiseWithProps(resolvedRelationship.key, async () => resolvedRelationship!);
   return new NavigationProperty(ecClass, name, lazyRelationship, direction);
 }
 
@@ -356,8 +308,7 @@ export function createNavigationPropertySync(
 
   let resolvedRelationship: RelationshipClass | undefined;
   if (typeof relationship === "string") {
-    resolvedRelationship =
-      ecClass.schema.lookupItemSync<RelationshipClass>(relationship);
+    resolvedRelationship = ecClass.schema.lookupItemSync<RelationshipClass>(relationship);
   } else resolvedRelationship = relationship;
 
   if (!resolvedRelationship)
@@ -376,9 +327,6 @@ export function createNavigationPropertySync(
     direction = tmpDirection;
   }
 
-  const lazyRelationship = new DelayedPromiseWithProps(
-    resolvedRelationship.key,
-    async () => resolvedRelationship!
-  );
+  const lazyRelationship = new DelayedPromiseWithProps(resolvedRelationship.key, async () => resolvedRelationship!);
   return new NavigationProperty(ecClass, name, lazyRelationship, direction);
 }

@@ -35,13 +35,8 @@ export const createRandomBaseNodeKey = (): BaseNodeKey => {
 /**
  * @internal Used for testing only.
  */
-export const createRandomECInstancesNodeKey = (
-  instanceKeys?: InstanceKey[]
-): ECInstancesNodeKey => {
-  instanceKeys = instanceKeys ?? [
-    createRandomECInstanceKey(),
-    createRandomECInstanceKey(),
-  ];
+export const createRandomECInstancesNodeKey = (instanceKeys?: InstanceKey[]): ECInstancesNodeKey => {
+  instanceKeys = instanceKeys ?? [createRandomECInstanceKey(), createRandomECInstanceKey()];
   return {
     type: StandardNodeTypes.ECInstancesNode,
     version: 2,
@@ -53,9 +48,7 @@ export const createRandomECInstancesNodeKey = (
 /**
  * @internal Used for testing only.
  */
-export const createRandomECClassGroupingNodeKey = (
-  groupedInstancesCount?: number
-): ECClassGroupingNodeKey => ({
+export const createRandomECClassGroupingNodeKey = (groupedInstancesCount?: number): ECClassGroupingNodeKey => ({
   type: StandardNodeTypes.ECClassGroupingNode,
   version: 2,
   pathFromRoot: [faker.random.uuid()],
@@ -66,9 +59,7 @@ export const createRandomECClassGroupingNodeKey = (
 /**
  * @internal Used for testing only.
  */
-export const createRandomECPropertyGroupingNodeKey = (
-  groupedInstancesCount?: number
-): ECPropertyGroupingNodeKey => ({
+export const createRandomECPropertyGroupingNodeKey = (groupedInstancesCount?: number): ECPropertyGroupingNodeKey => ({
   type: StandardNodeTypes.ECPropertyGroupingNode,
   version: 2,
   pathFromRoot: [faker.random.uuid()],
@@ -81,9 +72,7 @@ export const createRandomECPropertyGroupingNodeKey = (
 /**
  * @internal Used for testing only.
  */
-export const createRandomLabelGroupingNodeKey = (
-  groupedInstancesCount?: number
-): LabelGroupingNodeKey => ({
+export const createRandomLabelGroupingNodeKey = (groupedInstancesCount?: number): LabelGroupingNodeKey => ({
   type: StandardNodeTypes.DisplayLabelGroupingNode,
   version: 2,
   pathFromRoot: [faker.random.uuid()],
@@ -94,9 +83,7 @@ export const createRandomLabelGroupingNodeKey = (
 /**
  * @internal Used for testing only.
  */
-export const createRandomGroupingNodeKey = (
-  groupedInstancesCount?: number
-): GroupingNodeKey => {
+export const createRandomGroupingNodeKey = (groupedInstancesCount?: number): GroupingNodeKey => {
   const type = faker.random.arrayElement([
     StandardNodeTypes.DisplayLabelGroupingNode,
     StandardNodeTypes.ECClassGroupingNode,
@@ -121,8 +108,7 @@ export const createRandomECInstancesNode = (props?: Partial<Node>): Node => {
     ...props,
     key: props?.key ?? createRandomECInstancesNodeKey(),
     label: props?.label ?? createRandomLabelDefinition(),
-    description:
-      props?.description ?? nullable<string>(() => faker.lorem.sentence()),
+    description: props?.description ?? nullable<string>(() => faker.lorem.sentence()),
     imageId: nullable<string>(() => faker.random.word()),
     foreColor: nullable<string>(createRandomHexColor),
     backColor: nullable<string>(createRandomRgbColor),
@@ -160,9 +146,7 @@ export const createRandomECInstancesNodeJSON = (): NodeJSON => {
 /**
  * @internal Used for testing only.
  */
-export const createRandomNodePathElement = (
-  depth: number = 1
-): NodePathElement => {
+export const createRandomNodePathElement = (depth: number = 1): NodePathElement => {
   const el: NodePathElement = {
     node: createRandomECInstancesNode(),
     index: faker.random.number(999),
@@ -179,8 +163,7 @@ export const createRandomNodePathElement = (
   }
   if (depth > 1) {
     let childrenCount = faker.random.number({ min: 1, max: 5 });
-    while (childrenCount--)
-      el.children.push(createRandomNodePathElement(depth - 1));
+    while (childrenCount--) el.children.push(createRandomNodePathElement(depth - 1));
   }
   return el;
 };
@@ -189,9 +172,7 @@ export const createRandomNodePathElement = (
  * @internal Used for testing only.
  */
 // eslint-disable-next-line deprecation/deprecation
-export const createRandomNodePathElementJSON = (
-  depth: number = 1
-): NodePathElementJSON => {
+export const createRandomNodePathElementJSON = (depth: number = 1): NodePathElementJSON => {
   // eslint-disable-next-line deprecation/deprecation
   const el: NodePathElementJSON = {
     node: createRandomECInstancesNodeJSON(),
@@ -209,8 +190,7 @@ export const createRandomNodePathElementJSON = (
   }
   if (depth > 1) {
     let childrenCount = faker.random.number({ min: 1, max: 5 });
-    while (childrenCount--)
-      el.children.push(createRandomNodePathElementJSON(depth - 1));
+    while (childrenCount--) el.children.push(createRandomNodePathElementJSON(depth - 1));
   }
   return el;
 };

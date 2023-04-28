@@ -32,10 +32,7 @@ export class Path extends CurveChain {
     return other instanceof Path;
   }
   /** invoke `processor.announcePath(this, indexInParent)` */
-  public announceToCurveProcessor(
-    processor: RecursiveCurveProcessor,
-    indexInParent: number = -1
-  ): void {
+  public announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent: number = -1): void {
     return processor.announcePath(this, indexInParent);
   }
   /** Construct an empty path. */
@@ -51,11 +48,7 @@ export class Path extends CurveChain {
     const result = new Path();
     for (const curve of curves) {
       if (curve instanceof CurvePrimitive) result.children.push(curve);
-      else if (
-        Array.isArray(curve) &&
-        curve.length > 0 &&
-        curve[0] instanceof Point3d
-      ) {
+      else if (Array.isArray(curve) && curve.length > 0 && curve[0] instanceof Point3d) {
         result.children.push(LineString3d.create(curve));
       }
     }

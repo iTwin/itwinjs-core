@@ -7,12 +7,7 @@
  */
 
 import { ThematicDisplayMode, ThematicGradientMode } from "@itwin/core-common";
-import {
-  FragmentShaderComponent,
-  ProgramBuilder,
-  ShaderBuilder,
-  VariableType,
-} from "../ShaderBuilder";
+import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType } from "../ShaderBuilder";
 import { System } from "../System";
 import { addRenderPass } from "./RenderPass";
 import { addInstancedRtcMatrix, addProjectionMatrix } from "./Vertex";
@@ -167,9 +162,7 @@ const applyThematicColorPostludeForPointClouds = `
 function _getShader(isPointCloud: boolean) {
   return isPointCloud
     ? applyThematicColorPrelude + applyThematicColorPostludeForPointClouds // do not include slope and hillshade for point clouds
-    : applyThematicColorPrelude +
-        slopeAndHillShadeShader +
-        applyThematicColorPostlude; // include all modes for everything else
+    : applyThematicColorPrelude + slopeAndHillShadeShader + applyThematicColorPostlude; // include all modes for everything else
 }
 
 // Compute the value for the varying to be interpolated to the fragment shader in order to access the color in the thematic gradient texture
@@ -179,9 +172,7 @@ export function getComputeThematicIndex(
   skipSlopeAndHillShade: boolean,
   decodeNormal: boolean
 ): string {
-  const modelPos = instanced
-    ? "(g_instancedRtcMatrix * rawPosition)"
-    : "rawPosition";
+  const modelPos = instanced ? "(g_instancedRtcMatrix * rawPosition)" : "rawPosition";
   const heightMode = `
   if (kThematicDisplayMode_Height == u_thematicDisplayMode) {
     vec3 u = (u_modelToWorld * ${modelPos}).xyz;
@@ -198,9 +189,7 @@ export function getComputeThematicIndex(
   const hillShadeMode2 = ` else if (kThematicDisplayMode_HillShade == u_thematicDisplayMode) {
     v_thematicIndex = g_hillshadeIndex;
   }`;
-  return skipSlopeAndHillShade
-    ? heightMode
-    : heightMode + (decodeNormal ? hillShadeMode : hillShadeMode2);
+  return skipSlopeAndHillShade ? heightMode : heightMode + (decodeNormal ? hillShadeMode : hillShadeMode2);
 }
 
 // Determine the fractional position of c on line segment ab.  Assumes the three points are aligned on the same axis.
@@ -210,49 +199,24 @@ const findFractionalPositionOnLine = `
 `;
 
 function addThematicDisplayModeConstants(builder: ShaderBuilder) {
-  builder.addDefine(
-    "kThematicDisplayMode_Height",
-    ThematicDisplayMode.Height.toFixed(1)
-  );
+  builder.addDefine("kThematicDisplayMode_Height", ThematicDisplayMode.Height.toFixed(1));
   builder.addDefine(
     "kThematicDisplayMode_InverseDistanceWeightedSensors",
     ThematicDisplayMode.InverseDistanceWeightedSensors.toFixed(1)
   );
-  builder.addDefine(
-    "kThematicDisplayMode_Slope",
-    ThematicDisplayMode.Slope.toFixed(1)
-  );
-  builder.addDefine(
-    "kThematicDisplayMode_HillShade",
-    ThematicDisplayMode.HillShade.toFixed(1)
-  );
+  builder.addDefine("kThematicDisplayMode_Slope", ThematicDisplayMode.Slope.toFixed(1));
+  builder.addDefine("kThematicDisplayMode_HillShade", ThematicDisplayMode.HillShade.toFixed(1));
 }
 
 function addThematicGradientModeConstants(builder: ShaderBuilder) {
-  builder.addDefine(
-    "kThematicGradientMode_Smooth",
-    ThematicGradientMode.Smooth.toFixed(1)
-  );
-  builder.addDefine(
-    "kThematicGradientMode_Stepped",
-    ThematicGradientMode.Stepped.toFixed(1)
-  );
-  builder.addDefine(
-    "kThematicGradientMode_SteppedWithDelimiter",
-    ThematicGradientMode.SteppedWithDelimiter.toFixed(1)
-  );
-  builder.addDefine(
-    "kThematicGradientMode_IsoLines",
-    ThematicGradientMode.IsoLines.toFixed(1)
-  );
+  builder.addDefine("kThematicGradientMode_Smooth", ThematicGradientMode.Smooth.toFixed(1));
+  builder.addDefine("kThematicGradientMode_Stepped", ThematicGradientMode.Stepped.toFixed(1));
+  builder.addDefine("kThematicGradientMode_SteppedWithDelimiter", ThematicGradientMode.SteppedWithDelimiter.toFixed(1));
+  builder.addDefine("kThematicGradientMode_IsoLines", ThematicGradientMode.IsoLines.toFixed(1));
 }
 
 /** @internal */
-export function addThematicDisplay(
-  builder: ProgramBuilder,
-  isForPointClouds = false,
-  isForTerrainMesh = false
-) {
+export function addThematicDisplay(builder: ProgramBuilder, isForPointClouds = false, isForTerrainMesh = false) {
   const frag = builder.frag;
   const vert = builder.vert;
 
@@ -264,18 +228,11 @@ export function addThematicDisplay(
 
   if (vert.usesInstancedGeometry) addInstancedRtcMatrix(vert);
 
-  vert.addFunction(
-    "float findFractionalPositionOnLine(vec3 a, vec3 b, vec3 c)",
-    findFractionalPositionOnLine
-  );
+  vert.addFunction("float findFractionalPositionOnLine(vec3 a, vec3 b, vec3 c)", findFractionalPositionOnLine);
 
   vert.addUniform("u_modelToWorld", VariableType.Mat4, (prog) => {
     prog.addGraphicUniform("u_modelToWorld", (uniform, params) => {
-      params.target.uniforms.branch.bindModelToWorldTransform(
-        uniform,
-        params.geometry,
-        false
-      );
+      params.target.uniforms.branch.bindModelToWorldTransform(uniform, params.geometry, false);
     });
   });
 
@@ -324,28 +281,17 @@ export function addThematicDisplay(
   });
 
   if (isForPointClouds || isForTerrainMesh) {
-    builder.frag.addUniform(
-      "u_thematicColorMix",
-      VariableType.Float,
-      (prog) => {
-        prog.addGraphicUniform("u_thematicColorMix", (uniform, params) => {
-          uniform.setUniform1f(
-            params.target.uniforms.thematic.thematicDisplay?.gradientSettings
-              .colorMix || 0.0
-          );
-        });
-      }
-    );
+    builder.frag.addUniform("u_thematicColorMix", VariableType.Float, (prog) => {
+      prog.addGraphicUniform("u_thematicColorMix", (uniform, params) => {
+        uniform.setUniform1f(params.target.uniforms.thematic.thematicDisplay?.gradientSettings.colorMix || 0.0);
+      });
+    });
   } else {
-    builder.frag.addUniform(
-      "u_thematicColorMix",
-      VariableType.Float,
-      (prog) => {
-        prog.addGraphicUniform("u_thematicColorMix", (uniform, _params) => {
-          uniform.setUniform1f(0.0);
-        });
-      }
-    );
+    builder.frag.addUniform("u_thematicColorMix", VariableType.Float, (prog) => {
+      prog.addGraphicUniform("u_thematicColorMix", (uniform, _params) => {
+        uniform.setUniform1f(0.0);
+      });
+    });
   }
 
   frag.addUniform("u_numSensors", VariableType.Int, (prog) => {
@@ -371,28 +317,18 @@ export function addThematicDisplay(
           params.target.uniforms.batch.bindThematicSensors(uniform);
         }
       } else {
-        System.instance.ensureSamplerBound(
-          uniform,
-          TextureUnit.ThematicSensors
-        );
+        System.instance.ensureSamplerBound(uniform, TextureUnit.ThematicSensors);
       }
     });
   });
 
   if (!isForPointClouds) {
     // allows us to know when to discard between isolines to make them pickable
-    builder.frag.addUniform(
-      "u_discardBetweenIsolines",
-      VariableType.Boolean,
-      (prog) => {
-        prog.addProgramUniform(
-          "u_discardBetweenIsolines",
-          (uniform, params) => {
-            uniform.setUniform1i(params.target.isReadPixelsInProgress ? 1 : 0);
-          }
-        );
-      }
-    );
+    builder.frag.addUniform("u_discardBetweenIsolines", VariableType.Boolean, (prog) => {
+      prog.addProgramUniform("u_discardBetweenIsolines", (uniform, params) => {
+        uniform.setUniform1i(params.target.isReadPixelsInProgress ? 1 : 0);
+      });
+    });
   }
 
   frag.addFunction(fwidth);
@@ -401,8 +337,5 @@ export function addThematicDisplay(
   frag.addFunction(getColor);
   frag.addFunction(getIsoLineColor);
 
-  frag.set(
-    FragmentShaderComponent.ApplyThematicDisplay,
-    _getShader(isForPointClouds)
-  );
+  frag.set(FragmentShaderComponent.ApplyThematicDisplay, _getShader(isForPointClouds));
 }

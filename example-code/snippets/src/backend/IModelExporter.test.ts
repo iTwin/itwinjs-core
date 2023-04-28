@@ -5,12 +5,7 @@
 // __PUBLISH_EXTRACT_START__ IModelExporter_CodeExporter.code
 
 import { Code, CodeSpec } from "@itwin/core-common";
-import {
-  Element,
-  IModelJsFs as fs,
-  IModelDb,
-  SnapshotDb,
-} from "@itwin/core-backend";
+import { Element, IModelJsFs as fs, IModelDb, SnapshotDb } from "@itwin/core-backend";
 process.env.TRANSFORMER_NO_STRICT_DEP_CHECK = "1"; // allow this monorepo's dev versions of core libs in transformer
 import { IModelExporter, IModelExportHandler } from "@itwin/imodel-transformer";
 
@@ -19,10 +14,7 @@ class CodeExporter extends IModelExportHandler {
   public outputFileName: string;
 
   /** Initiate the export of codes. */
-  public static async exportCodes(
-    iModelDb: IModelDb,
-    outputFileName: string
-  ): Promise<void> {
+  public static async exportCodes(iModelDb: IModelDb, outputFileName: string): Promise<void> {
     const exporter = new IModelExporter(iModelDb);
     const exportHandler = new CodeExporter(outputFileName);
     exporter.registerHandler(exportHandler);
@@ -36,19 +28,11 @@ class CodeExporter extends IModelExportHandler {
   }
 
   /** Override of IModelExportHandler.onExportElement that outputs a line of a CSV file when the Element has a Code. */
-  public override onExportElement(
-    element: Element,
-    isUpdate: boolean | undefined
-  ): void {
+  public override onExportElement(element: Element, isUpdate: boolean | undefined): void {
     if (!Code.isEmpty(element.code)) {
       // only output when Element has a Code
-      const codeSpec: CodeSpec = element.iModel.codeSpecs.getById(
-        element.code.spec
-      );
-      fs.appendFileSync(
-        this.outputFileName,
-        `${element.id}, ${codeSpec.name}, ${element.code.value}\n`
-      );
+      const codeSpec: CodeSpec = element.iModel.codeSpecs.getById(element.code.spec);
+      fs.appendFileSync(this.outputFileName, `${element.id}, ${codeSpec.name}, ${element.code.value}\n`);
     }
     super.onExportElement(element, isUpdate);
   }

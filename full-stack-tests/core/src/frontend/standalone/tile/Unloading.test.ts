@@ -18,12 +18,7 @@ import {
   Viewport,
 } from "@itwin/core-frontend";
 import { TestUtility } from "../../TestUtility";
-import {
-  createOnScreenTestViewport,
-  testOnScreenViewport,
-  TestViewport,
-  testViewports,
-} from "../../TestViewport";
+import { createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports } from "../../TestViewport";
 
 describe("Tile unloading", async () => {
   let imodel: IModelConnection;
@@ -128,11 +123,9 @@ describe("Tile unloading", async () => {
         children = children[0].children!;
         expect(children).not.to.be.undefined;
         expect(children.length).to.equal(8);
-        for (const child of children)
-          expect(child.loadStatus).to.equal(TileLoadStatus.Ready);
+        for (const child of children) expect(child.loadStatus).to.equal(TileLoadStatus.Ready);
 
-        expect(tree.rootTile.usageMarker.isExpired(BeTimePoint.now())).to.be
-          .false;
+        expect(tree.rootTile.usageMarker.isExpired(BeTimePoint.now())).to.be.false;
       };
 
       expectLoadedChildren();
@@ -173,80 +166,65 @@ describe("Tile unloading", async () => {
   });
 
   it("should not dispose of tile trees displayed in second viewport", async () => {
-    await testViewports(
-      "0x41",
-      imodel,
-      1854,
-      931,
-      async (vp1: TestViewport) => {
-        // vp1 loads+renders all tiles, then sits idle.
-        await vp1.waitForAllTilesToRender();
-        const tree = getTileTree(vp1);
+    await testViewports("0x41", imodel, 1854, 931, async (vp1: TestViewport) => {
+      // vp1 loads+renders all tiles, then sits idle.
+      await vp1.waitForAllTilesToRender();
+      const tree = getTileTree(vp1);
+      expect(tree.isDisposed).to.be.false;
+
+      // vp2 renders continuously.
+      await testOnScreenViewport("0x41", imodel, 1854, 931, async (vp2) => {
+        await vp2.waitForAllTilesToRender();
+
+        vp2.changeViewedModels([]);
+
+        await waitForExpiration(vp2);
+
+        // vp2 no longers views this tile tree, but vp1 still does.
         expect(tree.isDisposed).to.be.false;
-
-        // vp2 renders continuously.
-        await testOnScreenViewport("0x41", imodel, 1854, 931, async (vp2) => {
-          await vp2.waitForAllTilesToRender();
-
-          vp2.changeViewedModels([]);
-
-          await waitForExpiration(vp2);
-
-          // vp2 no longers views this tile tree, but vp1 still does.
-          expect(tree.isDisposed).to.be.false;
-          expect(tree.rootTile.usageMarker.isExpired(BeTimePoint.now())).to.be
-            .false;
-        });
-      }
-    );
+        expect(tree.rootTile.usageMarker.isExpired(BeTimePoint.now())).to.be.false;
+      });
+    });
   });
 
   it("should not dispose of tiles displayed in second viewport", async () => {
-    await testViewports(
-      "0x41",
-      imodel,
-      1854,
-      931,
-      async (vp1: TestViewport) => {
-        // vp1 loads+renders all tiles, then sits idle.
-        await vp1.waitForAllTilesToRender();
-        const tree = getTileTree(vp1) as IModelTileTree;
-        tree.debugMaxDepth = 1;
+    await testViewports("0x41", imodel, 1854, 931, async (vp1: TestViewport) => {
+      // vp1 loads+renders all tiles, then sits idle.
+      await vp1.waitForAllTilesToRender();
+      const tree = getTileTree(vp1) as IModelTileTree;
+      tree.debugMaxDepth = 1;
 
-        // After changing max depth we must re-select tiles...
-        vp1.invalidateScene();
-        await vp1.waitForAllTilesToRender();
+      // After changing max depth we must re-select tiles...
+      vp1.invalidateScene();
+      await vp1.waitForAllTilesToRender();
 
-        // vp2 renders continuously, selecting tiles each frame.
-        await testOnScreenViewport("0x41", imodel, 1854, 931, async (vp2) => {
-          vp2.onRender.addListener((_) => vp2.invalidateScene());
-          await vp2.waitForAllTilesToRender();
+      // vp2 renders continuously, selecting tiles each frame.
+      await testOnScreenViewport("0x41", imodel, 1854, 931, async (vp2) => {
+        vp2.onRender.addListener((_) => vp2.invalidateScene());
+        await vp2.waitForAllTilesToRender();
 
-          const expectLoadedChildren = () => {
-            let children = tree.rootTile.children!;
-            expect(children).not.to.be.undefined;
-            expect(children.length).to.equal(1);
+        const expectLoadedChildren = () => {
+          let children = tree.rootTile.children!;
+          expect(children).not.to.be.undefined;
+          expect(children.length).to.equal(1);
 
-            children = children[0].children!;
-            expect(children).not.to.be.undefined;
-            expect(children.length).to.equal(8);
-            for (const child of children)
-              expect(child.loadStatus).to.equal(TileLoadStatus.Ready);
+          children = children[0].children!;
+          expect(children).not.to.be.undefined;
+          expect(children.length).to.equal(8);
+          for (const child of children) expect(child.loadStatus).to.equal(TileLoadStatus.Ready);
 
-            expect(tree.rootTile.usageMarker.isExpired(BeTimePoint.now())).to.be
-              .false;
-          };
+          expect(tree.rootTile.usageMarker.isExpired(BeTimePoint.now())).to.be.false;
+        };
 
-          expectLoadedChildren();
+        expectLoadedChildren();
 
-          vp2.scroll({ x: -9999, y: -9999 }, { animateFrustumChange: false });
+        vp2.scroll({ x: -9999, y: -9999 }, { animateFrustumChange: false });
 
-          await waitForExpiration(vp2);
+        await waitForExpiration(vp2);
 
-          expectLoadedChildren();
-        });
-      }
-    );
+        expectLoadedChildren();
+      });
+    });
   });
 
   function collectLoadedParents(tiles: Tile[]): Set<Tile> {
@@ -296,9 +274,7 @@ describe("Tile unloading", async () => {
       const reselectedTiles = getSelectedTiles(vp);
       expect(reselectedTiles.length).to.equal(selectedTiles.length);
       for (let i = 0; i < reselectedTiles.length; i++)
-        expect(reselectedTiles[i].contentId).to.equal(
-          selectedTiles[i].contentId
-        );
+        expect(reselectedTiles[i].contentId).to.equal(selectedTiles[i].contentId);
 
       for (const parent of parents) {
         expect(parent.hasGraphics).to.be.false;

@@ -13,10 +13,7 @@ export function isProperSubclassOf<
   SuperClass extends new (..._: any[]) => any,
   NonSubClass extends new (..._: any[]) => any,
   SubClass extends new (..._: any[]) => InstanceType<SuperClass>
->(
-  subclass: SubClass | NonSubClass,
-  superclass: SuperClass
-): subclass is SubClass {
+>(subclass: SubClass | NonSubClass, superclass: SuperClass): subclass is SubClass {
   return subclass.prototype instanceof superclass;
 }
 
@@ -30,9 +27,6 @@ export function isSubclassOf<
   SuperClass extends new (..._: any[]) => any,
   NonSubClass extends new (..._: any[]) => any,
   SubClass extends new (..._: any[]) => InstanceType<SuperClass>
->(
-  subclass: SuperClass | SubClass | NonSubClass,
-  superclass: SuperClass
-): subclass is SubClass | SuperClass {
+>(subclass: SuperClass | SubClass | NonSubClass, superclass: SuperClass): subclass is SubClass | SuperClass {
   return subclass === superclass || isProperSubclassOf(subclass, superclass);
 }

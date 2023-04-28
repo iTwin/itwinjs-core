@@ -2,21 +2,8 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import {
-  Schema as MetaSchema,
-  SchemaContext,
-  SchemaLoader,
-  SchemaPropsGetter,
-} from "@itwin/ecschema-metadata";
-import {
-  ClassRegistry,
-  Element,
-  ElementAspect,
-  IModelDb,
-  Relationship,
-  Schema,
-  Schemas,
-} from "@itwin/core-backend";
+import { Schema as MetaSchema, SchemaContext, SchemaLoader, SchemaPropsGetter } from "@itwin/ecschema-metadata";
+import { ClassRegistry, Element, ElementAspect, IModelDb, Relationship, Schema, Schemas } from "@itwin/core-backend";
 import {
   AnyDiagnostic,
   ISchemaChanges,
@@ -51,10 +38,7 @@ export interface SchemaVersion {
   minorVersion: number;
 }
 
-export async function tryGetSchema(
-  db: IModelDb,
-  schemaName: string
-): Promise<MetaSchema | undefined> {
+export async function tryGetSchema(db: IModelDb, schemaName: string): Promise<MetaSchema | undefined> {
   const loader = new SchemaLoader((name) => db.getSchemaProps(name));
   const schema = loader.tryGetSchema(schemaName);
   return schema;
@@ -70,12 +54,7 @@ export async function syncDynamicSchema(
   const existingSchema = await tryGetSchema(db, schemaName);
 
   const version = getSchemaVersion(db, schemaName);
-  const latestSchema = await createDynamicSchema(
-    db,
-    version,
-    domainSchemaNames,
-    props
-  );
+  const latestSchema = await createDynamicSchema(db, version, domainSchemaNames, props);
 
   let schemaState: pcf.ItemState = pcf.ItemState.New;
   let dynamicSchema = latestSchema;
@@ -89,12 +68,7 @@ export async function syncDynamicSchema(
     if (schemaIsChanged) {
       schemaState = pcf.ItemState.Changed;
       version.minorVersion = existingSchema.minorVersion + 1;
-      dynamicSchema = await createDynamicSchema(
-        db,
-        version,
-        domainSchemaNames,
-        props
-      );
+      dynamicSchema = await createDynamicSchema(db, version, domainSchemaNames, props);
     } else {
       schemaState = pcf.ItemState.Unchanged;
       dynamicSchema = existingSchema;
@@ -159,14 +133,8 @@ async function createDynamicSchema(
 
   const createEntityClass = async (schema: MetaSchema) => {
     for (const entity of map.entities) {
-      const entityResult = await editor.entities.createFromProps(
-        schema.schemaKey,
-        entity.props
-      );
-      if (!entityResult.itemKey)
-        throw new Error(
-          `Failed to create EC Entity Class - ${entityResult.errorMessage}`
-        );
+      const entityResult = await editor.entities.createFromProps(schema.schemaKey, entity.props);
+      if (!entityResult.itemKey) throw new Error(`Failed to create EC Entity Class - ${entityResult.errorMessage}`);
 
       if (entity.props.properties) {
         for (const prop of entity.props.properties) {
@@ -175,10 +143,7 @@ async function createDynamicSchema(
             prop.name,
             prop.type as any
           );
-          if (!propResult.itemKey)
-            throw new Error(
-              `Failed to create EC Property - ${propResult.errorMessage}`
-            );
+          if (!propResult.itemKey) throw new Error(`Failed to create EC Property - ${propResult.errorMessage}`);
         }
       }
     }
@@ -186,14 +151,8 @@ async function createDynamicSchema(
 
   const createRelClasses = async (schema: MetaSchema) => {
     for (const rel of map.relationships) {
-      const result = await editor.relationships.createFromProps(
-        schema.schemaKey,
-        rel.props
-      );
-      if (!result.itemKey)
-        throw new Error(
-          `Failed to create EC Relationship Class - ${result.errorMessage}`
-        );
+      const result = await editor.relationships.createFromProps(schema.schemaKey, rel.props);
+      if (!result.itemKey) throw new Error(`Failed to create EC Relationship Class - ${result.errorMessage}`);
     }
   };
 
@@ -230,17 +189,12 @@ async function createDynamicSchema(
 function getSchemaVersion(db: IModelDb, schemaName: string): SchemaVersion {
   const versionStr = db.querySchemaVersion(schemaName);
   if (!versionStr) return { readVersion: 1, writeVersion: 0, minorVersion: 0 };
-  const [readVersion, writeVersion, minorVersion] = versionStr
-    .split(".")
-    .map((v: string) => parseInt(v, 10));
+  const [readVersion, writeVersion, minorVersion] = versionStr.split(".").map((v: string) => parseInt(v, 10));
   return { readVersion, writeVersion, minorVersion };
 }
 
 async function schemaToXmlString(schema: MetaSchema): Promise<string> {
-  let xmlDoc = new DOMParser().parseFromString(
-    `<?xml version="1.0" encoding="UTF-8"?>`,
-    "application/xml"
-  );
+  let xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
   xmlDoc = await schema.toXml(xmlDoc);
   const xmlString = new XMLSerializer().serializeToString(xmlDoc);
   return xmlString;

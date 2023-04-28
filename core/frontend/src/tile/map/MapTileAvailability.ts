@@ -13,13 +13,7 @@ import { SortedArray } from "@itwin/core-bentley";
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
 /** @internal */
 class RectangleWithLevel extends MapCartoRectangle {
-  constructor(
-    public level: number,
-    west: number,
-    south: number,
-    east: number,
-    north: number
-  ) {
+  constructor(public level: number, west: number, south: number, east: number, north: number) {
     super(west, south, east, north);
   }
 }
@@ -45,61 +39,32 @@ class QuadTreeNode {
     this.extent = tilingScheme.tileXYToRectangle(x, y, level + 1);
   }
   public get nw(): QuadTreeNode {
-    if (!this.nwNode)
-      this.nwNode = new QuadTreeNode(
-        this.tilingScheme,
-        this,
-        this.level + 1,
-        this.x * 2,
-        this.y * 2
-      );
+    if (!this.nwNode) this.nwNode = new QuadTreeNode(this.tilingScheme, this, this.level + 1, this.x * 2, this.y * 2);
 
     return this.nwNode;
   }
   public get ne(): QuadTreeNode {
     if (!this.neNode)
-      this.neNode = new QuadTreeNode(
-        this.tilingScheme,
-        this,
-        this.level + 1,
-        this.x * 2 + 1,
-        this.y * 2
-      );
+      this.neNode = new QuadTreeNode(this.tilingScheme, this, this.level + 1, this.x * 2 + 1, this.y * 2);
 
     return this.neNode;
   }
   public get sw(): QuadTreeNode {
     if (!this.swNode)
-      this.swNode = new QuadTreeNode(
-        this.tilingScheme,
-        this,
-        this.level + 1,
-        this.x * 2,
-        this.y * 2 + 1
-      );
+      this.swNode = new QuadTreeNode(this.tilingScheme, this, this.level + 1, this.x * 2, this.y * 2 + 1);
 
     return this.swNode;
   }
   public get se(): QuadTreeNode {
     if (!this.seNode)
-      this.seNode = new QuadTreeNode(
-        this.tilingScheme,
-        this,
-        this.level + 1,
-        this.x * 2 + 1,
-        this.y * 2 + 1
-      );
+      this.seNode = new QuadTreeNode(this.tilingScheme, this, this.level + 1, this.x * 2 + 1, this.y * 2 + 1);
 
     return this.seNode;
   }
 }
 
 /** @internal */
-function putRectangleInQuadtree(
-  maxDepth: number,
-  node: QuadTreeNode,
-  rectangle: RectangleWithLevel
-) {
+function putRectangleInQuadtree(maxDepth: number, node: QuadTreeNode, rectangle: RectangleWithLevel) {
   while (node.level < maxDepth) {
     if (node.nw.extent.containsRange(rectangle)) {
       node = node.nw;
@@ -120,10 +85,7 @@ function putRectangleInQuadtree(
 /** @internal */
 export class TileAvailability {
   private _rootNodes = new Array<QuadTreeNode>();
-  constructor(
-    private _tilingScheme: MapTilingScheme,
-    private _maximumLevel: number
-  ) {}
+  constructor(private _tilingScheme: MapTilingScheme, private _maximumLevel: number) {}
 
   public static rectangleScratch = MapCartoRectangle.createMaximum();
 
@@ -146,13 +108,7 @@ export class TileAvailability {
    * @param {Number} endX The X coordinate of the last available tiles at the level.
    * @param {Number} endY The Y coordinate of the last available tiles at the level.
    */
-  public addAvailableTileRange(
-    level: number,
-    startX: number,
-    startY: number,
-    endX: number,
-    endY: number
-  ) {
+  public addAvailableTileRange(level: number, startX: number, startY: number, endX: number, endY: number) {
     const tilingScheme = this._tilingScheme;
     const rootNodes = this._rootNodes;
     if (level === 0) {
@@ -165,39 +121,19 @@ export class TileAvailability {
       }
     }
 
-    tilingScheme.tileXYToRectangle(
-      startX,
-      startY,
-      level + 1,
-      TileAvailability.rectangleScratch
-    );
+    tilingScheme.tileXYToRectangle(startX, startY, level + 1, TileAvailability.rectangleScratch);
     const west = TileAvailability.rectangleScratch.west;
     const south = TileAvailability.rectangleScratch.south;
 
-    tilingScheme.tileXYToRectangle(
-      endX,
-      endY,
-      level + 1,
-      TileAvailability.rectangleScratch
-    );
+    tilingScheme.tileXYToRectangle(endX, endY, level + 1, TileAvailability.rectangleScratch);
     const east = TileAvailability.rectangleScratch.east;
     const north = TileAvailability.rectangleScratch.north;
 
-    const rectangleWithLevel = new RectangleWithLevel(
-      level,
-      west,
-      south,
-      east,
-      north
-    );
+    const rectangleWithLevel = new RectangleWithLevel(level, west, south, east, north);
 
     for (const rootNode of rootNodes) {
       if (rootNode.extent.intersectsRange(rectangleWithLevel)) {
-        putRectangleInQuadtree(
-          this._maximumLevel,
-          rootNode,
-          rectangleWithLevel
-        );
+        putRectangleInQuadtree(this._maximumLevel, rootNode, rectangleWithLevel);
       }
     }
   }
@@ -234,16 +170,9 @@ export class TileAvailability {
     // is sure to be available for the whole tile.  We assume that if a tile at level n exists,
     // then all its parent tiles back to level 0 exist too.  This isn't really enforced
     // anywhere, but Cesium would never load a tile for which this is not true.
-    const rectangle = this._tilingScheme.tileXYToRectangle(
-      x,
-      y,
-      level + 1,
-      TileAvailability.rectangleScratch
-    );
+    const rectangle = this._tilingScheme.tileXYToRectangle(x, y, level + 1, TileAvailability.rectangleScratch);
     rectangle.getCenter(this._cartographicScratch);
-    return (
-      this.computeMaximumLevelAtPosition(this._cartographicScratch) >= level
-    );
+    return this.computeMaximumLevelAtPosition(this._cartographicScratch) >= level;
   }
 
   private findMaxLevelFromNode(
@@ -256,42 +185,26 @@ export class TileAvailability {
     // Find the deepest quadtree node containing this point.
     let found = false;
     while (!found && node !== undefined) {
-      const nw =
-        node.nwNode && node.nwNode.extent.containsCartographic(position);
-      const ne =
-        node.neNode && node.neNode.extent.containsCartographic(position);
-      const sw =
-        node.swNode && node.swNode.extent.containsCartographic(position);
-      const se =
-        node.seNode && node.seNode.extent.containsCartographic(position);
+      const nw = node.nwNode && node.nwNode.extent.containsCartographic(position);
+      const ne = node.neNode && node.neNode.extent.containsCartographic(position);
+      const sw = node.swNode && node.swNode.extent.containsCartographic(position);
+      const se = node.seNode && node.seNode.extent.containsCartographic(position);
 
       // The common scenario is that the point is in only one quadrant and we can simply
       // iterate down the tree.  But if the point is on a boundary between tiles, it is
       // in multiple tiles and we need to check all of them, so use recursion.
       if ((nw ? 1 : 0) + (ne ? 1 : 0) + (sw ? 1 : 0) + (se ? 1 : 0) > 1) {
         if (nw) {
-          maxLevel = Math.max(
-            maxLevel,
-            this.findMaxLevelFromNode(node, node.nwNode, position)
-          );
+          maxLevel = Math.max(maxLevel, this.findMaxLevelFromNode(node, node.nwNode, position));
         }
         if (ne) {
-          maxLevel = Math.max(
-            maxLevel,
-            this.findMaxLevelFromNode(node, node.neNode, position)
-          );
+          maxLevel = Math.max(maxLevel, this.findMaxLevelFromNode(node, node.neNode, position));
         }
         if (sw) {
-          maxLevel = Math.max(
-            maxLevel,
-            this.findMaxLevelFromNode(node, node.swNode, position)
-          );
+          maxLevel = Math.max(maxLevel, this.findMaxLevelFromNode(node, node.swNode, position));
         }
         if (se) {
-          maxLevel = Math.max(
-            maxLevel,
-            this.findMaxLevelFromNode(node, node.seNode, position)
-          );
+          maxLevel = Math.max(maxLevel, this.findMaxLevelFromNode(node, node.seNode, position));
         }
         break;
       } else if (nw) {
@@ -312,14 +225,9 @@ export class TileAvailability {
       const rectangles = node!.rectangles;
 
       // Rectangles are sorted by level, lowest first.
-      for (
-        let i = rectangles.length - 1;
-        i >= 0 && rectangles.get(i)!.level > maxLevel;
-        --i
-      ) {
+      for (let i = rectangles.length - 1; i >= 0 && rectangles.get(i)!.level > maxLevel; --i) {
         const rectangle = rectangles.get(i)!;
-        if (rectangle.containsCartographic(position))
-          maxLevel = rectangle.level;
+        if (rectangle.containsCartographic(position)) maxLevel = rectangle.level;
       }
       node = node!.parent!;
     }

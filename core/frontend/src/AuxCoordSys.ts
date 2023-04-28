@@ -81,26 +81,18 @@ const enum ACSDisplaySizes { // eslint-disable-line no-restricted-syntax
  * @public
  * @extensions
  */
-export abstract class AuxCoordSystemState
-  extends ElementState
-  implements AuxCoordSystemProps
-{
+export abstract class AuxCoordSystemState extends ElementState implements AuxCoordSystemProps {
   public static override get className() {
     return "AuxCoordSystem";
   }
   public type: number;
   public description?: string;
 
-  public static fromProps(
-    props: AuxCoordSystemProps,
-    iModel: IModelConnection
-  ): AuxCoordSystemState {
+  public static fromProps(props: AuxCoordSystemProps, iModel: IModelConnection): AuxCoordSystemState {
     const name = props.classFullName.toLowerCase();
-    if (name.endsWith("system2d"))
-      return new AuxCoordSystem2dState(props, iModel);
+    if (name.endsWith("system2d")) return new AuxCoordSystem2dState(props, iModel);
 
-    if (name.endsWith("system3d"))
-      return new AuxCoordSystem3dState(props, iModel);
+    if (name.endsWith("system3d")) return new AuxCoordSystem3dState(props, iModel);
 
     return new AuxCoordSystemSpatialState(props, iModel);
   }
@@ -110,10 +102,7 @@ export abstract class AuxCoordSystemState
    * @param iModel the iModel for which the ACS applies.
    * @note call this method with the appropriate subclass (e.g. AuxCoordSystemSpatialState, AuxCoordSystem2dState, etc), not on AuxCoordSystemState directly
    */
-  public static createNew(
-    acsName: string,
-    iModel: IModelConnection
-  ): AuxCoordSystemState {
+  public static createNew(acsName: string, iModel: IModelConnection): AuxCoordSystemState {
     const myCode = new Code({
       spec: BisCodeSpec.auxCoordSystemSpatial,
       scope: IModel.dictionaryId.toString(),
@@ -178,11 +167,7 @@ export abstract class AuxCoordSystemState
    * Given an origin point, returns whether the point falls within the view or not. If adjustOrigin is set to true, a point outside
    * the view will be modified to fall within the appropriate range.
    */
-  public static isOriginInView(
-    drawOrigin: Point3d,
-    viewport: Viewport,
-    adjustOrigin: boolean
-  ): boolean {
+  public static isOriginInView(drawOrigin: Point3d, viewport: Viewport, adjustOrigin: boolean): boolean {
     const testPtView = viewport.worldToView(drawOrigin);
     const frustum = viewport.getFrustum(CoordSystem.View);
     const screenRange = Point3d.create();
@@ -202,16 +187,8 @@ export abstract class AuxCoordSystemState
 
     if (!inView) {
       const offset = viewport.pixelsFromInches(ACSDisplaySizes.TriadSizeInches);
-      testPtView.x = AuxCoordSystemState.limitRange(
-        offset,
-        screenRange.x - offset,
-        testPtView.x
-      );
-      testPtView.y = AuxCoordSystemState.limitRange(
-        offset,
-        screenRange.y - offset,
-        testPtView.y
-      );
+      testPtView.x = AuxCoordSystemState.limitRange(offset, screenRange.x - offset, testPtView.x);
+      testPtView.y = AuxCoordSystemState.limitRange(offset, screenRange.y - offset, testPtView.y);
     }
 
     // Limit point to NPC box to prevent triad from being clipped from display...
@@ -234,13 +211,8 @@ export abstract class AuxCoordSystemState
     let color;
     if ((options & ACSDisplayOptions.Hilite) !== ACSDisplayOptions.None) {
       color = viewport.hilite.color;
-    } else if (
-      (options & ACSDisplayOptions.Active) !==
-      ACSDisplayOptions.None
-    ) {
-      color = inColor.equals(ColorDef.white)
-        ? viewport.getContrastToBackgroundColor()
-        : inColor;
+    } else if ((options & ACSDisplayOptions.Active) !== ACSDisplayOptions.None) {
+      color = inColor.equals(ColorDef.white) ? viewport.getContrastToBackgroundColor() : inColor;
     } else {
       color = ColorDef.from(150, 150, 150, 0);
     }
@@ -249,94 +221,49 @@ export abstract class AuxCoordSystemState
 
     if (isFill)
       color = color.withTransparency(
-        (options &
-          (ACSDisplayOptions.Deemphasized | ACSDisplayOptions.Dynamics)) !==
-          ACSDisplayOptions.None
-          ? 225
-          : 200
+        (options & (ACSDisplayOptions.Deemphasized | ACSDisplayOptions.Dynamics)) !== ACSDisplayOptions.None ? 225 : 200
       );
     else
-      color = color.withTransparency(
-        (options & ACSDisplayOptions.Deemphasized) !== ACSDisplayOptions.None
-          ? 150
-          : 75
-      );
+      color = color.withTransparency((options & ACSDisplayOptions.Deemphasized) !== ACSDisplayOptions.None ? 150 : 75);
 
     return color;
   }
 
-  private addAxisLabel(
-    builder: GraphicBuilder,
-    axis: number,
-    options: ACSDisplayOptions,
-    vp: Viewport
-  ) {
+  private addAxisLabel(builder: GraphicBuilder, axis: number, options: ACSDisplayOptions, vp: Viewport) {
     const color = ColorDef.white;
     const lineColor = this.getAdjustedColor(color, false, vp, options);
     builder.setSymbology(lineColor, lineColor, 2);
 
     const linePts1: Point3d[] = [];
     if (0 === axis) {
-      linePts1[0] = Point3d.create(
-        ACSDisplaySizes.LabelStart,
-        -ACSDisplaySizes.LabelWidth
-      );
-      linePts1[1] = Point3d.create(
-        ACSDisplaySizes.LabelEnd,
-        ACSDisplaySizes.LabelWidth
-      );
+      linePts1[0] = Point3d.create(ACSDisplaySizes.LabelStart, -ACSDisplaySizes.LabelWidth);
+      linePts1[1] = Point3d.create(ACSDisplaySizes.LabelEnd, ACSDisplaySizes.LabelWidth);
     } else {
       linePts1[0] = Point3d.create(0.0, ACSDisplaySizes.LabelStart);
-      linePts1[1] = Point3d.create(
-        0.0,
-        (ACSDisplaySizes.LabelStart + ACSDisplaySizes.LabelEnd) * 0.5
-      );
+      linePts1[1] = Point3d.create(0.0, (ACSDisplaySizes.LabelStart + ACSDisplaySizes.LabelEnd) * 0.5);
     }
     builder.addLineString(linePts1);
 
     const linePts2: Point3d[] = []; // NOTE: Don't use same point array, addPointString/addLineString don't deep copy...
     if (0 === axis) {
-      linePts2[0] = Point3d.create(
-        ACSDisplaySizes.LabelStart,
-        ACSDisplaySizes.LabelWidth
-      );
-      linePts2[1] = Point3d.create(
-        ACSDisplaySizes.LabelEnd,
-        -ACSDisplaySizes.LabelWidth
-      );
+      linePts2[0] = Point3d.create(ACSDisplaySizes.LabelStart, ACSDisplaySizes.LabelWidth);
+      linePts2[1] = Point3d.create(ACSDisplaySizes.LabelEnd, -ACSDisplaySizes.LabelWidth);
     } else {
-      linePts2[0] = Point3d.create(
-        ACSDisplaySizes.LabelWidth,
-        ACSDisplaySizes.LabelEnd
-      );
-      linePts2[1] = Point3d.create(
-        0.0,
-        (ACSDisplaySizes.LabelStart + ACSDisplaySizes.LabelEnd) * 0.5
-      );
-      linePts2[2] = Point3d.create(
-        -ACSDisplaySizes.LabelWidth,
-        ACSDisplaySizes.LabelEnd
-      );
+      linePts2[0] = Point3d.create(ACSDisplaySizes.LabelWidth, ACSDisplaySizes.LabelEnd);
+      linePts2[1] = Point3d.create(0.0, (ACSDisplaySizes.LabelStart + ACSDisplaySizes.LabelEnd) * 0.5);
+      linePts2[2] = Point3d.create(-ACSDisplaySizes.LabelWidth, ACSDisplaySizes.LabelEnd);
     }
     builder.addLineString(linePts2);
   }
 
-  private addAxis(
-    builder: GraphicBuilder,
-    axis: number,
-    options: ACSDisplayOptions,
-    vp: Viewport
-  ) {
-    const color =
-      0 === axis ? ColorDef.red : 1 === axis ? ColorDef.green : ColorDef.blue;
+  private addAxis(builder: GraphicBuilder, axis: number, options: ACSDisplayOptions, vp: Viewport) {
+    const color = 0 === axis ? ColorDef.red : 1 === axis ? ColorDef.green : ColorDef.blue;
     const lineColor = this.getAdjustedColor(color, false, vp, options);
     const fillColor = this.getAdjustedColor(color, true, vp, options);
 
     if (axis === 2) {
       builder.setSymbology(lineColor, lineColor, 6);
-      builder.addPointString([
-        Point3d.create(0.0, 0.0, ACSDisplaySizes.ZAxisLength),
-      ]); // NOTE: ACS origin point will be drawn separately as a pickable world decoration...
+      builder.addPointString([Point3d.create(0.0, 0.0, ACSDisplaySizes.ZAxisLength)]); // NOTE: ACS origin point will be drawn separately as a pickable world decoration...
 
       const linePts2: Point3d[] = [Point3d.create(), Point3d.create()]; // NOTE: Don't use same point array, addPointString/addLineString don't deep copy...
       linePts2[1].z = ACSDisplaySizes.ZAxisLength;
@@ -344,9 +271,7 @@ export abstract class AuxCoordSystemState
         lineColor,
         lineColor,
         1,
-        (options & ACSDisplayOptions.Dynamics) === ACSDisplayOptions.None
-          ? LinePixels.Solid
-          : LinePixels.Code2
+        (options & ACSDisplayOptions.Dynamics) === ACSDisplayOptions.None ? LinePixels.Solid : LinePixels.Code2
       );
       builder.addLineString(linePts2);
 
@@ -368,10 +293,7 @@ export abstract class AuxCoordSystemState
         Matrix3d.createColumns(xVec, yVec, Vector3d.create()),
         scale,
         scale,
-        AngleSweep.createStartEnd(
-          Angle.createRadians(0),
-          Angle.createRadians(Math.PI * 2)
-        )
+        AngleSweep.createStartEnd(Angle.createRadians(0), Angle.createRadians(Math.PI * 2))
       );
       builder.addArc(ellipse, false, false);
 
@@ -382,30 +304,12 @@ export abstract class AuxCoordSystemState
 
     const shapePts: Point3d[] = [];
     shapePts[0] = Point3d.create(ACSDisplaySizes.ArrowTipEnd, 0.0);
-    shapePts[1] = Point3d.create(
-      ACSDisplaySizes.ArrowTipFlange,
-      ACSDisplaySizes.ArrowTipWidth
-    );
-    shapePts[2] = Point3d.create(
-      ACSDisplaySizes.ArrowTipStart,
-      ACSDisplaySizes.ArrowBaseWidth
-    );
-    shapePts[3] = Point3d.create(
-      ACSDisplaySizes.ArrowBaseStart,
-      ACSDisplaySizes.ArrowBaseWidth
-    );
-    shapePts[4] = Point3d.create(
-      ACSDisplaySizes.ArrowBaseStart,
-      -ACSDisplaySizes.ArrowBaseWidth
-    );
-    shapePts[5] = Point3d.create(
-      ACSDisplaySizes.ArrowTipStart,
-      -ACSDisplaySizes.ArrowBaseWidth
-    );
-    shapePts[6] = Point3d.create(
-      ACSDisplaySizes.ArrowTipFlange,
-      -ACSDisplaySizes.ArrowTipWidth
-    );
+    shapePts[1] = Point3d.create(ACSDisplaySizes.ArrowTipFlange, ACSDisplaySizes.ArrowTipWidth);
+    shapePts[2] = Point3d.create(ACSDisplaySizes.ArrowTipStart, ACSDisplaySizes.ArrowBaseWidth);
+    shapePts[3] = Point3d.create(ACSDisplaySizes.ArrowBaseStart, ACSDisplaySizes.ArrowBaseWidth);
+    shapePts[4] = Point3d.create(ACSDisplaySizes.ArrowBaseStart, -ACSDisplaySizes.ArrowBaseWidth);
+    shapePts[5] = Point3d.create(ACSDisplaySizes.ArrowTipStart, -ACSDisplaySizes.ArrowBaseWidth);
+    shapePts[6] = Point3d.create(ACSDisplaySizes.ArrowTipFlange, -ACSDisplaySizes.ArrowTipWidth);
     shapePts[7] = shapePts[0].clone();
     if (1 === axis) shapePts.forEach((tmpPt) => tmpPt.set(tmpPt.y, tmpPt.x));
 
@@ -413,9 +317,7 @@ export abstract class AuxCoordSystemState
       lineColor,
       lineColor,
       1,
-      (options & ACSDisplayOptions.Dynamics) === ACSDisplayOptions.None
-        ? LinePixels.Solid
-        : LinePixels.Code2
+      (options & ACSDisplayOptions.Dynamics) === ACSDisplayOptions.None ? LinePixels.Solid : LinePixels.Code2
     );
     builder.addLineString(shapePts);
 
@@ -426,28 +328,17 @@ export abstract class AuxCoordSystemState
   }
 
   /** Returns a GraphicBuilder for this AuxCoordSystemState. */
-  private createGraphicBuilder(
-    context: DecorateContext,
-    options: ACSDisplayOptions
-  ): GraphicBuilder {
-    const checkOutOfView =
-      (options & ACSDisplayOptions.CheckVisible) !== ACSDisplayOptions.None;
+  private createGraphicBuilder(context: DecorateContext, options: ACSDisplayOptions): GraphicBuilder {
+    const checkOutOfView = (options & ACSDisplayOptions.CheckVisible) !== ACSDisplayOptions.None;
     const drawOrigin = this.getOrigin();
 
-    if (
-      checkOutOfView &&
-      !AuxCoordSystemState.isOriginInView(drawOrigin, context.viewport, true)
-    )
+    if (checkOutOfView && !AuxCoordSystemState.isOriginInView(drawOrigin, context.viewport, true))
       options = options | ACSDisplayOptions.Deemphasized;
 
-    let pixelSize = context.viewport.pixelsFromInches(
-      ACSDisplaySizes.TriadSizeInches
-    );
+    let pixelSize = context.viewport.pixelsFromInches(ACSDisplaySizes.TriadSizeInches);
 
-    if ((options & ACSDisplayOptions.Deemphasized) !== ACSDisplayOptions.None)
-      pixelSize *= 0.8;
-    else if ((options & ACSDisplayOptions.Active) !== ACSDisplayOptions.None)
-      pixelSize *= 0.9;
+    if ((options & ACSDisplayOptions.Deemphasized) !== ACSDisplayOptions.None) pixelSize *= 0.8;
+    else if ((options & ACSDisplayOptions.Active) !== ACSDisplayOptions.None) pixelSize *= 0.9;
 
     const exaggerate = context.viewport.view.getAspectRatioSkew();
     const scale = context.getPixelSizeAtPoint(drawOrigin) * pixelSize;
@@ -457,10 +348,7 @@ export abstract class AuxCoordSystemState
     rMatrix.scaleColumns(scale, scale / exaggerate, scale, rMatrix);
     const transform = Transform.createRefs(drawOrigin, rMatrix);
 
-    const builder = context.createGraphicBuilder(
-      GraphicType.WorldOverlay,
-      transform
-    );
+    const builder = context.createGraphicBuilder(GraphicType.WorldOverlay, transform);
     const vp = context.viewport;
     this.addAxis(builder, 0, options, vp);
     this.addAxis(builder, 1, options, vp);
@@ -478,10 +366,7 @@ export abstract class AuxCoordSystemState
  * @public
  * @extensions
  */
-export class AuxCoordSystem2dState
-  extends AuxCoordSystemState
-  implements AuxCoordSystem2dProps
-{
+export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoordSystem2dProps {
   public static override get className() {
     return "AuxCoordSystem2d";
   }
@@ -493,10 +378,7 @@ export class AuxCoordSystem2dState
     super(props, iModel);
     this.origin = Point2d.fromJSON(props.origin);
     this.angle = JsonUtils.asDouble(props.angle);
-    this._rMatrix = Matrix3d.createRotationAroundVector(
-      Vector3d.unitZ(),
-      Angle.createDegrees(this.angle)
-    )!;
+    this._rMatrix = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(this.angle))!;
   }
 
   public override toJSON(): AuxCoordSystem2dProps {
@@ -526,10 +408,7 @@ export class AuxCoordSystem2dState
  * @public
  * @extensions
  */
-export class AuxCoordSystem3dState
-  extends AuxCoordSystemState
-  implements AuxCoordSystem3dProps
-{
+export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoordSystem3dProps {
   public static override get className() {
     return "AuxCoordSystem3d";
   }

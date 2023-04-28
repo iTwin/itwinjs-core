@@ -47,9 +47,7 @@ function emitCategoryHeader(name: string) {
 function emitIModelJson(className: string, description: string, g: any) {
   if (emitToLog) {
     const imjs = IModelJson.Writer.toIModelJson(g);
-    GeometryCoreTestIO.consoleLog(
-      `| ${className} | ${description} | ${JSON.stringify(imjs)}|`
-    );
+    GeometryCoreTestIO.consoleLog(`| ${className} | ${description} | ${JSON.stringify(imjs)}|`);
   }
 }
 // Typical snippets for sandbox windows . . . . These assume that
@@ -68,18 +66,10 @@ describe("constructorsAndImodelJson", () => {
     const vectorAD = pointA.vectorTo(pointD);
 
     // A line segment on the x axis
-    emitIModelJson(
-      "LineSegment3d.create",
-      "Simple line segment",
-      LineSegment3d.create(pointA, pointB)
-    );
+    emitIModelJson("LineSegment3d.create", "Simple line segment", LineSegment3d.create(pointA, pointB));
 
     // A linestring along the x axis, up and back above the origin
-    emitIModelJson(
-      "LineString3d.create",
-      "linestring by points",
-      LineString3d.create(pointA, pointB, pointC, pointD)
-    );
+    emitIModelJson("LineString3d.create", "linestring by points", LineString3d.create(pointA, pointB, pointC, pointD));
     // circular arc with 3-point construction
     emitIModelJson(
       "Arc3d.createCircularStartMiddleEnd",
@@ -90,33 +80,19 @@ describe("constructorsAndImodelJson", () => {
     emitIModelJson(
       "Arc3d.create",
       "circular arc",
-      Arc3d.create(
-        pointA,
-        vectorAB,
-        vectorAD,
-        AngleSweep.createStartEndDegrees(-45, 90)
-      )!
+      Arc3d.create(pointA, vectorAB, vectorAD, AngleSweep.createStartEndDegrees(-45, 90))!
     );
     // elliptic arc -- larger vector90 . . .
     emitIModelJson(
       "Arc3d.create",
       "elliptic arc",
-      Arc3d.create(
-        pointA,
-        vectorAB,
-        vectorAD.scale(2.0),
-        AngleSweep.createStartEndDegrees(-45, 190)
-      )!
+      Arc3d.create(pointA, vectorAB, vectorAD.scale(2.0), AngleSweep.createStartEndDegrees(-45, 190))!
     );
 
     emitIModelJson(
       "BSplineCurve3d.create",
       "curve by poles",
-      BSplineCurve3d.create(
-        [pointA, pointB, pointC, pointD],
-        [0, 0, 0, 1, 1, 1],
-        4
-      )!
+      BSplineCurve3d.create([pointA, pointB, pointC, pointD], [0, 0, 0, 1, 1, 1], 4)!
     );
   });
 
@@ -129,12 +105,7 @@ describe("constructorsAndImodelJson", () => {
     const pointD = Point3d.create(0, 4, 0);
     const vectorAD = pointA.vectorTo(pointD);
 
-    const upperSemiCircle = Arc3d.create(
-      pointA,
-      vectorAB,
-      vectorAD,
-      AngleSweep.createStartEndDegrees(0, 180)
-    );
+    const upperSemiCircle = Arc3d.create(pointA, vectorAB, vectorAD, AngleSweep.createStartEndDegrees(0, 180));
     emitIModelJson(
       "Path.create",
       "path with line, arc, line",
@@ -145,31 +116,15 @@ describe("constructorsAndImodelJson", () => {
       )
     );
 
-    const closureSegment = LineSegment3d.create(
-      upperSemiCircle.fractionToPoint(1),
-      upperSemiCircle.fractionToPoint(0)
-    );
+    const closureSegment = LineSegment3d.create(upperSemiCircle.fractionToPoint(1), upperSemiCircle.fractionToPoint(0));
     const semiCircleRegion = Loop.create(upperSemiCircle, closureSegment);
-    emitIModelJson(
-      "Loop.create",
-      "loop with semicircle and diameter segment",
-      semiCircleRegion
-    );
+    emitIModelJson("Loop.create", "loop with semicircle and diameter segment", semiCircleRegion);
 
     const a = -4.5;
     const b = 9;
-    const outerRectangle = Loop.create(
-      LineString3d.createRectangleXY(Point3d.create(a, a, 0), b, b)
-    );
-    const parityRegionWith1Hole = ParityRegion.create(
-      outerRectangle,
-      semiCircleRegion
-    );
-    emitIModelJson(
-      "ParityRegion.create",
-      "rectangle with semicircular hole",
-      parityRegionWith1Hole
-    );
+    const outerRectangle = Loop.create(LineString3d.createRectangleXY(Point3d.create(a, a, 0), b, b));
+    const parityRegionWith1Hole = ParityRegion.create(outerRectangle, semiCircleRegion);
+    emitIModelJson("ParityRegion.create", "rectangle with semicircular hole", parityRegionWith1Hole);
   });
   it("constructorsAndImodelJson.SolidPrimitives", () => {
     emitCategoryHeader("SolidPrimitives");
@@ -206,17 +161,7 @@ describe("constructorsAndImodelJson", () => {
       emitIModelJson(
         "Box.createDgnBox(cornerA, xVector, yVector, baseX, baseY, topX, topY, capped)",
         "box with sides slanting inward",
-        Box.createDgnBox(
-          cornerA,
-          Vector3d.unitX(),
-          Vector3d.unitY(),
-          cornerB,
-          ax,
-          ay,
-          bx,
-          by,
-          true
-        ) as Box
+        Box.createDgnBox(cornerA, Vector3d.unitX(), Vector3d.unitY(), cornerB, ax, ay, bx, by, true) as Box
       );
     }
     {
@@ -235,14 +180,7 @@ describe("constructorsAndImodelJson", () => {
       );
     }
     {
-      const contour = Loop.create(
-        LineString3d.createRegularPolygonXY(
-          Point3d.create(1, 1, 0),
-          6,
-          1.0,
-          true
-        )
-      );
+      const contour = Loop.create(LineString3d.createRegularPolygonXY(Point3d.create(1, 1, 0), 6, 1.0, true));
       const sweepVector = Vector3d.create(0, 0, 4);
       const capped = true;
       emitIModelJson(
@@ -252,18 +190,8 @@ describe("constructorsAndImodelJson", () => {
       );
     }
     {
-      const contour = Loop.create(
-        LineString3d.createRegularPolygonXY(
-          Point3d.create(1, 1, 0),
-          6,
-          1.0,
-          true
-        )
-      );
-      const axisOfRotation = Ray3d.create(
-        Point3d.create(-1, 0, 0),
-        Vector3d.create(0, 1, 0)
-      );
+      const contour = Loop.create(LineString3d.createRegularPolygonXY(Point3d.create(1, 1, 0), 6, 1.0, true));
+      const axisOfRotation = Ray3d.create(Point3d.create(-1, 0, 0), Vector3d.create(0, 1, 0));
       const sweepAngle = Angle.createDegrees(135);
       const capped = true;
       emitIModelJson(
@@ -275,11 +203,7 @@ describe("constructorsAndImodelJson", () => {
   });
   it("constructorsAndImodelJson.Other", () => {
     emitCategoryHeader("CurveCollections");
-    emitIModelJson(
-      "CoordinateXYZ.create",
-      "isolated point",
-      CoordinateXYZ.create(Point3d.create(2, 3, 4))
-    );
+    emitIModelJson("CoordinateXYZ.create", "isolated point", CoordinateXYZ.create(Point3d.create(2, 3, 4)));
   });
   it("taggedNumericData.methods", () => {
     const ck = new Checker();
@@ -324,8 +248,7 @@ describe("constructorsAndImodelJson", () => {
       const json = IModelJson.Writer.toIModelJson(obj);
       if (ck.testDefined(json, "to json")) {
         const obj1 = IModelJson.Reader.parseTaggedNumericProps(json);
-        if (ck.testDefined(obj1) && obj1)
-          ck.testTrue(obj.isAlmostEqual(obj1), "json round trip");
+        if (ck.testDefined(obj1) && obj1) ck.testTrue(obj.isAlmostEqual(obj1), "json round trip");
       }
     }
     expect(ck.getNumErrors()).equals(0);
@@ -353,11 +276,7 @@ describe("constructorsAndImodelJson", () => {
     y0 += 5.0;
     mesh.data.taggedNumericData = tagA;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, 0, y0, 0);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "TaggedNumericData",
-      "TorusPipe"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "TaggedNumericData", "TorusPipe");
     expect(ck.getNumErrors()).equals(0);
   });
   it("TagLookup", () => {
@@ -371,45 +290,19 @@ describe("constructorsAndImodelJson", () => {
     const doubleTags = [100, 3, 5];
     const intShift = 8;
     const doubleShift = 1.5;
-    ck.testExactNumber(
-      105,
-      data.tagToIndexedDouble(29, -10000, -5000, 105),
-      "search empty array"
-    );
-    ck.testExactNumber(
-      105,
-      data.tagToInt(10, -10000, -5000, 105),
-      "search empty array"
-    );
+    ck.testExactNumber(105, data.tagToIndexedDouble(29, -10000, -5000, 105), "search empty array");
+    ck.testExactNumber(105, data.tagToInt(10, -10000, -5000, 105), "search empty array");
     for (const t of intTags) {
       data.pushIntPair(t, t + intShift);
-      ck.testExactNumber(
-        data.tagToInt(t, -100, 1000, 1000),
-        t + intShift,
-        "(int,int)"
-      );
-      ck.testExactNumber(
-        data.tagToInt(t, 10000, 20000, 1000),
-        10000,
-        "clamp int at min"
-      );
-      ck.testExactNumber(
-        data.tagToInt(t, -10000, -5000, 1000),
-        -5000,
-        "clamp int at max"
-      );
+      ck.testExactNumber(data.tagToInt(t, -100, 1000, 1000), t + intShift, "(int,int)");
+      ck.testExactNumber(data.tagToInt(t, 10000, 20000, 1000), 10000, "clamp int at min");
+      ck.testExactNumber(data.tagToInt(t, -10000, -5000, 1000), -5000, "clamp int at max");
     }
     for (const t of doubleTags) {
       data.pushIndexedDouble(t, t + doubleShift);
-      ck.testExactNumber(
-        data.tagToIndexedDouble(t, -20000, 20000, 1000),
-        t + doubleShift
-      );
+      ck.testExactNumber(data.tagToIndexedDouble(t, -20000, 20000, 1000), t + doubleShift);
       ck.testExactNumber(data.tagToIndexedDouble(t, 10000, 20000, 1000), 10000);
-      ck.testExactNumber(
-        data.tagToIndexedDouble(t, -10000, -5000, 1000),
-        -5000
-      );
+      ck.testExactNumber(data.tagToIndexedDouble(t, -10000, -5000, 1000), -5000);
     }
     ck.testTrue(data.isAlmostEqual(data), "identity");
     ck.testFalse(data.isAlmostEqual(dataB));

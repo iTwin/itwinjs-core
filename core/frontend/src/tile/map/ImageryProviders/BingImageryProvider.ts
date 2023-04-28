@@ -51,10 +51,7 @@ class Coverage {
  * @internal
  */
 class BingAttribution {
-  constructor(
-    public copyrightMessage: string,
-    private _coverages: Coverage[]
-  ) {}
+  constructor(public copyrightMessage: string, private _coverages: Coverage[]) {}
 
   public matchesTile(tile: Tile, tilingScheme: MapTilingScheme): boolean {
     const quadId = QuadId.createFromContentId(tile.contentId);
@@ -68,9 +65,7 @@ class BingAttribution {
 // in deployed applications, we can only make https requests, but the Bing Maps metadata request returns templates with "http:".
 // This function fixes those.
 function replaceHttpWithHttps(originalUrl: string) {
-  return originalUrl.startsWith("http:")
-    ? "https:".concat(originalUrl.slice(5))
-    : originalUrl;
+  return originalUrl.startsWith("http:") ? "https:".concat(originalUrl.slice(5)) : originalUrl;
 }
 
 /** @internal */
@@ -122,15 +117,10 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
   }
 
   // construct the Url from the desired Tile
-  public async constructUrl(
-    row: number,
-    column: number,
-    zoomLevel: number
-  ): Promise<string> {
+  public async constructUrl(row: number, column: number, zoomLevel: number): Promise<string> {
     // From the tile, get a "quadKey" the Microsoft way.
     const quadKey: string = this.tileXYToQuadKey(column, row, zoomLevel);
-    const subdomain: string =
-      this._urlSubdomains![(row + column) % this._urlSubdomains!.length];
+    const subdomain: string = this._urlSubdomains![(row + column) % this._urlSubdomains!.length];
 
     // from the template url, construct the tile url.
     let url: string = this._urlTemplate!.replace("{subdomain}", subdomain);
@@ -140,11 +130,8 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
   }
 
   // gets the attributions that match the tile set.
-  private getMatchingAttributions(
-    tiles: Set<Tile> | undefined
-  ): BingAttribution[] {
-    const matchingAttributions: BingAttribution[] =
-      new Array<BingAttribution>();
+  private getMatchingAttributions(tiles: Set<Tile> | undefined): BingAttribution[] {
+    const matchingAttributions: BingAttribution[] = new Array<BingAttribution>();
     if (!this._attributions || !tiles) return matchingAttributions;
 
     const unmatchedSet: BingAttribution[] = this._attributions.slice();
@@ -153,10 +140,7 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
         // compare to the set of Bing attributions that we have not yet matched.
         for (let iAttr = 0; iAttr < unmatchedSet.length; iAttr++) {
           const attribution = unmatchedSet[iAttr];
-          if (
-            attribution &&
-            attribution.matchesTile(tile, this._mapTilingScheme)
-          ) {
+          if (attribution && attribution.matchesTile(tile, this._mapTilingScheme)) {
             matchingAttributions.push(attribution);
             delete unmatchedSet[iAttr];
           }
@@ -165,15 +149,11 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
     return matchingAttributions;
   }
 
-  public override addLogoCards(
-    cards: HTMLTableElement,
-    vp: ScreenViewport
-  ): void {
+  public override addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
     const tiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
     const matchingAttributions = this.getMatchingAttributions(tiles);
     const copyrights: string[] = [];
-    for (const match of matchingAttributions)
-      copyrights.push(match.copyrightMessage);
+    for (const match of matchingAttributions) copyrights.push(match.copyrightMessage);
 
     let copyrightMsg = "";
     for (let i = 0; i < copyrights.length; ++i) {
@@ -206,9 +186,7 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
       this._zoomMax = thisResourceProps.zoomMax;
       this._tileHeight = thisResourceProps.imageHeight;
       this._tileWidth = thisResourceProps.imageWidth;
-      this._urlTemplate = replaceHttpWithHttps(
-        thisResourceProps.imageUrl.replace("{culture}", "en-US")
-      ); // NEEDSWORK - get locale from somewhere.
+      this._urlTemplate = replaceHttpWithHttps(thisResourceProps.imageUrl.replace("{culture}", "en-US")); // NEEDSWORK - get locale from somewhere.
       this._urlSubdomains = thisResourceProps.imageUrlSubdomains;
       // read the list of Bing's data suppliers and the range of data they provide. Used in calculation of copyright message.
       this.readAttributions(thisResourceProps.imageryProviders);
@@ -217,18 +195,12 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
       // for tiles at zoom levels where they don't have data. Their application stops you from zooming in when that's the
       // case, but we can't stop - the user might want to look at design data a closer zoom. So we intentionally load such
       // a tile, and then compare other tiles to it, rejecting them if they match.
-      this.loadTile(0, 0, this._zoomMax - 1).then(
-        (tileData: ImageSource | undefined) => {
-          // eslint-disable-line @typescript-eslint/no-floating-promises
-          if (tileData !== undefined)
-            this._missingTileData = tileData.data as Uint8Array;
-        }
-      );
+      this.loadTile(0, 0, this._zoomMax - 1).then((tileData: ImageSource | undefined) => {
+        // eslint-disable-line @typescript-eslint/no-floating-promises
+        if (tileData !== undefined) this._missingTileData = tileData.data as Uint8Array;
+      });
     } catch (error) {
-      throw new BentleyError(
-        IModelStatus.BadModel,
-        "Error in Bing Server communications"
-      );
+      throw new BentleyError(IModelStatus.BadModel, "Error in Bing Server communications");
     }
   }
 
@@ -248,12 +220,8 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
         );
         coverages.push(thisCoverage);
       }
-      const thisAttribution: BingAttribution = new BingAttribution(
-        copyrightMessage,
-        coverages
-      );
-      if (!this._attributions)
-        this._attributions = new Array<BingAttribution>();
+      const thisAttribution: BingAttribution = new BingAttribution(copyrightMessage, coverages);
+      if (!this._attributions) this._attributions = new Array<BingAttribution>();
       this._attributions.push(thisAttribution);
     }
   }

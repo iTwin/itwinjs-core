@@ -6,13 +6,7 @@
 import { assert } from "@itwin/core-bentley";
 import { IModelJson, Path } from "@itwin/core-geometry";
 import { ColorDef, ViewDetails } from "@itwin/core-common";
-import {
-  DecorateContext,
-  GraphicType,
-  IModelApp,
-  IModelConnection,
-  Tool,
-} from "@itwin/core-frontend";
+import { DecorateContext, GraphicType, IModelApp, IModelConnection, Tool } from "@itwin/core-frontend";
 import { parseArgs } from "@itwin/frontend-devtools";
 
 class AspectRatioSkewDecorator {
@@ -63,19 +57,13 @@ class AspectRatioSkewDecorator {
     context.addDecorationFromBuilder(builder);
   }
 
-  public static toggle(
-    iModel: IModelConnection,
-    applyAspectRatioSkew: boolean
-  ): void {
+  public static toggle(iModel: IModelConnection, applyAspectRatioSkew: boolean): void {
     const dec = this._instance;
     if (dec) {
       IModelApp.viewManager.dropDecorator(dec);
       this._instance = undefined;
     } else {
-      this._instance = new AspectRatioSkewDecorator(
-        iModel,
-        applyAspectRatioSkew
-      );
+      this._instance = new AspectRatioSkewDecorator(iModel, applyAspectRatioSkew);
       IModelApp.viewManager.addDecorator(this._instance);
     }
   }
@@ -99,8 +87,7 @@ export class ToggleAspectRatioSkewDecoratorTool extends Tool {
 
   public override async run(): Promise<boolean> {
     const iModel = IModelApp.viewManager.selectedView?.iModel;
-    if (iModel)
-      AspectRatioSkewDecorator.toggle(iModel, this._applyAspectRatioSkew);
+    if (iModel) AspectRatioSkewDecorator.toggle(iModel, this._applyAspectRatioSkew);
 
     return true;
   }

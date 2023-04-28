@@ -8,17 +8,9 @@
 
 import { BackstageItem } from "./backstage/BackstageItem";
 import { CommonStatusBarItem } from "./statusbar/StatusBarItem";
-import {
-  CommonToolbarItem,
-  ToolbarOrientation,
-  ToolbarUsage,
-} from "./toolbars/ToolbarItem";
+import { CommonToolbarItem, ToolbarOrientation, ToolbarUsage } from "./toolbars/ToolbarItem";
 import { AbstractWidgetProps } from "./widget/AbstractWidgetProps";
-import {
-  AbstractZoneLocation,
-  StagePanelLocation,
-  StagePanelSection,
-} from "./widget/StagePanel";
+import { AbstractZoneLocation, StagePanelLocation, StagePanelSection } from "./widget/StagePanel";
 
 /** Describes interface of objects that want to provide UI component to the running IModelApp.
  * @deprecated in 3.6. Use [UiItemsProvider]($appui-react) instead.
@@ -37,11 +29,7 @@ export interface UiItemsProvider {
     stageAppData?: any
   ) => CommonToolbarItem[]; // eslint-disable-line deprecation/deprecation
   /** UiItemsManager calls following method to augment base statusbar for stages that allow it. */
-  provideStatusBarItems?: (
-    stageId: string,
-    stageUsage: string,
-    stageAppData?: any
-  ) => CommonStatusBarItem[]; // eslint-disable-line deprecation/deprecation
+  provideStatusBarItems?: (stageId: string, stageUsage: string, stageAppData?: any) => CommonStatusBarItem[]; // eslint-disable-line deprecation/deprecation
   /** UiItemsManager calls following method to augment backstage items. */
   provideBackstageItems?: () => BackstageItem[]; // eslint-disable-line deprecation/deprecation
   /** UiItemsManager calls following method to augment Widget lists.

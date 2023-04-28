@@ -6,12 +6,7 @@
  * @module Effects
  */
 
-import {
-  ScreenSpaceEffectBuilder,
-  Tool,
-  UniformType,
-  VaryingType,
-} from "@itwin/core-frontend";
+import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@itwin/core-frontend";
 import { parseArgs } from "../tools/parseArgs";
 import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools";
 
@@ -128,11 +123,6 @@ export class VignetteConfig extends Tool {
 
   public override async parseAndRun(...input: string[]): Promise<boolean> {
     const args = parseArgs(input);
-    return this.run(
-      args.getFloat("w"),
-      args.getFloat("h"),
-      args.getFloat("r"),
-      args.getFloat("s")
-    );
+    return this.run(args.getFloat("w"), args.getFloat("h"), args.getFloat("r"), args.getFloat("s"));
   }
 }

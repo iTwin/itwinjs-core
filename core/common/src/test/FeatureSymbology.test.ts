@@ -92,10 +92,7 @@ describe("FeatureAppearance", () => {
   });
 
   it("creates for subcategory overrides", () => {
-    function test(
-      ovrProps: SubCategoryAppearance.Props,
-      appProps: FeatureAppearanceProps
-    ): void {
+    function test(ovrProps: SubCategoryAppearance.Props, appProps: FeatureAppearanceProps): void {
       const ovr = SubCategoryOverride.fromJSON(ovrProps);
       expect(ovr.toJSON()).to.deep.equal(ovrProps);
       const app = FeatureAppearance.fromJSON(appProps);
@@ -108,10 +105,7 @@ describe("FeatureAppearance", () => {
     }
 
     test({}, {});
-    test(
-      { color: ColorDef.from(0, 127, 255).toJSON() },
-      { rgb: { r: 0, g: 127, b: 255 } }
-    );
+    test({ color: ColorDef.from(0, 127, 255).toJSON() }, { rgb: { r: 0, g: 127, b: 255 } });
     test({ invisible: true }, {});
     test({ invisible: false }, {});
     test({ weight: 12 }, { weight: 12 });
@@ -122,10 +116,7 @@ describe("FeatureAppearance", () => {
 
   it("view-dependent transparency", () => {
     it("to and from JSON", () => {
-      function test(
-        appProps: FeatureAppearanceProps,
-        expectViewDependent: boolean
-      ): void {
+      function test(appProps: FeatureAppearanceProps, expectViewDependent: boolean): void {
         const expected = expectViewDependent ? true : undefined;
         const app = FeatureAppearance.fromJSON(appProps);
         expect(app.viewDependentTransparency).to.equal(expected);
@@ -145,10 +136,7 @@ describe("FeatureAppearance", () => {
     });
 
     it("from subcategory override", () => {
-      function test(
-        ovrProps: SubCategoryAppearance.Props,
-        expectViewDependent: boolean
-      ): void {
+      function test(ovrProps: SubCategoryAppearance.Props, expectViewDependent: boolean): void {
         const expected = expectViewDependent ? true : undefined;
         const ovr = SubCategoryOverride.fromJSON(ovrProps);
         const app = FeatureAppearance.fromSubCategoryOverride(ovr);
@@ -195,14 +183,8 @@ describe("FeatureOverrides", () => {
 
   it("default constructor works as expected", () => {
     const overrides = new Overrides();
-    assert.isFalse(
-      overrides.isClassVisible(GeometryClass.Construction),
-      "constructions"
-    );
-    assert.isFalse(
-      overrides.isClassVisible(GeometryClass.Dimension),
-      "dimensions"
-    );
+    assert.isFalse(overrides.isClassVisible(GeometryClass.Construction), "constructions");
+    assert.isFalse(overrides.isClassVisible(GeometryClass.Dimension), "dimensions");
     assert.isFalse(overrides.isClassVisible(GeometryClass.Pattern), "patterns");
     assert.isTrue(overrides.lineWeights, "line weights");
     assert.isFalse(overrides.isAlwaysDrawnExclusive, "drawn exclusive");
@@ -330,10 +312,7 @@ describe("FeatureOverrides", () => {
 
     overrides = new Overrides();
     overrides.overrideElement(id, elemApp1); // eslint-disable-line deprecation/deprecation
-    assert.exists(
-      overrides.getElementOverridesById(id),
-      "if elementId is not in never drawn set, then elemApp is set"
-    );
+    assert.exists(overrides.getElementOverridesById(id), "if elementId is not in never drawn set, then elemApp is set");
 
     overrides.overrideElement(id, elemApp2, false); // eslint-disable-line deprecation/deprecation
     assert.isTrue(
@@ -364,10 +343,7 @@ describe("FeatureOverrides", () => {
     } as FeatureAppearanceProps;
     const app = FeatureAppearance.fromJSON(props);
     overrides.setDefaultOverrides(app);
-    assert.isTrue(
-      overrides.defaultOverrides.equals(app),
-      "default overrides can be overriden"
-    );
+    assert.isTrue(overrides.defaultOverrides.equals(app), "default overrides can be overriden");
   });
 
   it("should not apply default overrides if appearance explicitly specified", () => {
@@ -409,9 +385,7 @@ describe("FeatureOverrides", () => {
     ) => {
       const feature = new Feature(elem, subcat, GeometryClass.Primary);
       const appearance = ovrs.getFeatureAppearance(feature, model);
-      expect(JSON.stringify(appearance)).to.equal(
-        JSON.stringify(expectedAppearance)
-      );
+      expect(JSON.stringify(appearance)).to.equal(JSON.stringify(expectedAppearance));
     };
 
     expectAppearance(el1, mod3, cat3, app);
@@ -437,33 +411,19 @@ describe("FeatureOverrides", () => {
     expect(ovrs.isSubCategoryVisible(4, 0)).to.be.false;
 
     // In model a, subcat 3 is visible and subcat 1 is invisible
-    ovrs.modelSubCategoryOverrides.set(
-      0xa,
-      0,
-      new Id64.Uint32Set(["0x3", "0x1"])
-    );
+    ovrs.modelSubCategoryOverrides.set(0xa, 0, new Id64.Uint32Set(["0x3", "0x1"]));
     expect(ovrs.isSubCategoryVisibleInModel(1, 0, 0xa, 0)).to.be.false;
     expect(ovrs.isSubCategoryVisibleInModel(2, 0, 0xa, 0)).to.be.true;
     expect(ovrs.isSubCategoryVisibleInModel(3, 0, 0xa, 0)).to.be.true;
     expect(ovrs.isSubCategoryVisibleInModel(4, 0, 0xa, 0)).to.be.false;
 
     // In model b, subcats 1 and 2 are invisible
-    ovrs.modelSubCategoryOverrides.set(
-      0xb,
-      0,
-      new Id64.Uint32Set(["0x1", "0x2"])
-    );
-    for (let i = 1; i < 5; i++)
-      expect(ovrs.isSubCategoryVisibleInModel(i, 0, 0xb, 0)).to.be.false;
+    ovrs.modelSubCategoryOverrides.set(0xb, 0, new Id64.Uint32Set(["0x1", "0x2"]));
+    for (let i = 1; i < 5; i++) expect(ovrs.isSubCategoryVisibleInModel(i, 0, 0xb, 0)).to.be.false;
 
     // In model c, subcats 3 and 4 are visible
-    ovrs.modelSubCategoryOverrides.set(
-      0xc,
-      0,
-      new Id64.Uint32Set(["0x3", "0x4"])
-    );
-    for (let i = 1; i < 5; i++)
-      expect(ovrs.isSubCategoryVisibleInModel(i, 0, 0xc, 0)).to.be.true;
+    ovrs.modelSubCategoryOverrides.set(0xc, 0, new Id64.Uint32Set(["0x3", "0x4"]));
+    for (let i = 1; i < 5; i++) expect(ovrs.isSubCategoryVisibleInModel(i, 0, 0xc, 0)).to.be.true;
 
     expect(ovrs.isSubCategoryVisible(1, 0)).to.be.true;
     expect(ovrs.isSubCategoryVisible(2, 0)).to.be.true;
@@ -478,24 +438,16 @@ describe("FeatureOverrides", () => {
 
     ovrs.neverDrawnAnimationNodes.add(1);
     ovrs.neverDrawnAnimationNodes.add(0);
-    expect(ovrs.getFeatureAppearance(feature, modelId, undefined, 1)).to.be
-      .undefined;
-    expect(ovrs.getFeatureAppearance(feature, modelId, undefined, 2)).not.to.be
-      .undefined;
-    expect(ovrs.getFeatureAppearance(feature, modelId, undefined, 0)).to.be
-      .undefined;
+    expect(ovrs.getFeatureAppearance(feature, modelId, undefined, 1)).to.be.undefined;
+    expect(ovrs.getFeatureAppearance(feature, modelId, undefined, 2)).not.to.be.undefined;
+    expect(ovrs.getFeatureAppearance(feature, modelId, undefined, 0)).to.be.undefined;
   });
 
   it("overrides animation nodes", () => {
     const ovrs = new Overrides();
 
     const expectAppearance = (nodeId: number, expected: FeatureAppearance) => {
-      const actual = ovrs.getFeatureAppearance(
-        new Feature("0x123"),
-        "0x456",
-        undefined,
-        nodeId
-      )!;
+      const actual = ovrs.getFeatureAppearance(new Feature("0x123"), "0x456", undefined, nodeId)!;
       expect(actual).not.to.be.undefined;
       expect(JSON.stringify(actual)).to.equal(JSON.stringify(expected));
     };
@@ -512,25 +464,13 @@ describe("FeatureOverrides", () => {
   it("animation overrides extend element overrides", () => {
     const ovrs = new Overrides();
 
-    const expectAppearance = (
-      elementId: string,
-      nodeId: number,
-      expected: FeatureAppearance
-    ) => {
-      const actual = ovrs.getFeatureAppearance(
-        new Feature(elementId),
-        "0x1",
-        undefined,
-        nodeId
-      );
+    const expectAppearance = (elementId: string, nodeId: number, expected: FeatureAppearance) => {
+      const actual = ovrs.getFeatureAppearance(new Feature(elementId), "0x1", undefined, nodeId);
       expect(actual).not.to.be.undefined;
       expect(JSON.stringify(actual)).to.equal(JSON.stringify(expected));
     };
 
-    const merge = (
-      src: FeatureAppearance,
-      plus: FeatureAppearanceProps
-    ): FeatureAppearance => {
+    const merge = (src: FeatureAppearance, plus: FeatureAppearanceProps): FeatureAppearance => {
       return FeatureAppearance.fromJSON({
         ...src.toJSON(),
         ...plus,
@@ -583,17 +523,8 @@ describe("FeatureOverrides", () => {
     ovrs.ignoreAnimationOverrides((args) => args.elementId.lower > 5);
     ovrs.ignoreAnimationOverrides((args) => args.animationNodeId < 5);
 
-    const expectAppearance = (
-      elemId: string,
-      nodeId: number,
-      expected: FeatureAppearance
-    ) => {
-      const actual = ovrs.getFeatureAppearance(
-        new Feature(elemId),
-        "0x1",
-        undefined,
-        nodeId
-      );
+    const expectAppearance = (elemId: string, nodeId: number, expected: FeatureAppearance) => {
+      const actual = ovrs.getFeatureAppearance(new Feature(elemId), "0x1", undefined, nodeId);
       expect(actual).not.to.be.undefined;
       expect(JSON.stringify(actual)).to.equal(JSON.stringify(expected));
     };
@@ -635,11 +566,7 @@ describe("FeatureOverrides", () => {
     for (const onConflict of ["extend", "replace", "skip", undefined]) {
       ovrs.elementOverrides.clear();
       expect(ovrs.getElementOverridesById(elementId)).to.be.undefined;
-      test(
-        green,
-        onConflict as "subsume" | "extend" | "replace" | "skip" | undefined,
-        green
-      );
+      test(green, onConflict as "subsume" | "extend" | "replace" | "skip" | undefined, green);
     }
 
     test(FeatureAppearance.fromTransparency(0.5), "skip", green);
@@ -647,11 +574,7 @@ describe("FeatureOverrides", () => {
 
     const blue = FeatureAppearance.fromRgb(ColorDef.blue);
     test(blue, "replace", blue);
-    test(
-      FeatureAppearance.fromRgba(ColorDef.red.withTransparency(0x7f)),
-      "skip",
-      blue
-    );
+    test(FeatureAppearance.fromRgba(ColorDef.red.withTransparency(0x7f)), "skip", blue);
     test(
       FeatureAppearance.fromRgba(ColorDef.red.withTransparency(0x7f)),
       "extend",
@@ -675,9 +598,7 @@ describe("FeatureOverrides", () => {
     const ovrs = new Overrides();
     ovrs.override({
       elementId,
-      appearance: FeatureAppearance.fromRgba(
-        ColorDef.blue.withTransparency(0x7f)
-      ),
+      appearance: FeatureAppearance.fromRgba(ColorDef.blue.withTransparency(0x7f)),
     });
     ovrs.override({
       elementId,
@@ -685,19 +606,13 @@ describe("FeatureOverrides", () => {
     });
 
     const app = ovrs.getElementOverridesById(elementId)!;
-    expect(
-      app.equals(
-        FeatureAppearance.fromRgba(ColorDef.red.withTransparency(0x7f))
-      )
-    ).to.be.true;
+    expect(app.equals(FeatureAppearance.fromRgba(ColorDef.red.withTransparency(0x7f)))).to.be.true;
   });
 });
 
 describe("FeatureAppearanceProvider", () => {
   class Source implements FeatureAppearanceSource {
-    public constructor(
-      public readonly appearance: FeatureAppearance | undefined
-    ) {}
+    public constructor(public readonly appearance: FeatureAppearance | undefined) {}
 
     public getAppearance(
       _elemLo: number,
@@ -715,11 +630,7 @@ describe("FeatureAppearanceProvider", () => {
   }
 
   class Provider implements FeatureAppearanceProvider {
-    public constructor(
-      public readonly modifyAppearance: (
-        app: FeatureAppearance
-      ) => FeatureAppearance
-    ) {}
+    public constructor(public readonly modifyAppearance: (app: FeatureAppearance) => FeatureAppearance) {}
 
     public getFeatureAppearance(
       source: FeatureAppearanceSource,
@@ -752,18 +663,7 @@ describe("FeatureAppearanceProvider", () => {
     source: FeatureAppearanceSource,
     provider: FeatureAppearanceProvider
   ): FeatureAppearance | undefined {
-    return provider.getFeatureAppearance(
-      source,
-      0,
-      0,
-      0,
-      0,
-      GeometryClass.Primary,
-      0,
-      0,
-      BatchType.Primary,
-      0
-    );
+    return provider.getFeatureAppearance(source, 0, 0, 0, 0, GeometryClass.Primary, 0, 0, BatchType.Primary, 0);
   }
 
   it("Chains providers in expected order", () => {
@@ -785,20 +685,14 @@ describe("FeatureAppearanceProvider", () => {
 
     const source = new Source(FeatureAppearance.fromJSON({ weight: 5 }));
 
-    let chained = FeatureAppearanceProvider.chain(
-      materialProvider,
-      emphasisProvider
-    );
+    let chained = FeatureAppearanceProvider.chain(materialProvider, emphasisProvider);
     let app = getAppearance(source, chained)!;
     expect(app.weight).to.equal(5);
     expect(app.transparency).to.equal(0.75);
     expect(app.emphasized).to.be.true;
     expect(app.ignoresMaterial).to.be.true;
 
-    chained = FeatureAppearanceProvider.chain(
-      emphasisProvider,
-      materialProvider
-    );
+    chained = FeatureAppearanceProvider.chain(emphasisProvider, materialProvider);
     app = getAppearance(source, chained)!;
     expect(app.weight).to.equal(5);
     expect(app.transparency).to.equal(0.25);
@@ -807,19 +701,14 @@ describe("FeatureAppearanceProvider", () => {
   });
 
   it("creates supplemental provider", () => {
-    const provider = FeatureAppearanceProvider.supplement(
-      (app: FeatureAppearance) => {
-        return FeatureAppearance.fromJSON({
-          ...app.toJSON(),
-          transparency: 0.5,
-        });
-      }
-    );
+    const provider = FeatureAppearanceProvider.supplement((app: FeatureAppearance) => {
+      return FeatureAppearance.fromJSON({
+        ...app.toJSON(),
+        transparency: 0.5,
+      });
+    });
 
-    let appearance = getAppearance(
-      new Source(FeatureAppearance.fromJSON({ weight: 5 })),
-      provider
-    );
+    let appearance = getAppearance(new Source(FeatureAppearance.fromJSON({ weight: 5 })), provider);
     expect(appearance!.weight).to.equal(5);
     expect(appearance!.transparency).to.equal(0.5);
 

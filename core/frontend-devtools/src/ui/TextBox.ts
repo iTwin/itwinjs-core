@@ -23,10 +23,7 @@ export interface TextBox {
 export type TextBoxHandler = (textbox: HTMLInputElement) => void;
 
 /** @alpha */
-export type TextBoxKeyPressHandler = (
-  textbox: HTMLInputElement,
-  ev: KeyboardEvent
-) => void;
+export type TextBoxKeyPressHandler = (textbox: HTMLInputElement, ev: KeyboardEvent) => void;
 
 /** @alpha */
 export interface TextBoxProps {

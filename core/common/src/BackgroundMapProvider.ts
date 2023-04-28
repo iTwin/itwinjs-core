@@ -45,20 +45,14 @@ export class BackgroundMapProvider {
   /** The type of map imagery provided. */
   public readonly type: BackgroundMapType;
 
-  private constructor(
-    name: BackgroundMapProviderName,
-    type: BackgroundMapType
-  ) {
+  private constructor(name: BackgroundMapProviderName, type: BackgroundMapType) {
     this.name = name;
     this.type = type;
   }
 
   /** Create a provider from its JSON representation. */
-  public static fromJSON(
-    props: BackgroundMapProviderProps
-  ): BackgroundMapProvider {
-    const name: BackgroundMapProviderName =
-      props.name === "MapBoxProvider" ? props.name : "BingProvider";
+  public static fromJSON(props: BackgroundMapProviderProps): BackgroundMapProvider {
+    const name: BackgroundMapProviderName = props.name === "MapBoxProvider" ? props.name : "BingProvider";
     let type;
     switch (props.type) {
       case BackgroundMapType.Street:
@@ -79,9 +73,7 @@ export class BackgroundMapProvider {
   }
 
   /** @internal */
-  public static fromBackgroundMapProps(
-    props: DeprecatedBackgroundMapProps
-  ): BackgroundMapProvider {
+  public static fromBackgroundMapProps(props: DeprecatedBackgroundMapProps): BackgroundMapProvider {
     // eslint-disable-next-line deprecation/deprecation
     return this.fromJSON({
       name: props.providerName as BackgroundMapProviderName,
@@ -97,9 +89,7 @@ export class BackgroundMapProvider {
   /** Produce a copy of this provider with identical properties except for those explicitly specified by `changedProps`.
    * Any properties explicitly set to `undefined` in `changedProps` will be reset to their default values.
    */
-  public clone(
-    changedProps: BackgroundMapProviderProps
-  ): BackgroundMapProvider {
+  public clone(changedProps: BackgroundMapProviderProps): BackgroundMapProvider {
     return BackgroundMapProvider.fromJSON({
       ...this.toJSON(),
       ...changedProps,

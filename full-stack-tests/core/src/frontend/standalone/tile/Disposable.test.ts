@@ -123,10 +123,7 @@ function getImageBufferData(): Uint8Array {
 }
 
 /** Returns true if for every batch of the given array, the feature overrides have shared ownership with the given target. */
-function allOverridesSharedWithTarget(
-  target: Target,
-  batches: Batch[]
-): boolean {
+function allOverridesSharedWithTarget(target: Target, batches: Batch[]): boolean {
   for (const batch of batches) {
     for (const ovr of (batch as any)._overrides) {
       if (ovr.target !== target) {
@@ -169,16 +166,9 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
   } else if (typeof disposable === "object") {
     // High-level rendering object disposable
     for (const prop in disposable) {
-      if (
-        disposable.hasOwnProperty(prop) &&
-        typeof disposable[prop] === "object"
-      ) {
-        if (ignoredAttribs !== undefined && ignoredAttribs.indexOf(prop) !== -1)
-          continue;
-        if (
-          Array.isArray(disposable[prop]) ||
-          disposable[prop].dispose !== undefined
-        )
+      if (disposable.hasOwnProperty(prop) && typeof disposable[prop] === "object") {
+        if (ignoredAttribs !== undefined && ignoredAttribs.indexOf(prop) !== -1) continue;
+        if (Array.isArray(disposable[prop]) || disposable[prop].dispose !== undefined)
           if (!disposedCheck(disposable[prop])) return false;
       }
     }
@@ -202,33 +192,21 @@ describe("Disposal of System", () => {
     const system = IModelApp.renderSystem;
 
     // Create image buffer and image source
-    const imageBuff = ImageBuffer.create(
-      getImageBufferData(),
-      ImageBufferFormat.Rgba,
-      1
-    );
+    const imageBuff = ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1);
     assert.isDefined(imageBuff);
 
     // Texture from image buffer
     // eslint-disable-next-line deprecation/deprecation
     const textureParams0 = new RenderTexture.Params("-192837465");
     // eslint-disable-next-line deprecation/deprecation
-    const texture0 = system.createTextureFromImageBuffer(
-      imageBuff,
-      imodel0,
-      textureParams0
-    );
+    const texture0 = system.createTextureFromImageBuffer(imageBuff, imodel0, textureParams0);
     assert.isDefined(texture0);
 
     // Texture from image source
     // eslint-disable-next-line deprecation/deprecation
     const textureParams1 = new RenderTexture.Params("-918273645");
     // eslint-disable-next-line deprecation/deprecation
-    const texture1 = system.createTextureFromImageBuffer(
-      imageBuff,
-      imodel0,
-      textureParams1
-    );
+    const texture1 = system.createTextureFromImageBuffer(imageBuff, imodel0, textureParams1);
     assert.isDefined(texture1);
 
     // Pre-disposal
@@ -267,14 +245,8 @@ describe("Disposal of WebGL Resources", () => {
     const colors = new ColorIndex();
     colors.initUniform(ColorByName.tan);
 
-    const points = [
-      new Point3d(0, 0, 0),
-      new Point3d(10, 0, 0),
-      new Point3d(0, 10, 0),
-    ];
-    const qpoints = new QPoint3dList(
-      QParams3d.fromRange(Range3d.createArray(points))
-    );
+    const points = [new Point3d(0, 0, 0), new Point3d(10, 0, 0), new Point3d(0, 10, 0)];
+    const qpoints = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
     for (const point of points) qpoints.add(point);
 
     const args: MeshArgs = {
@@ -291,10 +263,7 @@ describe("Disposal of WebGL Resources", () => {
     assert.isDefined(meshGraphic1);
 
     // Get a render graphic from tile reader
-    const model = new FakeGMState(
-      new FakeModelProps(new FakeREProps()),
-      imodel0
-    );
+    const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel0);
     const stream = ByteStream.fromUint8Array(TILE_DATA_1_1.triangles.bytes);
     const reader = ImdlReader.create({
       stream,
@@ -335,8 +304,7 @@ describe("Disposal of WebGL Resources", () => {
     expect(views.length).least(1);
 
     await testViewports(views[0].id, imodel1, 10, 10, async (vp) => {
-      expect(vp instanceof ScreenViewport || vp instanceof OffScreenViewport).to
-        .be.true;
+      expect(vp instanceof ScreenViewport || vp instanceof OffScreenViewport).to.be.true;
       expect(vp.isDisposed).to.be.false;
 
       const target = vp.target as any;
@@ -376,14 +344,8 @@ describe("Disposal of WebGL Resources", () => {
     public constructor() {
       super();
     }
-    public collectGraphics(
-      _context: SceneContext,
-      _target: PlanarClassifierTarget
-    ): void {}
-    public setSource(
-      _classifierTreeRef?: TileTreeReference,
-      _planarClipMask?: PlanarClipMaskState
-    ): void {}
+    public collectGraphics(_context: SceneContext, _target: PlanarClassifierTarget): void {}
+    public setSource(_classifierTreeRef?: TileTreeReference, _planarClipMask?: PlanarClipMaskState): void {}
     public dispose(): void {
       expect(this.disposed).to.be.false;
       this.disposed = true;
@@ -593,12 +555,10 @@ describe("Disposal of WebGL Resources", () => {
     target.dispose();
 
     // Post-disposal of target (not owned resource checks)
-    if (batches.length > 0 && !allOverridesSharedWithTarget(target, batches))
-      assert.isFalse(isDisposed(target));
+    if (batches.length > 0 && !allOverridesSharedWithTarget(target, batches)) assert.isFalse(isDisposed(target));
     else assert.isTrue(isDisposed(target));
     assert.isFalse(isDisposed(texture));
-    if (batches.length > 0 && !allOverridesSharedWithTarget(target, batches))
-      assert.isFalse(isDisposed(batches));
+    if (batches.length > 0 && !allOverridesSharedWithTarget(target, batches)) assert.isFalse(isDisposed(batches));
     // we did not call getOverrides on any graphics
     else assert.isTrue(isDisposed(batches));
 

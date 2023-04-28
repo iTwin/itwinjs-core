@@ -3,12 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-  DialogItem,
-  DialogProperty,
-  DialogPropertySyncItem,
-  PropertyDescriptionHelper,
-} from "@itwin/appui-abstract";
+import { DialogItem, DialogProperty, DialogPropertySyncItem, PropertyDescriptionHelper } from "@itwin/appui-abstract";
 import { BentleyError } from "@itwin/core-bentley";
 import {
   Code,
@@ -76,15 +71,8 @@ export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {
   protected allowView(vp: Viewport) {
     return vp.view.is3d();
   }
-  public override isCompatibleViewport(
-    vp: Viewport | undefined,
-    isSelectedViewChange: boolean
-  ): boolean {
-    return (
-      super.isCompatibleViewport(vp, isSelectedViewChange) &&
-      undefined !== vp &&
-      this.allowView(vp)
-    );
+  public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean {
+    return super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && this.allowView(vp);
   }
 
   protected async startCommand(): Promise<string> {
@@ -101,10 +89,7 @@ export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {
     const localToWorld =
       "solid" === this.current.geometryCategory
         ? (this.current as SolidPrimitive).getConstructiveFrame()
-        : FrameBuilder.createRightHandedFrame(
-            this.baseRotation?.getColumn(2),
-            this.current
-          );
+        : FrameBuilder.createRightHandedFrame(this.baseRotation?.getColumn(2), this.current);
     if (undefined === localToWorld) return undefined;
 
     const origin = localToWorld.getOrigin();
@@ -115,9 +100,7 @@ export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {
     return { origin, angles };
   }
 
-  protected getGeometryProps(
-    placement: PlacementProps
-  ): JsonGeometryStream | FlatBufferGeometryStream | undefined {
+  protected getGeometryProps(placement: PlacementProps): JsonGeometryStream | FlatBufferGeometryStream | undefined {
     if (undefined === this.current) return undefined;
 
     const builder = new ElementGeometry.Builder();
@@ -128,9 +111,7 @@ export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {
     return { format: "flatbuffer", data: builder.entries };
   }
 
-  protected getElementProps(
-    placement: PlacementProps
-  ): GeometricElementProps | undefined {
+  protected getElementProps(placement: PlacementProps): GeometricElementProps | undefined {
     const model = this.targetModelId;
     const category = this.targetCategory;
 
@@ -172,9 +153,7 @@ export class CreateSphereTool extends SolidPrimitiveTool {
     additionalInstr?: ToolAssistanceInstruction[]
   ): void {
     mainInstrText = EditTools.translate(
-      0 === this.accepted.length
-        ? "CreateSphere.Prompts.CenterPoint"
-        : "CreateSphere.Prompts.RadiusPoint"
+      0 === this.accepted.length ? "CreateSphere.Prompts.CenterPoint" : "CreateSphere.Prompts.RadiusPoint"
     );
     super.provideToolAssistance(mainInstrText, additionalInstr);
   }
@@ -196,9 +175,7 @@ export class CreateSphereTool extends SolidPrimitiveTool {
   public get useRadiusProperty() {
     if (!this._useRadiusProperty)
       this._useRadiusProperty = new DialogProperty<boolean>(
-        PropertyDescriptionHelper.buildLockPropertyDescription(
-          "useSphereRadius"
-        ),
+        PropertyDescriptionHelper.buildLockPropertyDescription("useSphereRadius"),
         false
       );
     return this._useRadiusProperty;
@@ -215,10 +192,7 @@ export class CreateSphereTool extends SolidPrimitiveTool {
   public get radiusProperty() {
     if (!this._radiusProperty)
       this._radiusProperty = new DialogProperty<number>(
-        new LengthDescription(
-          "sphereRadius",
-          EditTools.translate("CreateSphere.Label.Radius")
-        ),
+        new LengthDescription("sphereRadius", EditTools.translate("CreateSphere.Label.Radius")),
         0.1,
         undefined,
         !this.useRadius
@@ -257,10 +231,7 @@ export class CreateSphereTool extends SolidPrimitiveTool {
     return 2 === this.accepted.length;
   }
 
-  protected override async updateElementData(
-    ev: BeButtonEvent,
-    isDynamics: boolean
-  ): Promise<void> {
+  protected override async updateElementData(ev: BeButtonEvent, isDynamics: boolean): Promise<void> {
     const vp = this.targetView;
     if (undefined === vp) return;
 
@@ -285,9 +256,7 @@ export class CreateSphereTool extends SolidPrimitiveTool {
 
     this.baseRotation = AccuDrawHintBuilder.getCurrentRotation(vp, true, true);
 
-    const normal = this.baseRotation
-      ? this.baseRotation.getColumn(2)
-      : Vector3d.unitZ();
+    const normal = this.baseRotation ? this.baseRotation.getColumn(2) : Vector3d.unitZ();
     const vector90 = normal.crossProduct(vector0);
     const matrix = Matrix3d.createColumns(vector0, vector90, normal);
 
@@ -307,26 +276,16 @@ export class CreateSphereTool extends SolidPrimitiveTool {
     this.accepted.push(ev.point.clone());
   }
 
-  protected override getToolSettingPropertyLocked(
-    property: DialogProperty<any>
-  ): DialogProperty<any> | undefined {
-    return property === this.useRadiusProperty
-      ? this.radiusProperty
-      : undefined;
+  protected override getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined {
+    return property === this.useRadiusProperty ? this.radiusProperty : undefined;
   }
 
-  public override async applyToolSettingPropertyChange(
-    updatedValue: DialogPropertySyncItem
-  ): Promise<boolean> {
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     return this.changeToolSettingPropertyValue(updatedValue);
   }
 
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
-    this.initializeToolSettingPropertyValues([
-      this.radiusProperty,
-      this.useRadiusProperty,
-      this.cappedProperty,
-    ]);
+    this.initializeToolSettingPropertyValues([this.radiusProperty, this.useRadiusProperty, this.cappedProperty]);
 
     const toolSettings = new Array<DialogItem>();
 
@@ -335,15 +294,8 @@ export class CreateSphereTool extends SolidPrimitiveTool {
       rowPriority: 1,
       columnIndex: 0,
     });
-    toolSettings.push(
-      this.radiusProperty.toDialogItem(
-        { rowPriority: 1, columnIndex: 1 },
-        useRadiusLock
-      )
-    );
-    toolSettings.push(
-      this.cappedProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 })
-    );
+    toolSettings.push(this.radiusProperty.toDialogItem({ rowPriority: 1, columnIndex: 1 }, useRadiusLock));
+    toolSettings.push(this.cappedProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
 
     return toolSettings;
   }
@@ -382,14 +334,10 @@ export class CreateCylinderTool extends SolidPrimitiveTool {
         mainInstrText = EditTools.translate("CreateCylinder.Prompts.BasePoint");
         break;
       case CreateCylinderPhase.AcceptRadius:
-        mainInstrText = EditTools.translate(
-          "CreateCylinder.Prompts.RadiusPoint"
-        );
+        mainInstrText = EditTools.translate("CreateCylinder.Prompts.RadiusPoint");
         break;
       default:
-        mainInstrText = EditTools.translate(
-          "CreateCylinder.Prompts.LengthPoint"
-        );
+        mainInstrText = EditTools.translate("CreateCylinder.Prompts.LengthPoint");
         break;
     }
 
@@ -406,10 +354,7 @@ export class CreateCylinderTool extends SolidPrimitiveTool {
     hints.setOrigin(this.accepted[0]);
     hints.setOriginFixed = true;
 
-    if (
-      CreateCylinderPhase.AcceptLength === this.createPhase &&
-      undefined !== this.baseRotation
-    ) {
+    if (CreateCylinderPhase.AcceptLength === this.createPhase && undefined !== this.baseRotation) {
       hints.setXAxis2(this.baseRotation.getColumn(2));
 
       if (this.orthogonal) {
@@ -426,9 +371,7 @@ export class CreateCylinderTool extends SolidPrimitiveTool {
   public get useRadiusProperty() {
     if (!this._useRadiusProperty)
       this._useRadiusProperty = new DialogProperty<boolean>(
-        PropertyDescriptionHelper.buildLockPropertyDescription(
-          "useCylinderRadius"
-        ),
+        PropertyDescriptionHelper.buildLockPropertyDescription("useCylinderRadius"),
         false
       );
     return this._useRadiusProperty;
@@ -445,10 +388,7 @@ export class CreateCylinderTool extends SolidPrimitiveTool {
   public get radiusProperty() {
     if (!this._radiusProperty)
       this._radiusProperty = new DialogProperty<number>(
-        new LengthDescription(
-          "cylinderRadius",
-          EditTools.translate("CreateCylinder.Label.Radius")
-        ),
+        new LengthDescription("cylinderRadius", EditTools.translate("CreateCylinder.Label.Radius")),
         0.1,
         undefined,
         !this.useRadius
@@ -467,9 +407,7 @@ export class CreateCylinderTool extends SolidPrimitiveTool {
   public get useLengthProperty() {
     if (!this._useLengthProperty)
       this._useLengthProperty = new DialogProperty<boolean>(
-        PropertyDescriptionHelper.buildLockPropertyDescription(
-          "useCylinderLength"
-        ),
+        PropertyDescriptionHelper.buildLockPropertyDescription("useCylinderLength"),
         false
       );
     return this._useLengthProperty;
@@ -486,10 +424,7 @@ export class CreateCylinderTool extends SolidPrimitiveTool {
   public get lengthProperty() {
     if (!this._lengthProperty)
       this._lengthProperty = new DialogProperty<number>(
-        new LengthDescription(
-          "cylinderLength",
-          EditTools.translate("CreateCylinder.Label.Length")
-        ),
+        new LengthDescription("cylinderLength", EditTools.translate("CreateCylinder.Label.Length")),
         0.1,
         undefined,
         !this.useLength
@@ -548,10 +483,7 @@ export class CreateCylinderTool extends SolidPrimitiveTool {
     return CreateCylinderPhase.AcceptResult === this.createPhase;
   }
 
-  protected override async updateElementData(
-    ev: BeButtonEvent,
-    isDynamics: boolean
-  ): Promise<void> {
+  protected override async updateElementData(ev: BeButtonEvent, isDynamics: boolean): Promise<void> {
     const vp = this.targetView;
     if (undefined === vp) return;
 
@@ -565,22 +497,14 @@ export class CreateCylinderTool extends SolidPrimitiveTool {
         // Allow creating cylinder by 2 points when orthogonal and radius are locked...
         this.accepted.push(pt2.clone());
         this.createPhase =
-          this.orthogonal && this.useRadius
-            ? CreateCylinderPhase.AcceptLength
-            : CreateCylinderPhase.AcceptRadius;
+          this.orthogonal && this.useRadius ? CreateCylinderPhase.AcceptLength : CreateCylinderPhase.AcceptRadius;
         break;
       }
 
       case CreateCylinderPhase.AcceptRadius: {
-        this.baseRotation = AccuDrawHintBuilder.getCurrentRotation(
-          vp,
-          true,
-          true
-        );
+        this.baseRotation = AccuDrawHintBuilder.getCurrentRotation(vp, true, true);
 
-        const normal = this.baseRotation
-          ? this.baseRotation.getColumn(2)
-          : Vector3d.unitZ();
+        const normal = this.baseRotation ? this.baseRotation.getColumn(2) : Vector3d.unitZ();
         const vector0 = Vector3d.createStartEnd(pt1, pt2);
         const vector90 = normal.crossProduct(vector0);
         const radius = this.useRadius ? this.radius : vector0.magnitude();
@@ -619,19 +543,10 @@ export class CreateCylinderTool extends SolidPrimitiveTool {
         }
 
         // Establish base rotation when creating cylinder by 2 points...
-        if (undefined === this.baseRotation)
-          this.baseRotation = AccuDrawHintBuilder.getCurrentRotation(
-            vp,
-            true,
-            true
-          );
+        if (undefined === this.baseRotation) this.baseRotation = AccuDrawHintBuilder.getCurrentRotation(vp, true, true);
 
-        const xAxis = this.baseRotation
-          ? this.baseRotation.getColumn(0)
-          : Vector3d.unitX();
-        const yAxis = this.baseRotation
-          ? this.baseRotation.getColumn(1)
-          : Vector3d.unitY();
+        const xAxis = this.baseRotation ? this.baseRotation.getColumn(0) : Vector3d.unitX();
+        const yAxis = this.baseRotation ? this.baseRotation.getColumn(1) : Vector3d.unitY();
 
         if (undefined === zAxis.scaleToLength(length, zAxis)) {
           xAxis.scaleToLength(this.radius, xAxis);
@@ -643,13 +558,7 @@ export class CreateCylinderTool extends SolidPrimitiveTool {
         }
 
         if (this.orthogonal)
-          this.current = Cone.createAxisPoints(
-            pt1,
-            pt1.plus(zAxis),
-            this.radius,
-            this.radius,
-            this.capped
-          );
+          this.current = Cone.createAxisPoints(pt1, pt1.plus(zAxis), this.radius, this.radius, this.capped);
         else
           this.current = Cone.createBaseAndTarget(
             pt1,
@@ -669,17 +578,13 @@ export class CreateCylinderTool extends SolidPrimitiveTool {
     }
   }
 
-  protected override getToolSettingPropertyLocked(
-    property: DialogProperty<any>
-  ): DialogProperty<any> | undefined {
+  protected override getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined {
     if (property === this.useRadiusProperty) return this.radiusProperty;
     else if (property === this.useLengthProperty) return this.lengthProperty;
     return undefined;
   }
 
-  public override async applyToolSettingPropertyChange(
-    updatedValue: DialogPropertySyncItem
-  ): Promise<boolean> {
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     return this.changeToolSettingPropertyValue(updatedValue);
   }
 
@@ -700,31 +605,17 @@ export class CreateCylinderTool extends SolidPrimitiveTool {
       rowPriority: 1,
       columnIndex: 0,
     });
-    toolSettings.push(
-      this.radiusProperty.toDialogItem(
-        { rowPriority: 1, columnIndex: 1 },
-        useRadiusLock
-      )
-    );
+    toolSettings.push(this.radiusProperty.toDialogItem({ rowPriority: 1, columnIndex: 1 }, useRadiusLock));
 
     this.lengthProperty.isDisabled = !this.useLength;
     const useLengthLock = this.useLengthProperty.toDialogItem({
       rowPriority: 2,
       columnIndex: 0,
     });
-    toolSettings.push(
-      this.lengthProperty.toDialogItem(
-        { rowPriority: 2, columnIndex: 1 },
-        useLengthLock
-      )
-    );
+    toolSettings.push(this.lengthProperty.toDialogItem({ rowPriority: 2, columnIndex: 1 }, useLengthLock));
 
-    toolSettings.push(
-      this.orthogonalProperty.toDialogItem({ rowPriority: 3, columnIndex: 0 })
-    );
-    toolSettings.push(
-      this.cappedProperty.toDialogItem({ rowPriority: 4, columnIndex: 0 })
-    );
+    toolSettings.push(this.orthogonalProperty.toDialogItem({ rowPriority: 3, columnIndex: 0 }));
+    toolSettings.push(this.cappedProperty.toDialogItem({ rowPriority: 4, columnIndex: 0 }));
 
     return toolSettings;
   }
@@ -765,14 +656,10 @@ export class CreateConeTool extends SolidPrimitiveTool {
         mainInstrText = EditTools.translate("CreateCone.Prompts.BasePoint");
         break;
       case CreateConePhase.AcceptBaseRadius:
-        mainInstrText = EditTools.translate(
-          "CreateCone.Prompts.BaseRadiusPoint"
-        );
+        mainInstrText = EditTools.translate("CreateCone.Prompts.BaseRadiusPoint");
         break;
       case CreateConePhase.AcceptTopRadius:
-        mainInstrText = EditTools.translate(
-          "CreateCone.Prompts.TopRadiusPoint"
-        );
+        mainInstrText = EditTools.translate("CreateCone.Prompts.TopRadiusPoint");
         break;
       default:
         mainInstrText = EditTools.translate("CreateCone.Prompts.LengthPoint");
@@ -795,10 +682,7 @@ export class CreateConeTool extends SolidPrimitiveTool {
     if (CreateConePhase.AcceptTopRadius === this.createPhase && 2 === nPts) {
       hints.setOrigin(this.accepted[1]);
       if (undefined !== this.baseRotation) hints.setMatrix(this.baseRotation);
-    } else if (
-      CreateConePhase.AcceptLength === this.createPhase &&
-      undefined !== this.baseRotation
-    ) {
+    } else if (CreateConePhase.AcceptLength === this.createPhase && undefined !== this.baseRotation) {
       hints.setXAxis2(this.baseRotation.getColumn(2));
 
       if (this.orthogonal) {
@@ -815,9 +699,7 @@ export class CreateConeTool extends SolidPrimitiveTool {
   public get useBaseRadiusProperty() {
     if (!this._useBaseRadiusProperty)
       this._useBaseRadiusProperty = new DialogProperty<boolean>(
-        PropertyDescriptionHelper.buildLockPropertyDescription(
-          "useConeBaseRadius"
-        ),
+        PropertyDescriptionHelper.buildLockPropertyDescription("useConeBaseRadius"),
         false
       );
     return this._useBaseRadiusProperty;
@@ -834,10 +716,7 @@ export class CreateConeTool extends SolidPrimitiveTool {
   public get baseRadiusProperty() {
     if (!this._baseRadiusProperty)
       this._baseRadiusProperty = new DialogProperty<number>(
-        new LengthDescription(
-          "coneBaseRadius",
-          EditTools.translate("CreateCone.Label.BaseRadius")
-        ),
+        new LengthDescription("coneBaseRadius", EditTools.translate("CreateCone.Label.BaseRadius")),
         0.1,
         undefined,
         !this.useBaseRadius
@@ -856,9 +735,7 @@ export class CreateConeTool extends SolidPrimitiveTool {
   public get useTopRadiusProperty() {
     if (!this._useTopRadiusProperty)
       this._useTopRadiusProperty = new DialogProperty<boolean>(
-        PropertyDescriptionHelper.buildLockPropertyDescription(
-          "useConeTopRadius"
-        ),
+        PropertyDescriptionHelper.buildLockPropertyDescription("useConeTopRadius"),
         false
       );
     return this._useTopRadiusProperty;
@@ -875,10 +752,7 @@ export class CreateConeTool extends SolidPrimitiveTool {
   public get topRadiusProperty() {
     if (!this._topRadiusProperty)
       this._topRadiusProperty = new DialogProperty<number>(
-        new LengthDescription(
-          "coneTopRadius",
-          EditTools.translate("CreateCone.Label.TopRadius")
-        ),
+        new LengthDescription("coneTopRadius", EditTools.translate("CreateCone.Label.TopRadius")),
         0.1,
         undefined,
         !this.useTopRadius
@@ -914,10 +788,7 @@ export class CreateConeTool extends SolidPrimitiveTool {
   public get lengthProperty() {
     if (!this._lengthProperty)
       this._lengthProperty = new DialogProperty<number>(
-        new LengthDescription(
-          "coneLength",
-          EditTools.translate("CreateCone.Label.Length")
-        ),
+        new LengthDescription("coneLength", EditTools.translate("CreateCone.Label.Length")),
         0.1,
         undefined,
         !this.useLength
@@ -936,10 +807,7 @@ export class CreateConeTool extends SolidPrimitiveTool {
   public get cappedProperty() {
     if (!this._cappedProperty)
       this._cappedProperty = new DialogProperty<boolean>(
-        PropertyDescriptionHelper.buildToggleDescription(
-          "coneCapped",
-          EditTools.translate("CreateCone.Label.Capped")
-        ),
+        PropertyDescriptionHelper.buildToggleDescription("coneCapped", EditTools.translate("CreateCone.Label.Capped")),
         true
       );
     return this._cappedProperty;
@@ -976,10 +844,7 @@ export class CreateConeTool extends SolidPrimitiveTool {
     return CreateConePhase.AcceptResult === this.createPhase;
   }
 
-  protected override async updateElementData(
-    ev: BeButtonEvent,
-    isDynamics: boolean
-  ): Promise<void> {
+  protected override async updateElementData(ev: BeButtonEvent, isDynamics: boolean): Promise<void> {
     const vp = this.targetView;
     if (undefined === vp) return;
 
@@ -993,27 +858,17 @@ export class CreateConeTool extends SolidPrimitiveTool {
         // Allow creating cone by 2 points when orthogonal and base/top radii are locked...
         this.accepted.push(pt2.clone());
         this.createPhase =
-          this.orthogonal && this.useBaseRadius
-            ? CreateConePhase.AcceptLength
-            : CreateConePhase.AcceptBaseRadius;
+          this.orthogonal && this.useBaseRadius ? CreateConePhase.AcceptLength : CreateConePhase.AcceptBaseRadius;
         break;
       }
 
       case CreateConePhase.AcceptBaseRadius: {
-        this.baseRotation = AccuDrawHintBuilder.getCurrentRotation(
-          vp,
-          true,
-          true
-        );
+        this.baseRotation = AccuDrawHintBuilder.getCurrentRotation(vp, true, true);
 
-        const normal = this.baseRotation
-          ? this.baseRotation.getColumn(2)
-          : Vector3d.unitZ();
+        const normal = this.baseRotation ? this.baseRotation.getColumn(2) : Vector3d.unitZ();
         const vector0 = Vector3d.createStartEnd(pt1, pt2);
         const vector90 = normal.crossProduct(vector0);
-        const radius = this.useBaseRadius
-          ? this.baseRadius
-          : vector0.magnitude();
+        const radius = this.useBaseRadius ? this.baseRadius : vector0.magnitude();
 
         if (!this.useBaseRadius) {
           this.baseRadius = radius;
@@ -1049,19 +904,10 @@ export class CreateConeTool extends SolidPrimitiveTool {
         }
 
         // Establish base rotation when creating cone by 2 points...
-        if (undefined === this.baseRotation)
-          this.baseRotation = AccuDrawHintBuilder.getCurrentRotation(
-            vp,
-            true,
-            true
-          );
+        if (undefined === this.baseRotation) this.baseRotation = AccuDrawHintBuilder.getCurrentRotation(vp, true, true);
 
-        const xAxis = this.baseRotation
-          ? this.baseRotation.getColumn(0)
-          : Vector3d.unitX();
-        const yAxis = this.baseRotation
-          ? this.baseRotation.getColumn(1)
-          : Vector3d.unitY();
+        const xAxis = this.baseRotation ? this.baseRotation.getColumn(0) : Vector3d.unitX();
+        const yAxis = this.baseRotation ? this.baseRotation.getColumn(1) : Vector3d.unitY();
 
         if (undefined === zAxis.scaleToLength(length, zAxis)) {
           xAxis.scaleToLength(this.baseRadius, xAxis);
@@ -1097,17 +943,12 @@ export class CreateConeTool extends SolidPrimitiveTool {
         if (undefined !== localToWorld) this.baseRotation = localToWorld.matrix; // Update base rotation from result for AccuDraw hints...
 
         this.accepted.push((this.current as Cone).getCenterB()); // Add top center to accepted points for AccuDraw hints...
-        this.createPhase = this.useTopRadius
-          ? CreateConePhase.AcceptResult
-          : CreateConePhase.AcceptTopRadius;
+        this.createPhase = this.useTopRadius ? CreateConePhase.AcceptResult : CreateConePhase.AcceptTopRadius;
         break;
       }
 
       case CreateConePhase.AcceptTopRadius: {
-        const cone =
-          "solid" === this.current?.geometryCategory
-            ? (this.current as Cone)
-            : undefined;
+        const cone = "solid" === this.current?.geometryCategory ? (this.current as Cone) : undefined;
         if (undefined === cone) break;
 
         const vector0 = Vector3d.createStartEnd(cone.getCenterB(), pt2);
@@ -1136,19 +977,14 @@ export class CreateConeTool extends SolidPrimitiveTool {
     }
   }
 
-  protected override getToolSettingPropertyLocked(
-    property: DialogProperty<any>
-  ): DialogProperty<any> | undefined {
+  protected override getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined {
     if (property === this.useBaseRadiusProperty) return this.baseRadiusProperty;
-    else if (property === this.useTopRadiusProperty)
-      return this.topRadiusProperty;
+    else if (property === this.useTopRadiusProperty) return this.topRadiusProperty;
     else if (property === this.useLengthProperty) return this.lengthProperty;
     return undefined;
   }
 
-  public override async applyToolSettingPropertyChange(
-    updatedValue: DialogPropertySyncItem
-  ): Promise<boolean> {
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     return this.changeToolSettingPropertyValue(updatedValue);
   }
 
@@ -1171,43 +1007,24 @@ export class CreateConeTool extends SolidPrimitiveTool {
       rowPriority: 1,
       columnIndex: 0,
     });
-    toolSettings.push(
-      this.baseRadiusProperty.toDialogItem(
-        { rowPriority: 1, columnIndex: 1 },
-        useBaseRadiusLock
-      )
-    );
+    toolSettings.push(this.baseRadiusProperty.toDialogItem({ rowPriority: 1, columnIndex: 1 }, useBaseRadiusLock));
 
     this.topRadiusProperty.isDisabled = !this.useTopRadius;
     const useTopRadiusLock = this.useTopRadiusProperty.toDialogItem({
       rowPriority: 2,
       columnIndex: 0,
     });
-    toolSettings.push(
-      this.topRadiusProperty.toDialogItem(
-        { rowPriority: 2, columnIndex: 1 },
-        useTopRadiusLock
-      )
-    );
+    toolSettings.push(this.topRadiusProperty.toDialogItem({ rowPriority: 2, columnIndex: 1 }, useTopRadiusLock));
 
     this.lengthProperty.isDisabled = !this.useLength;
     const useLengthLock = this.useLengthProperty.toDialogItem({
       rowPriority: 3,
       columnIndex: 0,
     });
-    toolSettings.push(
-      this.lengthProperty.toDialogItem(
-        { rowPriority: 3, columnIndex: 1 },
-        useLengthLock
-      )
-    );
+    toolSettings.push(this.lengthProperty.toDialogItem({ rowPriority: 3, columnIndex: 1 }, useLengthLock));
 
-    toolSettings.push(
-      this.orthogonalProperty.toDialogItem({ rowPriority: 4, columnIndex: 0 })
-    );
-    toolSettings.push(
-      this.cappedProperty.toDialogItem({ rowPriority: 5, columnIndex: 0 })
-    );
+    toolSettings.push(this.orthogonalProperty.toDialogItem({ rowPriority: 4, columnIndex: 0 }));
+    toolSettings.push(this.cappedProperty.toDialogItem({ rowPriority: 5, columnIndex: 0 }));
 
     return toolSettings;
   }
@@ -1293,10 +1110,7 @@ export class CreateBoxTool extends SolidPrimitiveTool {
   public get lengthProperty() {
     if (!this._lengthProperty)
       this._lengthProperty = new DialogProperty<number>(
-        new LengthDescription(
-          "boxLength",
-          EditTools.translate("CreateBox.Label.Length")
-        ),
+        new LengthDescription("boxLength", EditTools.translate("CreateBox.Label.Length")),
         0.1,
         undefined,
         !this.useLength
@@ -1332,10 +1146,7 @@ export class CreateBoxTool extends SolidPrimitiveTool {
   public get widthProperty() {
     if (!this._widthProperty)
       this._widthProperty = new DialogProperty<number>(
-        new LengthDescription(
-          "boxWidth",
-          EditTools.translate("CreateBox.Label.Width")
-        ),
+        new LengthDescription("boxWidth", EditTools.translate("CreateBox.Label.Width")),
         0.1,
         undefined,
         !this.useWidth
@@ -1371,10 +1182,7 @@ export class CreateBoxTool extends SolidPrimitiveTool {
   public get heightProperty() {
     if (!this._heightProperty)
       this._heightProperty = new DialogProperty<number>(
-        new LengthDescription(
-          "boxHeight",
-          EditTools.translate("CreateBox.Label.Height")
-        ),
+        new LengthDescription("boxHeight", EditTools.translate("CreateBox.Label.Height")),
         0.1,
         undefined,
         !this.useHeight
@@ -1393,10 +1201,7 @@ export class CreateBoxTool extends SolidPrimitiveTool {
   public get cappedProperty() {
     if (!this._cappedProperty)
       this._cappedProperty = new DialogProperty<boolean>(
-        PropertyDescriptionHelper.buildToggleDescription(
-          "boxCapped",
-          EditTools.translate("CreateBox.Label.Capped")
-        ),
+        PropertyDescriptionHelper.buildToggleDescription("boxCapped", EditTools.translate("CreateBox.Label.Capped")),
         true
       );
     return this._cappedProperty;
@@ -1433,10 +1238,7 @@ export class CreateBoxTool extends SolidPrimitiveTool {
     return 4 === this.accepted.length;
   }
 
-  protected override async updateElementData(
-    ev: BeButtonEvent,
-    isDynamics: boolean
-  ): Promise<void> {
+  protected override async updateElementData(ev: BeButtonEvent, isDynamics: boolean): Promise<void> {
     const vp = this.targetView;
     if (undefined === vp) return;
 
@@ -1461,23 +1263,14 @@ export class CreateBoxTool extends SolidPrimitiveTool {
           return;
         }
 
-        this.baseRotation = AccuDrawHintBuilder.getCurrentRotation(
-          vp,
-          true,
-          true
-        );
+        this.baseRotation = AccuDrawHintBuilder.getCurrentRotation(vp, true, true);
 
-        const normal = this.baseRotation
-          ? this.baseRotation.getColumn(2)
-          : Vector3d.unitZ();
+        const normal = this.baseRotation ? this.baseRotation.getColumn(2) : Vector3d.unitZ();
         const vector90 = normal.crossProduct(vector0);
         const matrix = Matrix3d.createColumns(vector0, vector90, normal);
 
         this.baseRotation = Matrix3d.createRigidFromMatrix3d(matrix);
-        this.current = LineSegment3d.create(
-          this.accepted[0],
-          this.accepted[0].plus(vector0)
-        );
+        this.current = LineSegment3d.create(this.accepted[0], this.accepted[0].plus(vector0));
 
         if (isDynamics) return;
 
@@ -1494,21 +1287,15 @@ export class CreateBoxTool extends SolidPrimitiveTool {
           this.syncToolSettingPropertyValue(this.widthProperty);
         }
 
-        const vector0 = this.baseRotation
-          ? this.baseRotation.getColumn(0)
-          : Vector3d.unitX();
+        const vector0 = this.baseRotation ? this.baseRotation.getColumn(0) : Vector3d.unitX();
         const normal = vector90.crossProduct(vector0);
         const matrix = Matrix3d.createColumns(vector0, vector90, normal);
 
         if (
           undefined === vector90.scaleToLength(width, vector90) ||
-          undefined ===
-            Matrix3d.createRigidFromMatrix3d(matrix, undefined, matrix)
+          undefined === Matrix3d.createRigidFromMatrix3d(matrix, undefined, matrix)
         ) {
-          this.current = LineSegment3d.create(
-            this.accepted[0],
-            this.accepted[0].plusScaled(vector0, this.length)
-          );
+          this.current = LineSegment3d.create(this.accepted[0], this.accepted[0].plusScaled(vector0, this.length));
           return;
         }
 
@@ -1516,18 +1303,9 @@ export class CreateBoxTool extends SolidPrimitiveTool {
 
         const shapePts: Point3d[] = [];
         shapePts[0] = this.accepted[0].clone();
-        shapePts[1] = shapePts[0].plusScaled(
-          this.baseRotation.getColumn(0),
-          this.length
-        );
-        shapePts[2] = shapePts[1].plusScaled(
-          this.baseRotation.getColumn(1),
-          width
-        );
-        shapePts[3] = shapePts[0].plusScaled(
-          this.baseRotation.getColumn(1),
-          width
-        );
+        shapePts[1] = shapePts[0].plusScaled(this.baseRotation.getColumn(0), this.length);
+        shapePts[2] = shapePts[1].plusScaled(this.baseRotation.getColumn(1), width);
+        shapePts[3] = shapePts[0].plusScaled(this.baseRotation.getColumn(1), width);
         shapePts[4] = shapePts[0].clone();
 
         const base = LineString3d.create(shapePts);
@@ -1553,18 +1331,9 @@ export class CreateBoxTool extends SolidPrimitiveTool {
         if (undefined === zAxis.scaleToLength(height, zAxis)) {
           const shapePts: Point3d[] = [];
           shapePts[0] = this.accepted[0].clone();
-          shapePts[1] = shapePts[0].plusScaled(
-            this.baseRotation.getColumn(0),
-            this.length
-          );
-          shapePts[2] = shapePts[1].plusScaled(
-            this.baseRotation.getColumn(1),
-            this.width
-          );
-          shapePts[3] = shapePts[0].plusScaled(
-            this.baseRotation.getColumn(1),
-            this.width
-          );
+          shapePts[1] = shapePts[0].plusScaled(this.baseRotation.getColumn(0), this.length);
+          shapePts[2] = shapePts[1].plusScaled(this.baseRotation.getColumn(1), this.width);
+          shapePts[3] = shapePts[0].plusScaled(this.baseRotation.getColumn(1), this.width);
           shapePts[4] = shapePts[0].clone();
 
           const base = LineString3d.create(shapePts);
@@ -1574,10 +1343,7 @@ export class CreateBoxTool extends SolidPrimitiveTool {
 
         if (this.orthogonal) {
           const normal = this.baseRotation.getColumn(2);
-          normal.scaleToLength(
-            normal.dotProduct(zAxis) >= 0.0 ? height : -height,
-            zAxis
-          );
+          normal.scaleToLength(normal.dotProduct(zAxis) >= 0.0 ? height : -height, zAxis);
         }
 
         this.current = Box.createDgnBoxWithAxes(
@@ -1599,18 +1365,14 @@ export class CreateBoxTool extends SolidPrimitiveTool {
     }
   }
 
-  protected override getToolSettingPropertyLocked(
-    property: DialogProperty<any>
-  ): DialogProperty<any> | undefined {
+  protected override getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined {
     if (property === this.useLengthProperty) return this.lengthProperty;
     else if (property === this.useWidthProperty) return this.widthProperty;
     else if (property === this.useHeightProperty) return this.heightProperty;
     return undefined;
   }
 
-  public override async applyToolSettingPropertyChange(
-    updatedValue: DialogPropertySyncItem
-  ): Promise<boolean> {
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     return this.changeToolSettingPropertyValue(updatedValue);
   }
 
@@ -1633,43 +1395,24 @@ export class CreateBoxTool extends SolidPrimitiveTool {
       rowPriority: 1,
       columnIndex: 0,
     });
-    toolSettings.push(
-      this.lengthProperty.toDialogItem(
-        { rowPriority: 1, columnIndex: 1 },
-        useLengthLock
-      )
-    );
+    toolSettings.push(this.lengthProperty.toDialogItem({ rowPriority: 1, columnIndex: 1 }, useLengthLock));
 
     this.widthProperty.isDisabled = !this.useWidth;
     const useWidthLock = this.useWidthProperty.toDialogItem({
       rowPriority: 2,
       columnIndex: 0,
     });
-    toolSettings.push(
-      this.widthProperty.toDialogItem(
-        { rowPriority: 2, columnIndex: 1 },
-        useWidthLock
-      )
-    );
+    toolSettings.push(this.widthProperty.toDialogItem({ rowPriority: 2, columnIndex: 1 }, useWidthLock));
 
     this.heightProperty.isDisabled = !this.useHeight;
     const useHeightLock = this.useHeightProperty.toDialogItem({
       rowPriority: 3,
       columnIndex: 0,
     });
-    toolSettings.push(
-      this.heightProperty.toDialogItem(
-        { rowPriority: 3, columnIndex: 1 },
-        useHeightLock
-      )
-    );
+    toolSettings.push(this.heightProperty.toDialogItem({ rowPriority: 3, columnIndex: 1 }, useHeightLock));
 
-    toolSettings.push(
-      this.orthogonalProperty.toDialogItem({ rowPriority: 4, columnIndex: 0 })
-    );
-    toolSettings.push(
-      this.cappedProperty.toDialogItem({ rowPriority: 5, columnIndex: 0 })
-    );
+    toolSettings.push(this.orthogonalProperty.toDialogItem({ rowPriority: 4, columnIndex: 0 }));
+    toolSettings.push(this.cappedProperty.toDialogItem({ rowPriority: 5, columnIndex: 0 }));
 
     return toolSettings;
   }
@@ -1713,9 +1456,7 @@ export class CreateTorusTool extends SolidPrimitiveTool {
         mainInstrText = EditTools.translate("CreateTorus.Prompts.CenterPoint");
         break;
       case CreateTorusPhase.AcceptSecondaryRadius:
-        mainInstrText = EditTools.translate(
-          "CreateTorus.Prompts.SecondaryRadiusPoint"
-        );
+        mainInstrText = EditTools.translate("CreateTorus.Prompts.SecondaryRadiusPoint");
         break;
       default:
         mainInstrText = EditTools.translate("CreateTorus.Prompts.AnglePoint");
@@ -1745,10 +1486,7 @@ export class CreateTorusTool extends SolidPrimitiveTool {
             this.baseRotation.getColumn(1)
           )
         );
-    } else if (
-      CreateTorusPhase.AcceptAngle === this.createPhase &&
-      2 === nPts
-    ) {
+    } else if (CreateTorusPhase.AcceptAngle === this.createPhase && 2 === nPts) {
       hints.setModePolar();
       hints.setOrigin(this.accepted[1]);
       hints.setOriginFixed = true;
@@ -1762,9 +1500,7 @@ export class CreateTorusTool extends SolidPrimitiveTool {
   public get usePrimaryRadiusProperty() {
     if (!this._usePrimaryRadiusProperty)
       this._usePrimaryRadiusProperty = new DialogProperty<boolean>(
-        PropertyDescriptionHelper.buildLockPropertyDescription(
-          "useTorusPrimaryRadius"
-        ),
+        PropertyDescriptionHelper.buildLockPropertyDescription("useTorusPrimaryRadius"),
         false
       );
     return this._usePrimaryRadiusProperty;
@@ -1781,10 +1517,7 @@ export class CreateTorusTool extends SolidPrimitiveTool {
   public get primaryRadiusProperty() {
     if (!this._primaryRadiusProperty)
       this._primaryRadiusProperty = new DialogProperty<number>(
-        new LengthDescription(
-          "torusPrimaryRadius",
-          EditTools.translate("CreateTorus.Label.PrimaryRadius")
-        ),
+        new LengthDescription("torusPrimaryRadius", EditTools.translate("CreateTorus.Label.PrimaryRadius")),
         0.1,
         undefined,
         !this.usePrimaryRadius
@@ -1803,9 +1536,7 @@ export class CreateTorusTool extends SolidPrimitiveTool {
   public get useSecondaryRadiusProperty() {
     if (!this._useSecondaryRadiusProperty)
       this._useSecondaryRadiusProperty = new DialogProperty<boolean>(
-        PropertyDescriptionHelper.buildLockPropertyDescription(
-          "useTorusSecondaryRadius"
-        ),
+        PropertyDescriptionHelper.buildLockPropertyDescription("useTorusSecondaryRadius"),
         false
       );
     return this._useSecondaryRadiusProperty;
@@ -1822,10 +1553,7 @@ export class CreateTorusTool extends SolidPrimitiveTool {
   public get secondaryRadiusProperty() {
     if (!this._secondaryRadiusProperty)
       this._secondaryRadiusProperty = new DialogProperty<number>(
-        new LengthDescription(
-          "torusSecondaryRadius",
-          EditTools.translate("CreateTorus.Label.SecondaryRadius")
-        ),
+        new LengthDescription("torusSecondaryRadius", EditTools.translate("CreateTorus.Label.SecondaryRadius")),
         0.05,
         undefined,
         !this.useSecondaryRadius
@@ -1861,10 +1589,7 @@ export class CreateTorusTool extends SolidPrimitiveTool {
   public get angleProperty() {
     if (!this._angleProperty)
       this._angleProperty = new DialogProperty<number>(
-        new AngleDescription(
-          "torusAngle",
-          EditTools.translate("CreateTorus.Label.Angle")
-        ),
+        new AngleDescription("torusAngle", EditTools.translate("CreateTorus.Label.Angle")),
         Math.PI / 2.0,
         undefined,
         !this.useAngle
@@ -1903,10 +1628,7 @@ export class CreateTorusTool extends SolidPrimitiveTool {
     return CreateTorusPhase.AcceptResult === this.createPhase;
   }
 
-  protected override async updateElementData(
-    ev: BeButtonEvent,
-    isDynamics: boolean
-  ): Promise<void> {
+  protected override async updateElementData(ev: BeButtonEvent, isDynamics: boolean): Promise<void> {
     const vp = this.targetView;
     if (undefined === vp) return;
 
@@ -1920,20 +1642,12 @@ export class CreateTorusTool extends SolidPrimitiveTool {
       }
 
       case CreateTorusPhase.AcceptCenter: {
-        this.baseRotation = AccuDrawHintBuilder.getCurrentRotation(
-          vp,
-          true,
-          true
-        );
+        this.baseRotation = AccuDrawHintBuilder.getCurrentRotation(vp, true, true);
 
-        const normal = this.baseRotation
-          ? this.baseRotation.getColumn(2)
-          : Vector3d.unitZ();
+        const normal = this.baseRotation ? this.baseRotation.getColumn(2) : Vector3d.unitZ();
         const vector0 = Vector3d.createStartEnd(ev.point, this.accepted[0]);
         const vector90 = normal.crossProduct(vector0);
-        const primaryRadius = this.usePrimaryRadius
-          ? this.primaryRadius
-          : vector0.magnitude();
+        const primaryRadius = this.usePrimaryRadius ? this.primaryRadius : vector0.magnitude();
 
         if (!this.usePrimaryRadius) {
           this.primaryRadius = primaryRadius;
@@ -1950,10 +1664,7 @@ export class CreateTorusTool extends SolidPrimitiveTool {
         }
 
         const center = this.accepted[0].plus(vector0.negate());
-        const allowComplete =
-          this.useSecondaryRadius &&
-          this.useAngle &&
-          2 * Math.PI === this.angle;
+        const allowComplete = this.useSecondaryRadius && this.useAngle && 2 * Math.PI === this.angle;
 
         if (allowComplete) {
           vector0.normalizeInPlace();
@@ -2002,12 +1713,8 @@ export class CreateTorusTool extends SolidPrimitiveTool {
           this.syncToolSettingPropertyValue(this.secondaryRadiusProperty);
         }
 
-        const xAxis = this.baseRotation
-          ? this.baseRotation.getColumn(0)
-          : Vector3d.unitX();
-        const yAxis = this.baseRotation
-          ? this.baseRotation.getColumn(1)
-          : Vector3d.unitY();
+        const xAxis = this.baseRotation ? this.baseRotation.getColumn(0) : Vector3d.unitX();
+        const yAxis = this.baseRotation ? this.baseRotation.getColumn(1) : Vector3d.unitY();
 
         if (undefined === vector0.scaleToLength(secondaryRadius, vector0)) {
           xAxis.scaleToLength(this.primaryRadius, xAxis);
@@ -2017,9 +1724,7 @@ export class CreateTorusTool extends SolidPrimitiveTool {
           return;
         }
 
-        const sweep = Angle.createRadians(
-          this.useAngle ? this.angle : 2 * Math.PI
-        );
+        const sweep = Angle.createRadians(this.useAngle ? this.angle : 2 * Math.PI);
         this.current = TorusPipe.createDgnTorusPipe(
           this.accepted[1],
           xAxis,
@@ -2037,24 +1742,16 @@ export class CreateTorusTool extends SolidPrimitiveTool {
 
         if (!isDynamics)
           this.createPhase =
-            this.useAngle && 2 * Math.PI === this.angle
-              ? CreateTorusPhase.AcceptResult
-              : CreateTorusPhase.AcceptAngle;
+            this.useAngle && 2 * Math.PI === this.angle ? CreateTorusPhase.AcceptResult : CreateTorusPhase.AcceptAngle;
         break;
       }
 
       case CreateTorusPhase.AcceptAngle: {
         const vector90 = Vector3d.createStartEnd(this.accepted[1], ev.point);
 
-        const xAxis = this.baseRotation
-          ? this.baseRotation.getColumn(0)
-          : Vector3d.unitX();
-        const yAxis = this.baseRotation
-          ? this.baseRotation.getColumn(1)
-          : Vector3d.unitY();
-        const zAxis = this.baseRotation
-          ? this.baseRotation.getColumn(2)
-          : Vector3d.unitZ();
+        const xAxis = this.baseRotation ? this.baseRotation.getColumn(0) : Vector3d.unitX();
+        const yAxis = this.baseRotation ? this.baseRotation.getColumn(1) : Vector3d.unitY();
+        const zAxis = this.baseRotation ? this.baseRotation.getColumn(2) : Vector3d.unitZ();
 
         const prevSweep = Angle.createRadians(this.angle);
         const sweep = xAxis.planarAngleTo(vector90, zAxis);
@@ -2062,24 +1759,18 @@ export class CreateTorusTool extends SolidPrimitiveTool {
         if (
           Math.abs(sweep.radians) < Angle.createDegrees(30.0).radians &&
           prevSweep.isFullCircle &&
-          ((sweep.radians < 0.0 && prevSweep.radians > 0.0) ||
-            (sweep.radians > 0.0 && prevSweep.radians < 0.0))
+          ((sweep.radians < 0.0 && prevSweep.radians > 0.0) || (sweep.radians > 0.0 && prevSweep.radians < 0.0))
         )
           prevSweep.setRadians(-prevSweep.radians); // Reverse direction...
 
-        if (sweep.isAlmostZero)
-          sweep.setDegrees(prevSweep.radians < 0.0 ? -360.0 : 360.0); // Create full sweep...
+        if (sweep.isAlmostZero) sweep.setDegrees(prevSweep.radians < 0.0 ? -360.0 : 360.0); // Create full sweep...
 
         if (this.useAngle) {
-          if (
-            (sweep.radians < 0.0 && this.angle > 0.0) ||
-            (sweep.radians > 0.0 && this.angle < 0.0)
-          )
+          if ((sweep.radians < 0.0 && this.angle > 0.0) || (sweep.radians > 0.0 && this.angle < 0.0))
             sweep.setRadians(-this.angle);
           else sweep.setRadians(this.angle);
         } else {
-          if (sweep.radians < 0.0 && prevSweep.radians > 0.0)
-            sweep.setRadians(Angle.pi2Radians + sweep.radians);
+          if (sweep.radians < 0.0 && prevSweep.radians > 0.0) sweep.setRadians(Angle.pi2Radians + sweep.radians);
           else if (sweep.radians > 0.0 && prevSweep.radians < 0.0)
             sweep.setRadians(-(Angle.pi2Radians - sweep.radians));
 
@@ -2108,20 +1799,14 @@ export class CreateTorusTool extends SolidPrimitiveTool {
     }
   }
 
-  protected override getToolSettingPropertyLocked(
-    property: DialogProperty<any>
-  ): DialogProperty<any> | undefined {
-    if (property === this.usePrimaryRadiusProperty)
-      return this.primaryRadiusProperty;
-    else if (property === this.useSecondaryRadiusProperty)
-      return this.secondaryRadiusProperty;
+  protected override getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined {
+    if (property === this.usePrimaryRadiusProperty) return this.primaryRadiusProperty;
+    else if (property === this.useSecondaryRadiusProperty) return this.secondaryRadiusProperty;
     else if (property === this.useAngleProperty) return this.angleProperty;
     return undefined;
   }
 
-  public override async applyToolSettingPropertyChange(
-    updatedValue: DialogPropertySyncItem
-  ): Promise<boolean> {
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     return this.changeToolSettingPropertyValue(updatedValue);
   }
 
@@ -2144,21 +1829,13 @@ export class CreateTorusTool extends SolidPrimitiveTool {
       columnIndex: 0,
     });
     toolSettings.push(
-      this.primaryRadiusProperty.toDialogItem(
-        { rowPriority: 1, columnIndex: 1 },
-        usePrimaryRadiusLock
-      )
+      this.primaryRadiusProperty.toDialogItem({ rowPriority: 1, columnIndex: 1 }, usePrimaryRadiusLock)
     );
 
     this.secondaryRadiusProperty.isDisabled = !this.useSecondaryRadius;
-    const useSecondaryRadiusLock = this.useSecondaryRadiusProperty.toDialogItem(
-      { rowPriority: 2, columnIndex: 0 }
-    );
+    const useSecondaryRadiusLock = this.useSecondaryRadiusProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 });
     toolSettings.push(
-      this.secondaryRadiusProperty.toDialogItem(
-        { rowPriority: 2, columnIndex: 1 },
-        useSecondaryRadiusLock
-      )
+      this.secondaryRadiusProperty.toDialogItem({ rowPriority: 2, columnIndex: 1 }, useSecondaryRadiusLock)
     );
 
     this.angleProperty.isDisabled = !this.useAngle;
@@ -2166,16 +1843,9 @@ export class CreateTorusTool extends SolidPrimitiveTool {
       rowPriority: 3,
       columnIndex: 0,
     });
-    toolSettings.push(
-      this.angleProperty.toDialogItem(
-        { rowPriority: 3, columnIndex: 1 },
-        useAngleLock
-      )
-    );
+    toolSettings.push(this.angleProperty.toDialogItem({ rowPriority: 3, columnIndex: 1 }, useAngleLock));
 
-    toolSettings.push(
-      this.cappedProperty.toDialogItem({ rowPriority: 4, columnIndex: 0 })
-    );
+    toolSettings.push(this.cappedProperty.toDialogItem({ rowPriority: 4, columnIndex: 0 }));
 
     return toolSettings;
   }
@@ -2199,9 +1869,7 @@ export class ExtrudeCurveTool extends ModifyCurveTool {
   public get useLengthProperty() {
     if (!this._useLengthProperty)
       this._useLengthProperty = new DialogProperty<boolean>(
-        PropertyDescriptionHelper.buildLockPropertyDescription(
-          "useExtrudeLength"
-        ),
+        PropertyDescriptionHelper.buildLockPropertyDescription("useExtrudeLength"),
         false
       );
     return this._useLengthProperty;
@@ -2218,10 +1886,7 @@ export class ExtrudeCurveTool extends ModifyCurveTool {
   public get lengthProperty() {
     if (!this._lengthProperty)
       this._lengthProperty = new DialogProperty<number>(
-        new LengthDescription(
-          "extrudeLength",
-          EditTools.translate("ExtrudeCurve.Label.Length")
-        ),
+        new LengthDescription("extrudeLength", EditTools.translate("ExtrudeCurve.Label.Length")),
         0.1,
         undefined,
         !this.useLength
@@ -2296,17 +1961,11 @@ export class ExtrudeCurveTool extends ModifyCurveTool {
     this.keepProfileProperty.value = value;
   }
 
-  protected override getToolSettingPropertyLocked(
-    property: DialogProperty<any>
-  ): DialogProperty<any> | undefined {
-    return property === this.useLengthProperty
-      ? this.lengthProperty
-      : undefined;
+  protected override getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined {
+    return property === this.useLengthProperty ? this.lengthProperty : undefined;
   }
 
-  public override async applyToolSettingPropertyChange(
-    updatedValue: DialogPropertySyncItem
-  ): Promise<boolean> {
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     return this.changeToolSettingPropertyValue(updatedValue);
   }
 
@@ -2327,28 +1986,15 @@ export class ExtrudeCurveTool extends ModifyCurveTool {
       rowPriority: 1,
       columnIndex: 0,
     });
-    toolSettings.push(
-      this.lengthProperty.toDialogItem(
-        { rowPriority: 1, columnIndex: 1 },
-        useLengthLock
-      )
-    );
-    toolSettings.push(
-      this.orthogonalProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 })
-    );
-    toolSettings.push(
-      this.cappedProperty.toDialogItem({ rowPriority: 3, columnIndex: 0 })
-    );
-    toolSettings.push(
-      this.keepProfileProperty.toDialogItem({ rowPriority: 4, columnIndex: 0 })
-    );
+    toolSettings.push(this.lengthProperty.toDialogItem({ rowPriority: 1, columnIndex: 1 }, useLengthLock));
+    toolSettings.push(this.orthogonalProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
+    toolSettings.push(this.cappedProperty.toDialogItem({ rowPriority: 3, columnIndex: 0 }));
+    toolSettings.push(this.keepProfileProperty.toDialogItem({ rowPriority: 4, columnIndex: 0 }));
 
     return toolSettings;
   }
 
-  protected override acceptCurve(
-    curve: CurveCollection | CurvePrimitive
-  ): boolean {
+  protected override acceptCurve(curve: CurveCollection | CurvePrimitive): boolean {
     if ("curvePrimitive" === curve.geometryCategory) return true;
 
     switch (curve.curveCollectionType) {
@@ -2362,25 +2008,14 @@ export class ExtrudeCurveTool extends ModifyCurveTool {
     }
   }
 
-  protected override modifyCurve(
-    ev: BeButtonEvent,
-    isAccept: boolean
-  ): GeometryQuery | undefined {
-    if (undefined === ev.viewport || undefined === this.anchorPoint)
-      return undefined;
+  protected override modifyCurve(ev: BeButtonEvent, isAccept: boolean): GeometryQuery | undefined {
+    if (undefined === ev.viewport || undefined === this.anchorPoint) return undefined;
 
     const geom = this.curveData?.geom;
     if (undefined === geom) return undefined;
 
-    const matrix = AccuDrawHintBuilder.getCurrentRotation(
-      ev.viewport,
-      true,
-      true
-    );
-    const localToWorld = FrameBuilder.createRightHandedFrame(
-      matrix?.getColumn(2),
-      geom
-    );
+    const matrix = AccuDrawHintBuilder.getCurrentRotation(ev.viewport, true, true);
+    const localToWorld = FrameBuilder.createRightHandedFrame(matrix?.getColumn(2), geom);
     if (undefined === localToWorld) return undefined;
 
     const spacePoint = this.orthogonal
@@ -2396,31 +2031,19 @@ export class ExtrudeCurveTool extends ModifyCurveTool {
 
     const direction = Vector3d.createStartEnd(this.anchorPoint, spacePoint);
 
-    if (
-      this.useLength &&
-      undefined === direction.scaleToLength(this.length, direction)
-    )
-      return undefined;
+    if (this.useLength && undefined === direction.scaleToLength(this.length, direction)) return undefined;
 
     if (direction.magnitude() < Geometry.smallMetricDistance) return undefined;
 
     if (!this.useLength) {
       this.length = direction.magnitude();
       this.syncToolSettingPropertyValue(this.lengthProperty);
-      if (isAccept)
-        this.saveToolSettingPropertyValue(
-          this.lengthProperty,
-          this.lengthProperty.dialogItemValue
-        );
+      if (isAccept) this.saveToolSettingPropertyValue(this.lengthProperty, this.lengthProperty.dialogItemValue);
     }
 
     const contour = geom instanceof CurvePrimitive ? Path.create(geom) : geom;
 
-    return LinearSweep.create(
-      contour,
-      direction,
-      this.capped && contour.isAnyRegionType
-    );
+    return LinearSweep.create(contour, direction, this.capped && contour.isAnyRegionType);
   }
 
   protected override get wantModifyOriginal(): boolean {
@@ -2432,20 +2055,10 @@ export class ExtrudeCurveTool extends ModifyCurveTool {
 
     if (this.agenda.isEmpty) {
       hints.enableSmartRotation = true;
-    } else if (
-      undefined !== this.anchorPoint &&
-      undefined !== this.targetView
-    ) {
+    } else if (undefined !== this.anchorPoint && undefined !== this.targetView) {
       const geom = this.curveData?.geom;
-      const matrix = AccuDrawHintBuilder.getCurrentRotation(
-        this.targetView,
-        true,
-        true
-      );
-      const localToWorld = FrameBuilder.createRightHandedFrame(
-        matrix?.getColumn(2),
-        geom
-      );
+      const matrix = AccuDrawHintBuilder.getCurrentRotation(this.targetView, true, true);
+      const localToWorld = FrameBuilder.createRightHandedFrame(matrix?.getColumn(2), geom);
 
       hints.setModeRectangular();
       hints.setOrigin(this.anchorPoint);
@@ -2469,8 +2082,7 @@ export class ExtrudeCurveTool extends ModifyCurveTool {
     _additionalInstr?: ToolAssistanceInstruction[]
   ): void {
     let mainMsg;
-    if (!this.agenda.isEmpty)
-      mainMsg = EditTools.translate("ExtrudeCurve.Prompts.DefineLength");
+    if (!this.agenda.isEmpty) mainMsg = EditTools.translate("ExtrudeCurve.Prompts.DefineLength");
     super.provideToolAssistance(mainMsg);
   }
 
@@ -2495,10 +2107,7 @@ export class RevolveCurveTool extends ModifyCurveTool {
   public get angleProperty() {
     if (!this._angleProperty)
       this._angleProperty = new DialogProperty<number>(
-        new AngleDescription(
-          "revolveAngle",
-          EditTools.translate("RevolveCurve.Label.Angle")
-        ),
+        new AngleDescription("revolveAngle", EditTools.translate("RevolveCurve.Label.Angle")),
         Angle.piOver2Radians,
         undefined,
         false
@@ -2553,37 +2162,23 @@ export class RevolveCurveTool extends ModifyCurveTool {
     this.keepProfileProperty.value = value;
   }
 
-  public override async applyToolSettingPropertyChange(
-    updatedValue: DialogPropertySyncItem
-  ): Promise<boolean> {
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     return this.changeToolSettingPropertyValue(updatedValue);
   }
 
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
-    this.initializeToolSettingPropertyValues([
-      this.keepProfileProperty,
-      this.cappedProperty,
-      this.angleProperty,
-    ]);
+    this.initializeToolSettingPropertyValues([this.keepProfileProperty, this.cappedProperty, this.angleProperty]);
 
     const toolSettings = new Array<DialogItem>();
 
-    toolSettings.push(
-      this.angleProperty.toDialogItem({ rowPriority: 1, columnIndex: 1 })
-    );
-    toolSettings.push(
-      this.cappedProperty.toDialogItem({ rowPriority: 3, columnIndex: 0 })
-    );
-    toolSettings.push(
-      this.keepProfileProperty.toDialogItem({ rowPriority: 4, columnIndex: 0 })
-    );
+    toolSettings.push(this.angleProperty.toDialogItem({ rowPriority: 1, columnIndex: 1 }));
+    toolSettings.push(this.cappedProperty.toDialogItem({ rowPriority: 3, columnIndex: 0 }));
+    toolSettings.push(this.keepProfileProperty.toDialogItem({ rowPriority: 4, columnIndex: 0 }));
 
     return toolSettings;
   }
 
-  protected override acceptCurve(
-    curve: CurveCollection | CurvePrimitive
-  ): boolean {
+  protected override acceptCurve(curve: CurveCollection | CurvePrimitive): boolean {
     if ("curvePrimitive" === curve.geometryCategory) return true;
 
     switch (curve.curveCollectionType) {
@@ -2597,31 +2192,19 @@ export class RevolveCurveTool extends ModifyCurveTool {
     }
   }
 
-  protected override modifyCurve(
-    ev: BeButtonEvent,
-    isAccept: boolean
-  ): GeometryQuery | undefined {
-    if (undefined === ev.viewport || this.points.length < (isAccept ? 2 : 1))
-      return undefined;
+  protected override modifyCurve(ev: BeButtonEvent, isAccept: boolean): GeometryQuery | undefined {
+    if (undefined === ev.viewport || this.points.length < (isAccept ? 2 : 1)) return undefined;
 
     const geom = this.curveData?.geom;
     if (undefined === geom) return undefined;
 
-    const direction = Vector3d.createStartEnd(
-      this.points[0],
-      isAccept ? this.points[1] : ev.point
-    );
+    const direction = Vector3d.createStartEnd(this.points[0], isAccept ? this.points[1] : ev.point);
     if (direction.magnitude() < Geometry.smallMetricDistance) return undefined;
 
     const axis = Ray3d.create(this.points[0], direction);
     const angle = Angle.createRadians(this.angle);
     const contour = geom instanceof CurvePrimitive ? Path.create(geom) : geom;
-    const sweep = RotationalSweep.create(
-      contour,
-      axis,
-      angle,
-      this.capped && contour.isAnyRegionType
-    );
+    const sweep = RotationalSweep.create(contour, axis, angle, this.capped && contour.isAnyRegionType);
 
     // Detect a self-intersection...contour should not intersect axis of revolution...
     const localToWorld = sweep?.getConstructiveFrame();
@@ -2634,29 +2217,21 @@ export class RevolveCurveTool extends ModifyCurveTool {
     const paramRange = sweep?.getCurves().projectedParameterRange(xAxis);
     if (
       undefined === paramRange ||
-      (paramRange.low < -Geometry.smallMetricDistanceSquared &&
-        paramRange.high > Geometry.smallMetricDistanceSquared)
+      (paramRange.low < -Geometry.smallMetricDistanceSquared && paramRange.high > Geometry.smallMetricDistanceSquared)
     )
       return undefined;
 
     return sweep;
   }
 
-  public override onDynamicFrame(
-    ev: BeButtonEvent,
-    context: DynamicsContext
-  ): void {
+  public override onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
     if (0 === this.points.length) return;
 
     const pts = this.points.slice();
     pts.push(ev.point.clone());
 
     const builder = context.createGraphic({ type: GraphicType.WorldOverlay });
-    builder.setSymbology(
-      context.viewport.getContrastToBackgroundColor(),
-      ColorDef.black,
-      3
-    );
+    builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 3);
     builder.addLineString(pts);
 
     context.addGraphic(builder.finish());
@@ -2672,9 +2247,7 @@ export class RevolveCurveTool extends ModifyCurveTool {
     return this.points.length < 2;
   }
 
-  protected override async gatherInput(
-    ev: BeButtonEvent
-  ): Promise<EventHandled | undefined> {
+  protected override async gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined> {
     if (undefined !== this.anchorPoint) this.points.push(ev.point.clone());
 
     return super.gatherInput(ev);
@@ -2689,10 +2262,7 @@ export class RevolveCurveTool extends ModifyCurveTool {
       hints.setOrigin(this.points[0]);
       hints.setOriginFixed = true;
       hints.setLockZ = true;
-    } else if (
-      undefined !== this.anchorPoint &&
-      undefined !== this.targetView
-    ) {
+    } else if (undefined !== this.anchorPoint && undefined !== this.targetView) {
       const geom = this.curveData?.geom;
       const closeDetail =
         geom instanceof CurvePrimitive
@@ -2700,28 +2270,15 @@ export class RevolveCurveTool extends ModifyCurveTool {
           : geom?.closestPoint(this.anchorPoint);
       if (undefined === closeDetail?.curve) return;
 
-      const unitX = closeDetail.curve.fractionToPointAndUnitTangent(
-        closeDetail.fraction
-      ).direction;
+      const unitX = closeDetail.curve.fractionToPointAndUnitTangent(closeDetail.fraction).direction;
       if (undefined === unitX) return;
 
-      const matrix = AccuDrawHintBuilder.getCurrentRotation(
-        this.targetView,
-        true,
-        true
-      );
-      const localToWorld = FrameBuilder.createRightHandedFrame(
-        matrix?.getColumn(2),
-        geom
-      );
+      const matrix = AccuDrawHintBuilder.getCurrentRotation(this.targetView, true, true);
+      const localToWorld = FrameBuilder.createRightHandedFrame(matrix?.getColumn(2), geom);
       if (undefined === localToWorld) return;
 
       const unitZ = localToWorld.matrix.getColumn(2);
-      const frame = Matrix3d.createRigidFromColumns(
-        unitX,
-        unitZ,
-        AxisOrder.XZY
-      );
+      const frame = Matrix3d.createRigidFromColumns(unitX, unitZ, AxisOrder.XZY);
       if (undefined === frame) return;
 
       hints.setModeRectangular();
@@ -2739,9 +2296,7 @@ export class RevolveCurveTool extends ModifyCurveTool {
     let mainMsg;
     if (!this.agenda.isEmpty)
       mainMsg = EditTools.translate(
-        0 === this.points.length
-          ? "RevolveCurve.Prompts.AxisPoint"
-          : "RevolveCurve.Prompts.AxisDirection"
+        0 === this.points.length ? "RevolveCurve.Prompts.AxisPoint" : "RevolveCurve.Prompts.AxisDirection"
       );
     super.provideToolAssistance(mainMsg);
   }

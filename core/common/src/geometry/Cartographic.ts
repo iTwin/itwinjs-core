@@ -44,11 +44,7 @@ export class Cartographic implements CartographicProps {
    * @param latitude latitude, in radians.
    * @param height The height, in meters, above the ellipsoid.
    */
-  private constructor(
-    public longitude: number = 0,
-    public latitude: number = 0,
-    public height: number = 0
-  ) {}
+  private constructor(public longitude: number = 0, public latitude: number = 0, public height: number = 0) {}
 
   /** Create a Cartographic object with longitude, latitude, and height of zero. */
   public static createZero() {
@@ -59,12 +55,8 @@ export class Cartographic implements CartographicProps {
    * @param args an object containing a longitude, latitude, and an optional height property. The longitude and latitude properties are numbers specified in radians. The height property, if specified, is a number which contains the height in meters above the ellipsoid; if undefined, this height will default to zero.
    * @param result The object onto which to store the result.
    */
-  public static fromRadians(
-    args: { longitude: number; latitude: number; height?: number },
-    result?: Cartographic
-  ) {
-    if (!result)
-      return new Cartographic(args.longitude, args.latitude, args.height);
+  public static fromRadians(args: { longitude: number; latitude: number; height?: number }, result?: Cartographic) {
+    if (!result) return new Cartographic(args.longitude, args.latitude, args.height);
 
     result.longitude = args.longitude;
     result.latitude = args.latitude;
@@ -97,35 +89,21 @@ export class Cartographic implements CartographicProps {
   }
 
   private static _oneMinusF =
-    1 -
-    (Constant.earthRadiusWGS84.equator - Constant.earthRadiusWGS84.polar) /
-      Constant.earthRadiusWGS84.equator;
-  private static _equatorOverPolar =
-    Constant.earthRadiusWGS84.equator / Constant.earthRadiusWGS84.polar;
+    1 - (Constant.earthRadiusWGS84.equator - Constant.earthRadiusWGS84.polar) / Constant.earthRadiusWGS84.equator;
+  private static _equatorOverPolar = Constant.earthRadiusWGS84.equator / Constant.earthRadiusWGS84.polar;
   /** return the geocentric latitude angle for the input geodetic latitude angle (both in radians).
    * @param geodeticLatitude geodetic latitude angle in radians
    */
-  public static geocentricLatitudeFromGeodeticLatitude(
-    geodeticLatitude: number
-  ): number {
-    return Math.atan(
-      Cartographic._oneMinusF *
-        Cartographic._oneMinusF *
-        Math.tan(geodeticLatitude)
-    );
+  public static geocentricLatitudeFromGeodeticLatitude(geodeticLatitude: number): number {
+    return Math.atan(Cartographic._oneMinusF * Cartographic._oneMinusF * Math.tan(geodeticLatitude));
   }
   /** return the parametric latitude angle for the input geodetic latitude angle (both in radians).  The parametric latitude
    * is appropriate for input to the Ellipsoid methods.
    * @param geodeticLatitude geodetic latitude angle in radians
    */
-  public static parametricLatitudeFromGeodeticLatitude(
-    geodeticLatitude: number
-  ): number {
+  public static parametricLatitudeFromGeodeticLatitude(geodeticLatitude: number): number {
     return Math.atan(
-      Cartographic._oneMinusF *
-        Cartographic._oneMinusF *
-        Cartographic._equatorOverPolar *
-        Math.tan(geodeticLatitude)
+      Cartographic._oneMinusF * Cartographic._oneMinusF * Cartographic._equatorOverPolar * Math.tan(geodeticLatitude)
     );
   }
 
@@ -133,10 +111,7 @@ export class Cartographic implements CartographicProps {
    * @param args an object containing a longitude, latitude, and an optional height property. The longitude and latitude properties are numbers specified in degrees. The height property, if specified, is a number which contains the height in meters above the ellipsoid; if undefined, this height will default to zero.
    * @param result The object onto which to store the result.
    */
-  public static fromDegrees(
-    args: { longitude: number; latitude: number; height?: number },
-    result?: Cartographic
-  ) {
+  public static fromDegrees(args: { longitude: number; latitude: number; height?: number }, result?: Cartographic) {
     return Cartographic.fromRadians(
       {
         longitude: Angle.degreesToRadians(args.longitude),
@@ -151,10 +126,7 @@ export class Cartographic implements CartographicProps {
    * @param args an object containing a longitude, latitude, and an optional height property. The longitude and latitude properties are Angle objects. The height property, if specified, is a number which contains the height in meters above the ellipsoid; if undefined, this height will default to zero.
    * @param result The object into which to store the result (optional)
    */
-  public static fromAngles(
-    args: { longitude: Angle; latitude: Angle; height?: number },
-    result?: Cartographic
-  ) {
+  public static fromAngles(args: { longitude: Angle; latitude: Angle; height?: number }, result?: Cartographic) {
     return Cartographic.fromRadians(
       {
         longitude: args.longitude.radians,
@@ -168,11 +140,7 @@ export class Cartographic implements CartographicProps {
   private static _cartesianToCartographicN = new Point3d();
   private static _cartesianToCartographicP = new Point3d();
   private static _cartesianToCartographicH = new Vector3d();
-  private static _wgs84OneOverRadii = new Point3d(
-    1.0 / 6378137.0,
-    1.0 / 6378137.0,
-    1.0 / 6356752.3142451793
-  );
+  private static _wgs84OneOverRadii = new Point3d(1.0 / 6378137.0, 1.0 / 6378137.0, 1.0 / 6356752.3142451793);
   private static _wgs84OneOverRadiiSquared = new Point3d(
     1.0 / (6378137.0 * 6378137.0),
     1.0 / (6378137.0 * 6378137.0),
@@ -192,15 +160,9 @@ export class Cartographic implements CartographicProps {
    * @param [result] The object onto which to store the result.
    * @returns The modified result parameter, new Cartographic instance if none was provided, or undefined if the cartesian is at the center of the ellipsoid.
    */
-  public static fromEcef(
-    cartesian: Point3d,
-    result?: Cartographic
-  ): Cartographic | undefined {
+  public static fromEcef(cartesian: Point3d, result?: Cartographic): Cartographic | undefined {
     const oneOverRadiiSquared = Cartographic._wgs84OneOverRadiiSquared;
-    const p = Cartographic.scalePointToGeodeticSurface(
-      cartesian,
-      Cartographic._cartesianToCartographicP
-    );
+    const p = Cartographic.scalePointToGeodeticSurface(cartesian, Cartographic._cartesianToCartographicP);
 
     if (!p) return undefined;
 
@@ -226,10 +188,7 @@ export class Cartographic implements CartographicProps {
    * @param [result] The object onto which to store the result.
    * @returns a point on the geodetic surface
    */
-  public static scalePointToGeodeticSurface(
-    point: Point3d,
-    result?: Point3d
-  ): Point3d | undefined {
+  public static scalePointToGeodeticSurface(point: Point3d, result?: Point3d): Point3d | undefined {
     const oneOverRadii = Cartographic._wgs84OneOverRadii;
     const oneOverRadiiSquared = Cartographic._wgs84OneOverRadiiSquared;
     const centerToleranceSquared = Cartographic._wgs84CenterToleranceSquared;
@@ -244,8 +203,7 @@ export class Cartographic implements CartographicProps {
 
   /** Duplicates a Cartographic. */
   public clone(result?: Cartographic): Cartographic {
-    if (!result)
-      return new Cartographic(this.longitude, this.latitude, this.height);
+    if (!result) return new Cartographic(this.longitude, this.latitude, this.height);
 
     result.longitude = this.longitude;
     result.latitude = this.latitude;
@@ -257,9 +215,7 @@ export class Cartographic implements CartographicProps {
   public equals(right: CartographicProps): boolean {
     return (
       this === right ||
-      (this.longitude === right.longitude &&
-        this.latitude === right.latitude &&
-        this.height === right.height)
+      (this.longitude === right.longitude && this.latitude === right.latitude && this.height === right.height)
     );
   }
 
@@ -334,9 +290,7 @@ export class Cartographic implements CartographicProps {
 
     // If the position is near the center, the iteration will not converge.
     if (squaredNorm < centerToleranceSquared) {
-      return !isFinite(ratio)
-        ? undefined
-        : Point3d.createFrom(intersection, result);
+      return !isFinite(ratio) ? undefined : Point3d.createFrom(intersection, result);
     }
 
     const oneOverRadiiSquaredX = oneOverRadiiSquared.x;
@@ -351,8 +305,7 @@ export class Cartographic implements CartographicProps {
     gradient.z = intersection.z * oneOverRadiiSquaredZ * 2.0;
 
     // Compute the initial guess at the normal vector multiplier, lambda.
-    let lambda =
-      ((1.0 - ratio) * cartesian.magnitude()) / (0.5 * gradient.magnitude());
+    let lambda = ((1.0 - ratio) * cartesian.magnitude()) / (0.5 * gradient.magnitude());
     let correction = 0.0;
     let func;
     let denominator;
@@ -395,12 +348,7 @@ export class Cartographic implements CartographicProps {
       correction = func / derivative;
     } while (Math.abs(func) > 0.01);
 
-    if (!result)
-      return new Point3d(
-        positionX * xMultiplier,
-        positionY * yMultiplier,
-        positionZ * zMultiplier
-      );
+    if (!result) return new Point3d(positionX * xMultiplier, positionY * yMultiplier, positionZ * zMultiplier);
 
     result.x = positionX * xMultiplier;
     result.y = positionY * yMultiplier;
@@ -418,11 +366,7 @@ export class Cartographic implements CartographicProps {
     scratchN.z = Math.sin(this.latitude);
     Cartographic.normalize(scratchN, scratchN);
 
-    Cartographic.multiplyComponents(
-      Cartographic._wgs84RadiiSquared,
-      scratchN,
-      scratchK
-    );
+    Cartographic.multiplyComponents(Cartographic._wgs84RadiiSquared, scratchN, scratchK);
     const gamma = Math.sqrt(scratchN.dotProduct(scratchK));
     Cartographic.scalePoint(scratchK, 1.0 / gamma, scratchK);
     Cartographic.scalePoint(scratchN, this.height, scratchN);
@@ -475,43 +419,22 @@ export class CartographicRange {
       (this._maxLongitude = Math.max(low.longitude, high.longitude));
     if (this._maxLongitude - this._minLongitude > Angle.piRadians) {
       longitudeRanges.push(Range1d.createXX(0.0, this._minLongitude));
-      longitudeRanges.push(
-        Range1d.createXX(this._maxLongitude, Angle.pi2Radians)
-      );
+      longitudeRanges.push(Range1d.createXX(this._maxLongitude, Angle.pi2Radians));
     } else {
-      longitudeRanges.push(
-        Range1d.createXX(this._minLongitude, this._maxLongitude)
-      );
+      longitudeRanges.push(Range1d.createXX(this._minLongitude, this._maxLongitude));
     }
 
     for (const longitudeRange of longitudeRanges) {
       (this._minLatitude = Math.min(low.latitude, high.latitude)),
         (this._maxLatitude = Math.max(low.latitude, high.latitude));
       if (this._maxLatitude - this._minLatitude > Angle.piOver2Radians) {
+        this._ranges.push(Range2d.createXYXY(longitudeRange.low, 0.0, longitudeRange.high, this._minLatitude));
         this._ranges.push(
-          Range2d.createXYXY(
-            longitudeRange.low,
-            0.0,
-            longitudeRange.high,
-            this._minLatitude
-          )
-        );
-        this._ranges.push(
-          Range2d.createXYXY(
-            longitudeRange.low,
-            this._maxLatitude,
-            longitudeRange.high,
-            Angle.piRadians
-          )
+          Range2d.createXYXY(longitudeRange.low, this._maxLatitude, longitudeRange.high, Angle.piRadians)
         );
       } else {
         this._ranges.push(
-          Range2d.createXYXY(
-            longitudeRange.low,
-            this._minLatitude,
-            longitudeRange.high,
-            this._maxLatitude
-          )
+          Range2d.createXYXY(longitudeRange.low, this._minLatitude, longitudeRange.high, this._maxLatitude)
         );
       }
     }
@@ -519,8 +442,7 @@ export class CartographicRange {
 
   public intersectsRange(other: CartographicRange): boolean {
     for (const range of this._ranges)
-      for (const otherRange of other._ranges)
-        if (range.intersectsRange(otherRange)) return true;
+      for (const otherRange of other._ranges) if (range.intersectsRange(otherRange)) return true;
     return false;
   }
 
@@ -533,11 +455,6 @@ export class CartographicRange {
    * for ranges that overlap the -PI/+PI frontier in which case either representation is acceptable.
    */
   public getLongitudeLatitudeBoundingBox(): Range2d {
-    return Range2d.createXYXY(
-      this._minLongitude,
-      this._minLatitude,
-      this._maxLongitude,
-      this._maxLatitude
-    );
+    return Range2d.createXYXY(this._minLongitude, this._minLatitude, this._maxLongitude, this._maxLatitude);
   }
 }

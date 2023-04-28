@@ -58,8 +58,7 @@ class LocalTransport extends IpcWebSocketTransport {
         return;
       }
 
-      for (const listener of IpcWebSocket.receivers)
-        listener({} as Event, message);
+      for (const listener of IpcWebSocket.receivers) listener({} as Event, message);
     });
   }
 
@@ -92,9 +91,7 @@ export class LocalhostIpcApp {
   public static buildUrlForSocket(base: URL, path = "ipc"): URL {
     const url = new URL(base);
     url.protocol = "ws";
-    url.pathname = [...url.pathname.split("/"), path]
-      .filter((v) => v)
-      .join("/");
+    url.pathname = [...url.pathname.split("/"), path].filter((v) => v).join("/");
     return url;
   }
 

@@ -7,10 +7,7 @@ import { expect } from "chai";
 import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { MutableSchema } from "../../../Editing/Mutable/MutableSchema";
 import * as Rules from "../../../Validation/ECRules";
-import {
-  DiagnosticCategory,
-  DiagnosticType,
-} from "../../../Validation/Diagnostic";
+import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
 
 describe("Schema rules tests", () => {
   let context: SchemaContext;
@@ -39,8 +36,7 @@ describe("Schema rules tests", () => {
       await (schemaA as MutableSchema).addReference(schemaB);
       const result = Rules.validateSchemaReferences(schemaA);
 
-      for await (const _diagnostic of result)
-        expect(false, "Rule should have passed").true;
+      for await (const _diagnostic of result) expect(false, "Rule should have passed").true;
     });
 
     describe("EC-001, SupplementalSchemasCannotBeReferenced Tests", () => {
@@ -57,9 +53,7 @@ describe("Schema rules tests", () => {
           name: "SchemaB",
           version: "1.0.0",
           alias: "b",
-          customAttributes: [
-            { className: "CoreCustomAttributes.SupplementalSchema" },
-          ],
+          customAttributes: [{ className: "CoreCustomAttributes.SupplementalSchema" }],
         };
 
         const coreCustomAttributesJson = {
@@ -97,15 +91,10 @@ describe("Schema rules tests", () => {
             "Referenced schema 'SchemaB' of schema 'SchemaA' is a supplemental schema. Supplemental schemas are not allowed to be referenced."
           );
           expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
-          expect(diagnostic.code).to.equal(
-            Rules.Diagnostics.SupplementalSchemasCannotBeReferenced.code
-          );
+          expect(diagnostic.code).to.equal(Rules.Diagnostics.SupplementalSchemasCannotBeReferenced.code);
           expect(diagnostic.diagnosticType).to.equal(DiagnosticType.Schema);
         }
-        expect(
-          resultHasEntries,
-          "expected rule to return an AsyncIterable with entries."
-        ).to.be.true;
+        expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
       });
     });
 
@@ -145,25 +134,15 @@ describe("Schema rules tests", () => {
         for await (const diagnostic of result) {
           resultHasEntries = true;
           expect(diagnostic.ecDefinition).to.equal(schemaA);
-          expect(diagnostic.messageArgs).to.eql([
-            schemaA.name,
-            "b",
-            "SchemaB",
-            "SchemaC",
-          ]);
+          expect(diagnostic.messageArgs).to.eql([schemaA.name, "b", "SchemaB", "SchemaC"]);
           expect(diagnostic.messageText).to.eql(
             "Schema 'SchemaA' has multiple schema references (SchemaB, SchemaC) with the same alias 'b', which is not allowed."
           );
           expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
-          expect(diagnostic.code).to.equal(
-            Rules.Diagnostics.SchemaRefAliasMustBeUnique.code
-          );
+          expect(diagnostic.code).to.equal(Rules.Diagnostics.SchemaRefAliasMustBeUnique.code);
           expect(diagnostic.diagnosticType).to.equal(DiagnosticType.Schema);
         }
-        expect(
-          resultHasEntries,
-          "expected rule to return an AsyncIterable with entries."
-        ).to.be.true;
+        expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
       });
     });
 
@@ -200,23 +179,15 @@ describe("Schema rules tests", () => {
         for await (const diagnostic of result) {
           resultHasEntries = true;
           expect(diagnostic.ecDefinition).to.equal(schemaA);
-          expect(diagnostic.messageArgs).to.eql([
-            schemaA.name,
-            "SchemaB --> SchemaA, SchemaA --> SchemaB",
-          ]);
+          expect(diagnostic.messageArgs).to.eql([schemaA.name, "SchemaB --> SchemaA, SchemaA --> SchemaB"]);
           expect(diagnostic.messageText).to.eql(
             "Schema 'SchemaA' has reference cycles: SchemaB --> SchemaA, SchemaA --> SchemaB"
           );
           expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
-          expect(diagnostic.code).to.equal(
-            Rules.Diagnostics.ReferenceCyclesNotAllowed.code
-          );
+          expect(diagnostic.code).to.equal(Rules.Diagnostics.ReferenceCyclesNotAllowed.code);
           expect(diagnostic.diagnosticType).to.equal(DiagnosticType.Schema);
         }
-        expect(
-          resultHasEntries,
-          "expected rule to return an AsyncIterable with entries."
-        ).to.be.true;
+        expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
       });
 
       it("Multiple schema reference cycles, rule violated.", async () => {
@@ -270,15 +241,10 @@ describe("Schema rules tests", () => {
             "Schema 'SchemaA' has reference cycles: SchemaC --> SchemaA, SchemaA --> SchemaC, SchemaD --> SchemaA, SchemaA --> SchemaD"
           );
           expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
-          expect(diagnostic.code).to.equal(
-            Rules.Diagnostics.ReferenceCyclesNotAllowed.code
-          );
+          expect(diagnostic.code).to.equal(Rules.Diagnostics.ReferenceCyclesNotAllowed.code);
           expect(diagnostic.diagnosticType).to.equal(DiagnosticType.Schema);
         }
-        expect(
-          resultHasEntries,
-          "expected rule to return an AsyncIterable with entries."
-        ).to.be.true;
+        expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
       });
     });
   });

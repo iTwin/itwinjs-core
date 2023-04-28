@@ -7,11 +7,7 @@ import * as faker from "faker";
 import { Item, ItemJSON } from "../../presentation-common/content/Item";
 import { NestedContentValueJSON } from "../../presentation-common/content/Value";
 import { createTestECInstanceKey } from "../_helpers/EC";
-import {
-  createRandomECClassInfo,
-  createRandomECInstanceKey,
-  createRandomLabelDefinition,
-} from "../_helpers/random";
+import { createRandomECClassInfo, createRandomECInstanceKey, createRandomLabelDefinition } from "../_helpers/random";
 
 describe("Item", () => {
   describe("constructor", () => {

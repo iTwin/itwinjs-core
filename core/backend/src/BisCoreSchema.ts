@@ -37,12 +37,7 @@ export class BisCoreSchema extends Schema {
     return "BisCore";
   }
   public static get schemaFilePath(): string {
-    return path.join(
-      KnownLocations.nativeAssetsDir,
-      "ECSchemas",
-      "Dgn",
-      `${BisCoreSchema.schemaName}.ecschema.xml`
-    );
+    return path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Dgn", `${BisCoreSchema.schemaName}.ecschema.xml`);
   }
 
   /** @internal */

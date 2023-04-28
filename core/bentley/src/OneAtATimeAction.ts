@@ -26,16 +26,12 @@ class PromiseWithAbandon<T> {
    * @param _run The method that creates the underlying Promise.
    * @param _args An array of args to be passed to run when [[start]] is called.
    */
-  constructor(
-    private _run: (...args: any[]) => Promise<T>,
-    private _args: any[]
-  ) {}
+  constructor(private _run: (...args: any[]) => Promise<T>, private _args: any[]) {}
 
   /** Create a Promise that is chained to the underlying Promise, but is connected to the abandon method. */
   public async init(msg: string): Promise<T> {
     return new Promise<T>((resolve, reject) => {
-      this.abandon = (message?: string) =>
-        reject(new AbandonedError(message ?? msg));
+      this.abandon = (message?: string) => reject(new AbandonedError(message ?? msg));
       this._resolve = resolve;
     });
   }

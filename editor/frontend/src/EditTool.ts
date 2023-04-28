@@ -31,10 +31,7 @@ export namespace EditTools {
    * @param msg the message about what's happening from the currently busy EditCommand.
    * @returns the delay (in milliseconds) before attempting again. If `undefined` use default (usually 1 second)
    */
-  export type BusyRetry = (
-    attempt: number,
-    msg: string
-  ) => Promise<number | undefined>;
+  export type BusyRetry = (attempt: number, msg: string) => Promise<number | undefined>;
 }
 
 /**
@@ -47,10 +44,7 @@ export class EditTools {
   public static busyRetry?: EditTools.BusyRetry;
   private static _initialized = false;
 
-  public static async startCommand<T>(
-    startArg: EditTools.StartArgs,
-    ...cmdArgs: any[]
-  ): Promise<T> {
+  public static async startCommand<T>(startArg: EditTools.StartArgs, ...cmdArgs: any[]): Promise<T> {
     let attempt = 0;
     while (true) {
       try {
@@ -89,9 +83,7 @@ export class EditTools {
     // clean up if we're being shut down
     IModelApp.onBeforeShutdown.addListener(() => this.shutdown());
 
-    const namespacePromise = IModelApp.localization.registerNamespace(
-      this.namespace
-    );
+    const namespacePromise = IModelApp.localization.registerNamespace(this.namespace);
 
     const tools = IModelApp.tools;
     tools.registerModule(UndoRedoTools, this.namespace);

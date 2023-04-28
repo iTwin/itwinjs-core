@@ -6,12 +6,7 @@
  * @module Effects
  */
 
-import {
-  ScreenSpaceEffectBuilder,
-  Tool,
-  UniformType,
-  VaryingType,
-} from "@itwin/core-frontend";
+import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@itwin/core-frontend";
 import { parseArgs } from "../tools/parseArgs";
 import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools";
 
@@ -67,8 +62,7 @@ export class FlipImageEffect extends AddEffectTool {
 
   protected defineEffect(builder: ScreenSpaceEffectBuilder): void {
     // Don't bother applying the effect if nothing is to be flipped.
-    builder.shouldApply = (_context) =>
-      flipHorizontal || flipVertical || flipColor;
+    builder.shouldApply = (_context) => flipHorizontal || flipVertical || flipColor;
 
     // Define the varying for the texture coordinate.
     builder.addVarying("v_uv", VaryingType.Vec2);
@@ -104,11 +98,7 @@ export class FlipImageConfig extends Tool {
     return 3;
   }
 
-  public override async run(
-    horizontal?: boolean,
-    vertical?: boolean,
-    color?: boolean
-  ): Promise<boolean> {
+  public override async run(horizontal?: boolean, vertical?: boolean, color?: boolean): Promise<boolean> {
     flipHorizontal = !!horizontal;
     flipVertical = !!vertical;
     flipColor = !!color;
@@ -119,10 +109,6 @@ export class FlipImageConfig extends Tool {
 
   public override async parseAndRun(...input: string[]): Promise<boolean> {
     const args = parseArgs(input);
-    return this.run(
-      args.getBoolean("h"),
-      args.getBoolean("v"),
-      args.getBoolean("c")
-    );
+    return this.run(args.getBoolean("h"), args.getBoolean("v"), args.getBoolean("c"));
   }
 }

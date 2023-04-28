@@ -19,17 +19,10 @@ function expectSignsEqual(a: XYZ, b: XYZ) {
 }
 
 function expectPointsEqual(lhs: XYZ, rhs: XYZ, tolerance: number) {
-  assert.isTrue(
-    lhs.isAlmostEqual(rhs, tolerance),
-    `expectPointsEqual ${lhs.toJSON()} ${rhs.toJSON()}`
-  );
+  assert.isTrue(lhs.isAlmostEqual(rhs, tolerance), `expectPointsEqual ${lhs.toJSON()} ${rhs.toJSON()}`);
 }
 
-function _roundTrip(
-  vec: Vector3d,
-  normalized: boolean = true,
-  tolerance: number = 0.005
-) {
+function _roundTrip(vec: Vector3d, normalized: boolean = true, tolerance: number = 0.005) {
   if (!normalized) {
     vec.normalize(vec);
   }
@@ -43,13 +36,7 @@ function _roundTrip(
   assert.isTrue(rep.value === oen.value);
 }
 
-function roundTrip(
-  x: number,
-  y: number,
-  z: number,
-  normalized: boolean = true,
-  tolerance: number = 0.005
-) {
+function roundTrip(x: number, y: number, z: number, normalized: boolean = true, tolerance: number = 0.005) {
   _roundTrip(new Vector3d(x, y, z), normalized, tolerance);
 }
 

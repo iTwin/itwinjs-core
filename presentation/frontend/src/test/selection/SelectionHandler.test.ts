@@ -27,9 +27,7 @@ describe("SelectionHandler", () => {
   beforeEach(() => {
     const selectionChangeEvent = new SelectionChangeEvent();
     selectionManagerMock.reset();
-    selectionManagerMock
-      .setup((x) => x.selectionChange)
-      .returns(() => selectionChangeEvent);
+    selectionManagerMock.setup((x) => x.selectionChange).returns(() => selectionChangeEvent);
     selectionHandler = new SelectionHandler({
       manager: selectionManagerMock.object,
       imodel: imodelMock.object,
@@ -44,13 +42,9 @@ describe("SelectionHandler", () => {
 
   describe("dispose", () => {
     it("stops listening for selection change events", () => {
-      expect(
-        selectionManagerMock.object.selectionChange.numberOfListeners
-      ).to.eq(1);
+      expect(selectionManagerMock.object.selectionChange.numberOfListeners).to.eq(1);
       selectionHandler.dispose();
-      expect(
-        selectionManagerMock.object.selectionChange.numberOfListeners
-      ).to.eq(0);
+      expect(selectionManagerMock.object.selectionChange.numberOfListeners).to.eq(0);
     });
   });
 
@@ -84,13 +78,7 @@ describe("SelectionHandler", () => {
     it("calls manager's clearSelection", () => {
       selectionHandler.clearSelection();
       selectionManagerMock.verify(
-        (x) =>
-          x.clearSelection(
-            moq.It.isValue(source),
-            moq.It.isAny(),
-            moq.It.isValue(0),
-            moq.It.isValue(ruleset)
-          ),
+        (x) => x.clearSelection(moq.It.isValue(source), moq.It.isAny(), moq.It.isValue(0), moq.It.isValue(ruleset)),
         moq.Times.once()
       );
     });
@@ -108,10 +96,7 @@ describe("SelectionHandler", () => {
         } as SelectionChangeEventArgs,
         selectionManagerMock.object
       );
-      selectionManagerMock.verify(
-        (x) => x.clearSelection(moq.It.isAny(), imodelMock.object),
-        moq.Times.never()
-      );
+      selectionManagerMock.verify((x) => x.clearSelection(moq.It.isAny(), imodelMock.object), moq.Times.never());
     });
   });
 
@@ -230,9 +215,7 @@ describe("SelectionHandler", () => {
   });
 
   describe("onSelect", () => {
-    const callbackMock = moq.Mock.ofInstance(
-      (_args: SelectionChangeEventArgs, _provider: ISelectionProvider) => {}
-    );
+    const callbackMock = moq.Mock.ofInstance((_args: SelectionChangeEventArgs, _provider: ISelectionProvider) => {});
 
     beforeEach(() => {
       callbackMock.reset();
@@ -248,14 +231,8 @@ describe("SelectionHandler", () => {
         keys: new KeySet(),
         timestamp: new Date(),
       };
-      selectionManagerMock.object.selectionChange.raiseEvent(
-        args,
-        selectionManagerMock.object
-      );
-      callbackMock.verify(
-        (x) => x(args, selectionManagerMock.object),
-        moq.Times.once()
-      );
+      selectionManagerMock.object.selectionChange.raiseEvent(args, selectionManagerMock.object);
+      callbackMock.verify((x) => x(args, selectionManagerMock.object), moq.Times.once());
     });
 
     it("doesn't get called when SelectionChangeEvent has same source as SelectionHandler", () => {
@@ -267,14 +244,8 @@ describe("SelectionHandler", () => {
         keys: new KeySet(),
         timestamp: new Date(),
       };
-      selectionManagerMock.object.selectionChange.raiseEvent(
-        args,
-        selectionManagerMock.object
-      );
-      callbackMock.verify(
-        (x) => x(args, selectionManagerMock.object),
-        moq.Times.never()
-      );
+      selectionManagerMock.object.selectionChange.raiseEvent(args, selectionManagerMock.object);
+      callbackMock.verify((x) => x(args, selectionManagerMock.object), moq.Times.never());
     });
   });
 });

@@ -7,12 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import {
-  LinePixels,
-  MeshEdge,
-  OctEncodedNormalPair,
-  PolylineData,
-} from "@itwin/core-common";
+import { LinePixels, MeshEdge, OctEncodedNormalPair, PolylineData } from "@itwin/core-common";
 import { MeshArgs, MeshArgsEdges } from "./mesh/MeshPrimitives";
 import { VertexIndices } from "./VertexTable";
 import { TesselatedPolyline, wantJointTriangles } from "./PolylineParams";
@@ -35,13 +30,9 @@ export interface SegmentEdgeParams {
   readonly endPointAndQuadIndices: Uint8Array;
 }
 
-function convertPolylinesAndEdges(
-  polylines?: PolylineData[],
-  edges?: MeshEdge[]
-): SegmentEdgeParams | undefined {
+function convertPolylinesAndEdges(polylines?: PolylineData[], edges?: MeshEdge[]): SegmentEdgeParams | undefined {
   let numIndices = undefined !== edges ? edges.length : 0;
-  if (undefined !== polylines)
-    for (const pd of polylines) numIndices += pd.vertIndices.length - 1;
+  if (undefined !== polylines) for (const pd of polylines) numIndices += pd.vertIndices.length - 1;
 
   if (0 === numIndices) return undefined;
 
@@ -111,10 +102,7 @@ export interface SilhouetteParams extends SegmentEdgeParams {
   readonly normalPairs: Uint8Array;
 }
 
-function convertSilhouettes(
-  edges: MeshEdge[],
-  normalPairs: OctEncodedNormalPair[]
-): SilhouetteParams | undefined {
+function convertSilhouettes(edges: MeshEdge[], normalPairs: OctEncodedNormalPair[]): SilhouetteParams | undefined {
   const base = convertPolylinesAndEdges(undefined, edges);
   if (undefined === base) return undefined;
 
@@ -219,11 +207,7 @@ export function calculateEdgeTableParams(
   };
 }
 
-function buildIndexedEdges(
-  args: MeshArgsEdges,
-  doPolylines: boolean,
-  maxSize: number
-): IndexedEdgeParams | undefined {
+function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean, maxSize: number): IndexedEdgeParams | undefined {
   const hardEdges = args.edges?.edges;
   const silhouettes = args.silhouettes;
   const polylines = doPolylines ? args.polylines?.lines : undefined;
@@ -231,11 +215,7 @@ function buildIndexedEdges(
   const numHardEdges = hardEdges?.length ?? 0;
   const numSilhouettes = silhouettes?.edges?.length ?? 0;
   const numPolylines = polylines
-    ? polylines.reduce(
-        (count: number, pd: PolylineData) =>
-          count + Math.max(0, pd.vertIndices.length - 1),
-        0
-      )
+    ? polylines.reduce((count: number, pd: PolylineData) => count + Math.max(0, pd.vertIndices.length - 1), 0)
     : 0;
   const numSegmentEdges = numHardEdges + numPolylines;
   const numTotalEdges = numSegmentEdges + numSilhouettes;
@@ -243,11 +223,13 @@ function buildIndexedEdges(
 
   // Each edge is a quad consisting of six vertices. Each vertex is an identical 24-bit index into the lookup table.
   const indices = new VertexIndices(new Uint8Array(numTotalEdges * 6 * 3));
-  for (let i = 0; i < numTotalEdges; i++)
-    for (let j = 0; j < 6; j++) indices.setNthIndex(i * 6 + j, i);
+  for (let i = 0; i < numTotalEdges; i++) for (let j = 0; j < 6; j++) indices.setNthIndex(i * 6 + j, i);
 
-  const { width, height, silhouettePadding, silhouetteStartByteIndex } =
-    calculateEdgeTableParams(numSegmentEdges, numSilhouettes, maxSize);
+  const { width, height, silhouettePadding, silhouetteStartByteIndex } = calculateEdgeTableParams(
+    numSegmentEdges,
+    numSilhouettes,
+    maxSize
+  );
 
   const data = new Uint8Array(width * height * 4);
   function setUint24(byteIndex: number, value: number): void {
@@ -256,20 +238,14 @@ function buildIndexedEdges(
     data[byteIndex + 2] = (value & 0xff0000) >>> 16;
   }
 
-  function setEdge(
-    index: number,
-    startPointIndex: number,
-    endPointIndex: number
-  ): void {
+  function setEdge(index: number, startPointIndex: number, endPointIndex: number): void {
     const byteIndex = index * 6;
     setUint24(byteIndex, startPointIndex);
     setUint24(byteIndex + 3, endPointIndex);
   }
 
   let curIndex = 0;
-  if (hardEdges)
-    for (const edge of hardEdges)
-      setEdge(curIndex++, edge.indices[0], edge.indices[1]);
+  if (hardEdges) for (const edge of hardEdges) setEdge(curIndex++, edge.indices[0], edge.indices[1]);
 
   if (polylines) {
     for (const pd of polylines) {
@@ -287,14 +263,8 @@ function buildIndexedEdges(
   if (silhouettes?.edges) {
     assert(undefined !== silhouettes.normals);
     assert(silhouettes.normals.length === silhouettes.edges.length);
-    function setSilhouette(
-      index: number,
-      start: number,
-      end: number,
-      normals: OctEncodedNormalPair
-    ): void {
-      const byteIndex =
-        silhouetteStartByteIndex + silhouettePadding + index * 10;
+    function setSilhouette(index: number, start: number, end: number, normals: OctEncodedNormalPair): void {
+      const byteIndex = silhouetteStartByteIndex + silhouettePadding + index * 10;
       setUint24(byteIndex, start);
       setUint24(byteIndex + 3, end);
       data[byteIndex + 6] = normals.first.value & 0xff;
@@ -343,28 +313,19 @@ export interface EdgeParams {
 
 /** @internal */
 export namespace EdgeParams {
-  export function fromMeshArgs(
-    meshArgs: MeshArgs,
-    maxWidth?: number
-  ): EdgeParams | undefined {
+  export function fromMeshArgs(meshArgs: MeshArgs, maxWidth?: number): EdgeParams | undefined {
     const args = meshArgs.edges;
     if (!args) return undefined;
 
     const doJoints = wantJointTriangles(args.width, true === meshArgs.is2d);
-    const polylines = doJoints
-      ? TesselatedPolyline.fromMesh(meshArgs)
-      : undefined;
+    const polylines = doJoints ? TesselatedPolyline.fromMesh(meshArgs) : undefined;
 
     let segments: SegmentEdgeParams | undefined;
     let silhouettes: SilhouetteParams | undefined;
     let indexed: IndexedEdgeParams | undefined;
 
     if (IModelApp.tileAdmin.enableIndexedEdges) {
-      indexed = buildIndexedEdges(
-        args,
-        !doJoints,
-        maxWidth ?? IModelApp.renderSystem.maxTextureSize
-      );
+      indexed = buildIndexedEdges(args, !doJoints, maxWidth ?? IModelApp.renderSystem.maxTextureSize);
     } else {
       segments = convertPolylinesAndEdges(undefined, args.edges.edges);
       silhouettes =

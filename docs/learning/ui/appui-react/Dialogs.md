@@ -33,13 +33,8 @@ export interface SampleModalDialogState {
   opened: boolean;
 }
 
-export class SampleModalDialog extends React.Component<
-  SampleModalDialogProps,
-  SampleModalDialogState
-> {
-  private _title = IModelApp.i18n.translate(
-    "SampleApp:buttons.sampleModalDialog"
-  );
+export class SampleModalDialog extends React.Component<SampleModalDialogProps, SampleModalDialogState> {
+  private _title = IModelApp.i18n.translate("SampleApp:buttons.sampleModalDialog");
 
   constructor(props: SampleModalDialogProps) {
     super(props);
@@ -61,24 +56,19 @@ export class SampleModalDialog extends React.Component<
           { type: DialogButtonType.Cancel, onClick: this._handleCancel },
         ]}
       >
-        Lorem ipsum dolor sit amet, posse imperdiet ius in, mundi cotidieque ei
-        per. Vel scripta ornatus assentior cu. Duo nonumy equidem te, per ad
-        malis deserunt consetetur. In per invidunt conceptam. Ea pri aeque
-        corrumpit. Eum ea ipsum perfecto vulputate, an cum oblique ornatus.
+        Lorem ipsum dolor sit amet, posse imperdiet ius in, mundi cotidieque ei per. Vel scripta ornatus assentior cu.
+        Duo nonumy equidem te, per ad malis deserunt consetetur. In per invidunt conceptam. Ea pri aeque corrumpit. Eum
+        ea ipsum perfecto vulputate, an cum oblique ornatus.
       </Dialog>
     );
   }
 
   private _handleOK = () => {
-    this._closeDialog(
-      () => this.props.onResult && this.props.onResult(DialogButtonType.OK)
-    );
+    this._closeDialog(() => this.props.onResult && this.props.onResult(DialogButtonType.OK));
   };
 
   private _handleCancel = () => {
-    this._closeDialog(
-      () => this.props.onResult && this.props.onResult(DialogButtonType.Cancel)
-    );
+    this._closeDialog(() => this.props.onResult && this.props.onResult(DialogButtonType.Cancel));
   };
 
   private _closeDialog = (followUp?: () => void) => {
@@ -93,9 +83,7 @@ export class SampleModalDialog extends React.Component<
 The `UiFramework.dialogs.modal.open` function is called to open a modal dialog.
 
 ```tsx
-UiFramework.dialogs.modal.open(
-  <SampleModalDialog onResult={(result) => this._handleModalResult(result)} />
-);
+UiFramework.dialogs.modal.open(<SampleModalDialog onResult={(result) => this._handleModalResult(result)} />);
 ```
 
 ### Handling Modal Dialog Close
@@ -133,14 +121,9 @@ export interface SampleModelessDialogState {
   opened: boolean;
 }
 
-export class SampleModelessDialog extends React.Component<
-  SampleModelessDialogProps,
-  SampleModelessDialogState
-> {
+export class SampleModelessDialog extends React.Component<SampleModelessDialogProps, SampleModelessDialogState> {
   public readonly state: Readonly<SampleModelessDialogState>;
-  private _title = IModelApp.i18n.translate(
-    "SampleApp:buttons.sampleModelessDialog"
-  );
+  private _title = IModelApp.i18n.translate("SampleApp:buttons.sampleModelessDialog");
 
   constructor(props: SampleModelessDialogProps) {
     super(props);
@@ -161,10 +144,9 @@ export class SampleModelessDialog extends React.Component<
         onEscape={this._handleCancel}
         onOutsideClick={this._handleCancel}
       >
-        Lorem ipsum dolor sit amet, posse imperdiet ius in, mundi cotidieque ei
-        per. Vel scripta ornatus assentior cu. Duo nonumy equidem te, per ad
-        malis deserunt consetetur. In per invidunt conceptam. Ea pri aeque
-        corrumpit. Eum ea ipsum perfecto vulputate, an cum oblique ornatus.
+        Lorem ipsum dolor sit amet, posse imperdiet ius in, mundi cotidieque ei per. Vel scripta ornatus assentior cu.
+        Duo nonumy equidem te, per ad malis deserunt consetetur. In per invidunt conceptam. Ea pri aeque corrumpit. Eum
+        ea ipsum perfecto vulputate, an cum oblique ornatus.
       </ModelessDialog>
     );
   }
@@ -174,10 +156,7 @@ export class SampleModelessDialog extends React.Component<
   };
 
   private _closeDialog = () => {
-    this.setState(
-      { opened: false },
-      () => this.props.onClose && this.props.onClose()
-    );
+    this.setState({ opened: false }, () => this.props.onClose && this.props.onClose());
   };
 }
 ```
@@ -190,11 +169,7 @@ The `UiFramework.dialogs.modeless.open` function is called to open a modeless di
 const dialogId = "sample";
 
 UiFramework.dialogs.modeless.open(
-  <SampleModelessDialog
-    opened={true}
-    dialogId={dialogId}
-    onClose={() => this._handleModelessClose(dialogId)}
-  />,
+  <SampleModelessDialog opened={true} dialogId={dialogId} onClose={() => this._handleModelessClose(dialogId)} />,
   dialogId
 );
 ```

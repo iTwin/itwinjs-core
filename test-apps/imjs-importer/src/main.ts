@@ -79,16 +79,7 @@ IModelHost.startup()
         console.log("Failed to create bim file");
       } else {
         const modelGroups = importer.importFilesFromDirectory(
-          path.join(
-            "..",
-            "..",
-            "core",
-            "geometry",
-            "src",
-            "test",
-            "output",
-            directoryTail
-          )
+          path.join("..", "..", "core", "geometry", "src", "test", "output", directoryTail)
         );
         let numModel = 0;
         for (const group of modelGroups) {

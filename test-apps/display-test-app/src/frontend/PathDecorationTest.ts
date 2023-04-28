@@ -3,22 +3,9 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-  CanvasDecoration,
-  DecorateContext,
-  GraphicType,
-  HitDetail,
-  IModelApp,
-  Tool,
-} from "@itwin/core-frontend";
+import { CanvasDecoration, DecorateContext, GraphicType, HitDetail, IModelApp, Tool } from "@itwin/core-frontend";
 import { AxisAlignedBox3d, GeometryStreamProps } from "@itwin/core-common";
-import {
-  AngleSweep,
-  Arc3d,
-  Path,
-  Range1d,
-  Range3d,
-} from "@itwin/core-geometry";
+import { AngleSweep, Arc3d, Path, Range1d, Range3d } from "@itwin/core-geometry";
 
 class PathCanvasDecoration implements CanvasDecoration {
   public drawDecoration(ctx: CanvasRenderingContext2D) {
@@ -48,13 +35,8 @@ export class PathDecorationTest {
 
   /** We added this class as a ViewManager.decorator below. This method is called to ask for our decorations. Here we add the line string. */
   public decorate(context: DecorateContext) {
-    if (undefined === this._pickId)
-      this._pickId = context.viewport.iModel.transientIds.getNext();
-    const pathBuilder = context.createGraphicBuilder(
-      GraphicType.WorldDecoration,
-      undefined,
-      this._pickId
-    );
+    if (undefined === this._pickId) this._pickId = context.viewport.iModel.transientIds.getNext();
+    const pathBuilder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._pickId);
     pathBuilder.addPath(this._path);
     context.addDecorationFromBuilder(pathBuilder);
     context.addCanvasDecoration(PathDecorationTest.canvasDecoration);
@@ -66,9 +48,7 @@ export class PathDecorationTest {
   }
 
   /** Return no decoration geometry for picking. */
-  public getDecorationGeometry(
-    _hit: HitDetail
-  ): GeometryStreamProps | undefined {
+  public getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined {
     return undefined;
   }
 
@@ -80,8 +60,7 @@ export class PathDecorationTest {
 
   /** stop the demo */
   private static stop() {
-    if (PathDecorationTest.decorator)
-      IModelApp.viewManager.dropDecorator(PathDecorationTest.decorator);
+    if (PathDecorationTest.decorator) IModelApp.viewManager.dropDecorator(PathDecorationTest.decorator);
     PathDecorationTest.decorator = undefined;
   }
 
@@ -96,8 +75,7 @@ export class PathDecorationTestTool extends Tool {
   public static override toolId = "TogglePathDecoration";
   public override async run(_args: any[]) {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp)
-      PathDecorationTest.toggle(vp.view.iModel.projectExtents);
+    if (undefined !== vp) PathDecorationTest.toggle(vp.view.iModel.projectExtents);
     return true;
   }
 }
@@ -123,14 +101,7 @@ function _getPath(extents: AxisAlignedBox3d): Path {
     const f = range.fractionToPoint(fract, fract, fract);
 
     curves.push([a, b, c, d]);
-    curves.push(
-      Arc3d.create(
-        d,
-        d.vectorTo(e),
-        d.vectorTo(f),
-        AngleSweep.createStartEndDegrees(0.0, 90.0)
-      )
-    );
+    curves.push(Arc3d.create(d, d.vectorTo(e), d.vectorTo(f), AngleSweep.createStartEndDegrees(0.0, 90.0)));
   }
 
   return Path.create(...curves);

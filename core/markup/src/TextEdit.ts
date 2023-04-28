@@ -41,17 +41,10 @@ export class PlaceTextTool extends RedlineTool {
   }
 
   protected override showPrompt(): void {
-    this.provideToolAssistance(
-      `${MarkupTool.toolKey}Text.Place.Prompts.FirstPoint`,
-      true
-    );
+    this.provideToolAssistance(`${MarkupTool.toolKey}Text.Place.Prompts.FirstPoint`, true);
   }
 
-  protected override async createMarkup(
-    svg: G,
-    ev: BeButtonEvent,
-    isDynamics: boolean
-  ): Promise<void> {
+  protected override async createMarkup(svg: G, ev: BeButtonEvent, isDynamics: boolean): Promise<void> {
     if (isDynamics && InputSource.Touch === ev.inputSource) return;
     const start = MarkupApp.convertVpToVb(ev.viewPoint); // starting point in viewbox coordinates
     const text = new MarkupText().plain(this._value); // create a plain text element
@@ -59,19 +52,12 @@ export class PlaceTextTool extends RedlineTool {
     this.setCurrentTextStyle(text); // apply active text style
     text.translate(start.x, start.y); // and position it relative to the cursor
     if (isDynamics) {
-      svg.add(
-        text
-          .getOutline()
-          .attr(MarkupApp.props.text.edit.textBox)
-          .addClass(MarkupApp.textOutlineClass)
-      ); // in dynamics, draw the box around the text
+      svg.add(text.getOutline().attr(MarkupApp.props.text.edit.textBox).addClass(MarkupApp.textOutlineClass)); // in dynamics, draw the box around the text
     } else {
       await new EditTextTool(text, true).run(); // text is now positioned, open text editor
     }
   }
-  public override async onResetButtonUp(
-    _ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
     await this.exitTool();
     return EventHandled.Yes;
   }
@@ -93,9 +79,7 @@ export class EditTextTool extends MarkupTool {
   protected override showPrompt(): void {
     const mainInstruction = ToolAssistance.createInstruction(
       this.iconSpec,
-      IModelApp.localization.getLocalizedString(
-        `${MarkupTool.toolKey}Text.Edit.Prompts.FirstPoint`
-      )
+      IModelApp.localization.getLocalizedString(`${MarkupTool.toolKey}Text.Edit.Prompts.FirstPoint`)
     );
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
@@ -111,12 +95,7 @@ export class EditTextTool extends MarkupTool {
       )
     );
     mouseInstructions.push(
-      ToolAssistance.createInstruction(
-        ToolAssistanceImage.LeftClick,
-        acceptMsg,
-        false,
-        ToolAssistanceInputMethod.Mouse
-      )
+      ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse)
     );
     touchInstructions.push(
       ToolAssistance.createInstruction(
@@ -136,23 +115,10 @@ export class EditTextTool extends MarkupTool {
     );
 
     const sections: ToolAssistanceSection[] = [];
-    sections.push(
-      ToolAssistance.createSection(
-        mouseInstructions,
-        ToolAssistance.inputsLabel
-      )
-    );
-    sections.push(
-      ToolAssistance.createSection(
-        touchInstructions,
-        ToolAssistance.inputsLabel
-      )
-    );
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
 
-    const instructions = ToolAssistance.createInstructions(
-      mainInstruction,
-      sections
-    );
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
     IModelApp.notifications.setToolAssistance(instructions);
   }
 
@@ -191,19 +157,11 @@ export class EditTextTool extends MarkupTool {
     editor.wrap = "off";
     // so we don't send these events to the ToolAdmin and process them by tools. We want default handling
     const mouseListener = (ev: Event) => (ev.stopPropagation(), true);
-    (editor as any).onselectstart =
-      editor.oncontextmenu =
-      editor.onmousedown =
-      editor.onmouseup =
-        mouseListener; // enable default handling for these events
+    (editor as any).onselectstart = editor.oncontextmenu = editor.onmousedown = editor.onmouseup = mouseListener; // enable default handling for these events
 
     // Tab, Escape, ctrl-enter, or shift-enter all end the editor
     editor.onkeydown = async (ev: KeyboardEvent) => {
-      if (
-        ev.key === "Tab" ||
-        ev.key === "Escape" ||
-        (ev.key === "Enter" && (ev.shiftKey || ev.ctrlKey))
-      )
+      if (ev.key === "Tab" || ev.key === "Escape" || (ev.key === "Enter" && (ev.shiftKey || ev.ctrlKey)))
         this.exitTool(); // eslint-disable-line @typescript-eslint/no-floating-promises
       ev.stopPropagation();
     };
@@ -221,20 +179,14 @@ export class EditTextTool extends MarkupTool {
     style.textAnchor = textElStyle.textAnchor;
     style.fontSize = editProps.fontSize; // from app.props
 
-    const parentZ = parseInt(
-      window.getComputedStyle(markupDiv).zIndex || "0",
-      10
-    );
+    const parentZ = parseInt(window.getComputedStyle(markupDiv).zIndex || "0", 10);
     style.zIndex = (parentZ + 200).toString();
 
     editor.innerHTML = text.getMarkup(); // start with existing text
     this.editor.focus(); // give the editor focus
 
     // if we're started from the place text tool, select the entire current value, otherwise place the cursor at the end.
-    this.editor.setSelectionRange(
-      this._fromPlaceTool ? 0 : editor.value.length,
-      editor.value.length
-    );
+    this.editor.setSelectionRange(this._fromPlaceTool ? 0 : editor.value.length, editor.value.length);
   }
 
   /** Called when EditText exits, saves the edited value into the text element */
@@ -280,23 +232,17 @@ export class EditTextTool extends MarkupTool {
     return true;
   }
 
-  public override async onResetButtonUp(
-    _ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
     await this.exitTool();
     return EventHandled.Yes;
   }
 
-  public override async onDataButtonUp(
-    _ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onDataButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
     await this.exitTool();
     return EventHandled.Yes;
   }
 
-  public override async onMouseStartDrag(
-    _ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onMouseStartDrag(_ev: BeButtonEvent): Promise<EventHandled> {
     await this.exitTool();
     return EventHandled.Yes;
   }

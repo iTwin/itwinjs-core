@@ -21,8 +21,7 @@ export interface CustomFormatPropEditorSpec {
 /** CheckboxFormatPropEditorSpec defines getter and setter method for a boolean property editor.
  * @public
  */
-export interface CheckboxFormatPropEditorSpec
-  extends CustomFormatPropEditorSpec {
+export interface CheckboxFormatPropEditorSpec extends CustomFormatPropEditorSpec {
   editorType: "checkbox";
   getBool: (props: FormatProps) => boolean;
   setBool: (props: FormatProps, isChecked: boolean) => FormatProps;
@@ -40,8 +39,7 @@ export const isCheckboxFormatPropEditorSpec = (
 /** TextInputFormatPropEditorSpec defines getter and setter method for a text input property editor.
  * @public
  */
-export interface TextInputFormatPropEditorSpec
-  extends CustomFormatPropEditorSpec {
+export interface TextInputFormatPropEditorSpec extends CustomFormatPropEditorSpec {
   editorType: "text";
   getString: (props: FormatProps) => string;
   setString: (props: FormatProps, value: string) => FormatProps;
@@ -59,8 +57,7 @@ export const isTextInputFormatPropEditorSpec = (
 /** TextSelectFormatPropEditorSpec defines getter and setter method for a Select/Dropdown property editor.
  * @public
  */
-export interface TextSelectFormatPropEditorSpec
-  extends CustomFormatPropEditorSpec {
+export interface TextSelectFormatPropEditorSpec extends CustomFormatPropEditorSpec {
   editorType: "select";
   selectOptions: { label: string; value: string }[];
   getString: (props: FormatProps) => string;

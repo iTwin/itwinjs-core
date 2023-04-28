@@ -18,20 +18,8 @@ export class BasicUnit implements UnitProps {
   public isValid = false;
   public system: string = "unknown";
 
-  constructor(
-    name: string,
-    label: string,
-    phenomenon: string,
-    system?: string
-  ) {
-    if (
-      name &&
-      name.length > 0 &&
-      label &&
-      label.length > 0 &&
-      phenomenon &&
-      phenomenon.length > 0
-    ) {
+  constructor(name: string, label: string, phenomenon: string, system?: string) {
+    if (name && name.length > 0 && label && label.length > 0 && phenomenon && phenomenon.length > 0) {
       this.name = name;
       this.label = label;
       this.phenomenon = phenomenon;

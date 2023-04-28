@@ -76,8 +76,7 @@ export class StandardAttributes {
   );
 
   /** The default "gps-time" attribute value */
-  public static readonly DEFAULT_GPS_TIME: AttributeValue =
-    AttributeValue.createFloat8(0.0);
+  public static readonly DEFAULT_GPS_TIME: AttributeValue = AttributeValue.createFloat8(0.0);
 
   /** The "adjusted" gps time offset (The offset moves the time back to near zero to improve floating point resolution).
         See the "GPS Time Type" field in "LAS SPECIFICATION VERSION 1.3" */

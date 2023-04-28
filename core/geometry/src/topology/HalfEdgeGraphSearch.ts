@@ -7,13 +7,7 @@
  * @module Topology
  */
 
-import {
-  HalfEdge,
-  HalfEdgeGraph,
-  HalfEdgeMask,
-  HalfEdgeToBooleanFunction,
-  NodeToNumberFunction,
-} from "./Graph";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction, NodeToNumberFunction } from "./Graph";
 import { SignedDataSummary } from "./SignedDataSummary";
 import { XYParitySearchContext } from "./XYParitySearchContext";
 
@@ -70,11 +64,7 @@ export class HalfEdgeGraphSearch {
     oneCandidateNodePerFace: HalfEdgeGraph | HalfEdge[],
     faceAreaFunction?: NodeToNumberFunction
   ): HalfEdge | undefined {
-    const summary = HalfEdgeGraphSearch.collectFaceAreaSummary(
-      oneCandidateNodePerFace,
-      false,
-      faceAreaFunction
-    );
+    const summary = HalfEdgeGraphSearch.collectFaceAreaSummary(oneCandidateNodePerFace, false, faceAreaFunction);
     return summary.largestNegativeItem;
   }
 
@@ -138,8 +128,7 @@ export class HalfEdgeGraphSearch {
         if (area > 0) {
           if (numEdges > 3) {
             numPositiveExceptions++;
-            if (numPositiveExceptions > numPositiveExceptionsAllowed)
-              return false;
+            if (numPositiveExceptions > numPositiveExceptionsAllowed) return false;
           }
         } else {
           numNegative++;
@@ -175,26 +164,15 @@ export class HalfEdgeGraphSearch {
     const allMasks = parityMask | visitMask;
     const stack: HalfEdge[] = [];
     // arbitrarily call the seed face exterior ... others will alternate as visited.
-    HalfEdgeGraphSearch.pushAndMaskAllNodesInFace(
-      seedEdge,
-      allMasks,
-      stack,
-      faces
-    ); // Start with exterior as mask
+    HalfEdgeGraphSearch.pushAndMaskAllNodesInFace(seedEdge, allMasks, stack, faces); // Start with exterior as mask
     while (stack.length > 0) {
       const p = stack.pop()!;
       const mate = p.edgeMate;
       if (!mate) continue;
       if (!mate.isMaskSet(visitMask)) {
         let newState = p.isMaskSet(parityMask);
-        if (!parityEdgeTester || parityEdgeTester.testEdge(p))
-          newState = !newState;
-        HalfEdgeGraphSearch.pushAndMaskAllNodesInFace(
-          mate,
-          newState ? allMasks : visitMask,
-          stack,
-          faces
-        );
+        if (!parityEdgeTester || parityEdgeTester.testEdge(p)) newState = !newState;
+        HalfEdgeGraphSearch.pushAndMaskAllNodesInFace(mate, newState ? allMasks : visitMask, stack, faces);
       }
     }
     return faces;
@@ -207,11 +185,7 @@ export class HalfEdgeGraphSearch {
    * @param parityMask mask which was previously set with alternating parity, but with an arbitrary start face.
    * @param faces array of faces to search.
    */
-  private static correctParityInSingleComponent(
-    _graph: HalfEdgeGraph,
-    mask: HalfEdgeMask,
-    faces: HalfEdge[]
-  ) {
+  private static correctParityInSingleComponent(_graph: HalfEdgeGraph, mask: HalfEdgeMask, faces: HalfEdge[]) {
     const exteriorHalfEdge = HalfEdgeGraphSearch.findMinimumAreaFace(faces);
     if (!exteriorHalfEdge) {
     } else if (exteriorHalfEdge.isMaskSet(mask)) {
@@ -228,18 +202,10 @@ export class HalfEdgeGraphSearch {
     }
   }
   /** Apply correctParityInSingleComponent to each array in components. (Quick exit if mask in NULL_MASK) */
-  private static correctParityInComponentArrays(
-    graph: HalfEdgeGraph,
-    mask: HalfEdgeMask,
-    components: HalfEdge[][]
-  ) {
+  private static correctParityInComponentArrays(graph: HalfEdgeGraph, mask: HalfEdgeMask, components: HalfEdge[][]) {
     if (mask === HalfEdgeMask.NULL_MASK) return;
     for (const facesInComponent of components)
-      HalfEdgeGraphSearch.correctParityInSingleComponent(
-        graph,
-        mask,
-        facesInComponent
-      );
+      HalfEdgeGraphSearch.correctParityInSingleComponent(graph, mask, facesInComponent);
   }
   /**
    * Collect arrays gathering faces by connected component.
@@ -258,20 +224,11 @@ export class HalfEdgeGraphSearch {
     graph.clearMask(allMasks);
     for (const faceSeed of graph.allHalfEdges) {
       if (!faceSeed.isMaskSet(HalfEdgeMask.VISITED)) {
-        const newFaces = HalfEdgeGraphSearch.parityFloodFromSeed(
-          faceSeed,
-          visitMask,
-          parityEdgeTester,
-          parityMask
-        );
+        const newFaces = HalfEdgeGraphSearch.parityFloodFromSeed(faceSeed, visitMask, parityEdgeTester, parityMask);
         components.push(newFaces);
       }
     }
-    HalfEdgeGraphSearch.correctParityInComponentArrays(
-      graph,
-      parityMask,
-      components
-    );
+    HalfEdgeGraphSearch.correctParityInComponentArrays(graph, parityMask, components);
     return components;
   }
   /**
@@ -280,11 +237,7 @@ export class HalfEdgeGraphSearch {
    * @param x x coordinate of test point.
    * @param y y coordinate of test point.
    */
-  public static pointInOrOnFaceXY(
-    seedNode: HalfEdge,
-    x: number,
-    y: number
-  ): number | undefined {
+  public static pointInOrOnFaceXY(seedNode: HalfEdge, x: number, y: number): number | undefined {
     const context = new XYParitySearchContext(x, y);
     // walk around looking for an accepted node to start the search (seedNode is usually ok!)
     let nodeA = seedNode;
@@ -357,29 +310,18 @@ export class HalfEdgeGraphSearch {
    * @param isBoundaryNode
    * @param announceNode
    */
-  public static collectExtendedBoundaryLoopsInGraph(
-    graph: HalfEdgeGraph,
-    exteriorMask: HalfEdgeMask
-  ): HalfEdge[][] {
+  public static collectExtendedBoundaryLoopsInGraph(graph: HalfEdgeGraph, exteriorMask: HalfEdgeMask): HalfEdge[][] {
     const loops: HalfEdge[][] = [];
     const visitMask = graph.grabMask(true);
     const isBoundaryEdge = (edge: HalfEdge): boolean => {
-      return (
-        edge.getMask(exteriorMask) === 0 &&
-        edge.edgeMate.getMask(exteriorMask) !== 0
-      );
+      return edge.getMask(exteriorMask) === 0 && edge.edgeMate.getMask(exteriorMask) !== 0;
     };
     const announceEdgeInBoundary = (edge: HalfEdge, counter: number) => {
       if (counter === 0) loops.push([]);
       loops[loops.length - 1].push(edge);
     };
     for (const seed of graph.allHalfEdges) {
-      this.collectExtendedBoundaryLoopFromSeed(
-        seed,
-        visitMask,
-        isBoundaryEdge,
-        announceEdgeInBoundary
-      );
+      this.collectExtendedBoundaryLoopFromSeed(seed, visitMask, isBoundaryEdge, announceEdgeInBoundary);
     }
     graph.dropMask(visitMask);
     return loops;

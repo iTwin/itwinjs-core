@@ -7,23 +7,11 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import {
-  AnalysisStyleDisplacement,
-  AnalysisStyleThematic,
-  ThematicGradientSettings,
-} from "@itwin/core-common";
-import {
-  AuxChannel,
-  AuxDisplacementChannel,
-  AuxParamChannel,
-} from "../../primitives/AuxChannelTable";
+import { AnalysisStyleDisplacement, AnalysisStyleThematic, ThematicGradientSettings } from "@itwin/core-common";
+import { AuxChannel, AuxDisplacementChannel, AuxParamChannel } from "../../primitives/AuxChannelTable";
 import { DrawParams } from "../DrawCommand";
 import { TextureUnit } from "../RenderFlags";
-import {
-  VariableType,
-  VertexShaderBuilder,
-  VertexShaderComponent,
-} from "../ShaderBuilder";
+import { VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
 import { octDecodeNormal } from "./Surface";
 import { unquantizePosition } from "./Vertex";
 
@@ -145,23 +133,18 @@ const scratchAnimParams = [
 
 function getAnimParams(size: 2 | 3, initialValue?: number): Float32Array {
   const array = scratchAnimParams[size]!;
-  if (undefined !== initialValue)
-    for (let i = 0; i < array.length; i++) array[i] = initialValue;
+  if (undefined !== initialValue) for (let i = 0; i < array.length; i++) array[i] = initialValue;
 
   return array;
 }
 
 function getDisplacementChannel(
   params: DrawParams
-):
-  | { channel: AuxDisplacementChannel; displacement: AnalysisStyleDisplacement }
-  | undefined {
+): { channel: AuxDisplacementChannel; displacement: AnalysisStyleDisplacement } | undefined {
   const displacement = params.target.analysisStyle?.displacement;
   if (!displacement) return undefined;
 
-  const channel = params.geometry.asLUT?.lut.auxChannels?.displacements?.get(
-    displacement.channelName
-  );
+  const channel = params.geometry.asLUT?.lut.auxChannels?.displacements?.get(displacement.channelName);
   return channel ? { channel, displacement } : undefined;
 }
 
@@ -172,23 +155,15 @@ function getNormalChannel(params: DrawParams): AuxChannel | undefined {
   return params.geometry.asLUT?.lut.auxChannels?.normals?.get(channelName);
 }
 
-function getScalarChannel(
-  params: DrawParams
-): { channel: AuxParamChannel; scalar: AnalysisStyleThematic } | undefined {
+function getScalarChannel(params: DrawParams): { channel: AuxParamChannel; scalar: AnalysisStyleThematic } | undefined {
   const scalar = params.target.analysisStyle?.thematic;
   if (!scalar) return undefined;
 
-  const channel = params.geometry.asMesh?.lut.auxChannels?.params?.get(
-    scalar.channelName
-  );
+  const channel = params.geometry.asMesh?.lut.auxChannels?.params?.get(scalar.channelName);
   return channel ? { channel, scalar } : undefined;
 }
 
-function computeAnimParams(
-  params: Float32Array,
-  channel: AuxChannel,
-  fraction: number
-): void {
+function computeAnimParams(params: Float32Array, channel: AuxChannel, fraction: number): void {
   const { inputs, indices } = channel;
   const inputValue = fraction * inputs[inputs.length - 1];
   for (let i = 0; i < inputs.length - 1; i++) {
@@ -204,10 +179,7 @@ function computeAnimParams(
 }
 
 /** @internal */
-export function addAnimation(
-  vert: VertexShaderBuilder,
-  isSurface: boolean
-): void {
+export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean): void {
   // Lookup table
   vert.addGlobal("g_anim_step", VariableType.Vec2);
   vert.addGlobal("g_anim_center", VariableType.Vec2);
@@ -247,12 +219,7 @@ export function addAnimation(
     prog.addGraphicUniform("u_animDispParams", (uniform, params) => {
       const animParams = getAnimParams(3, 0.0);
       const disp = getDisplacementChannel(params);
-      if (undefined !== disp)
-        computeAnimParams(
-          animParams,
-          disp.channel,
-          params.target.analysisFraction
-        );
+      if (undefined !== disp) computeAnimParams(animParams, disp.channel, params.target.analysisFraction);
 
       uniform.setUniform3fv(animParams);
     });
@@ -262,8 +229,7 @@ export function addAnimation(
       const animParams = getAnimParams(3, 0.0);
       const disp = getDisplacementChannel(params);
       if (undefined !== disp)
-        for (let i = 0; i < 3; i++)
-          animParams[i] = disp.channel.qScale[i] * disp.displacement.scale;
+        for (let i = 0; i < 3; i++) animParams[i] = disp.channel.qScale[i] * disp.displacement.scale;
 
       uniform.setUniform3fv(animParams);
     });
@@ -273,8 +239,7 @@ export function addAnimation(
       const animParams = getAnimParams(3, 0.0);
       const disp = getDisplacementChannel(params);
       if (undefined !== disp)
-        for (let i = 0; i < 3; i++)
-          animParams[i] = disp.channel.qOrigin[i] * disp.displacement.scale;
+        for (let i = 0; i < 3; i++) animParams[i] = disp.channel.qOrigin[i] * disp.displacement.scale;
 
       uniform.setUniform3fv(animParams);
     });
@@ -293,12 +258,7 @@ export function addAnimation(
       prog.addGraphicUniform("u_animNormalParams", (uniform, params) => {
         const animParams = getAnimParams(3, -1.0);
         const channel = getNormalChannel(params);
-        if (undefined !== channel)
-          computeAnimParams(
-            animParams,
-            channel,
-            params.target.analysisFraction
-          );
+        if (undefined !== channel) computeAnimParams(animParams, channel, params.target.analysisFraction);
 
         uniform.setUniform3fv(animParams);
       });
@@ -308,12 +268,7 @@ export function addAnimation(
       prog.addGraphicUniform("u_animScalarParams", (uniform, params) => {
         const scalars = getScalarChannel(params);
         const animParams = getAnimParams(3, -1.0);
-        if (scalars)
-          computeAnimParams(
-            animParams,
-            scalars.channel,
-            params.target.analysisFraction
-          );
+        if (scalars) computeAnimParams(animParams, scalars.channel, params.target.analysisFraction);
 
         uniform.setUniform3fv(animParams);
       });
@@ -328,12 +283,8 @@ export function addAnimation(
           let rangeScale = range.high - range.low;
           if (rangeScale === 0) rangeScale = 1;
 
-          animParams[0] =
-            ThematicGradientSettings.margin +
-            (scalars.channel.qOrigin - range.low) / rangeScale;
-          animParams[1] =
-            (ThematicGradientSettings.contentRange * scalars.channel.qScale) /
-            rangeScale;
+          animParams[0] = ThematicGradientSettings.margin + (scalars.channel.qOrigin - range.low) / rangeScale;
+          animParams[1] = (ThematicGradientSettings.contentRange * scalars.channel.qScale) / rangeScale;
         }
 
         uniform.setUniform2fv(animParams);

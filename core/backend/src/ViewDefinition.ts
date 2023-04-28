@@ -6,13 +6,7 @@
  * @module ViewDefinitions
  */
 
-import {
-  Id64,
-  Id64Array,
-  Id64String,
-  IModelStatus,
-  JsonUtils,
-} from "@itwin/core-bentley";
+import { Id64, Id64Array, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
 import {
   Angle,
   Matrix3d,
@@ -49,11 +43,7 @@ import {
   ViewDetails,
   ViewDetails3d,
 } from "@itwin/core-common";
-import {
-  DefinitionElement,
-  GraphicalElement2d,
-  SpatialLocationElement,
-} from "./Element";
+import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { DisplayStyle, DisplayStyle2d, DisplayStyle3d } from "./DisplayStyle";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
@@ -85,13 +75,9 @@ export class ModelSelector extends DefinitionElement {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(
-    referenceIds: EntityReferenceSet
-  ): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    this.models.forEach((modelId: Id64String) =>
-      referenceIds.addModel(modelId)
-    );
+    this.models.forEach((modelId: Id64String) => referenceIds.addModel(modelId));
   }
 
   /** Create a Code for a ModelSelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
@@ -99,14 +85,8 @@ export class ModelSelector extends DefinitionElement {
    * @param scopeModelId The Id of the DefinitionModel that contains the ModelSelector and provides the scope for its name.
    * @param codeValue The ModelSelector name
    */
-  public static createCode(
-    iModel: IModelDb,
-    scopeModelId: CodeScopeProps,
-    codeValue: string
-  ): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(
-      BisCodeSpec.modelSelector
-    );
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.modelSelector);
     return new Code({
       spec: codeSpec.id,
       scope: scopeModelId,
@@ -147,18 +127,8 @@ export class ModelSelector extends DefinitionElement {
    * @returns The Id of the newly inserted ModelSelector element.
    * @throws [[IModelError]] if unable to insert the element.
    */
-  public static insert(
-    iModelDb: IModelDb,
-    definitionModelId: Id64String,
-    name: string,
-    models: Id64Array
-  ): Id64String {
-    const modelSelector = this.create(
-      iModelDb,
-      definitionModelId,
-      name,
-      models
-    );
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String {
+    const modelSelector = this.create(iModelDb, definitionModelId, name, models);
     return iModelDb.elements.insertElement(modelSelector.toJSON());
   }
 }
@@ -189,13 +159,9 @@ export class CategorySelector extends DefinitionElement {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(
-    referenceIds: EntityReferenceSet
-  ): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    this.categories.forEach((categoryId: Id64String) =>
-      referenceIds.addElement(categoryId)
-    );
+    this.categories.forEach((categoryId: Id64String) => referenceIds.addElement(categoryId));
   }
 
   /** Create a Code for a CategorySelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
@@ -203,14 +169,8 @@ export class CategorySelector extends DefinitionElement {
    * @param scopeModelId The Id of the DefinitionModel that contains the CategorySelector and provides the scope for its name.
    * @param codeValue The CategorySelector name
    */
-  public static createCode(
-    iModel: IModelDb,
-    scopeModelId: CodeScopeProps,
-    codeValue: string
-  ): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(
-      BisCodeSpec.categorySelector
-    );
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.categorySelector);
     return new Code({
       spec: codeSpec.id,
       scope: scopeModelId,
@@ -258,12 +218,7 @@ export class CategorySelector extends DefinitionElement {
     name: string,
     categories: Id64Array
   ): Id64String {
-    const categorySelector = this.create(
-      iModelDb,
-      definitionModelId,
-      name,
-      categories
-    );
+    const categorySelector = this.create(iModelDb, definitionModelId, name, categories);
     return iModelDb.elements.insertElement(categorySelector.toJSON());
   }
 }
@@ -298,14 +253,10 @@ export abstract class ViewDefinition extends DefinitionElement {
 
     this.categorySelectorId = Id64.fromJSON(props.categorySelectorId);
     if (!Id64.isValid(this.categorySelectorId))
-      throw new IModelError(
-        IModelStatus.BadArg,
-        `categorySelectorId is invalid`
-      );
+      throw new IModelError(IModelStatus.BadArg, `categorySelectorId is invalid`);
 
     this.displayStyleId = Id64.fromJSON(props.displayStyleId);
-    if (!Id64.isValid(this.displayStyleId))
-      throw new IModelError(IModelStatus.BadArg, `displayStyleId is invalid`);
+    if (!Id64.isValid(this.displayStyleId)) throw new IModelError(IModelStatus.BadArg, `displayStyleId is invalid`);
   }
 
   /** @internal */
@@ -317,9 +268,7 @@ export abstract class ViewDefinition extends DefinitionElement {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(
-    referenceIds: EntityReferenceSet
-  ): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     referenceIds.addElement(this.categorySelectorId);
     referenceIds.addElement(this.displayStyleId);
@@ -330,13 +279,13 @@ export abstract class ViewDefinition extends DefinitionElement {
   }
 
   /** @beta */
-  public static override readonly requiredReferenceKeys: ReadonlyArray<string> =
-    [...super.requiredReferenceKeys, "categorySelectorId", "displayStyleId"];
+  public static override readonly requiredReferenceKeys: ReadonlyArray<string> = [
+    ...super.requiredReferenceKeys,
+    "categorySelectorId",
+    "displayStyleId",
+  ];
   /** @alpha */
-  public static override readonly requiredReferenceKeyTypeMap: Record<
-    string,
-    ConcreteEntityTypes
-  > = {
+  public static override readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes> = {
     ...super.requiredReferenceKeyTypeMap,
     categorySelectorId: ConcreteEntityTypes.Element,
     displayStyleId: ConcreteEntityTypes.Element,
@@ -354,12 +303,9 @@ export abstract class ViewDefinition extends DefinitionElement {
       targetElementProps.jsonProperties &&
       targetElementProps.jsonProperties.viewDetails
     ) {
-      const acsId: Id64String = Id64.fromJSON(
-        targetElementProps.jsonProperties.viewDetails.acs
-      );
+      const acsId: Id64String = Id64.fromJSON(targetElementProps.jsonProperties.viewDetails.acs);
       if (Id64.isValidId64(acsId)) {
-        targetElementProps.jsonProperties.viewDetails.acs =
-          context.findTargetElementId(acsId);
+        targetElementProps.jsonProperties.viewDetails.acs = context.findTargetElementId(acsId);
       }
     }
   }
@@ -388,9 +334,7 @@ export abstract class ViewDefinition extends DefinitionElement {
 
   /** Load this view's CategorySelector from the IModelDb. */
   public loadCategorySelector(): CategorySelector {
-    return this.iModel.elements.getElement<CategorySelector>(
-      this.categorySelectorId
-    );
+    return this.iModel.elements.getElement<CategorySelector>(this.categorySelectorId);
   }
 
   /** Provides access to optional detail settings for this view. */
@@ -413,14 +357,8 @@ export abstract class ViewDefinition extends DefinitionElement {
    * @param scopeModelId The Id of the DefinitionModel to contain the ViewDefinition and provides the scope for its name.
    * @param codeValue The ViewDefinition name
    */
-  public static createCode(
-    iModel: IModelDb,
-    scopeModelId: CodeScopeProps,
-    codeValue: string
-  ): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(
-      BisCodeSpec.viewDefinition
-    );
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.viewDefinition);
     return new Code({
       spec: codeSpec.id,
       scope: scopeModelId,
@@ -506,19 +444,12 @@ export class SpatialViewDefinition extends ViewDefinition3d {
   public constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) {
     super(props, iModel);
     this.modelSelectorId = Id64.fromJSON(props.modelSelectorId);
-    if (!Id64.isValid(this.modelSelectorId))
-      throw new IModelError(IModelStatus.BadArg, `modelSelectorId is invalid`);
+    if (!Id64.isValid(this.modelSelectorId)) throw new IModelError(IModelStatus.BadArg, `modelSelectorId is invalid`);
   }
 
   /** Construct a SpatialViewDefinition from its JSON representation. */
-  public static fromJSON(
-    props: Omit<SpatialViewDefinitionProps, "classFullName">,
-    iModel: IModelDb
-  ) {
-    return new SpatialViewDefinition(
-      { ...props, classFullName: this.classFullName },
-      iModel
-    );
+  public static fromJSON(props: Omit<SpatialViewDefinitionProps, "classFullName">, iModel: IModelDb) {
+    return new SpatialViewDefinition({ ...props, classFullName: this.classFullName }, iModel);
   }
 
   /** Convert this view to its JSON representation. */
@@ -529,22 +460,19 @@ export class SpatialViewDefinition extends ViewDefinition3d {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(
-    referenceIds: EntityReferenceSet
-  ): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     referenceIds.addElement(this.modelSelectorId);
   }
 
   /** @beta */
-  public static override readonly requiredReferenceKeys: ReadonlyArray<string> =
-    [...super.requiredReferenceKeys, "modelSelectorId"];
+  public static override readonly requiredReferenceKeys: ReadonlyArray<string> = [
+    ...super.requiredReferenceKeys,
+    "modelSelectorId",
+  ];
 
   /** @alpha */
-  public static override readonly requiredReferenceKeyTypeMap: Record<
-    string,
-    ConcreteEntityTypes
-  > = {
+  public static override readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes> = {
     ...super.requiredReferenceKeyTypeMap,
     modelSelectorId: ConcreteEntityTypes.Element,
   };
@@ -580,14 +508,9 @@ export class SpatialViewDefinition extends ViewDefinition3d {
   ): SpatialViewDefinition {
     const rotation = Matrix3d.createStandardWorldToView(standardView);
     const angles = YawPitchRollAngles.createFromMatrix3d(rotation);
-    const rotationTransform = Transform.createOriginAndMatrix(
-      undefined,
-      rotation
-    );
+    const rotationTransform = Transform.createOriginAndMatrix(undefined, rotation);
     const rotatedRange = rotationTransform.multiplyRange(range);
-    const cameraDistance =
-      (2 * (rotatedRange.diagonal().magnitudeXY() / 2.0)) /
-      Math.tan(cameraAngle / 2.0);
+    const cameraDistance = (2 * (rotatedRange.diagonal().magnitudeXY() / 2.0)) / Math.tan(cameraAngle / 2.0);
     const cameraLocation = rotatedRange.diagonalFractionToPoint(0.5); // Start at center.
     cameraLocation.z += cameraDistance; // Back up by camera distance.
     rotation.multiplyTransposeVectorInPlace(cameraLocation);
@@ -599,11 +522,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
       modelSelectorId,
       categorySelectorId,
       displayStyleId,
-      origin: rotation.multiplyTransposeXYZ(
-        rotatedRange.low.x,
-        rotatedRange.low.y,
-        rotatedRange.low.z
-      ),
+      origin: rotation.multiplyTransposeXYZ(rotatedRange.low.x, rotatedRange.low.y, rotatedRange.low.z),
       extents: rotatedRange.diagonal(),
       angles,
       cameraOn: true,
@@ -685,10 +604,7 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
   ): OrthographicViewDefinition {
     const rotation = Matrix3d.createStandardWorldToView(standardView);
     const angles = YawPitchRollAngles.createFromMatrix3d(rotation);
-    const rotationTransform = Transform.createOriginAndMatrix(
-      undefined,
-      rotation
-    );
+    const rotationTransform = Transform.createOriginAndMatrix(undefined, rotation);
     const rotatedRange = rotationTransform.multiplyRange(range);
     const viewDefinitionProps: SpatialViewDefinitionProps = {
       classFullName: this.classFullName,
@@ -697,11 +613,7 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
       modelSelectorId,
       categorySelectorId,
       displayStyleId,
-      origin: rotation.multiplyTransposeXYZ(
-        rotatedRange.low.x,
-        rotatedRange.low.y,
-        rotatedRange.low.z
-      ),
+      origin: rotation.multiplyTransposeXYZ(rotatedRange.low.x, rotatedRange.low.y, rotatedRange.low.z),
       extents: rotatedRange.diagonal(),
       angles,
       cameraOn: false,
@@ -749,17 +661,10 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
   /** Set a new viewed range without changing the rotation or any other properties. */
   public setRange(range: Range3d): void {
     const rotation = this.angles.toMatrix3d();
-    const rotationTransform = Transform.createOriginAndMatrix(
-      undefined,
-      rotation
-    );
+    const rotationTransform = Transform.createOriginAndMatrix(undefined, rotation);
     const rotatedRange = rotationTransform.multiplyRange(range);
     this.origin = Point3d.createFrom(
-      rotation.multiplyTransposeXYZ(
-        rotatedRange.low.x,
-        rotatedRange.low.y,
-        rotatedRange.low.z
-      )
+      rotation.multiplyTransposeXYZ(rotatedRange.low.x, rotatedRange.low.y, rotatedRange.low.z)
     );
     this.extents = rotatedRange.diagonal();
   }
@@ -805,9 +710,7 @@ export class ViewDefinition2d extends ViewDefinition {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(
-    referenceIds: EntityReferenceSet
-  ): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     referenceIds.addElement(this.baseModelId);
   }
@@ -870,14 +773,8 @@ export class DrawingViewDefinition extends ViewDefinition2d {
   }
 
   /** Construct a DrawingViewDefinition from its JSON representation. */
-  public static fromJSON(
-    props: Omit<ViewDefinition2dProps, "classFullName">,
-    iModel: IModelDb
-  ) {
-    return new DrawingViewDefinition(
-      { ...props, classFullName: this.classFullName },
-      iModel
-    );
+  public static fromJSON(props: Omit<ViewDefinition2dProps, "classFullName">, iModel: IModelDb) {
+    return new DrawingViewDefinition({ ...props, classFullName: this.classFullName }, iModel);
   }
 
   /** Insert a DrawingViewDefinition
@@ -977,14 +874,8 @@ export class AuxCoordSystem2d extends AuxCoordSystem {
    * @param scopeModelId The Id of the DefinitionModel that contains the AuxCoordSystem2d element and provides the scope for its name.
    * @param codeValue The AuxCoordSystem2d name
    */
-  public static createCode(
-    iModel: IModelDb,
-    scopeModelId: CodeScopeProps,
-    codeValue: string
-  ): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(
-      BisCodeSpec.auxCoordSystem2d
-    );
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.auxCoordSystem2d);
     return new Code({
       spec: codeSpec.id,
       scope: scopeModelId,
@@ -1014,14 +905,8 @@ export class AuxCoordSystem3d extends AuxCoordSystem {
    * @param scopeModelId The Id of the DefinitionModel that contains the AuxCoordSystem3d element and provides the scope for its name.
    * @param codeValue The AuxCoordSystem3d name
    */
-  public static createCode(
-    iModel: IModelDb,
-    scopeModelId: CodeScopeProps,
-    codeValue: string
-  ): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(
-      BisCodeSpec.auxCoordSystem3d
-    );
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.auxCoordSystem3d);
     return new Code({
       spec: codeSpec.id,
       scope: scopeModelId,
@@ -1043,14 +928,8 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
    * @param scopeModelId The Id of the DefinitionModel that contains the AuxCoordSystemSpatial element and provides the scope for its name.
    * @param codeValue The AuxCoordSystemSpatial name
    */
-  public static override createCode(
-    iModel: IModelDb,
-    scopeModelId: CodeScopeProps,
-    codeValue: string
-  ): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(
-      BisCodeSpec.auxCoordSystemSpatial
-    );
+  public static override createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.auxCoordSystemSpatial);
     return new Code({
       spec: codeSpec.id,
       scope: scopeModelId,
@@ -1074,9 +953,7 @@ export class ViewAttachment extends GraphicalElement2d {
     // ###NOTE: scale, displayPriority, and clipping vectors are stored in ViewAttachmentProps.jsonProperties.
   }
   /** @internal */
-  protected override collectReferenceConcreteIds(
-    referenceIds: EntityReferenceSet
-  ): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     referenceIds.addElement(this.view.id);
   }

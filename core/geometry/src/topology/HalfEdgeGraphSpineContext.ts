@@ -110,11 +110,7 @@ export class HalfEdgeGraphSpineContext {
     xyzOut.push(newArray);
   }
 
-  private getBoxCorners(
-    diagonalNode: HalfEdge,
-    nodes: HalfEdge[],
-    points: Point3d[]
-  ): boolean {
+  private getBoxCorners(diagonalNode: HalfEdge, nodes: HalfEdge[], points: Point3d[]): boolean {
     const diagonalMate = diagonalNode.edgeMate;
     nodes.length = 0;
     points.length = 0;
@@ -129,8 +125,7 @@ export class HalfEdgeGraphSpineContext {
       const nodeB = diagonalNode.faceSuccessor;
       nodes.push(nodeB);
       nodes.push(nodeB.faceSuccessor);
-      for (let i = 0; i < 4; i++)
-        points.push(Point3d.create(nodes[i].x, nodes[i].y));
+      for (let i = 0; i < 4; i++) points.push(Point3d.create(nodes[i].x, nodes[i].y));
       return true;
     }
     return false;
@@ -214,12 +209,8 @@ export class HalfEdgeGraphSpineContext {
       // Measure angles from edge midpoints towards interior candidate.
       thetaMin = Number.POSITIVE_INFINITY;
       for (let i: number = 0; i < 3; i++) {
-        const edgeToInterior = Vector3d.createStartEnd(
-          xyzMid[i],
-          interiorCandidate[k]
-        );
-        theta[i] =
-          edgeVector[i].smallerUnorientedAngleTo(edgeToInterior).radians;
+        const edgeToInterior = Vector3d.createStartEnd(xyzMid[i], interiorCandidate[k]);
+        theta[i] = edgeVector[i].smallerUnorientedAngleTo(edgeToInterior).radians;
         if (theta[i] < thetaMin) thetaMin = theta[i];
       }
       if (thetaMin > bestAngle) {
@@ -261,13 +252,7 @@ export class HalfEdgeGraphSpineContext {
   }
 
   /// <param name="xyzA">Vertex whose angle is being split</param>
-  private splitOK(
-    xyzA: Point3d,
-    xyzB: Point3d,
-    xyzQ: Point3d,
-    xyzC: Point3d,
-    minAngle: number
-  ): boolean {
+  private splitOK(xyzA: Point3d, xyzB: Point3d, xyzQ: Point3d, xyzC: Point3d, minAngle: number): boolean {
     const vectorAB = Vector3d.createStartEnd(xyzA, xyzB);
     const vectorAQ = Vector3d.createStartEnd(xyzA, xyzQ);
     const vectorAC = Vector3d.createStartEnd(xyzA, xyzC);
@@ -282,10 +267,7 @@ export class HalfEdgeGraphSpineContext {
   //  (c) each post split angle is less than minSplitRadians
   // Drop a perpenedicular to that boundary.
   // return the number of edges added.
-  private addPerpendicularsToBoundaries(
-    minSplitRadians: number,
-    minCandidateRadians: number
-  ): number {
+  private addPerpendicularsToBoundaries(minSplitRadians: number, minCandidateRadians: number): number {
     let numAdd = 0;
     for (const pA of this._spineGraph.allHalfEdges) {
       const pB = pA.faceSuccessor;
@@ -314,12 +296,7 @@ export class HalfEdgeGraphSpineContext {
             const xyzE = xyzB.interpolate(s, xyzC);
             if (this.splitOK(xyzA, xyzB, xyzE, xyzC, minSplitRadians)) {
               const pE = this._spineGraph.splitEdgeAtFraction(pB, s);
-              const pA1 = this._spineGraph.createEdgeHalfEdgeHalfEdge(
-                pA,
-                0,
-                pE,
-                0
-              );
+              const pA1 = this._spineGraph.createEdgeHalfEdgeHalfEdge(pA, 0, pE, 0);
               pA1.setXYZFrom(pA);
               pE.setXYZAroundVertex(xyzE.x, xyzE.y, xyzE.z);
               numAdd++;
@@ -356,8 +333,7 @@ export class HalfEdgeGraphSpineContext {
     const centroid = Point3d.create();
     for (let i: number = 0; i < 4; i++) {
       bIsBoundary[i] = 0 !== pNode[i].getMask(HalfEdgeMask.BOUNDARY_EDGE);
-      if (pNode[i].getMask(HalfEdgeMask.BOUNDARY_EDGE))
-        iBoundary[numBoundary++] = i;
+      if (pNode[i].getMask(HalfEdgeMask.BOUNDARY_EDGE)) iBoundary[numBoundary++] = i;
       else iInterior[numInterior++] = i;
       xyz[i] = pNode[i].getPoint3d();
       xyz[i + 4] = xyz[i];
@@ -371,30 +347,22 @@ export class HalfEdgeGraphSpineContext {
     centroid.scaleInPlace(0.25);
     if (numBoundary === 0 || numBoundary === 1) {
       for (let i: number = 0; i < numInterior; i++)
-        if (bIncludeInterior)
-          this.addEdge(xyzOut, midpoint[iInterior[i]], centroid);
+        if (bIncludeInterior) this.addEdge(xyzOut, midpoint[iInterior[i]], centroid);
     } else if (numBoundary === 4) {
-      for (let i: number = 0; i < numBoundary; i++)
-        if (bIncludeFinal) this.addEdge(xyzOut, midpoint[i], centroid);
+      for (let i: number = 0; i < numBoundary; i++) if (bIncludeFinal) this.addEdge(xyzOut, midpoint[i], centroid);
     } else if (numBoundary === 2) {
       if (iInterior[1] === iInterior[0] + 2) {
         // Spine enters one end, exits the other ..
-        if (bIncludeInterior)
-          this.addEdge(xyzOut, midpoint[iInterior[0]], midpoint[iInterior[1]]);
+        if (bIncludeInterior) this.addEdge(xyzOut, midpoint[iInterior[0]], midpoint[iInterior[1]]);
       } else {
         // Block sits as exterior corner.  Let the two spines continue to their opposite faces ..
         for (let i: number = 0; i < 4; i++)
-          if (
-            (bIsBoundary[i] && bIncludeCornerSpokes) ||
-            (!bIsBoundary[i] && bIncludeInterior)
-          )
+          if ((bIsBoundary[i] && bIncludeCornerSpokes) || (!bIsBoundary[i] && bIncludeInterior))
             this.addEdge(xyzOut, midpoint[i], centroid);
       }
     } else if (numBoundary === 3) {
-      if (bIncludeInterior)
-        this.addEdge(xyzOut, midpoint[iInterior[0]], centroid);
-      if (bIncludeFinal)
-        this.addEdge(xyzOut, centroid, midpoint[iInterior[0] + 2]);
+      if (bIncludeInterior) this.addEdge(xyzOut, midpoint[iInterior[0]], centroid);
+      if (bIncludeFinal) this.addEdge(xyzOut, centroid, midpoint[iInterior[0] + 2]);
     }
     return true;
   }
@@ -447,15 +415,9 @@ export class HalfEdgeGraphSpineContext {
         this.addEdge(xyzOut, xyzMidpoint[2], xyzInterior);
       }
     } else if (numBoundary === 1) {
-      if (bIncludeInterior)
-        this.addEdge(
-          xyzOut,
-          xyzMidpoint[lastBoundary + 1],
-          xyzMidpoint[lastBoundary + 2]
-        );
+      if (bIncludeInterior) this.addEdge(xyzOut, xyzMidpoint[lastBoundary + 1], xyzMidpoint[lastBoundary + 2]);
     } else if (numBoundary === 2) {
-      if (bIncludeFinal && lastInterior >= 0)
-        this.addEdge(xyzOut, xyzMidpoint[lastInterior], xyz[lastInterior + 2]);
+      if (bIncludeFinal && lastInterior >= 0) this.addEdge(xyzOut, xyzMidpoint[lastInterior], xyz[lastInterior + 2]);
     } else if (numBoundary === 3) {
       const xyzInterior = this.selectTriangleInteriorPoint(xyz);
       if (bIncludeFinal) {
@@ -493,8 +455,7 @@ export class HalfEdgeGraphSpineContext {
       }
       pPreviousB = nodeB;
     }
-    if (bClosed && pFirstA !== undefined && pPreviousB !== undefined)
-      HalfEdge.pinch(pPreviousB, pFirstA);
+    if (bClosed && pFirstA !== undefined && pPreviousB !== undefined) HalfEdge.pinch(pPreviousB, pFirstA);
   }
   /**
    * Look for trivial (2 edge) faces that have exteriorMask and non-masked on both sides.
@@ -524,10 +485,7 @@ export class HalfEdgeGraphSpineContext {
    * @param applyParity if true ()
    * @param minSplitRadians smallest allowed angle in the split sector that is split.
    */
-  public triangulateForSpine(
-    applyParity: boolean = true,
-    minSplitRadians: number = 0.3
-  ): void {
+  public triangulateForSpine(applyParity: boolean = true, minSplitRadians: number = 0.3): void {
     const sMaxSplit = 20;
     const sMinCandidateRadians = 1.0;
     let numSplit = 0;
@@ -551,10 +509,7 @@ export class HalfEdgeGraphSpineContext {
     Triangulator.flipTriangles(this.graph);
 
     while (numSplit++ < sMaxSplit) {
-      const numPerp = this.addPerpendicularsToBoundaries(
-        minSplitRadians,
-        sMinCandidateRadians
-      );
+      const numPerp = this.addPerpendicularsToBoundaries(minSplitRadians, sMinCandidateRadians);
       if (numPerp <= 0) break;
       Triangulator.flipTriangles(this.graph);
     }
@@ -577,31 +532,14 @@ export class HalfEdgeGraphSpineContext {
     bIncludeCornerSpokes: boolean = true
   ): Point3d[][] {
     const xyzOut: Point3d[][] = [];
-    this._spineGraph.announceFaceLoops(
-      (_graph: HalfEdgeGraph, faceSeed: HalfEdge) => {
-        if (!faceSeed.getMask(HalfEdgeMask.EXTERIOR)) {
-          if (
-            this.getSpineEdgesInTriangle(
-              faceSeed,
-              xyzOut,
-              bIncludeInterior,
-              bIncludeFinal
-            )
-          ) {
-          } else if (
-            this.getSpineEdgesInQuad(
-              faceSeed,
-              xyzOut,
-              bIncludeInterior,
-              bIncludeFinal,
-              bIncludeCornerSpokes
-            )
-          ) {
-          }
+    this._spineGraph.announceFaceLoops((_graph: HalfEdgeGraph, faceSeed: HalfEdge) => {
+      if (!faceSeed.getMask(HalfEdgeMask.EXTERIOR)) {
+        if (this.getSpineEdgesInTriangle(faceSeed, xyzOut, bIncludeInterior, bIncludeFinal)) {
+        } else if (this.getSpineEdgesInQuad(faceSeed, xyzOut, bIncludeInterior, bIncludeFinal, bIncludeCornerSpokes)) {
         }
-        return true;
       }
-    );
+      return true;
+    });
     return xyzOut;
   }
 
@@ -617,15 +555,10 @@ export class HalfEdgeGraphSpineContext {
    * @param bDeleteDiagonals if true, eliminate the diagonals.
    * @param minAngleRadians angle tolerance, as described above.
    */
-  public consolidateTrianglesToQuads(
-    bDeleteDiagonals: boolean,
-    minAngle: Angle = Angle.createDegrees(50)
-  ): number {
+  public consolidateTrianglesToQuads(bDeleteDiagonals: boolean, minAngle: Angle = Angle.createDegrees(50)): number {
     const numDiagonal = this.setSortedDiagonalMasks(minAngle.radians);
     if (bDeleteDiagonals && numDiagonal > 0) {
-      this.graph.yankAndDeleteEdges((node: HalfEdge) =>
-        node.getMask(this._diagonalMask)
-      );
+      this.graph.yankAndDeleteEdges((node: HalfEdge) => node.getMask(this._diagonalMask));
     }
     return numDiagonal;
   }

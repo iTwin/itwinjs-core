@@ -66,12 +66,7 @@ export namespace JsonUtils {
    * @param val the value to set
    * @param defaultVal the default value.
    */
-  export function setOrRemoveNumber(
-    json: any,
-    key: string,
-    val: number,
-    defaultVal: number
-  ) {
+  export function setOrRemoveNumber(json: any, key: string, val: number, defaultVal: number) {
     if (val === defaultVal) delete json[key];
     else json[key] = val;
   }
@@ -83,12 +78,7 @@ export namespace JsonUtils {
    * @param val the value to set
    * @param defaultVal the default value.
    */
-  export function setOrRemoveBoolean(
-    json: any,
-    key: string,
-    val: boolean,
-    defaultVal: boolean
-  ) {
+  export function setOrRemoveBoolean(json: any, key: string, val: boolean, defaultVal: boolean) {
     if (val === defaultVal) delete json[key];
     else json[key] = val;
   }
@@ -126,12 +116,7 @@ export namespace JsonUtils {
    * Works recursively for object members, and over arrays entries. Calls "toJSON" on any members that implement it.
    */
   export function toObject(val: any): any {
-    if (
-      typeof val === "boolean" ||
-      typeof val === "number" ||
-      typeof val === "string"
-    )
-      return val;
+    if (typeof val === "boolean" || typeof val === "number" || typeof val === "string") return val;
 
     if (typeof val !== "object") return undefined;
 

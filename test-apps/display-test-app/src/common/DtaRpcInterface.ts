@@ -28,28 +28,19 @@ export class DtaRpcInterface extends RpcInterface {
   public async readExternalSavedViews(_filename: string): Promise<string> {
     return this.forward(arguments);
   }
-  public async writeExternalSavedViews(
-    _filename: string,
-    _namedViews: string
-  ): Promise<void> {
+  public async writeExternalSavedViews(_filename: string, _namedViews: string): Promise<void> {
     return this.forward(arguments);
   }
   public async readExternalCameraPaths(_filename: string): Promise<string> {
     return this.forward(arguments);
   }
-  public async writeExternalCameraPaths(
-    _filename: string,
-    _cameraPaths: string
-  ): Promise<void> {
+  public async writeExternalCameraPaths(_filename: string, _cameraPaths: string): Promise<void> {
     return this.forward(arguments);
   }
   public async readExternalFile(_filename: string): Promise<string> {
     return this.forward(arguments);
   }
-  public async writeExternalFile(
-    _filename: string,
-    _content: string
-  ): Promise<void> {
+  public async writeExternalFile(_filename: string, _content: string): Promise<void> {
     return this.forward(arguments);
   }
   public async terminate(): Promise<void> {

@@ -11,14 +11,8 @@ import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
 import { System } from "./System";
 
-function computeBytesUsed(
-  width: number,
-  height: number,
-  format: GL.RenderBuffer.Format,
-  numSamples: number
-): number {
-  const bytesPerPixel =
-    GL.RenderBuffer.Format.DepthComponent16 === format ? 2 : 4;
+function computeBytesUsed(width: number, height: number, format: GL.RenderBuffer.Format, numSamples: number): number {
+  const bytesPerPixel = GL.RenderBuffer.Format.DepthComponent16 === format ? 2 : 4;
   return width * height * bytesPerPixel * numSamples;
 }
 
@@ -43,11 +37,7 @@ export class RenderBuffer implements WebGLDisposable {
     return this._glBuffer;
   }
 
-  public static create(
-    width: number,
-    height: number,
-    format = GL.RenderBuffer.Format.DepthComponent16
-  ) {
+  public static create(width: number, height: number, format = GL.RenderBuffer.Format.DepthComponent16) {
     const gl = System.instance.context;
 
     const glBuffer = gl.createRenderbuffer();
@@ -60,12 +50,7 @@ export class RenderBuffer implements WebGLDisposable {
     gl.renderbufferStorage(GL.RenderBuffer.TARGET, format, width, height);
     RenderBuffer.unbind();
 
-    return new RenderBuffer(
-      glBuffer,
-      width,
-      height,
-      computeBytesUsed(width, height, format, 1)
-    );
+    return new RenderBuffer(glBuffer, width, height, computeBytesUsed(width, height, format, 1));
   }
 
   public get isDisposed(): boolean {
@@ -87,12 +72,7 @@ export class RenderBuffer implements WebGLDisposable {
     }
   }
 
-  private constructor(
-    glBuffer: WebGLRenderbuffer,
-    width: number,
-    height: number,
-    bytesUsed: number
-  ) {
+  private constructor(glBuffer: WebGLRenderbuffer, width: number, height: number, bytesUsed: number) {
     this._glBuffer = glBuffer;
     this._bytesUsed = bytesUsed;
     this._width = width;
@@ -138,33 +118,17 @@ export class RenderBufferMultiSample implements WebGLDisposable {
     return this._glBuffer;
   }
 
-  public static create(
-    width: number,
-    height: number,
-    format: number,
-    numSamples: number
-  ) {
+  public static create(width: number, height: number, format: number, numSamples: number) {
     const gl = System.instance.context;
     const glBuffer = gl.createRenderbuffer();
     if (null === glBuffer) return undefined;
 
     assert(0 < width && 0 < height);
     RenderBufferMultiSample.bindBuffer(glBuffer);
-    gl.renderbufferStorageMultisample(
-      GL.RenderBuffer.TARGET,
-      numSamples,
-      format,
-      width,
-      height
-    );
+    gl.renderbufferStorageMultisample(GL.RenderBuffer.TARGET, numSamples, format, width, height);
     RenderBufferMultiSample.unbind();
 
-    return new RenderBufferMultiSample(
-      glBuffer,
-      width,
-      height,
-      computeBytesUsed(width, height, format, numSamples)
-    );
+    return new RenderBufferMultiSample(glBuffer, width, height, computeBytesUsed(width, height, format, numSamples));
   }
 
   public get isDisposed(): boolean {
@@ -185,12 +149,7 @@ export class RenderBufferMultiSample implements WebGLDisposable {
     }
   }
 
-  private constructor(
-    glBuffer: WebGLRenderbuffer,
-    width: number,
-    height: number,
-    bytesUsed: number
-  ) {
+  private constructor(glBuffer: WebGLRenderbuffer, width: number, height: number, bytesUsed: number) {
     this._glBuffer = glBuffer;
     this._bytesUsed = bytesUsed;
     this._width = width;

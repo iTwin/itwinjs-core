@@ -102,8 +102,5 @@ export interface IpcSocketBackend extends IpcSocket {
    * @param handler A function that supplies the implementation for methods invoked over `channel` via [[IpcSocketFrontend.invoke]]
    * @note returns A function to call to remove the handler.
    */
-  handle: (
-    channel: string,
-    handler: (...args: any[]) => Promise<any>
-  ) => RemoveFunction;
+  handle: (channel: string, handler: (...args: any[]) => Promise<any>) => RemoveFunction;
 }

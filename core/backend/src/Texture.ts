@@ -43,10 +43,7 @@ export class Texture extends DefinitionElement {
   constructor(props: TextureCreateProps, iModel: IModelDb) {
     super(props, iModel);
     this.format = props.format;
-    this.data =
-      typeof props.data === "string"
-        ? Base64EncodedString.toUint8Array(props.data)
-        : props.data;
+    this.data = typeof props.data === "string" ? Base64EncodedString.toUint8Array(props.data) : props.data;
     this.description = props.description;
   }
 
@@ -64,15 +61,9 @@ export class Texture extends DefinitionElement {
    * @param scopeModelId The Id of the DefinitionModel that contains the Texture and provides the scope for its name.
    * @param name The Texture name
    */
-  public static createCode(
-    iModel: IModelDb,
-    scopeModelId: CodeScopeProps,
-    name: string
-  ): Code {
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, name: string): Code {
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.texture);
-    return 0 === name.length
-      ? Code.createEmpty()
-      : new Code({ spec: codeSpec.id, scope: scopeModelId, value: name });
+    return 0 === name.length ? Code.createEmpty() : new Code({ spec: codeSpec.id, scope: scopeModelId, value: name });
   }
 
   /** Create a texture with the given parameters.
@@ -126,14 +117,7 @@ export class Texture extends DefinitionElement {
     data: Uint8Array | Base64EncodedString,
     description?: string
   ): Id64String {
-    const texture = this.createTexture(
-      iModelDb,
-      definitionModelId,
-      name,
-      format,
-      data,
-      description
-    );
+    const texture = this.createTexture(iModelDb, definitionModelId, name, format, data, description);
     return iModelDb.elements.insertElement(texture.toJSON());
   }
 }

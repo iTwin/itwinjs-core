@@ -41,9 +41,7 @@ export abstract class WipRpcInterface extends RpcInterface {
   public async placeholder(_iModelToken: IModelRpcProps): Promise<string> {
     return this.forward(arguments);
   } // here to test that WipRpcInterface is configured properly
-  public async isChangeCacheAttached(
-    _iModelToken: IModelRpcProps
-  ): Promise<boolean> {
+  public async isChangeCacheAttached(_iModelToken: IModelRpcProps): Promise<boolean> {
     return this.forward(arguments);
   }
   public async attachChangeCache(_iModelToken: IModelRpcProps): Promise<void> {
@@ -56,10 +54,7 @@ export abstract class WipRpcInterface extends RpcInterface {
   ): Promise<ChangedElements | undefined> {
     return this.forward(arguments);
   }
-  public async isChangesetProcessed(
-    _iModelToken: IModelRpcProps,
-    _changesetId: string
-  ): Promise<boolean> {
+  public async isChangesetProcessed(_iModelToken: IModelRpcProps, _changesetId: string): Promise<boolean> {
     return this.forward(arguments);
   }
 }

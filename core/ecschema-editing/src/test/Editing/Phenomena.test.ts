@@ -20,14 +20,8 @@ describe("Phenomenons tests", () => {
   });
 
   it("should create a valid phenomenon", async () => {
-    const result = await testEditor.phenomenons.create(
-      testKey,
-      "testPhenomenon",
-      "Units.LENGTH(2)"
-    );
-    const phenomenon = (await testEditor.schemaContext.getSchemaItem(
-      result.itemKey!
-    )) as Phenomenon;
+    const result = await testEditor.phenomenons.create(testKey, "testPhenomenon", "Units.LENGTH(2)");
+    const phenomenon = (await testEditor.schemaContext.getSchemaItem(result.itemKey!)) as Phenomenon;
     expect(phenomenon.definition).to.eql("Units.LENGTH(2)");
   });
 
@@ -37,13 +31,8 @@ describe("Phenomenons tests", () => {
       description: "test description",
       definition: "Units.LENGTH(2)",
     };
-    const result = await testEditor.phenomenons.createFromProps(
-      testKey,
-      phenomenonProps
-    );
-    const phenomenon = (await testEditor.schemaContext.getSchemaItem(
-      result.itemKey!
-    )) as Phenomenon;
+    const result = await testEditor.phenomenons.createFromProps(testKey, phenomenonProps);
+    const phenomenon = (await testEditor.schemaContext.getSchemaItem(result.itemKey!)) as Phenomenon;
     expect(phenomenon.description).to.eql("test description");
     expect(phenomenon.definition).to.eql("Units.LENGTH(2)");
     expect(phenomenon.fullName).to.eql("testSchema.testPhenomenon");

@@ -10,10 +10,7 @@ import { DisposableList, IDisposable } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Keys, KeySet } from "@itwin/presentation-common";
 import { ISelectionProvider } from "./ISelectionProvider";
-import {
-  SelectionChangeEventArgs,
-  SelectionChangesListener,
-} from "./SelectionChangeEvent";
+import { SelectionChangeEventArgs, SelectionChangesListener } from "./SelectionChangeEvent";
 import { SelectionManager } from "./SelectionManager";
 
 /**
@@ -77,9 +74,7 @@ export class SelectionHandler implements IDisposable {
     this.rulesetId = props.rulesetId;
     this.imodel = props.imodel;
     this.onSelect = props.onSelect;
-    this._disposables.add(
-      this.manager.selectionChange.addListener(this.onSelectionChanged)
-    );
+    this._disposables.add(this.manager.selectionChange.addListener(this.onSelectionChanged));
   }
 
   /**
@@ -95,10 +90,7 @@ export class SelectionHandler implements IDisposable {
    * the event should be handled at all (using the `shouldHandle` method) and then calling `onSelect`
    */
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  protected onSelectionChanged = (
-    evt: SelectionChangeEventArgs,
-    provider: ISelectionProvider
-  ): void => {
+  protected onSelectionChanged = (evt: SelectionChangeEventArgs, provider: ISelectionProvider): void => {
     if (!this.onSelect || !this.shouldHandle(evt)) return;
 
     this._inSelect = true;
@@ -133,13 +125,7 @@ export class SelectionHandler implements IDisposable {
   public addToSelection(keys: Keys, level: number = 0): void {
     if (this._inSelect) return;
 
-    return this.manager.addToSelection(
-      this.name,
-      this.imodel,
-      keys,
-      level,
-      this.rulesetId
-    );
+    return this.manager.addToSelection(this.name, this.imodel, keys, level, this.rulesetId);
   }
 
   /**
@@ -150,13 +136,7 @@ export class SelectionHandler implements IDisposable {
   public removeFromSelection(keys: Keys, level: number = 0): void {
     if (this._inSelect) return;
 
-    return this.manager.removeFromSelection(
-      this.name,
-      this.imodel,
-      keys,
-      level,
-      this.rulesetId
-    );
+    return this.manager.removeFromSelection(this.name, this.imodel, keys, level, this.rulesetId);
   }
 
   /**
@@ -167,13 +147,7 @@ export class SelectionHandler implements IDisposable {
   public replaceSelection(keys: Keys, level: number = 0): void {
     if (this._inSelect) return;
 
-    return this.manager.replaceSelection(
-      this.name,
-      this.imodel,
-      keys,
-      level,
-      this.rulesetId
-    );
+    return this.manager.replaceSelection(this.name, this.imodel, keys, level, this.rulesetId);
   }
 
   /**
@@ -183,11 +157,6 @@ export class SelectionHandler implements IDisposable {
   public clearSelection(level: number = 0): void {
     if (this._inSelect) return;
 
-    return this.manager.clearSelection(
-      this.name,
-      this.imodel,
-      level,
-      this.rulesetId
-    );
+    return this.manager.clearSelection(this.name, this.imodel, level, this.rulesetId);
   }
 }

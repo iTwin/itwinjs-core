@@ -8,12 +8,7 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { Placement3d, QueryRowFormat, SectionType } from "@itwin/core-common";
-import {
-  DrawingViewState,
-  IModelConnection,
-  SheetViewState,
-  SpatialViewState,
-} from "@itwin/core-frontend";
+import { DrawingViewState, IModelConnection, SheetViewState, SpatialViewState } from "@itwin/core-frontend";
 import { ClipVector, Transform, XYZProps } from "@itwin/core-geometry";
 
 const selectSectionDrawingLocationStatesECSql = `
@@ -124,10 +119,7 @@ export class SectionDrawingLocationState {
   public readonly viewAttachment?: SectionViewAttachment;
 
   /** @internal */
-  public constructor(
-    props: SectionDrawingLocationStateData,
-    iModel: IModelConnection
-  ) {
+  public constructor(props: SectionDrawingLocationStateData, iModel: IModelConnection) {
     this.iModel = iModel;
     this.id = props.sectionLocationId;
     this.model = props.sectionLocationModelId;
@@ -136,9 +128,7 @@ export class SectionDrawingLocationState {
     this.sectionType = props.sectionType;
     this.drawingViewId = props.sectionViewId;
     this.spatialViewId = props.spatialViewId;
-    this.drawingToSpatialTransform = Transform.fromJSON(
-      JSON.parse(props.drawingToSpatialTransform)
-    );
+    this.drawingToSpatialTransform = Transform.fromJSON(JSON.parse(props.drawingToSpatialTransform));
 
     const extractClip = (str: string | undefined) => {
       let clip;
@@ -160,19 +150,14 @@ export class SectionDrawingLocationState {
         pitch: props.pitch,
         roll: props.roll,
       },
-      placement:
-        props.bboxLow && props.bboxHigh
-          ? { low: props.bboxLow, high: props.bboxHigh }
-          : undefined,
+      placement: props.bboxLow && props.bboxHigh ? { low: props.bboxLow, high: props.bboxHigh } : undefined,
     };
     this.placement = Placement3d.fromJSON(placementProps);
 
     if (props.viewAttachmentId && props.sheetToSpatialTransform) {
       this.viewAttachment = {
         id: props.viewAttachmentId,
-        transformToSpatial: Transform.fromJSON(
-          JSON.parse(props.sheetToSpatialTransform)
-        ),
+        transformToSpatial: Transform.fromJSON(JSON.parse(props.sheetToSpatialTransform)),
         clip: extractClip(props.sheetClip),
         viewId: props.sheetViewId,
       };
@@ -201,11 +186,7 @@ export class SectionDrawingLocationState {
 
   /** Return a promise that resolves to the [SheetViewState]($frontend) corresponding to `this.viewAttachment.viewId`; or undefined if there is no corresponding [ViewAttachment]($backend) or an exception occurs. */
   public async tryLoadSheetView(): Promise<SheetViewState | undefined> {
-    if (
-      undefined === this.viewAttachment ||
-      undefined === this.viewAttachment.viewId
-    )
-      return undefined;
+    if (undefined === this.viewAttachment || undefined === this.viewAttachment.viewId) return undefined;
 
     try {
       const view = await this.iModel.views.load(this.viewAttachment.viewId);
@@ -216,22 +197,13 @@ export class SectionDrawingLocationState {
   }
 
   /** Query the specified iModel for [SectionDrawingLocation]($backend)s and return a list of corresponding [[SectionDrawingLocationState]]s. */
-  public static async queryAll(
-    iModel: IModelConnection
-  ): Promise<SectionDrawingLocationState[]> {
+  public static async queryAll(iModel: IModelConnection): Promise<SectionDrawingLocationState[]> {
     const states: SectionDrawingLocationState[] = [];
     try {
-      for await (const row of iModel.createQueryReader(
-        selectSectionDrawingLocationStatesECSql,
-        undefined,
-        { rowFormat: QueryRowFormat.UseJsPropertyNames }
-      ))
-        states.push(
-          new SectionDrawingLocationState(
-            row.toRow() as SectionDrawingLocationStateData,
-            iModel
-          )
-        );
+      for await (const row of iModel.createQueryReader(selectSectionDrawingLocationStatesECSql, undefined, {
+        rowFormat: QueryRowFormat.UseJsPropertyNames,
+      }))
+        states.push(new SectionDrawingLocationState(row.toRow() as SectionDrawingLocationStateData, iModel));
     } catch {
       // If the iModel contains a version of BisCore schema older than 1.12.0, the query will produce an exception due to missing SectionDrawingLocation class. That's fine.
     }

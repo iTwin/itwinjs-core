@@ -46,10 +46,7 @@ export const resetOp8Initializer = () => {
   op8Initializer = 0;
 };
 
-export class TestZeroMajorRpcImpl
-  extends RpcInterface
-  implements ZeroMajorRpcInterface
-{
+export class TestZeroMajorRpcImpl extends RpcInterface implements ZeroMajorRpcInterface {
   public static register() {
     RpcManager.registerImpl(ZeroMajorRpcInterface, TestZeroMajorRpcImpl);
   }
@@ -81,10 +78,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     return val;
   }
 
-  public async op6(data: {
-    x: number;
-    y: number;
-  }): Promise<{ x: number; y: number }> {
+  public async op6(data: { x: number; y: number }): Promise<{ x: number; y: number }> {
     const val = data;
     return val;
   }
@@ -94,10 +88,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     return val;
   }
 
-  public async op8(
-    x: number,
-    y: number
-  ): Promise<{ initializer: number; sum: number }> {
+  public async op8(x: number, y: number): Promise<{ initializer: number; sum: number }> {
     if (!op8Initializer) {
       op8Initializer = TestRpcInterface.OP8_INITIALIZER;
       throw new RpcPendingResponse(TestRpcInterface.OP8_PENDING_MESSAGE);
@@ -155,10 +146,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     return;
   }
 
-  public async op16(
-    token: IModelRpcProps,
-    values: TokenValues
-  ): Promise<boolean> {
+  public async op16(token: IModelRpcProps, values: TokenValues): Promise<boolean> {
     return (
       token.key === values.key &&
       token.iTwinId === values.iTwinId &&
@@ -232,10 +220,7 @@ export class TestRpcImpl3 extends RpcInterface implements TestRpcInterface3 {
   }
 }
 
-export class MultipleClientsImpl
-  extends RpcInterface
-  implements MultipleClientsInterface
-{
+export class MultipleClientsImpl extends RpcInterface implements MultipleClientsInterface {
   public static register() {
     RpcManager.registerImpl(MultipleClientsInterface, MultipleClientsImpl);
   }
@@ -246,10 +231,7 @@ export class MultipleClientsImpl
   }
 }
 
-export class AttachedInterfaceImpl
-  extends RpcInterface
-  implements AttachedInterface
-{
+export class AttachedInterfaceImpl extends RpcInterface implements AttachedInterface {
   public static register() {
     RpcManager.registerImpl(AttachedInterface, AttachedInterfaceImpl);
   }
@@ -259,10 +241,7 @@ export class AttachedInterfaceImpl
   }
 }
 
-export class WebRoutingInterfaceImpl
-  extends RpcInterface
-  implements WebRoutingInterface
-{
+export class WebRoutingInterfaceImpl extends RpcInterface implements WebRoutingInterface {
   public static register() {
     RpcManager.registerImpl(WebRoutingInterface, WebRoutingInterfaceImpl);
   }
@@ -280,10 +259,7 @@ export class WebRoutingInterfaceImpl
   }
 }
 
-export class MobileTestInterfaceImpl
-  extends RpcInterface
-  implements MobileTestInterface
-{
+export class MobileTestInterfaceImpl extends RpcInterface implements MobileTestInterface {
   public static register() {
     RpcManager.registerImpl(MobileTestInterface, MobileTestInterfaceImpl);
   }

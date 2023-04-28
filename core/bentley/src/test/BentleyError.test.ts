@@ -17,12 +17,8 @@ describe("BentleyError.getErrorMessage", () => {
         return "CustomToString";
       }
     }
-    expect(BentleyError.getErrorMessage(new Error("foo"))).to.equal(
-      "Error: foo"
-    );
-    expect(BentleyError.getErrorMessage(new CustomError("foo"))).to.equal(
-      "CustomToString"
-    );
+    expect(BentleyError.getErrorMessage(new Error("foo"))).to.equal("Error: foo");
+    expect(BentleyError.getErrorMessage(new CustomError("foo"))).to.equal("CustomToString");
   });
 
   it("prefers message property to msg property", () => {
@@ -36,9 +32,7 @@ describe("BentleyError.getErrorMessage", () => {
   });
 
   it("returns useful toString output", () => {
-    expect(BentleyError.getErrorMessage({ toString: () => "abc" })).to.equal(
-      "abc"
-    );
+    expect(BentleyError.getErrorMessage({ toString: () => "abc" })).to.equal("abc");
   });
 
   it("returns empty string for object with useless toString", () => {
@@ -119,40 +113,25 @@ describe("BentleyError.getErrorMetadata", () => {
   });
 
   it("returns undefined for unsupported getMetaData property types", () => {
-    expect(BentleyError.getErrorMetadata({ getMetaData: "foo" })).to.be
-      .undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: null })).to.be
-      .undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: undefined })).to.be
-      .undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: "foo" })).to.be.undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: null })).to.be.undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: undefined })).to.be.undefined;
     expect(BentleyError.getErrorMetadata({ getMetaData: 5 })).to.be.undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: BigInt(42) })).to.be
-      .undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: Symbol() })).to.be
-      .undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: true })).to.be
-      .undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: false })).to.be
-      .undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: BigInt(42) })).to.be.undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: Symbol() })).to.be.undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: true })).to.be.undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: false })).to.be.undefined;
   });
 
   it("returns undefined for unsupported getMetaData return types", () => {
-    expect(BentleyError.getErrorMetadata({ getMetaData: () => "foo" })).to.be
-      .undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: () => null })).to.be
-      .undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: () => undefined })).to
-      .be.undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: () => 5 })).to.be
-      .undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: () => BigInt(42) })).to
-      .be.undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: () => Symbol() })).to.be
-      .undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: () => true })).to.be
-      .undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: () => false })).to.be
-      .undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: () => "foo" })).to.be.undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: () => null })).to.be.undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: () => undefined })).to.be.undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: () => 5 })).to.be.undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: () => BigInt(42) })).to.be.undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: () => Symbol() })).to.be.undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: () => true })).to.be.undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: () => false })).to.be.undefined;
   });
 });
 

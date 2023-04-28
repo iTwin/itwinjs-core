@@ -54,16 +54,11 @@ export class LinearSearchRange2dArray<T> implements Range2dSearchInterface<T> {
    * @param handler function to receive range and tag hits.
    * @return false if search terminated by handler.  Return true if no handler returned false.
    */
-  public searchXY(
-    x: number,
-    y: number,
-    handler: (range: Range2d, tag: T) => boolean
-  ): boolean {
+  public searchXY(x: number, y: number, handler: (range: Range2d, tag: T) => boolean): boolean {
     if (this._isDirty) this.updateForSearch();
     // NEEDS WORK: Linear search here -- do better!
     for (const candidate of this._rangeArray) {
-      if (candidate.containsXY(x, y))
-        if (!handler(candidate, (candidate as any).tag)) return false;
+      if (candidate.containsXY(x, y)) if (!handler(candidate, (candidate as any).tag)) return false;
     }
     return true;
   }
@@ -75,14 +70,10 @@ export class LinearSearchRange2dArray<T> implements Range2dSearchInterface<T> {
    * @param handler function to receive range and tag hits.
    * @return false if search terminated by handler.  Return true if no handler returned false.
    */
-  public searchRange2d(
-    testRange: LowAndHighXY,
-    handler: (range: Range2d, tag: T) => boolean
-  ): boolean {
+  public searchRange2d(testRange: LowAndHighXY, handler: (range: Range2d, tag: T) => boolean): boolean {
     if (this._isDirty) this.updateForSearch();
     for (const candidate of this._rangeArray) {
-      if (candidate.intersectsRange(testRange))
-        if (!handler(candidate, (candidate as any).tag)) return false;
+      if (candidate.intersectsRange(testRange)) if (!handler(candidate, (candidate as any).tag)) return false;
     }
     return true;
   }

@@ -7,13 +7,7 @@
  */
 
 import { assert, DbResult, Id64String } from "@itwin/core-bentley";
-import {
-  ECSqlStatement,
-  ElementAspect,
-  IModelDb,
-  PhysicalElement,
-  SpatialLocationElement,
-} from "@itwin/core-backend";
+import { ECSqlStatement, ElementAspect, IModelDb, PhysicalElement, SpatialLocationElement } from "@itwin/core-backend";
 import {
   Code,
   ElementProps,
@@ -34,10 +28,7 @@ import {
   QueryParams,
   ReferentElementProps,
 } from "@itwin/linear-referencing-common";
-import {
-  LinearlyReferencedAtLocation,
-  LinearlyReferencedFromToLocation,
-} from "./LinearReferencingElementAspects";
+import { LinearlyReferencedAtLocation, LinearlyReferencedFromToLocation } from "./LinearReferencingElementAspects";
 import {
   ILinearLocationLocatesElement,
   ILinearlyLocatedAlongILinearElement,
@@ -69,10 +60,7 @@ export abstract class LinearlyLocatedAttribution extends SpatialLocationElement 
 /** Base class for Spatial Location Element implementations that are linearly located along a Linear-Element.
  * @beta
  */
-export abstract class LinearLocationElement
-  extends SpatialLocationElement
-  implements LinearlyLocatedBase
-{
+export abstract class LinearLocationElement extends SpatialLocationElement implements LinearlyLocatedBase {
   /** @internal */
   public static override get className(): string {
     return "LinearLocationElement";
@@ -90,10 +78,7 @@ export abstract class LinearLocationElement
 /** Linear Referencing Location attached to an Element not inherently Linearly Referenced.
  * @beta
  */
-export class LinearLocation
-  extends LinearLocationElement
-  implements LinearlyLocatedBase
-{
+export class LinearLocation extends LinearLocationElement implements LinearlyLocatedBase {
   /** @internal */
   public static override get className(): string {
     return "LinearLocation";
@@ -102,10 +87,7 @@ export class LinearLocation
     super(props, iModel);
   }
 
-  private static toProps(
-    modelId: Id64String,
-    categoryId: Id64String
-  ): GeometricElement3dProps {
+  private static toProps(modelId: Id64String, categoryId: Id64String): GeometricElement3dProps {
     const props: GeometricElement3dProps = {
       classFullName: LinearLocation.classFullName,
       category: categoryId,
@@ -116,11 +98,7 @@ export class LinearLocation
     return props;
   }
 
-  public static create(
-    iModel: IModelDb,
-    modelId: Id64String,
-    categoryId: Id64String
-  ): LinearLocation {
+  public static create(iModel: IModelDb, modelId: Id64String, categoryId: Id64String): LinearLocation {
     return new LinearLocation(this.toProps(modelId, categoryId), iModel);
   }
 
@@ -150,12 +128,7 @@ export class LinearLocation
     fromToPosition: LinearlyReferencedFromToLocationProps,
     locatedElementId: Id64String
   ): Id64String {
-    const newId = LinearlyLocated.insertFromTo(
-      iModel,
-      this.toJSON(),
-      linearElementId,
-      fromToPosition
-    );
+    const newId = LinearlyLocated.insertFromTo(iModel, this.toJSON(), linearElementId, fromToPosition);
 
     ILinearLocationLocatesElement.insert(iModel, newId, locatedElementId);
 
@@ -170,12 +143,7 @@ export class LinearLocation
     atPosition: LinearlyReferencedAtLocationProps,
     locatedElementId: Id64String
   ): Id64String {
-    const newId = LinearlyLocated.insertAt(
-      iModel,
-      this.toProps(modelId, categoryId),
-      linearElementId,
-      atPosition
-    );
+    const newId = LinearlyLocated.insertAt(iModel, this.toProps(modelId, categoryId), linearElementId, atPosition);
 
     ILinearLocationLocatesElement.insert(iModel, newId, locatedElementId);
 
@@ -188,12 +156,7 @@ export class LinearLocation
     atPosition: LinearlyReferencedAtLocationProps,
     locatedElementId: Id64String
   ): Id64String {
-    const newId = LinearlyLocated.insertAt(
-      iModel,
-      this.toJSON(),
-      linearElementId,
-      atPosition
-    );
+    const newId = LinearlyLocated.insertAt(iModel, this.toJSON(), linearElementId, atPosition);
 
     ILinearLocationLocatesElement.insert(iModel, newId, locatedElementId);
 
@@ -218,10 +181,7 @@ export abstract class LinearPhysicalElement extends PhysicalElement {
 /** Spatial Location Element that can play the role of a Referent (known location along a Linear-Element).
  * @beta
  */
-export abstract class ReferentElement
-  extends SpatialLocationElement
-  implements LinearlyLocatedBase
-{
+export abstract class ReferentElement extends SpatialLocationElement implements LinearlyLocatedBase {
   /** @internal */
   public static override get className(): string {
     return "ReferentElement";
@@ -273,10 +233,7 @@ export class Referent extends ReferentElement {
     categoryId: Id64String,
     referencedElementId: Id64String
   ): Referent {
-    return new Referent(
-      this.toProps(modelId, categoryId, referencedElementId),
-      iModel
-    );
+    return new Referent(this.toProps(modelId, categoryId, referencedElementId), iModel);
   }
 
   public static insertAt(
@@ -300,12 +257,7 @@ export class Referent extends ReferentElement {
     linearElementId: Id64String,
     atPosition: LinearlyReferencedAtLocationProps
   ): Id64String {
-    return LinearlyLocated.insertAt(
-      iModel,
-      this.toJSON(),
-      linearElementId,
-      atPosition
-    );
+    return LinearlyLocated.insertAt(iModel, this.toJSON(), linearElementId, atPosition);
   }
 }
 
@@ -342,17 +294,9 @@ class AtAndFromToECSQLGenImpl extends ECSQLGenImpl {
       "LEFT JOIN LinearReferencing.LinearlyReferencedFromToLocation FromToLocation ON LinearlyLocated.InstanceId = FromToLocation.Element.Id "
     );
   }
-  public genWhere(
-    bindVals: any[],
-    from?: number,
-    inclusiveFrom?: boolean,
-    to?: number,
-    inclusiveTo?: boolean
-  ): string {
-    const fromCompOp: string =
-      inclusiveFrom === undefined || inclusiveFrom ? ">=" : ">";
-    const toCompOp: string =
-      inclusiveTo === undefined || inclusiveTo ? "<=" : "<";
+  public genWhere(bindVals: any[], from?: number, inclusiveFrom?: boolean, to?: number, inclusiveTo?: boolean): string {
+    const fromCompOp: string = inclusiveFrom === undefined || inclusiveFrom ? ">=" : ">";
+    const toCompOp: string = inclusiveTo === undefined || inclusiveTo ? "<=" : "<";
 
     let ecSql = "";
     if (from !== undefined && to !== undefined) {
@@ -405,8 +349,7 @@ class AtAndFromToECSQLGenImpl extends ECSQLGenImpl {
       bindVals.push(to);
     } else {
       ecSql += "(AtLocation.AtPosition.DistanceAlongFromStart IS NOT NULL) OR ";
-      ecSql +=
-        "(FromToLocation.FromPosition.DistanceAlongFromStart IS NOT NULL) ";
+      ecSql += "(FromToLocation.FromPosition.DistanceAlongFromStart IS NOT NULL) ";
     }
 
     return ecSql;
@@ -423,17 +366,9 @@ class FromToECSQLGenImpl extends ECSQLGenImpl {
   public genFromJoin(): string {
     return "INNER JOIN LinearReferencing.LinearlyReferencedFromToLocation FromToLocation ON LinearlyLocated.InstanceId = FromToLocation.Element.Id ";
   }
-  public genWhere(
-    bindVals: any[],
-    from?: number,
-    inclusiveFrom?: boolean,
-    to?: number,
-    inclusiveTo?: boolean
-  ): string {
-    const fromCompOp: string =
-      inclusiveFrom === undefined || inclusiveFrom ? ">=" : ">";
-    const toCompOp: string =
-      inclusiveTo === undefined || inclusiveTo ? "<=" : "<";
+  public genWhere(bindVals: any[], from?: number, inclusiveFrom?: boolean, to?: number, inclusiveTo?: boolean): string {
+    const fromCompOp: string = inclusiveFrom === undefined || inclusiveFrom ? ">=" : ">";
+    const toCompOp: string = inclusiveTo === undefined || inclusiveTo ? "<=" : "<";
 
     let ecSql = "";
     if (from !== undefined && to !== undefined) {
@@ -473,8 +408,7 @@ class FromToECSQLGenImpl extends ECSQLGenImpl {
       bindVals.push(to);
       bindVals.push(to);
     } else {
-      ecSql +=
-        "FromToLocation.FromPosition.DistanceAlongFromStart IS NOT NULL ";
+      ecSql += "FromToLocation.FromPosition.DistanceAlongFromStart IS NOT NULL ";
     }
 
     return ecSql;
@@ -491,17 +425,9 @@ class AtECSQLGenImpl extends ECSQLGenImpl {
   public genFromJoin(): string {
     return "INNER JOIN LinearReferencing.LinearlyReferencedAtLocation AtLocation ON LinearlyLocated.InstanceId = AtLocation.Element.Id ";
   }
-  public genWhere(
-    bindVals: any[],
-    from?: number,
-    inclusiveFrom?: boolean,
-    to?: number,
-    inclusiveTo?: boolean
-  ): string {
-    const fromCompOp: string =
-      inclusiveFrom === undefined || inclusiveFrom ? ">=" : ">";
-    const toCompOp: string =
-      inclusiveTo === undefined || inclusiveTo ? "<=" : "<";
+  public genWhere(bindVals: any[], from?: number, inclusiveFrom?: boolean, to?: number, inclusiveTo?: boolean): string {
+    const fromCompOp: string = inclusiveFrom === undefined || inclusiveFrom ? ">=" : ">";
+    const toCompOp: string = inclusiveTo === undefined || inclusiveTo ? "<=" : "<";
 
     let ecSql = "";
     if (from !== undefined && to !== undefined) {
@@ -550,9 +476,7 @@ class QueryLinearLocationsECSQLGen {
     this._ecSql += select;
   }
 
-  private _parseClassFullName(
-    classFullName: string
-  ): [string, string] | undefined {
+  private _parseClassFullName(classFullName: string): [string, string] | undefined {
     const parts = classFullName.split(":");
     if (parts.length !== 2) return undefined;
 
@@ -570,9 +494,7 @@ class QueryLinearLocationsECSQLGen {
     );
   }
 
-  private _addFromClause(
-    impl: ECSQLGenImpl /* bvector<double>& bindVals */
-  ): void {
+  private _addFromClause(impl: ECSQLGenImpl /* bvector<double>& bindVals */): void {
     let from = "FROM ";
     from += this._genLinearlyLocated();
     from += impl.genFromJoin();
@@ -589,8 +511,7 @@ class QueryLinearLocationsECSQLGen {
       this._params.fromComparisonOption === undefined ||
         this._params.fromComparisonOption === ComparisonOption.Inclusive,
       this._params.toDistanceAlong,
-      this._params.toComparisonOption === undefined ||
-        this._params.toComparisonOption === ComparisonOption.Inclusive
+      this._params.toComparisonOption === undefined || this._params.toComparisonOption === ComparisonOption.Inclusive
     );
 
     if (this._params.linearlyLocatedClassFullNames !== undefined) {
@@ -599,14 +520,12 @@ class QueryLinearLocationsECSQLGen {
       if (1 === this._params.linearlyLocatedClassFullNames.length) {
         const classFullName = this._params.linearlyLocatedClassFullNames[0];
         const schemaNameClassName = this._parseClassFullName(classFullName);
-        if (schemaNameClassName === undefined)
-          throw new IModelError(0, "Invalid full class name");
+        if (schemaNameClassName === undefined) throw new IModelError(0, "Invalid full class name");
 
         where += `meta.ECSchemaDef.Name='${schemaNameClassName[0]}' AND meta.ECClassDef.Name='${schemaNameClassName[1]}' `;
       } else if (1 < this._params.linearlyLocatedClassFullNames.length) {
         where += "(";
-        for (const classFullName of this._params
-          .linearlyLocatedClassFullNames) {
+        for (const classFullName of this._params.linearlyLocatedClassFullNames) {
           if (classFullName === undefined) continue;
 
           const schemaNameClassName = this._parseClassFullName(classFullName);
@@ -633,14 +552,10 @@ class QueryLinearLocationsECSQLGen {
   private _createImpl(): ECSQLGenImpl {
     if (
       this._params.linearlyReferencedLocationTypeFilter === undefined ||
-      this._params.linearlyReferencedLocationTypeFilter ===
-        LinearlyReferencedLocationType.Any
+      this._params.linearlyReferencedLocationTypeFilter === LinearlyReferencedLocationType.Any
     ) {
       return new AtAndFromToECSQLGenImpl();
-    } else if (
-      this._params.linearlyReferencedLocationTypeFilter ===
-      LinearlyReferencedLocationType.FromTo
-    ) {
+    } else if (this._params.linearlyReferencedLocationTypeFilter === LinearlyReferencedLocationType.FromTo) {
       return new FromToECSQLGenImpl();
     } else {
       return new AtECSQLGenImpl();
@@ -670,19 +585,14 @@ class QueryLinearLocationsECSQLGen {
  * @beta
  */
 export class LinearlyLocated {
-  private static insertBasic(
-    iModel: IModelDb,
-    elProps: ElementProps,
-    linearElementId: Id64String
-  ): Id64String {
+  private static insertBasic(iModel: IModelDb, elProps: ElementProps, linearElementId: Id64String): Id64String {
     const newId = iModel.elements.insertElement(elProps);
 
-    const linearlyLocatedAlongLinearElement =
-      ILinearlyLocatedAlongILinearElement.create(
-        iModel,
-        newId,
-        linearElementId
-      );
+    const linearlyLocatedAlongLinearElement = ILinearlyLocatedAlongILinearElement.create(
+      iModel,
+      newId,
+      linearElementId
+    );
     linearlyLocatedAlongLinearElement.insert();
 
     return newId;
@@ -702,19 +612,13 @@ export class LinearlyLocated {
     linearElementId: Id64String,
     atPosition: LinearlyReferencedAtLocationProps
   ): Id64String {
-    const newId: Id64String = this.insertBasic(
-      iModel,
-      elProps,
-      linearElementId
-    );
+    const newId: Id64String = this.insertBasic(iModel, elProps, linearElementId);
 
     LinearlyReferencedAtLocation.insert(
       iModel,
       newId,
       atPosition.atPosition,
-      atPosition.fromReferent === undefined
-        ? undefined
-        : atPosition.fromReferent.id
+      atPosition.fromReferent === undefined ? undefined : atPosition.fromReferent.id
     );
 
     return newId;
@@ -734,23 +638,15 @@ export class LinearlyLocated {
     linearElementId: Id64String,
     fromToPosition: LinearlyReferencedFromToLocationProps
   ): Id64String {
-    const newId: Id64String = this.insertBasic(
-      iModel,
-      elProps,
-      linearElementId
-    );
+    const newId: Id64String = this.insertBasic(iModel, elProps, linearElementId);
 
     LinearlyReferencedFromToLocation.insert(
       iModel,
       newId,
       fromToPosition.fromPosition,
       fromToPosition.toPosition,
-      fromToPosition.fromPositionFromReferent === undefined
-        ? undefined
-        : fromToPosition.fromPositionFromReferent.id,
-      fromToPosition.toPositionFromReferent === undefined
-        ? undefined
-        : fromToPosition.toPositionFromReferent.id
+      fromToPosition.fromPositionFromReferent === undefined ? undefined : fromToPosition.fromPositionFromReferent.id,
+      fromToPosition.toPositionFromReferent === undefined ? undefined : fromToPosition.toPositionFromReferent.id
     );
 
     return newId;
@@ -761,10 +657,7 @@ export class LinearlyLocated {
     linearlyLocatedElementId: Id64String,
     fullClassName: string
   ): T[] {
-    const aspects: ElementAspect[] = iModel.elements.getAspects(
-      linearlyLocatedElementId,
-      fullClassName
-    );
+    const aspects: ElementAspect[] = iModel.elements.getAspects(linearlyLocatedElementId, fullClassName);
 
     if (aspects.length === 0) return [];
 
@@ -788,8 +681,7 @@ export class LinearlyLocated {
       `SELECT ECInstanceId FROM LinearReferencing.${className} WHERE Element.Id=? LIMIT 1`,
       (stmt: ECSqlStatement) => {
         stmt.bindId(1, linearlyLocatedElementId);
-        if (stmt.step() === DbResult.BE_SQLITE_ROW)
-          aspectId = stmt.getValue(0).getId();
+        if (stmt.step() === DbResult.BE_SQLITE_ROW) aspectId = stmt.getValue(0).getId();
       }
     );
 
@@ -802,10 +694,7 @@ export class LinearlyLocated {
    * @returns Returns an array of LinearlyReferencedAtLocation.
    * @throws [[IModelError]]
    */
-  public static getAtLocations(
-    iModel: IModelDb,
-    linearlyLocatedElementId: Id64String
-  ): LinearlyReferencedAtLocation[] {
+  public static getAtLocations(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedAtLocation[] {
     return this.getLinearLocations<LinearlyReferencedAtLocation>(
       iModel,
       linearlyLocatedElementId,
@@ -823,10 +712,7 @@ export class LinearlyLocated {
     iModel: IModelDb,
     linearlyLocatedElementId: Id64String
   ): LinearlyReferencedAtLocation | undefined {
-    const linearLocations = this.getAtLocations(
-      iModel,
-      linearlyLocatedElementId
-    );
+    const linearLocations = this.getAtLocations(iModel, linearlyLocatedElementId);
     if (linearLocations.length === 0) return undefined;
     else {
       assert(linearLocations.length === 1);
@@ -891,19 +777,18 @@ export class LinearlyLocated {
       )!;
     }
 
-    const linearLocationAspectProps: LinearlyReferencedFromToLocationAspectProps =
-      {
-        id: linearLocAspectId,
-        element: {
-          id: linearlyLocatedElementId,
-          relClassName: "LinearReferencing:ILinearlyLocatedOwnsFromToLocations",
-        },
-        classFullName: "LinearReferencing:LinearlyReferencedFromToLocation",
-        fromPosition: linearLocationProps.fromPosition,
-        fromPositionFromReferent: linearLocationProps.fromPositionFromReferent,
-        toPosition: linearLocationProps.toPosition,
-        toPositionFromReferent: linearLocationProps.toPositionFromReferent,
-      };
+    const linearLocationAspectProps: LinearlyReferencedFromToLocationAspectProps = {
+      id: linearLocAspectId,
+      element: {
+        id: linearlyLocatedElementId,
+        relClassName: "LinearReferencing:ILinearlyLocatedOwnsFromToLocations",
+      },
+      classFullName: "LinearReferencing:LinearlyReferencedFromToLocation",
+      fromPosition: linearLocationProps.fromPosition,
+      fromPositionFromReferent: linearLocationProps.fromPositionFromReferent,
+      toPosition: linearLocationProps.toPosition,
+      toPositionFromReferent: linearLocationProps.toPositionFromReferent,
+    };
 
     iModel.elements.updateAspect(linearLocationAspectProps);
   }
@@ -913,18 +798,14 @@ export class LinearlyLocated {
    * @param linearlyLocatedElementId The id of the LinearlyLocated Element to query a Linear-Element for.
    * @returns Returns the Id of the Linear-Element or undefined is none is assigned.
    */
-  public static getLinearElementId(
-    iModel: IModelDb,
-    linearlyLocatedElementId: Id64String
-  ): Id64String | undefined {
+  public static getLinearElementId(iModel: IModelDb, linearlyLocatedElementId: Id64String): Id64String | undefined {
     let linearElementId: Id64String | undefined;
     iModel.withPreparedStatement(
       "SELECT TargetECInstanceId FROM LinearReferencing.ILinearlyLocatedAlongILinearElement WHERE SourceECInstanceId = ?",
       (stmt: ECSqlStatement) => {
         stmt.bindId(1, linearlyLocatedElementId);
 
-        if (DbResult.BE_SQLITE_ROW === stmt.step())
-          linearElementId = stmt.getValue(0).getId();
+        if (DbResult.BE_SQLITE_ROW === stmt.step()) linearElementId = stmt.getValue(0).getId();
         else linearElementId = undefined;
       }
     );
@@ -959,10 +840,7 @@ export class LinearlyLocated {
     iModel: IModelDb,
     linearlyLocatedElementId: Id64String
   ): LinearlyReferencedFromToLocation | undefined {
-    const linearLocations = this.getFromToLocations(
-      iModel,
-      linearlyLocatedElementId
-    );
+    const linearLocations = this.getFromToLocations(iModel, linearlyLocatedElementId);
     if (linearLocations.length === 0) return undefined;
     else {
       assert(linearLocations.length === 1);
@@ -986,10 +864,7 @@ export interface LinearlyLocatedBase {
  */
 export interface LinearlyLocatedSingleAt extends LinearlyLocatedBase {
   getAtLocation(): LinearlyReferencedAtLocation | undefined;
-  updateAtLocation(
-    linearLocation: LinearlyReferencedAtLocationProps,
-    aspectId?: Id64String
-  ): void;
+  updateAtLocation(linearLocation: LinearlyReferencedAtLocationProps, aspectId?: Id64String): void;
 }
 
 /** Interface to optionally be implemented by Elements inherently Linearly-Located whose linear-locations are always at-positions.
@@ -999,10 +874,7 @@ export interface LinearlyLocatedSingleAt extends LinearlyLocatedBase {
  */
 export interface LinearlyLocatedMultipleAt extends LinearlyLocatedBase {
   getAtLocations(): LinearlyReferencedAtLocation[];
-  updateAtLocation(
-    linearLocation: LinearlyReferencedAtLocationProps,
-    aspectId: Id64String
-  ): void;
+  updateAtLocation(linearLocation: LinearlyReferencedAtLocationProps, aspectId: Id64String): void;
 }
 
 /** Interface to optionally be implemented by Elements inherently Linearly-Located whose linear-locations are always a single from-to-position.
@@ -1012,10 +884,7 @@ export interface LinearlyLocatedMultipleAt extends LinearlyLocatedBase {
  */
 export interface LinearlyLocatedSingleFromTo extends LinearlyLocatedBase {
   getFromToLocation(): LinearlyReferencedFromToLocation | undefined;
-  updateFromToLocation(
-    linearLocation: LinearlyReferencedFromToLocationProps,
-    aspectId?: Id64String
-  ): void;
+  updateFromToLocation(linearLocation: LinearlyReferencedFromToLocationProps, aspectId?: Id64String): void;
 }
 
 /** Interface to optionally be implemented by Elements inherently Linearly-Located whose linear-locations are always from-to-positions.
@@ -1025,10 +894,7 @@ export interface LinearlyLocatedSingleFromTo extends LinearlyLocatedBase {
  */
 export interface LinearlyLocatedMultipleFromTo extends LinearlyLocatedBase {
   getFromToLocations(): LinearlyReferencedFromToLocation[];
-  updateFromToLocation(
-    linearLocation: LinearlyReferencedFromToLocationProps,
-    aspectId: Id64String
-  ): void;
+  updateFromToLocation(linearLocation: LinearlyReferencedFromToLocationProps, aspectId: Id64String): void;
 }
 
 /** A class offering services for linearly-located data along a Linear-Element.
@@ -1048,24 +914,21 @@ export class LinearElement {
     const ecsqlAndBindVals = ecSqlGen.generate(linearElementId);
 
     const linearLocationRefs: LinearLocationReference[] = [];
-    iModel.withPreparedStatement(
-      ecsqlAndBindVals[0],
-      (stmt: ECSqlStatement) => {
-        stmt.bindValues(ecsqlAndBindVals[1]);
+    iModel.withPreparedStatement(ecsqlAndBindVals[0], (stmt: ECSqlStatement) => {
+      stmt.bindValues(ecsqlAndBindVals[1]);
 
-        while (DbResult.BE_SQLITE_ROW === stmt.step()) {
-          const linearLocationRef: LinearLocationReference = {
-            linearlyLocatedId: stmt.getValue(0).getId(),
-            linearlyLocatedClassFullName: stmt.getValue(1).getString(),
-            startDistanceAlong: stmt.getValue(2).getDouble(),
-            stopDistanceAlong: stmt.getValue(3).getDouble(),
-            locationAspectId: stmt.getValue(4).getId(),
-          };
+      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        const linearLocationRef: LinearLocationReference = {
+          linearlyLocatedId: stmt.getValue(0).getId(),
+          linearlyLocatedClassFullName: stmt.getValue(1).getString(),
+          startDistanceAlong: stmt.getValue(2).getDouble(),
+          stopDistanceAlong: stmt.getValue(3).getDouble(),
+          locationAspectId: stmt.getValue(4).getId(),
+        };
 
-          linearLocationRefs.push(linearLocationRef);
-        }
+        linearLocationRefs.push(linearLocationRef);
       }
-    );
+    });
 
     return linearLocationRefs;
   }

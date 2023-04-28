@@ -7,12 +7,7 @@
  */
 
 import { Format } from "./Formatter/Format";
-import {
-  AlternateUnitLabelsProvider,
-  UnitConversionSpec,
-  UnitProps,
-  UnitsProvider,
-} from "./Interfaces";
+import { AlternateUnitLabelsProvider, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
 import { Parser, QuantityParseResult } from "./Parser";
 
 /** A ParserSpec holds information needed to parse a string into a quantity synchronously.
@@ -28,11 +23,7 @@ export class ParserSpec {
    *  @param format   Defines the output format for the quantity value.
    *  @param conversions An array of conversion factors necessary to convert from an input unit to the units specified in the format..
    */
-  constructor(
-    outUnit: UnitProps,
-    format: Format,
-    conversions: UnitConversionSpec[]
-  ) {
+  constructor(outUnit: UnitProps, format: Format, conversions: UnitConversionSpec[]) {
     this._outUnit = outUnit;
     this._format = format;
     this._conversions = conversions;
@@ -62,11 +53,7 @@ export class ParserSpec {
     outUnit: UnitProps,
     altUnitLabelsProvider?: AlternateUnitLabelsProvider
   ): Promise<ParserSpec> {
-    const conversions = await Parser.createUnitConversionSpecsForUnit(
-      unitsProvider,
-      outUnit,
-      altUnitLabelsProvider
-    );
+    const conversions = await Parser.createUnitConversionSpecsForUnit(unitsProvider, outUnit, altUnitLabelsProvider);
     return new ParserSpec(outUnit, format, conversions);
   }
 

@@ -193,16 +193,13 @@ export class Unit {
    */
   public toStandard(value: float64): float64 {
     /* Get the target unit */
-    if (this._target == null)
-      this._target = Registry.getUnit(this._targetUnitCode);
+    if (this._target == null) this._target = Registry.getUnit(this._targetUnitCode);
     /* Already standard ? */
     if (this._code == this._targetUnitCode) return value;
     /* Check for a custom unit */ else if (this._code == Unit._UNIT_DMS)
       return this._target.toStandard(Unit.dmsToDeg(value));
-    else if (this._code == Unit._UNIT_DM)
-      return this._target.toStandard(Unit.dmToDeg(value));
-    /* Default to scale */ else
-      return this._target.toStandard((value * this._b) / this._c);
+    else if (this._code == Unit._UNIT_DM) return this._target.toStandard(Unit.dmToDeg(value));
+    /* Default to scale */ else return this._target.toStandard((value * this._b) / this._c);
   }
 
   /**
@@ -221,16 +218,13 @@ export class Unit {
    */
   public fromStandard(value: float64): float64 {
     /* Get the target unit */
-    if (this._target == null)
-      this._target = Registry.getUnit(this._targetUnitCode);
+    if (this._target == null) this._target = Registry.getUnit(this._targetUnitCode);
     /* Already standard ? */
     if (this._code == this._targetUnitCode) return value;
     /* Check for a custom unit */ else if (this._code == Unit._UNIT_DMS)
       return Unit.degToDms(this._target.fromStandard(value));
-    else if (this._code == Unit._UNIT_DM)
-      return Unit.degToDm(this._target.fromStandard(value));
-    /* Default to scale */ else
-      return (this._target.fromStandard(value) * this._c) / this._b;
+    else if (this._code == Unit._UNIT_DM) return Unit.degToDm(this._target.fromStandard(value));
+    /* Default to scale */ else return (this._target.fromStandard(value) * this._c) / this._b;
   }
 
   /**
@@ -262,29 +256,17 @@ export class Unit {
     }
     /* Get the degrees */
     let deg: int32 = Numbers.divInt(iseconds, 10000);
-    ASystem.assertNot(
-      deg < -360 || deg > 360,
-      "Invalid deg (" + deg + ") in DMS " + dms
-    );
+    ASystem.assertNot(deg < -360 || deg > 360, "Invalid deg (" + deg + ") in DMS " + dms);
     iseconds -= deg * 10000;
     /* Get the minutes */
     let min: int32 = Numbers.divInt(iseconds, 100);
-    ASystem.assertNot(
-      min < 0 || min > 59,
-      "Invalid min (" + min + ") in DMS " + dms
-    );
+    ASystem.assertNot(min < 0 || min > 59, "Invalid min (" + min + ") in DMS " + dms);
     iseconds -= min * 100;
     /* Get the seconds */
     let sec: int32 = iseconds;
-    ASystem.assertNot(
-      sec < 0 || sec > 59,
-      "Invalid sec (" + sec + ") in DMS " + dms
-    );
+    ASystem.assertNot(sec < 0 || sec > 59, "Invalid sec (" + sec + ") in DMS " + dms);
     /* Check the fraction */
-    ASystem.assertNot(
-      fraction < 0.0 || fraction >= 1.0,
-      "Invalid fraction (" + fraction + ") in DMS " + dms
-    );
+    ASystem.assertNot(fraction < 0.0 || fraction >= 1.0, "Invalid fraction (" + fraction + ") in DMS " + dms);
     /* Convert to fractional degrees */
     let fdeg: float64 = deg + min / 60.0 + sec / 3600.0 + fraction / 3600.0;
     if (neg) fdeg *= -1.0;
@@ -347,21 +329,12 @@ export class Unit {
     }
     /* Get the degrees */
     let deg: int32 = Numbers.divInt(iminutes, 100);
-    ASystem.assertNot(
-      deg < -180 || deg > 180,
-      "Invalid deg (" + deg + ") in DM " + dm
-    );
+    ASystem.assertNot(deg < -180 || deg > 180, "Invalid deg (" + deg + ") in DM " + dm);
     /* Get the minutes */
     let min: int32 = iminutes % 100;
-    ASystem.assertNot(
-      min < 0 || min > 59,
-      "Invalid min (" + min + ") in DM " + dm
-    );
+    ASystem.assertNot(min < 0 || min > 59, "Invalid min (" + min + ") in DM " + dm);
     /* Check the fraction */
-    ASystem.assertNot(
-      fraction < 0.0 || fraction >= 1.0,
-      "Invalid fraction (" + fraction + ") in DM " + dm
-    );
+    ASystem.assertNot(fraction < 0.0 || fraction >= 1.0, "Invalid fraction (" + fraction + ") in DM " + dm);
     /* Convert to fractional degrees */
     let fdeg: float64 = deg + min / 60.0 + fraction / 60.0;
     if (neg) fdeg *= -1.0;

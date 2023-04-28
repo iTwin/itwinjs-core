@@ -9,13 +9,7 @@
 import { BeEvent } from "@itwin/core-bentley";
 import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
 import { ConditionalStringValue } from "../items/ConditionalStringValue";
-import {
-  ActionButton,
-  CommonToolbarItem,
-  GroupButton,
-  ToolbarItemId,
-  ToolbarItemUtilities,
-} from "./ToolbarItem";
+import { ActionButton, CommonToolbarItem, GroupButton, ToolbarItemId, ToolbarItemUtilities } from "./ToolbarItem";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -46,9 +40,7 @@ export class ToolbarItemsManager {
   /** Event raised when Toolbar items are changed.
    * @internal
    */
-  public readonly onItemsChanged = new BeEvent<
-    (args: ToolbarItemsChangedArgs) => void
-  >();
+  public readonly onItemsChanged = new BeEvent<(args: ToolbarItemsChangedArgs) => void>();
 
   private loadItemsInternal(
     items: ReadonlyArray<CommonToolbarItem>,
@@ -58,8 +50,7 @@ export class ToolbarItemsManager {
     if (processConditions && items) {
       const eventIds = ToolbarItemsManager.getSyncIdsOfInterest(items);
       if (0 !== eventIds.length) {
-        const { itemsUpdated, updatedItems } =
-          this.internalRefreshAffectedItems(items, new Set(eventIds));
+        const { itemsUpdated, updatedItems } = this.internalRefreshAffectedItems(items, new Set(eventIds));
 
         // istanbul ignore else
         if (itemsUpdated) items = updatedItems;
@@ -87,21 +78,15 @@ export class ToolbarItemsManager {
     if (items !== this._items) this.loadItemsInternal(items, true, true);
   }
 
-  public add(
-    itemOrItems: CommonToolbarItem | ReadonlyArray<CommonToolbarItem>
-  ) {
+  public add(itemOrItems: CommonToolbarItem | ReadonlyArray<CommonToolbarItem>) {
     let itemsToAdd;
     if (isInstance(itemOrItems)) itemsToAdd = [itemOrItems];
     else {
       itemsToAdd = itemOrItems.filter(
-        (itemToAdd, index) =>
-          itemOrItems.findIndex((item) => item.id === itemToAdd.id) === index
+        (itemToAdd, index) => itemOrItems.findIndex((item) => item.id === itemToAdd.id) === index
       );
     }
-    itemsToAdd = itemsToAdd.filter(
-      (itemToAdd) =>
-        this._items.find((item) => item.id === itemToAdd.id) === undefined
-    );
+    itemsToAdd = itemsToAdd.filter((itemToAdd) => this._items.find((item) => item.id === itemToAdd.id) === undefined);
     if (itemsToAdd.length === 0) return;
     const items = [...this._items, ...itemsToAdd];
     this.items = items;
@@ -122,22 +107,13 @@ export class ToolbarItemsManager {
     this._items = [];
   }
 
-  private static gatherSyncIds(
-    eventIds: Set<string>,
-    items: readonly CommonToolbarItem[]
-  ) {
+  private static gatherSyncIds(eventIds: Set<string>, items: readonly CommonToolbarItem[]) {
     for (const item of items) {
       for (const [, entry] of Object.entries(item)) {
         if (entry instanceof ConditionalBooleanValue) {
-          entry.syncEventIds.forEach((eventId: string) =>
-            eventIds.add(eventId.toLowerCase())
-          );
-        } /* istanbul ignore else */ else if (
-          entry instanceof ConditionalStringValue
-        ) {
-          entry.syncEventIds.forEach((eventId: string) =>
-            eventIds.add(eventId.toLowerCase())
-          );
+          entry.syncEventIds.forEach((eventId: string) => eventIds.add(eventId.toLowerCase()));
+        } /* istanbul ignore else */ else if (entry instanceof ConditionalStringValue) {
+          entry.syncEventIds.forEach((eventId: string) => eventIds.add(eventId.toLowerCase()));
         }
       }
 
@@ -148,9 +124,7 @@ export class ToolbarItemsManager {
     }
   }
 
-  public static getSyncIdsOfInterest(
-    items: readonly CommonToolbarItem[]
-  ): string[] {
+  public static getSyncIdsOfInterest(items: readonly CommonToolbarItem[]): string[] {
     const eventIds = new Set<string>();
     this.gatherSyncIds(eventIds, items);
     return [...eventIds.values()];
@@ -170,10 +144,7 @@ export class ToolbarItemsManager {
       const updatedItem = { ...item };
 
       if (ToolbarItemUtilities.isGroupButton(updatedItem)) {
-        const { childrenUpdated, childItems } = this.refreshChildItems(
-          updatedItem,
-          eventIds
-        );
+        const { childrenUpdated, childItems } = this.refreshChildItems(updatedItem, eventIds);
         // istanbul ignore else
         if (childrenUpdated) {
           updatedItem.items = childItems;
@@ -184,14 +155,10 @@ export class ToolbarItemsManager {
       for (const [, entry] of Object.entries(updatedItem)) {
         if (entry instanceof ConditionalBooleanValue) {
           // istanbul ignore else
-          if (ConditionalBooleanValue.refreshValue(entry, eventIds))
-            itemsUpdated = true;
-        } /* istanbul ignore else */ else if (
-          entry instanceof ConditionalStringValue
-        ) {
+          if (ConditionalBooleanValue.refreshValue(entry, eventIds)) itemsUpdated = true;
+        } /* istanbul ignore else */ else if (entry instanceof ConditionalStringValue) {
           // istanbul ignore else
-          if (ConditionalStringValue.refreshValue(entry, eventIds))
-            itemsUpdated = true;
+          if (ConditionalStringValue.refreshValue(entry, eventIds)) itemsUpdated = true;
         }
       }
 
@@ -214,8 +181,7 @@ export class ToolbarItemsManager {
       const updatedItem = { ...item };
 
       if (ToolbarItemUtilities.isGroupButton(updatedItem)) {
-        const { childrenUpdated, childItems } =
-          ToolbarItemsManager.refreshChildItems(updatedItem, eventIds);
+        const { childrenUpdated, childItems } = ToolbarItemsManager.refreshChildItems(updatedItem, eventIds);
         // istanbul ignore else
         if (childrenUpdated) {
           updatedItem.items = childItems;
@@ -226,14 +192,10 @@ export class ToolbarItemsManager {
       for (const [, entry] of Object.entries(updatedItem)) {
         if (entry instanceof ConditionalBooleanValue) {
           // istanbul ignore else
-          if (ConditionalBooleanValue.refreshValue(entry, eventIds))
-            updateRequired = true;
-        } /* istanbul ignore else */ else if (
-          entry instanceof ConditionalStringValue
-        ) {
+          if (ConditionalBooleanValue.refreshValue(entry, eventIds)) updateRequired = true;
+        } /* istanbul ignore else */ else if (entry instanceof ConditionalStringValue) {
           // istanbul ignore else
-          if (ConditionalStringValue.refreshValue(entry, eventIds))
-            updateRequired = true;
+          if (ConditionalStringValue.refreshValue(entry, eventIds)) updateRequired = true;
         }
       }
 
@@ -247,10 +209,7 @@ export class ToolbarItemsManager {
     // istanbul ignore next
     if (0 === eventIds.size) return;
 
-    const { itemsUpdated, updatedItems } = this.internalRefreshAffectedItems(
-      this.items,
-      eventIds
-    );
+    const { itemsUpdated, updatedItems } = this.internalRefreshAffectedItems(this.items, eventIds);
 
     // istanbul ignore else
     if (itemsUpdated) this.loadItemsInternal(updatedItems, false, true);
@@ -262,15 +221,10 @@ export class ToolbarItemsManager {
   ): boolean {
     for (const item of children) {
       if (ToolbarItemUtilities.isGroupButton(item)) {
-        if (this.isActiveToolIdRefreshRequiredForChildren(item.items, toolId))
-          return true;
+        if (this.isActiveToolIdRefreshRequiredForChildren(item.items, toolId)) return true;
       } else {
         const isActive = !!item.isActive;
-        if (
-          (isActive && item.id !== toolId) ||
-          (!isActive && item.id === toolId)
-        )
-          return true;
+        if ((isActive && item.id !== toolId) || (!isActive && item.id === toolId)) return true;
       }
     }
     return false;
@@ -279,20 +233,10 @@ export class ToolbarItemsManager {
   private isActiveToolIdRefreshRequired(toolId: string): boolean {
     for (const item of this.items) {
       if (ToolbarItemUtilities.isGroupButton(item)) {
-        if (
-          ToolbarItemsManager.isActiveToolIdRefreshRequiredForChildren(
-            item.items,
-            toolId
-          )
-        )
-          return true;
+        if (ToolbarItemsManager.isActiveToolIdRefreshRequiredForChildren(item.items, toolId)) return true;
       } else {
         const isActive = !!item.isActive;
-        if (
-          (isActive && item.id !== toolId) ||
-          (!isActive && item.id === toolId)
-        )
-          return true;
+        if ((isActive && item.id !== toolId) || (!isActive && item.id === toolId)) return true;
       }
     }
 
@@ -308,10 +252,7 @@ export class ToolbarItemsManager {
       const updatedItem = { ...item };
 
       if (ToolbarItemUtilities.isGroupButton(updatedItem)) {
-        updatedItem.items = ToolbarItemsManager.refreshActiveToolIdInChildItems(
-          updatedItem,
-          toolId
-        );
+        updatedItem.items = ToolbarItemsManager.refreshActiveToolIdInChildItems(updatedItem, toolId);
       }
 
       updatedItem.isActive = updatedItem.id === toolId;
@@ -329,10 +270,7 @@ export class ToolbarItemsManager {
       const updatedItem = { ...item };
 
       if (ToolbarItemUtilities.isGroupButton(updatedItem)) {
-        updatedItem.items = ToolbarItemsManager.refreshActiveToolIdInChildItems(
-          updatedItem,
-          toolId
-        );
+        updatedItem.items = ToolbarItemsManager.refreshActiveToolIdInChildItems(updatedItem, toolId);
       }
 
       updatedItem.isActive = updatedItem.id === toolId;

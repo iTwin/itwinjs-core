@@ -25,10 +25,7 @@ import {
   SnapshotDb,
   SpatialCategory,
 } from "@itwin/core-backend";
-import {
-  IModelTestUtils,
-  KnownTestLocations,
-} from "@itwin/core-backend/lib/cjs/test/index";
+import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 import { PerfTestUtility } from "./PerfTestUtils";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -105,8 +102,7 @@ function createElemProps(
     elementProps.sub1Long = values.sub1Long;
     elementProps.sub1Double = values.sub1Double;
   }
-  if (className.includes("PerfElement2d"))
-    elementProps.baseStr2 = values.baseStr2;
+  if (className.includes("PerfElement2d")) elementProps.baseStr2 = values.baseStr2;
   elementProps.baseStr = values.baseStr;
   elementProps.baseLong = values.baseLong;
   elementProps.baseDouble = values.baseDouble;
@@ -114,90 +110,36 @@ function createElemProps(
 }
 
 function verifyProps(testElement: TestElementProps) {
-  assert.equal(
-    testElement.baseStr,
-    values.baseStr,
-    `${testElement.classFullName}`
-  );
-  assert.equal(
-    testElement.baseLong,
-    values.baseLong,
-    `${testElement.classFullName}`
-  );
-  assert.equal(
-    testElement.baseDouble,
-    values.baseDouble,
-    `${testElement.classFullName}`
-  );
+  assert.equal(testElement.baseStr, values.baseStr, `${testElement.classFullName}`);
+  assert.equal(testElement.baseLong, values.baseLong, `${testElement.classFullName}`);
+  assert.equal(testElement.baseDouble, values.baseDouble, `${testElement.classFullName}`);
 
   if (testElement.classFullName.includes("Sub")) {
-    assert.equal(
-      testElement.sub1Str,
-      values.sub1Str,
-      `${testElement.classFullName}`
-    );
-    assert.equal(
-      testElement.sub1Long,
-      values.sub1Long,
-      `${testElement.classFullName}`
-    );
-    assert.equal(
-      testElement.sub1Double,
-      values.sub1Double,
-      `${testElement.classFullName}`
-    );
+    assert.equal(testElement.sub1Str, values.sub1Str, `${testElement.classFullName}`);
+    assert.equal(testElement.sub1Long, values.sub1Long, `${testElement.classFullName}`);
+    assert.equal(testElement.sub1Double, values.sub1Double, `${testElement.classFullName}`);
 
-    if (
-      testElement.classFullName.includes("Sub2") ||
-      testElement.classFullName.includes("Sub3")
-    ) {
-      assert.equal(
-        testElement.sub2Str,
-        values.sub2Str,
-        `${testElement.classFullName}`
-      );
-      assert.equal(
-        testElement.sub2Long,
-        values.sub2Long,
-        `${testElement.classFullName}`
-      );
-      assert.equal(
-        testElement.sub2Double,
-        values.sub2Double,
-        `${testElement.classFullName}`
-      );
+    if (testElement.classFullName.includes("Sub2") || testElement.classFullName.includes("Sub3")) {
+      assert.equal(testElement.sub2Str, values.sub2Str, `${testElement.classFullName}`);
+      assert.equal(testElement.sub2Long, values.sub2Long, `${testElement.classFullName}`);
+      assert.equal(testElement.sub2Double, values.sub2Double, `${testElement.classFullName}`);
     }
 
     if (testElement.classFullName.includes("Sub3")) {
-      assert.equal(
-        testElement.sub3Str,
-        values.sub3Str,
-        `${testElement.classFullName}`
-      );
-      assert.equal(
-        testElement.sub3Long,
-        values.sub3Long,
-        `${testElement.classFullName}`
-      );
-      assert.equal(
-        testElement.sub3Double,
-        values.sub3Double,
-        `${testElement.classFullName}`
-      );
+      assert.equal(testElement.sub3Str, values.sub3Str, `${testElement.classFullName}`);
+      assert.equal(testElement.sub3Long, values.sub3Long, `${testElement.classFullName}`);
+      assert.equal(testElement.sub3Double, values.sub3Double, `${testElement.classFullName}`);
     }
   }
 }
 
 function getCount(imodel: IModelDb, className: string) {
   let count = 0;
-  imodel.withPreparedStatement(
-    `SELECT count(*) AS [count] FROM ${className}`,
-    (stmt: ECSqlStatement) => {
-      assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
-      const row = stmt.getRow();
-      count = row.count;
-    }
-  );
+  imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
+    assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
+    const row = stmt.getRow();
+    count = row.count;
+  });
   return count;
 }
 
@@ -210,11 +152,7 @@ describe("PerformanceElementsTests", () => {
     for (const name of crudConfig.classNames) {
       for (const size of crudConfig.dbSizes) {
         const fileName = `Performance_seed_${name}_${size}.bim`;
-        const pathname = path.join(
-          KnownTestLocations.outputDir,
-          "ElementCRUDPerformance",
-          fileName
-        );
+        const pathname = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", fileName);
 
         if (IModelJsFs.existsSync(pathname)) return;
 
@@ -222,22 +160,15 @@ describe("PerformanceElementsTests", () => {
           IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", fileName),
           { rootSubject: { name: "PerfTest" } }
         );
-        const testSchemaName = path.join(
-          KnownTestLocations.assetsDir,
-          "PerfTestDomain.ecschema.xml"
-        );
+        const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
         await seedIModel.importSchemas([testSchemaName]);
         seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
-        assert.isDefined(
-          seedIModel.getMetaData(`PerfTestDomain:${name}`),
-          `${name}is present in iModel.`
+        assert.isDefined(seedIModel.getMetaData(`PerfTestDomain:${name}`), `${name}is present in iModel.`);
+        const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
+          seedIModel,
+          Code.createEmpty(),
+          true
         );
-        const [, newModelId] =
-          IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
-            seedIModel,
-            Code.createEmpty(),
-            true
-          );
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(
           seedIModel,
           IModel.dictionaryId,
@@ -254,12 +185,7 @@ describe("PerformanceElementsTests", () => {
           );
 
         for (let m = 0; m < size; ++m) {
-          const elementProps = createElemProps(
-            name,
-            seedIModel,
-            newModelId,
-            spatialCategoryId
-          );
+          const elementProps = createElemProps(name, seedIModel, newModelId, spatialCategoryId);
           const geomElement = seedIModel.elements.createElement(elementProps);
           const id = seedIModel.elements.insertElement(geomElement.toJSON());
           assert.isTrue(Id64.isValidId64(id), "insert worked");
@@ -272,10 +198,7 @@ describe("PerformanceElementsTests", () => {
     }
   });
   after(() => {
-    const csvPath = path.join(
-      KnownTestLocations.outputDir,
-      "PerformanceResults.csv"
-    );
+    const csvPath = path.join(KnownTestLocations.outputDir, "PerformanceResults.csv");
     reporter.exportCSV(csvPath);
   });
 
@@ -297,16 +220,12 @@ describe("PerformanceElementsTests", () => {
             "ElementCRUDPerformance",
             `IModelPerformance_Insert_${name}_${opCount}.bim`
           );
-          const perfimodel = IModelTestUtils.createSnapshotFromSeed(
-            testFileName,
-            seedFileName
+          const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+          const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
+            perfimodel,
+            Code.createEmpty(),
+            true
           );
-          const [, newModelId] =
-            IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
-              perfimodel,
-              Code.createEmpty(),
-              true
-            );
           let spatialCategoryId = SpatialCategory.queryCategoryIdByName(
             perfimodel,
             IModel.dictionaryId,
@@ -324,12 +243,7 @@ describe("PerformanceElementsTests", () => {
 
           let totalTime = 0.0;
           for (let m = 0; m < opCount; ++m) {
-            const elementProps = createElemProps(
-              name,
-              perfimodel,
-              newModelId,
-              spatialCategoryId
-            );
+            const elementProps = createElemProps(name, perfimodel, newModelId, spatialCategoryId);
             const geomElement = perfimodel.elements.createElement(elementProps);
             const startTime = new Date().getTime();
             const id = perfimodel.elements.insertElement(geomElement.toJSON());
@@ -339,17 +253,12 @@ describe("PerformanceElementsTests", () => {
             totalTime = totalTime + elapsedTime;
           }
 
-          reporter.addEntry(
-            "PerformanceElementsTests",
-            "ElementsInsert",
-            "Execution time(s)",
-            totalTime,
-            { ElementClassName: name, InitialCount: size, opCount }
-          );
-          assert.equal(
-            getCount(perfimodel, `PerfTestDomain:${name}`),
-            size + opCount
-          );
+          reporter.addEntry("PerformanceElementsTests", "ElementsInsert", "Execution time(s)", totalTime, {
+            ElementClassName: name,
+            InitialCount: size,
+            opCount,
+          });
+          assert.equal(getCount(perfimodel, `PerfTestDomain:${name}`), size + opCount);
           perfimodel.close();
         }
       }
@@ -374,40 +283,27 @@ describe("PerformanceElementsTests", () => {
             "ElementCRUDPerformance",
             `IModelPerformance_Delete_${name}_${opCount}.bim`
           );
-          const perfimodel = IModelTestUtils.createSnapshotFromSeed(
-            testFileName,
-            seedFileName
-          );
-          const minId: number = PerfTestUtility.getMinId(
-            perfimodel,
-            "bis.PhysicalElement"
-          );
+          const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+          const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.PhysicalElement");
           const elementIdIncrement = Math.floor(size / opCount);
 
           const startTime = new Date().getTime();
           for (let i = 0; i < opCount; ++i) {
             try {
               const elId = minId + elementIdIncrement * i;
-              perfimodel.elements.deleteElement(
-                Id64.fromLocalAndBriefcaseIds(elId, 0)
-              );
+              perfimodel.elements.deleteElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
             } catch (err) {
               assert.isTrue(false);
             }
           }
           const endTime = new Date().getTime();
           const elapsedTime = (endTime - startTime) / 1000.0;
-          reporter.addEntry(
-            "PerformanceElementsTests",
-            "ElementsDelete",
-            "Execution time(s)",
-            elapsedTime,
-            { ElementClassName: name, InitialCount: size, opCount }
-          );
-          assert.equal(
-            getCount(perfimodel, `PerfTestDomain:${name}`),
-            size - opCount
-          );
+          reporter.addEntry("PerformanceElementsTests", "ElementsDelete", "Execution time(s)", elapsedTime, {
+            ElementClassName: name,
+            InitialCount: size,
+            opCount,
+          });
+          assert.equal(getCount(perfimodel, `PerfTestDomain:${name}`), size - opCount);
           perfimodel.close();
         }
       }
@@ -432,22 +328,14 @@ describe("PerformanceElementsTests", () => {
             "ElementCRUDPerformance",
             `IModelPerformance_Read_${name}_${opCount}.bim`
           );
-          const perfimodel = IModelTestUtils.createSnapshotFromSeed(
-            testFileName,
-            seedFileName
-          );
-          const minId: number = PerfTestUtility.getMinId(
-            perfimodel,
-            "bis.PhysicalElement"
-          );
+          const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+          const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.PhysicalElement");
           const elementIdIncrement = Math.floor(size / opCount);
 
           const startTime = new Date().getTime();
           for (let i = 0; i < opCount; ++i) {
             const elId = minId + elementIdIncrement * i;
-            perfimodel.elements.getElement(
-              Id64.fromLocalAndBriefcaseIds(elId, 0)
-            );
+            perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
           }
           const endTime = new Date().getTime();
 
@@ -455,20 +343,16 @@ describe("PerformanceElementsTests", () => {
           // This is performed afterwards to avoid including the extra noise in the perf numbers.
           for (let i = 0; i < opCount; ++i) {
             const elId = minId + elementIdIncrement * i;
-            const elemFound: Element = perfimodel.elements.getElement(
-              Id64.fromLocalAndBriefcaseIds(elId, 0)
-            );
+            const elemFound: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
             verifyProps(elemFound as any);
           }
 
           const elapsedTime = (endTime - startTime) / 1000.0;
-          reporter.addEntry(
-            "PerformanceElementsTests",
-            "ElementsRead",
-            "Execution time(s)",
-            elapsedTime,
-            { ElementClassName: name, InitialCount: size, opCount }
-          );
+          reporter.addEntry("PerformanceElementsTests", "ElementsRead", "Execution time(s)", elapsedTime, {
+            ElementClassName: name,
+            InitialCount: size,
+            opCount,
+          });
           perfimodel.close();
         }
       }
@@ -493,14 +377,8 @@ describe("PerformanceElementsTests", () => {
             "ElementCRUDPerformance",
             `IModelPerformance_Update_${name}_${opCount}.bim`
           );
-          const perfimodel = IModelTestUtils.createSnapshotFromSeed(
-            testFileName,
-            seedFileName
-          );
-          const minId: number = PerfTestUtility.getMinId(
-            perfimodel,
-            "bis.PhysicalElement"
-          );
+          const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+          const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.PhysicalElement");
           const elementIdIncrement = Math.floor(size / opCount);
 
           // first construct modified elements
@@ -520,9 +398,7 @@ describe("PerformanceElementsTests", () => {
           const startTime = new Date().getTime();
           for (let i = 0; i < opCount; ++i) {
             const elId = minId + elementIdIncrement * i;
-            const editElem: Element = perfimodel.elements.getElement(
-              Id64.fromLocalAndBriefcaseIds(elId, 0)
-            );
+            const editElem: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
             (editElem as any).baseStr = "PerfElement - UpdatedValue";
             editElem.setUserProperties("geom", geometryStream);
             try {
@@ -536,22 +412,15 @@ describe("PerformanceElementsTests", () => {
           // verify value is updated
           for (let i = 0; i < opCount; ++i) {
             const elId = minId + elementIdIncrement * i;
-            const elemFound: Element = perfimodel.elements.getElement(
-              Id64.fromLocalAndBriefcaseIds(elId, 0)
-            );
-            assert.equal(
-              (elemFound as any).baseStr,
-              "PerfElement - UpdatedValue"
-            );
+            const elemFound: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
+            assert.equal((elemFound as any).baseStr, "PerfElement - UpdatedValue");
           }
           const elapsedTime = (endTime - startTime) / 1000.0;
-          reporter.addEntry(
-            "PerformanceElementsTests",
-            "ElementsUpdate",
-            "Execution time(s)",
-            elapsedTime,
-            { ElementClassName: name, InitialCount: size, opCount }
-          );
+          reporter.addEntry("PerformanceElementsTests", "ElementsUpdate", "Execution time(s)", elapsedTime, {
+            ElementClassName: name,
+            InitialCount: size,
+            opCount,
+          });
           perfimodel.close();
         }
       }
@@ -560,16 +429,12 @@ describe("PerformanceElementsTests", () => {
 });
 
 describe("PerformanceElementsTests2d", () => {
-  const outDir: string = path.join(
-    KnownTestLocations.outputDir,
-    "ElementCRUDPerformance2d"
-  );
+  const outDir: string = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance2d");
   const reporter = new Reporter();
   const crudConfig = require(path.join(__dirname, "CRUDConfig.json")).test2d; // eslint-disable-line @typescript-eslint/no-var-requires
 
   before(async () => {
-    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
-      IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
+    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir)) IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
     if (!IModelJsFs.existsSync(outDir)) IModelJsFs.mkdirSync(outDir);
 
     // Create all of the seed iModels
@@ -581,31 +446,17 @@ describe("PerformanceElementsTests2d", () => {
         if (IModelJsFs.existsSync(pathname)) return;
 
         const seedIModel = SnapshotDb.createEmpty(
-          IModelTestUtils.prepareOutputFile(
-            "ElementCRUDPerformance2d",
-            fileName
-          ),
+          IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", fileName),
           { rootSubject: { name: "PerfTest" } }
         );
-        const testSchemaName = path.join(
-          KnownTestLocations.assetsDir,
-          "PerfTestDomain.ecschema.xml"
-        );
+        const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
         await seedIModel.importSchemas([testSchemaName]);
         seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
-        assert.isDefined(
-          seedIModel.getMetaData(`PerfTestDomain:${name}`),
-          `${name}is present in iModel.`
-        );
+        assert.isDefined(seedIModel.getMetaData(`PerfTestDomain:${name}`), `${name}is present in iModel.`);
 
         const codeProps = Code.createEmpty();
         codeProps.value = "DrawingModel";
-        const [, newModelId] =
-          IModelTestUtils.createAndInsertDrawingPartitionAndModel(
-            seedIModel,
-            codeProps,
-            true
-          );
+        const [, newModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(seedIModel, codeProps, true);
         let drawingCategoryId = DrawingCategory.queryCategoryIdByName(
           seedIModel,
           IModel.dictionaryId,
@@ -622,12 +473,7 @@ describe("PerformanceElementsTests2d", () => {
           );
 
         for (let m = 0; m < size; ++m) {
-          const elementProps = createElemProps(
-            name,
-            seedIModel,
-            newModelId,
-            drawingCategoryId
-          );
+          const elementProps = createElemProps(name, seedIModel, newModelId, drawingCategoryId);
           const geomElement = seedIModel.elements.createElement(elementProps);
           const id = seedIModel.elements.insertElement(geomElement.toJSON());
           assert.isTrue(Id64.isValidId64(id), "insert worked");
@@ -640,10 +486,7 @@ describe("PerformanceElementsTests2d", () => {
     }
   });
   after(() => {
-    const csvPath = path.join(
-      KnownTestLocations.outputDir,
-      "PerformanceResults.csv"
-    );
+    const csvPath = path.join(KnownTestLocations.outputDir, "PerformanceResults.csv");
     reporter.exportCSV(csvPath);
   });
 
@@ -665,19 +508,11 @@ describe("PerformanceElementsTests2d", () => {
             "ElementCRUDPerformance2d",
             `IModelPerformance2d_Insert_${name}_${opCount}.bim`
           );
-          const perfimodel = IModelTestUtils.createSnapshotFromSeed(
-            testFileName,
-            seedFileName
-          );
+          const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
           const codeProps = Code.createEmpty();
           codeProps.value = "DrawingModel1";
-          const [, newModelId] =
-            IModelTestUtils.createAndInsertDrawingPartitionAndModel(
-              perfimodel,
-              codeProps,
-              true
-            );
+          const [, newModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(perfimodel, codeProps, true);
           let drawingCategoryId = DrawingCategory.queryCategoryIdByName(
             perfimodel,
             IModel.dictionaryId,
@@ -694,12 +529,7 @@ describe("PerformanceElementsTests2d", () => {
             );
           let totalTime = 0.0;
           for (let m = 0; m < opCount; ++m) {
-            const elementProps = createElemProps(
-              name,
-              perfimodel,
-              newModelId,
-              drawingCategoryId
-            );
+            const elementProps = createElemProps(name, perfimodel, newModelId, drawingCategoryId);
             const geomElement = perfimodel.elements.createElement(elementProps);
             const startTime = new Date().getTime();
             const id = perfimodel.elements.insertElement(geomElement.toJSON());
@@ -709,17 +539,12 @@ describe("PerformanceElementsTests2d", () => {
             totalTime = totalTime + elapsedTime;
           }
 
-          reporter.addEntry(
-            "PerformanceElementsTests2d",
-            "ElementsInsert2d",
-            "Execution time(s)",
-            totalTime,
-            { ElementClassName: name, InitialCount: size, opCount }
-          );
-          assert.equal(
-            getCount(perfimodel, `PerfTestDomain:${name}`),
-            size + opCount
-          );
+          reporter.addEntry("PerformanceElementsTests2d", "ElementsInsert2d", "Execution time(s)", totalTime, {
+            ElementClassName: name,
+            InitialCount: size,
+            opCount,
+          });
+          assert.equal(getCount(perfimodel, `PerfTestDomain:${name}`), size + opCount);
           perfimodel.close();
         }
       }
@@ -744,40 +569,27 @@ describe("PerformanceElementsTests2d", () => {
             "ElementCRUDPerformance2d",
             `IModelPerformance2d_Delete_${name}_${opCount}.bim`
           );
-          const perfimodel = IModelTestUtils.createSnapshotFromSeed(
-            testFileName,
-            seedFileName
-          );
-          const minId: number = PerfTestUtility.getMinId(
-            perfimodel,
-            "bis.GraphicalElement2d"
-          );
+          const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+          const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.GraphicalElement2d");
           const elementIdIncrement = Math.floor(size / opCount);
 
           const startTime = new Date().getTime();
           for (let i = 0; i < opCount; ++i) {
             try {
               const elId = minId + elementIdIncrement * i;
-              perfimodel.elements.deleteElement(
-                Id64.fromLocalAndBriefcaseIds(elId, 0)
-              );
+              perfimodel.elements.deleteElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
             } catch (err) {
               assert.isTrue(false);
             }
           }
           const endTime = new Date().getTime();
           const elapsedTime = (endTime - startTime) / 1000.0;
-          reporter.addEntry(
-            "PerformanceElementsTests2d",
-            "ElementsDelete2d",
-            "Execution time(s)",
-            elapsedTime,
-            { ElementClassName: name, InitialCount: size, opCount }
-          );
-          assert.equal(
-            getCount(perfimodel, `PerfTestDomain:${name}`),
-            size - opCount
-          );
+          reporter.addEntry("PerformanceElementsTests2d", "ElementsDelete2d", "Execution time(s)", elapsedTime, {
+            ElementClassName: name,
+            InitialCount: size,
+            opCount,
+          });
+          assert.equal(getCount(perfimodel, `PerfTestDomain:${name}`), size - opCount);
           perfimodel.close();
         }
       }
@@ -802,22 +614,14 @@ describe("PerformanceElementsTests2d", () => {
             "ElementCRUDPerformance2d",
             `IModelPerformance2d_Read_${name}_${opCount}.bim`
           );
-          const perfimodel = IModelTestUtils.createSnapshotFromSeed(
-            testFileName,
-            seedFileName
-          );
-          const minId: number = PerfTestUtility.getMinId(
-            perfimodel,
-            "bis.GraphicalElement2d"
-          );
+          const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+          const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.GraphicalElement2d");
           const elementIdIncrement = Math.floor(size / opCount);
 
           const startTime = new Date().getTime();
           for (let i = 0; i < opCount; ++i) {
             const elId = minId + elementIdIncrement * i;
-            perfimodel.elements.getElement(
-              Id64.fromLocalAndBriefcaseIds(elId, 0)
-            );
+            perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
           }
           const endTime = new Date().getTime();
 
@@ -825,20 +629,16 @@ describe("PerformanceElementsTests2d", () => {
           // This is performed afterwards to avoid including the extra noise in the perf numbers.
           for (let i = 0; i < opCount; ++i) {
             const elId = minId + elementIdIncrement * i;
-            const elemFound: Element = perfimodel.elements.getElement(
-              Id64.fromLocalAndBriefcaseIds(elId, 0)
-            );
+            const elemFound: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
             verifyProps(elemFound as any);
           }
 
           const elapsedTime = (endTime - startTime) / 1000.0;
-          reporter.addEntry(
-            "PerformanceElementsTests2d",
-            "ElementsRead2d",
-            "Execution time(s)",
-            elapsedTime,
-            { ElementClassName: name, InitialCount: size, opCount }
-          );
+          reporter.addEntry("PerformanceElementsTests2d", "ElementsRead2d", "Execution time(s)", elapsedTime, {
+            ElementClassName: name,
+            InitialCount: size,
+            opCount,
+          });
           perfimodel.close();
         }
       }
@@ -863,14 +663,8 @@ describe("PerformanceElementsTests2d", () => {
             "ElementCRUDPerformance2d",
             `IModelPerformance2d_Update_${name}_${opCount}.bim`
           );
-          const perfimodel = IModelTestUtils.createSnapshotFromSeed(
-            testFileName,
-            seedFileName
-          );
-          const minId: number = PerfTestUtility.getMinId(
-            perfimodel,
-            "bis.GraphicalElement2d"
-          );
+          const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+          const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.GraphicalElement2d");
           const elementIdIncrement = Math.floor(size / opCount);
 
           // first construct modified elements
@@ -889,9 +683,7 @@ describe("PerformanceElementsTests2d", () => {
           const startTime = new Date().getTime();
           for (let i = 0; i < opCount; ++i) {
             const elId = minId + elementIdIncrement * i;
-            const editElem: Element = perfimodel.elements.getElement(
-              Id64.fromLocalAndBriefcaseIds(elId, 0)
-            );
+            const editElem: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
             (editElem as any).baseStr = "PerfElement - UpdatedValue";
             editElem.setUserProperties("geom", geometryStream);
             try {
@@ -905,22 +697,15 @@ describe("PerformanceElementsTests2d", () => {
           // verify value is updated
           for (let i = 0; i < opCount; ++i) {
             const elId = minId + elementIdIncrement * i;
-            const elemFound: Element = perfimodel.elements.getElement(
-              Id64.fromLocalAndBriefcaseIds(elId, 0)
-            );
-            assert.equal(
-              (elemFound as any).baseStr,
-              "PerfElement - UpdatedValue"
-            );
+            const elemFound: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
+            assert.equal((elemFound as any).baseStr, "PerfElement - UpdatedValue");
           }
           const elapsedTime = (endTime - startTime) / 1000.0;
-          reporter.addEntry(
-            "PerformanceElementsTests2d",
-            "ElementsUpdate2d",
-            "Execution time(s)",
-            elapsedTime,
-            { ElementClassName: name, InitialCount: size, opCount }
-          );
+          reporter.addEntry("PerformanceElementsTests2d", "ElementsUpdate2d", "Execution time(s)", elapsedTime, {
+            ElementClassName: name,
+            InitialCount: size,
+            opCount,
+          });
           perfimodel.close();
         }
       }

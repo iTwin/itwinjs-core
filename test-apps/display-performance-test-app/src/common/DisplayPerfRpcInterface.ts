@@ -5,12 +5,7 @@
 import * as chromeLauncher from "chrome-launcher";
 import * as http from "http";
 import * as https from "https";
-import {
-  RpcInterface,
-  RpcManager,
-  RpcOperation,
-  RpcRequestTokenSupplier_T,
-} from "@itwin/core-common";
+import { RpcInterface, RpcManager, RpcOperation, RpcRequestTokenSupplier_T } from "@itwin/core-common";
 
 const localDeploymentOnly: RpcRequestTokenSupplier_T = () => ({
   iModelId: "none",
@@ -87,10 +82,7 @@ export default class DisplayPerfRpcInterface extends RpcInterface {
   public async readExternalSavedViews(_filename: string): Promise<string> {
     return this.forward(arguments);
   }
-  public async getMatchingFiles(
-    _rootDir: string,
-    _pattern: string
-  ): Promise<string> {
+  public async getMatchingFiles(_rootDir: string, _pattern: string): Promise<string> {
     return this.forward(arguments);
   }
 

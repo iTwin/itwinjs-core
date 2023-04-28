@@ -19,11 +19,7 @@ class GltfDecoration {
   private readonly _tooltip: string;
   private readonly _pickableId?: string;
 
-  public constructor(
-    graphic: RenderGraphic,
-    tooltip: string | undefined,
-    pickableId?: string
-  ) {
+  public constructor(graphic: RenderGraphic, tooltip: string | undefined, pickableId?: string) {
     this._graphic = graphic;
     this._tooltip = tooltip ?? "glTF model";
     this._pickableId = pickableId;
@@ -32,8 +28,7 @@ class GltfDecoration {
   public readonly useCachedDecorations = true;
 
   public decorate(context: DecorateContext): void {
-    if (context.viewport.view.isSpatialView())
-      context.addDecoration(GraphicType.Scene, this._graphic);
+    if (context.viewport.view.isSpatialView()) context.addDecoration(GraphicType.Scene, this._graphic);
   }
 
   public testDecorationHit(id: string): boolean {
@@ -107,9 +102,7 @@ export class GltfDecorationTool extends Tool {
       // Transform the graphic to the center of the project extents.
       const branch = new GraphicBranch();
       branch.add(graphic);
-      const transform = Transform.createTranslation(
-        iModel.projectExtents.center
-      );
+      const transform = Transform.createTranslation(iModel.projectExtents.center);
       graphic = IModelApp.renderSystem.createGraphicBranch(branch, transform);
 
       // Take ownership of the graphic so it is not disposed of until we're finished with it.

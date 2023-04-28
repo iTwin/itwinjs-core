@@ -44,13 +44,7 @@ export class TileIndex {
   /**
    * Create a new index.
    */
-  public constructor(
-    level: int32,
-    index: int32,
-    gridIndex: GridIndex,
-    pointIndex: ALong,
-    pointCount: int32
-  ) {
+  public constructor(level: int32, index: int32, gridIndex: GridIndex, pointIndex: ALong, pointCount: int32) {
     this.level = level;
     this.index = index;
     this.gridIndex = gridIndex;
@@ -75,15 +69,6 @@ export class TileIndex {
    * @return the unique key (combines level and grid index).
    */
   public getKey(): string {
-    return (
-      "T" +
-      this.level +
-      "/" +
-      this.gridIndex.x +
-      "/" +
-      this.gridIndex.y +
-      "/" +
-      this.gridIndex.z
-    );
+    return "T" + this.level + "/" + this.gridIndex.x + "/" + this.gridIndex.y + "/" + this.gridIndex.z;
   }
 }

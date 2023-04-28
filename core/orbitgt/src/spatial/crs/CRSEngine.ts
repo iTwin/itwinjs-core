@@ -44,11 +44,7 @@ export class CRSEngine {
    * @param targetCRS the target CRS.
    * @return the transformed coordinate.
    */
-  public transformPoint(
-    point: Coordinate,
-    sourceCRS: string,
-    targetCRS: string
-  ): Coordinate {
+  public transformPoint(point: Coordinate, sourceCRS: string, targetCRS: string): Coordinate {
     // subclasses should override this method
     return point;
   }
@@ -90,11 +86,7 @@ export class CRSEngine {
    * @param targetCRS the target CRS.
    * @return the transformed bounds.
    */
-  public transformBounds(
-    bounds: Bounds,
-    sourceCRS: string,
-    targetCRS: string
-  ): Bounds {
+  public transformBounds(bounds: Bounds, sourceCRS: string, targetCRS: string): Bounds {
     // no real need to override this method in subclasses
     /* Create new bounds */
     let targetBounds: Bounds = new Bounds();

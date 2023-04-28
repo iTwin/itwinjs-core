@@ -17,9 +17,7 @@ function withinTolerance(x: number, y: number): boolean {
 }
 
 describe("RenderState", () => {
-  before(async () =>
-    IModelApp.startup({ localization: new EmptyLocalization() })
-  );
+  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
 
   it("should compare as expected", () => {
@@ -28,158 +26,83 @@ describe("RenderState", () => {
     assert.isTrue(a.equals(a), "expected RenderState to equal itself");
 
     const b = new RenderState();
-    assert.isTrue(
-      a.equals(b),
-      "expected 2 new RenderStates to equal eachother"
-    );
+    assert.isTrue(a.equals(b), "expected 2 new RenderStates to equal eachother");
     assert.isTrue(b.equals(a), "expected RenderState.equal to be commutative");
 
     a.flags.depthTest = true;
-    assert.isFalse(
-      a.equals(b),
-      "expected RenderState.equal to return false for different states"
-    );
+    assert.isFalse(a.equals(b), "expected RenderState.equal to return false for different states");
     b.flags.depthTest = true;
-    assert.isTrue(
-      a.equals(b),
-      "expected RenderState.equal to return true for same states"
-    );
+    assert.isTrue(a.equals(b), "expected RenderState.equal to return true for same states");
     a.flags.depthTest = false;
     b.flags.depthTest = false;
 
     // Test properties
     b.frontFace = GL.FrontFace.Clockwise; // make different than the default
-    assert.isFalse(
-      a.equals(b),
-      "expected different frontFace to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different frontFace to compare as !equal");
     b.frontFace = GL.FrontFace.CounterClockwise; // set back to default value
     assert.isTrue(a.equals(b), "expected same frontFace to compare as equal");
 
     b.cullFace = GL.CullFace.Front;
-    assert.isFalse(
-      a.equals(b),
-      "expected different cullFace to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different cullFace to compare as !equal");
     b.cullFace = GL.CullFace.Back;
     assert.isTrue(a.equals(b), "expected same cullFace to compare as equal");
 
     b.depthFunc = GL.DepthFunc.NotEqual;
-    assert.isFalse(
-      a.equals(b),
-      "expected different depthFunc to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different depthFunc to compare as !equal");
     b.depthFunc = GL.DepthFunc.LessOrEqual;
     assert.isTrue(a.equals(b), "expected same depthFunc to compare as equal");
 
     // Test flags
     b.flags.cull = true;
-    assert.isFalse(
-      a.equals(b),
-      "expected different cull flag to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different cull flag to compare as !equal");
     b.flags.cull = false;
     assert.isTrue(a.equals(b), "expected same cull flag to compare as equal");
 
     b.flags.depthTest = true;
-    assert.isFalse(
-      a.equals(b),
-      "expected different depthTest flag to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different depthTest flag to compare as !equal");
     b.flags.depthTest = false;
-    assert.isTrue(
-      a.equals(b),
-      "expected same depthTest flag to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected same depthTest flag to compare as equal");
 
     b.flags.blend = true;
-    assert.isFalse(
-      a.equals(b),
-      "expected different blend flag to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different blend flag to compare as !equal");
     b.flags.blend = false;
     assert.isTrue(a.equals(b), "expected same blend flag to compare as equal");
 
     b.flags.stencilTest = true;
-    assert.isFalse(
-      a.equals(b),
-      "expected different stencilTest flag to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different stencilTest flag to compare as !equal");
     b.flags.stencilTest = false;
-    assert.isTrue(
-      a.equals(b),
-      "expected same stencilTest flag to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected same stencilTest flag to compare as equal");
 
     b.flags.depthMask = false;
-    assert.isFalse(
-      a.equals(b),
-      "expected different depthMask flag to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different depthMask flag to compare as !equal");
     b.flags.depthMask = true;
-    assert.isTrue(
-      a.equals(b),
-      "expected same depthMask flag to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected same depthMask flag to compare as equal");
 
     // Test blending
     b.blend.setColor([0.0, 0.0, 0.0, 1.0]);
-    assert.isFalse(
-      a.equals(b),
-      "expected different blend color to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different blend color to compare as !equal");
     b.blend.setColor([0.0, 0.0, 0.0, 0.0]);
     assert.isTrue(a.equals(b), "expected same blend color to compare as equal");
 
     b.blend.equationRgb = GL.BlendEquation.Subtract;
-    assert.isFalse(
-      a.equals(b),
-      "expected different blend equationRgb to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different blend equationRgb to compare as !equal");
     b.blend.equationRgb = GL.BlendEquation.Add;
-    assert.isTrue(
-      a.equals(b),
-      "expected same blend equationRgb to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected same blend equationRgb to compare as equal");
 
     b.blend.equationAlpha = GL.BlendEquation.Subtract;
-    assert.isFalse(
-      a.equals(b),
-      "expected different blend equationAlpha to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different blend equationAlpha to compare as !equal");
     b.blend.equationAlpha = GL.BlendEquation.Add;
-    assert.isTrue(
-      a.equals(b),
-      "expected same blend equationAlpha to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected same blend equationAlpha to compare as equal");
 
-    b.blend.setBlendFunc(
-      GL.BlendFactor.AlphaSaturate,
-      GL.BlendFactor.DefaultDst
-    );
-    assert.isFalse(
-      a.equals(b),
-      "expected different blend function src to compare as !equal"
-    );
+    b.blend.setBlendFunc(GL.BlendFactor.AlphaSaturate, GL.BlendFactor.DefaultDst);
+    assert.isFalse(a.equals(b), "expected different blend function src to compare as !equal");
     b.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.DefaultDst);
-    assert.isTrue(
-      a.equals(b),
-      "expected same blend function src to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected same blend function src to compare as equal");
 
-    b.blend.setBlendFunc(
-      GL.BlendFactor.DefaultSrc,
-      GL.BlendFactor.AlphaSaturate
-    );
-    assert.isFalse(
-      a.equals(b),
-      "expected different blend function dst to compare as !equal"
-    );
+    b.blend.setBlendFunc(GL.BlendFactor.DefaultSrc, GL.BlendFactor.AlphaSaturate);
+    assert.isFalse(a.equals(b), "expected different blend function dst to compare as !equal");
     b.blend.setBlendFunc(GL.BlendFactor.DefaultSrc, GL.BlendFactor.Zero);
-    assert.isTrue(
-      a.equals(b),
-      "expected same blend function dst to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected same blend function dst to compare as equal");
 
     b.blend.setBlendFuncSeparate(
       GL.BlendFactor.AlphaSaturate,
@@ -187,20 +110,14 @@ describe("RenderState", () => {
       GL.BlendFactor.DefaultDst,
       GL.BlendFactor.DefaultDst
     );
-    assert.isFalse(
-      a.equals(b),
-      "expected different blend function src rgb to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different blend function src rgb to compare as !equal");
     b.blend.setBlendFuncSeparate(
       GL.BlendFactor.One,
       GL.BlendFactor.DefaultSrc,
       GL.BlendFactor.DefaultDst,
       GL.BlendFactor.DefaultDst
     );
-    assert.isTrue(
-      a.equals(b),
-      "expected same blend function src rgb to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected same blend function src rgb to compare as equal");
 
     b.blend.setBlendFuncSeparate(
       GL.BlendFactor.DefaultSrc,
@@ -208,20 +125,14 @@ describe("RenderState", () => {
       GL.BlendFactor.DefaultDst,
       GL.BlendFactor.DefaultDst
     );
-    assert.isFalse(
-      a.equals(b),
-      "expected different blend function dst rgb to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different blend function dst rgb to compare as !equal");
     b.blend.setBlendFuncSeparate(
       GL.BlendFactor.DefaultSrc,
       GL.BlendFactor.One,
       GL.BlendFactor.DefaultDst,
       GL.BlendFactor.DefaultDst
     );
-    assert.isTrue(
-      a.equals(b),
-      "expected same blend function dst rgb to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected same blend function dst rgb to compare as equal");
 
     b.blend.setBlendFuncSeparate(
       GL.BlendFactor.DefaultSrc,
@@ -229,20 +140,14 @@ describe("RenderState", () => {
       GL.BlendFactor.AlphaSaturate,
       GL.BlendFactor.DefaultDst
     );
-    assert.isFalse(
-      a.equals(b),
-      "expected different blend function src alpha to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different blend function src alpha to compare as !equal");
     b.blend.setBlendFuncSeparate(
       GL.BlendFactor.DefaultSrc,
       GL.BlendFactor.DefaultSrc,
       GL.BlendFactor.Zero,
       GL.BlendFactor.DefaultDst
     );
-    assert.isTrue(
-      a.equals(b),
-      "expected same blend function src alpha to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected same blend function src alpha to compare as equal");
 
     b.blend.setBlendFuncSeparate(
       GL.BlendFactor.DefaultSrc,
@@ -250,186 +155,93 @@ describe("RenderState", () => {
       GL.BlendFactor.DefaultDst,
       GL.BlendFactor.AlphaSaturate
     );
-    assert.isFalse(
-      a.equals(b),
-      "expected different blend function dst alpha to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different blend function dst alpha to compare as !equal");
     b.blend.setBlendFuncSeparate(
       GL.BlendFactor.DefaultSrc,
       GL.BlendFactor.DefaultSrc,
       GL.BlendFactor.DefaultDst,
       GL.BlendFactor.Zero
     );
-    assert.isTrue(
-      a.equals(b),
-      "expected same blend function dst alpha to compare as !equal"
-    );
+    assert.isTrue(a.equals(b), "expected same blend function dst alpha to compare as !equal");
 
     // Test Stencil
     b.stencilMask = 0xf0;
-    assert.isFalse(
-      a.equals(b),
-      "expected different stnecilMask to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different stnecilMask to compare as !equal");
     b.stencilMask = 0xffffffff;
     assert.isTrue(a.equals(b), "expected same stnecilMask to compare as equal");
 
     b.stencil.frontFunction.function = GL.StencilFunction.Greater;
-    assert.isFalse(
-      a.equals(b),
-      "expected different stencil frontFunction to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different stencil frontFunction to compare as !equal");
     b.stencil.frontFunction.function = GL.StencilFunction.Always;
-    assert.isTrue(
-      a.equals(b),
-      "expected same stencil frontFunction to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected same stencil frontFunction to compare as equal");
 
     b.stencil.backFunction.function = GL.StencilFunction.Greater;
-    assert.isFalse(
-      a.equals(b),
-      "expected different stencil backFunction to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different stencil backFunction to compare as !equal");
     b.stencil.backFunction.function = GL.StencilFunction.Always;
-    assert.isTrue(
-      a.equals(b),
-      "expected same stencil backFunction to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected same stencil backFunction to compare as equal");
 
     b.stencil.frontFunction.ref = 0x08;
-    assert.isFalse(
-      a.equals(b),
-      "expected different stencil frontRef to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different stencil frontRef to compare as !equal");
     b.stencil.frontFunction.ref = 0;
-    assert.isTrue(
-      a.equals(b),
-      "expected same stencil frontRef to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected same stencil frontRef to compare as equal");
 
     b.stencil.backFunction.ref = 0x08;
-    assert.isFalse(
-      a.equals(b),
-      "expected different stencil backRef to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different stencil backRef to compare as !equal");
     b.stencil.backFunction.ref = 0;
-    assert.isTrue(
-      a.equals(b),
-      "expected same stencil backRef to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected same stencil backRef to compare as equal");
 
     b.stencil.frontFunction.mask = 0x08;
-    assert.isFalse(
-      a.equals(b),
-      "expected different stencil fronMask to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different stencil fronMask to compare as !equal");
     b.stencil.frontFunction.mask = 0xffffffff;
-    assert.isTrue(
-      a.equals(b),
-      "expected same stencil fronMask to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected same stencil fronMask to compare as equal");
 
     b.stencil.backFunction.mask = 0x08;
-    assert.isFalse(
-      a.equals(b),
-      "expected different stencil backMask to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different stencil backMask to compare as !equal");
     b.stencil.backFunction.mask = 0xffffffff;
-    assert.isTrue(
-      a.equals(b),
-      "expected same stencil backMask to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected same stencil backMask to compare as equal");
 
     b.stencil.frontOperation.fail = GL.StencilOperation.IncrWrap;
-    assert.isFalse(
-      a.equals(b),
-      "expected different stencil frontOperation fail to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different stencil frontOperation fail to compare as !equal");
     b.stencil.frontOperation.fail = GL.StencilOperation.Keep;
-    assert.isTrue(
-      a.equals(b),
-      "expected same stencil frontOperation fail to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected same stencil frontOperation fail to compare as equal");
 
     b.stencil.frontOperation.zFail = GL.StencilOperation.IncrWrap;
-    assert.isFalse(
-      a.equals(b),
-      "expected different stencil frontOperation zFail to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different stencil frontOperation zFail to compare as !equal");
     b.stencil.frontOperation.zFail = GL.StencilOperation.Keep;
-    assert.isTrue(
-      a.equals(b),
-      "expected same stencil frontOperation zFail to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected same stencil frontOperation zFail to compare as equal");
 
     b.stencil.frontOperation.zPass = GL.StencilOperation.IncrWrap;
-    assert.isFalse(
-      a.equals(b),
-      "expected different stencil frontOperation zPass to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different stencil frontOperation zPass to compare as !equal");
     b.stencil.frontOperation.zPass = GL.StencilOperation.Keep;
-    assert.isTrue(
-      a.equals(b),
-      "expected same stencil frontOperation zPass to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected same stencil frontOperation zPass to compare as equal");
 
     b.stencil.backOperation.fail = GL.StencilOperation.IncrWrap;
-    assert.isFalse(
-      a.equals(b),
-      "expected different stencil backOperation fail to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different stencil backOperation fail to compare as !equal");
     b.stencil.backOperation.fail = GL.StencilOperation.Keep;
-    assert.isTrue(
-      a.equals(b),
-      "expected same stencil backOperation fail to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected same stencil backOperation fail to compare as equal");
 
     b.stencil.backOperation.zFail = GL.StencilOperation.IncrWrap;
-    assert.isFalse(
-      a.equals(b),
-      "expected different stencil backOperation zFail to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different stencil backOperation zFail to compare as !equal");
     b.stencil.backOperation.zFail = GL.StencilOperation.Keep;
-    assert.isTrue(
-      a.equals(b),
-      "expected same stencil backOperation zFail to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected same stencil backOperation zFail to compare as equal");
 
     b.stencil.backOperation.zPass = GL.StencilOperation.IncrWrap;
-    assert.isFalse(
-      a.equals(b),
-      "expected different stencil backOperation zPass to compare as !equal"
-    );
+    assert.isFalse(a.equals(b), "expected different stencil backOperation zPass to compare as !equal");
     b.stencil.backOperation.zPass = GL.StencilOperation.Keep;
-    assert.isTrue(
-      a.equals(b),
-      "expected same stencil backOperation zPass to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected same stencil backOperation zPass to compare as equal");
 
     // Test constructor, clone and coppy
     a = new RenderState(b);
-    assert.isTrue(
-      a.equals(b),
-      "expected constructor copied RenderState to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected constructor copied RenderState to compare as equal");
 
     a = b.clone();
-    assert.isTrue(
-      a.equals(b),
-      "expected cloned RenderState to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected cloned RenderState to compare as equal");
 
     a.flags.depthTest = true;
-    assert.isFalse(
-      b.equals(a),
-      "expected modified cloned RenderState to compare as !equal"
-    );
+    assert.isFalse(b.equals(a), "expected modified cloned RenderState to compare as !equal");
 
     b.copyFrom(a);
-    assert.isTrue(
-      b.equals(a),
-      "expected copyFrom RenderState to compare as equal"
-    );
+    assert.isTrue(b.equals(a), "expected copyFrom RenderState to compare as equal");
 
     // Test again with all properties set to non-default values.
     b.frontFace = GL.FrontFace.Clockwise;
@@ -443,14 +255,8 @@ describe("RenderState", () => {
     b.blend.setColor([0.0, 0.0, 0.0, 1.0]);
     b.blend.equationRgb = GL.BlendEquation.Subtract;
     b.blend.equationAlpha = GL.BlendEquation.Subtract;
-    b.blend.setBlendFunc(
-      GL.BlendFactor.AlphaSaturate,
-      GL.BlendFactor.DefaultDst
-    );
-    b.blend.setBlendFunc(
-      GL.BlendFactor.DefaultSrc,
-      GL.BlendFactor.AlphaSaturate
-    );
+    b.blend.setBlendFunc(GL.BlendFactor.AlphaSaturate, GL.BlendFactor.DefaultDst);
+    b.blend.setBlendFunc(GL.BlendFactor.DefaultSrc, GL.BlendFactor.AlphaSaturate);
     b.blend.setBlendFuncSeparate(
       GL.BlendFactor.AlphaSaturate,
       GL.BlendFactor.DefaultSrc,
@@ -489,21 +295,12 @@ describe("RenderState", () => {
     b.stencil.backOperation.zFail = GL.StencilOperation.IncrWrap;
     b.stencil.backOperation.zPass = GL.StencilOperation.IncrWrap;
     a = new RenderState(b);
-    assert.isTrue(
-      a.equals(b),
-      "expected constructor copied non-default RenderState to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected constructor copied non-default RenderState to compare as equal");
     a = b.clone();
-    assert.isTrue(
-      a.equals(b),
-      "expected cloned non-default RenderState to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected cloned non-default RenderState to compare as equal");
     a = new RenderState();
     a.copyFrom(b);
-    assert.isTrue(
-      a.equals(b),
-      "expected copyFrom non-default RenderState to compare as equal"
-    );
+    assert.isTrue(a.equals(b), "expected copyFrom non-default RenderState to compare as equal");
   });
 
   it("should have expected initial WebGL context state", () => {
@@ -562,8 +359,7 @@ describe("RenderState", () => {
 
     const glBlendColor = gl.getParameter(GL.Capability.BlendColor);
     const rsBlendColor = rs.blend.color;
-    for (let i = 0; i < 4; i++)
-      expect(rsBlendColor[i]).to.equal(glBlendColor[i]);
+    for (let i = 0; i < 4; i++) expect(rsBlendColor[i]).to.equal(glBlendColor[i]);
   });
 
   it("should apply state", () => {
@@ -579,34 +375,22 @@ describe("RenderState", () => {
     prevState.copyFrom(newState);
     newState.flags.cull = true;
     newState.apply(prevState);
-    assert.isTrue(
-      gl.getParameter(GL.Capability.CullFace) === true,
-      "cull flag should now be enabled"
-    );
+    assert.isTrue(gl.getParameter(GL.Capability.CullFace) === true, "cull flag should now be enabled");
 
     prevState.copyFrom(newState);
     newState.flags.depthTest = true;
     newState.apply(prevState);
-    assert.isTrue(
-      gl.getParameter(GL.Capability.DepthTest) === true,
-      "depthTest flag should now be enabled"
-    );
+    assert.isTrue(gl.getParameter(GL.Capability.DepthTest) === true, "depthTest flag should now be enabled");
 
     prevState.copyFrom(newState);
     newState.flags.blend = true;
     newState.apply(prevState);
-    assert.isTrue(
-      gl.getParameter(GL.Capability.Blend) === true,
-      "blend flag should now be enabled"
-    );
+    assert.isTrue(gl.getParameter(GL.Capability.Blend) === true, "blend flag should now be enabled");
 
     prevState.copyFrom(newState);
     newState.flags.stencilTest = true;
     newState.apply(prevState);
-    assert.isTrue(
-      gl.getParameter(GL.Capability.StencilTest) === true,
-      "stencilTest flag should now be enabled"
-    );
+    assert.isTrue(gl.getParameter(GL.Capability.StencilTest) === true, "stencilTest flag should now be enabled");
 
     newState.frontFace = GL.FrontFace.Clockwise;
     newState.apply(prevState);
@@ -618,10 +402,7 @@ describe("RenderState", () => {
     prevState.copyFrom(newState);
     newState.cullFace = GL.CullFace.Front;
     newState.apply(prevState);
-    assert.isTrue(
-      gl.getParameter(GL.Capability.CullFaceMode) === GL.CullFace.Front,
-      "cullFace should now be Front"
-    );
+    assert.isTrue(gl.getParameter(GL.Capability.CullFaceMode) === GL.CullFace.Front, "cullFace should now be Front");
 
     prevState.copyFrom(newState);
     newState.depthFunc = GL.DepthFunc.GreaterOrEqual;
@@ -634,46 +415,27 @@ describe("RenderState", () => {
     prevState.copyFrom(newState);
     newState.flags.depthMask = false;
     newState.apply(prevState);
-    assert.isTrue(
-      gl.getParameter(GL.Capability.DepthWriteMask) === false,
-      "depthMask flag should now be disabled"
-    );
+    assert.isTrue(gl.getParameter(GL.Capability.DepthWriteMask) === false, "depthMask flag should now be disabled");
 
     prevState.copyFrom(newState);
     newState.stencilMask = 0x03;
     newState.apply(prevState);
-    assert.isTrue(
-      gl.getParameter(GL.Capability.StencilWriteMask) === 0x03,
-      "stencilMask should now be 0x03"
-    );
+    assert.isTrue(gl.getParameter(GL.Capability.StencilWriteMask) === 0x03, "stencilMask should now be 0x03");
 
     prevState.copyFrom(newState);
     newState.blend.setColor([0.1, 0.2, 0.3, 0.4]);
     newState.apply(prevState);
     const blendColor = gl.getParameter(GL.Capability.BlendColor);
-    assert.isTrue(
-      withinTolerance(blendColor[0], 0.1),
-      "blendColor[0] should now be 0.1"
-    );
-    assert.isTrue(
-      withinTolerance(blendColor[1], 0.2),
-      "blendColor[1] should now be 0.2"
-    );
-    assert.isTrue(
-      withinTolerance(blendColor[2], 0.3),
-      "blendColor[2] should now be 0.3"
-    );
-    assert.isTrue(
-      withinTolerance(blendColor[3], 0.4),
-      "blendColor[3] should now be 0.4"
-    );
+    assert.isTrue(withinTolerance(blendColor[0], 0.1), "blendColor[0] should now be 0.1");
+    assert.isTrue(withinTolerance(blendColor[1], 0.2), "blendColor[1] should now be 0.2");
+    assert.isTrue(withinTolerance(blendColor[2], 0.3), "blendColor[2] should now be 0.3");
+    assert.isTrue(withinTolerance(blendColor[3], 0.4), "blendColor[3] should now be 0.4");
 
     prevState.copyFrom(newState);
     newState.blend.equationRgb = GL.BlendEquation.ReverseSubtract;
     newState.apply(prevState);
     assert.isTrue(
-      gl.getParameter(GL.Capability.BlendEquationRGB) ===
-        GL.BlendEquation.ReverseSubtract,
+      gl.getParameter(GL.Capability.BlendEquationRGB) === GL.BlendEquation.ReverseSubtract,
       "blend.equationRgb should now be ReverseSubtract"
     );
 
@@ -681,8 +443,7 @@ describe("RenderState", () => {
     newState.blend.equationAlpha = GL.BlendEquation.Subtract;
     newState.apply(prevState);
     assert.isTrue(
-      gl.getParameter(GL.Capability.BlendEquationAlpha) ===
-        GL.BlendEquation.Subtract,
+      gl.getParameter(GL.Capability.BlendEquationAlpha) === GL.BlendEquation.Subtract,
       "blend.equationAlpha should now be Subtract"
     );
 
@@ -690,8 +451,7 @@ describe("RenderState", () => {
     newState.blend.functionSourceRgb = GL.BlendFactor.OneMinusSrcColor;
     newState.apply(prevState);
     assert.isTrue(
-      gl.getParameter(GL.Capability.BlendSrcRgb) ===
-        GL.BlendFactor.OneMinusSrcColor,
+      gl.getParameter(GL.Capability.BlendSrcRgb) === GL.BlendFactor.OneMinusSrcColor,
       "blend.functionSourceRgb should now be OneMinusSrcColor"
     );
 
@@ -699,8 +459,7 @@ describe("RenderState", () => {
     newState.blend.functionSourceAlpha = GL.BlendFactor.OneMinusSrcAlpha;
     newState.apply(prevState);
     assert.isTrue(
-      gl.getParameter(GL.Capability.BlendSrcAlpha) ===
-        GL.BlendFactor.OneMinusSrcAlpha,
+      gl.getParameter(GL.Capability.BlendSrcAlpha) === GL.BlendFactor.OneMinusSrcAlpha,
       "blend.functionSourceAlpha should now be OneMinusSrcAlpha"
     );
 
@@ -708,8 +467,7 @@ describe("RenderState", () => {
     newState.blend.functionDestRgb = GL.BlendFactor.OneMinusDstColor;
     newState.apply(prevState);
     assert.isTrue(
-      gl.getParameter(GL.Capability.BlendDstRgb) ===
-        GL.BlendFactor.OneMinusDstColor,
+      gl.getParameter(GL.Capability.BlendDstRgb) === GL.BlendFactor.OneMinusDstColor,
       "blend.functionDestRgb should now be OneMinusDstColor"
     );
 
@@ -717,8 +475,7 @@ describe("RenderState", () => {
     newState.blend.functionDestAlpha = GL.BlendFactor.OneMinusDstAlpha;
     newState.apply(prevState);
     assert.isTrue(
-      gl.getParameter(GL.Capability.BlendDstAlpha) ===
-        GL.BlendFactor.OneMinusDstAlpha,
+      gl.getParameter(GL.Capability.BlendDstAlpha) === GL.BlendFactor.OneMinusDstAlpha,
       "blend.functionDestAlpha should now be OneMinusDstAlpha"
     );
   });

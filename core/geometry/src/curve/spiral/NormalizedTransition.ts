@@ -25,9 +25,7 @@ export abstract class NormalizedTransition {
   /** At fractional position on the x axis, return the (normalized) curvature fraction. */
   public abstract fractionToCurvatureFraction(fractionX: number): number;
   /** Return the derivative of the (normalized) curvature fraction */
-  public abstract fractionToCurvatureFractionDerivative(
-    fractionX: number
-  ): number;
+  public abstract fractionToCurvatureFractionDerivative(fractionX: number): number;
   /** Return the integrated area under the curve
    * * This is equal to the accumulated angle change.
    */
@@ -56,21 +54,15 @@ export abstract class NormalizedTransition {
         ? this._clothoidEvaluator
         : (this._clothoidEvaluator = new NormalizedClothoidTransition());
     if (name === "bloss")
-      return this._blossEvaluator
-        ? this._blossEvaluator
-        : (this._blossEvaluator = new NormalizedBlossTransition());
+      return this._blossEvaluator ? this._blossEvaluator : (this._blossEvaluator = new NormalizedBlossTransition());
     if (name === "biquadratic")
       return this._biquadraticEvaluator
         ? this._biquadraticEvaluator
         : (this._biquadraticEvaluator = new NormalizedBiQuadraticTransition());
     if (name === "sine")
-      return this._sineEvaluator
-        ? this._sineEvaluator
-        : (this._sineEvaluator = new NormalizedSineTransition());
+      return this._sineEvaluator ? this._sineEvaluator : (this._sineEvaluator = new NormalizedSineTransition());
     if (name === "cosine")
-      return this._cosineEvaluator
-        ? this._cosineEvaluator
-        : (this._cosineEvaluator = new NormalizedCosineTransition());
+      return this._cosineEvaluator ? this._cosineEvaluator : (this._cosineEvaluator = new NormalizedCosineTransition());
     return undefined;
   }
 }

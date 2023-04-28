@@ -4,13 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import {
-  ECSqlStatement,
-  IModelDb,
-  IModelJsFs,
-  SnapshotDb,
-  SpatialCategory,
-} from "@itwin/core-backend";
+import { ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import { IModelTestUtils } from "@itwin/core-backend/lib/cjs/test/index";
 import { Id64String } from "@itwin/core-bentley";
 import {
@@ -23,12 +17,7 @@ import {
   IModel,
   SubCategoryAppearance,
 } from "@itwin/core-common";
-import {
-  Arc3d,
-  IModelJson as GeomJson,
-  Point2d,
-  Point3d,
-} from "@itwin/core-geometry";
+import { Arc3d, IModelJson as GeomJson, Point2d, Point3d } from "@itwin/core-geometry";
 
 export class PerfTestDataMgr {
   public db: SnapshotDb | undefined;
@@ -41,35 +30,23 @@ export class PerfTestDataMgr {
     }
     const fName = path.basename(imodelPath);
     const dirName = path.basename(path.dirname(imodelPath));
-    this.db = SnapshotDb.createEmpty(
-      IModelTestUtils.prepareOutputFile(dirName, fName),
-      { rootSubject: { name: "PerfTest" } }
-    );
+    this.db = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile(dirName, fName), {
+      rootSubject: { name: "PerfTest" },
+    });
   }
   public async importSchema(schemaPath: string, testCName: string = "") {
     assert(IModelJsFs.existsSync(schemaPath));
     if (this.db) {
       await this.db.importSchemas([schemaPath]);
       if (testCName)
-        assert.isDefined(
-          this.db.getMetaData(testCName),
-          `Class Name ${testCName}is not present in iModel.`
-        );
+        assert.isDefined(this.db.getMetaData(testCName), `Class Name ${testCName}is not present in iModel.`);
       this.db.saveChanges();
     }
   }
   public setup() {
     if (this.db) {
-      this.modelId = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
-        this.db,
-        Code.createEmpty(),
-        true
-      );
-      this.catId = SpatialCategory.queryCategoryIdByName(
-        this.db,
-        IModel.dictionaryId,
-        "MySpatialCategory"
-      );
+      this.modelId = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(this.db, Code.createEmpty(), true);
+      this.catId = SpatialCategory.queryCategoryIdByName(this.db, IModel.dictionaryId, "MySpatialCategory");
       if (undefined === this.catId) {
         this.catId = SpatialCategory.insert(
           this.db,
@@ -118,8 +95,7 @@ function genPropValue(prop: string): any {
   if (prop.toLowerCase().includes("boolean")) return true;
   if (prop.toLowerCase().includes("binary")) return new Uint8Array([1, 2, 3]);
   if (prop.toLowerCase().includes("point2d")) return new Point2d(1.034, 2.034);
-  if (prop.toLowerCase().includes("point3d"))
-    return new Point3d(-1.0, 2.3, 3.0001);
+  if (prop.toLowerCase().includes("point3d")) return new Point3d(-1.0, 2.3, 3.0001);
   // could not find type
   else return undefined;
 }
@@ -155,9 +131,7 @@ export class PerfTestUtility {
     for (let i = 0; i < classCount; ++i) {
       sxml = `${sxml}
         <ECEntityClass typeName="${i === 0 ? className : subClassName + i}">`;
-      const bisBaseClass: string = is3d
-        ? "bis:PhysicalElement"
-        : "bis:GraphicalElement2d";
+      const bisBaseClass: string = is3d ? "bis:PhysicalElement" : "bis:GraphicalElement2d";
       if (hierarchy) {
         let baseClass: string = "";
         if (i === 0) baseClass = bisBaseClass;
@@ -172,22 +146,14 @@ export class PerfTestUtility {
       }
       if (props.length === 0) {
         sxml = `${sxml}
-            <ECProperty propertyName="${
-              i === 0 ? "BaseStr" : `Sub${i}Str`
-            }" typeName="string"/>
-            <ECProperty propertyName="${
-              i === 0 ? "BaseLong" : `Sub${i}Long`
-            }" typeName="long"/>
-            <ECProperty propertyName="${
-              i === 0 ? "BaseDouble" : `Sub${i}Double`
-            }" typeName="double"/>`;
+            <ECProperty propertyName="${i === 0 ? "BaseStr" : `Sub${i}Str`}" typeName="string"/>
+            <ECProperty propertyName="${i === 0 ? "BaseLong" : `Sub${i}Long`}" typeName="long"/>
+            <ECProperty propertyName="${i === 0 ? "BaseDouble" : `Sub${i}Double`}" typeName="double"/>`;
       } else {
         for (const prop of props) {
           const propType = prop.split("Test")[0];
           sxml = `${sxml}
-          <ECProperty propertyName="${
-            i === 0 ? prop : `Sub${i}${prop}`
-          }" typeName="${propType}"/>`;
+          <ECProperty propertyName="${i === 0 ? prop : `Sub${i}${prop}`}" typeName="${propType}"/>`;
         }
       }
       sxml = `${sxml}
@@ -197,11 +163,7 @@ export class PerfTestUtility {
     </ECSchema>`;
     return sxml;
   }
-  public static genPropValues(
-    imodel: IModelDb,
-    schemaName: string,
-    className: string
-  ): any {
+  public static genPropValues(imodel: IModelDb, schemaName: string, className: string): any {
     const props: string[] = [];
     const ecsql: string = `SELECT DISTINCT prop.Name FROM ECDbMeta.ECPropertyDef prop
        JOIN ECDbMeta.ECClassDef base ON base.ECInstanceId = prop.Class.Id
@@ -260,11 +222,7 @@ export class PerfTestUtility {
       geom: geometryStream,
     };
 
-    const autoHandledProps = PerfTestUtility.genPropValues(
-      _iModelName,
-      schemaName,
-      className
-    );
+    const autoHandledProps = PerfTestUtility.genPropValues(_iModelName, schemaName, className);
     Object.assign(elementProps, autoHandledProps);
 
     return elementProps;
@@ -272,14 +230,11 @@ export class PerfTestUtility {
 
   public static getCount(imodel: IModelDb, className: string) {
     let count = 0;
-    imodel.withPreparedStatement(
-      `SELECT count(*) AS [count] FROM ${className}`,
-      (stmt: ECSqlStatement) => {
-        assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
-        const row = stmt.getRow();
-        count = row.count;
-      }
-    );
+    imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
+      assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
+      const row = stmt.getRow();
+      count = row.count;
+    });
     return count;
   }
 
@@ -327,11 +282,7 @@ export class PerfTestUtility {
       elementProps.sub2Long = values.sub2Long;
       elementProps.sub2Double = values.sub2Double;
     }
-    if (
-      className === "PerfElementSub3" ||
-      className === "PerfElementSub2" ||
-      className === "PerfElementSub1"
-    ) {
+    if (className === "PerfElementSub3" || className === "PerfElementSub2" || className === "PerfElementSub1") {
       elementProps.sub1Str = values.sub1Str;
       elementProps.sub1Long = values.sub1Long;
       elementProps.sub1Double = values.sub1Double;

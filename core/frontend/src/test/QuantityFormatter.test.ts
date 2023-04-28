@@ -52,10 +52,7 @@ const storageMock = () => {
 
 describe("Quantity formatter", async () => {
   let quantityFormatter: QuantityFormatter;
-  const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(
-    window,
-    "localStorage"
-  )!;
+  const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(window, "localStorage")!;
   const myLocalStorage = storageMock();
 
   before(async () => {
@@ -78,14 +75,10 @@ describe("Quantity formatter", async () => {
 
   it("Length should honor overrides from LocalUnitFormatProvider", async () => {
     // set the units settings provider that will set the QuantityFormatter to "metric" and provide overrides to display "cm"
-    await quantityFormatter.setUnitFormattingSettingsProvider(
-      new LocalUnitFormatProvider(quantityFormatter, false)
-    );
+    await quantityFormatter.setUnitFormattingSettingsProvider(new LocalUnitFormatProvider(quantityFormatter, false));
 
     const expected = `12345.6 cm`;
-    const newFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(
-      QuantityType.Length
-    );
+    const newFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
     assert(newFormatterSpec !== undefined);
     const actual = quantityFormatter.formatQuantity(123.456, newFormatterSpec);
     assert.equal(actual, expected);
@@ -106,57 +99,40 @@ describe("Quantity formatter", async () => {
     };
 
     // set the units settings provider that will set the QuantityFormatter to "metric" and provide overrides to display "cm"
-    await quantityFormatter.setUnitFormattingSettingsProvider(
-      new LocalUnitFormatProvider(quantityFormatter, false)
-    );
+    await quantityFormatter.setUnitFormattingSettingsProvider(new LocalUnitFormatProvider(quantityFormatter, false));
 
     let expected = `12345.6 cm`;
-    let newFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(
-      QuantityType.Length
-    );
+    let newFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
     assert(newFormatterSpec !== undefined);
     let actual = quantityFormatter.formatQuantity(123.456, newFormatterSpec);
     assert.equal(actual, expected);
 
     // update the overrides to display "mm"
     expected = `123456 mm`;
-    await quantityFormatter.setOverrideFormats(
-      QuantityType.Length,
-      overrideLengthAndCoordinateEntry
-    );
+    await quantityFormatter.setOverrideFormats(QuantityType.Length, overrideLengthAndCoordinateEntry);
     const storedOverride = JSON.parse(
       localStorage.getItem("quantityTypeFormat#user#q:QuantityTypeEnumValue-1")!
     ) as OverrideFormatEntry;
     assert(storedOverride.metric?.composite?.units[0].label === "mm");
     assert(storedOverride.metric?.composite?.units[0].name === "Units.MM");
 
-    newFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(
-      QuantityType.Length
-    );
+    newFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
     actual = quantityFormatter.formatQuantity(123.456, newFormatterSpec);
     assert.equal(actual, expected);
 
     // now delete the overrides to restore to default of "m"
     expected = `123.456 m`;
     await quantityFormatter.clearOverrideFormats(QuantityType.Length);
-    newFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(
-      QuantityType.Length
-    );
+    newFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
     actual = quantityFormatter.formatQuantity(123.456, newFormatterSpec);
     assert.equal(actual, expected);
 
-    assert(
-      localStorage.getItem(
-        "quantityTypeFormat#user#q:QuantityTypeEnumValue-1"
-      ) === null
-    );
+    assert(localStorage.getItem("quantityTypeFormat#user#q:QuantityTypeEnumValue-1") === null);
   });
 
   it("Length should be cached during onInitialized processing", async () => {
     const expected = `405'-0 1/2"`;
-    const newFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(
-      QuantityType.Length
-    );
+    const newFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
     assert(newFormatterSpec !== undefined);
     const actual = quantityFormatter.formatQuantity(123.456, newFormatterSpec);
     assert.equal(actual, expected);
@@ -164,10 +140,7 @@ describe("Quantity formatter", async () => {
 
   it("Length format spec retrieved asynchronously", async () => {
     const expected = `405'-0 1/2"`;
-    const newFormatterSpec =
-      await quantityFormatter.getFormatterSpecByQuantityType(
-        QuantityType.Length
-      );
+    const newFormatterSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
     const actual = quantityFormatter.formatQuantity(123.456, newFormatterSpec);
     assert.equal(actual, expected);
   });
@@ -196,86 +169,38 @@ describe("Quantity formatter", async () => {
       },
     };
 
-    const metricFormatSpec =
-      await quantityFormatter.getFormatterSpecByQuantityType(
-        QuantityType.Length,
-        false
-      );
-    const metricFormattedValue = quantityFormatter.formatQuantity(
-      1.5,
-      metricFormatSpec
-    );
+    const metricFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length, false);
+    const metricFormattedValue = quantityFormatter.formatQuantity(1.5, metricFormatSpec);
     assert.equal(metricFormattedValue, "1.5 m");
 
-    const imperialFormatSpec =
-      await quantityFormatter.getFormatterSpecByQuantityType(
-        QuantityType.Length,
-        true
-      );
-    const imperialFormattedValue = quantityFormatter.formatQuantity(
-      1.5,
-      imperialFormatSpec
-    );
+    const imperialFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length, true);
+    const imperialFormattedValue = quantityFormatter.formatQuantity(1.5, imperialFormatSpec);
     assert.equal(imperialFormattedValue, `4'-11"`);
 
-    await quantityFormatter.setOverrideFormats(
-      QuantityType.Length,
-      overrideLengthAndCoordinateEntry
-    );
-    const overrideMetricFormatSpec =
-      await quantityFormatter.getFormatterSpecByQuantityType(
-        QuantityType.Length,
-        false
-      );
-    const overrideMetricFormattedValue = quantityFormatter.formatQuantity(
-      1.5,
-      overrideMetricFormatSpec
-    );
+    await quantityFormatter.setOverrideFormats(QuantityType.Length, overrideLengthAndCoordinateEntry);
+    const overrideMetricFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length, false);
+    const overrideMetricFormattedValue = quantityFormatter.formatQuantity(1.5, overrideMetricFormatSpec);
     assert.equal(overrideMetricFormattedValue, "150 cm");
 
-    const overrideImperialFormatSpec =
-      await quantityFormatter.getFormatterSpecByQuantityType(
-        QuantityType.Length,
-        true
-      );
-    const overrideImperialFormattedValue = quantityFormatter.formatQuantity(
-      1.5,
-      overrideImperialFormatSpec
+    const overrideImperialFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(
+      QuantityType.Length,
+      true
     );
+    const overrideImperialFormattedValue = quantityFormatter.formatQuantity(1.5, overrideImperialFormatSpec);
     assert.equal(overrideImperialFormattedValue, "59.0551 in");
     quantityFormatter.addAlternateLabels("Units.FT", "shoe", "sock");
-    const alternateLabels =
-      quantityFormatter.alternateUnitLabelsProvider.getAlternateUnitLabels({
-        name: "Units.FT",
-      } as UnitProps);
+    const alternateLabels = quantityFormatter.alternateUnitLabelsProvider.getAlternateUnitLabels({
+      name: "Units.FT",
+    } as UnitProps);
     bAssert(undefined !== alternateLabels);
     assert(alternateLabels.includes("shoe"));
     assert(alternateLabels.includes("sock"));
-    const overrideImperialParserSpec =
-      await quantityFormatter.getParserSpecByQuantityType(
-        QuantityType.Length,
-        true
-      );
-    const overrideValueInMeters1 = quantityFormatter.parseToQuantityValue(
-      `48"`,
-      overrideImperialParserSpec
-    );
-    const overrideValueInMeters2 = quantityFormatter.parseToQuantityValue(
-      `48 in`,
-      overrideImperialParserSpec
-    );
-    const overrideValueInMeters3 = quantityFormatter.parseToQuantityValue(
-      `4 ft`,
-      overrideImperialParserSpec
-    );
-    const overrideValueInMeters4 = quantityFormatter.parseToQuantityValue(
-      `4 shoe`,
-      overrideImperialParserSpec
-    );
-    const overrideValueInMeters5 = quantityFormatter.parseToQuantityValue(
-      `4 sock`,
-      overrideImperialParserSpec
-    );
+    const overrideImperialParserSpec = await quantityFormatter.getParserSpecByQuantityType(QuantityType.Length, true);
+    const overrideValueInMeters1 = quantityFormatter.parseToQuantityValue(`48"`, overrideImperialParserSpec);
+    const overrideValueInMeters2 = quantityFormatter.parseToQuantityValue(`48 in`, overrideImperialParserSpec);
+    const overrideValueInMeters3 = quantityFormatter.parseToQuantityValue(`4 ft`, overrideImperialParserSpec);
+    const overrideValueInMeters4 = quantityFormatter.parseToQuantityValue(`4 shoe`, overrideImperialParserSpec);
+    const overrideValueInMeters5 = quantityFormatter.parseToQuantityValue(`4 sock`, overrideImperialParserSpec);
     assert(Parser.isParsedQuantity(overrideValueInMeters1));
     assert(Parser.isParsedQuantity(overrideValueInMeters2));
     assert(Parser.isParsedQuantity(overrideValueInMeters3));
@@ -289,24 +214,9 @@ describe("Quantity formatter", async () => {
       Parser.isParsedQuantity(overrideValueInMeters5)
     ) {
       assert(withinTolerance(overrideValueInMeters1.value, 1.2192));
-      assert(
-        withinTolerance(
-          overrideValueInMeters1.value,
-          overrideValueInMeters2.value
-        )
-      );
-      assert(
-        withinTolerance(
-          overrideValueInMeters3.value,
-          overrideValueInMeters2.value
-        )
-      );
-      assert(
-        withinTolerance(
-          overrideValueInMeters4.value,
-          overrideValueInMeters5.value
-        )
-      );
+      assert(withinTolerance(overrideValueInMeters1.value, overrideValueInMeters2.value));
+      assert(withinTolerance(overrideValueInMeters3.value, overrideValueInMeters2.value));
+      assert(withinTolerance(overrideValueInMeters4.value, overrideValueInMeters5.value));
     }
   });
 
@@ -335,156 +245,66 @@ describe("Quantity formatter", async () => {
     };
 
     // deprecated way of passing in useImperial
-    let metricFormatSpec =
-      await quantityFormatter.getFormatterSpecByQuantityType(
-        QuantityType.Coordinate,
-        false
-      );
-    let metricFormattedValue = quantityFormatter.formatQuantity(
-      100000.0,
-      metricFormatSpec
-    );
+    let metricFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Coordinate, false);
+    let metricFormattedValue = quantityFormatter.formatQuantity(100000.0, metricFormatSpec);
     assert.equal(metricFormattedValue, "100000 m");
 
-    let imperialFormatSpec =
-      await quantityFormatter.getFormatterSpecByQuantityType(
-        QuantityType.Coordinate,
-        true
-      );
-    let imperialFormattedValue = quantityFormatter.formatQuantity(
-      100000.0,
-      imperialFormatSpec
-    );
+    let imperialFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Coordinate, true);
+    let imperialFormattedValue = quantityFormatter.formatQuantity(100000.0, imperialFormatSpec);
     assert.equal(imperialFormattedValue, "328083.99 ft");
 
-    await quantityFormatter.setOverrideFormats(
-      QuantityType.Length,
-      overrideLengthAndCoordinateEntry
-    );
-    await quantityFormatter.setOverrideFormats(
-      QuantityType.Coordinate,
-      overrideLengthAndCoordinateEntry
-    );
+    await quantityFormatter.setOverrideFormats(QuantityType.Length, overrideLengthAndCoordinateEntry);
+    await quantityFormatter.setOverrideFormats(QuantityType.Coordinate, overrideLengthAndCoordinateEntry);
 
-    let overrideMetricFormatSpec =
-      await quantityFormatter.getFormatterSpecByQuantityType(
-        QuantityType.Length,
-        false
-      );
-    let overrideMetricFormattedValue = quantityFormatter.formatQuantity(
-      100000.0,
-      overrideMetricFormatSpec
-    );
+    let overrideMetricFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length, false);
+    let overrideMetricFormattedValue = quantityFormatter.formatQuantity(100000.0, overrideMetricFormatSpec);
     assert.equal(overrideMetricFormattedValue, "100000 m");
 
-    overrideMetricFormatSpec =
-      await quantityFormatter.getFormatterSpecByQuantityType(
-        QuantityType.Coordinate,
-        false
-      );
-    overrideMetricFormattedValue = quantityFormatter.formatQuantity(
-      100000.0,
-      overrideMetricFormatSpec
-    );
+    overrideMetricFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Coordinate, false);
+    overrideMetricFormattedValue = quantityFormatter.formatQuantity(100000.0, overrideMetricFormatSpec);
     assert.equal(overrideMetricFormattedValue, "100000 m");
 
-    let overrideImperialFormatSpec =
-      await quantityFormatter.getFormatterSpecByQuantityType(
-        QuantityType.Length,
-        true
-      );
-    let overrideImperialFormattedValue = quantityFormatter.formatQuantity(
-      100000.0,
-      overrideImperialFormatSpec
-    );
+    let overrideImperialFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length, true);
+    let overrideImperialFormattedValue = quantityFormatter.formatQuantity(100000.0, overrideImperialFormatSpec);
     assert.equal(overrideImperialFormattedValue, "328083.3333 ft (US Survey)");
 
-    overrideImperialFormatSpec =
-      await quantityFormatter.getFormatterSpecByQuantityType(
-        QuantityType.Coordinate,
-        true
-      );
-    overrideImperialFormattedValue = quantityFormatter.formatQuantity(
-      100000.0,
-      overrideImperialFormatSpec
-    );
+    overrideImperialFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Coordinate, true);
+    overrideImperialFormattedValue = quantityFormatter.formatQuantity(100000.0, overrideImperialFormatSpec);
     assert.equal(overrideImperialFormattedValue, "328083.3333 ft (US Survey)");
 
-    let overrideImperialParserSpec =
-      await quantityFormatter.getParserSpecByQuantityType(
-        QuantityType.Length,
-        true
-      );
+    let overrideImperialParserSpec = await quantityFormatter.getParserSpecByQuantityType(QuantityType.Length, true);
     let overrideValueInMeters1 = quantityFormatter.parseToQuantityValue(
       "328083.333333333 ft (US Survey)",
       overrideImperialParserSpec
     );
-    let overrideValueInMeters2 = quantityFormatter.parseToQuantityValue(
-      "328083.333333333",
-      overrideImperialParserSpec
-    );
+    let overrideValueInMeters2 = quantityFormatter.parseToQuantityValue("328083.333333333", overrideImperialParserSpec);
     assert(Parser.isParsedQuantity(overrideValueInMeters1));
     assert(Parser.isParsedQuantity(overrideValueInMeters2));
-    if (
-      Parser.isParsedQuantity(overrideValueInMeters1) &&
-      Parser.isParsedQuantity(overrideValueInMeters2)
-    ) {
+    if (Parser.isParsedQuantity(overrideValueInMeters1) && Parser.isParsedQuantity(overrideValueInMeters2)) {
       assert(withinTolerance(overrideValueInMeters1.value, 100000));
-      assert(
-        withinTolerance(
-          overrideValueInMeters1.value,
-          overrideValueInMeters2.value
-        )
-      );
+      assert(withinTolerance(overrideValueInMeters1.value, overrideValueInMeters2.value));
     }
 
-    overrideImperialParserSpec =
-      await quantityFormatter.getParserSpecByQuantityType(
-        QuantityType.Coordinate,
-        true
-      );
+    overrideImperialParserSpec = await quantityFormatter.getParserSpecByQuantityType(QuantityType.Coordinate, true);
     overrideValueInMeters1 = quantityFormatter.parseToQuantityValue(
       "328083.333333333 ft (US Survey)",
       overrideImperialParserSpec
     );
-    overrideValueInMeters2 = quantityFormatter.parseToQuantityValue(
-      "328083.333333333",
-      overrideImperialParserSpec
-    );
+    overrideValueInMeters2 = quantityFormatter.parseToQuantityValue("328083.333333333", overrideImperialParserSpec);
     assert(Parser.isParsedQuantity(overrideValueInMeters1));
     assert(Parser.isParsedQuantity(overrideValueInMeters2));
-    if (
-      Parser.isParsedQuantity(overrideValueInMeters1) &&
-      Parser.isParsedQuantity(overrideValueInMeters2)
-    ) {
+    if (Parser.isParsedQuantity(overrideValueInMeters1) && Parser.isParsedQuantity(overrideValueInMeters2)) {
       assert(withinTolerance(overrideValueInMeters1.value, 100000));
-      assert(
-        withinTolerance(
-          overrideValueInMeters1.value,
-          overrideValueInMeters2.value
-        )
-      );
+      assert(withinTolerance(overrideValueInMeters1.value, overrideValueInMeters2.value));
     }
 
     await quantityFormatter.clearAllOverrideFormats();
-    metricFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(
-      QuantityType.Coordinate,
-      false
-    );
-    metricFormattedValue = quantityFormatter.formatQuantity(
-      100000.0,
-      metricFormatSpec
-    );
+    metricFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Coordinate, false);
+    metricFormattedValue = quantityFormatter.formatQuantity(100000.0, metricFormatSpec);
     assert.equal(metricFormattedValue, "100000 m");
 
-    imperialFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(
-      QuantityType.Coordinate,
-      true
-    );
-    imperialFormattedValue = quantityFormatter.formatQuantity(
-      100000.0,
-      imperialFormatSpec
-    );
+    imperialFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Coordinate, true);
+    imperialFormattedValue = quantityFormatter.formatQuantity(100000.0, imperialFormatSpec);
     assert.equal(imperialFormattedValue, "328083.99 ft");
   });
 
@@ -513,148 +333,70 @@ describe("Quantity formatter", async () => {
     };
 
     await quantityFormatter.setActiveUnitSystem("metric");
-    let metricFormatSpec =
-      await quantityFormatter.getFormatterSpecByQuantityType(
-        QuantityType.Coordinate
-      );
-    let metricFormattedValue = quantityFormatter.formatQuantity(
-      100000.0,
-      metricFormatSpec
-    );
+    let metricFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Coordinate);
+    let metricFormattedValue = quantityFormatter.formatQuantity(100000.0, metricFormatSpec);
     assert.equal(metricFormattedValue, "100000 m");
 
     await quantityFormatter.setActiveUnitSystem("imperial");
-    let imperialFormatSpec =
-      await quantityFormatter.getFormatterSpecByQuantityType(
-        QuantityType.Coordinate
-      );
-    let imperialFormattedValue = quantityFormatter.formatQuantity(
-      100000.0,
-      imperialFormatSpec
-    );
+    let imperialFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Coordinate);
+    let imperialFormattedValue = quantityFormatter.formatQuantity(100000.0, imperialFormatSpec);
     assert.equal(imperialFormattedValue, "328083.99 ft");
 
-    await quantityFormatter.setOverrideFormats(
-      QuantityType.Length,
-      overrideLengthAndCoordinateEntry
-    );
-    await quantityFormatter.setOverrideFormats(
-      QuantityType.Coordinate,
-      overrideLengthAndCoordinateEntry
-    );
+    await quantityFormatter.setOverrideFormats(QuantityType.Length, overrideLengthAndCoordinateEntry);
+    await quantityFormatter.setOverrideFormats(QuantityType.Coordinate, overrideLengthAndCoordinateEntry);
 
     await quantityFormatter.setActiveUnitSystem("metric");
-    let overrideMetricFormatSpec =
-      await quantityFormatter.getFormatterSpecByQuantityType(
-        QuantityType.Length
-      );
-    let overrideMetricFormattedValue = quantityFormatter.formatQuantity(
-      100000.0,
-      overrideMetricFormatSpec
-    );
+    let overrideMetricFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
+    let overrideMetricFormattedValue = quantityFormatter.formatQuantity(100000.0, overrideMetricFormatSpec);
     assert.equal(overrideMetricFormattedValue, "100000 m");
 
-    overrideMetricFormatSpec =
-      await quantityFormatter.getFormatterSpecByQuantityType(
-        QuantityType.Coordinate
-      );
-    overrideMetricFormattedValue = quantityFormatter.formatQuantity(
-      100000.0,
-      overrideMetricFormatSpec
-    );
+    overrideMetricFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Coordinate);
+    overrideMetricFormattedValue = quantityFormatter.formatQuantity(100000.0, overrideMetricFormatSpec);
     assert.equal(overrideMetricFormattedValue, "100000 m");
 
     await quantityFormatter.setActiveUnitSystem("imperial");
-    let overrideImperialFormatSpec =
-      await quantityFormatter.getFormatterSpecByQuantityType(
-        QuantityType.Length
-      );
-    let overrideImperialFormattedValue = quantityFormatter.formatQuantity(
-      100000.0,
-      overrideImperialFormatSpec
-    );
+    let overrideImperialFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
+    let overrideImperialFormattedValue = quantityFormatter.formatQuantity(100000.0, overrideImperialFormatSpec);
     assert.equal(overrideImperialFormattedValue, "328083.3333 ft (US Survey)");
 
-    overrideImperialFormatSpec =
-      await quantityFormatter.getFormatterSpecByQuantityType(
-        QuantityType.Coordinate
-      );
-    overrideImperialFormattedValue = quantityFormatter.formatQuantity(
-      100000.0,
-      overrideImperialFormatSpec
-    );
+    overrideImperialFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Coordinate);
+    overrideImperialFormattedValue = quantityFormatter.formatQuantity(100000.0, overrideImperialFormatSpec);
     assert.equal(overrideImperialFormattedValue, "328083.3333 ft (US Survey)");
 
-    let overrideImperialParserSpec =
-      await quantityFormatter.getParserSpecByQuantityType(QuantityType.Length);
+    let overrideImperialParserSpec = await quantityFormatter.getParserSpecByQuantityType(QuantityType.Length);
     let overrideValueInMeters1 = quantityFormatter.parseToQuantityValue(
       "328083.333333333 ft (US Survey)",
       overrideImperialParserSpec
     );
-    let overrideValueInMeters2 = quantityFormatter.parseToQuantityValue(
-      "328083.333333333",
-      overrideImperialParserSpec
-    );
+    let overrideValueInMeters2 = quantityFormatter.parseToQuantityValue("328083.333333333", overrideImperialParserSpec);
     assert(Parser.isParsedQuantity(overrideValueInMeters1));
     assert(Parser.isParsedQuantity(overrideValueInMeters2));
-    if (
-      Parser.isParsedQuantity(overrideValueInMeters1) &&
-      Parser.isParsedQuantity(overrideValueInMeters2)
-    ) {
+    if (Parser.isParsedQuantity(overrideValueInMeters1) && Parser.isParsedQuantity(overrideValueInMeters2)) {
       assert(withinTolerance(overrideValueInMeters1.value, 100000));
-      assert(
-        withinTolerance(
-          overrideValueInMeters1.value,
-          overrideValueInMeters2.value
-        )
-      );
+      assert(withinTolerance(overrideValueInMeters1.value, overrideValueInMeters2.value));
     }
 
-    overrideImperialParserSpec =
-      await quantityFormatter.getParserSpecByQuantityType(
-        QuantityType.Coordinate
-      );
+    overrideImperialParserSpec = await quantityFormatter.getParserSpecByQuantityType(QuantityType.Coordinate);
     overrideValueInMeters1 = quantityFormatter.parseToQuantityValue(
       "328083.333333333 ft (US Survey)",
       overrideImperialParserSpec
     );
-    overrideValueInMeters2 = quantityFormatter.parseToQuantityValue(
-      "328083.333333333",
-      overrideImperialParserSpec
-    );
+    overrideValueInMeters2 = quantityFormatter.parseToQuantityValue("328083.333333333", overrideImperialParserSpec);
     assert(Parser.isParsedQuantity(overrideValueInMeters1));
     assert(Parser.isParsedQuantity(overrideValueInMeters2));
-    if (
-      Parser.isParsedQuantity(overrideValueInMeters1) &&
-      Parser.isParsedQuantity(overrideValueInMeters2)
-    ) {
+    if (Parser.isParsedQuantity(overrideValueInMeters1) && Parser.isParsedQuantity(overrideValueInMeters2)) {
       assert(withinTolerance(overrideValueInMeters1.value, 100000));
-      assert(
-        withinTolerance(
-          overrideValueInMeters1.value,
-          overrideValueInMeters2.value
-        )
-      );
+      assert(withinTolerance(overrideValueInMeters1.value, overrideValueInMeters2.value));
     }
 
     await quantityFormatter.clearAllOverrideFormats();
-    imperialFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(
-      QuantityType.Coordinate
-    );
-    imperialFormattedValue = quantityFormatter.formatQuantity(
-      100000.0,
-      imperialFormatSpec
-    );
+    imperialFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Coordinate);
+    imperialFormattedValue = quantityFormatter.formatQuantity(100000.0, imperialFormatSpec);
     assert.equal(imperialFormattedValue, "328083.99 ft");
 
     await quantityFormatter.setActiveUnitSystem("metric");
-    metricFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(
-      QuantityType.Coordinate
-    );
-    metricFormattedValue = quantityFormatter.formatQuantity(
-      100000.0,
-      metricFormatSpec
-    );
+    metricFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Coordinate);
+    metricFormattedValue = quantityFormatter.formatQuantity(100000.0, metricFormatSpec);
     assert.equal(metricFormattedValue, "100000 m");
   });
 
@@ -682,67 +424,26 @@ describe("Quantity formatter", async () => {
       },
     };
 
-    let metricFormatSpec =
-      await quantityFormatter.getFormatterSpecByQuantityType(
-        QuantityType.Area,
-        false
-      );
-    let metricFormattedValue = quantityFormatter.formatQuantity(
-      100000.0,
-      metricFormatSpec
-    );
+    let metricFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Area, false);
+    let metricFormattedValue = quantityFormatter.formatQuantity(100000.0, metricFormatSpec);
     assert.equal(metricFormattedValue, "100000 m²");
 
-    let imperialFormatSpec =
-      await quantityFormatter.getFormatterSpecByQuantityType(
-        QuantityType.Area,
-        true
-      );
-    let imperialFormattedValue = quantityFormatter.formatQuantity(
-      100000.0,
-      imperialFormatSpec
-    );
+    let imperialFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Area, true);
+    let imperialFormattedValue = quantityFormatter.formatQuantity(100000.0, imperialFormatSpec);
     assert.equal(imperialFormattedValue, "1076391.0417 ft²");
 
-    await quantityFormatter.setOverrideFormats(
-      QuantityType.Area,
-      overrideEntry
-    );
+    await quantityFormatter.setOverrideFormats(QuantityType.Area, overrideEntry);
 
-    const overrideMetricFormatSpec =
-      await quantityFormatter.getFormatterSpecByQuantityType(
-        QuantityType.Area,
-        false
-      );
-    const overrideMetricFormattedValue = quantityFormatter.formatQuantity(
-      100000.0,
-      overrideMetricFormatSpec
-    );
+    const overrideMetricFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Area, false);
+    const overrideMetricFormattedValue = quantityFormatter.formatQuantity(100000.0, overrideMetricFormatSpec);
     assert.equal(overrideMetricFormattedValue, "100000 m²");
 
-    const overrideImperialFormatSpec =
-      await quantityFormatter.getFormatterSpecByQuantityType(
-        QuantityType.Area,
-        true
-      );
-    const overrideImperialFormattedValue = quantityFormatter.formatQuantity(
-      100000.0,
-      overrideImperialFormatSpec
-    );
-    assert.equal(
-      overrideImperialFormattedValue,
-      "1076386.7361 ft² (US Survey)"
-    );
+    const overrideImperialFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Area, true);
+    const overrideImperialFormattedValue = quantityFormatter.formatQuantity(100000.0, overrideImperialFormatSpec);
+    assert.equal(overrideImperialFormattedValue, "1076386.7361 ft² (US Survey)");
 
-    const overrideImperialParserSpec =
-      await quantityFormatter.getParserSpecByQuantityType(
-        QuantityType.Area,
-        true
-      );
-    const overrideValueInMeters1 = quantityFormatter.parseToQuantityValue(
-      "1076386.7361",
-      overrideImperialParserSpec
-    );
+    const overrideImperialParserSpec = await quantityFormatter.getParserSpecByQuantityType(QuantityType.Area, true);
+    const overrideValueInMeters1 = quantityFormatter.parseToQuantityValue("1076386.7361", overrideImperialParserSpec);
     const overrideValueInMeters2 = quantityFormatter.parseToQuantityValue(
       "1076386.7361 sussf",
       overrideImperialParserSpec
@@ -751,39 +452,19 @@ describe("Quantity formatter", async () => {
     // console.log(`overrideValueInMeters1=${JSON.stringify(overrideValueInMeters1)}`);
     assert(Parser.isParsedQuantity(overrideValueInMeters1));
     assert(Parser.isParsedQuantity(overrideValueInMeters2));
-    if (
-      Parser.isParsedQuantity(overrideValueInMeters1) &&
-      Parser.isParsedQuantity(overrideValueInMeters2)
-    ) {
+    if (Parser.isParsedQuantity(overrideValueInMeters1) && Parser.isParsedQuantity(overrideValueInMeters2)) {
       assert(withinTolerance(overrideValueInMeters1.value, 100000, 1.0e-5));
-      assert(
-        withinTolerance(
-          overrideValueInMeters1.value,
-          overrideValueInMeters2.value
-        )
-      );
+      assert(withinTolerance(overrideValueInMeters1.value, overrideValueInMeters2.value));
     }
 
     await quantityFormatter.clearOverrideFormats(QuantityType.Area);
 
-    metricFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(
-      QuantityType.Area,
-      false
-    );
-    metricFormattedValue = quantityFormatter.formatQuantity(
-      100000.0,
-      metricFormatSpec
-    );
+    metricFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Area, false);
+    metricFormattedValue = quantityFormatter.formatQuantity(100000.0, metricFormatSpec);
     assert.equal(metricFormattedValue, "100000 m²");
 
-    imperialFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(
-      QuantityType.Area,
-      true
-    );
-    imperialFormattedValue = quantityFormatter.formatQuantity(
-      100000.0,
-      imperialFormatSpec
-    );
+    imperialFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Area, true);
+    imperialFormattedValue = quantityFormatter.formatQuantity(100000.0, imperialFormatSpec);
     assert.equal(imperialFormattedValue, "1076391.0417 ft²");
   });
 
@@ -797,12 +478,8 @@ describe("Quantity formatter", async () => {
     ) {
       const fromUnit = await quantityFormatter.findUnitByName(fromUnitName);
       const toUnit = await quantityFormatter.findUnitByName(toUnitName);
-      const unitConversion = await quantityFormatter.getConversion(
-        fromUnit,
-        toUnit
-      );
-      const convertedValue =
-        magnitude * unitConversion.factor + unitConversion.offset;
+      const unitConversion = await quantityFormatter.getConversion(fromUnit, toUnit);
+      const convertedValue = magnitude * unitConversion.factor + unitConversion.offset;
       assert(
         withinTolerance(convertedValue, expectedValue, tolerance),
         `Expected ${expectedValue} ${toUnitName}, got ${convertedValue} ${toUnitName}`
@@ -827,116 +504,29 @@ describe("Quantity formatter", async () => {
       // Conversion tests where expected value is taken directly out of  http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 4, Page C-8
       // Exact values from document used for these conversions
       await testUnitConversion(1.0, "Units.FT", 0.999998, "Units.US_SURVEY_FT");
-      await testUnitConversion(
-        1.0,
-        "Units.FT",
-        0.0254 * 39.37,
-        "Units.US_SURVEY_FT"
-      );
-      await testUnitConversion(
-        1.0,
-        "Units.US_SURVEY_FT",
-        1.0 / 0.999998,
-        "Units.FT"
-      );
-      await testUnitConversion(
-        1.0,
-        "Units.US_SURVEY_FT",
-        1200.0 / 3937.0,
-        "Units.M"
-      );
-      await testUnitConversion(
-        1.0,
-        "Units.M",
-        3937.0 / 1200.0,
-        "Units.US_SURVEY_FT"
-      );
-      await testUnitConversion(
-        1.0,
-        "Units.US_SURVEY_MILE",
-        (5280.0 * 1200.0) / 3937.0,
-        "Units.M"
-      );
-      await testUnitConversion(
-        1.0,
-        "Units.US_SURVEY_MILE",
-        1.0 / 0.999998,
-        "Units.MILE"
-      );
-      await testUnitConversion(
-        1.0,
-        "Units.MILE",
-        0.999998,
-        "Units.US_SURVEY_MILE"
-      );
-      await testUnitConversion(
-        1.0,
-        "Units.M",
-        3937.0 / 1200.0 / 5280.0,
-        "Units.US_SURVEY_MILE"
-      );
-      await testUnitConversion(
-        1.0,
-        "Units.US_SURVEY_FT",
-        1.0 / 66.0,
-        "Units.US_SURVEY_CHAIN"
-      );
+      await testUnitConversion(1.0, "Units.FT", 0.0254 * 39.37, "Units.US_SURVEY_FT");
+      await testUnitConversion(1.0, "Units.US_SURVEY_FT", 1.0 / 0.999998, "Units.FT");
+      await testUnitConversion(1.0, "Units.US_SURVEY_FT", 1200.0 / 3937.0, "Units.M");
+      await testUnitConversion(1.0, "Units.M", 3937.0 / 1200.0, "Units.US_SURVEY_FT");
+      await testUnitConversion(1.0, "Units.US_SURVEY_MILE", (5280.0 * 1200.0) / 3937.0, "Units.M");
+      await testUnitConversion(1.0, "Units.US_SURVEY_MILE", 1.0 / 0.999998, "Units.MILE");
+      await testUnitConversion(1.0, "Units.MILE", 0.999998, "Units.US_SURVEY_MILE");
+      await testUnitConversion(1.0, "Units.M", 3937.0 / 1200.0 / 5280.0, "Units.US_SURVEY_MILE");
+      await testUnitConversion(1.0, "Units.US_SURVEY_FT", 1.0 / 66.0, "Units.US_SURVEY_CHAIN");
       await testUnitConversion(1.0, "Units.M", 39.37, "Units.US_SURVEY_IN");
-      await testUnitConversion(
-        12.0,
-        "Units.US_SURVEY_IN",
-        1200.0 / 3937.0,
-        "Units.M"
-      );
+      await testUnitConversion(12.0, "Units.US_SURVEY_IN", 1200.0 / 3937.0, "Units.M");
 
       // Directly from exact values in tables
-      await testUnitConversion(
-        1.0,
-        "Units.US_SURVEY_MILE",
-        63360,
-        "Units.US_SURVEY_IN"
-      );
-      await testUnitConversion(
-        1.0,
-        "Units.US_SURVEY_MILE",
-        5280,
-        "Units.US_SURVEY_FT"
-      );
-      await testUnitConversion(
-        1.0,
-        "Units.US_SURVEY_MILE",
-        1760,
-        "Units.US_SURVEY_YRD"
-      );
-      await testUnitConversion(
-        1.0,
-        "Units.US_SURVEY_MILE",
-        80,
-        "Units.US_SURVEY_CHAIN",
-        1.0e-6
-      );
+      await testUnitConversion(1.0, "Units.US_SURVEY_MILE", 63360, "Units.US_SURVEY_IN");
+      await testUnitConversion(1.0, "Units.US_SURVEY_MILE", 5280, "Units.US_SURVEY_FT");
+      await testUnitConversion(1.0, "Units.US_SURVEY_MILE", 1760, "Units.US_SURVEY_YRD");
+      await testUnitConversion(1.0, "Units.US_SURVEY_MILE", 80, "Units.US_SURVEY_CHAIN", 1.0e-6);
 
       // Exact values do not exist in document
       await testUnitConversion(1.0, "Units.US_SURVEY_FT", 0.3048006, "Units.M");
-      await testUnitConversion(
-        1.0,
-        "Units.US_SURVEY_CHAIN",
-        20.11684,
-        "Units.M"
-      );
-      await testUnitConversion(
-        1.0,
-        "Units.US_SURVEY_YRD",
-        3.0 * 0.3048006,
-        "Units.M"
-      );
-      await testUnitConversion(
-        1.0,
-        "Units.US_SURVEY_MILE",
-        1609.347,
-        "Units.M",
-        1.0e-3
-      );
+      await testUnitConversion(1.0, "Units.US_SURVEY_CHAIN", 20.11684, "Units.M");
+      await testUnitConversion(1.0, "Units.US_SURVEY_YRD", 3.0 * 0.3048006, "Units.M");
+      await testUnitConversion(1.0, "Units.US_SURVEY_MILE", 1609.347, "Units.M", 1.0e-3);
     });
   });
 });
@@ -952,33 +542,25 @@ describe("Test Custom QuantityType", async () => {
     const persistenceUnit = await quantityFormatter.findUnitByName("Units.RAD");
     const quantityTypeDefinition = new BearingQuantityType(persistenceUnit);
 
-    let wasRegistered = await quantityFormatter.registerQuantityType(
-      quantityTypeDefinition
-    );
+    let wasRegistered = await quantityFormatter.registerQuantityType(quantityTypeDefinition);
     assert.equal(wasRegistered, true);
     // only allow a single registration
-    wasRegistered = await quantityFormatter.registerQuantityType(
-      quantityTypeDefinition
-    );
+    wasRegistered = await quantityFormatter.registerQuantityType(quantityTypeDefinition);
     assert.equal(wasRegistered, false);
 
-    const formatterSpec =
-      await quantityFormatter.getFormatterSpecByQuantityType("Bearing");
+    const formatterSpec = await quantityFormatter.getFormatterSpecByQuantityType("Bearing");
     assert.isDefined(formatterSpec);
 
     const rad45 = Math.PI / 4;
     const formattedAngle = formatterSpec!.applyFormatting(rad45);
     assert.equal(formattedAngle, `N 45°0'0" E`);
 
-    const parserSpec = await quantityFormatter.getParserSpecByQuantityType(
-      "Bearing"
-    );
+    const parserSpec = await quantityFormatter.getParserSpecByQuantityType("Bearing");
     assert.isDefined(parserSpec);
 
     const parsedRadians = parserSpec!.parseToQuantityValue("n45e");
     assert(Parser.isParsedQuantity(parsedRadians));
-    if (Parser.isParsedQuantity(parsedRadians))
-      assert.equal(parsedRadians.value, rad45);
+    if (Parser.isParsedQuantity(parsedRadians)) assert.equal(parsedRadians.value, rad45);
   });
 });
 
@@ -989,17 +571,9 @@ describe("Test Formatted Quantities", async () => {
     await quantityFormatter.onInitialized();
   });
 
-  async function testFormatting(
-    type: QuantityTypeArg,
-    magnitude: number,
-    expectedValue: string
-  ) {
-    const formatterSpec =
-      await quantityFormatter.getFormatterSpecByQuantityType(type);
-    const formattedValue = quantityFormatter.formatQuantity(
-      magnitude,
-      formatterSpec
-    );
+  async function testFormatting(type: QuantityTypeArg, magnitude: number, expectedValue: string) {
+    const formatterSpec = await quantityFormatter.getFormatterSpecByQuantityType(type);
+    const formattedValue = quantityFormatter.formatQuantity(magnitude, formatterSpec);
     // console.log(`Type=${type} formatted value=${formattedValue}`); // eslint-disable-line no-console
     assert.equal(formattedValue, expectedValue);
   }
@@ -1012,16 +586,8 @@ describe("Test Formatted Quantities", async () => {
     await testFormatting(QuantityType.Coordinate, 1000.0, "3280.84 ft");
     await testFormatting(QuantityType.LatLong, Math.PI, `180°0'0"`);
     await testFormatting(QuantityType.LatLong, 0.2645, `15°9'17.0412"`);
-    await testFormatting(
-      QuantityType.LengthEngineering,
-      1000.0,
-      "3280.8399 ft"
-    );
-    await testFormatting(
-      QuantityType.LengthSurvey,
-      1000.0,
-      "3280.8333 ft (US Survey)"
-    );
+    await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.8399 ft");
+    await testFormatting(QuantityType.LengthSurvey, 1000.0, "3280.8333 ft (US Survey)");
     await testFormatting(QuantityType.Stationing, 1000.0, "32+80.84");
     await testFormatting(QuantityType.Volume, 1000.0, "35314.6662 ft³");
 
@@ -1043,11 +609,7 @@ describe("Test Formatted Quantities", async () => {
     await testFormatting(QuantityType.Area, 1000.0, "10763.9104 ft²");
     await testFormatting(QuantityType.Coordinate, 1000.0, "3280.84 ft");
     await testFormatting(QuantityType.LatLong, Math.PI, `180°0'0"`);
-    await testFormatting(
-      QuantityType.LengthEngineering,
-      1000.0,
-      "3280.8399 ft"
-    );
+    await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.8399 ft");
     await testFormatting(QuantityType.LengthSurvey, 1000.0, "3280.8333 ft");
     await testFormatting(QuantityType.Stationing, 1000.0, "32+80.84");
     await testFormatting(QuantityType.Volume, 1000.0, "35314.6662 ft³");
@@ -1058,11 +620,7 @@ describe("Test Formatted Quantities", async () => {
     await testFormatting(QuantityType.Area, 1000.0, "10763.8674 ft²");
     await testFormatting(QuantityType.Coordinate, 1000.0, "3280.83 ft");
     await testFormatting(QuantityType.LatLong, Math.PI, `180°0'0"`);
-    await testFormatting(
-      QuantityType.LengthEngineering,
-      1000.0,
-      "3280.8333 ft"
-    );
+    await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.8333 ft");
     await testFormatting(QuantityType.LengthSurvey, 1000.0, "3280.8333 ft");
     await testFormatting(QuantityType.Stationing, 1000.0, "32+80.83");
     await testFormatting(QuantityType.Volume, 1000.0, "35314.4548 ft³");

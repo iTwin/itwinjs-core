@@ -14,11 +14,7 @@ export class NonUniformColor {
   public readonly indices: Uint16Array;
   public readonly isOpaque: boolean;
 
-  public constructor(
-    colors: Uint32Array,
-    indices: number[],
-    hasAlpha: boolean
-  ) {
+  public constructor(colors: Uint32Array, indices: number[], hasAlpha: boolean) {
     this.colors = new Uint32Array(colors.buffer);
     this.indices = Uint16Array.from(indices);
     this.isOpaque = !hasAlpha;
@@ -59,11 +55,7 @@ export class ColorIndex {
     return !this.isUniform ? (this._color as NonUniformColor) : undefined;
   }
 
-  public initNonUniform(
-    colors: Uint32Array,
-    indices: number[],
-    hasAlpha: boolean
-  ) {
+  public initNonUniform(colors: Uint32Array, indices: number[], hasAlpha: boolean) {
     this._color = new NonUniformColor(colors, indices, hasAlpha);
   }
 }

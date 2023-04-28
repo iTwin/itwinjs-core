@@ -30,9 +30,7 @@ export async function startupForIntegration(cfg?: IModelHostOptions) {
   cfg.cacheDir = path.join(__dirname, ".cache"); // Set the cache dir to be under the lib directory.
   const iModelClient = new IModelsClient({
     api: {
-      baseUrl: `https://${
-        process.env.IMJS_URL_PREFIX ?? ""
-      }api.bentley.com/imodels`,
+      baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`,
     },
   });
   cfg.hubAccess = new BackendIModelsAccess(iModelClient);

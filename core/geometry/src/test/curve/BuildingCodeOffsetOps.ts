@@ -77,24 +77,11 @@ export class BuildingCodeOffsetOps {
             pointB,
             arcVector0,
             arcVector90,
-            AngleSweep.createStartEndRadians(
-              -phiSign * intersectionRadians,
-              0.0
-            )
+            AngleSweep.createStartEndRadians(-phiSign * intersectionRadians, 0.0)
           );
         } else {
-          const offsetPointAB = this.offsetPointFromSegment(
-            pointA,
-            pointB,
-            -offsetAB,
-            1.0
-          );
-          const offsetPointBC = this.offsetPointFromSegment(
-            pointB,
-            pointC,
-            -offsetBC,
-            0.0
-          );
+          const offsetPointAB = this.offsetPointFromSegment(pointA, pointB, -offsetAB, 1.0);
+          const offsetPointBC = this.offsetPointFromSegment(pointB, pointC, -offsetBC, 0.0);
           arc = LineSegment3d.create(offsetPointAB, offsetPointBC);
         }
       } else {
@@ -117,18 +104,8 @@ export class BuildingCodeOffsetOps {
             AngleSweep.createStartEndRadians(0, phiSign * intersectionRadians)
           );
         } else {
-          const offsetPointAB = this.offsetPointFromSegment(
-            pointA,
-            pointB,
-            -offsetAB,
-            1.0
-          );
-          const offsetPointBC = this.offsetPointFromSegment(
-            pointB,
-            pointC,
-            -offsetBC,
-            0.0
-          );
+          const offsetPointAB = this.offsetPointFromSegment(pointA, pointB, -offsetAB, 1.0);
+          const offsetPointBC = this.offsetPointFromSegment(pointB, pointC, -offsetBC, 0.0);
           arc = LineSegment3d.create(offsetPointAB, offsetPointBC);
         }
       }
@@ -168,17 +145,9 @@ export class BuildingCodeOffsetOps {
     fraction: number
   ): Point3d {
     const dAB = pointA.distance(pointB);
-    const perpendicularFraction = Geometry.conditionalDivideFraction(
-      offsetDistance,
-      dAB
-    );
-    if (perpendicularFraction === undefined)
-      return pointA.interpolate(fraction, pointB);
-    return pointA.interpolatePerpendicularXY(
-      fraction,
-      pointB,
-      perpendicularFraction
-    );
+    const perpendicularFraction = Geometry.conditionalDivideFraction(offsetDistance, dAB);
+    if (perpendicularFraction === undefined) return pointA.interpolate(fraction, pointB);
+    return pointA.interpolatePerpendicularXY(fraction, pointB, perpendicularFraction);
   }
   /**
    * Append a line segment and variant joint to a growing chain
@@ -250,12 +219,7 @@ export class BuildingCodeOffsetOps {
     } else {
       if (offsetDistances.length + 1 < n) return undefined;
       const path = Path.create();
-      const point0 = this.offsetPointFromSegment(
-        points[0],
-        points[1],
-        -offsetDistances[0],
-        0.0
-      );
+      const point0 = this.offsetPointFromSegment(points[0], points[1], -offsetDistances[0], 0.0);
       for (let i = 0; i + 2 < n; i++) {
         const joint = this.createJointWithRadiusChange(
           points[i],
@@ -266,12 +230,7 @@ export class BuildingCodeOffsetOps {
         );
         this.appendSegmentAndJoint(path, point0, joint);
       }
-      const point1 = this.offsetPointFromSegment(
-        points[n - 2],
-        points[n - 1],
-        -offsetDistances[n - 2],
-        1.0
-      );
+      const point1 = this.offsetPointFromSegment(points[n - 2], points[n - 1], -offsetDistances[n - 2], 1.0);
       this.appendSegmentAndJoint(path, point0, point1);
       return path;
     }

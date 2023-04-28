@@ -14,9 +14,7 @@ describe("Learning Snippets", () => {
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile(
-      "assets/datasets/Properties_60InstancesWithUrl2.ibim"
-    );
+    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {
@@ -71,9 +69,7 @@ describe("Learning Snippets", () => {
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
           descriptor: {},
         }))!;
-        const defaultCategory = content.descriptor.categories.find(
-          (category) => category.name === "default"
-        );
+        const defaultCategory = content.descriptor.categories.find((category) => category.name === "default");
         expect(defaultCategory).to.containSubset({
           label: "Custom Category OLD",
         });
@@ -122,9 +118,7 @@ describe("Learning Snippets", () => {
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
           descriptor: {},
         }))!;
-        const defaultCategory = content.descriptor.categories.find(
-          (category) => category.name === "default"
-        );
+        const defaultCategory = content.descriptor.categories.find((category) => category.name === "default");
         expect(defaultCategory).to.containSubset({
           label: "High Priority",
         });
@@ -164,9 +158,7 @@ describe("Learning Snippets", () => {
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
           descriptor: {},
         }))!;
-        const defaultCategory = content.descriptor.categories.find(
-          (category) => category.name === "default"
-        );
+        const defaultCategory = content.descriptor.categories.find((category) => category.name === "default");
         expect(defaultCategory).to.containSubset({
           label: "Test Category",
         });

@@ -4,12 +4,7 @@ import { assert } from "chai";
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { DbResult, using } from "@itwin/core-bentley";
-import {
-  ECSqlReader,
-  QueryBinder,
-  QueryOptionsBuilder,
-  QueryRowFormat,
-} from "@itwin/core-common";
+import { ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { SnapshotDb } from "../../core-backend";
 import { ECDb } from "../../ECDb";
 import { ECSqlStatement } from "../../ECSqlStatement";
@@ -76,12 +71,9 @@ describe("ECSqlReader", () => {
         async (ecdb: ECDb) => {
           assert.isTrue(ecdb.isOpen);
 
-          const r = await ecdb.withStatement(
-            "INSERT INTO ts.Foo(n) VALUES(20)",
-            async (stmt: ECSqlStatement) => {
-              return stmt.stepForInsert();
-            }
-          );
+          const r = await ecdb.withStatement("INSERT INTO ts.Foo(n) VALUES(20)", async (stmt: ECSqlStatement) => {
+            return stmt.stepForInsert();
+          });
           ecdb.saveChanges();
           assert.equal(r.status, DbResult.BE_SQLITE_DONE);
           assert.equal(r.id, "0x1");
@@ -116,9 +108,7 @@ describe("ECSqlReader", () => {
     it("iterable in for loop", async () => {
       let actualRowCount = 0;
       const expectedRowCount = 46; // 46 Elements in test.bim
-      for await (const row of iModel.createQueryReader(
-        "SELECT * FROM bis.Element"
-      )) {
+      for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
         actualRowCount++;
         assert.isDefined(row[0]);
       }
@@ -179,11 +169,9 @@ describe("ECSqlReader", () => {
     describe("Get id from each row", () => {
       it("Get id using iterable iterator with unspecified rowFormat", async () => {
         let counter = 1;
-        for await (const row of iModel.createQueryReader(
-          "SELECT * FROM meta.ECSchemaDef",
-          undefined,
-          { limit: { count: 5 } }
-        )) {
+        for await (const row of iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, {
+          limit: { count: 5 },
+        })) {
           const currentExpectedId = `0x${counter}`;
           assert.equal(row[0], currentExpectedId);
           assert.equal(row.id, currentExpectedId);
@@ -200,11 +188,10 @@ describe("ECSqlReader", () => {
 
       it("Get id using iterable iterator with UseJsPropertyNames rowFormat", async () => {
         let counter = 1;
-        for await (const row of iModel.createQueryReader(
-          "SELECT * FROM meta.ECSchemaDef",
-          undefined,
-          { limit: { count: 5 }, rowFormat: QueryRowFormat.UseJsPropertyNames }
-        )) {
+        for await (const row of iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, {
+          limit: { count: 5 },
+          rowFormat: QueryRowFormat.UseJsPropertyNames,
+        })) {
           const currentExpectedId = `0x${counter}`;
           assert.equal(row[0], currentExpectedId);
           assert.equal(row.id, currentExpectedId);
@@ -221,14 +208,10 @@ describe("ECSqlReader", () => {
 
       it("Get id using iterable iterator with UseECSqlPropertyNames rowFormat", async () => {
         let counter = 1;
-        for await (const row of iModel.createQueryReader(
-          "SELECT * FROM meta.ECSchemaDef",
-          undefined,
-          {
-            limit: { count: 5 },
-            rowFormat: QueryRowFormat.UseECSqlPropertyNames,
-          }
-        )) {
+        for await (const row of iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, {
+          limit: { count: 5 },
+          rowFormat: QueryRowFormat.UseECSqlPropertyNames,
+        })) {
           const currentExpectedId = `0x${counter}`;
           assert.equal(row[0], currentExpectedId);
           assert.equal(row.id, currentExpectedId);
@@ -245,14 +228,10 @@ describe("ECSqlReader", () => {
 
       it("Get id using iterable iterator with UseECSqlPropertyIndexes rowFormat", async () => {
         let counter = 1;
-        for await (const row of iModel.createQueryReader(
-          "SELECT * FROM meta.ECSchemaDef",
-          undefined,
-          {
-            limit: { count: 5 },
-            rowFormat: QueryRowFormat.UseECSqlPropertyIndexes,
-          }
-        )) {
+        for await (const row of iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, {
+          limit: { count: 5 },
+          rowFormat: QueryRowFormat.UseECSqlPropertyIndexes,
+        })) {
           const currentExpectedId = `0x${counter}`;
           assert.equal(row[0], currentExpectedId);
           assert.equal(row.id, currentExpectedId);
@@ -269,11 +248,7 @@ describe("ECSqlReader", () => {
 
       it("Get id using step with unspecified rowFormat", async () => {
         let counter = 1;
-        reader = iModel.createQueryReader(
-          "SELECT * FROM meta.ECSchemaDef",
-          undefined,
-          { limit: { count: 5 } }
-        );
+        reader = iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, { limit: { count: 5 } });
         while (await reader.step()) {
           const currentExpectedId = `0x${counter}`;
           assert.equal(reader.current[0], currentExpectedId);
@@ -291,11 +266,10 @@ describe("ECSqlReader", () => {
 
       it("Get id using step with UseJsPropertyNames rowFormat", async () => {
         let counter = 1;
-        reader = iModel.createQueryReader(
-          "SELECT * FROM meta.ECSchemaDef",
-          undefined,
-          { limit: { count: 5 }, rowFormat: QueryRowFormat.UseJsPropertyNames }
-        );
+        reader = iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, {
+          limit: { count: 5 },
+          rowFormat: QueryRowFormat.UseJsPropertyNames,
+        });
         while (await reader.step()) {
           const currentExpectedId = `0x${counter}`;
           assert.equal(reader.current[0], currentExpectedId);
@@ -313,14 +287,10 @@ describe("ECSqlReader", () => {
 
       it("Get id using step with UseECSqlPropertyNames rowFormat", async () => {
         let counter = 1;
-        reader = iModel.createQueryReader(
-          "SELECT * FROM meta.ECSchemaDef",
-          undefined,
-          {
-            limit: { count: 5 },
-            rowFormat: QueryRowFormat.UseECSqlPropertyNames,
-          }
-        );
+        reader = iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, {
+          limit: { count: 5 },
+          rowFormat: QueryRowFormat.UseECSqlPropertyNames,
+        });
         while (await reader.step()) {
           const currentExpectedId = `0x${counter}`;
           assert.equal(reader.current[0], currentExpectedId);
@@ -338,14 +308,10 @@ describe("ECSqlReader", () => {
 
       it("Get id using step with UseECSqlPropertyIndexes rowFormat", async () => {
         let counter = 1;
-        reader = iModel.createQueryReader(
-          "SELECT * FROM meta.ECSchemaDef",
-          undefined,
-          {
-            limit: { count: 5 },
-            rowFormat: QueryRowFormat.UseECSqlPropertyIndexes,
-          }
-        );
+        reader = iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, {
+          limit: { count: 5 },
+          rowFormat: QueryRowFormat.UseECSqlPropertyIndexes,
+        });
         while (await reader.step()) {
           const currentExpectedId = `0x${counter}`;
           assert.equal(reader.current[0], currentExpectedId);
@@ -469,10 +435,7 @@ describe("ECSqlReader", () => {
           assert.equal(reader.current[0], currentExpectedId);
           assert.equal(reader.current.customColumnName, currentExpectedId);
           assert.equal(reader.current.toArray()[0], currentExpectedId);
-          assert.equal(
-            reader.current.toRow().customColumnName,
-            currentExpectedId
-          );
+          assert.equal(reader.current.toRow().customColumnName, currentExpectedId);
           counter++;
           actualRowCount++;
         }
@@ -491,10 +454,7 @@ describe("ECSqlReader", () => {
           assert.equal(reader.current[0], currentExpectedId);
           assert.equal(reader.current.customColumnName, currentExpectedId);
           assert.equal(reader.current.toArray()[0], currentExpectedId);
-          assert.equal(
-            reader.current.toRow().customColumnName,
-            currentExpectedId
-          );
+          assert.equal(reader.current.toRow().customColumnName, currentExpectedId);
           counter++;
           actualRowCount++;
         }
@@ -516,10 +476,7 @@ describe("ECSqlReader", () => {
           assert.equal(reader.current[0], currentExpectedId);
           assert.equal(reader.current.customColumnName, currentExpectedId);
           assert.equal(reader.current.toArray()[0], currentExpectedId);
-          assert.equal(
-            reader.current.toRow().customColumnName,
-            currentExpectedId
-          );
+          assert.equal(reader.current.toRow().customColumnName, currentExpectedId);
           counter++;
           actualRowCount++;
         }
@@ -541,10 +498,7 @@ describe("ECSqlReader", () => {
           assert.equal(reader.current[0], currentExpectedId);
           assert.equal(reader.current.customColumnName, currentExpectedId);
           assert.equal(reader.current.toArray()[0], currentExpectedId);
-          assert.equal(
-            reader.current.toRow().customColumnName,
-            currentExpectedId
-          );
+          assert.equal(reader.current.toRow().customColumnName, currentExpectedId);
           counter++;
           actualRowCount++;
         }
@@ -556,9 +510,7 @@ describe("ECSqlReader", () => {
       const expectedRowCount = 46; // 46 Elements in test.bim
 
       beforeEach(async () => {
-        reader = iModel.createQueryReader(
-          "SELECT COUNT(*) numResults FROM (SELECT * FROM bis.Element)"
-        );
+        reader = iModel.createQueryReader("SELECT COUNT(*) numResults FROM (SELECT * FROM bis.Element)");
       });
 
       it("Get count of rows using current index", async () => {

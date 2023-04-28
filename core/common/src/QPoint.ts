@@ -7,16 +7,7 @@
  */
 
 import { assert, Uint16ArrayBuilder } from "@itwin/core-bentley";
-import {
-  Point2d,
-  Point3d,
-  Range2d,
-  Range3d,
-  Vector2d,
-  Vector3d,
-  XAndY,
-  XYAndZ,
-} from "@itwin/core-geometry";
+import { Point2d, Point3d, Range2d, Range3d, Vector2d, Vector3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 
 /**
  * Provides facilities for quantizing floating point values within a specified range into 16-bit unsigned integers.
@@ -34,10 +25,7 @@ export namespace Quantization {
   export const rangeScale8 = 0xff;
 
   /** Compute the scale factor required to quantize `extent` to `rangeScale` discrete values. */
-  export function computeScale(
-    extent: number,
-    rangeScale = rangeScale16
-  ): number {
+  export function computeScale(extent: number, rangeScale = rangeScale16): number {
     return 0.0 === extent ? extent : rangeScale / extent;
   }
 
@@ -49,35 +37,19 @@ export namespace Quantization {
   /** Return `pos` quantized to the range [`origin`, `origin + rangeScale`].
    * @see [[Quantization.unquantize]] for the inverse operation.
    */
-  export function quantize(
-    pos: number,
-    origin: number,
-    scale: number,
-    rangeScale = rangeScale16
-  ): number {
-    return Math.floor(
-      Math.max(0.0, Math.min(rangeScale, 0.5 + (pos - origin) * scale))
-    );
+  export function quantize(pos: number, origin: number, scale: number, rangeScale = rangeScale16): number {
+    return Math.floor(Math.max(0.0, Math.min(rangeScale, 0.5 + (pos - origin) * scale)));
   }
 
   /** @internal */
-  export function isQuantizable(
-    pos: number,
-    origin: number,
-    scale: number,
-    rangeScale = rangeScale16
-  ) {
+  export function isQuantizable(pos: number, origin: number, scale: number, rangeScale = rangeScale16) {
     return isInRange(quantize(pos, origin, scale, rangeScale));
   }
 
   /** Give `qpos` quantized to the range [`origin`, `origin + rangeScale`], return the unquantized value.
    * @see [[Quantization.quantize]] for the inverse operation.
    */
-  export function unquantize(
-    qpos: number,
-    origin: number,
-    scale: number
-  ): number {
+  export function unquantize(qpos: number, origin: number, scale: number): number {
     return 0.0 === scale ? origin : origin + qpos / scale;
   }
 
@@ -139,11 +111,7 @@ export class QParams2d {
   }
 
   /** Create parameters to support quantization of values within the specified range. */
-  public static fromRange(
-    range: Range2d,
-    out?: QParams2d,
-    rangeScale = Quantization.rangeScale16
-  ) {
+  public static fromRange(range: Range2d, out?: QParams2d, rangeScale = Quantization.rangeScale16) {
     const params = undefined !== out ? out : new QParams2d();
     params.setFromRange(range, rangeScale);
     return params;
@@ -176,12 +144,7 @@ export class QParams2d {
   }
 
   /** Create parameters from origin and scale components */
-  public static fromOriginAndScale(
-    originX: number,
-    originY: number,
-    scaleX: number,
-    scaleY: number
-  ) {
+  public static fromOriginAndScale(originX: number, originY: number, scaleX: number, scaleY: number) {
     return new QParams2d(originX, originY, scaleX, scaleY);
   }
 
@@ -320,16 +283,11 @@ export namespace QPoint2dBuffer {
    * @returns The point at `pointIndex`.
    * @throws Error if `pointIndex` is out of bounds.
    */
-  export function getQPoint(
-    points: Uint16Array,
-    pointIndex: number,
-    result?: QPoint2d
-  ): QPoint2d {
+  export function getQPoint(points: Uint16Array, pointIndex: number, result?: QPoint2d): QPoint2d {
     const index = pointIndex * 2;
     const x = points[index + 0];
     const y = points[index + 1];
-    if (undefined === x || undefined === y)
-      throw new Error("Index out of range");
+    if (undefined === x || undefined === y) throw new Error("Index out of range");
 
     result = result ?? new QPoint2d();
     result.setFromScalars(x, y);
@@ -343,11 +301,7 @@ export namespace QPoint2dBuffer {
    * @returns The point at `pointIndex`.
    * @throws Error if `pointIndex` is out of bounds.
    */
-  export function unquantizePoint(
-    buffer: QPoint2dBuffer,
-    pointIndex: number,
-    result?: Point2d
-  ): Point2d {
+  export function unquantizePoint(buffer: QPoint2dBuffer, pointIndex: number, result?: Point2d): Point2d {
     const qpt = getQPoint(buffer.points, pointIndex, scratchQPoint2d);
     return qpt.unquantize(buffer.params, result);
   }
@@ -439,8 +393,7 @@ export class QPoint2dList {
   public fromTypedArray(range: Range2d, array: Uint16Array) {
     this.params.setFromRange(range);
     this._list.length = array.length / 2;
-    for (let i = 0, j = 0; i < this.list.length; i++)
-      this._list[i] = QPoint2d.fromScalars(array[j++], array[j++]);
+    for (let i = 0, j = 0; i < this.list.length; i++) this._list[i] = QPoint2d.fromScalars(array[j++], array[j++]);
   }
 
   /** Construct a QPoint2dList containing all points in the supplied list, quantized to the range of those points. */
@@ -476,14 +429,7 @@ export class QParams3d {
     this.setFrom(ox, oy, oz, sx, sy, sz);
   }
 
-  private setFrom(
-    ox: number,
-    oy: number,
-    oz: number,
-    sx: number,
-    sy: number,
-    sz: number
-  ) {
+  private setFrom(ox: number, oy: number, oz: number, sx: number, sy: number, sz: number) {
     this.origin.x = ox;
     this.origin.y = oy;
     this.origin.z = oz;
@@ -494,14 +440,7 @@ export class QParams3d {
 
   /** Set `x`, `y`, and `z` from `src. */
   public copyFrom(src: QParams3d): void {
-    this.setFrom(
-      src.origin.x,
-      src.origin.y,
-      src.origin.z,
-      src.scale.x,
-      src.scale.y,
-      src.scale.z
-    );
+    this.setFrom(src.origin.x, src.origin.y, src.origin.z, src.scale.x, src.scale.y, src.scale.z);
   }
 
   /** Create a copy of these parameters.
@@ -549,11 +488,7 @@ export class QParams3d {
   /** Creates parameters to support quantization of values within the specified range.
    * If `out` is supplied, it will be modified in-place and returned instead of allocating a new QParams3d.
    */
-  public static fromRange(
-    range: Range3d,
-    out?: QParams3d,
-    rangeScale = Quantization.rangeScale16
-  ): QParams3d {
+  public static fromRange(range: Range3d, out?: QParams3d, rangeScale = Quantization.rangeScale16): QParams3d {
     const params = undefined !== out ? out : new QParams3d();
     params.setFromRange(range, rangeScale);
     return params;
@@ -562,11 +497,7 @@ export class QParams3d {
   /** Creates parameters supporting quantization of values within the range [-1.0, 1.0].
    * If `out` is supplied, it will be modified in-place and returned instead of allocating a new QParams3d.
    */
-  public static fromOriginAndScale(
-    origin: Point3d,
-    scale: Point3d,
-    out?: QParams3d
-  ): QParams3d {
+  public static fromOriginAndScale(origin: Point3d, scale: Point3d, out?: QParams3d): QParams3d {
     const params = undefined !== out ? out : new QParams3d();
     params.setFromOriginAndScale(origin, scale);
     return params;
@@ -575,10 +506,7 @@ export class QParams3d {
   /** Creates parameters supporting quantization of values within the range [-1.0, 1.0]. */
   public static fromNormalizedRange(rangeScale = Quantization.rangeScale16) {
     return QParams3d.fromRange(
-      Range3d.createArray([
-        Point3d.create(-1, -1, -1),
-        Point3d.create(1, 1, 1),
-      ]),
+      Range3d.createArray([Point3d.create(-1, -1, -1), Point3d.create(1, 1, 1)]),
       undefined,
       rangeScale
     );
@@ -711,12 +639,7 @@ export class QPoint3d {
    * @param z Must be an integer in the range [0, 0xffff]
    * @param out If supplied, it will be modified in-place instead of allocating a new QPoint3d.
    */
-  public static fromScalars(
-    x: number,
-    y: number,
-    z: number,
-    out?: QPoint3d
-  ): QPoint3d {
+  public static fromScalars(x: number, y: number, z: number, out?: QPoint3d): QPoint3d {
     const pt = undefined === out ? new QPoint3d() : out;
     pt.setFromScalars(x, y, z);
     return pt;
@@ -784,17 +707,12 @@ export namespace QPoint3dBuffer {
    * @returns The point at `pointIndex`.
    * @throws Error if `pointIndex` is out of bounds.
    */
-  export function getQPoint(
-    points: Uint16Array,
-    pointIndex: number,
-    result?: QPoint3d
-  ): QPoint3d {
+  export function getQPoint(points: Uint16Array, pointIndex: number, result?: QPoint3d): QPoint3d {
     const index = pointIndex * 3;
     const x = points[index + 0];
     const y = points[index + 1];
     const z = points[index + 2];
-    if (undefined === x || undefined === y || undefined === z)
-      throw new Error("Index out of range");
+    if (undefined === x || undefined === y || undefined === z) throw new Error("Index out of range");
 
     result = result ?? new QPoint3d();
     result.setFromScalars(x, y, z);
@@ -808,11 +726,7 @@ export namespace QPoint3dBuffer {
    * @returns The point at `pointIndex`.
    * @throws Error if `pointIndex` is out of bounds.
    */
-  export function unquantizePoint(
-    buffer: QPoint3dBuffer,
-    pointIndex: number,
-    result?: Point3d
-  ): Point3d {
+  export function unquantizePoint(buffer: QPoint3dBuffer, pointIndex: number, result?: Point3d): Point3d {
     const qpt = getQPoint(buffer.points, pointIndex, scratchQPoint3d);
     return qpt.unquantize(buffer.params, result);
   }
@@ -836,19 +750,14 @@ export class QPoint3dList {
    * @param The quantization parameters. If omitted, a null range will be used.
    */
   public constructor(params?: QParams3d) {
-    this.params = params
-      ? params.clone()
-      : QParams3d.fromRange(Range3d.createNull());
+    this.params = params ? params.clone() : QParams3d.fromRange(Range3d.createNull());
   }
 
   /** Construct a QPoint3dList containing all points in the supplied list, quantized to the range of those points.
    * @param The points to quantize and add to the list.
    * @param out If supplied, it will be cleared, its parameters recomputed, and the points will be added to it; otherwise, a new QPoint3dList will be created and returned.
    */
-  public static fromPoints(
-    points: Point3d[],
-    out?: QPoint3dList
-  ): QPoint3dList {
+  public static fromPoints(points: Point3d[], out?: QPoint3dList): QPoint3dList {
     let qPoints;
     const qParams = QParams3d.fromRange(Range3d.createArray(points));
     if (out) {
@@ -1015,11 +924,7 @@ export class QPoint2dBufferBuilder {
    * @throws Error if `pointIndex` is out of bounds.
    */
   public get(pointIndex: number, result?: QPoint2d): QPoint2d {
-    return QPoint2dBuffer.getQPoint(
-      this.buffer.toTypedArray(),
-      pointIndex,
-      result
-    );
+    return QPoint2dBuffer.getQPoint(this.buffer.toTypedArray(), pointIndex, result);
   }
 
   /** Returns the unquantized point at the specified index in [[buffer]].
@@ -1029,10 +934,7 @@ export class QPoint2dBufferBuilder {
    * @throws Error if `pointIndex` is out of bounds.
    */
   public unquantize(pointIndex: number, result?: Point2d): Point2d {
-    return this.get(pointIndex, this._scratchQPoint2d).unquantize(
-      this.params,
-      result
-    );
+    return this.get(pointIndex, this._scratchQPoint2d).unquantize(this.params, result);
   }
 
   /** Obtain a [[QPoint2dBuffer]] containing all of the points that have been appended by this builder. */
@@ -1109,11 +1011,7 @@ export class QPoint3dBufferBuilder {
    * @throws Error if `pointIndex` is out of bounds.
    */
   public get(pointIndex: number, result?: QPoint3d): QPoint3d {
-    return QPoint3dBuffer.getQPoint(
-      this.buffer.toTypedArray(),
-      pointIndex,
-      result
-    );
+    return QPoint3dBuffer.getQPoint(this.buffer.toTypedArray(), pointIndex, result);
   }
 
   /** Returns the unquantized point at the specified index in [[buffer]].
@@ -1123,10 +1021,7 @@ export class QPoint3dBufferBuilder {
    * @throws Error if `pointIndex` is out of bounds.
    */
   public unquantize(pointIndex: number, result?: Point3d): Point3d {
-    return this.get(pointIndex, this._scratchQPoint3d).unquantize(
-      this.params,
-      result
-    );
+    return this.get(pointIndex, this._scratchQPoint3d).unquantize(this.params, result);
   }
 
   /** Obtain a [[QPoint3dBuffer]] containing all of the points that have been appended by this builder. */

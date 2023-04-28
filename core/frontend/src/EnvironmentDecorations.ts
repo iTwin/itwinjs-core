@@ -18,12 +18,7 @@ import {
   TextureImageSpec,
   TextureMapping,
 } from "@itwin/core-common";
-import {
-  Point2d,
-  Point3d,
-  PolyfaceBuilder,
-  StrokeOptions,
-} from "@itwin/core-geometry";
+import { Point2d, Point3d, PolyfaceBuilder, StrokeOptions } from "@itwin/core-geometry";
 import { tryImageElementFromUrl } from "./ImageUtil";
 import { IModelApp } from "./IModelApp";
 import { GraphicType } from "./render/GraphicBuilder";
@@ -60,11 +55,7 @@ export class EnvironmentDecorations {
   protected _ground?: GroundPlaneDecorations;
   protected _sky: SkyBoxDecorations;
 
-  public constructor(
-    view: ViewState3d,
-    onLoaded: () => void,
-    onDispose: () => void
-  ) {
+  public constructor(view: ViewState3d, onLoaded: () => void, onDispose: () => void) {
     this._environment = view.displayStyle.environment;
     this._view = view;
     this._onLoaded = onLoaded;
@@ -88,8 +79,7 @@ export class EnvironmentDecorations {
     this._environment = env;
 
     // Update ground plane
-    if (!env.displayGround || env.ground !== prev.ground)
-      this._ground = undefined;
+    if (!env.displayGround || env.ground !== prev.ground) this._ground = undefined;
 
     if (env.displayGround && !this._ground) this.loadGround();
 
@@ -113,19 +103,12 @@ export class EnvironmentDecorations {
     const extents = this._view.getGroundExtents(context.viewport);
     if (extents.isNull) return;
 
-    const points: Point3d[] = [
-      extents.low.clone(),
-      extents.low.clone(),
-      extents.high.clone(),
-      extents.high.clone(),
-    ];
+    const points: Point3d[] = [extents.low.clone(), extents.low.clone(), extents.high.clone(), extents.high.clone()];
     points[1].x = extents.high.x;
     points[3].x = extents.low.x;
 
     const aboveGround = this._view.isEyePointAbove(extents.low.z);
-    const params = aboveGround
-      ? this._ground.aboveParams
-      : this._ground.belowParams;
+    const params = aboveGround ? this._ground.aboveParams : this._ground.belowParams;
     const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
     builder.activateGraphicParams(params);
 
@@ -169,10 +152,7 @@ export class EnvironmentDecorations {
       { color: groundColors[1], value: values[1] },
       { color: groundColors[2], value: values[2] },
     ];
-    const texture = IModelApp.renderSystem.getGradientTexture(
-      gradient,
-      this._view.iModel
-    );
+    const texture = IModelApp.renderSystem.getGradientTexture(gradient, this._view.iModel);
     if (!texture) return undefined;
 
     // Create a material using the gradient texture
@@ -206,8 +186,7 @@ export class EnvironmentDecorations {
     this._sky.promise = promise;
     loader.preload
       .then((loaded) => {
-        if (promise === this._sky.promise)
-          this.setSky(loaded ? loader.load() : undefined);
+        if (promise === this._sky.promise) this.setSky(loaded ? loader.load() : undefined);
       })
       .catch(() => {
         if (promise === this._sky.promise) this.setSky(undefined);
@@ -228,10 +207,7 @@ export class EnvironmentDecorations {
     if (sky instanceof SkyCube) {
       const key = this.createCubeImageKey(sky);
       load = () => {
-        const texture = IModelApp.renderSystem.findTexture(
-          key,
-          this._view.iModel
-        );
+        const texture = IModelApp.renderSystem.findTexture(key, this._view.iModel);
         return texture ? { type: "cube", texture } : undefined;
       };
 
@@ -258,10 +234,7 @@ export class EnvironmentDecorations {
           }
 
           // eslint-disable-next-line deprecation/deprecation
-          const params = new RenderTexture.Params(
-            key,
-            RenderTexture.Type.SkyBox
-          );
+          const params = new RenderTexture.Params(key, RenderTexture.Type.SkyBox);
           const txImgs = [
             idToImage.get(sky.images.front)!,
             idToImage.get(sky.images.back)!,
@@ -288,10 +261,7 @@ export class EnvironmentDecorations {
       }
     } else if (sky instanceof SkySphere) {
       load = () => {
-        const texture = IModelApp.renderSystem.findTexture(
-          sky.image,
-          this._view.iModel
-        );
+        const texture = IModelApp.renderSystem.findTexture(sky.image, this._view.iModel);
         return texture
           ? {
               type: "sphere",
@@ -335,13 +305,8 @@ export class EnvironmentDecorations {
     };
   }
 
-  private async imageFromSpec(
-    spec: TextureImageSpec
-  ): Promise<HTMLImageElement | undefined> {
-    if (Id64.isValidId64(spec))
-      return (
-        await IModelApp.renderSystem.loadTextureImage(spec, this._view.iModel)
-      )?.image;
+  private async imageFromSpec(spec: TextureImageSpec): Promise<HTMLImageElement | undefined> {
+    if (Id64.isValidId64(spec)) return (await IModelApp.renderSystem.loadTextureImage(spec, this._view.iModel))?.image;
 
     return tryImageElementFromUrl(spec);
   }

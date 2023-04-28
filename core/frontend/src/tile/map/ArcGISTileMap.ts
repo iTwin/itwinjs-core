@@ -18,9 +18,7 @@ export class ArcGISTileMap {
   public fallbackTileMapRequestSize = 2;
 
   private _callQueues: Array<Promise<boolean[]>> | undefined;
-  private _tilesCache = new Dictionary<string, boolean>((lhs, rhs) =>
-    compareStrings(lhs, rhs)
-  );
+  private _tilesCache = new Dictionary<string, boolean>((lhs, rhs) => compareStrings(lhs, rhs));
   private _restBaseUrl: string;
   private _accessClient: MapLayerAccessClient | undefined;
   private _settings: ImageMapLayerSettings;
@@ -35,9 +33,7 @@ export class ArcGISTileMap {
     this._accessClient = accessClient;
     this._settings = settings;
     if (nbLods !== undefined && nbLods > 0) {
-      this._callQueues = new Array<Promise<boolean[]>>(nbLods).fill(
-        Promise.resolve<boolean[]>(nonVisibleChildren)
-      );
+      this._callQueues = new Array<Promise<boolean[]>>(nbLods).fill(Promise.resolve<boolean[]>(nonVisibleChildren));
     }
   }
   protected async fetchTileMapFromServer(
@@ -96,9 +92,7 @@ export class ArcGISTileMap {
     // before making another one.
     const childLevel = childIds[0].level + 1;
     if (this._callQueues && childLevel < this._callQueues.length) {
-      const res = this._callQueues[childLevel].then(async () =>
-        this.getChildrenAvailabilityFromServer(childIds)
-      );
+      const res = this._callQueues[childLevel].then(async () => this.getChildrenAvailabilityFromServer(childIds));
       this._callQueues[childLevel] = res.catch(() => nonVisibleChildren);
       return res;
     } else {
@@ -109,11 +103,7 @@ export class ArcGISTileMap {
 
   // Query tiles are tiles that we need to check availability
   // The array is assumed to be in in row major orientation, i.e.: [TileRow0Col0, TileRow0Col1, TileRow1Col0, TileRow1Col1,]
-  protected async fetchAndReadTilemap(
-    queryTiles: QuadId[],
-    reqWidth: number,
-    reqHeight: number
-  ) {
+  protected async fetchAndReadTilemap(queryTiles: QuadId[], reqWidth: number, reqHeight: number) {
     let available: boolean[] = [];
     if (queryTiles.length === 0) {
       return available;
@@ -124,10 +114,7 @@ export class ArcGISTileMap {
     const level = queryTiles[0].level;
 
     let reqRow, reqColumn;
-    if (
-      reqWidth === this.fallbackTileMapRequestSize &&
-      reqHeight === this.fallbackTileMapRequestSize
-    ) {
+    if (reqWidth === this.fallbackTileMapRequestSize && reqHeight === this.fallbackTileMapRequestSize) {
       reqRow = row;
       reqColumn = column;
     } else {
@@ -142,13 +129,7 @@ export class ArcGISTileMap {
 
     try {
       // console.log(`Tilemap request: ${level},${reqRow},${reqColumn},${reqWidth},${reqHeight}`);
-      const json = await this.fetchTileMapFromServer(
-        level,
-        reqRow,
-        reqColumn,
-        reqWidth,
-        reqHeight
-      );
+      const json = await this.fetchTileMapFromServer(level, reqRow, reqColumn, reqWidth, reqHeight);
       let tileMapWidth = reqWidth;
       let tileMapHeight = reqHeight;
       if (Array.isArray(json.data)) {
@@ -157,14 +138,8 @@ export class ArcGISTileMap {
         if (json.adjusted) {
           // If tilemap size got adjusted, I'm expecting to get adjusted size...
           // otherwise there is something really odd with this server.
-          assert(
-            json.location?.width !== undefined &&
-              json.location?.height !== undefined
-          );
-          if (
-            json.location?.width !== undefined &&
-            json.location?.height !== undefined
-          ) {
+          assert(json.location?.width !== undefined && json.location?.height !== undefined);
+          if (json.location?.width !== undefined && json.location?.height !== undefined) {
             tileMapWidth = json.location?.width;
             tileMapHeight = json.location?.height;
           }
@@ -176,10 +151,7 @@ export class ArcGISTileMap {
             const curColumn = reqColumn + i;
             const curRow = reqRow + j;
             // console.log(`Tilemap tile:: ${level},${curRow},${curColumn} => ${avail}`);
-            this._tilesCache.set(
-              QuadId.getTileContentId(level, curColumn, curRow),
-              avail
-            );
+            this._tilesCache.set(QuadId.getTileContentId(level, curColumn, curRow), avail);
 
             // Check if actual tile is among the children we are looking for, if so update the availability array.
             if (
@@ -199,10 +171,7 @@ export class ArcGISTileMap {
         // Mark all tilemap tiles to non-available in the cache too
         for (let j = 0; j < tileMapWidth; j++) {
           for (let i = 0; i < tileMapHeight; i++) {
-            this._tilesCache.set(
-              QuadId.getTileContentId(level, reqColumn + i, reqRow + j),
-              false
-            );
+            this._tilesCache.set(QuadId.getTileContentId(level, reqColumn + i, reqRow + j), false);
           }
         }
       }
@@ -213,9 +182,7 @@ export class ArcGISTileMap {
     return available;
   }
 
-  protected async getChildrenAvailabilityFromServer(
-    childIds: QuadId[]
-  ): Promise<boolean[]> {
+  protected async getChildrenAvailabilityFromServer(childIds: QuadId[]): Promise<boolean[]> {
     // We need to check cache again:
     // Tiles we are looking for may have been added to cache while we were waiting in the call queue.
     const cacheInfo = this.getAvailableTilesFromCache(childIds);
@@ -225,11 +192,7 @@ export class ArcGISTileMap {
 
     let available;
     try {
-      available = await this.fetchAndReadTilemap(
-        childIds,
-        this.tileMapRequestSize,
-        this.tileMapRequestSize
-      );
+      available = await this.fetchAndReadTilemap(childIds, this.tileMapRequestSize, this.tileMapRequestSize);
       if (available.length !== childIds.length) {
         if (this.tileMapRequestSize > this.fallbackTileMapRequestSize) {
           // Maybe we were unlucky and the tilemap got adjusted our the tiles we are looking for got clipped,

@@ -40,9 +40,7 @@ export namespace ConcreteEntityTypes {
   /** used by the transformer to figure out where to check for the existence in a db of a concrete element id
    * @internal
    */
-  export function toBisCoreRootClassFullName(
-    type: ConcreteEntityTypes
-  ): string {
+  export function toBisCoreRootClassFullName(type: ConcreteEntityTypes): string {
     return toBisCoreRootClassFullNameMap[type];
   }
 }

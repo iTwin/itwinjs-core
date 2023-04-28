@@ -3,17 +3,9 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-  PrimitiveValue,
-  PropertyValueFormat,
-  StandardTypeNames,
-} from "@itwin/appui-abstract";
+import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import {
-  MapFeatureInfoRecord,
-  MapLayerFeatureInfo,
-  MapSubLayerFeatureInfo,
-} from "@itwin/core-frontend";
+import { MapFeatureInfoRecord, MapLayerFeatureInfo, MapSubLayerFeatureInfo } from "@itwin/core-frontend";
 import { Transform } from "@itwin/core-geometry";
 import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
 import { ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
@@ -27,16 +19,10 @@ export class ArcGisFeatureJSON extends ArcGisFeatureReader {
     super(settings, layerMetadata);
   }
 
-  public readAndRender(
-    response: ArcGisResponseData,
-    renderer: ArcGisFeatureRenderer
-  ) {
+  public readAndRender(response: ArcGisResponseData, renderer: ArcGisFeatureRenderer) {
     const responseObj = response.data;
 
-    if (
-      responseObj?.geometryType === "esriGeometryPolyline" ||
-      responseObj?.geometryType === "esriGeometryPolygon"
-    ) {
+    if (responseObj?.geometryType === "esriGeometryPolyline" || responseObj?.geometryType === "esriGeometryPolygon") {
       const fill = responseObj.geometryType === "esriGeometryPolygon";
       for (const feature of responseObj.features) {
         let offset = 0;
@@ -45,32 +31,16 @@ export class ArcGisFeatureJSON extends ArcGisFeatureReader {
 
         if (feature?.geometry?.rings) {
           for (const ring of feature?.geometry?.rings) {
-            offset = ArcGisFeatureJSON.deflateCoordinates(
-              ring,
-              coords,
-              2,
-              offset
-            );
+            offset = ArcGisFeatureJSON.deflateCoordinates(ring, coords, 2, offset);
             lengths.push(ring.length);
           }
         } else if (feature?.geometry?.paths) {
           for (const path of feature?.geometry?.paths) {
-            offset = ArcGisFeatureJSON.deflateCoordinates(
-              path,
-              coords,
-              2,
-              offset
-            );
+            offset = ArcGisFeatureJSON.deflateCoordinates(path, coords, 2, offset);
             lengths.push(path.length);
           }
         }
-        renderer.renderPath(
-          lengths,
-          coords,
-          fill,
-          2,
-          renderer.transform === undefined
-        );
+        renderer.renderPath(lengths, coords, fill, 2, renderer.transform === undefined);
       }
     } else if (
       responseObj?.geometryType === "esriGeometryPoint" ||
@@ -81,12 +51,7 @@ export class ArcGisFeatureJSON extends ArcGisFeatureReader {
         if (feature.geometry) {
           const lengths: number[] = [];
           const coords: number[] = [feature.geometry.x, feature.geometry.y];
-          renderer.renderPoint(
-            lengths,
-            coords,
-            2,
-            renderer.transform === undefined
-          );
+          renderer.renderPoint(lengths, coords, 2, renderer.transform === undefined);
         }
       }
     }
@@ -103,20 +68,15 @@ export class ArcGisFeatureJSON extends ArcGisFeatureReader {
   ) {
     for (let i = 0, ii = coordinates.length; i < ii; ++i) {
       const coordinate = coordinates[i];
-      for (let j = 0; j < stride; ++j)
-        flatCoordinates[offset++] = coordinate[j];
+      for (let j = 0; j < stride; ++j) flatCoordinates[offset++] = coordinate[j];
     }
 
     return offset;
   }
 
-  public readFeatureInfo(
-    response: ArcGisResponseData,
-    featureInfos: MapLayerFeatureInfo[]
-  ) {
+  public readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[]) {
     const responseObj = response.data;
-    if (responseObj === undefined || !Array.isArray(responseObj.features))
-      return;
+    if (responseObj === undefined || !Array.isArray(responseObj.features)) return;
 
     const layerInfo: MapLayerFeatureInfo = { layerName: this._settings.name };
 
@@ -174,10 +134,7 @@ export class ArcGisFeatureJSON extends ArcGisFeatureReader {
       }
 
       const typename = getStandardTypeName(fieldType);
-      propertyValue.displayValue = this.getDisplayValue(
-        typename,
-        propertyValue.value
-      );
+      propertyValue.displayValue = this.getDisplayValue(typename, propertyValue.value);
 
       return new MapFeatureInfoRecord(propertyValue, {
         name: fieldName,
@@ -198,8 +155,7 @@ export class ArcGisFeatureJSON extends ArcGisFeatureReader {
 
       if (layerInfo.info === undefined) layerInfo.info = [];
 
-      if (!(layerInfo.info instanceof HTMLElement))
-        layerInfo.info.push(subLayerInfo);
+      if (!(layerInfo.info instanceof HTMLElement)) layerInfo.info.push(subLayerInfo);
     }
 
     featureInfos.push(layerInfo);

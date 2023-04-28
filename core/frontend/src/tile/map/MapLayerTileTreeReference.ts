@@ -7,19 +7,11 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import {
-  ImageMapLayerSettings,
-  MapLayerSettings,
-  ModelMapLayerSettings,
-} from "@itwin/core-common";
+import { ImageMapLayerSettings, MapLayerSettings, ModelMapLayerSettings } from "@itwin/core-common";
 import { HitDetail } from "../../HitDetail";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import {
-  createModelMapLayerTileTreeReference,
-  MapLayerImageryProvider,
-  TileTreeReference,
-} from "../internal";
+import { createModelMapLayerTileTreeReference, MapLayerImageryProvider, TileTreeReference } from "../internal";
 
 /** @internal  */
 export abstract class MapLayerTileTreeReference extends TileTreeReference {
@@ -31,9 +23,7 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
     super();
   }
   protected get _transparency() {
-    return this._layerSettings.transparency
-      ? this._layerSettings.transparency
-      : undefined;
+    return this._layerSettings.transparency ? this._layerSettings.transparency : undefined;
   }
 
   public get isOpaque() {
@@ -62,16 +52,9 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
   public get transparency() {
     return this._transparency;
   }
-  public override async getToolTip(
-    hit: HitDetail
-  ): Promise<HTMLElement | string | undefined> {
+  public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
     const tree = this.treeOwner.tileTree;
-    if (
-      undefined === tree ||
-      hit.iModel !== tree.iModel ||
-      tree.modelId !== hit.sourceId
-    )
-      return undefined;
+    if (undefined === tree || hit.iModel !== tree.iModel || tree.modelId !== hit.sourceId) return undefined;
 
     const strings = [];
     strings.push(`Map Layer: ${this._layerSettings.name}`);
@@ -88,17 +71,9 @@ export function createMapLayerTreeReference(
   iModel: IModelConnection
 ): MapLayerTileTreeReference | undefined {
   if (layerSettings instanceof ModelMapLayerSettings) {
-    return createModelMapLayerTileTreeReference(
-      layerSettings,
-      layerIndex,
-      iModel
-    );
+    return createModelMapLayerTileTreeReference(layerSettings, layerIndex, iModel);
   } else if (layerSettings instanceof ImageMapLayerSettings)
-    return IModelApp.mapLayerFormatRegistry.createImageryMapLayerTree(
-      layerSettings,
-      layerIndex,
-      iModel
-    );
+    return IModelApp.mapLayerFormatRegistry.createImageryMapLayerTree(layerSettings, layerIndex, iModel);
   else {
     assert(false);
     return undefined;

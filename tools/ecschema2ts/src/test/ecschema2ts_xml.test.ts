@@ -21,9 +21,7 @@ describe("convert schema xml string to ts", () => {
         </ECSchema>`,
       expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
       expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
-      expectedPropsImportTs: [
-        new RegExp(`import { EntityProps } from "@itwin/core-common";`),
-      ],
+      expectedPropsImportTs: [new RegExp(`import { EntityProps } from "@itwin/core-common";`)],
       expectedPropsTs: [
         utils.dedent`
         export interface EntityTestProps extends EntityProps {
@@ -32,12 +30,8 @@ describe("convert schema xml string to ts", () => {
         }`,
       ],
       expectedElemImportTs: [
-        new RegExp(
-          `import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`
-        ),
-        new RegExp(
-          `import { EntityTestProps } from "./TestSchemaElementProps";`
-        ),
+        new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
+        new RegExp(`import { EntityTestProps } from "./TestSchemaElementProps";`),
       ],
       expectedElemTs: [
         utils.dedent`
@@ -76,9 +70,7 @@ describe("convert schema xml string to ts", () => {
       expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
       expectedPropsImportTs: [
         new RegExp(`import { EntityProps } from "@itwin/core-common";`),
-        new RegExp(
-          `import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`
-        ),
+        new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`),
       ],
       expectedPropsTs: [
         utils.dedent`
@@ -94,12 +86,8 @@ describe("convert schema xml string to ts", () => {
         }`,
       ],
       expectedElemImportTs: [
-        new RegExp(
-          `import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`
-        ),
-        new RegExp(
-          `import { EntityTestProps } from "./TestSchemaElementProps";`
-        ),
+        new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
+        new RegExp(`import { EntityTestProps } from "./TestSchemaElementProps";`),
       ],
       expectedElemTs: [
         utils.dedent`
@@ -130,9 +118,7 @@ describe("convert schema xml string to ts", () => {
       expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
       expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
       expectedPropsImportTs: [
-        new RegExp(
-          `import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`
-        ),
+        new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`),
       ],
       expectedPropsTs: [
         utils.dedent`
@@ -182,9 +168,7 @@ describe("convert schema xml string to ts", () => {
         }`,
       ],
       expectedElemImportTs: [
-        new RegExp(
-          `import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`
-        ),
+        new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
       ],
       expectedElemTs: [
         utils.dedent`
@@ -236,12 +220,8 @@ describe("convert schema xml string to ts", () => {
         }`,
       ],
       expectedElemImportTs: [
-        new RegExp(
-          `import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`
-        ),
-        new RegExp(
-          `import { BaseEntityProps } from "./TestSchemaElementProps";`
-        ),
+        new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
+        new RegExp(`import { BaseEntityProps } from "./TestSchemaElementProps";`),
       ],
       expectedElemTs: [
         utils.dedent`
@@ -303,12 +283,8 @@ describe("convert schema xml string to ts", () => {
       expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
       expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
       expectedPropsImportTs: [
-        new RegExp(
-          `import { (?=.*\\b(EntityProps)\\b).* } from "@itwin/core-common";`
-        ),
-        new RegExp(
-          `import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`
-        ),
+        new RegExp(`import { (?=.*\\b(EntityProps)\\b).* } from "@itwin/core-common";`),
+        new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`),
         new RegExp(
           `import { (?=.*\\b(IntEnumeration)\\b)(?=.*\\b(StringEnumeration)\\b).* } from "./TestSchemaElements";`
         ),
@@ -332,12 +308,8 @@ describe("convert schema xml string to ts", () => {
         }`,
       ],
       expectedElemImportTs: [
-        new RegExp(
-          `import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`
-        ),
-        new RegExp(
-          `import { (?=.*\\b(EntityTestProps)\\b).* } from "./TestSchemaElementProps";`
-        ),
+        new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
+        new RegExp(`import { (?=.*\\b(EntityTestProps)\\b).* } from "./TestSchemaElementProps";`),
       ],
       expectedElemTs: [
         utils.dedent`
@@ -381,9 +353,7 @@ describe("convert schema xml string to ts", () => {
         </ECSchema>`,
       expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
       expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
-      expectedPropsImportTs: [
-        new RegExp(`import { EntityProps } from "@itwin/core-common";`),
-      ],
+      expectedPropsImportTs: [new RegExp(`import { EntityProps } from "@itwin/core-common";`)],
       expectedPropsTs: [
         utils.dedent`
         export interface BaseEntityTestProps extends EntityProps {
@@ -396,9 +366,7 @@ describe("convert schema xml string to ts", () => {
         }`,
       ],
       expectedElemImportTs: [
-        new RegExp(
-          `import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`
-        ),
+        new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
         new RegExp(
           `import { (?=.*\\b(DerivedEntityTestProps)\\b)(?=.*\\b(BaseEntityTestProps)\\b).* } from "./TestSchemaElementProps";`
         ),
@@ -463,9 +431,7 @@ describe("convert schema xml string to ts", () => {
         </ECSchema>`,
       expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
       expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
-      expectedPropsImportTs: [
-        new RegExp(`import { EntityProps } from "@itwin/core-common";`),
-      ],
+      expectedPropsImportTs: [new RegExp(`import { EntityProps } from "@itwin/core-common";`)],
       expectedPropsTs: [
         utils.dedent`
         export interface MixinTest {
@@ -490,9 +456,7 @@ describe("convert schema xml string to ts", () => {
         }`,
       ],
       expectedElemImportTs: [
-        new RegExp(
-          `import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`
-        ),
+        new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
         new RegExp(
           `import { (?=.*\\b(DerivedEntityTestProps)\\b)(?=.*\\b(BaseEntityTestProps)\\b).* } from "./TestSchemaElementProps";`
         ),
@@ -538,9 +502,7 @@ describe("convert schema xml string to ts", () => {
       expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
       expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
       expectedPropsImportTs: [
-        new RegExp(
-          `import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`
-        ),
+        new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`),
       ],
       expectedPropsTs: [
         utils.dedent`
@@ -603,9 +565,7 @@ describe("convert schema xml string to ts", () => {
         new RegExp(
           `import { (?=.*\\b(IModelDb)\\b)(?=.*\\b(Element)\\b)(?=.*\\b(AnnotationElement2d)\\b)(?=.*\\b(GeometricElement2d)\\b).* } from "@itwin/core-backend";`
         ),
-        new RegExp(
-          `import { (?=.*\\b(GeometricElement2dProps)\\b).* } from "@itwin/core-common";`
-        ),
+        new RegExp(`import { (?=.*\\b(GeometricElement2dProps)\\b).* } from "@itwin/core-common";`),
         new RegExp(
           `import { (?=.*\\b(DerivedGeometricElement2dProps)\\b)(?=.*\\b(DerivedElementProps)\\b).* } from "./TestSchemaElementProps";`
         ),
@@ -659,11 +619,7 @@ describe("convert schema xml string to ts", () => {
         </ECSchema>`,
       expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
       expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
-      expectedPropsImportTs: [
-        new RegExp(
-          `import { (?=.*\\b(EntityProps)\\b).* } from "@itwin/core-common";`
-        ),
-      ],
+      expectedPropsImportTs: [new RegExp(`import { (?=.*\\b(EntityProps)\\b).* } from "@itwin/core-common";`)],
       expectedPropsTs: [
         utils.dedent`
         export interface BaseEntityTestProps extends EntityProps {
@@ -675,12 +631,8 @@ describe("convert schema xml string to ts", () => {
         new RegExp(
           `import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b)(?=.*\\b(Element)\\b).* } from "@itwin/core-backend";`
         ),
-        new RegExp(
-          `import { (?=.*\\b(ElementProps)\\b).* } from "@itwin/core-common";`
-        ),
-        new RegExp(
-          `import { (?=.*\\b(BaseEntityTestProps)\\b).* } from "./TestSchemaElementProps";`
-        ),
+        new RegExp(`import { (?=.*\\b(ElementProps)\\b).* } from "@itwin/core-common";`),
+        new RegExp(`import { (?=.*\\b(BaseEntityTestProps)\\b).* } from "./TestSchemaElementProps";`),
       ],
       expectedElemTs: [
         utils.dedent`
@@ -747,9 +699,7 @@ describe("convert schema xml string to ts", () => {
       expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
       expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
       expectedPropsImportTs: [
-        new RegExp(
-          `import { (?=.*\\b(GeometricElement2dProps)\\b).* } from "@itwin/core-common";`
-        ),
+        new RegExp(`import { (?=.*\\b(GeometricElement2dProps)\\b).* } from "@itwin/core-common";`),
       ],
       expectedPropsTs: [
         utils.dedent`
@@ -777,9 +727,7 @@ describe("convert schema xml string to ts", () => {
         }`,
       ],
       expectedElemImportTs: [
-        new RegExp(
-          `import { (?=.*\\b(AnnotationElement2d)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`
-        ),
+        new RegExp(`import { (?=.*\\b(AnnotationElement2d)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
         new RegExp(
           `import { (?=.*\\b(NormalEntityProps)\\b)(?=.*\\b(BaseEntityProps)\\b)(?=.*\\b(DerivedElementTestProps)\\b).* } from "./TestSchemaElementProps";`
         ),
@@ -823,8 +771,7 @@ describe("convert schema xml string to ts", () => {
 
     // Test Case: Xml Deserialization should not crash when references Units and Formats
     {
-      testName:
-        "Xml Deserialization should not crash when parsing Units and Formats",
+      testName: "Xml Deserialization should not crash when parsing Units and Formats",
       referenceXmls: [],
       schemaXml: `<?xml version="1.0" encoding="utf-8"?>
         <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
@@ -841,8 +788,7 @@ describe("convert schema xml string to ts", () => {
 
     // Test Case: Xml Deserialization should not crash when parsing KoQ's persistentUnit and presentationUnits
     {
-      testName:
-        "Xml Deserialization should not crash when parsing KoQ's persistentUnit and presentationUnits",
+      testName: "Xml Deserialization should not crash when parsing KoQ's persistentUnit and presentationUnits",
       referenceXmls: [],
       schemaXml: `<?xml version="1.0" encoding="utf-8"?>
         <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
@@ -867,9 +813,7 @@ describe("convert schema xml string to ts", () => {
         </ECSchema>`,
       expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
       expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
-      expectedPropsImportTs: [
-        new RegExp(`import { EntityProps } from "@itwin/core-common";`),
-      ],
+      expectedPropsImportTs: [new RegExp(`import { EntityProps } from "@itwin/core-common";`)],
       expectedPropsTs: [
         utils.dedent`
         export interface TestEntityProps extends EntityProps {
@@ -878,12 +822,8 @@ describe("convert schema xml string to ts", () => {
         }`,
       ],
       expectedElemImportTs: [
-        new RegExp(
-          `import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`
-        ),
-        new RegExp(
-          `import { TestEntityProps } from "./TestSchemaElementProps";`
-        ),
+        new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
+        new RegExp(`import { TestEntityProps } from "./TestSchemaElementProps";`),
       ],
       expectedElemTs: [
         utils.dedent`

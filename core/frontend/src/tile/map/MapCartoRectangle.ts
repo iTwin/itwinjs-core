@@ -31,12 +31,7 @@ export class MapCartoRectangle extends Range2d {
    * @note If `north` is less than `south`, they will be swapped.
    * @see [[fromRadians]], [[fromDegrees]], [[createZero]], and [[createMaximum]] to construct a new rectangle.
    */
-  protected constructor(
-    west: number,
-    south: number,
-    east: number,
-    north: number
-  ) {
+  protected constructor(west: number, south: number, east: number, north: number) {
     super(west, Math.min(south, north), east, Math.max(south, north));
   }
 
@@ -47,12 +42,7 @@ export class MapCartoRectangle extends Range2d {
 
   /** Create a rectangle encompassing all points on the surface of the Earth. */
   public static createMaximum(): MapCartoRectangle {
-    return new MapCartoRectangle(
-      -Angle.piRadians,
-      -Angle.piOver2Radians,
-      Angle.piRadians,
-      Angle.piOver2Radians
-    );
+    return new MapCartoRectangle(-Angle.piRadians, -Angle.piOver2Radians, Angle.piRadians, Angle.piOver2Radians);
   }
 
   /** Create a new rectangle with angles specified in radians.
@@ -91,13 +81,7 @@ export class MapCartoRectangle extends Range2d {
     result?: MapCartoRectangle
   ): MapCartoRectangle {
     const mult = Angle.radiansPerDegree;
-    return MapCartoRectangle.fromRadians(
-      west * mult,
-      south * mult,
-      east * mult,
-      north * mult,
-      result
-    );
+    return MapCartoRectangle.fromRadians(west * mult, south * mult, east * mult, north * mult, result);
   }
 
   /** The western longitude in radians. */
@@ -134,11 +118,9 @@ export class MapCartoRectangle extends Range2d {
 
   /** A non-localized string representation of this rectangle, for debugging purposes. */
   public get latLongString() {
-    return `Latitude: ${this.low.y * Angle.degreesPerRadian} - ${
-      this.high.y * Angle.degreesPerRadian
-    } Longitude: ${this.low.x * Angle.degreesPerRadian} - ${
-      this.high.x * Angle.degreesPerRadian
-    }`;
+    return `Latitude: ${this.low.y * Angle.degreesPerRadian} - ${this.high.y * Angle.degreesPerRadian} Longitude: ${
+      this.low.x * Angle.degreesPerRadian
+    } - ${this.high.x * Angle.degreesPerRadian}`;
   }
 
   /** A pair of [[Cartographic]]s representing the same area as this rectangle. */
@@ -215,18 +197,10 @@ export class MapCartoRectangle extends Range2d {
 
   /** @internal */
   public getTileFractionRange(tilingScheme: MapTilingScheme) {
-    scratchMercatorFractionRange.low.x = tilingScheme.longitudeToXFraction(
-      this.low.x
-    );
-    scratchMercatorFractionRange.high.x = tilingScheme.longitudeToXFraction(
-      this.high.x
-    );
-    scratchMercatorFractionRange.low.y = tilingScheme.latitudeToYFraction(
-      this.low.y
-    );
-    scratchMercatorFractionRange.high.y = tilingScheme.latitudeToYFraction(
-      this.high.y
-    );
+    scratchMercatorFractionRange.low.x = tilingScheme.longitudeToXFraction(this.low.x);
+    scratchMercatorFractionRange.high.x = tilingScheme.longitudeToXFraction(this.high.x);
+    scratchMercatorFractionRange.low.y = tilingScheme.latitudeToYFraction(this.low.y);
+    scratchMercatorFractionRange.high.y = tilingScheme.latitudeToYFraction(this.high.y);
 
     return scratchMercatorFractionRange;
   }

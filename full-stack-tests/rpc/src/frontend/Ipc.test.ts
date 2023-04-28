@@ -59,9 +59,7 @@ if (ProcessDetector.isElectronAppFrontend) {
 
         socket.send("test", 1, 2, 3);
 
-        assert(
-          await executeBackendCallback(BackendTestCallbacks.sendIpcMessage)
-        );
+        assert(await executeBackendCallback(BackendTestCallbacks.sendIpcMessage));
       });
     });
 

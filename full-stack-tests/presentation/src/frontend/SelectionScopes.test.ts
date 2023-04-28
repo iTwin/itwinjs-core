@@ -13,8 +13,7 @@ describe("Selection Scopes", () => {
 
   before(async () => {
     await initialize();
-    const testIModelName: string =
-      "assets/datasets/Properties_60InstancesWithUrl2.ibim";
+    const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await SnapshotConnection.openFile(testIModelName);
     expect(imodel).is.not.null;
   });
@@ -29,22 +28,13 @@ describe("Selection Scopes", () => {
   });
 
   it("returns hard-coded selection scopes from the backend", async () => {
-    const scopes = await Presentation.selection.scopes.getSelectionScopes(
-      imodel
-    );
+    const scopes = await Presentation.selection.scopes.getSelectionScopes(imodel);
     expect(scopes).to.matchSnapshot();
   });
 
   it("sets correct selection with 'element' selection scope", async () => {
-    const elementProps = await imodel.elements.getProps(
-      Id64.fromUint32Pair(116, 0)
-    );
-    await Presentation.selection.addToSelectionWithScope(
-      "",
-      imodel,
-      elementProps[0].id!,
-      "element"
-    );
+    const elementProps = await imodel.elements.getProps(Id64.fromUint32Pair(116, 0));
+    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps[0].id!, "element");
     const selection = Presentation.selection.getSelection(imodel);
     expect(selection.size).to.eq(1);
     expect(
@@ -56,15 +46,11 @@ describe("Selection Scopes", () => {
   });
 
   it("sets correct selection with 'element' 1st parent level selection scope", async () => {
-    const elementProps = await imodel.elements.getProps(
-      Id64.fromUint32Pair(28, 0)
-    );
-    await Presentation.selection.addToSelectionWithScope(
-      "",
-      imodel,
-      elementProps[0].id!,
-      { id: "element", ancestorLevel: 1 }
-    );
+    const elementProps = await imodel.elements.getProps(Id64.fromUint32Pair(28, 0));
+    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps[0].id!, {
+      id: "element",
+      ancestorLevel: 1,
+    });
     const selection = Presentation.selection.getSelection(imodel);
     expect(selection.size).to.eq(1);
     expect(
@@ -76,15 +62,8 @@ describe("Selection Scopes", () => {
   });
 
   it("sets correct selection with 'assembly' selection scope", async () => {
-    const elementProps = await imodel.elements.getProps(
-      Id64.fromUint32Pair(28, 0)
-    );
-    await Presentation.selection.addToSelectionWithScope(
-      "",
-      imodel,
-      elementProps[0].id!,
-      "assembly"
-    );
+    const elementProps = await imodel.elements.getProps(Id64.fromUint32Pair(28, 0));
+    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps[0].id!, "assembly");
     const selection = Presentation.selection.getSelection(imodel);
     expect(selection.size).to.eq(1);
     expect(
@@ -96,15 +75,11 @@ describe("Selection Scopes", () => {
   });
 
   it("sets correct selection with 'element' 2nd parent level selection scope", async () => {
-    const elementProps = await imodel.elements.getProps(
-      Id64.fromUint32Pair(28, 0)
-    );
-    await Presentation.selection.addToSelectionWithScope(
-      "",
-      imodel,
-      elementProps[0].id!,
-      { id: "element", ancestorLevel: 2 }
-    );
+    const elementProps = await imodel.elements.getProps(Id64.fromUint32Pair(28, 0));
+    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps[0].id!, {
+      id: "element",
+      ancestorLevel: 2,
+    });
     const selection = Presentation.selection.getSelection(imodel);
     expect(selection.size).to.eq(1);
     expect(
@@ -116,15 +91,11 @@ describe("Selection Scopes", () => {
   });
 
   it("sets correct selection with 'element' exceeding parent level selection scope", async () => {
-    const elementProps = await imodel.elements.getProps(
-      Id64.fromUint32Pair(28, 0)
-    );
-    await Presentation.selection.addToSelectionWithScope(
-      "",
-      imodel,
-      elementProps[0].id!,
-      { id: "element", ancestorLevel: 999 }
-    );
+    const elementProps = await imodel.elements.getProps(Id64.fromUint32Pair(28, 0));
+    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps[0].id!, {
+      id: "element",
+      ancestorLevel: 999,
+    });
     const selection = Presentation.selection.getSelection(imodel);
     expect(selection.size).to.eq(1);
     expect(
@@ -136,15 +107,8 @@ describe("Selection Scopes", () => {
   });
 
   it("sets correct selection with 'top-assembly' selection scope", async () => {
-    const elementProps = await imodel.elements.getProps(
-      Id64.fromUint32Pair(28, 0)
-    );
-    await Presentation.selection.addToSelectionWithScope(
-      "",
-      imodel,
-      elementProps[0].id!,
-      "top-assembly"
-    );
+    const elementProps = await imodel.elements.getProps(Id64.fromUint32Pair(28, 0));
+    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps[0].id!, "top-assembly");
     const selection = Presentation.selection.getSelection(imodel);
     expect(selection.size).to.eq(1);
     expect(
@@ -156,15 +120,8 @@ describe("Selection Scopes", () => {
   });
 
   it("sets correct selection with 'category' selection scope", async () => {
-    const elementProps = await imodel.elements.getProps(
-      Id64.fromUint32Pair(116, 0)
-    );
-    await Presentation.selection.addToSelectionWithScope(
-      "",
-      imodel,
-      elementProps[0].id!,
-      "element"
-    );
+    const elementProps = await imodel.elements.getProps(Id64.fromUint32Pair(116, 0));
+    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps[0].id!, "element");
     const selection = Presentation.selection.getSelection(imodel);
     expect(selection.size).to.eq(1);
     expect(
@@ -176,15 +133,8 @@ describe("Selection Scopes", () => {
   });
 
   it("sets correct selection with 'model' selection scope", async () => {
-    const elementProps = await imodel.elements.getProps(
-      Id64.fromUint32Pair(116, 0)
-    );
-    await Presentation.selection.addToSelectionWithScope(
-      "",
-      imodel,
-      elementProps[0].id!,
-      "element"
-    );
+    const elementProps = await imodel.elements.getProps(Id64.fromUint32Pair(116, 0));
+    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps[0].id!, "element");
     const selection = Presentation.selection.getSelection(imodel);
     expect(selection.size).to.eq(1);
     expect(

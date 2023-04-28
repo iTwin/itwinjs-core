@@ -42,8 +42,7 @@ export class AttributeMask {
     /* Do we have a list of readers? */
     if (readers != null) {
       this.attributes = new Array<PointAttribute>(readers.size());
-      for (let i: number = 0; i < this.attributes.length; i++)
-        this.attributes[i] = readers.get(i).getAttribute();
+      for (let i: number = 0; i < this.attributes.length; i++) this.attributes[i] = readers.get(i).getAttribute();
       this.readers = readers;
     }
   }
@@ -55,8 +54,7 @@ export class AttributeMask {
    */
   public static readAllEmbedded(fileReader: FileReader): AttributeMask {
     let readers: AList<AttributeReader> = new AList<AttributeReader>();
-    for (let reader of fileReader.getStaticAttributeReaders())
-      readers.add(reader);
+    for (let reader of fileReader.getStaticAttributeReaders()) readers.add(reader);
     return new AttributeMask(readers);
   }
 }

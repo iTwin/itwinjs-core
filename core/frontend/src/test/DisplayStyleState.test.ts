@@ -4,13 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import {
-  Code,
-  DisplayStyle3dProps,
-  EmptyLocalization,
-  RenderSchedule,
-  RenderTimelineProps,
-} from "@itwin/core-common";
+import { Code, DisplayStyle3dProps, EmptyLocalization, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
 import { DisplayStyle3dState } from "../DisplayStyleState";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
@@ -53,9 +47,7 @@ describe("DisplayStyleState", () => {
     ];
 
     class Style extends DisplayStyle3dState {
-      public readonly eventPayloads: Array<
-        RenderSchedule.ScriptReference | undefined
-      >;
+      public readonly eventPayloads: Array<RenderSchedule.ScriptReference | undefined>;
 
       public constructor() {
         const props: DisplayStyle3dProps = {
@@ -68,33 +60,23 @@ describe("DisplayStyleState", () => {
         super(props, iModel);
 
         this.eventPayloads = [];
-        this.onScheduleScriptReferenceChanged.addListener((ref) =>
-          this.eventPayloads.push(ref)
-        ); // eslint-disable-line deprecation/deprecation
+        this.onScheduleScriptReferenceChanged.addListener((ref) => this.eventPayloads.push(ref)); // eslint-disable-line deprecation/deprecation
       }
 
-      public expectScript(
-        props: RenderSchedule.ScriptProps,
-        sourceId: string
-      ): void {
+      public expectScript(props: RenderSchedule.ScriptProps, sourceId: string): void {
         expect(this.scheduleScript).not.to.be.undefined;
         expect(this.scheduleScriptReference!.sourceId).to.equal(sourceId); // eslint-disable-line deprecation/deprecation
-        expect(this.scheduleScript!.modelTimelines[0].modelId).to.equal(
-          props[0].modelId
-        );
+        expect(this.scheduleScript!.modelTimelines[0].modelId).to.equal(props[0].modelId);
       }
 
       public get isLoading() {
         return undefined !== this._queryRenderTimelinePropsPromise;
       }
       public async finishLoading() {
-        while (this._queryRenderTimelinePropsPromise)
-          await this._queryRenderTimelinePropsPromise;
+        while (this._queryRenderTimelinePropsPromise) await this._queryRenderTimelinePropsPromise;
       }
 
-      protected override async queryRenderTimelineProps(
-        timelineId: string
-      ): Promise<RenderTimelineProps | undefined> {
+      protected override async queryRenderTimelineProps(timelineId: string): Promise<RenderTimelineProps | undefined> {
         let script;
         if (timelineId === "0x1") script = JSON.stringify(script1);
         else if (timelineId === "0x2") script = JSON.stringify(script2);
@@ -175,18 +157,16 @@ describe("DisplayStyleState", () => {
 
       const promise = new Promise<void>((resolve) => {
         let numCalls = 0;
-        const removeListener = style.onScheduleScriptChanged.addListener(
-          (newScript) => {
-            // Event is invoked immediately when we set schedule script to undefined, then asynchronously after we finish loading
-            // the script from the RenderTimeline.
-            ++numCalls;
-            expect(undefined === newScript).to.equal(numCalls === 1);
-            if (numCalls === 2) {
-              removeListener();
-              resolve();
-            }
+        const removeListener = style.onScheduleScriptChanged.addListener((newScript) => {
+          // Event is invoked immediately when we set schedule script to undefined, then asynchronously after we finish loading
+          // the script from the RenderTimeline.
+          ++numCalls;
+          expect(undefined === newScript).to.equal(numCalls === 1);
+          if (numCalls === 2) {
+            removeListener();
+            resolve();
           }
-        );
+        });
       });
 
       style.scheduleScript = undefined;
@@ -248,9 +228,7 @@ describe("DisplayStyleState", () => {
       expect(style.isLoading).to.be.false;
 
       style.expectScript(script2, "0x2");
-      expect(style.eventPayloads).to.deep.equal([
-        style.scheduleScriptReference,
-      ]); // eslint-disable-line deprecation/deprecation
+      expect(style.eventPayloads).to.deep.equal([style.scheduleScriptReference]); // eslint-disable-line deprecation/deprecation
     });
 
     it("is set to undefined if loadScheduleScriptReference produces an exception", async () => {

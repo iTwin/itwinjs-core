@@ -23,12 +23,7 @@ import {
   XYAndZ,
   XYZ,
 } from "@itwin/core-geometry";
-import {
-  Frustum,
-  GridOrientationType,
-  Npc,
-  NpcCorners,
-} from "@itwin/core-common";
+import { Frustum, GridOrientationType, Npc, NpcCorners } from "@itwin/core-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
 import { CoordSystem } from "./CoordSystem";
 import { Viewport } from "./Viewport";
@@ -111,9 +106,7 @@ export class ViewingSpace {
   }
   /** @internal */
   public fromViewOrientation(from: XYZ, to?: XYZ) {
-    this.rotation.multiplyTransposeVectorInPlace(
-      ViewingSpace._copyOutput(from, to)
-    );
+    this.rotation.multiplyTransposeVectorInPlace(ViewingSpace._copyOutput(from, to));
   }
 
   /** Ensure the rotation matrix for this view is aligns the root z with the view out (i.e. a "2d view"). */
@@ -137,16 +130,11 @@ export class ViewingSpace {
 
     const vDelta = view.getExtents();
     const maxDelta = vDelta.x > vDelta.y ? vDelta.x : vDelta.y;
-    let focusDistance =
-      maxDelta / (2.0 * Math.tan(camera.getLensAngle().radians / 2.0));
+    let focusDistance = maxDelta / (2.0 * Math.tan(camera.getLensAngle().radians / 2.0));
 
     if (focusDistance < vDelta.z / 2.0) focusDistance = vDelta.z / 2.0;
 
-    const eyePoint = new Point3d(
-      vDelta.x / 2.0,
-      vDelta.y / 2.0,
-      vDelta.z / 2.0 + focusDistance
-    );
+    const eyePoint = new Point3d(vDelta.x / 2.0, vDelta.y / 2.0, vDelta.z / 2.0 + focusDistance);
 
     this.fromViewOrientation(eyePoint);
     eyePoint.plus(view.getOrigin(), eyePoint);
@@ -164,9 +152,7 @@ export class ViewingSpace {
       cartoRange.extendXY(carto.longitude, carto.latitude);
     }
 
-    return ApproximateTerrainHeights.instance.getMinimumMaximumHeights(
-      cartoRange
-    );
+    return ApproximateTerrainHeights.instance.getMinimumMaximumHeights(cartoRange);
   }
 
   private static _minDepth = 1; // Allowing very small depth will cause frustum calculations to fail.
@@ -182,12 +168,7 @@ export class ViewingSpace {
 
     const extents = view.getViewedExtents();
     const frustum = new Frustum();
-    const worldToNpc = this.view.computeWorldToNpc(
-      this.rotation,
-      this.viewOrigin,
-      this.viewDelta,
-      false
-    ).map as Map4d;
+    const worldToNpc = this.view.computeWorldToNpc(this.rotation, this.viewOrigin, this.viewDelta, false).map as Map4d;
 
     if (worldToNpc === undefined) return;
 
@@ -196,36 +177,22 @@ export class ViewingSpace {
     const viewedExtentCorners = extents.corners();
 
     // Only extend depth to include viewed geometry if it is within the frustum. (if viewing global locations).
-    if (
-      clipPlanes.classifyPointContainment(viewedExtentCorners, false) ===
-      ClipPlaneContainment.StronglyOutside
-    )
+    if (clipPlanes.classifyPointContainment(viewedExtentCorners, false) === ClipPlaneContainment.StronglyOutside)
       extents.setNull();
 
     let depthRange;
     let gridPlane;
     if (this.view.viewFlags.grid) {
-      const gridOrigin = this.view.isSpatialView()
-        ? this.view.iModel.globalOrigin
-        : Point3d.create();
+      const gridOrigin = this.view.isSpatialView() ? this.view.iModel.globalOrigin : Point3d.create();
       switch (this.view.getGridOrientation()) {
         case GridOrientationType.WorldXY:
-          gridPlane = Plane3dByOriginAndUnitNormal.create(
-            gridOrigin,
-            Vector3d.create(0, 0, 1)
-          );
+          gridPlane = Plane3dByOriginAndUnitNormal.create(gridOrigin, Vector3d.create(0, 0, 1));
           break;
         case GridOrientationType.WorldYZ:
-          gridPlane = Plane3dByOriginAndUnitNormal.create(
-            gridOrigin,
-            Vector3d.create(1, 0, 0)
-          );
+          gridPlane = Plane3dByOriginAndUnitNormal.create(gridOrigin, Vector3d.create(1, 0, 0));
           break;
         case GridOrientationType.WorldXZ:
-          gridPlane = Plane3dByOriginAndUnitNormal.create(
-            gridOrigin,
-            Vector3d.create(0, 1, 0)
-          );
+          gridPlane = Plane3dByOriginAndUnitNormal.create(gridOrigin, Vector3d.create(0, 1, 0));
           break;
 
         case GridOrientationType.AuxCoord:
@@ -238,13 +205,10 @@ export class ViewingSpace {
           break;
       }
     }
-    const globalGeometry =
-      this.view.displayStyle.getGlobalGeometryAndHeightRange();
+    const globalGeometry = this.view.displayStyle.getGlobalGeometryAndHeightRange();
     if (undefined !== globalGeometry) {
       const viewZ = this.rotation.getRow(2);
-      const eyeDepth = this.eyePoint
-        ? viewZ.dotProduct(this.eyePoint)
-        : undefined;
+      const eyeDepth = this.eyePoint ? viewZ.dotProduct(this.eyePoint) : undefined;
 
       depthRange = globalGeometry.geometry.getFrustumIntersectionDepthRange(
         frustum,
@@ -261,26 +225,19 @@ export class ViewingSpace {
         if (backDist / frontDist > maxBackgroundFrontBackRatio)
           depthRange.high = eyeDepth - backDist / maxBackgroundFrontBackRatio;
       }
-    } else
-      depthRange = gridPlane
-        ? getFrustumPlaneIntersectionDepthRange(frustum, gridPlane)
-        : Range1d.createNull();
+    } else depthRange = gridPlane ? getFrustumPlaneIntersectionDepthRange(frustum, gridPlane) : Range1d.createNull();
 
     if (!extents.isNull) {
       const viewZ = this.rotation.getRow(2);
       const corners = extents.corners();
-      for (const corner of corners)
-        depthRange.extendX(viewZ.dotProduct(corner));
+      for (const corner of corners) depthRange.extendX(viewZ.dotProduct(corner));
     }
 
     if (depthRange.isNull) return;
 
     this.rotation.multiplyVectorInPlace(origin); // put origin in view coordinates
     origin.z = depthRange.low; // set origin to back of viewed extents
-    delta.z = Math.max(
-      depthRange.high - depthRange.low,
-      ViewingSpace._minDepth
-    ); // and delta to front of viewed extents
+    delta.z = Math.max(depthRange.high - depthRange.low, ViewingSpace._minDepth); // and delta to front of viewed extents
     this.rotation.multiplyTransposeVectorInPlace(origin);
 
     if (!view.isCameraOn) return;
@@ -308,12 +265,7 @@ export class ViewingSpace {
    */
   public calcNpcToView(): Map4d {
     const corners = this.getViewCorners();
-    const map = Map4d.createBoxMap(
-      NpcCorners[Npc._000],
-      NpcCorners[Npc._111],
-      corners.low,
-      corners.high
-    );
+    const map = Map4d.createBoxMap(NpcCorners[Npc._000], NpcCorners[Npc._111], corners.low, corners.high);
 
     // The map may be undefined if the view rect's width or height is zero.
     return undefined === map ? Map4d.createIdentity() : map;
@@ -383,10 +335,7 @@ export class ViewingSpace {
           const frontDist = eyeOrg.z - delta.z; // front distance is backDist - delta.z
 
           // allow ViewState to specify a minimum front dist, but in no case less than 6 inches
-          const minFrontDist = Math.max(
-            15.2 * Constant.oneCentimeter,
-            view.forceMinFrontDist
-          );
+          const minFrontDist = Math.max(15.2 * Constant.oneCentimeter, view.forceMinFrontDist);
           if (frontDist < minFrontDist) {
             // camera is too close to front plane, move origin away from eye to maintain a minimum front distance.
             this.toViewOrientation(origin);
@@ -396,10 +345,7 @@ export class ViewingSpace {
         }
 
         // if we moved the z planes, set the "zClipAdjusted" flag.
-        if (
-          !origin.isExactEqual(this.viewOriginUnexpanded) ||
-          !delta.isExactEqual(this.viewDeltaUnexpanded)
-        )
+        if (!origin.isExactEqual(this.viewOriginUnexpanded) || !delta.isExactEqual(this.viewDeltaUnexpanded))
           this.zClipAdjusted = true;
       }
     } else {
@@ -423,9 +369,7 @@ export class ViewingSpace {
 
     this.worldToNpcMap.setFrom(newRootToNpc.map);
     this.frustFraction = newRootToNpc.frustFraction;
-    this.worldToViewMap.setFrom(
-      this.calcNpcToView().multiplyMapMap(this.worldToNpcMap)
-    );
+    this.worldToViewMap.setFrom(this.calcNpcToView().multiplyMapMap(this.worldToNpcMap));
   }
 
   /** Create from a Viewport. */
@@ -489,10 +433,7 @@ export class ViewingSpace {
   }
   /** Convert an array of points from CoordSystem.View as Point4ds to CoordSystem.World */
   public view4dToWorldArray(viewPts: Point4d[], worldPts: Point3d[]): void {
-    this.worldToViewMap.transform1.multiplyPoint4dArrayQuietRenormalize(
-      viewPts,
-      worldPts
-    );
+    this.worldToViewMap.transform1.multiplyPoint4dArrayQuietRenormalize(viewPts, worldPts);
   }
 
   /**
@@ -517,10 +458,7 @@ export class ViewingSpace {
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
   public worldToView(input: XYAndZ, out?: Point3d): Point3d {
-    return this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(
-      input,
-      out
-    );
+    return this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(input, out);
   }
   /**
    * Convert a point from CoordSystem.World to CoordSystem.View as Point4d
@@ -536,10 +474,7 @@ export class ViewingSpace {
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
   public viewToWorld(input: XYAndZ, out?: Point3d): Point3d {
-    return this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(
-      input,
-      out
-    );
+    return this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(input, out);
   }
   /**
    * Convert a point from CoordSystem.View as a Point4d to CoordSystem.View
@@ -547,13 +482,7 @@ export class ViewingSpace {
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
   public view4dToWorld(input: Point4d, out?: Point3d): Point3d {
-    return this.worldToViewMap.transform1.multiplyXYZWQuietRenormalize(
-      input.x,
-      input.y,
-      input.z,
-      input.w,
-      out
-    );
+    return this.worldToViewMap.transform1.multiplyXYZWQuietRenormalize(input.x, input.y, input.z, input.w, out);
   }
 
   /** Get an 8-point Frustum corresponding to the 8 corners of the Viewport in the specified coordinate system.
@@ -568,11 +497,7 @@ export class ViewingSpace {
    * @return the view frustum
    * @note The "adjusted" box may be either larger or smaller than the "unadjusted" box.
    */
-  public getFrustum(
-    sys: CoordSystem = CoordSystem.World,
-    adjustedBox: boolean = true,
-    box?: Frustum
-  ): Frustum {
+  public getFrustum(sys: CoordSystem = CoordSystem.World, adjustedBox: boolean = true, box?: Frustum): Frustum {
     box = box ? box.initNpc() : new Frustum();
 
     // if they are looking for the "unexpanded" (that is before f/b clipping expansion) box, we need to get the npc
@@ -589,9 +514,7 @@ export class ViewingSpace {
 
       // get the root corners of the unexpanded box
       const ueRootBox = new Frustum();
-      ueRootToNpc.map.transform1.multiplyPoint3dArrayQuietNormalize(
-        ueRootBox.points
-      );
+      ueRootToNpc.map.transform1.multiplyPoint3dArrayQuietNormalize(ueRootBox.points);
 
       // and convert them to npc coordinates of the expanded view
       this.worldToNpcArray(ueRootBox.points);
@@ -613,18 +536,13 @@ export class ViewingSpace {
 
   /** @internal */
   public getPixelSizeAtPoint(inPoint?: Point3d) {
-    const viewPt = !!inPoint
-      ? this.worldToView(inPoint)
-      : this.npcToView(new Point3d(0.5, 0.5, 0.5));
+    const viewPt = !!inPoint ? this.worldToView(inPoint) : this.npcToView(new Point3d(0.5, 0.5, 0.5));
     const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
     return this.viewToWorld(viewPt).distance(this.viewToWorld(viewPt2));
   }
 
   /** @internal */
-  public getPreloadFrustum(
-    transformOrScale?: Transform | number,
-    result?: Frustum
-  ) {
+  public getPreloadFrustum(transformOrScale?: Transform | number, result?: Frustum) {
     const viewFrustum = this.getFrustum(CoordSystem.World, true);
 
     if (transformOrScale && transformOrScale instanceof Transform) {

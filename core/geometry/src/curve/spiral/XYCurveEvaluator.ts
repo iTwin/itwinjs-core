@@ -44,12 +44,7 @@ export abstract class XYCurveEvaluator {
   public abstract fractionToD3Y(fraction: number): number;
   /** Evaluate both X and Y at fractional coordinate, return bundled as a point. */
   public fractionToPoint(fraction: number, result?: Point3d): Point3d {
-    return Point3d.create(
-      this.fractionToX(fraction),
-      this.fractionToY(fraction),
-      0.0,
-      result
-    );
+    return Point3d.create(this.fractionToX(fraction), this.fractionToY(fraction), 0.0, result);
   }
   /** Evaluate both X and Y and their first derivatives at fractional coordinate, return bundled as origin and (non-unit) direction vector. */
   public fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d {
@@ -99,12 +94,7 @@ export abstract class XYCurveEvaluator {
   // These static variables are reused on calls to integrateFromStartFraction
   protected static _gaussX: Float64Array;
   protected static _gaussWeight: Float64Array;
-  protected static _gaussMapper: (
-    xA: number,
-    xB: number,
-    arrayX: Float64Array,
-    arrayW: Float64Array
-  ) => number;
+  protected static _gaussMapper: (xA: number, xB: number, arrayX: Float64Array, arrayW: Float64Array) => number;
   public static initWorkSpace() {
     XYCurveEvaluator._gaussX = new Float64Array(5);
     XYCurveEvaluator._gaussWeight = new Float64Array(5);
@@ -116,18 +106,10 @@ export abstract class XYCurveEvaluator {
    * @param fraction0
    * @param fraction1
    */
-  public integrateDistanceBetweenFractions(
-    fraction0: number,
-    fraction1: number
-  ): number {
+  public integrateDistanceBetweenFractions(fraction0: number, fraction1: number): number {
     const gaussX = XYCurveEvaluator._gaussX;
     const gaussWeight = XYCurveEvaluator._gaussWeight;
-    const numEval = XYCurveEvaluator._gaussMapper(
-      fraction0,
-      fraction1,
-      gaussX,
-      gaussWeight
-    );
+    const numEval = XYCurveEvaluator._gaussMapper(fraction0, fraction1, gaussX, gaussWeight);
     let sum = 0;
     for (let k = 0; k < numEval; k++) {
       sum += gaussWeight[k] * this.fractionToTangentMagnitude(gaussX[k]);
@@ -149,13 +131,7 @@ export abstract class XYCurveEvaluator {
     distance1: number,
     targetDistance: number
   ): number | undefined {
-    const startFraction = Geometry.inverseInterpolate(
-      fraction0,
-      distance0,
-      fraction1,
-      distance1,
-      targetDistance
-    );
+    const startFraction = Geometry.inverseInterpolate(fraction0, distance0, fraction1, distance1, targetDistance);
     if (startFraction !== undefined) {
       return SimpleNewton.runNewton1D(
         startFraction,
@@ -185,12 +161,9 @@ export abstract class XYCurveEvaluator {
     d3xy?: Vector3d
   ) {
     xy.set(this.fractionToX(fraction), this.fractionToY(fraction), 0);
-    if (d1xy)
-      d1xy.set(this.fractionToDX(fraction), this.fractionToDY(fraction), 0);
-    if (d2xy)
-      d2xy.set(this.fractionToDDX(fraction), this.fractionToDDY(fraction), 0);
-    if (d3xy)
-      d3xy.set(this.fractionToD3X(fraction), this.fractionToD3Y(fraction), 0);
+    if (d1xy) d1xy.set(this.fractionToDX(fraction), this.fractionToDY(fraction), 0);
+    if (d2xy) d2xy.set(this.fractionToDDX(fraction), this.fractionToDDY(fraction), 0);
+    if (d3xy) d3xy.set(this.fractionToD3X(fraction), this.fractionToD3Y(fraction), 0);
   }
   /** Apply a uniform scale around the origin. */
   public abstract scaleInPlace(scaleFactor: number): void;

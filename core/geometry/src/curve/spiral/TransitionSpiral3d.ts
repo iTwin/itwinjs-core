@@ -35,12 +35,7 @@ import type { Ray3d } from "../../geometry3d/Ray3d";
  * *
  * @public
  */
-export type IntegratedSpiralTypeName =
-  | "clothoid"
-  | "bloss"
-  | "biquadratic"
-  | "cosine"
-  | "sine";
+export type IntegratedSpiralTypeName = "clothoid" | "bloss" | "biquadratic" | "cosine" | "sine";
 
 /**
  * This is the set of valid type names for "direct" spirals.
@@ -105,9 +100,7 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
     this._spiralType = spiralType ? spiralType : "unknownSpiralType";
     this._designProperties = designProperties;
     this._localToWorld = localToWorld;
-    this._activeFractionInterval = activeFractionInterval
-      ? activeFractionInterval
-      : Segment1d.create(0, 1);
+    this._activeFractionInterval = activeFractionInterval ? activeFractionInterval : Segment1d.create(0, 1);
   }
 
   public get spiralType(): string {
@@ -131,15 +124,10 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
   public abstract refreshComputedProperties(): void;
 
   /** Return (if possible) a spiral which is a portion of this curve. */
-  public override clonePartialCurve(
-    fractionA: number,
-    fractionB: number
-  ): TransitionSpiral3d {
+  public override clonePartialCurve(fractionA: number, fractionB: number): TransitionSpiral3d {
     const spiralB = this.clone();
-    const globalFractionA =
-      this._activeFractionInterval.fractionToPoint(fractionA);
-    const globalFractionB =
-      this._activeFractionInterval.fractionToPoint(fractionB);
+    const globalFractionA = this._activeFractionInterval.fractionToPoint(fractionA);
+    const globalFractionB = this._activeFractionInterval.fractionToPoint(fractionB);
     spiralB._activeFractionInterval.set(globalFractionA, globalFractionB);
     spiralB.refreshComputedProperties();
     return spiralB;
@@ -156,8 +144,7 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
   public static averageCurvature(radiusLimits: Segment1d): number {
     return (
       0.5 *
-      (TransitionSpiral3d.radiusToCurvature(radiusLimits.x0) +
-        TransitionSpiral3d.radiusToCurvature(radiusLimits.x1))
+      (TransitionSpiral3d.radiusToCurvature(radiusLimits.x0) + TransitionSpiral3d.radiusToCurvature(radiusLimits.x1))
     );
   }
   /**
@@ -166,22 +153,14 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
    * @param r1 end radius, or 0 for line
    */
   public static averageCurvatureR0R1(r0: number, r1: number): number {
-    return (
-      0.5 *
-      (TransitionSpiral3d.radiusToCurvature(r0) +
-        TransitionSpiral3d.radiusToCurvature(r1))
-    );
+    return 0.5 * (TransitionSpiral3d.radiusToCurvature(r0) + TransitionSpiral3d.radiusToCurvature(r1));
   }
   /**
    * Given two radii (or zeros for 0 curvature) return the average curvature
    * @param r0 start radius, or 0 for line
    * @param r1 end radius, or 0 for line
    */
-  public static interpolateCurvatureR0R1(
-    r0: number,
-    fraction: number,
-    r1: number
-  ): number {
+  public static interpolateCurvatureR0R1(r0: number, fraction: number, r1: number): number {
     return Geometry.interpolate(
       TransitionSpiral3d.radiusToCurvature(r0),
       fraction,
@@ -190,47 +169,25 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
   }
 
   /** Return the arc length of a transition spiral with given sweep and radius pair. */
-  public static radiusRadiusSweepRadiansToArcLength(
-    radius0: number,
-    radius1: number,
-    sweepRadians: number
-  ): number {
-    return Math.abs(
-      sweepRadians / TransitionSpiral3d.averageCurvatureR0R1(radius0, radius1)
-    );
+  public static radiusRadiusSweepRadiansToArcLength(radius0: number, radius1: number, sweepRadians: number): number {
+    return Math.abs(sweepRadians / TransitionSpiral3d.averageCurvatureR0R1(radius0, radius1));
   }
 
   /** Return the turn angle for spiral of given length between two radii */
-  public static radiusRadiusLengthToSweepRadians(
-    radius0: number,
-    radius1: number,
-    arcLength: number
-  ): number {
-    return (
-      TransitionSpiral3d.averageCurvatureR0R1(radius0, radius1) * arcLength
-    );
+  public static radiusRadiusLengthToSweepRadians(radius0: number, radius1: number, arcLength: number): number {
+    return TransitionSpiral3d.averageCurvatureR0R1(radius0, radius1) * arcLength;
   }
 
   /** Return the end radius for spiral of given start radius, length, and turn angle. */
-  public static radius0LengthSweepRadiansToRadius1(
-    radius0: number,
-    arcLength: number,
-    sweepRadians: number
-  ) {
+  public static radius0LengthSweepRadiansToRadius1(radius0: number, arcLength: number, sweepRadians: number) {
     return TransitionSpiral3d.curvatureToRadius(
-      (2.0 * sweepRadians) / arcLength -
-        TransitionSpiral3d.radiusToCurvature(radius0)
+      (2.0 * sweepRadians) / arcLength - TransitionSpiral3d.radiusToCurvature(radius0)
     );
   }
   /** Return the start radius for spiral of given end radius, length, and turn angle. */
-  public static radius1LengthSweepRadiansToRadius0(
-    radius1: number,
-    arcLength: number,
-    sweepRadians: number
-  ) {
+  public static radius1LengthSweepRadiansToRadius0(radius1: number, arcLength: number, sweepRadians: number) {
     return TransitionSpiral3d.curvatureToRadius(
-      (2.0 * sweepRadians) / arcLength -
-        TransitionSpiral3d.radiusToCurvature(radius1)
+      (2.0 * sweepRadians) / arcLength - TransitionSpiral3d.radiusToCurvature(radius1)
     );
   }
   /** Return the original defining properties (if any) saved by the constructor. */
@@ -243,26 +200,16 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
    * * Also apply the scale factor to the designProperties.
    * @param transformA
    */
-  protected applyRigidPartOfTransform(
-    transformA: Transform
-  ): { rigidAxes: Matrix3d; scale: number } | undefined {
+  protected applyRigidPartOfTransform(transformA: Transform): { rigidAxes: Matrix3d; scale: number } | undefined {
     const rigidData = transformA.matrix.factorRigidWithSignedScale();
     if (rigidData !== undefined) {
       // [sQ a][R b] = [sQ*R sQb+a]
       // but we save it as [Q*R sQb+a] with spiral data scaled by s.
-      const transformC0 = transformA.multiplyTransformTransform(
-        this.localToWorld
-      );
+      const transformC0 = transformA.multiplyTransformTransform(this.localToWorld);
       // BUT pull the scale part out of the matrix ...
-      const matrixC = rigidData.rigidAxes.multiplyMatrixMatrix(
-        this.localToWorld.matrix
-      );
-      this._localToWorld = Transform.createOriginAndMatrix(
-        transformC0.origin,
-        matrixC
-      );
-      if (this.designProperties)
-        this.designProperties.applyScaleFactor(rigidData.scale);
+      const matrixC = rigidData.rigidAxes.multiplyMatrixMatrix(this.localToWorld.matrix);
+      this._localToWorld = Transform.createOriginAndMatrix(transformC0.origin, matrixC);
+      if (this.designProperties) this.designProperties.applyScaleFactor(rigidData.scale);
 
       return rigidData;
     }
@@ -284,10 +231,7 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
     return handler.claimResult();
   }
   /** extend the range by the strokes of the spiral */
-  public override extendRange(
-    rangeToExtend: Range3d,
-    transform?: Transform
-  ): void {
+  public override extendRange(rangeToExtend: Range3d, transform?: Transform): void {
     const myRange = this.rangeBetweenFractions(0.0, 1.0, transform);
     rangeToExtend.extendRange(myRange);
   }
@@ -295,38 +239,19 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
   /** return the range of spiral between fractions of the activeStrokes.
    * * Use activeStrokes point count times interval factor for initial evaluation count, but do at least 5
    */
-  public override rangeBetweenFractions(
-    fractionA: number,
-    fractionB: number,
-    transform?: Transform
-  ): Range3d {
+  public override rangeBetweenFractions(fractionA: number, fractionB: number, transform?: Transform): Range3d {
     const strokes = this.activeStrokes;
     if (undefined === strokes) return Range3d.createNull();
-    let count = Math.ceil(
-      strokes.numPoints() * Math.abs(fractionB - fractionA)
-    );
+    let count = Math.ceil(strokes.numPoints() * Math.abs(fractionB - fractionA));
     count = Geometry.clamp(5, count, 30);
-    return this.rangeBetweenFractionsByCount(
-      fractionA,
-      fractionB,
-      count,
-      transform,
-      0.5
-    );
+    return this.rangeBetweenFractionsByCount(fractionA, fractionB, count, transform, 0.5);
   }
   /** Project instance geometry (via dispatch) onto the given ray, and return the extreme fractional parameters of projection.
    * @param ray ray onto which the instance is projected. A `Vector3d` is treated as a `Ray3d` with zero origin.
    * @param lowHigh optional receiver for output
    * @returns range of fractional projection parameters onto the ray, where 0.0 is start of the ray and 1.0 is the end of the ray.
    */
-  public override projectedParameterRange(
-    ray: Vector3d | Ray3d,
-    lowHigh?: Range1d
-  ): Range1d | undefined {
-    return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(
-      this,
-      ray,
-      lowHigh
-    );
+  public override projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
+    return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(this, ray, lowHigh);
   }
 }

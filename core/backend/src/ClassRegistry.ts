@@ -7,12 +7,7 @@
  */
 
 import { DbResult, Id64, IModelStatus, Logger } from "@itwin/core-bentley";
-import {
-  EntityMetaData,
-  EntityReferenceSet,
-  IModelError,
-  RelatedElement,
-} from "@itwin/core-common";
+import { EntityMetaData, EntityReferenceSet, IModelError, RelatedElement } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
@@ -28,16 +23,11 @@ export class ClassRegistry {
   private static readonly _classMap = new Map<string, typeof Entity>();
   /** @internal */
   public static isNotFoundError(err: any) {
-    return (
-      err instanceof IModelError && err.errorNumber === IModelStatus.NotFound
-    );
+    return err instanceof IModelError && err.errorNumber === IModelStatus.NotFound;
   }
   /** @internal */
   public static makeMetaDataNotFoundError(className: string): IModelError {
-    return new IModelError(
-      IModelStatus.NotFound,
-      `metadata not found for ${className}`
-    );
+    return new IModelError(IModelStatus.NotFound, `metadata not found for ${className}`);
   }
   /** @internal */
   public static register(entityClass: typeof Entity, schema: typeof Schema) {
@@ -53,10 +43,7 @@ export class ClassRegistry {
   }
 
   /** Generate a proxy Schema for a domain that has not been registered. */
-  private static generateProxySchema(
-    domain: string,
-    iModel: IModelDb
-  ): typeof Schema {
+  private static generateProxySchema(domain: string, iModel: IModelDb): typeof Schema {
     const hasBehavior = iModel.withPreparedSqliteStatement(
       `
       SELECT NULL FROM [ec_CustomAttribute] [c]
@@ -91,20 +78,11 @@ export class ClassRegistry {
    * @returns the qualified full name of an ECEntityClass
    * @internal public for testing only
    */
-  public static getRootEntity(
-    iModel: IModelDb,
-    ecTypeQualifier: string
-  ): string {
+  public static getRootEntity(iModel: IModelDb, ecTypeQualifier: string): string {
     const [classSchema, className] = ecTypeQualifier.split(".");
-    const schemaItemJson = iModel.nativeDb.getSchemaItem(
-      classSchema,
-      className
-    );
+    const schemaItemJson = iModel.nativeDb.getSchemaItem(classSchema, className);
     if (schemaItemJson.error)
-      throw new IModelError(
-        schemaItemJson.error.status,
-        `failed to get schema item '${ecTypeQualifier}'`
-      );
+      throw new IModelError(schemaItemJson.error.status, `failed to get schema item '${ecTypeQualifier}'`);
 
     assert(undefined !== schemaItemJson.result);
     const schemaItem = JSON.parse(schemaItemJson.result);
@@ -114,42 +92,29 @@ export class ClassRegistry {
 
     // typescript doesn't understand that the inverse of the above condition is
     // ("appliesTo" in rootclassMetaData || rootClassMetaData.baseClass !== undefined)
-    const parentItemQualifier =
-      schemaItem.appliesTo ?? (schemaItem.baseClass as string);
+    const parentItemQualifier = schemaItem.appliesTo ?? (schemaItem.baseClass as string);
     return this.getRootEntity(iModel, parentItemQualifier);
   }
 
   /** Generate a JavaScript class from Entity metadata.
    * @param entityMetaData The Entity metadata that defines the class
    */
-  private static generateClassForEntity(
-    entityMetaData: EntityMetaData,
-    iModel: IModelDb
-  ): typeof Entity {
+  private static generateClassForEntity(entityMetaData: EntityMetaData, iModel: IModelDb): typeof Entity {
     const name = entityMetaData.ecclass.split(":");
     const domainName = name[0];
     const className = name[1];
 
     if (0 === entityMetaData.baseClasses.length)
       // metadata must contain a superclass
-      throw new IModelError(
-        IModelStatus.BadArg,
-        `class ${name} has no superclass`
-      );
+      throw new IModelError(IModelStatus.BadArg, `class ${name} has no superclass`);
 
     // make sure schema exists
     let schema = Schemas.getRegisteredSchema(domainName);
-    if (undefined === schema)
-      schema = this.generateProxySchema(domainName, iModel); // no schema found, create it too
+    if (undefined === schema) schema = this.generateProxySchema(domainName, iModel); // no schema found, create it too
 
-    const superclass = this._classMap.get(
-      entityMetaData.baseClasses[0].toLowerCase()
-    );
+    const superclass = this._classMap.get(entityMetaData.baseClasses[0].toLowerCase());
     if (undefined === superclass)
-      throw new IModelError(
-        IModelStatus.NotFound,
-        `cannot find superclass for class ${name}`
-      );
+      throw new IModelError(IModelStatus.NotFound, `cannot find superclass for class ${name}`);
 
     // user defined class hierarchies may skip a class in the hierarchy, and therefore their JS base class cannot
     // be used to tell if there are any generated classes in the hierarchy
@@ -163,18 +128,13 @@ export class ClassRegistry {
         generatedClassHasNonGeneratedNonCoreAncestor = true;
         break;
       }
-      const superclassMetaData = iModel.classMetaDataRegistry.find(
-        currentSuperclass.classFullName
-      );
+      const superclassMetaData = iModel.classMetaDataRegistry.find(currentSuperclass.classFullName);
       if (superclassMetaData === undefined)
         throw new IModelError(
           IModelStatus.BadSchema,
           `could not find the metadata for class '${currentSuperclass.name}', class metadata should be loaded by now`
         );
-      const maybeNextSuperclass = this.getClass(
-        superclassMetaData.baseClasses[0],
-        iModel
-      );
+      const maybeNextSuperclass = this.getClass(superclassMetaData.baseClasses[0], iModel);
       if (maybeNextSuperclass === undefined)
         throw new IModelError(
           IModelStatus.BadSchema,
@@ -208,58 +168,36 @@ export class ClassRegistry {
           const maybeMetaData = iModel.nativeDb.getSchemaItem(
             ...(prop.relationshipClass.split(":") as [string, string])
           );
-          assert(
-            maybeMetaData.result !== undefined,
-            "The nav props relationship metadata was not found"
-          );
+          assert(maybeMetaData.result !== undefined, "The nav props relationship metadata was not found");
           const relMetaData = JSON.parse(maybeMetaData.result);
-          const rootClassMetaData = ClassRegistry.getRootEntity(
-            iModel,
-            relMetaData.target.constraintClasses[0]
-          );
+          const rootClassMetaData = ClassRegistry.getRootEntity(iModel, relMetaData.target.constraintClasses[0]);
           // root class must be in BisCore so should be loaded since biscore classes will never get this
           // generated implementation
-          const normalizeClassName = (clsName: string) =>
-            clsName.replace(".", ":");
-          const rootClass = ClassRegistry.findRegisteredClass(
-            normalizeClassName(rootClassMetaData)
-          );
-          assert(
-            rootClass,
-            `The root class for ${prop.relationshipClass} was not in BisCore.`
-          );
+          const normalizeClassName = (clsName: string) => clsName.replace(".", ":");
+          const rootClass = ClassRegistry.findRegisteredClass(normalizeClassName(rootClassMetaData));
+          assert(rootClass, `The root class for ${prop.relationshipClass} was not in BisCore.`);
           return {
             name,
             concreteEntityType: EntityReferences.typeFromClass(rootClass),
           };
         });
 
-      Object.defineProperty(
-        generatedClass.prototype,
-        "collectReferenceConcreteIds",
-        {
-          value(this: typeof generatedClass, referenceIds: EntityReferenceSet) {
-            // eslint-disable-next-line @typescript-eslint/dot-notation
-            const superImpl =
-              superclass.prototype["collectReferenceConcreteIds"];
-            superImpl.call(this, referenceIds);
-            for (const navProp of navigationProps) {
-              const relatedElem: RelatedElement | undefined = (this as any)[
-                navProp.name
-              ]; // cast to any since subclass can have any extensions
-              if (!relatedElem || !Id64.isValid(relatedElem.id)) continue;
-              const referenceId = EntityReferences.fromEntityType(
-                relatedElem.id,
-                navProp.concreteEntityType
-              );
-              referenceIds.add(referenceId);
-            }
-          },
-          // defaults for methods on a prototype (required for sinon to stub out methods on tests)
-          writable: true,
-          configurable: true,
-        }
-      );
+      Object.defineProperty(generatedClass.prototype, "collectReferenceConcreteIds", {
+        value(this: typeof generatedClass, referenceIds: EntityReferenceSet) {
+          // eslint-disable-next-line @typescript-eslint/dot-notation
+          const superImpl = superclass.prototype["collectReferenceConcreteIds"];
+          superImpl.call(this, referenceIds);
+          for (const navProp of navigationProps) {
+            const relatedElem: RelatedElement | undefined = (this as any)[navProp.name]; // cast to any since subclass can have any extensions
+            if (!relatedElem || !Id64.isValid(relatedElem.id)) continue;
+            const referenceId = EntityReferences.fromEntityType(relatedElem.id, navProp.concreteEntityType);
+            referenceIds.add(referenceId);
+          }
+        },
+        // defaults for methods on a prototype (required for sinon to stub out methods on tests)
+        writable: true,
+        configurable: true,
+      });
     }
 
     // if the schema is a proxy for a domain with behavior, throw exceptions for all protected operations
@@ -271,9 +209,7 @@ export class ClassRegistry {
         );
       };
 
-      superclass.protectedOperations.forEach(
-        (operation) => ((generatedClass as any)[operation] = throwError)
-      );
+      superclass.protectedOperations.forEach((operation) => ((generatedClass as any)[operation] = throwError));
     }
 
     this.register(generatedClass, schema); // register it before returning
@@ -288,8 +224,7 @@ export class ClassRegistry {
     for (const thisMember in moduleObj) {
       // eslint-disable-line guard-for-in
       const thisClass = moduleObj[thisMember];
-      if (thisClass.prototype instanceof Entity)
-        this.register(thisClass, schema);
+      if (thisClass.prototype instanceof Entity) this.register(thisClass, schema);
     }
   }
 
@@ -297,18 +232,12 @@ export class ClassRegistry {
    * This function fetches the specified Entity from the imodel, generates a JavaScript class for it, and registers the generated
    * class. This function also ensures that all of the base classes of the Entity exist and are registered.
    */
-  private static generateClass(
-    classFullName: string,
-    iModel: IModelDb
-  ): typeof Entity {
-    const metadata: EntityMetaData | undefined =
-      iModel.classMetaDataRegistry.find(classFullName);
-    if (metadata === undefined || metadata.ecclass === undefined)
-      throw this.makeMetaDataNotFoundError(classFullName);
+  private static generateClass(classFullName: string, iModel: IModelDb): typeof Entity {
+    const metadata: EntityMetaData | undefined = iModel.classMetaDataRegistry.find(classFullName);
+    if (metadata === undefined || metadata.ecclass === undefined) throw this.makeMetaDataNotFoundError(classFullName);
 
     // Make sure we have all base classes registered.
-    if (metadata.baseClasses && 0 !== metadata.baseClasses.length)
-      this.getClass(metadata.baseClasses[0], iModel);
+    if (metadata.baseClasses && 0 !== metadata.baseClasses.length) this.getClass(metadata.baseClasses[0], iModel);
 
     // Now we can generate the class from the classDef.
     return this.generateClassForEntity(metadata, iModel);
@@ -319,9 +248,7 @@ export class ClassRegistry {
    * @param iModel The IModel that contains the class definitions
    * @returns The Entity class or undefined
    */
-  public static findRegisteredClass(
-    classFullName: string
-  ): typeof Entity | undefined {
+  public static findRegisteredClass(classFullName: string): typeof Entity | undefined {
     return this._classMap.get(classFullName.toLowerCase());
   }
 
@@ -330,10 +257,7 @@ export class ClassRegistry {
    * @param iModel The IModel that contains the class definitions
    * @returns The Entity class
    */
-  public static getClass(
-    classFullName: string,
-    iModel: IModelDb
-  ): typeof Entity {
+  public static getClass(classFullName: string, iModel: IModelDb): typeof Entity {
     const key = classFullName.toLowerCase();
     const ctor = this._classMap.get(key);
     return ctor ? ctor : this.generateClass(key, iModel);
@@ -365,10 +289,7 @@ export class ClassRegistry {
  * @internal
  */
 export class MetaDataRegistry {
-  private _registry: Map<string, EntityMetaData> = new Map<
-    string,
-    EntityMetaData
-  >();
+  private _registry: Map<string, EntityMetaData> = new Map<string, EntityMetaData>();
 
   /** Get the specified Entity metadata */
   public find(classFullName: string): EntityMetaData | undefined {

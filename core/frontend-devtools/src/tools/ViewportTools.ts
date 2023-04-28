@@ -57,22 +57,13 @@ export class FreezeSceneTool extends ViewportToggleTool {
   public static override toolId = "FreezeScene";
 
   protected override async toggle(vp: Viewport, enable?: boolean) {
-    if (undefined === enable || enable !== vp.freezeScene)
-      vp.freezeScene = !vp.freezeScene;
+    if (undefined === enable || enable !== vp.freezeScene) vp.freezeScene = !vp.freezeScene;
 
     return Promise.resolve();
   }
 }
 
-const boundingVolumeNames = [
-  "none",
-  "volume",
-  "content",
-  "both",
-  "children",
-  "sphere",
-  "solid",
-];
+const boundingVolumeNames = ["none", "volume", "content", "both", "children", "sphere", "solid"];
 
 /** Set the tile bounding volume decorations to display in the selected viewport.
  * Omitting the argument turns on Volume bounding boxes if bounding boxes are currently off; otherwise, toggles them off.
@@ -93,10 +84,7 @@ export class ShowTileVolumesTool extends Tool {
     if (undefined === vp) return true;
 
     if (undefined === boxes)
-      boxes =
-        TileBoundingBoxes.None === vp.debugBoundingBoxes
-          ? TileBoundingBoxes.Volume
-          : TileBoundingBoxes.None;
+      boxes = TileBoundingBoxes.None === vp.debugBoundingBoxes ? TileBoundingBoxes.Volume : TileBoundingBoxes.None;
 
     vp.debugBoundingBoxes = boxes;
     return true;
@@ -173,11 +161,7 @@ export class ToggleTileTreeReferencesTool extends Tool {
     const vp = IModelApp.viewManager.selectedView;
     if (!vp || !this._which || !vp.view.isSpatialView()) return false;
 
-    vp.view.setTileTreeReferencesDeactivated(
-      this._modelIds,
-      this._deactivate,
-      this._which
-    );
+    vp.view.setTileTreeReferencesDeactivated(this._modelIds, this._deactivate, this._which);
     vp.invalidateScene();
     return true;
   }
@@ -236,8 +220,7 @@ export class ChangeHiliteModeTool extends Tool {
     const hilites = IModelApp.viewManager.selectedView?.iModel.hilited;
     if (!hilites) return false;
 
-    if (mode === "union" || mode === "intersection")
-      hilites.modelSubCategoryMode = mode;
+    if (mode === "union" || mode === "intersection") hilites.modelSubCategoryMode = mode;
 
     return true;
   }
@@ -265,10 +248,7 @@ export abstract class ChangeHiliteTool extends Tool {
     return true;
   }
 
-  protected abstract apply(
-    vp: Viewport,
-    settings: Hilite.Settings | undefined
-  ): void;
+  protected abstract apply(vp: Viewport, settings: Hilite.Settings | undefined): void;
   protected abstract getCurrentSettings(vp: Viewport): Hilite.Settings;
 
   public override async parseAndRun(...inputArgs: string[]): Promise<boolean> {
@@ -286,8 +266,7 @@ export abstract class ChangeHiliteTool extends Tool {
     const args = parseArgs(inputArgs);
     const parseColorComponent = (c: "r" | "g" | "b") => {
       const num = args.getInteger(c);
-      if (undefined !== num)
-        colors[c] = Math.floor(Math.max(0, Math.min(255, num)));
+      if (undefined !== num) colors[c] = Math.floor(Math.max(0, Math.min(255, num)));
     };
 
     parseColorComponent("r");
@@ -376,8 +355,7 @@ export class ChangeFlashSettingsTool extends Tool {
     const vp = IModelApp.viewManager.selectedView;
     if (!vp) return true;
 
-    if (1 === inputArgs.length && "default" === inputArgs[0].toLowerCase())
-      return this.run();
+    if (1 === inputArgs.length && "default" === inputArgs[0].toLowerCase()) return this.run();
 
     const options: FlashSettingsOptions = {};
     const args = parseArgs(inputArgs);
@@ -400,8 +378,7 @@ export class ChangeFlashSettingsTool extends Tool {
     }
 
     const duration = args.getFloat("d");
-    if (undefined !== duration)
-      options.duration = BeDuration.fromSeconds(duration);
+    if (undefined !== duration) options.duration = BeDuration.fromSeconds(duration);
 
     return this.run(vp.flashSettings.clone(options));
   }
@@ -413,12 +390,8 @@ export class ChangeFlashSettingsTool extends Tool {
 export class FadeOutTool extends ViewportToggleTool {
   public static override toolId = "FadeOut";
 
-  protected override async toggle(
-    vp: Viewport,
-    enable?: boolean
-  ): Promise<void> {
-    if (undefined === enable || enable !== vp.isFadeOutActive)
-      vp.isFadeOutActive = !vp.isFadeOutActive;
+  protected override async toggle(vp: Viewport, enable?: boolean): Promise<void> {
+    if (undefined === enable || enable !== vp.isFadeOutActive) vp.isFadeOutActive = !vp.isFadeOutActive;
 
     return Promise.resolve();
   }
@@ -440,8 +413,7 @@ export class DefaultTileSizeModifierTool extends Tool {
    * @param modifier the tile size modifier to use; if undefined, do not set modifier
    */
   public override async run(modifier?: number): Promise<boolean> {
-    if (undefined !== modifier)
-      IModelApp.tileAdmin.defaultTileSizeModifier = modifier;
+    if (undefined !== modifier) IModelApp.tileAdmin.defaultTileSizeModifier = modifier;
 
     return true;
   }
@@ -503,8 +475,7 @@ export class ViewportAddRealityModel extends Tool {
    */
   public override async run(url: string): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp)
-      vp.displayStyle.attachRealityModel({ tilesetUrl: url });
+    if (undefined !== vp) vp.displayStyle.attachRealityModel({ tilesetUrl: url });
 
     return true;
   }
@@ -523,10 +494,7 @@ export class ViewportAddRealityModel extends Tool {
 export class Toggle3dManipulationsTool extends ViewportToggleTool {
   public static override toolId = "Toggle3dManipulations";
 
-  protected override async toggle(
-    vp: Viewport,
-    allow?: boolean
-  ): Promise<void> {
+  protected override async toggle(vp: Viewport, allow?: boolean): Promise<void> {
     if (!vp.view.is3d()) return Promise.resolve();
 
     if (undefined === allow) allow = !vp.view.allow3dManipulations();
@@ -547,12 +515,8 @@ export class Toggle3dManipulationsTool extends ViewportToggleTool {
 export class ToggleViewAttachmentsTool extends ViewportToggleTool {
   public static override toolId = "ToggleViewAttachments";
 
-  protected override async toggle(
-    vp: Viewport,
-    enable?: boolean
-  ): Promise<void> {
-    if (undefined === enable || enable !== vp.wantViewAttachments)
-      vp.wantViewAttachments = !vp.wantViewAttachments;
+  protected override async toggle(vp: Viewport, enable?: boolean): Promise<void> {
+    if (undefined === enable || enable !== vp.wantViewAttachments) vp.wantViewAttachments = !vp.wantViewAttachments;
 
     return Promise.resolve();
   }
@@ -564,10 +528,7 @@ export class ToggleViewAttachmentsTool extends ViewportToggleTool {
 export class ToggleViewAttachmentBoundariesTool extends ViewportToggleTool {
   public static override toolId = "ToggleViewAttachmentBoundaries";
 
-  protected override async toggle(
-    vp: Viewport,
-    enable?: boolean
-  ): Promise<void> {
+  protected override async toggle(vp: Viewport, enable?: boolean): Promise<void> {
     if (undefined === enable || enable !== vp.wantViewAttachmentBoundaries)
       vp.wantViewAttachmentBoundaries = !vp.wantViewAttachmentBoundaries;
 
@@ -581,10 +542,7 @@ export class ToggleViewAttachmentBoundariesTool extends ViewportToggleTool {
 export class ToggleViewAttachmentClipShapesTool extends ViewportToggleTool {
   public static override toolId = "ToggleViewAttachmentClipShapes";
 
-  protected override async toggle(
-    vp: Viewport,
-    enable?: boolean
-  ): Promise<void> {
+  protected override async toggle(vp: Viewport, enable?: boolean): Promise<void> {
     if (undefined === enable || enable !== vp.wantViewAttachmentClipShapes)
       vp.wantViewAttachmentClipShapes = !vp.wantViewAttachmentClipShapes;
 
@@ -598,16 +556,9 @@ export class ToggleViewAttachmentClipShapesTool extends ViewportToggleTool {
 export class ToggleDrawingGraphicsTool extends ViewportToggleTool {
   public static override toolId = "ToggleDrawingGraphics";
 
-  protected override async toggle(
-    vp: Viewport,
-    enable?: boolean
-  ): Promise<void> {
-    if (
-      undefined === enable ||
-      enable !== DrawingViewState.hideDrawingGraphics
-    ) {
-      DrawingViewState.hideDrawingGraphics =
-        !DrawingViewState.hideDrawingGraphics;
+  protected override async toggle(vp: Viewport, enable?: boolean): Promise<void> {
+    if (undefined === enable || enable !== DrawingViewState.hideDrawingGraphics) {
+      DrawingViewState.hideDrawingGraphics = !DrawingViewState.hideDrawingGraphics;
       vp.invalidateScene();
     }
 
@@ -623,12 +574,8 @@ export class ToggleSectionDrawingSpatialViewTool extends ViewportToggleTool {
   public static override toolId = "ToggleSectionDrawingSpatialView";
 
   protected async toggle(vp: Viewport, enable?: boolean): Promise<void> {
-    if (
-      undefined === enable ||
-      enable !== DrawingViewState.alwaysDisplaySpatialView
-    ) {
-      DrawingViewState.alwaysDisplaySpatialView =
-        !DrawingViewState.alwaysDisplaySpatialView;
+    if (undefined === enable || enable !== DrawingViewState.alwaysDisplaySpatialView) {
+      DrawingViewState.alwaysDisplaySpatialView = !DrawingViewState.alwaysDisplaySpatialView;
       if (vp.view instanceof DrawingViewState) {
         // Force the view to update its section drawing attachment.
         const view = vp.view.clone();

@@ -45,10 +45,7 @@ export class TestContext {
     // eslint-disable-line deprecation/deprecation
     // Url without trailing slash
     const uriPrefix: string = this.settings.Backend.location.replace(/\/$/, "");
-    BentleyCloudRpcManager.initializeClient(
-      { info, uriPrefix },
-      getRpcInterfaces()
-    );
+    BentleyCloudRpcManager.initializeClient({ info, uriPrefix }, getRpcInterfaces());
   }
 
   private async initialize() {
@@ -62,11 +59,7 @@ export class TestContext {
 
     // Configure iTwin.js frontend logging to go to the console
     Logger.initializeToConsole();
-    Logger.setLevelDefault(
-      this.settings.logLevel === undefined
-        ? LogLevel.Warning
-        : this.settings.logLevel
-    );
+    Logger.setLevelDefault(this.settings.logLevel === undefined ? LogLevel.Warning : this.settings.logLevel);
 
     if (undefined !== this.settings.oidcClientId) {
       this.adminUserAccessToken = await getAccessTokenFromBackend(
@@ -85,10 +78,7 @@ export class TestContext {
 
     const iModelData = this.settings.iModel;
 
-    this.iModelWithChangesets = await IModelSession.create(
-      this.adminUserAccessToken,
-      iModelData
-    );
+    this.iModelWithChangesets = await IModelSession.create(this.adminUserAccessToken, iModelData);
     this.iTwinId = this.iModelWithChangesets.iTwinId;
 
     this.initializeRpcInterfaces({
@@ -98,17 +88,13 @@ export class TestContext {
 
     const iModelClient = new IModelsClient({
       api: {
-        baseUrl: `https://${
-          process.env.IMJS_URL_PREFIX ?? ""
-        }api.bentley.com/imodels`,
+        baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`,
       },
     });
 
     await NoRenderApp.startup({
       applicationId: this.settings.gprid,
-      authorizationClient: new TestFrontendAuthorizationClient(
-        this.adminUserAccessToken
-      ),
+      authorizationClient: new TestFrontendAuthorizationClient(this.adminUserAccessToken),
       hubAccess: new FrontendIModelsAccess(iModelClient),
     });
 

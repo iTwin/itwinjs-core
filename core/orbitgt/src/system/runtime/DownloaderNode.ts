@@ -79,10 +79,7 @@ export class DownloaderNode extends Downloader {
         if (responseHeaders != null) {
           for (let propertyName in response.headers) {
             if (typeof response.headers[propertyName] === "string")
-              responseHeaders.set(
-                propertyName,
-                response.headers[propertyName] as string
-              );
+              responseHeaders.set(propertyName, response.headers[propertyName] as string);
           }
         }
         // process the incoming download chuncks
@@ -103,10 +100,7 @@ export class DownloaderNode extends Downloader {
         if (responseHeaders != null) {
           for (let propertyName in response.headers) {
             if (typeof response.headers[propertyName] === "string")
-              responseHeaders.set(
-                propertyName,
-                response.headers[propertyName] as string
-              );
+              responseHeaders.set(propertyName, response.headers[propertyName] as string);
           }
         }
         // process the incoming download chuncks

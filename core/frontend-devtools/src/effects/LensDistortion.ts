@@ -7,12 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import {
-  ScreenSpaceEffectBuilder,
-  Tool,
-  UniformType,
-  VaryingType,
-} from "@itwin/core-frontend";
+import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@itwin/core-frontend";
 import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools";
 import { parseArgs } from "../tools/parseArgs";
 
@@ -79,22 +74,18 @@ export class LensDistortionEffect extends AddEffectTool {
     builder.addUniform({
       name: "cylindricalRatio",
       type: UniformType.Float,
-      bind: (uniform) =>
-        uniform.setUniform1f(LensDistortionConfig.cylindricalRatio),
+      bind: (uniform) => uniform.setUniform1f(LensDistortionConfig.cylindricalRatio),
     });
     builder.addUniform({
       name: "aspectRatio",
       type: UniformType.Float,
-      bind: (uniform, context) =>
-        uniform.setUniform1f(context.viewport.viewRect.aspect),
+      bind: (uniform, context) => uniform.setUniform1f(context.viewport.viewRect.aspect),
     });
     builder.addUniform({
       name: "height",
       type: UniformType.Float,
       bind: (uniform, context) => {
-        assert(
-          context.viewport.view.is3d() && context.viewport.view.isCameraOn
-        );
+        assert(context.viewport.view.is3d() && context.viewport.view.isCameraOn);
         const fov = context.viewport.view.camera.lens.radians;
         const height = Math.tan(fov / 2) / context.viewport.viewRect.aspect;
         uniform.setUniform1f(height);
@@ -118,10 +109,7 @@ export class LensDistortionConfig extends Tool {
   public static strength = 0.5;
   public static cylindricalRatio = 0.5;
 
-  public override async run(
-    strength?: number,
-    ratio?: number
-  ): Promise<boolean> {
+  public override async run(strength?: number, ratio?: number): Promise<boolean> {
     LensDistortionConfig.strength = strength ?? 0.5;
     LensDistortionConfig.cylindricalRatio = ratio ?? 0.5;
     refreshViewportsForEffect("fdt lensdistortion");

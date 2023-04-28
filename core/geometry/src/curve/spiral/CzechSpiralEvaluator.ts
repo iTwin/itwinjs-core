@@ -40,19 +40,11 @@ export class CzechSpiralEvaluator extends CubicEvaluator {
    * @param length1
    * @param radius1
    */
-  public static gammaConstant(
-    length1: number,
-    radius1: number
-  ): number | undefined {
-    return (
-      (2.0 * radius1) / Math.sqrt(4.0 * radius1 * radius1 - length1 * length1)
-    );
+  public static gammaConstant(length1: number, radius1: number): number | undefined {
+    return (2.0 * radius1) / Math.sqrt(4.0 * radius1 * radius1 - length1 * length1);
   }
   /** Compute the czech cubic constant. */
-  public static computeCubicM(
-    length1: number,
-    radius1: number
-  ): number | undefined {
+  public static computeCubicM(length1: number, radius1: number): number | undefined {
     const gamma = CzechSpiralEvaluator.gammaConstant(length1, radius1);
     // In the private update method, the LR values should have been vetted.
     if (gamma === undefined) return undefined;
@@ -60,10 +52,7 @@ export class CzechSpiralEvaluator extends CubicEvaluator {
     return gamma / Math.abs(6.0 * radius1 * length1);
   }
 
-  public static create(
-    length1: number,
-    radius1: number
-  ): CzechSpiralEvaluator | undefined {
+  public static create(length1: number, radius1: number): CzechSpiralEvaluator | undefined {
     const m = this.computeCubicM(length1, radius1);
     if (m === undefined) return undefined;
     return new CzechSpiralEvaluator(length1, radius1, m);
@@ -76,11 +65,7 @@ export class CzechSpiralEvaluator extends CubicEvaluator {
   }
   /** return a deep copy of the evaluator */
   public clone(): CzechSpiralEvaluator {
-    return new CzechSpiralEvaluator(
-      this.nominalLength1,
-      this.nominalRadius1,
-      this.cubicM
-    );
+    return new CzechSpiralEvaluator(this.nominalLength1, this.nominalRadius1, this.cubicM);
   }
   /** Member by member matchup ... */
   public isAlmostEqual(other: any): boolean {
@@ -100,12 +85,7 @@ export class CzechSpiralEvaluator extends CubicEvaluator {
    * @param x distance along the x axis.
    */
   public xToCzechApproximateDistance(x: number): number {
-    return CzechSpiralEvaluator.forwardL2R2Map(
-      x,
-      1.0,
-      this.nominalLength1,
-      this.nominalRadius1
-    );
+    return CzechSpiralEvaluator.forwardL2R2Map(x, 1.0, this.nominalLength1, this.nominalRadius1);
   }
   /**
    * Return the inverse of the `forwardL2R2Map` function.
@@ -114,24 +94,14 @@ export class CzechSpiralEvaluator extends CubicEvaluator {
    *
    */
   public czechApproximateDistanceToX(d: number): number | undefined {
-    return CzechSpiralEvaluator.inverseL2R2Map(
-      d,
-      1.0,
-      this.nominalLength1,
-      this.nominalRadius1
-    );
+    return CzechSpiralEvaluator.inverseL2R2Map(d, 1.0, this.nominalLength1, this.nominalRadius1);
   }
 
   /**
    * evaluate a series expansion that is used with varying signs (plus or minus 1) in czech and italian spirals.
    * @param x distance along the x axis.
    */
-  public static forwardL2R2Map(
-    x: number,
-    sign: number,
-    length: number,
-    radius: number
-  ): number {
+  public static forwardL2R2Map(x: number, sign: number, length: number, radius: number): number {
     const l2 = length * length;
     const r2 = radius * radius;
     const Q = 4.0 * r2 - l2;
@@ -144,12 +114,7 @@ export class CzechSpiralEvaluator extends CubicEvaluator {
    * @param s (approximate) distance along the spiral.
    *
    */
-  public static inverseL2R2Map(
-    b: number,
-    sign: number,
-    length: number,
-    radius: number
-  ): number | undefined {
+  public static inverseL2R2Map(b: number, sign: number, length: number, radius: number): number | undefined {
     const l2 = length * length;
     const r2 = radius * radius;
     const Q = 4.0 * r2 - l2;
@@ -188,10 +153,7 @@ export class ItalianSpiralEvaluator extends CubicEvaluator {
   /** Compute the czech cubic constant.
    * ** funky mixture of lengths ....
    */
-  private static computeCubicM(
-    lengthXByForward: number,
-    radius1: number
-  ): number | undefined {
+  private static computeCubicM(lengthXByForward: number, radius1: number): number | undefined {
     const gamma = CzechSpiralEvaluator.gammaConstant(lengthXByForward, radius1);
     // In the private update method, the LR values should have been vetted.
     if (gamma === undefined) return undefined;
@@ -200,33 +162,15 @@ export class ItalianSpiralEvaluator extends CubicEvaluator {
   }
 
   /** Constructor is private.  Caller responsible for cubicM validity. */
-  private constructor(
-    length1: number,
-    radius1: number,
-    lengthX: number,
-    cubicM: number
-  ) {
+  private constructor(length1: number, radius1: number, lengthX: number, cubicM: number) {
     super(lengthX, cubicM);
     this.nominalLength1 = length1;
     this.nominalRadius1 = radius1;
   }
-  public static create(
-    length1: number,
-    radius1: number
-  ): ItalianSpiralEvaluator | undefined {
+  public static create(length1: number, radius1: number): ItalianSpiralEvaluator | undefined {
     // um ... this seems goofy.  lengthX from forward, then invert for another .   But that's what the native code does ...
-    const lengthX = CzechSpiralEvaluator.forwardL2R2Map(
-      length1,
-      -1.0,
-      length1,
-      radius1
-    );
-    const lengthX1 = CzechSpiralEvaluator.inverseL2R2Map(
-      length1,
-      1.0,
-      lengthX,
-      radius1
-    );
+    const lengthX = CzechSpiralEvaluator.forwardL2R2Map(length1, -1.0, length1, radius1);
+    const lengthX1 = CzechSpiralEvaluator.inverseL2R2Map(length1, 1.0, lengthX, radius1);
     if (lengthX1 === undefined) return undefined;
     const m = ItalianSpiralEvaluator.computeCubicM(lengthX, radius1);
     if (m === undefined) return undefined;
@@ -240,12 +184,7 @@ export class ItalianSpiralEvaluator extends CubicEvaluator {
   }
   /** return a deep copy of the evaluator */
   public clone(): ItalianSpiralEvaluator {
-    return new ItalianSpiralEvaluator(
-      this.nominalLength1,
-      this.nominalRadius1,
-      super.axisLength,
-      this.cubicM
-    );
+    return new ItalianSpiralEvaluator(this.nominalLength1, this.nominalRadius1, super.axisLength, this.cubicM);
   }
   /** Member by member matchup ... */
   public isAlmostEqual(other: any): boolean {
@@ -264,12 +203,7 @@ export class ItalianSpiralEvaluator extends CubicEvaluator {
    * @param x distance along the x axis.
    */
   public distanceToItalianApproximateX(x: number): number {
-    return CzechSpiralEvaluator.forwardL2R2Map(
-      x,
-      -1.0,
-      this.nominalLength1,
-      this.nominalRadius1
-    );
+    return CzechSpiralEvaluator.forwardL2R2Map(x, -1.0, this.nominalLength1, this.nominalRadius1);
   }
   /**
    * Return the inverse of the `forwardL2R2Map` function.
@@ -278,11 +212,6 @@ export class ItalianSpiralEvaluator extends CubicEvaluator {
    *
    */
   public xToItalianApproximateDistance(d: number): number | undefined {
-    return CzechSpiralEvaluator.inverseL2R2Map(
-      d,
-      -1.0,
-      this.nominalLength1,
-      this.nominalRadius1
-    );
+    return CzechSpiralEvaluator.inverseL2R2Map(d, -1.0, this.nominalLength1, this.nominalRadius1);
   }
 }

@@ -50,8 +50,7 @@ The following example displays a link in a Sticky message:
 ```tsx
 const reactNode = (
   <span>
-    For more details,{" "}
-    <UnderlinedButton onClick={this._handleLink}>click here</UnderlinedButton>.
+    For more details, <UnderlinedButton onClick={this._handleLink}>click here</UnderlinedButton>.
   </span>
 );
 const reactMessage = { reactNode };

@@ -6,11 +6,7 @@
  * @module NativeApp
  */
 
-import {
-  AsyncMethodsOf,
-  PickAsyncMethods,
-  PromiseReturnType,
-} from "@itwin/core-bentley";
+import { AsyncMethodsOf, PickAsyncMethods, PromiseReturnType } from "@itwin/core-bentley";
 import {
   BackendError,
   IModelError,
@@ -59,10 +55,7 @@ export class IpcApp {
    * @returns A function to remove the handler
    * @note Ipc is only supported if [[isValid]] is true.
    */
-  public static addListener(
-    channel: string,
-    handler: IpcListener
-  ): RemoveFunction {
+  public static addListener(channel: string, handler: IpcListener): RemoveFunction {
     return this.ipc.addListener(iTwinChannel(channel), handler);
   }
 
@@ -111,22 +104,10 @@ export class IpcApp {
    * @note Ipc is only supported if [[isValid]] is true.
    * @internal
    */
-  public static async callIpcChannel(
-    channelName: string,
-    methodName: string,
-    ...args: any[]
-  ): Promise<any> {
-    const retVal = (await this.invoke(
-      channelName,
-      methodName,
-      ...args
-    )) as IpcInvokeReturn;
+  public static async callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any> {
+    const retVal = (await this.invoke(channelName, methodName, ...args)) as IpcInvokeReturn;
     if (undefined !== retVal.error) {
-      const err = new BackendError(
-        retVal.error.errorNumber,
-        retVal.error.name,
-        retVal.error.message
-      );
+      const err = new BackendError(retVal.error.errorNumber, retVal.error.name, retVal.error.message);
       err.stack = retVal.error.stack;
       throw err;
     }
@@ -139,8 +120,7 @@ export class IpcApp {
   public static makeIpcProxy<K>(channelName: string): PickAsyncMethods<K> {
     return new Proxy({} as PickAsyncMethods<K>, {
       get(_target, methodName: string) {
-        return async (...args: any[]) =>
-          IpcApp.callIpcChannel(channelName, methodName, ...args);
+        return async (...args: any[]) => IpcApp.callIpcChannel(channelName, methodName, ...args);
       },
     });
   }
@@ -150,14 +130,10 @@ export class IpcApp {
    * @param functionName the function to call on the handler.
    * @internal
    */
-  public static makeIpcFunctionProxy<K>(
-    channelName: string,
-    functionName: string
-  ): PickAsyncMethods<K> {
+  public static makeIpcFunctionProxy<K>(channelName: string, functionName: string): PickAsyncMethods<K> {
     return new Proxy({} as PickAsyncMethods<K>, {
       get(_target, methodName: string) {
-        return async (...args: any[]) =>
-          IpcApp.callIpcChannel(channelName, functionName, methodName, ...args);
+        return async (...args: any[]) => IpcApp.callIpcChannel(channelName, functionName, methodName, ...args);
       },
     });
   }
@@ -167,17 +143,11 @@ export class IpcApp {
     methodName: T,
     ...args: Parameters<IpcAppFunctions[T]>
   ) {
-    return this.callIpcChannel(
-      IpcAppChannel.Functions,
-      methodName,
-      ...args
-    ) as PromiseReturnType<IpcAppFunctions[T]>;
+    return this.callIpcChannel(IpcAppChannel.Functions, methodName, ...args) as PromiseReturnType<IpcAppFunctions[T]>;
   }
 
   /** A Proxy to call one of the [IpcAppFunctions]($common) functions via IPC. */
-  public static appFunctionIpc = IpcApp.makeIpcProxy<IpcAppFunctions>(
-    IpcAppChannel.Functions
-  );
+  public static appFunctionIpc = IpcApp.makeIpcProxy<IpcAppFunctions>(IpcAppChannel.Functions);
 
   /** start an IpcApp.
    * @note this should not be called directly. It is called by NativeApp.startup */
@@ -213,19 +183,16 @@ export abstract class NotificationHandler {
   public abstract get channelName(): string;
 
   public registerImpl(): RemoveFunction {
-    return IpcApp.addListener(
-      this.channelName,
-      (_evt: Event, funcName: string, ...args: any[]) => {
-        const func = (this as any)[funcName];
-        if (typeof func !== "function")
-          throw new IModelError(
-            IModelStatus.FunctionNotFound,
-            `Method "${this.constructor.name}.${funcName}" not found on NotificationHandler registered for channel: ${this.channelName}`
-          );
+    return IpcApp.addListener(this.channelName, (_evt: Event, funcName: string, ...args: any[]) => {
+      const func = (this as any)[funcName];
+      if (typeof func !== "function")
+        throw new IModelError(
+          IModelStatus.FunctionNotFound,
+          `Method "${this.constructor.name}.${funcName}" not found on NotificationHandler registered for channel: ${this.channelName}`
+        );
 
-        func.call(this, ...args);
-      }
-    );
+      func.call(this, ...args);
+    });
   }
 
   /**
@@ -240,10 +207,7 @@ export abstract class NotificationHandler {
 }
 
 /** IpcApp notifications from backend */
-class IpcAppNotifyHandler
-  extends NotificationHandler
-  implements IpcAppNotifications
-{
+class IpcAppNotifyHandler extends NotificationHandler implements IpcAppNotifications {
   public get channelName() {
     return IpcAppChannel.AppNotify;
   }

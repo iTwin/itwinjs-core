@@ -5,10 +5,7 @@
 
 import * as ws from "ws";
 import { BentleyStatus, IModelError } from "@itwin/core-common";
-import {
-  MobileRpcGateway,
-  MobileRpcProtocol,
-} from "../common/MobileRpcProtocol";
+import { MobileRpcGateway, MobileRpcProtocol } from "../common/MobileRpcProtocol";
 import { MobileRpcConfiguration } from "../common/MobileRpcManager";
 import { MobileHost } from "./MobileHost";
 import { ProcessDetector } from "@itwin/core-bentley";
@@ -118,15 +115,8 @@ export class MobileRpcServer {
     }
 
     if (Buffer.isBuffer(message)) {
-      if (
-        message.byteOffset !== 0 ||
-        message.byteLength !== message.buffer.byteLength
-      ) {
-        message = new Uint8Array(
-          message.buffer,
-          message.byteOffset,
-          message.byteLength
-        );
+      if (message.byteOffset !== 0 || message.byteLength !== message.buffer.byteLength) {
+        message = new Uint8Array(message.buffer, message.byteOffset, message.byteLength);
       } else {
         message = message.buffer;
       }

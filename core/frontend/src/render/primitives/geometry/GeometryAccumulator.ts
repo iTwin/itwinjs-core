@@ -7,20 +7,8 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import {
-  IndexedPolyface,
-  Loop,
-  Path,
-  Point3d,
-  Range3d,
-  SolidPrimitive,
-  Transform,
-} from "@itwin/core-geometry";
-import {
-  AnalysisStyleDisplacement,
-  Feature,
-  QPoint3dList,
-} from "@itwin/core-common";
+import { IndexedPolyface, Loop, Path, Point3d, Range3d, SolidPrimitive, Transform } from "@itwin/core-geometry";
+import { AnalysisStyleDisplacement, Feature, QPoint3dList } from "@itwin/core-common";
 import { GraphicBranch } from "../../GraphicBranch";
 import { RenderGraphic } from "../../RenderGraphic";
 import { RenderSystem } from "../../RenderSystem";
@@ -82,115 +70,54 @@ export class GeometryAccumulator {
   }
 
   private calculateTransform(transform: Transform, range: Range3d): Transform {
-    if (this.haveTransform)
-      transform = this._transform.multiplyTransformTransform(transform);
+    if (this.haveTransform) transform = this._transform.multiplyTransformTransform(transform);
 
     transform.multiplyRange(range, range);
     return transform;
   }
 
-  public addLoop(
-    loop: Loop,
-    displayParams: DisplayParams,
-    transform: Transform,
-    disjoint: boolean
-  ): boolean {
+  public addLoop(loop: Loop, displayParams: DisplayParams, transform: Transform, disjoint: boolean): boolean {
     const range = this.getPrimitiveRange(loop);
     if (!range) return false;
 
     const xform = this.calculateTransform(transform, range);
-    return this.addGeometry(
-      Geometry.createFromLoop(
-        loop,
-        xform,
-        range,
-        displayParams,
-        disjoint,
-        this.currentFeature
-      )
-    );
+    return this.addGeometry(Geometry.createFromLoop(loop, xform, range, displayParams, disjoint, this.currentFeature));
   }
 
-  public addLineString(
-    pts: Point3d[],
-    displayParams: DisplayParams,
-    transform: Transform
-  ): boolean {
+  public addLineString(pts: Point3d[], displayParams: DisplayParams, transform: Transform): boolean {
     // Do this.getPrimitiveRange() manually, so there is no need to create a PointString3d object just to find the range
     const range = Range3d.createNull();
     range.extendArray(pts, undefined);
     if (range.isNull) return false;
 
     const xform = this.calculateTransform(transform, range);
-    return this.addGeometry(
-      Geometry.createFromLineString(
-        pts,
-        xform,
-        range,
-        displayParams,
-        this.currentFeature
-      )
-    );
+    return this.addGeometry(Geometry.createFromLineString(pts, xform, range, displayParams, this.currentFeature));
   }
 
-  public addPointString(
-    pts: Point3d[],
-    displayParams: DisplayParams,
-    transform: Transform
-  ): boolean {
+  public addPointString(pts: Point3d[], displayParams: DisplayParams, transform: Transform): boolean {
     // Do this.getPrimitiveRange() manually, so there is no need to create a PointString3d object just to find the range
     const range = Range3d.createNull();
     range.extendArray(pts, undefined);
     if (range.isNull) return false;
 
     const xform = this.calculateTransform(transform, range);
-    return this.addGeometry(
-      Geometry.createFromPointString(
-        pts,
-        xform,
-        range,
-        displayParams,
-        this.currentFeature
-      )
-    );
+    return this.addGeometry(Geometry.createFromPointString(pts, xform, range, displayParams, this.currentFeature));
   }
 
-  public addPath(
-    path: Path,
-    displayParams: DisplayParams,
-    transform: Transform,
-    disjoint: boolean
-  ): boolean {
+  public addPath(path: Path, displayParams: DisplayParams, transform: Transform, disjoint: boolean): boolean {
     const range = this.getPrimitiveRange(path);
     if (!range) return false;
 
     const xform = this.calculateTransform(transform, range);
-    return this.addGeometry(
-      Geometry.createFromPath(
-        path,
-        xform,
-        range,
-        displayParams,
-        disjoint,
-        this.currentFeature
-      )
-    );
+    return this.addGeometry(Geometry.createFromPath(path, xform, range, displayParams, disjoint, this.currentFeature));
   }
 
-  public addPolyface(
-    pf: IndexedPolyface,
-    displayParams: DisplayParams,
-    transform: Transform
-  ): boolean {
+  public addPolyface(pf: IndexedPolyface, displayParams: DisplayParams, transform: Transform): boolean {
     // Adjust the mesh range based on displacements applied to vertices by analysis style, if applicable.
     let range;
     if (this._analysisDisplacement) {
-      const channel = pf.data.auxData?.channels.find(
-        (x) => x.name === this._analysisDisplacement!.channelName
-      );
-      const displacementRange = channel?.computeDisplacementRange(
-        this._analysisDisplacement.scale
-      );
+      const channel = pf.data.auxData?.channels.find((x) => x.name === this._analysisDisplacement!.channelName);
+      const displacementRange = channel?.computeDisplacementRange(this._analysisDisplacement.scale);
       if (displacementRange && !displacementRange.isNull) {
         range = Range3d.createNull();
         const pt = new Point3d();
@@ -213,34 +140,16 @@ export class GeometryAccumulator {
     if (!range && !(range = this.getPrimitiveRange(pf))) return false;
 
     const xform = this.calculateTransform(transform, range);
-    return this.addGeometry(
-      Geometry.createFromPolyface(
-        pf,
-        xform,
-        range,
-        displayParams,
-        this.currentFeature
-      )
-    );
+    return this.addGeometry(Geometry.createFromPolyface(pf, xform, range, displayParams, this.currentFeature));
   }
 
-  public addSolidPrimitive(
-    primitive: SolidPrimitive,
-    displayParams: DisplayParams,
-    transform: Transform
-  ): boolean {
+  public addSolidPrimitive(primitive: SolidPrimitive, displayParams: DisplayParams, transform: Transform): boolean {
     const range = this.getPrimitiveRange(primitive);
     if (!range) return false;
 
     const xform = this.calculateTransform(transform, range);
     return this.addGeometry(
-      Geometry.createFromSolidPrimitive(
-        primitive,
-        xform,
-        range,
-        displayParams,
-        this.currentFeature
-      )
+      Geometry.createFromSolidPrimitive(primitive, xform, range, displayParams, this.currentFeature)
     );
   }
 
@@ -269,21 +178,10 @@ export class GeometryAccumulator {
     const range = geometries.computeRange();
     const is2d = !range.isNull && range.isAlmostZeroZ;
 
-    return MeshBuilderMap.createFromGeometries(
-      geometries,
-      tolerance,
-      range,
-      is2d,
-      options,
-      pickable
-    );
+    return MeshBuilderMap.createFromGeometries(geometries, tolerance, range, is2d, options, pickable);
   }
 
-  public toMeshes(
-    options: GeometryOptions,
-    tolerance: number,
-    pickable: { modelId?: string } | undefined
-  ): MeshList {
+  public toMeshes(options: GeometryOptions, tolerance: number, pickable: { modelId?: string } | undefined): MeshList {
     if (this.geometries.isEmpty) return new MeshList();
 
     const builderMap = this.toMeshBuilderMap(options, tolerance, pickable);
@@ -341,10 +239,7 @@ export class GeometryAccumulator {
         }
       }
 
-      const graphic = mesh.getGraphics(
-        this.system,
-        this._viewIndependentOrigin
-      );
+      const graphic = mesh.getGraphics(this.system, this._viewIndependentOrigin);
       if (undefined !== graphic) branch.add(graphic);
     }
 

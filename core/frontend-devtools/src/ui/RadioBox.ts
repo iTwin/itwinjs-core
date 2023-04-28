@@ -102,13 +102,9 @@ export function createRadioBox(props: RadioBoxProps): RadioBox {
 
   const setValue = (value: number | string): boolean => {
     const stringValue = value.toString();
-    const validValue: boolean = radioBoxes
-      .map((input) => input.value)
-      .includes(stringValue);
+    const validValue: boolean = radioBoxes.map((input) => input.value).includes(stringValue);
     if (validValue) {
-      radioBoxes.forEach(
-        (input) => (input.checked = input.value === stringValue)
-      );
+      radioBoxes.forEach((input) => (input.checked = input.value === stringValue));
       props.handler(stringValue, form);
     }
     return validValue;

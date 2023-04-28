@@ -21,11 +21,8 @@ export enum ChangeFlag {
   ViewedCategoriesPerModel = 1 << 6,
   ViewState = 1 << 7, // eslint-disable-line no-shadow
   All = 0x0fffffff,
-  Overrides = ChangeFlag.All &
-    ~(ChangeFlag.ViewedModels | ChangeFlag.ViewState),
-  Initial = ChangeFlag.ViewedCategories |
-    ChangeFlag.ViewedModels |
-    ChangeFlag.DisplayStyle,
+  Overrides = ChangeFlag.All & ~(ChangeFlag.ViewedModels | ChangeFlag.ViewState),
+  Initial = ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle,
 }
 
 /** Describes which aspects of a [[Viewport]] have changed. Each time [[Viewport.renderFrame]] is invoked, the aspects of the viewport that have changed since

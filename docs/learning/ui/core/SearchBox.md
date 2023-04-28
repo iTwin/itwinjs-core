@@ -24,10 +24,7 @@ There are 3 event handler props:
 In this example, the required `onValueChanged` prop and the optional `placeholder` prop are specified.
 
 ```tsx
-<SearchBox
-  onValueChanged={(value: string) => console.log(`Search text: ${value}`)}
-  placeholder="Search"
-/>
+<SearchBox onValueChanged={(value: string) => console.log(`Search text: ${value}`)} placeholder="Search" />
 ```
 
 ![searchbox](./images/SearchBox.png "SearchBox")

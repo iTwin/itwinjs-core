@@ -50,10 +50,7 @@ interface Symbology {
 }
 
 function makeGeomParams(symb: Symbology): GeometryParams {
-  const params = new GeometryParams(
-    symb.categoryId ?? Id64.invalid,
-    symb.subCategoryId
-  );
+  const params = new GeometryParams(symb.categoryId ?? Id64.invalid, symb.subCategoryId);
   params.lineColor = symb.color;
   params.materialId = symb.materialId;
   if (symb.patternOrigin)
@@ -85,18 +82,8 @@ class GeomWriter {
   }
 
   public append(entry: GeomWriterEntry): void {
-    if (entry.partId)
-      this.builder.appendGeometryPart3d(
-        entry.partId,
-        new Point3d(entry.origin, 0, 0)
-      );
-    else if (
-      entry.subCategoryId ||
-      entry.categoryId ||
-      entry.color ||
-      entry.materialId ||
-      entry.patternOrigin
-    )
+    if (entry.partId) this.builder.appendGeometryPart3d(entry.partId, new Point3d(entry.origin, 0, 0));
+    else if (entry.subCategoryId || entry.categoryId || entry.color || entry.materialId || entry.patternOrigin)
       this.builder.appendGeometryParamsChange(makeGeomParams(entry));
     else if (undefined !== entry.pos)
       this.builder.appendGeometry(
@@ -107,8 +94,7 @@ class GeomWriter {
           new Point3d(entry.pos, 1, 0),
         ])
       );
-    else if (undefined !== entry.appendSubRanges)
-      this.builder.appendGeometryRanges();
+    else if (undefined !== entry.appendSubRanges) this.builder.appendGeometryRanges();
   }
 }
 
@@ -123,9 +109,7 @@ type GeomStreamEntry =
   | UnionMember<SubRange, PartRef & Symbology & Primitive>
   | UnionMember<Primitive, PartRef & Symbology & SubRange>;
 
-function readGeomStream(
-  iter: GeometryStreamIterator
-): GeomStreamEntry[] & { viewIndependent: boolean } {
+function readGeomStream(iter: GeometryStreamIterator): GeomStreamEntry[] & { viewIndependent: boolean } {
   const result: GeomStreamEntry[] = [];
   for (const entry of iter) {
     const symb: Symbology = {
@@ -133,11 +117,9 @@ function readGeomStream(
       subCategoryId: entry.geomParams.subCategoryId,
     };
 
-    if (undefined !== entry.geomParams.lineColor)
-      symb.color = entry.geomParams.lineColor;
+    if (undefined !== entry.geomParams.lineColor) symb.color = entry.geomParams.lineColor;
 
-    if (undefined !== entry.geomParams.materialId)
-      symb.materialId = entry.geomParams.materialId;
+    if (undefined !== entry.geomParams.materialId) symb.materialId = entry.geomParams.materialId;
 
     if (entry.geomParams.pattern) {
       expect(entry.geomParams.pattern.origin).not.to.be.undefined;
@@ -157,15 +139,12 @@ function readGeomStream(
     }
 
     if (entry.primitive.type === "geometryQuery") {
-      expect(entry.primitive.geometry.geometryCategory).to.equal(
-        "curveCollection"
-      );
+      expect(entry.primitive.geometry.geometryCategory).to.equal("curveCollection");
       if (entry.primitive.geometry.geometryCategory === "curveCollection") {
         expect(entry.primitive.geometry.children!.length).to.equal(1);
         expect(entry.primitive.geometry.children![0]).instanceOf(LineString3d);
 
-        const pts = (entry.primitive.geometry.children![0] as LineString3d)
-          .points;
+        const pts = (entry.primitive.geometry.children![0] as LineString3d).points;
         expect(pts.length).to.equal(5);
         expect(pts[1].x).to.equal(pts[0].x + 1);
 
@@ -175,8 +154,7 @@ function readGeomStream(
       expect(entry.primitive.type).to.equal("partReference");
       if (entry.primitive.type === "partReference") {
         const partRef: PartRef = { partId: entry.primitive.part.id };
-        if (entry.primitive.part.toLocal)
-          partRef.origin = entry.primitive.part.toLocal.origin.x;
+        if (entry.primitive.part.toLocal) partRef.origin = entry.primitive.part.toLocal.origin.x;
 
         result.push(partRef);
       }
@@ -196,29 +174,19 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
   let materialId: string;
 
   beforeEach(() => {
-    imodel = SnapshotDb.createEmpty(
-      IModelTestUtils.prepareOutputFile(
-        "InlineGeomParts",
-        `${Guid.createValue()}.bim`
-      ),
-      {
-        rootSubject: {
-          name: "InlineGeomParts",
-          description: "InlineGeomParts",
-        },
-      }
-    );
+    imodel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("InlineGeomParts", `${Guid.createValue()}.bim`), {
+      rootSubject: {
+        name: "InlineGeomParts",
+        description: "InlineGeomParts",
+      },
+    });
 
     GenericSchema.registerSchema();
     const partitionId = imodel.elements.insertElement({
       classFullName: PhysicalPartition.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
-      code: PhysicalPartition.createCode(
-        imodel,
-        IModel.rootSubjectId,
-        `PhysicalPartition_${Guid.createValue()}`
-      ),
+      code: PhysicalPartition.createCode(imodel, IModel.rootSubjectId, `PhysicalPartition_${Guid.createValue()}`),
     });
 
     expect(Id64.isValidId64(partitionId)).to.be.true;
@@ -242,12 +210,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
     });
     expect(Id64.isValidId64(redSubCategoryId)).to.be.true;
 
-    materialId = RenderMaterialElement.insert(
-      imodel,
-      IModel.dictionaryId,
-      "mat",
-      { paletteName: "pal" }
-    );
+    materialId = RenderMaterialElement.insert(imodel, IModel.dictionaryId, "mat", { paletteName: "pal" });
     expect(Id64.isValidId64(materialId)).to.be.true;
   });
 
@@ -262,11 +225,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
     const props: GeometryPartProps = {
       classFullName: GeometryPart.classFullName,
       model: IModel.dictionaryId,
-      code: GeometryPart.createCode(
-        imodel,
-        IModel.dictionaryId,
-        Guid.createValue()
-      ),
+      code: GeometryPart.createCode(imodel, IModel.dictionaryId, Guid.createValue()),
       geom: writer.builder.geometryStream,
     };
 
@@ -275,10 +234,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
     return partId;
   }
 
-  function insertElement(
-    geom: GeomWriterEntry[],
-    viewIndependent = false
-  ): string {
+  function insertElement(geom: GeomWriterEntry[], viewIndependent = false): string {
     const writer = new GeomWriter({ categoryId });
     if (viewIndependent) writer.builder.isViewIndependent = true;
 
@@ -301,27 +257,20 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
     return elemId;
   }
 
-  function readElementGeom(
-    id: string
-  ): GeomStreamEntry[] & { viewIndependent: boolean } {
+  function readElementGeom(id: string): GeomStreamEntry[] & { viewIndependent: boolean } {
     let iter;
     const elem = imodel.elements.getElement({ id, wantGeometry: true });
     if (elem instanceof GeometryPart) {
       iter = GeometryStreamIterator.fromGeometryPart(elem);
     } else {
       expect(elem).instanceOf(GeometricElement3d);
-      iter = GeometryStreamIterator.fromGeometricElement3d(
-        elem as GeometricElement3d
-      );
+      iter = GeometryStreamIterator.fromGeometricElement3d(elem as GeometricElement3d);
     }
 
     return readGeomStream(iter);
   }
 
-  function expectGeom(
-    actual: GeomStreamEntry[],
-    expected: GeomStreamEntry[]
-  ): void {
+  function expectGeom(actual: GeomStreamEntry[], expected: GeomStreamEntry[]): void {
     expect(actual).to.deep.equal(expected);
   }
 
@@ -335,16 +284,10 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
   it("inlines and deletes a simple unique part reference", () => {
     // Create single reference to a part and perform sanity checks on our geometry validation code.
     const partId = insertGeometryPart([{ pos: 123 }]);
-    expectGeom(readElementGeom(partId), [
-      { categoryId: "0", subCategoryId: "0" },
-      { pos: 123 },
-    ]);
+    expectGeom(readElementGeom(partId), [{ categoryId: "0", subCategoryId: "0" }, { pos: 123 }]);
 
     const elemId = insertElement([{ partId }]);
-    expectGeom(readElementGeom(elemId), [
-      { categoryId, subCategoryId: blueSubCategoryId },
-      { partId },
-    ]);
+    expectGeom(readElementGeom(elemId), [{ categoryId, subCategoryId: blueSubCategoryId }, { partId }]);
 
     // Inline and delete the part.
     expect(inlinePartRefs()).to.equal(1);
@@ -352,11 +295,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
 
     const geom = readElementGeom(elemId);
     expect(geom.viewIndependent).to.be.false;
-    expectGeom(geom, [
-      { categoryId, subCategoryId: blueSubCategoryId },
-      { low: 123 },
-      { pos: 123 },
-    ]);
+    expectGeom(geom, [{ categoryId, subCategoryId: blueSubCategoryId }, { low: 123 }, { pos: 123 }]);
   });
 
   it("inlines and deletes unique parts, ignoring non-unique parts", () => {
@@ -375,13 +314,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
 
     const symb = { categoryId, subCategoryId: blueSubCategoryId };
     expectGeom(readElementGeom(elem1), [symb, { low: 1 }, { pos: 1 }]);
-    expectGeom(readElementGeom(elem2), [
-      symb,
-      { low: 2 },
-      { pos: 2 },
-      symb,
-      { partId: part3 },
-    ]);
+    expectGeom(readElementGeom(elem2), [symb, { low: 2 }, { pos: 2 }, symb, { partId: part3 }]);
     expectGeom(readElementGeom(elem3), [symb, { partId: part3 }]);
     expectGeom(readElementGeom(elem4), [symb, { partId: part4 }]);
     expectGeom(readElementGeom(elem5), [symb, { partId: part4 }]);
@@ -391,25 +324,13 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
     const partId = insertGeometryPart([{ pos: -8 }]);
     const elemId = insertElement([{ partId, origin: 50 }]);
     expect(inlinePartRefs()).to.equal(1);
-    expectGeom(readElementGeom(elemId), [
-      { categoryId, subCategoryId: blueSubCategoryId },
-      { low: 42 },
-      { pos: 42 },
-    ]);
+    expectGeom(readElementGeom(elemId), [{ categoryId, subCategoryId: blueSubCategoryId }, { low: 42 }, { pos: 42 }]);
   });
 
   it("applies element symbology to part and resets element symbology after embedding part", () => {
-    const part1 = insertGeometryPart([
-      { pos: 1 },
-      { color: ColorDef.green },
-      { pos: 1.5 },
-    ]);
+    const part1 = insertGeometryPart([{ pos: 1 }, { color: ColorDef.green }, { pos: 1.5 }]);
 
-    const part2 = insertGeometryPart([
-      { pos: 2 },
-      { materialId },
-      { pos: 2.5 },
-    ]);
+    const part2 = insertGeometryPart([{ pos: 2 }, { materialId }, { pos: 2.5 }]);
 
     // Sanity check.
     expectGeom(readElementGeom(part2), [
@@ -419,11 +340,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
       { pos: 2.5 },
     ]);
 
-    const part3 = insertGeometryPart([
-      { pos: 3 },
-      { materialId: "0" },
-      { pos: 3.5 },
-    ]);
+    const part3 = insertGeometryPart([{ pos: 3 }, { materialId: "0" }, { pos: 3.5 }]);
 
     const elemId = insertElement([
       { pos: -1 },
@@ -488,11 +405,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
   it("inserts subgraphic ranges for parts", () => {
     const part1 = insertGeometryPart([{ pos: 1 }]);
     const part2 = insertGeometryPart([{ pos: 2 }]);
-    const elem = insertElement([
-      { pos: -1 },
-      { partId: part1 },
-      { partId: part2, origin: 5 },
-    ]);
+    const elem = insertElement([{ pos: -1 }, { partId: part1 }, { partId: part2, origin: 5 }]);
 
     expect(inlinePartRefs()).to.equal(2);
 
@@ -510,12 +423,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
 
   it("preserves existing subgraphic ranges", () => {
     const partId = insertGeometryPart([{ pos: 0 }]);
-    const elem = insertElement([
-      { appendSubRanges: true },
-      { pos: -1 },
-      { partId },
-      { pos: 1 },
-    ]);
+    const elem = insertElement([{ appendSubRanges: true }, { pos: -1 }, { partId }, { pos: 1 }]);
 
     expectGeom(readElementGeom(elem), [
       { categoryId, subCategoryId: blueSubCategoryId },
@@ -565,10 +473,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
     const part1 = insertGeometryPart([{ pos: 1 }]);
     const part2 = insertGeometryPart([{ patternOrigin: 123 }, { pos: 2 }]);
 
-    expectGeom(readElementGeom(part2), [
-      { categoryId: "0", subCategoryId: "0", patternOrigin: 123 },
-      { pos: 2 },
-    ]);
+    expectGeom(readElementGeom(part2), [{ categoryId: "0", subCategoryId: "0", patternOrigin: 123 }, { pos: 2 }]);
 
     const elemId = insertElement([
       { patternOrigin: 456 },

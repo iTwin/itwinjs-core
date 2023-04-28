@@ -47,20 +47,14 @@ export class OverrideFormat {
     unitAndLabels?: Array<[Unit | InvertedUnit, string | undefined]>
   ) {
     this.parent = parent;
-    this.name = OverrideFormat.createOverrideFormatFullName(
-      parent,
-      precision,
-      unitAndLabels
-    );
+    this.name = OverrideFormat.createOverrideFormatFullName(parent, precision, unitAndLabels);
     this._precision = precision;
     this._units = unitAndLabels;
   }
 
   // Properties that can be overriden
   public get precision(): DecimalPrecision | FractionalPrecision {
-    return undefined === this._precision
-      ? this.parent.precision
-      : this._precision;
+    return undefined === this._precision ? this.parent.precision : this._precision;
   }
   public get units() {
     return undefined === this._units ? this.parent.units : this._units;
@@ -118,23 +112,14 @@ export class OverrideFormat {
    * @alpha
    */
   public fullNameXml(koqSchema: Schema): string {
-    let fullName = XmlSerializationUtils.createXmlTypedName(
-      koqSchema,
-      this.parent.schema,
-      this.parent.name
-    );
+    let fullName = XmlSerializationUtils.createXmlTypedName(koqSchema, this.parent.schema, this.parent.name);
 
-    if (undefined !== this.precision)
-      fullName += `(${this.precision.toString()})`;
+    if (undefined !== this.precision) fullName += `(${this.precision.toString()})`;
 
     if (undefined === this._units) return fullName;
     for (const [unit, unitLabel] of this._units) {
       fullName += "[";
-      fullName += XmlSerializationUtils.createXmlTypedName(
-        koqSchema,
-        unit.schema,
-        unit.name
-      );
+      fullName += XmlSerializationUtils.createXmlTypedName(koqSchema, unit.schema, unit.name);
       fullName += `|${unitLabel}]`;
     }
     return fullName;
@@ -182,8 +167,7 @@ export class OverrideFormat {
    * This method is not intended for complete serialization as it does not serialize any of the schema item properties.
    */
   public getFormatProps(): SchemaItemOverrideFormatProps {
-    const formatJson =
-      this.parent.toJSON() as Mutable<SchemaItemOverrideFormatProps>;
+    const formatJson = this.parent.toJSON() as Mutable<SchemaItemOverrideFormatProps>;
 
     if (this.parent.fullName !== this.fullName) {
       // Update name and parent properties to distinguish it from parent Format
@@ -219,7 +203,5 @@ export class OverrideFormat {
  * @internal
  */
 export function getFormatProps(format: Format | OverrideFormat): FormatProps {
-  return OverrideFormat.isOverrideFormat(format)
-    ? format.getFormatProps()
-    : format.toJSON();
+  return OverrideFormat.isOverrideFormat(format) ? format.getFormatProps() : format.toJSON();
 }

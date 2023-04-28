@@ -17,11 +17,7 @@ describe("ColorDef", () => {
     assert.equal(cadetBlue.getRgb(), ColorDef.from(0x5f, 0x9e, 0xa0).getRgb());
     assert.equal(cadetBlue.getRgb(), ColorDef.from(95, 158, 160).getRgb());
     assert.equal(cadetBlue.toRgbString(), "rgb(95,158,160)");
-    assert.equal(
-      cadetBlue.tbgr,
-      ColorDef.fromString("cadetblue").tbgr,
-      "Expect case insensitive compare"
-    );
+    assert.equal(cadetBlue.tbgr, ColorDef.fromString("cadetblue").tbgr, "Expect case insensitive compare");
     assert.equal(cadetBlue.getRgb(), ColorDef.fromString("cadetBlue").getRgb());
   });
 

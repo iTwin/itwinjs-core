@@ -77,9 +77,7 @@ describe("ToolRegistry", () => {
   });
 
   it("Should execute the TestImmediate command", async () => {
-    const command = IModelApp.tools.findExactMatch(
-      "Localized TestImmediate Keyin"
-    )!;
+    const command = IModelApp.tools.findExactMatch("Localized TestImmediate Keyin")!;
     assert.equal(command, TestImmediate, "Found TestImmediate");
     assert.equal(command.minArgs, 2);
     assert.equal(command.maxArgs, 2);
@@ -95,20 +93,13 @@ describe("ToolRegistry", () => {
     assert.isFalse(cmdReturn);
   });
 
-  function testKeyinArgs(
-    keyin: string,
-    args: string[],
-    expectedToolKeyin?: string
-  ) {
+  function testKeyinArgs(keyin: string, args: string[], expectedToolKeyin?: string) {
     const result = IModelApp.tools.parseKeyin(keyin);
     expect(result.ok).to.be.true;
     if (result.ok) {
       assert.equal(result.args.length, args.length);
-      args.forEach((parsedArg, index) =>
-        assert.equal(parsedArg, result.args[index])
-      );
-      if (undefined !== expectedToolKeyin)
-        expect(result.tool.keyin).to.equal(expectedToolKeyin);
+      args.forEach((parsedArg, index) => assert.equal(parsedArg, result.args[index]));
+      if (undefined !== expectedToolKeyin) expect(result.tool.keyin).to.equal(expectedToolKeyin);
     }
   }
 
@@ -127,17 +118,8 @@ describe("ToolRegistry", () => {
       "included",
     ]);
     testKeyinArgs(`uccalc "a quoted string"`, ["a quoted string"]);
-    testKeyinArgs(`uccalc this has "a quoted string"`, [
-      "this",
-      "has",
-      "a quoted string",
-    ]);
-    testKeyinArgs(`uccalc "a quoted string" is before me`, [
-      "a quoted string",
-      "is",
-      "before",
-      "me",
-    ]);
+    testKeyinArgs(`uccalc this has "a quoted string"`, ["this", "has", "a quoted string"]);
+    testKeyinArgs(`uccalc "a quoted string" is before me`, ["a quoted string", "is", "before", "me"]);
     testKeyinArgs(`uccalc "my arg"`, ["my arg"]);
   }).timeout(8000); // for whatever reason 2 seconds often isn't enough time for macOS to run this test...
 
@@ -147,51 +129,21 @@ describe("ToolRegistry", () => {
     testKeyinArgs(`uccalc "trailing """`, [`trailing "`]);
     testKeyinArgs(`uccalc "double """" quotes"`, [`double "" quotes`]);
     testKeyinArgs(`uccalc "" """" """"""`, [``, `"`, `""`]);
-    testKeyinArgs(`uccalc no "yes """ no """ yes" no "yes "" yes"`, [
-      `no`,
-      `yes "`,
-      `no`,
-      `" yes`,
-      `no`,
-      `yes " yes`,
-    ]);
+    testKeyinArgs(`uccalc no "yes """ no """ yes" no "yes "" yes"`, [`no`, `yes "`, `no`, `" yes`, `no`, `yes " yes`]);
   }).timeout(8000);
 
   it("Should parse command with mismatched quotes", () => {
     expectParseError(`uccalc "test`, KeyinParseError.MismatchedQuotes);
     expectParseError(`uccalc abc "xyz`, KeyinParseError.MismatchedQuotes);
-    expectParseError(
-      `uccalc abc "x "" y "" z`,
-      KeyinParseError.MismatchedQuotes
-    );
+    expectParseError(`uccalc abc "x "" y "" z`, KeyinParseError.MismatchedQuotes);
   });
 
   it("Should not consider quoted tokens as part of tool keyin", () => {
-    testKeyinArgs(
-      `preprocessor format double`,
-      [],
-      "preprocessor format double"
-    );
-    testKeyinArgs(
-      `preprocessor format double abc "d e f"`,
-      ["abc", "d e f"],
-      "preprocessor format double"
-    );
-    testKeyinArgs(
-      `preprocessor format "double"`,
-      ["double"],
-      "preprocessor format"
-    );
-    testKeyinArgs(
-      `preprocessor format "double" abc "d e f"`,
-      ["double", "abc", "d e f"],
-      "preprocessor format"
-    );
-    testKeyinArgs(
-      `preprocessor "format" double`,
-      ["format", "double"],
-      "preprocessor"
-    );
+    testKeyinArgs(`preprocessor format double`, [], "preprocessor format double");
+    testKeyinArgs(`preprocessor format double abc "d e f"`, ["abc", "d e f"], "preprocessor format double");
+    testKeyinArgs(`preprocessor format "double"`, ["double"], "preprocessor format");
+    testKeyinArgs(`preprocessor format "double" abc "d e f"`, ["double", "abc", "d e f"], "preprocessor format");
+    testKeyinArgs(`preprocessor "format" double`, ["format", "double"], "preprocessor");
 
     const result = IModelApp.tools.parseKeyin(`"preprocessor" format double`);
     expect(result.ok).to.be.false;
@@ -209,10 +161,7 @@ describe("ToolRegistry", () => {
       "five six",
       "seven",
     ]);
-    testKeyinArgs(`uccalc one"two"three four""five"`, [
-      `one"two"three`,
-      `four""five"`,
-    ]);
+    testKeyinArgs(`uccalc one"two"three four""five"`, [`one"two"three`, `four""five"`]);
     testKeyinArgs("\tuccalc\none\t \ttwo \n three", ["one", "two", "three"]);
   }).timeout(8000);
 
@@ -224,35 +173,29 @@ describe("ToolRegistry", () => {
   });
 
   it("Should find some partial matches for 'plac'", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> =
-      IModelApp.tools.findPartialMatches("plac");
+    const searchResults: FuzzySearchResults<typeof Tool> = IModelApp.tools.findPartialMatches("plac");
     showSearchResults("Matches for 'plac':", searchResults);
   });
 
   it("Should find some partial matches for 'plce'", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> =
-      IModelApp.tools.findPartialMatches("plce");
+    const searchResults: FuzzySearchResults<typeof Tool> = IModelApp.tools.findPartialMatches("plce");
     showSearchResults("Matches for 'plce':", searchResults);
   });
 
   it("Should find some partial matches for 'cone plac'", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> =
-      IModelApp.tools.findPartialMatches("cone plac");
+    const searchResults: FuzzySearchResults<typeof Tool> = IModelApp.tools.findPartialMatches("cone plac");
     showSearchResultsUsingIndexApi("Matches for 'cone plac':", searchResults);
   });
   it("Should find some partial matches for 'vie'", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> =
-      IModelApp.tools.findPartialMatches("vie");
+    const searchResults: FuzzySearchResults<typeof Tool> = IModelApp.tools.findPartialMatches("vie");
     showSearchResultsUsingIndexApi("Matches for 'vie':", searchResults);
   });
   it("Should find some partial matches for 'place '", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> =
-      IModelApp.tools.findPartialMatches("place ");
+    const searchResults: FuzzySearchResults<typeof Tool> = IModelApp.tools.findPartialMatches("place ");
     showSearchResults("Matches for 'place ':", searchResults);
   });
   it("Should find some nomatch results 'fjt'", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> =
-      IModelApp.tools.findPartialMatches("fjt");
+    const searchResults: FuzzySearchResults<typeof Tool> = IModelApp.tools.findPartialMatches("fjt");
     showSearchResults("Matches for 'place ':", searchResults);
   });
 });
@@ -266,10 +209,7 @@ function caretStringFromBoldMask(keyin: string, boldMask: boolean[]): string {
   return boldString;
 }
 
-function showSearchResults(
-  title: string,
-  searchResults: FuzzySearchResults<typeof Tool>
-) {
+function showSearchResults(title: string, searchResults: FuzzySearchResults<typeof Tool>) {
   expect(searchResults.length).to.be.greaterThan(0);
   logResult(searchResults.length, title);
 
@@ -283,22 +223,14 @@ function showSearchResults(
   }
 }
 
-function showSearchResultsUsingIndexApi(
-  title: string,
-  searchResults?: FuzzySearchResults<typeof Tool>
-) {
+function showSearchResultsUsingIndexApi(title: string, searchResults?: FuzzySearchResults<typeof Tool>) {
   assert.isDefined(searchResults);
   if (!searchResults) return;
   logResult(searchResults.length, title);
 
   // eslint-disable-next-line @typescript-eslint/prefer-for-of
-  for (
-    let resultIndex: number = 0;
-    resultIndex < searchResults.length;
-    resultIndex++
-  ) {
-    const thisResult: FuzzySearchResult<typeof Tool> | undefined =
-      searchResults.getResult(resultIndex);
+  for (let resultIndex: number = 0; resultIndex < searchResults.length; resultIndex++) {
+    const thisResult: FuzzySearchResult<typeof Tool> | undefined = searchResults.getResult(resultIndex);
     assert.isDefined(thisResult);
 
     const keyin = thisResult!.getMatchedValue();

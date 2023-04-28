@@ -7,12 +7,7 @@
  * @module Tools
  */
 
-import {
-  HitDetail,
-  IModelApp,
-  Tool,
-  ToolTipProvider,
-} from "@itwin/core-frontend";
+import { HitDetail, IModelApp, Tool, ToolTipProvider } from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 
 /** Augments tooltips with detailed information useful for debugging.
@@ -28,13 +23,7 @@ class DebugToolTipProvider implements ToolTipProvider {
     // discard and overwrite
     await tooltipPromise;
 
-    const keys: Array<keyof HitDetail> = [
-      "sourceId",
-      "modelId",
-      "subCategoryId",
-      "tileId",
-      "geometryClass",
-    ];
+    const keys: Array<keyof HitDetail> = ["sourceId", "modelId", "subCategoryId", "tileId", "geometryClass"];
     let html = "";
     for (const key of keys) {
       const value = hit[key];

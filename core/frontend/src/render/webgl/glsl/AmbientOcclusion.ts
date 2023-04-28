@@ -10,11 +10,7 @@
 
 import { AmbientOcclusionGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
-import {
-  FragmentShaderComponent,
-  VariablePrecision,
-  VariableType,
-} from "../ShaderBuilder";
+import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { System } from "../System";
 import { Texture2DHandle } from "../Texture";
@@ -207,9 +203,7 @@ function _shouldUseDB() {
 }
 
 /** @internal */
-export function createAmbientOcclusionProgram(
-  context: WebGL2RenderingContext
-): ShaderProgram {
+export function createAmbientOcclusionProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
   const shouldUseDB = _shouldUseDB();
@@ -250,11 +244,7 @@ export function createAmbientOcclusionProgram(
   frag.addUniform("u_pickDepthAndOrder", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_pickDepthAndOrder", (uniform, params) => {
       const geom = params.geometry as AmbientOcclusionGeometry;
-      Texture2DHandle.bindSampler(
-        uniform,
-        geom.depthAndOrder,
-        TextureUnit.Zero
-      );
+      Texture2DHandle.bindSampler(uniform, geom.depthAndOrder, TextureUnit.Zero);
     });
   });
 
@@ -312,9 +302,7 @@ export function createAmbientOcclusionProgram(
     VariableType.Float,
     (prog) => {
       prog.addProgramUniform("u_maxDistance", (uniform, params) => {
-        uniform.setUniform1f(
-          params.target.ambientOcclusionSettings.maxDistance
-        );
+        uniform.setUniform1f(params.target.ambientOcclusionSettings.maxDistance);
       });
     },
     VariablePrecision.High

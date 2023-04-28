@@ -63,8 +63,7 @@ export class ConcurrencyQueue<T> {
    * @returns The return value of `callback`, resolved once the task completes.
    */
   public async push(callback: () => Promise<T>): Promise<T> {
-    if (this._pending.length < this.maxParallel)
-      return this.pushPending(callback());
+    if (this._pending.length < this.maxParallel) return this.pushPending(callback());
 
     // There are already enough tasks running, so this will have to go into the queue and wait for a future "pending" promise to start it.
     return new Promise((resolve) => {

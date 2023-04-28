@@ -32,11 +32,7 @@ export type OrderedComparator<T, U = T> = (lhs: T, rhs: U) => number;
  * An [[OrderedComparator]] for numbers that treats two numbers as equal if the absolute value of their difference is less than a specified tolerance.
  * @public
  */
-export function compareWithTolerance(
-  a: number,
-  b: number,
-  tolerance = 0.1
-): number {
+export function compareWithTolerance(a: number, b: number, tolerance = 0.1): number {
   if (a < b - tolerance) return -1;
   else if (a > b + tolerance) return 1;
   else return 0;
@@ -58,11 +54,7 @@ export function compareStrings(a: string, b: string): number {
 }
 
 /** @public */
-export function comparePossiblyUndefined<T>(
-  compareDefined: (lhs: T, rhs: T) => number,
-  lhs?: T,
-  rhs?: T
-): number {
+export function comparePossiblyUndefined<T>(compareDefined: (lhs: T, rhs: T) => number, lhs?: T, rhs?: T): number {
   if (undefined === lhs) return undefined === rhs ? 0 : -1;
   else if (undefined === rhs) return 1;
   else return compareDefined(lhs, rhs);
@@ -79,10 +71,7 @@ export function compareNumbersOrUndefined(lhs?: number, rhs?: number): number {
 }
 
 /** @public */
-export function compareBooleansOrUndefined(
-  lhs?: boolean,
-  rhs?: boolean
-): number {
+export function compareBooleansOrUndefined(lhs?: boolean, rhs?: boolean): number {
   return comparePossiblyUndefined(compareBooleans, lhs, rhs);
 }
 

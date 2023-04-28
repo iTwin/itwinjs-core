@@ -61,32 +61,12 @@ export class TriangleCandidate extends BarycentricTriangle {
     id: number,
     result?: TriangleCandidate
   ): TriangleCandidate {
-    if (!result)
-      result = new TriangleCandidate(
-        Point3d.create(),
-        Point3d.create(),
-        Point3d.create(),
-        id,
-        0.0,
-        false
-      );
+    if (!result) result = new TriangleCandidate(Point3d.create(), Point3d.create(), Point3d.create(), id, 0.0, false);
     result.id = id;
     let numValid = 0;
-    if (
-      undefined !==
-      source0.getPoint3dAtCheckedPointIndex(index0, result.points[0])
-    )
-      numValid++;
-    if (
-      undefined !==
-      source1.getPoint3dAtCheckedPointIndex(index1, result.points[1])
-    )
-      numValid++;
-    if (
-      undefined !==
-      source2.getPoint3dAtCheckedPointIndex(index2, result.points[2])
-    )
-      numValid++;
+    if (undefined !== source0.getPoint3dAtCheckedPointIndex(index0, result.points[0])) numValid++;
+    if (undefined !== source1.getPoint3dAtCheckedPointIndex(index1, result.points[1])) numValid++;
+    if (undefined !== source2.getPoint3dAtCheckedPointIndex(index2, result.points[2])) numValid++;
     if (numValid === 3) result.updateAspectRatio();
     else result.markInvalid();
     return result;
@@ -145,10 +125,7 @@ export class TriangleCandidate extends BarycentricTriangle {
     result = candidateA.clone(result);
     if (candidateB.isValid) {
       const dot = candidateA.dotProductOfCrossProductsFromOrigin(candidateB);
-      result._quality = Geometry.minXY(
-        candidateA.aspectRatio,
-        candidateB.aspectRatio
-      );
+      result._quality = Geometry.minXY(candidateA.aspectRatio, candidateB.aspectRatio);
       if (dot < 0.0) result._quality -= 1.0;
     }
     return result;
@@ -158,11 +135,7 @@ export class TriangleCandidate extends BarycentricTriangle {
    * @param triangle known valid triangle, to be updated
    * @param other candidate replacement
    */
-  public static updateIfOtherHasHigherQuality(
-    triangle: TriangleCandidate,
-    other: TriangleCandidate
-  ) {
-    if (other.isValid && other._quality > triangle._quality)
-      triangle.setFrom(other);
+  public static updateIfOtherHasHigherQuality(triangle: TriangleCandidate, other: TriangleCandidate) {
+    if (other.isValid && other._quality > triangle._quality) triangle.setFrom(other);
   }
 }

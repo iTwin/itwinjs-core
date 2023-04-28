@@ -4,11 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { gunzip, gzip } from "zlib";
 import { promisify } from "util";
-import {
-  Metadata,
-  ServerStorage,
-  TransferConfig,
-} from "@itwin/object-storage-core";
+import { Metadata, ServerStorage, TransferConfig } from "@itwin/object-storage-core";
 import { getTileObjectReference } from "@itwin/core-common";
 import { Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -36,9 +32,7 @@ export class TileStorage {
    */
   public async initialize(iModelId: string): Promise<void> {
     if (this._initializedIModels.has(iModelId)) return;
-    if (
-      !(await this.storage.baseDirectoryExists({ baseDirectory: iModelId }))
-    ) {
+    if (!(await this.storage.baseDirectoryExists({ baseDirectory: iModelId }))) {
       await this.storage.createBaseDirectory({ baseDirectory: iModelId });
     }
     this._initializedIModels.add(iModelId);
@@ -48,15 +42,9 @@ export class TileStorage {
    * Returns config that can be used by frontends to download tiles
    * @see [TileStorage]($frontend)
    */
-  public async getDownloadConfig(
-    iModelId: string,
-    expiresInSeconds?: number
-  ): Promise<TransferConfig> {
+  public async getDownloadConfig(iModelId: string, expiresInSeconds?: number): Promise<TransferConfig> {
     try {
-      return await this.storage.getDownloadConfig(
-        { baseDirectory: iModelId },
-        expiresInSeconds
-      );
+      return await this.storage.getDownloadConfig({ baseDirectory: iModelId }, expiresInSeconds);
     } catch (err) {
       this.logException("Failed to get download config", err);
       throw err;
@@ -78,11 +66,7 @@ export class TileStorage {
     try {
       await this.storage.upload(
         getTileObjectReference(iModelId, changesetId, treeId, contentId, guid),
-        Buffer.from(
-          IModelHost.compressCachedTiles
-            ? await promisify(gzip)(content.buffer)
-            : content.buffer
-        ),
+        Buffer.from(IModelHost.compressCachedTiles ? await promisify(gzip)(content.buffer) : content.buffer),
         metadata,
         IModelHost.compressCachedTiles ? { contentEncoding: "gzip" } : undefined
       );
@@ -107,9 +91,7 @@ export class TileStorage {
         getTileObjectReference(iModelId, changesetId, treeId, contentId, guid),
         "buffer"
       );
-      return IModelHost.compressCachedTiles
-        ? await promisify(gunzip)(buffer)
-        : buffer;
+      return IModelHost.compressCachedTiles ? await promisify(gunzip)(buffer) : buffer;
     } catch (err) {
       this.logException("Failed to download tile", err);
       throw err;
@@ -119,9 +101,7 @@ export class TileStorage {
   /**
    * Returns a list of all tiles that are found in the cloud cache.
    */
-  public async getCachedTiles(
-    iModelId: string
-  ): Promise<{ treeId: string; contentId: string; guid: string }[]> {
+  public async getCachedTiles(iModelId: string): Promise<{ treeId: string; contentId: string; guid: string }[]> {
     return (await this.storage.listObjects({ baseDirectory: iModelId }))
       .map((objectReference) => ({
         parts: objectReference.relativeDirectory?.split("/") ?? [""],
@@ -160,20 +140,15 @@ export class TileStorage {
     contentId: string,
     guid?: string
   ): Promise<boolean> {
-    return this.storage.objectExists(
-      getTileObjectReference(iModelId, changesetId, treeId, contentId, guid)
-    );
+    return this.storage.objectExists(getTileObjectReference(iModelId, changesetId, treeId, contentId, guid));
   }
 
   private logException(message: string, err: unknown): void {
-    Logger.logException(
-      BackendLoggerCategory.IModelTileStorage,
-      err,
-      (category, msg, errorMetadata) =>
-        Logger.logError(category, `${message}: {errorMessage}`, {
-          ...errorMetadata,
-          errorMessage: msg,
-        })
+    Logger.logException(BackendLoggerCategory.IModelTileStorage, err, (category, msg, errorMetadata) =>
+      Logger.logError(category, `${message}: {errorMessage}`, {
+        ...errorMetadata,
+        errorMessage: msg,
+      })
     );
   }
 }

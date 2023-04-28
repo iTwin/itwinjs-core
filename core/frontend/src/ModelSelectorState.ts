@@ -62,12 +62,7 @@ export class ModelSelectorState extends ElementState {
    * @public
    */
   public equalState(other: ModelSelectorState): boolean {
-    if (
-      this.models.size !== other.models.size ||
-      this.id !== other.id ||
-      this.name !== other.name
-    )
-      return false;
+    if (this.models.size !== other.models.size || this.id !== other.id || this.name !== other.name) return false;
 
     for (const model of this.models) if (!other.models.has(model)) return false;
 

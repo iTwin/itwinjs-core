@@ -27,11 +27,7 @@ export interface EditorIpc {
    * before the new `EditCommand` is constructed. If it cannot finish immediately, it may return a string that identifies
    * the work it is performing for `EditTools.busyHandler` to retry and/or display.
    */
-  startCommand: (
-    commandId: string,
-    iModelKey: string,
-    ...args: any[]
-  ) => Promise<any>;
+  startCommand: (commandId: string, iModelKey: string, ...args: any[]) => Promise<any>;
 
   /** Call a method on the currently active `EditCommand` and return its value.
    * @param name the name of the method to invoke.

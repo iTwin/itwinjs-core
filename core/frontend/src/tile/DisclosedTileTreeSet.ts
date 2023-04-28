@@ -31,9 +31,7 @@ export class DisclosedTileTreeSet implements Iterable<TileTree> {
    * @param comparator If supplied, a comparison function used to determine the order of iteration of the set; otherwise, iteration will proceed in insertion order.
    */
   public constructor(comparator?: OrderedComparator<TileTree, TileTree>) {
-    this._trees = comparator
-      ? new OrderedSet<TileTree>(comparator)
-      : new Set<TileTree>();
+    this._trees = comparator ? new OrderedSet<TileTree>(comparator) : new Set<TileTree>();
   }
 
   /** Returns true if the specified tree has been [[add]]ed to the set. */

@@ -55,12 +55,7 @@ export class TaggedNumericData {
   /** Application specific secondary tag.   See reserved values in  [[TaggedNumericConstants]] */
   public tagB: number;
 
-  public constructor(
-    tagA: number = 0,
-    tagB: number = 0,
-    intData?: number[],
-    doubleData?: number[]
-  ) {
+  public constructor(tagA: number = 0, tagB: number = 0, intData?: number[], doubleData?: number[]) {
     this.tagA = tagA;
     this.tagB = tagB;
     if (intData) this.intData = intData;
@@ -100,16 +95,10 @@ export class TaggedNumericData {
    * @param maxValue
    * @param defaultValue
    */
-  public tagToInt(
-    targetTag: number,
-    minValue: number,
-    maxValue: number,
-    defaultValue: number
-  ): number {
+  public tagToInt(targetTag: number, minValue: number, maxValue: number, defaultValue: number): number {
     if (this.intData) {
       for (let i = 0; i + 1 < this.intData.length; i += 2) {
-        if (this.intData[i] === targetTag)
-          return Math.min(Math.max(this.intData[i + 1], minValue), maxValue);
+        if (this.intData[i] === targetTag) return Math.min(Math.max(this.intData[i + 1], minValue), maxValue);
       }
     }
     return defaultValue;
@@ -122,20 +111,11 @@ export class TaggedNumericData {
    * @param maxValue
    * @param defaultValue
    */
-  public tagToIndexedDouble(
-    targetTag: number,
-    minValue: number,
-    maxValue: number,
-    defaultValue: number
-  ): number {
+  public tagToIndexedDouble(targetTag: number, minValue: number, maxValue: number, defaultValue: number): number {
     if (this.intData) {
       for (let i = 0; i + 1 < this.intData.length; i += 2) {
         if (this.intData[i] === targetTag) {
-          return Geometry.clamp(
-            this.getDoubleData(this.intData[i + 1], defaultValue),
-            minValue,
-            maxValue
-          );
+          return Geometry.clamp(this.getDoubleData(this.intData[i + 1], defaultValue), minValue, maxValue);
         }
       }
     }
@@ -147,8 +127,7 @@ export class TaggedNumericData {
    * @param defaultValue
    */
   public getDoubleData(index: number, defaultValue: number): number {
-    if (this.doubleData && 0 <= index && index < this.doubleData.length)
-      return this.doubleData[index];
+    if (this.doubleData && 0 <= index && index < this.doubleData.length) return this.doubleData[index];
     return defaultValue;
   }
   /** Apply isAlmostEqual to all members. */
@@ -158,21 +137,13 @@ export class TaggedNumericData {
     if (this.tagB !== other.tagB) return false;
     return (
       Geometry.exactEqualNumberArrays(this.intData, other.intData) &&
-      Geometry.almostEqualArrays<number>(
-        this.doubleData,
-        other.doubleData,
-        Geometry.isAlmostEqualNumber
-      )
+      Geometry.almostEqualArrays<number>(this.doubleData, other.doubleData, Geometry.isAlmostEqualNumber)
     );
   }
 
-  public static areAlmostEqual(
-    dataA: TaggedNumericData | undefined,
-    dataB: TaggedNumericData | undefined
-  ): boolean {
+  public static areAlmostEqual(dataA: TaggedNumericData | undefined, dataB: TaggedNumericData | undefined): boolean {
     if (dataA === undefined && dataB === undefined) return true;
-    if (dataA !== undefined && dataB !== undefined)
-      return dataA.isAlmostEqual(dataB);
+    if (dataA !== undefined && dataB !== undefined) return dataA.isAlmostEqual(dataB);
     return false;
   }
   /** Return a deep clone.  */

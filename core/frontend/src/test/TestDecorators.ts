@@ -16,9 +16,7 @@ import { GraphicBranch } from "../core-frontend";
  */
 export class TestDecorator {
   public static dropAll(): void {
-    for (const decorator of IModelApp.viewManager.decorators.filter(
-      (x) => x instanceof TestDecorator
-    ))
+    for (const decorator of IModelApp.viewManager.decorators.filter((x) => x instanceof TestDecorator))
       IModelApp.viewManager.dropDecorator(decorator);
   }
 }

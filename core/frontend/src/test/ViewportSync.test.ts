@@ -26,9 +26,7 @@ describe("TwoWayViewportSync", () => {
   let vp1: Viewport;
   let vp2: Viewport;
 
-  before(async () =>
-    IModelApp.startup({ localization: new EmptyLocalization() })
-  );
+  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
 
   beforeEach(() => {
@@ -182,9 +180,7 @@ describe("connectViewports", () => {
   const nVps = 4;
   const vps: Viewport[] = [];
 
-  before(async () =>
-    IModelApp.startup({ localization: new EmptyLocalization() })
-  );
+  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
 
   beforeEach(() => {
@@ -202,9 +198,7 @@ describe("connectViewports", () => {
   }
 
   function sameFrusta(source: Viewport) {
-    return getTargets(source).every((x) =>
-      x.getFrustum().isSame(source.getFrustum())
-    );
+    return getTargets(source).every((x) => x.getFrustum().isSame(source.getFrustum()));
   }
 
   function allSameFrustum() {
@@ -253,9 +247,7 @@ describe("connectViewports", () => {
         reorder();
 
         const frust = vps[0].getFrustum();
-        expect(
-          vps.every((x) => x.getFrustum().isSame(frust) === (x === vps[0]))
-        ).to.be.true;
+        expect(vps.every((x) => x.getFrustum().isSame(frust) === (x === vps[0]))).to.be.true;
 
         const disconnect = connect();
         expect(vps.every((x) => x.getFrustum().isSame(frust))).to.be.true;

@@ -4,20 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
-import {
-  ClassRegistry,
-  IModelDb,
-  IModelHost,
-  Schema,
-  Schemas,
-  SpatialCategory,
-} from "@itwin/core-backend";
-import {
-  ColorByName,
-  IModelError,
-  IModelStatus,
-  SubCategoryAppearance,
-} from "@itwin/core-common";
+import { ClassRegistry, IModelDb, IModelHost, Schema, Schemas, SpatialCategory } from "@itwin/core-backend";
+import { ColorByName, IModelError, IModelStatus, SubCategoryAppearance } from "@itwin/core-common";
 import * as _schemaNames from "../common/RobotWorldSchema";
 import * as obstacles from "./BarrierElement";
 
@@ -58,17 +46,12 @@ export class RobotWorld extends Schema {
     if (iModelDb.containsClass(_schemaNames.Class.Robot)) return;
 
     if (iModelDb.isReadonly)
-      throw new IModelError(
-        IModelStatus.ReadOnly,
-        "importSchema failed because IModelDb is read-only"
-      );
+      throw new IModelError(IModelStatus.ReadOnly, "importSchema failed because IModelDb is read-only");
 
     // Must import the schema. The schema must be installed alongside the app in its
     // assets directory. Note that, for portability, make sure the case of
     // the filename is correct!
-    await iModelDb.importSchemas([
-      path.join(IModelHost.appAssetsDir!, "RobotWorld.ecschema.xml"),
-    ]);
+    await iModelDb.importSchemas([path.join(IModelHost.appAssetsDir!, "RobotWorld.ecschema.xml")]);
 
     // This is the right time to create definitions, such as Categories, that will
     // be used with the classes in this schema.
@@ -97,17 +80,9 @@ export class RobotWorld extends Schema {
   }
 
   // Look up the category to use for instances of the specified class
-  public static getCategory(
-    iModelDb: IModelDb,
-    className: _schemaNames.Class
-  ): SpatialCategory {
-    const categoryId = SpatialCategory.queryCategoryIdByName(
-      iModelDb,
-      IModelDb.dictionaryId,
-      className
-    );
-    if (categoryId === undefined)
-      throw new IModelError(IModelStatus.NotFound, "Category not found");
+  public static getCategory(iModelDb: IModelDb, className: _schemaNames.Class): SpatialCategory {
+    const categoryId = SpatialCategory.queryCategoryIdByName(iModelDb, IModelDb.dictionaryId, className);
+    if (categoryId === undefined) throw new IModelError(IModelStatus.NotFound, "Category not found");
     return iModelDb.elements.getElement(categoryId);
   }
 }

@@ -6,22 +6,11 @@
  * @module Tiles
  */
 
-import {
-  assert,
-  base64StringToUint8Array,
-  IModelStatus,
-} from "@itwin/core-bentley";
+import { assert, base64StringToUint8Array, IModelStatus } from "@itwin/core-bentley";
 import { ImageSource } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { Viewport } from "../Viewport";
-import {
-  ReadonlyTileUserSet,
-  Tile,
-  TileContent,
-  TileRequestChannel,
-  TileTree,
-  TileUser,
-} from "./internal";
+import { ReadonlyTileUserSet, Tile, TileContent, TileRequestChannel, TileTree, TileUser } from "./internal";
 
 /** Represents a pending or active request to load the contents of a [[Tile]]. The request coordinates with the [[Tile.requestContent]] to obtain the raw content and
  * [[Tile.readContent]] to convert the result into a [[RenderGraphic]]. TileRequests are created internally as needed; it is never necessary or useful for external code to create them.
@@ -100,10 +89,7 @@ export class TileRequest {
     let response;
     let gotResponse = false;
     try {
-      response = await this.channel.requestContent(
-        this.tile,
-        () => this.isCanceled
-      );
+      response = await this.channel.requestContent(this.tile, () => this.isCanceled);
       gotResponse = true;
 
       // Set this now, so our `isCanceled` check can see it.
@@ -140,8 +126,7 @@ export class TileRequest {
    */
   public cancel(): void {
     this.notifyAndClear();
-    if (TileRequest.State.Dispatched === this._state)
-      this.channel.onActiveRequestCanceled(this);
+    if (TileRequest.State.Dispatched === this._state) this.channel.onActiveRequestCanceled(this);
 
     this._state = TileRequest.State.Failed;
   }
@@ -172,13 +157,8 @@ export class TileRequest {
     let content: TileContent | undefined;
     let data: TileRequest.ResponseData | undefined;
     if (undefined !== response) {
-      if (typeof response === "string")
-        data = base64StringToUint8Array(response);
-      else if (
-        response instanceof Uint8Array ||
-        response instanceof ImageSource
-      )
-        data = response;
+      if (typeof response === "string") data = base64StringToUint8Array(response);
+      else if (response instanceof Uint8Array || response instanceof ImageSource) data = response;
       else if (response instanceof ArrayBuffer) data = new Uint8Array(response);
       else if (typeof response === "object") {
         if ("content" in response) content = response.content;
@@ -195,11 +175,7 @@ export class TileRequest {
       const start = Date.now();
       if (!content) {
         assert(undefined !== data);
-        content = await this.tile.readContent(
-          data,
-          IModelApp.renderSystem,
-          () => this.isCanceled
-        );
+        content = await this.tile.readContent(data, IModelApp.renderSystem, () => this.isCanceled);
         if (this.isCanceled) return;
       }
 

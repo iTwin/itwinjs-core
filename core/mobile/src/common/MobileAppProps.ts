@@ -29,10 +29,7 @@ export interface MobileNotifications {
   notifyMemoryWarning: () => void;
   notifyOrientationChanged: () => void;
   notifyWillTerminate: () => void;
-  notifyAuthAccessTokenChanged: (
-    accessToken: string | undefined,
-    expirationDate: string | undefined
-  ) => void;
+  notifyAuthAccessTokenChanged: (accessToken: string | undefined, expirationDate: string | undefined) => void;
 }
 
 /** @beta */

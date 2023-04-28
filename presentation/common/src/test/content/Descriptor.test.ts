@@ -14,16 +14,9 @@ import {
   SelectClassInfoJSON,
   SortDirection,
 } from "../../presentation-common/content/Descriptor";
-import {
-  Field,
-  FieldDescriptorType,
-} from "../../presentation-common/content/Fields";
+import { Field, FieldDescriptorType } from "../../presentation-common/content/Fields";
 import { PropertyValueFormat } from "../../presentation-common/content/TypeDescription";
-import {
-  CompressedClassInfoJSON,
-  RelatedClassInfo,
-  RelatedClassInfoJSON,
-} from "../../presentation-common/EC";
+import { CompressedClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON } from "../../presentation-common/EC";
 import { InstanceFilterDefinition } from "../../presentation-common/InstanceFilterDefinition";
 import {
   createTestCategoryDescription,
@@ -33,11 +26,7 @@ import {
   createTestSelectClassInfo,
   createTestSimpleContentField,
 } from "../_helpers/Content";
-import {
-  createTestPropertyInfo,
-  createTestRelatedClassInfo,
-  createTestRelationshipPath,
-} from "../_helpers/EC";
+import { createTestPropertyInfo, createTestRelatedClassInfo, createTestRelationshipPath } from "../_helpers/EC";
 
 describe("Descriptor", () => {
   describe("constructor", () => {
@@ -47,16 +36,12 @@ describe("Descriptor", () => {
         contentFlags: 9,
         displayType: faker.random.word(),
         categories: [category],
-        fields: [
-          createTestSimpleContentField({ category }),
-          createTestSimpleContentField({ category }),
-        ],
+        fields: [createTestSimpleContentField({ category }), createTestSimpleContentField({ category })],
         selectClasses: [],
       };
       const descriptor = new Descriptor(source);
       for (const key in source) {
-        if (source.hasOwnProperty(key))
-          expect((descriptor as any)[key]).to.deep.eq((source as any)[key]);
+        if (source.hasOwnProperty(key)) expect((descriptor as any)[key]).to.deep.eq((source as any)[key]);
       }
     });
 
@@ -66,16 +51,12 @@ describe("Descriptor", () => {
         contentFlags: 9,
         displayType: faker.random.word(),
         categories: [category],
-        fields: [
-          createTestSimpleContentField({ category }),
-          createTestSimpleContentField({ category }),
-        ],
+        fields: [createTestSimpleContentField({ category }), createTestSimpleContentField({ category })],
         selectClasses: [],
       };
       const descriptor = new Descriptor(source);
       for (const key in source) {
-        if (source.hasOwnProperty(key))
-          expect((descriptor as any)[key]).to.deep.eq((source as any)[key]);
+        if (source.hasOwnProperty(key)) expect((descriptor as any)[key]).to.deep.eq((source as any)[key]);
       }
     });
   });
@@ -84,8 +65,7 @@ describe("Descriptor", () => {
     const validateParentship = (fields: Field[], parent?: Field) => {
       fields.forEach((field) => {
         expect(field.parent).to.eq(parent);
-        if (field.isNestedContentField())
-          validateParentship(field.nestedFields, field);
+        if (field.isNestedContentField()) validateParentship(field.nestedFields, field);
       });
     };
 
@@ -244,10 +224,7 @@ describe("Descriptor", () => {
         inputKeysHash: "",
         selectClasses: [],
         classesMap: {},
-        fields: [
-          createTestSimpleContentField({ category }).toJSON(),
-          undefined as any,
-        ],
+        fields: [createTestSimpleContentField({ category }).toJSON(), undefined as any],
       };
       const descriptor = Descriptor.fromJSON(json);
       expect(descriptor!.fields.length).to.eq(1);
@@ -350,9 +327,7 @@ describe("Descriptor", () => {
       const descriptor = createTestContentDescriptor({
         fields: [nestedContentField],
       });
-      expect(descriptor.getFieldByName(primitiveField.name, true)).to.eq(
-        primitiveField
-      );
+      expect(descriptor.getFieldByName(primitiveField.name, true)).to.eq(primitiveField);
     });
   });
 
@@ -478,10 +453,7 @@ describe("SelectClassInfo", () => {
 
   describe("fromCompressedJSON", () => {
     it("doesn't create unnecessary members", () => {
-      const result = SelectClassInfo.fromCompressedJSON(
-        compressedJson,
-        classesMap
-      );
+      const result = SelectClassInfo.fromCompressedJSON(compressedJson, classesMap);
       expect(result).to.not.haveOwnProperty("pathFromInputToSelectClass");
       expect(result).to.not.haveOwnProperty("relatedPropertyPaths");
       expect(result).to.not.haveOwnProperty("navigationPropertyClasses");
@@ -496,9 +468,7 @@ describe("SelectClassInfo", () => {
           RelatedClassInfo.toCompressedJSON(item, classesMap)
         ),
       };
-      expect(
-        SelectClassInfo.fromCompressedJSON(compressedJson, classesMap)
-      ).to.deep.eq({
+      expect(SelectClassInfo.fromCompressedJSON(compressedJson, classesMap)).to.deep.eq({
         ...obj,
         pathFromInputToSelectClass,
       });
@@ -512,9 +482,7 @@ describe("SelectClassInfo", () => {
           p.map((i) => RelatedClassInfo.toCompressedJSON(i, classesMap))
         ),
       };
-      expect(
-        SelectClassInfo.fromCompressedJSON(compressedJson, classesMap)
-      ).to.deep.eq({
+      expect(SelectClassInfo.fromCompressedJSON(compressedJson, classesMap)).to.deep.eq({
         ...obj,
         relatedPropertyPaths,
       });
@@ -528,9 +496,7 @@ describe("SelectClassInfo", () => {
           RelatedClassInfo.toCompressedJSON(item, classesMap)
         ),
       };
-      expect(
-        SelectClassInfo.fromCompressedJSON(compressedJson, classesMap)
-      ).to.deep.eq({
+      expect(SelectClassInfo.fromCompressedJSON(compressedJson, classesMap)).to.deep.eq({
         ...obj,
         navigationPropertyClasses,
       });
@@ -544,9 +510,7 @@ describe("SelectClassInfo", () => {
           p.map((i) => RelatedClassInfo.toCompressedJSON(i, classesMap))
         ),
       };
-      expect(
-        SelectClassInfo.fromCompressedJSON(compressedJson, classesMap)
-      ).to.deep.eq({
+      expect(SelectClassInfo.fromCompressedJSON(compressedJson, classesMap)).to.deep.eq({
         ...obj,
         relatedInstancePaths,
       });
@@ -556,18 +520,10 @@ describe("SelectClassInfo", () => {
   describe("toCompressedJSON", () => {
     it("doesn't create unnecessary members", () => {
       const actualCompressedJson = SelectClassInfo.toCompressedJSON(obj, {});
-      expect(actualCompressedJson).to.not.haveOwnProperty(
-        "pathFromInputToSelectClass"
-      );
-      expect(actualCompressedJson).to.not.haveOwnProperty(
-        "relatedPropertyPaths"
-      );
-      expect(actualCompressedJson).to.not.haveOwnProperty(
-        "navigationPropertyClasses"
-      );
-      expect(actualCompressedJson).to.not.haveOwnProperty(
-        "relatedInstancePaths"
-      );
+      expect(actualCompressedJson).to.not.haveOwnProperty("pathFromInputToSelectClass");
+      expect(actualCompressedJson).to.not.haveOwnProperty("relatedPropertyPaths");
+      expect(actualCompressedJson).to.not.haveOwnProperty("navigationPropertyClasses");
+      expect(actualCompressedJson).to.not.haveOwnProperty("relatedInstancePaths");
     });
 
     it("serializes `pathFromInputToSelectClass`", () => {
@@ -577,13 +533,9 @@ describe("SelectClassInfo", () => {
         ...obj,
         pathFromInputToSelectClass,
       };
-      expect(
-        SelectClassInfo.toCompressedJSON(obj, actualClassesMap)
-      ).to.deep.eq({
+      expect(SelectClassInfo.toCompressedJSON(obj, actualClassesMap)).to.deep.eq({
         ...compressedJson,
-        pathFromInputToSelectClass: pathFromInputToSelectClass.map((p) =>
-          RelatedClassInfo.toCompressedJSON(p, {})
-        ),
+        pathFromInputToSelectClass: pathFromInputToSelectClass.map((p) => RelatedClassInfo.toCompressedJSON(p, {})),
       });
       expect(actualClassesMap).to.containSubset(classesMap);
     });
@@ -595,13 +547,9 @@ describe("SelectClassInfo", () => {
         ...obj,
         relatedPropertyPaths,
       };
-      expect(
-        SelectClassInfo.toCompressedJSON(obj, actualClassesMap)
-      ).to.deep.eq({
+      expect(SelectClassInfo.toCompressedJSON(obj, actualClassesMap)).to.deep.eq({
         ...compressedJson,
-        relatedPropertyPaths: relatedPropertyPaths.map((p) =>
-          p.map((i) => RelatedClassInfo.toCompressedJSON(i, {}))
-        ),
+        relatedPropertyPaths: relatedPropertyPaths.map((p) => p.map((i) => RelatedClassInfo.toCompressedJSON(i, {}))),
       });
       expect(actualClassesMap).to.containSubset(classesMap);
     });
@@ -613,13 +561,9 @@ describe("SelectClassInfo", () => {
         ...obj,
         navigationPropertyClasses,
       };
-      expect(
-        SelectClassInfo.toCompressedJSON(obj, actualClassesMap)
-      ).to.deep.eq({
+      expect(SelectClassInfo.toCompressedJSON(obj, actualClassesMap)).to.deep.eq({
         ...compressedJson,
-        navigationPropertyClasses: navigationPropertyClasses.map((p) =>
-          RelatedClassInfo.toCompressedJSON(p, {})
-        ),
+        navigationPropertyClasses: navigationPropertyClasses.map((p) => RelatedClassInfo.toCompressedJSON(p, {})),
       });
       expect(actualClassesMap).to.containSubset(classesMap);
     });
@@ -631,13 +575,9 @@ describe("SelectClassInfo", () => {
         ...obj,
         relatedInstancePaths,
       };
-      expect(
-        SelectClassInfo.toCompressedJSON(obj, actualClassesMap)
-      ).to.deep.eq({
+      expect(SelectClassInfo.toCompressedJSON(obj, actualClassesMap)).to.deep.eq({
         ...compressedJson,
-        relatedInstancePaths: relatedInstancePaths.map((p) =>
-          p.map((i) => RelatedClassInfo.toCompressedJSON(i, {}))
-        ),
+        relatedInstancePaths: relatedInstancePaths.map((p) => p.map((i) => RelatedClassInfo.toCompressedJSON(i, {}))),
       });
       expect(actualClassesMap).to.containSubset(classesMap);
     });
@@ -645,10 +585,7 @@ describe("SelectClassInfo", () => {
 
   describe("listFromCompressedJSON", () => {
     it("creates valid SelectClassInfo[] from compressed JSON", () => {
-      const result = SelectClassInfo.listFromCompressedJSON(
-        [compressedJson],
-        classesMap
-      );
+      const result = SelectClassInfo.listFromCompressedJSON([compressedJson], classesMap);
       expect(result).to.deep.equal([obj]);
     });
   });

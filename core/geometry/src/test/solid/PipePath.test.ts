@@ -43,11 +43,7 @@ describe("PipePath", () => {
       }
       y0 += 10.0;
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "PipePath",
-      "TorusPipeAlongArc"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PipePath", "TorusPipeAlongArc");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -77,10 +73,7 @@ describe("PipePath", () => {
       sweep,
       capped
     );
-    ck.testDefined(
-      pipeBad,
-      "Zero vectorX nevertheless yields defined TorusPipe"
-    ); // default vec is used!
+    ck.testDefined(pipeBad, "Zero vectorX nevertheless yields defined TorusPipe"); // default vec is used!
     pipeBad = TorusPipe.createDgnTorusPipe(
       center,
       vectorX,
@@ -90,70 +83,21 @@ describe("PipePath", () => {
       sweep,
       capped
     );
-    ck.testDefined(
-      pipeBad,
-      "Zero vectorY nevertheless yields defined TorusPipe"
-    ); // default vec is used!
-    pipeBad = TorusPipe.createDgnTorusPipe(
-      center,
-      vectorX,
-      vectorY,
-      0,
-      minorRadius,
-      sweep,
-      capped
-    );
+    ck.testDefined(pipeBad, "Zero vectorY nevertheless yields defined TorusPipe"); // default vec is used!
+    pipeBad = TorusPipe.createDgnTorusPipe(center, vectorX, vectorY, 0, minorRadius, sweep, capped);
     ck.testUndefined(pipeBad, "Zero majorRadius yields undefined TorusPipe");
-    pipeBad = TorusPipe.createDgnTorusPipe(
-      center,
-      vectorX,
-      vectorY,
-      majorRadius,
-      0,
-      sweep,
-      capped
-    );
+    pipeBad = TorusPipe.createDgnTorusPipe(center, vectorX, vectorY, majorRadius, 0, sweep, capped);
     ck.testUndefined(pipeBad, "Zero minorRadius yields undefined TorusPipe");
-    pipeBad = TorusPipe.createDgnTorusPipe(
-      center,
-      vectorX,
-      vectorY,
-      minorRadius,
-      majorRadius,
-      sweep,
-      capped
-    );
+    pipeBad = TorusPipe.createDgnTorusPipe(center, vectorX, vectorY, minorRadius, majorRadius, sweep, capped);
     ck.testUndefined(pipeBad, "Swapped radii yields undefined TorusPipe");
-    pipeBad = TorusPipe.createDgnTorusPipe(
-      center,
-      vectorX,
-      vectorY,
-      majorRadius,
-      minorRadius,
-      Angle.zero(),
-      capped
-    );
+    pipeBad = TorusPipe.createDgnTorusPipe(center, vectorX, vectorY, majorRadius, minorRadius, Angle.zero(), capped);
     ck.testUndefined(pipeBad, "Zero sweep yields undefined TorusPipe");
 
-    let pipe0 = TorusPipe.createDgnTorusPipe(
-      center,
-      vectorX,
-      vectorY,
-      majorRadius,
-      minorRadius,
-      sweep,
-      capped
-    )!;
+    let pipe0 = TorusPipe.createDgnTorusPipe(center, vectorX, vectorY, majorRadius, minorRadius, sweep, capped)!;
     for (const frac of [0.1, 0.5, 0.6]) {
       const uIsoline = pipe0.constantUSection(frac)!;
       const vIsoline = pipe0.constantVSection(frac)!;
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        [uIsoline, vIsoline],
-        x0,
-        y0,
-        z0
-      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [uIsoline, vIsoline], x0, y0, z0);
     }
 
     // test mirror
@@ -161,19 +105,10 @@ describe("PipePath", () => {
     mirrorAcrossX.matrix.setAt(1, 1, -1);
     const pipeM = pipe0.cloneTransformed(mirrorAcrossX);
     if (ck.testDefined(pipeM) && pipeM !== undefined) {
-      ck.testTrue(
-        pipeM.getConstructiveFrame()!.matrix.isRigid(false),
-        "getConstructiveFrame removes mirror"
-      );
+      ck.testTrue(pipeM.getConstructiveFrame()!.matrix.isRigid(false), "getConstructiveFrame removes mirror");
       const builderM = PolyfaceBuilder.create(options);
       builderM.addTorusPipe(pipeM, 20, 20);
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        [pipeM, builderM.claimPolyface()],
-        x0,
-        y0,
-        z0
-      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pipeM, builderM.claimPolyface()], x0, y0, z0);
     }
 
     for (const xAxis of [
@@ -184,37 +119,15 @@ describe("PipePath", () => {
       Vector3d.create(1, 1, 1),
     ]) {
       y0 = 0;
-      for (const yAxis of [
-        vectorY,
-        vectorY.negate(),
-        Vector3d.create(1, 1, 0),
-      ]) {
+      for (const yAxis of [vectorY, vectorY.negate(), Vector3d.create(1, 1, 0)]) {
         x0 = 0;
-        pipe0 = TorusPipe.createDgnTorusPipe(
-          center,
-          xAxis,
-          yAxis,
-          majorRadius,
-          minorRadius,
-          sweep,
-          capped
-        )!;
+        pipe0 = TorusPipe.createDgnTorusPipe(center, xAxis, yAxis, majorRadius, minorRadius, sweep, capped)!;
         const builder0 = PolyfaceBuilder.create(options);
         builder0.addTorusPipe(pipe0, 20, 20);
-        GeometryCoreTestIO.captureCloneGeometry(
-          allGeometry,
-          [pipe0, builder0.claimPolyface()],
-          x0,
-          y0,
-          z0
-        );
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pipe0, builder0.claimPolyface()], x0, y0, z0);
 
         // test scaling and un-scaling
-        for (const scale of [
-          Point2d.create(10, 10),
-          Point2d.create(5, 10),
-          Point2d.create(10, 5),
-        ]) {
+        for (const scale of [Point2d.create(10, 10), Point2d.create(5, 10), Point2d.create(10, 5)]) {
           // Create radii-scaled TorusPipe
           const pipeScaledRadii = TorusPipe.createDgnTorusPipe(
             center,
@@ -225,8 +138,7 @@ describe("PipePath", () => {
             sweep,
             capped
           );
-          if (!ck.testDefined(pipeScaledRadii) || pipeScaledRadii === undefined)
-            continue;
+          if (!ck.testDefined(pipeScaledRadii) || pipeScaledRadii === undefined) continue;
           if (
             !ck.testCoordinate(
               1,
@@ -267,22 +179,13 @@ describe("PipePath", () => {
           const scaleInWorldCoords = pipe0
             .cloneLocalToWorld()
             .multiplyTransformTransform(
-              scaleInLocalCoords.multiplyTransformTransform(
-                pipe0.cloneLocalToWorld().inverse()!
-              )
+              scaleInLocalCoords.multiplyTransformTransform(pipe0.cloneLocalToWorld().inverse()!)
             );
           const pipeCloneScaled = pipe0.cloneTransformed(scaleInWorldCoords);
-          if (!ck.testDefined(pipeCloneScaled) || pipeCloneScaled === undefined)
-            continue;
+          if (!ck.testDefined(pipeCloneScaled) || pipeCloneScaled === undefined) continue;
           builder = PolyfaceBuilder.create(options);
           builder.addTorusPipe(pipeCloneScaled, 20, 20);
-          GeometryCoreTestIO.captureCloneGeometry(
-            allGeometry,
-            [pipeCloneScaled, builder.claimPolyface()],
-            x0,
-            y0,
-            z0
-          );
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pipeCloneScaled, builder.claimPolyface()], x0, y0, z0);
           ck.testTrue(
             pipeScaledRadii.isAlmostEqual(pipeCloneScaled),
             "TorusPipe with scaled radii is equivalent to TorusPipe cloned with scale transform"
@@ -290,13 +193,8 @@ describe("PipePath", () => {
 
           // Clone radii-scaled TorusPipe with inverse of scale transform, and compare with original.
           const unScaleInWorldCoords = scaleInWorldCoords.inverse()!;
-          const pipeCloneUnScaled0 =
-            pipeScaledRadii.cloneTransformed(unScaleInWorldCoords);
-          if (
-            !ck.testDefined(pipeCloneUnScaled0) ||
-            pipeCloneUnScaled0 === undefined
-          )
-            continue;
+          const pipeCloneUnScaled0 = pipeScaledRadii.cloneTransformed(unScaleInWorldCoords);
+          if (!ck.testDefined(pipeCloneUnScaled0) || pipeCloneUnScaled0 === undefined) continue;
           builder = PolyfaceBuilder.create(options);
           builder.addTorusPipe(pipeCloneUnScaled0, 20, 20);
           GeometryCoreTestIO.captureCloneGeometry(
@@ -312,13 +210,8 @@ describe("PipePath", () => {
           );
 
           // Clone scale-transformed TorusPipe with inverse of scale transform, and compare with original.
-          const pipeCloneUnScaled1 =
-            pipeCloneScaled.cloneTransformed(unScaleInWorldCoords);
-          if (
-            !ck.testDefined(pipeCloneUnScaled1) ||
-            pipeCloneUnScaled1 === undefined
-          )
-            continue;
+          const pipeCloneUnScaled1 = pipeCloneScaled.cloneTransformed(unScaleInWorldCoords);
+          if (!ck.testDefined(pipeCloneUnScaled1) || pipeCloneUnScaled1 === undefined) continue;
           builder = PolyfaceBuilder.create(options);
           builder.addTorusPipe(pipeCloneUnScaled1, 20, 20);
           GeometryCoreTestIO.captureCloneGeometry(
@@ -337,11 +230,7 @@ describe("PipePath", () => {
       }
       z0 += 10;
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "PipePath",
-      "TorusPipeTransformed"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PipePath", "TorusPipeTransformed");
     expect(ck.getNumErrors()).equals(0);
   });
 

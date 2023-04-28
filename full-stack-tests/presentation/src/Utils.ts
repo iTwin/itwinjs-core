@@ -14,26 +14,15 @@ import { Field } from "@itwin/presentation-common";
  * Simplified type for `sinon.SinonSpy`.
  * @internal
  */
-export type SinonSpy<T extends (...args: any) => any> = sinon.SinonSpy<
-  Parameters<T>,
-  ReturnType<T>
->;
+export type SinonSpy<T extends (...args: any) => any> = sinon.SinonSpy<Parameters<T>, ReturnType<T>>;
 
 /** Returns field by given label. */
-function tryGetFieldByLabelInternal(
-  fields: Field[],
-  label: string,
-  allFields: Field[]
-): Field | undefined {
+function tryGetFieldByLabelInternal(fields: Field[], label: string, allFields: Field[]): Field | undefined {
   for (const field of fields) {
     if (field.label === label) return field;
 
     if (field.isNestedContentField()) {
-      const nestedMatchingField = tryGetFieldByLabelInternal(
-        field.nestedFields,
-        label,
-        allFields
-      );
+      const nestedMatchingField = tryGetFieldByLabelInternal(field.nestedFields, label, allFields);
       if (nestedMatchingField) return nestedMatchingField;
     }
 
@@ -43,10 +32,7 @@ function tryGetFieldByLabelInternal(
 }
 
 /** Looks up a field by given label. Returns `undefined` if not found. */
-export function tryGetFieldByLabel(
-  fields: Field[],
-  label: string
-): Field | undefined {
+export function tryGetFieldByLabel(fields: Field[], label: string): Field | undefined {
   return tryGetFieldByLabelInternal(fields, label, []);
 }
 
@@ -59,9 +45,7 @@ export function getFieldByLabel(fields: Field[], label: string): Field {
   const result = tryGetFieldByLabelInternal(fields, label, allFields);
   if (!result)
     throw new Error(
-      `Field '${label}' not found. Available fields: [${allFields
-        .map((f) => `"${f.label}"`)
-        .join(", ")}]`
+      `Field '${label}' not found. Available fields: [${allFields.map((f) => `"${f.label}"`).join(", ")}]`
     );
   return result;
 }
@@ -105,10 +89,7 @@ export function buildTestIModelDb(name: string, cb: (db: IModelDb) => void) {
  * Create an imodel with given name and invoke a callback to fill it with data required for a test. Return a
  * frontend connection to the imodel.
  */
-export async function buildTestIModelConnection(
-  name: string,
-  cb: (db: IModelDb) => void
-): Promise<IModelConnection> {
+export async function buildTestIModelConnection(name: string, cb: (db: IModelDb) => void): Promise<IModelConnection> {
   const { db, fileName } = buildTestIModelDb(name, cb);
   db.close();
   return SnapshotConnection.openFile(fileName);

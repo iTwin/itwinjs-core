@@ -77,11 +77,6 @@ export namespace Hilite {
 
   /** Create a copy of a Settings object. */
   export function cloneSettings(settings: Settings): Settings {
-    return new Settings(
-      settings.color,
-      settings.visibleRatio,
-      settings.hiddenRatio,
-      settings.silhouette
-    );
+    return new Settings(settings.color, settings.visibleRatio, settings.hiddenRatio, settings.silhouette);
   }
 }

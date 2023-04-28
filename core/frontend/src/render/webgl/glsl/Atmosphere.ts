@@ -394,9 +394,7 @@ const applyAtmosphericScattering = `
   return vec4(applyHdr(atmosphericScatteringColor + reflectedLightColor), baseColor.a);
 `;
 
-const addMainShaderUniforms = (
-  shader: FragmentShaderBuilder | VertexShaderBuilder
-) => {
+const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuilder) => {
   shader.addUniform("u_atmosphereData", VariableType.Mat4, (prog) => {
     prog.addProgramUniform("u_atmosphereData", (uniform, params) => {
       uniform.setMatrix4(params.target.uniforms.atmosphere.atmosphereData);
@@ -426,14 +424,9 @@ const addMainShaderUniforms = (
     "u_inverseAtmosphereScaleInverseRotationMatrix",
     VariableType.Mat3,
     (prog) => {
-      prog.addProgramUniform(
-        "u_inverseAtmosphereScaleInverseRotationMatrix",
-        (uniform, params) => {
-          params.target.uniforms.atmosphere.bindInverseRotationInverseAtmosphereScaleMatrix(
-            uniform
-          );
-        }
-      );
+      prog.addProgramUniform("u_inverseAtmosphereScaleInverseRotationMatrix", (uniform, params) => {
+        params.target.uniforms.atmosphere.bindInverseRotationInverseAtmosphereScaleMatrix(uniform);
+      });
     },
     VariablePrecision.High
   );
@@ -441,14 +434,9 @@ const addMainShaderUniforms = (
     "u_inverseEarthScaleInverseRotationMatrix",
     VariableType.Mat3,
     (prog) => {
-      prog.addProgramUniform(
-        "u_inverseEarthScaleInverseRotationMatrix",
-        (uniform, params) => {
-          params.target.uniforms.atmosphere.bindInverseRotationInverseEarthScaleMatrix(
-            uniform
-          );
-        }
-      );
+      prog.addProgramUniform("u_inverseEarthScaleInverseRotationMatrix", (uniform, params) => {
+        params.target.uniforms.atmosphere.bindInverseRotationInverseEarthScaleMatrix(uniform);
+      });
     },
     VariablePrecision.High
   );
@@ -481,11 +469,7 @@ export function addAtmosphericScatteringEffect(
   const mainShader = perFragmentCompute ? builder.frag : builder.vert;
 
   mainShader.addConstant("MAX_FLOAT", VariableType.Float, "3.402823466e+38");
-  mainShader.addConstant(
-    "MAX_SAMPLE_POINTS",
-    VariableType.Int,
-    `${MAX_SAMPLE_POINTS}`
-  );
+  mainShader.addConstant("MAX_SAMPLE_POINTS", VariableType.Int, `${MAX_SAMPLE_POINTS}`);
 
   addMainShaderUniforms(mainShader);
 
@@ -507,9 +491,7 @@ export function addAtmosphericScatteringEffect(
     if (isSkyBox) {
       builder.frag.addFunction(computeAtmosphericScatteringFragmentOnSky);
     } else {
-      builder.frag.addFunction(
-        computeAtmosphericScatteringFragmentOnRealityMesh
-      );
+      builder.frag.addFunction(computeAtmosphericScatteringFragmentOnRealityMesh);
     }
   } else {
     builder.vert.addFunction(computeAtmosphericScatteringFromScratch);
@@ -540,8 +522,5 @@ export function addAtmosphericScatteringEffect(
     VariablePrecision.High
   );
   builder.frag.addFunction(applyHdr);
-  builder.frag.set(
-    FragmentShaderComponent.ApplyAtmosphericScattering,
-    applyAtmosphericScattering
-  );
+  builder.frag.set(FragmentShaderComponent.ApplyAtmosphericScattering, applyAtmosphericScattering);
 }

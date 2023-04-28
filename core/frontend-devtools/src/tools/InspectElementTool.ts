@@ -8,11 +8,7 @@
  */
 
 import { BentleyError, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
-import {
-  GeometrySummaryOptions,
-  GeometrySummaryVerbosity,
-  IModelReadRpcInterface,
-} from "@itwin/core-common";
+import { GeometrySummaryOptions, GeometrySummaryVerbosity, IModelReadRpcInterface } from "@itwin/core-common";
 import {
   BeButtonEvent,
   CoreTools,
@@ -65,9 +61,7 @@ export class InspectElementTool extends PrimitiveTool {
   }
 
   private setupAndPromptForNextAction(): void {
-    this._useSelection =
-      undefined !== this.targetView &&
-      this.targetView.iModel.selectionSet.isActive;
+    this._useSelection = undefined !== this.targetView && this.targetView.iModel.selectionSet.isActive;
     if (!this._useSelection) IModelApp.accuSnap.enableLocate(true);
 
     this.showPrompt();
@@ -75,9 +69,7 @@ export class InspectElementTool extends PrimitiveTool {
 
   private showPrompt(): void {
     CoreTools.outputPromptByKey(
-      this._useSelection
-        ? "ElementSet.Prompts.ConfirmSelection"
-        : "ElementSet.Prompts.IdentifyElement"
+      this._useSelection ? "ElementSet.Prompts.ConfirmSelection" : "ElementSet.Prompts.IdentifyElement"
     );
   }
 
@@ -100,21 +92,14 @@ export class InspectElementTool extends PrimitiveTool {
           await this.onReinitialize();
         })
         .catch((err) => {
-          IModelApp.notifications.outputMessage(
-            new NotifyMessageDetails(
-              OutputMessagePriority.Error,
-              err.toString()
-            )
-          );
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
         });
     else {
       this.setupAndPromptForNextAction();
     }
   }
 
-  public override async onDataButtonDown(
-    ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (this._useSelection) {
       if (undefined !== ev.viewport) {
         const ids: Id64Array = [];
@@ -150,9 +135,7 @@ export class InspectElementTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public override async onResetButtonUp(
-    _ev: BeButtonEvent
-  ): Promise<EventHandled> {
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
     await this.onReinitialize();
     return EventHandled.No;
   }
@@ -170,13 +153,8 @@ export class InspectElementTool extends PrimitiveTool {
     if (!(await tool.run())) return this.exitTool();
   }
 
-  public override async filterHit(
-    hit: HitDetail,
-    _out: LocateResponse
-  ): Promise<LocateFilterStatus> {
-    return hit.isElementHit
-      ? LocateFilterStatus.Accept
-      : LocateFilterStatus.Reject;
+  public override async filterHit(hit: HitDetail, _out: LocateResponse): Promise<LocateFilterStatus> {
+    return hit.isElementHit ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
   }
 
   private async process(elementIds: Id64String[]) {
@@ -186,9 +164,10 @@ export class InspectElementTool extends PrimitiveTool {
     };
     let messageDetails: NotifyMessageDetails;
     try {
-      let str = await IModelReadRpcInterface.getClientForRouting(
-        this.iModel.routingContext.token
-      ).getGeometrySummary(this.iModel.getRpcProps(), request);
+      let str = await IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).getGeometrySummary(
+        this.iModel.getRpcProps(),
+        request
+      );
       if (this._explodeParts) {
         const regex = /^part id: (0x[a-f0-9]+)/gm;
         const partIds = new Set<string>();
@@ -198,22 +177,17 @@ export class InspectElementTool extends PrimitiveTool {
         if (partIds.size > 0) {
           request.elementIds = Array.from(partIds);
           str += `\npart ids: ${JSON.stringify(request.elementIds)}\n`;
-          str += await IModelReadRpcInterface.getClientForRouting(
-            this.iModel.routingContext.token
-          ).getGeometrySummary(this.iModel.getRpcProps(), request);
+          str += await IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).getGeometrySummary(
+            this.iModel.getRpcProps(),
+            request
+          );
         }
       }
 
       if (this._doCopy) copyStringToClipboard(str);
 
-      const brief = `Summary ${
-        this._doCopy ? "copied to clipboard." : "complete."
-      }`;
-      messageDetails = new NotifyMessageDetails(
-        OutputMessagePriority.Info,
-        brief,
-        str
-      );
+      const brief = `Summary ${this._doCopy ? "copied to clipboard." : "complete."}`;
+      messageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, brief, str);
 
       if (this._modal) {
         const div = document.createElement("div");
@@ -234,11 +208,7 @@ export class InspectElementTool extends PrimitiveTool {
           }
         }
 
-        await IModelApp.notifications.openMessageBox(
-          MessageBoxType.Ok,
-          div,
-          MessageBoxIconType.Information
-        );
+        await IModelApp.notifications.openMessageBox(MessageBoxType.Ok, div, MessageBoxIconType.Information);
       }
     } catch (err) {
       messageDetails = new NotifyMessageDetails(
@@ -279,8 +249,7 @@ export class InspectElementTool extends PrimitiveTool {
 
     const parts = args.getBoolean("r");
     if (true === parts && undefined !== IModelApp.viewManager.selectedView)
-      this._options.includePartReferences =
-        IModelApp.viewManager.selectedView.view.is3d() ? "3d" : "2d";
+      this._options.includePartReferences = IModelApp.viewManager.selectedView.view.is3d() ? "3d" : "2d";
 
     const modal = args.getBoolean("m");
     if (undefined !== modal) this._modal = modal;

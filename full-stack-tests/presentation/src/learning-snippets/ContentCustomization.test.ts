@@ -4,12 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import {
-  Field,
-  KeySet,
-  NestedContentField,
-  Ruleset,
-} from "@itwin/presentation-common";
+import { Field, KeySet, NestedContentField, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
 import { getFieldByLabel } from "../Utils";
@@ -20,9 +15,7 @@ describe("Learning Snippets", () => {
 
     before(async () => {
       await initialize();
-      imodel = await SnapshotConnection.openFile(
-        "assets/datasets/Properties_60InstancesWithUrl2.ibim"
-      );
+      imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
     });
 
     after(async () => {
@@ -77,9 +70,7 @@ describe("Learning Snippets", () => {
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
             descriptor: {},
           }))!;
-          const defaultCategory = content.descriptor.categories.find(
-            (category) => category.name === "default"
-          );
+          const defaultCategory = content.descriptor.categories.find((category) => category.name === "default");
           expect(defaultCategory).to.containSubset({
             label: "Custom Category OLD",
           });
@@ -128,9 +119,7 @@ describe("Learning Snippets", () => {
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
             descriptor: {},
           }))!;
-          const defaultCategory = content.descriptor.categories.find(
-            (category) => category.name === "default"
-          );
+          const defaultCategory = content.descriptor.categories.find((category) => category.name === "default");
           expect(defaultCategory).to.containSubset({
             label: "High Priority",
           });
@@ -170,9 +159,7 @@ describe("Learning Snippets", () => {
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
             descriptor: {},
           }))!;
-          const defaultCategory = content.descriptor.categories.find(
-            (category) => category.name === "default"
-          );
+          const defaultCategory = content.descriptor.categories.find((category) => category.name === "default");
           expect(defaultCategory).to.containSubset({
             label: "Test Category",
           });
@@ -294,8 +281,7 @@ describe("Learning Snippets", () => {
                       {
                         id: "custom-category",
                         label: "Custom Category",
-                        description:
-                          "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+                        description: "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
                       },
                     ],
                     propertyOverrides: [
@@ -323,8 +309,7 @@ describe("Learning Snippets", () => {
           expect(content.descriptor.categories).to.containSubset([
             {
               label: "Custom Category",
-              description:
-                "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+              description: "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
             },
           ]);
           // __PUBLISH_EXTRACT_END__
@@ -1049,15 +1034,10 @@ describe("Learning Snippets", () => {
           const content = (await Presentation.presentation.getContent({
             imodel,
             rulesetOrId: ruleset,
-            keys: new KeySet([
-              { className: "generic.PhysicalObject", id: "0x74" },
-            ]),
+            keys: new KeySet([{ className: "generic.PhysicalObject", id: "0x74" }]),
             descriptor: {},
           }))!;
-          const field = getFieldByLabel(
-            content.descriptor.fields,
-            "Element Volume"
-          );
+          const field = getFieldByLabel(content.descriptor.fields, "Element Volume");
           expect(content.contentSet)
             .to.have.lengthOf(1)
             .and.to.containSubset([
@@ -1215,14 +1195,8 @@ describe("Learning Snippets", () => {
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
             descriptor: {},
           }))!;
-          const childElementField = getFieldByLabel(
-            content.descriptor.fields,
-            "Element"
-          ) as NestedContentField;
-          const childElementCodeField = getFieldByLabel(
-            childElementField.nestedFields,
-            "Code"
-          );
+          const childElementField = getFieldByLabel(content.descriptor.fields, "Element") as NestedContentField;
+          const childElementCodeField = getFieldByLabel(childElementField.nestedFields, "Code");
           expect(content.contentSet[0].values[childElementField.name])
             .to.have.lengthOf(2)
             .and.to.containSubset([
@@ -1349,9 +1323,7 @@ describe("Learning Snippets", () => {
           const content = (await Presentation.presentation.getContent({
             imodel,
             rulesetOrId: ruleset,
-            keys: new KeySet([
-              { className: "BisCore:PhysicalModel", id: "0x1c" },
-            ]),
+            keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
             descriptor: {},
           }))!;
 
@@ -1432,9 +1404,7 @@ describe("Learning Snippets", () => {
           const content = (await Presentation.presentation.getContent({
             imodel,
             rulesetOrId: ruleset,
-            keys: new KeySet([
-              { className: "BisCore:PhysicalModel", id: "0x1c" },
-            ]),
+            keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
             descriptor: {},
           }))!;
           expect(content.descriptor.fields).to.containSubset([
@@ -1584,19 +1554,14 @@ describe("Learning Snippets", () => {
           const content = (await Presentation.presentation.getContent({
             imodel,
             rulesetOrId: ruleset,
-            keys: new KeySet([
-              { className: "BisCore:PhysicalModel", id: "0x1c" },
-            ]),
+            keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
             descriptor: {},
           }))!;
           expect(content.descriptor.fields).to.containSubset([
             {
               label: "Physical Partition",
               nestedFields: (nestedFields: Field[]) => {
-                return (
-                  nestedFields.length === 1 &&
-                  nestedFields[0].label === "User Label"
-                );
+                return nestedFields.length === 1 && nestedFields[0].label === "User Label";
               },
             },
           ]);
@@ -1660,9 +1625,7 @@ describe("Learning Snippets", () => {
           const content = (await Presentation.presentation.getContent({
             imodel,
             rulesetOrId: ruleset,
-            keys: new KeySet([
-              { className: "BisCore:PhysicalModel", id: "0x1c" },
-            ]),
+            keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
             descriptor: {},
           }))!;
           expect(content.descriptor.fields).to.containSubset([

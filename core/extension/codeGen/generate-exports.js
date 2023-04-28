@@ -17,9 +17,7 @@ const generatedCsvFileName = "GeneratedExtensionApi.csv";
 const codeGenOpeningComment = "// BEGIN GENERATED CODE";
 const codeGenClosingComment = "// END GENERATED CODE";
 // select all of generated block, including comments
-const codeGenBlock = RegExp(
-  `${codeGenOpeningComment}(\\s|\\S)*${codeGenClosingComment}`
-);
+const codeGenBlock = RegExp(`${codeGenOpeningComment}(\\s|\\S)*${codeGenClosingComment}`);
 
 // Convert extension linter's output file to a set of lists separated by export type
 function interpretCsv(csvString) {
@@ -65,24 +63,13 @@ function generateDeclarationCode(exportList) {
     const typeExports = "export type {";
     const exportTrailer = `\n} from "${packageName}";\n\n`;
 
-    let reals = [
-      ...exportList[packageName].enum,
-      ...exportList[packageName].real,
-    ]
-      .sort()
-      .join(",\n\t");
+    let reals = [...exportList[packageName].enum, ...exportList[packageName].real].sort().join(",\n\t");
 
-    let types = [
-      ...exportList[packageName].interface,
-      ...exportList[packageName].type,
-    ]
-      .sort()
-      .join(",\n\t");
+    let types = [...exportList[packageName].interface, ...exportList[packageName].type].sort().join(",\n\t");
 
     reals = reals ? `\n\t${reals}` : "";
     types = types ? `\n\t${types}` : "";
-    exportCode +=
-      realExports + reals + exportTrailer + typeExports + types + exportTrailer;
+    exportCode += realExports + reals + exportTrailer + typeExports + types + exportTrailer;
   }
 
   return exportCode;
@@ -96,12 +83,7 @@ function generateJsCode(exportList) {
   // Only make exports for reals in each package
   for (const packageName in exportList) {
     exportCode += `\n// ${packageName}:`;
-    const _exports = [
-      ...exportList[packageName].enum,
-      ...exportList[packageName].real,
-    ]
-      .sort()
-      .join(",\n\t");
+    const _exports = [...exportList[packageName].enum, ...exportList[packageName].real].sort().join(",\n\t");
     exportCode += _exports ? `\n\t${_exports},` : "";
   }
 
@@ -115,47 +97,33 @@ function generateRuntimeCode(exportListPreview, exportList) {
   let exportsApi = `const extensionExports = {\n${tab}`;
   const _exports = [];
   const exportTrailer = `\n};\n\n`;
-  const addComment = (packageName, release, kind) =>
-    `  // @${release} ${kind}(s) from ${packageName}\n`;
+  const addComment = (packageName, release, kind) => `  // @${release} ${kind}(s) from ${packageName}\n`;
 
   for (const packageName in exportList) {
     let imports = "import {\n";
     let importTrailer = `} from "${packageName}";\n\n`;
     // since ExtensionRuntime.ts is also in core-frontend we have to add this exception
-    if (packageName === "@itwin/core-frontend")
-      importTrailer = `} from "../core-frontend";\n\n`;
+    if (packageName === "@itwin/core-frontend") importTrailer = `} from "../core-frontend";\n\n`;
 
-    imports +=
-      exportListPreview[packageName].enum.size > 0
-        ? addComment(packageName, "preview", "enum")
-        : "";
+    imports += exportListPreview[packageName].enum.size > 0 ? addComment(packageName, "preview", "enum") : "";
     [...exportListPreview[packageName].enum].sort().forEach((enumExport) => {
       imports += `${tab}${enumExport},\n`;
       _exports.push(enumExport);
     });
 
-    imports +=
-      exportListPreview[packageName].real.size > 0
-        ? addComment(packageName, "preview", "real")
-        : "";
+    imports += exportListPreview[packageName].real.size > 0 ? addComment(packageName, "preview", "real") : "";
     [...exportListPreview[packageName].real].sort().forEach((realExport) => {
       imports += `${tab}${realExport},\n`;
       _exports.push(realExport);
     });
 
-    imports +=
-      exportList[packageName].enum.size > 0
-        ? addComment(packageName, "public", "enum")
-        : "";
+    imports += exportList[packageName].enum.size > 0 ? addComment(packageName, "public", "enum") : "";
     [...exportList[packageName].enum].sort().forEach((enumExport) => {
       imports += `${tab}${enumExport},\n`;
       _exports.push(enumExport);
     });
 
-    imports +=
-      exportList[packageName].real.size > 0
-        ? addComment(packageName, "public", "real")
-        : "";
+    imports += exportList[packageName].real.size > 0 ? addComment(packageName, "public", "real") : "";
     [...exportList[packageName].real].sort().forEach((realExport) => {
       imports += `${tab}${realExport},\n`;
       _exports.push(realExport);
@@ -181,10 +149,7 @@ function collectExports(packagePath) {
       throw Error(`Extension api csv (${packagePath}) is empty.`);
     }
   } catch (error) {
-    throw Error(
-      "Failed to read extension api csv, it may not exist or has no content.\n" +
-        error
-    );
+    throw Error("Failed to read extension api csv, it may not exist or has no content.\n" + error);
   }
 
   return interpretCsv(fileContents);
@@ -192,8 +157,7 @@ function collectExports(packagePath) {
 
 // Replace the target file's code gen block with the provided code
 function addToFile(filePath, generatedCode) {
-  if (!fs.existsSync(filePath))
-    throw Error(`File: ${filePath} does not exist.`);
+  if (!fs.existsSync(filePath)) throw Error(`File: ${filePath} does not exist.`);
 
   let fileContents = fs.readFileSync(filePath, "utf8");
 

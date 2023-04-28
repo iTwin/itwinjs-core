@@ -7,12 +7,7 @@
  */
 
 import { UnitProps } from "../Interfaces";
-import {
-  DecimalPrecision,
-  FormatTraits,
-  FormatType,
-  FractionalPrecision,
-} from "./FormatEnums";
+import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision } from "./FormatEnums";
 
 /** This interface defines the persistence format for describing the formatting of quantity values.
  * @beta
@@ -50,9 +45,7 @@ export interface CustomFormatProps extends FormatProps {
 /** CustomFormatProps type guard.
  * @beta
  */
-export const isCustomFormatProps = (
-  item: FormatProps
-): item is CustomFormatProps => {
+export const isCustomFormatProps = (item: FormatProps): item is CustomFormatProps => {
   return (item as CustomFormatProps).custom !== undefined;
 };
 

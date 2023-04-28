@@ -14,22 +14,14 @@ export class ElectronTestRunner {
   public static readonly supportsCleanup = false;
   public static async initialize(config: CertaConfig): Promise<void> {
     // Restart under electron if we're running in node
-    if (!("electron" in process.versions))
-      return process.exit(await relaunchInElectron());
+    if (!("electron" in process.versions)) return process.exit(await relaunchInElectron());
 
     // If we are running in electron, we need to append any chromium CLI switches ***before*** the 'ready' event of the app module is emitted.
     const { app } = require("electron");
-    if (config.debug)
-      app.commandLine.appendSwitch(
-        "remote-debugging-port",
-        String(config.ports.frontendDebugging)
-      );
+    if (config.debug) app.commandLine.appendSwitch("remote-debugging-port", String(config.ports.frontendDebugging));
 
     const timeout = new Promise((_resolve, reject) =>
-      setTimeout(
-        () => reject("Timed out after 2 minutes when starting electron"),
-        2 * 60 * 1000
-      )
+      setTimeout(() => reject("Timed out after 2 minutes when starting electron"), 2 * 60 * 1000)
     );
     await Promise.race([app.whenReady(), timeout]);
   }
@@ -55,13 +47,10 @@ export class ElectronTestRunner {
       app.exit(exitCode);
     };
 
-    ipcMain.on(
-      "certa-console",
-      async (e: any, op: "log" | "error" | "dir", ...args: any[]) => {
-        console[op](...args);
-        e.returnValue = undefined; // ipcRenderer.sendSync() will hang without this
-      }
-    );
+    ipcMain.on("certa-console", async (e: any, op: "log" | "error" | "dir", ...args: any[]) => {
+      console[op](...args);
+      e.returnValue = undefined; // ipcRenderer.sendSync() will hang without this
+    });
 
     ipcMain.on("certa-done", (_e: any, count: number) => {
       rendererWindow.webContents.once("destroyed", () => {
@@ -93,8 +82,6 @@ export class ElectronTestRunner {
 
       await startTests();
     });
-    await rendererWindow.loadFile(
-      path.join(__dirname, "../../../public/index.html")
-    );
+    await rendererWindow.loadFile(path.join(__dirname, "../../../public/index.html"));
   }
 }

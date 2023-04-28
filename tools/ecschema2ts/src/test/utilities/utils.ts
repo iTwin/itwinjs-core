@@ -6,12 +6,7 @@ import { expect } from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
-import {
-  Schema,
-  SchemaContext,
-  SchemaReadHelper,
-  XmlParser,
-} from "@itwin/ecschema-metadata";
+import { Schema, SchemaContext, SchemaReadHelper, XmlParser } from "@itwin/ecschema-metadata";
 import { DOMParser } from "@xmldom/xmldom";
 import { ECSchemaToTs } from "../../ecschema2ts";
 
@@ -82,9 +77,7 @@ export function deserializeXml(context: SchemaContext, schemaXml: string) {
   return schema;
 }
 
-export function testGeneratedTypescriptProperty(
-  testCases: PropertyTestCase[]
-): void {
+export function testGeneratedTypescriptProperty(testCases: PropertyTestCase[]): void {
   testCases.forEach((testCase) => {
     it(testCase.testName, () => {
       const schemaLocator = new SchemaXmlFileLocater();
@@ -92,8 +85,7 @@ export function testGeneratedTypescriptProperty(
       const context = new SchemaContext();
       context.addLocater(schemaLocator);
 
-      for (const referenceXml of testCase.referenceXmls)
-        deserializeXml(context, referenceXml);
+      for (const referenceXml of testCase.referenceXmls) deserializeXml(context, referenceXml);
 
       const testSchema = deserializeXml(context, testCase.schemaXml);
       const converter = new ECSchemaToTs();
@@ -101,15 +93,12 @@ export function testGeneratedTypescriptProperty(
       for (const expectedImport of testCase.expectedPropsImportTs)
         expect(result.propsTsString).to.match(expectedImport);
 
-      for (const expectedProp of testCase.expectedPropsTs)
-        expect(result.propsTsString).to.have.string(expectedProp);
+      for (const expectedProp of testCase.expectedPropsTs) expect(result.propsTsString).to.have.string(expectedProp);
     });
   });
 }
 
-export function testGeneratedSchemaTypescript(
-  testCases: SchemaTestCase[]
-): void {
+export function testGeneratedSchemaTypescript(testCases: SchemaTestCase[]): void {
   testCases.forEach((testCase) => {
     it(testCase.testName, () => {
       const schemaLocator = new SchemaXmlFileLocater();
@@ -117,8 +106,7 @@ export function testGeneratedSchemaTypescript(
       const context = new SchemaContext();
       context.addLocater(schemaLocator);
 
-      for (const referenceXml of testCase.referenceXmls)
-        deserializeXml(context, referenceXml);
+      for (const referenceXml of testCase.referenceXmls) deserializeXml(context, referenceXml);
 
       const testSchema = deserializeXml(context, testCase.schemaXml);
       const converter = new ECSchemaToTs();
@@ -131,14 +119,11 @@ export function testGeneratedSchemaTypescript(
       for (const expectedImport of testCase.expectedPropsImportTs)
         expect(result.propsTsString).to.match(expectedImport);
 
-      for (const expectedProp of testCase.expectedPropsTs)
-        expect(result.propsTsString).to.have.string(expectedProp);
+      for (const expectedProp of testCase.expectedPropsTs) expect(result.propsTsString).to.have.string(expectedProp);
 
-      for (const expectedImport of testCase.expectedElemImportTs)
-        expect(result.elemTsString).to.match(expectedImport);
+      for (const expectedImport of testCase.expectedElemImportTs) expect(result.elemTsString).to.match(expectedImport);
 
-      for (const expectedElem of testCase.expectedElemTs)
-        expect(result.elemTsString).to.have.string(expectedElem);
+      for (const expectedElem of testCase.expectedElemTs) expect(result.elemTsString).to.have.string(expectedElem);
     });
   });
 }
@@ -171,10 +156,7 @@ export function createExpectedSchemaImportTs(schemaName: string): RegExp[] {
   return importTs;
 }
 
-export function dedent(
-  callSite: TemplateStringsArray | string,
-  ...args: any[]
-): string {
+export function dedent(callSite: TemplateStringsArray | string, ...args: any[]): string {
   function format(str: string) {
     let size = -1;
 
@@ -183,8 +165,7 @@ export function dedent(
 
       if (m1.match(/\n/) && m1.length === 1) return _m;
 
-      if (m1.match(/\n/) && m1.length > 1)
-        return _m.slice(0, m1.length - size + 1);
+      if (m1.match(/\n/) && m1.length > 1) return _m.slice(0, m1.length - size + 1);
       return `\n${m1.slice(Math.min(m1.length, size))}`;
     });
   }

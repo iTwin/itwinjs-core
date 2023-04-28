@@ -8,13 +8,7 @@
  */
 
 import { StopWatch } from "@itwin/core-bentley";
-import {
-  IModelApp,
-  NotifyMessageDetails,
-  OutputMessagePriority,
-  Tool,
-  Viewport,
-} from "@itwin/core-frontend";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@itwin/core-frontend";
 
 class TileLoadTimer {
   private readonly _vp: Viewport;
@@ -36,20 +30,14 @@ class TileLoadTimer {
     };
 
     IModelApp.notifications.outputMessage(
-      new NotifyMessageDetails(
-        OutputMessagePriority.Info,
-        "Tile loading timer started."
-      )
+      new NotifyMessageDetails(OutputMessagePriority.Info, "Tile loading timer started.")
     );
     this._stopwatch.start();
   }
 
   private cancel(): void {
     IModelApp.notifications.outputMessage(
-      new NotifyMessageDetails(
-        OutputMessagePriority.Info,
-        "Tile loading timer canceled."
-      )
+      new NotifyMessageDetails(OutputMessagePriority.Info, "Tile loading timer canceled.")
     );
     this.stop();
   }
@@ -63,8 +51,7 @@ class TileLoadTimer {
 
   private onRender(): void {
     // ###TODO: May be intermediate frames during which children props have been asynchronously requested but no outstanding tile requests.
-    if (!this._vp.areAllTileTreesLoaded || 0 < this._vp.numRequestedTiles)
-      return;
+    if (!this._vp.areAllTileTreesLoaded || 0 < this._vp.numRequestedTiles) return;
 
     this._stopwatch.stop();
     IModelApp.notifications.outputMessage(

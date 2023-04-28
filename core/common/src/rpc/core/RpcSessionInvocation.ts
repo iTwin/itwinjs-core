@@ -54,10 +54,7 @@ export class RpcSessionInvocation extends RpcInvocation {
       protocolVersion: parseInt(request.context.protocolVersion, 10),
     };
 
-    return new RpcSessionInvocation(
-      SessionProtocol.instance,
-      serializedRequest
-    );
+    return new RpcSessionInvocation(SessionProtocol.instance, serializedRequest);
   }
 
   public get rejected() {

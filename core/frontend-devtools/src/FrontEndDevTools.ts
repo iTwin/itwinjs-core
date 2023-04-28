@@ -18,10 +18,7 @@ import {
 import { ClearEffectsTool } from "./effects/EffectTools";
 import { ExplosionEffect } from "./effects/Explosion";
 import { FlipImageConfig, FlipImageEffect } from "./effects/FlipImage";
-import {
-  LensDistortionConfig,
-  LensDistortionEffect,
-} from "./effects/LensDistortion";
+import { LensDistortionConfig, LensDistortionEffect } from "./effects/LensDistortion";
 import { SaturationConfig, SaturationEffect } from "./effects/Saturation";
 import { SnowEffect } from "./effects/Snow";
 import { VignetteConfig, VignetteEffect } from "./effects/Vignette";
@@ -62,11 +59,7 @@ import {
 } from "./tools/ViewportTools";
 import { AnimationIntervalTool } from "./tools/AnimationIntervalTool";
 import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
-import {
-  ClipColorTool,
-  TestClipStyleTool,
-  ToggleSectionCutTool,
-} from "./tools/ClipTools";
+import { ClipColorTool, TestClipStyleTool, ToggleSectionCutTool } from "./tools/ClipTools";
 import {
   ApplyRenderingStyleTool,
   ChangeBackgroundColorTool,
@@ -79,11 +72,7 @@ import {
   ToggleWiremeshTool,
   WoWIgnoreBackgroundTool,
 } from "./tools/DisplayStyleTools";
-import {
-  QueryScheduleScriptTool,
-  ReverseScheduleScriptTool,
-  SetScheduleScriptTool,
-} from "./tools/ScheduleScriptTools";
+import { QueryScheduleScriptTool, ReverseScheduleScriptTool, SetScheduleScriptTool } from "./tools/ScheduleScriptTools";
 import {
   ClearEmphasizedElementsTool,
   ClearIsolatedElementsTool,
@@ -148,11 +137,7 @@ import {
   ToggleOSMBuildingDisplay,
 } from "./tools/RealityModelTools";
 import { RealityTransitionTool } from "./tools/RealityTransitionTool";
-import {
-  CompileShadersTool,
-  LoseWebGLContextTool,
-  ToggleDPIForLODTool,
-} from "./tools/RenderSystemTools";
+import { CompileShadersTool, LoseWebGLContextTool, ToggleDPIForLODTool } from "./tools/RenderSystemTools";
 import {
   SetAASamplesTool,
   ToggleDrapeFrustumTool,
@@ -166,20 +151,10 @@ import {
   ToggleVolClassIntersect,
 } from "./tools/RenderTargetTools";
 import { ReportWebGLCompatibilityTool } from "./tools/ReportWebGLCompatibilityTool";
-import {
-  ApplyViewByIdTool,
-  ApplyViewTool,
-  SaveViewTool,
-} from "./tools/SavedViews";
-import {
-  DumpSelectionSetTool,
-  SelectElementsByIdTool,
-} from "./tools/SelectionTools";
+import { ApplyViewByIdTool, ApplyViewTool, SaveViewTool } from "./tools/SavedViews";
+import { DumpSelectionSetTool, SelectElementsByIdTool } from "./tools/SelectionTools";
 import { SetGpuMemoryLimitTool } from "./tools/SetGpuMemoryLimitTool";
-import {
-  ElementIdFromSourceAspectIdTool,
-  SourceAspectIdFromElementIdTool,
-} from "./tools/SourceAspectIdTools";
+import { ElementIdFromSourceAspectIdTool, SourceAspectIdFromElementIdTool } from "./tools/SourceAspectIdTools";
 import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration";
 import { ToggleTileTreeBoundsDecorationTool } from "./tools/TileTreeBoundsDecoration";
 import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
@@ -207,8 +182,7 @@ export class FrontendDevTools {
     IModelApp.onBeforeShutdown.addListener(() => this.shutdown());
 
     const namespace = "FrontendDevTools";
-    const namespacePromise =
-      IModelApp.localization.registerNamespace(namespace);
+    const namespacePromise = IModelApp.localization.registerNamespace(namespace);
     const tools = [
       AttachMapLayerTool,
       AttachMapOverlayTool,

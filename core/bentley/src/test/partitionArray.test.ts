@@ -35,8 +35,7 @@ describe("partitionArray", () => {
       const list = test[0];
       const partition = partitionArray(list, isEven);
       expect(partition).to.equal(test[1]);
-      for (let i = 0; i < list.length; i++)
-        expect(isEven(list[i])).to.equal(i < partition);
+      for (let i = 0; i < list.length; i++) expect(isEven(list[i])).to.equal(i < partition);
     }
   });
 });

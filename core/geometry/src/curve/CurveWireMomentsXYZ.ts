@@ -50,24 +50,14 @@ export class CurveWireMomentsXYZ implements IStrokeHandler {
     const df = 1.0 / numStrokes;
     let scaleFactor, fraction;
     for (let i = 1; i <= numStrokes; i++) {
-      const fractionA = Geometry.interpolate(
-        fraction0,
-        (i - 1) * df,
-        fraction1
-      );
-      const fractionB =
-        i === numStrokes
-          ? fraction1
-          : Geometry.interpolate(fraction0, i * df, fraction1);
+      const fractionA = Geometry.interpolate(fraction0, (i - 1) * df, fraction1);
+      const fractionB = i === numStrokes ? fraction1 : Geometry.interpolate(fraction0, i * df, fraction1);
       const numGauss = this._gaussMapper.mapXAndW(fractionA, fractionB);
       for (let k = 0; k < numGauss; k++) {
         fraction = this._gaussMapper.gaussX[k];
         const ray = cp.fractionToPointAndDerivative(fraction)!;
         scaleFactor = this._gaussMapper.gaussW[k] * ray.direction.magnitude();
-        this._activeMomentData.accumulateScaledOuterProduct(
-          ray.origin,
-          scaleFactor
-        );
+        this._activeMomentData.accumulateScaledOuterProduct(ray.origin, scaleFactor);
       }
     }
   }
@@ -82,11 +72,7 @@ export class CurveWireMomentsXYZ implements IStrokeHandler {
   ): void {
     this._activeMomentData.accumulateLineMomentsXYZ(point0, point1);
   }
-  public announcePointTangent(
-    _xyz: Point3d,
-    _fraction: number,
-    _tangent: Vector3d
-  ): void {
+  public announcePointTangent(_xyz: Point3d, _fraction: number, _tangent: Vector3d): void {
     // umm ... this should not happen.  We need to know intervals. The other functions should have prevented this.
   }
   /** Recurse to leaf-level primitives */

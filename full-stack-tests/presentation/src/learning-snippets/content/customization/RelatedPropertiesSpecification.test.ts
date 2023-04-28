@@ -14,9 +14,7 @@ describe("Learning Snippets", () => {
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile(
-      "assets/datasets/Properties_60InstancesWithUrl2.ibim"
-    );
+    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {
@@ -193,9 +191,7 @@ describe("Learning Snippets", () => {
         const content = (await Presentation.presentation.getContent({
           imodel,
           rulesetOrId: ruleset,
-          keys: new KeySet([
-            { className: "BisCore:PhysicalModel", id: "0x1c" },
-          ]),
+          keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
           descriptor: {},
         }))!;
 
@@ -276,9 +272,7 @@ describe("Learning Snippets", () => {
         const content = (await Presentation.presentation.getContent({
           imodel,
           rulesetOrId: ruleset,
-          keys: new KeySet([
-            { className: "BisCore:PhysicalModel", id: "0x1c" },
-          ]),
+          keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
           descriptor: {},
         }))!;
         expect(content.descriptor.fields).to.containSubset([
@@ -428,19 +422,14 @@ describe("Learning Snippets", () => {
         const content = (await Presentation.presentation.getContent({
           imodel,
           rulesetOrId: ruleset,
-          keys: new KeySet([
-            { className: "BisCore:PhysicalModel", id: "0x1c" },
-          ]),
+          keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
           descriptor: {},
         }))!;
         expect(content.descriptor.fields).to.containSubset([
           {
             label: "Physical Partition",
             nestedFields: (nestedFields: Field[]) => {
-              return (
-                nestedFields.length === 1 &&
-                nestedFields[0].label === "User Label"
-              );
+              return nestedFields.length === 1 && nestedFields[0].label === "User Label";
             },
           },
         ]);
@@ -504,9 +493,7 @@ describe("Learning Snippets", () => {
         const content = (await Presentation.presentation.getContent({
           imodel,
           rulesetOrId: ruleset,
-          keys: new KeySet([
-            { className: "BisCore:PhysicalModel", id: "0x1c" },
-          ]),
+          keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
           descriptor: {},
         }))!;
         expect(content.descriptor.fields).to.containSubset([
@@ -626,9 +613,7 @@ describe("Learning Snippets", () => {
         const content = (await Presentation.presentation.getContent({
           imodel,
           rulesetOrId: ruleset,
-          keys: new KeySet([
-            { className: "BisCore:PhysicalModel", id: "0x1c" },
-          ]),
+          keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
           descriptor: {},
         }))!;
         expect(content.descriptor.fields).to.containSubset([

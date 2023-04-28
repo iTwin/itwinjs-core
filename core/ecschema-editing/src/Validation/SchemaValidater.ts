@@ -9,10 +9,7 @@
 import { ISchemaPartVisitor, Schema } from "@itwin/ecschema-metadata";
 import { IRuleSet } from "./Rules";
 import { SchemaValidationVisitor } from "./SchemaValidationVisitor";
-import {
-  IDiagnosticReporter,
-  SuppressionDiagnosticReporter,
-} from "./DiagnosticReporter";
+import { IDiagnosticReporter, SuppressionDiagnosticReporter } from "./DiagnosticReporter";
 import { AnyDiagnostic } from "./Diagnostic";
 import { SchemaWalker } from "./SchemaWalker";
 import { ECRuleSet } from "./ECRules";
@@ -45,10 +42,7 @@ export class SchemaValidater {
    * @param schema The schema to validate.
    * @param validaterRuleSet Optional IRuleSet to be applied to the schema in addition to the default EC rules.
    */
-  public static async validateSchema(
-    schema: Schema,
-    validaterRuleSet?: IRuleSet
-  ): Promise<AnyDiagnostic[]> {
+  public static async validateSchema(schema: Schema, validaterRuleSet?: IRuleSet): Promise<AnyDiagnostic[]> {
     const collectionReporter = new CollectionReporter();
     const reporters: IDiagnosticReporter[] = [collectionReporter];
 
@@ -62,10 +56,7 @@ export class SchemaValidater {
     return collectionReporter.diagnostics;
   }
 
-  private static createNewVisitor(
-    ruleSets: IRuleSet[],
-    reporters: IDiagnosticReporter[]
-  ): ISchemaPartVisitor {
+  private static createNewVisitor(ruleSets: IRuleSet[], reporters: IDiagnosticReporter[]): ISchemaPartVisitor {
     const visitor = new SchemaValidationVisitor();
     ruleSets.forEach((set) => visitor.registerRuleSet(set));
     reporters.forEach((reporter) => visitor.registerReporter(reporter));

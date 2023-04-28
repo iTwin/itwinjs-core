@@ -32,8 +32,7 @@ export interface NestedMenu {
 /** @alpha */
 export function createNestedMenu(props: NestedMenuProps): NestedMenu {
   const div = document.createElement("div");
-  const body =
-    undefined !== props.body ? props.body : document.createElement("div");
+  const body = undefined !== props.body ? props.body : document.createElement("div");
   const header = document.createElement("div");
 
   div.appendChild(header);

@@ -26,12 +26,7 @@ export class PrettyLoggingPlugin {
   private _onSuccess: (count: number) => any;
   private _formatter: StatsFormatter;
 
-  constructor(
-    name: string,
-    startMessage: string,
-    onSuccess?: () => void,
-    formatter?: StatsFormatter
-  ) {
+  constructor(name: string, startMessage: string, onSuccess?: () => void, formatter?: StatsFormatter) {
     this._name = name;
     this._isRebuild = false;
     this._startMessage = startMessage;
@@ -48,9 +43,7 @@ export class PrettyLoggingPlugin {
   private clearIfInteractive() {
     if (this.isInteractive) {
       const isWindows = process.platform === "win32";
-      process.stdout.write(
-        isWindows ? "\x1B[2J\x1B[0f" : "\x1B[2J\x1B[3J\x1B[H"
-      );
+      process.stdout.write(isWindows ? "\x1B[2J\x1B[0f" : "\x1B[2J\x1B[3J\x1B[H");
     }
   }
 
@@ -61,16 +54,11 @@ export class PrettyLoggingPlugin {
     const myChalk: chalk.Chalk = color ? (chalk as any)[color] : chalk;
     if (elapsed)
       console.log(
-        `${newline}${myChalk.inverse(this._name)} ${myChalk.bold(
-          message
-        )}${chalk.gray(`   (in ${elapsed.toLocaleString()} ms)`)}${newline}`
-      );
-    else
-      console.log(
-        `${newline}${myChalk.inverse(this._name)} ${myChalk.bold(
-          message
+        `${newline}${myChalk.inverse(this._name)} ${myChalk.bold(message)}${chalk.gray(
+          `   (in ${elapsed.toLocaleString()} ms)`
         )}${newline}`
       );
+    else console.log(`${newline}${myChalk.inverse(this._name)} ${myChalk.bold(message)}${newline}`);
 
     console.group();
     this._grouped = true;
@@ -91,11 +79,7 @@ export class PrettyLoggingPlugin {
     const formattedLogs = [];
     for (const plugin of Object.keys(logs)) {
       for (const { type, message } of logs[plugin].entries) {
-        formattedLogs.push(
-          logLevelColors[type](
-            `  ${type.toUpperCase()} \t[ ${plugin} ]\t${message}`
-          )
-        );
+        formattedLogs.push(logLevelColors[type](`  ${type.toUpperCase()} \t[ ${plugin} ]\t${message}`));
       }
     }
 
@@ -107,15 +91,9 @@ export class PrettyLoggingPlugin {
   }
 
   // Reformats warnings and errors with react-dev-utils.
-  private handleWarningsAndErrors(
-    elapsed: number,
-    jsonStats: StatsCompilation
-  ) {
+  private handleWarningsAndErrors(elapsed: number, jsonStats: StatsCompilation) {
     const { errors, warnings } = this._formatter(jsonStats);
-    if (errors?.length)
-      throw new PrettyLoggingError(
-        errors.map((err) => JSON.stringify(err, null, 2)).join("\n\n")
-      );
+    if (errors?.length) throw new PrettyLoggingError(errors.map((err) => JSON.stringify(err, null, 2)).join("\n\n"));
 
     if (warnings?.length) {
       if (process.env.CI) {
@@ -124,35 +102,23 @@ export class PrettyLoggingPlugin {
             `\nTreating warnings as errors because process.env.CI is set.\nMost CI servers set it automatically.\n`
           )
         );
-        throw new PrettyLoggingError(
-          warnings.map((w) => JSON.stringify(w, null, 2)).join("\n\n")
-        );
+        throw new PrettyLoggingError(warnings.map((w) => JSON.stringify(w, null, 2)).join("\n\n"));
       } else if (process.env.TF_BUILD) {
         console.log(
           chalk.yellow(
             `\nTreating warnings as errors because process.env.TF_BUILD is set.\nTFS sets this automatically.\n`
           )
         );
-        throw new PrettyLoggingError(
-          warnings.map((w) => JSON.stringify(w, null, 2)).join("\n\n")
-        );
+        throw new PrettyLoggingError(warnings.map((w) => JSON.stringify(w, null, 2)).join("\n\n"));
       }
 
-      if (this.isInteractive)
-        this.printHeading("Compiled with warnings", "yellow", elapsed);
+      if (this.isInteractive) this.printHeading("Compiled with warnings", "yellow", elapsed);
       console.log(warnings.map((w) => JSON.stringify(w, null, 2)).join("\n\n"));
+      console.log(`\nSearch for the ${chalk.underline(chalk.yellow("keywords"))} to learn more about eslint warnings.`);
       console.log(
-        `\nSearch for the ${chalk.underline(
-          chalk.yellow("keywords")
-        )} to learn more about eslint warnings.`
+        `To ignore an eslint warning, add ${chalk.cyan("// eslint-disable-next-line")} to the line before.\n`
       );
-      console.log(
-        `To ignore an eslint warning, add ${chalk.cyan(
-          "// eslint-disable-next-line"
-        )} to the line before.\n`
-      );
-      if (!this.isInteractive)
-        this.printHeading("Compiled with warnings", "yellow", elapsed);
+      if (!this.isInteractive) this.printHeading("Compiled with warnings", "yellow", elapsed);
       return false;
     }
 
@@ -187,14 +153,12 @@ export class PrettyLoggingPlugin {
       try {
         isSuccessful = this.handleWarningsAndErrors(elapsed, jsonStats);
       } catch (err: any) {
-        if (!this.isInteractive)
-          this.printHeading("Failed to compile", "red", elapsed);
+        if (!this.isInteractive) this.printHeading("Failed to compile", "red", elapsed);
         isSuccessful = false;
         console.log();
         console.log(err.message || err);
         console.log();
-        if (!this.isInteractive)
-          this.printHeading("Failed to compile", "red", elapsed);
+        if (!this.isInteractive) this.printHeading("Failed to compile", "red", elapsed);
         if (!this._isWatch) throw err;
       }
 

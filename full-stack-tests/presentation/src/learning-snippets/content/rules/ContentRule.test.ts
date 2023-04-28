@@ -14,9 +14,7 @@ describe("Learning Snippets", () => {
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile(
-      "assets/datasets/Properties_60InstancesWithUrl2.ibim"
-    );
+    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {
@@ -70,9 +68,7 @@ describe("Learning Snippets", () => {
         const elementContent = await Presentation.presentation.getContent({
           imodel,
           rulesetOrId: ruleset,
-          keys: new KeySet([
-            { className: "Generic:PhysicalObject", id: "0x74" },
-          ]),
+          keys: new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]),
           descriptor: {},
         });
         expect(elementContent!.contentSet.length).to.eq(1);
@@ -83,9 +79,7 @@ describe("Learning Snippets", () => {
         const modelContent = await Presentation.presentation.getContent({
           imodel,
           rulesetOrId: ruleset,
-          keys: new KeySet([
-            { className: "BisCore:PhysicalModel", id: "0x1c" },
-          ]),
+          keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
           descriptor: {},
         });
         expect(modelContent!.contentSet.length).to.eq(62);
@@ -141,9 +135,7 @@ describe("Learning Snippets", () => {
         expect(content).to.be.undefined;
 
         // Set DISPLAY_CATEGORIES to get content of all Category instances in the imodel
-        await Presentation.presentation
-          .vars(ruleset.id)
-          .setBool("DISPLAY_CATEGORIES", true);
+        await Presentation.presentation.vars(ruleset.id).setBool("DISPLAY_CATEGORIES", true);
         content = await Presentation.presentation.getContent({
           imodel,
           rulesetOrId: ruleset,
@@ -153,17 +145,13 @@ describe("Learning Snippets", () => {
         expect(content!.contentSet)
           .to.containSubset([
             {
-              primaryKeys: [
-                { className: "BisCore:SpatialCategory", id: "0x17" },
-              ],
+              primaryKeys: [{ className: "BisCore:SpatialCategory", id: "0x17" }],
             },
           ])
           .and.to.have.lengthOf(1);
 
         // Set DISPLAY_MODELS to also get geometric model instances' content
-        await Presentation.presentation
-          .vars(ruleset.id)
-          .setBool("DISPLAY_MODELS", true);
+        await Presentation.presentation.vars(ruleset.id).setBool("DISPLAY_MODELS", true);
         content = await Presentation.presentation.getContent({
           imodel,
           rulesetOrId: ruleset,
@@ -173,9 +161,7 @@ describe("Learning Snippets", () => {
         expect(content!.contentSet)
           .to.containSubset([
             {
-              primaryKeys: [
-                { className: "BisCore:SpatialCategory", id: "0x17" },
-              ],
+              primaryKeys: [{ className: "BisCore:SpatialCategory", id: "0x17" }],
             },
             {
               primaryKeys: [{ className: "BisCore:PhysicalModel", id: "0x1c" }],
@@ -276,9 +262,7 @@ describe("Learning Snippets", () => {
               primaryKeys: [{ className: "BisCore:PhysicalModel", id: "0x1c" }],
             },
             {
-              primaryKeys: [
-                { className: "BisCore:SpatialCategory", id: "0x17" },
-              ],
+              primaryKeys: [{ className: "BisCore:SpatialCategory", id: "0x17" }],
             },
           ])
           .and.to.have.lengthOf(2);

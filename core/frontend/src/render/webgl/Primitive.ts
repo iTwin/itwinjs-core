@@ -11,19 +11,10 @@ import { InstancedGraphicParams } from "../InstancedGraphicParams";
 import { RenderMemory } from "../RenderMemory";
 import { PrimitiveVisibility } from "../RenderTarget";
 import { RenderAreaPattern } from "../RenderSystem";
-import {
-  CachedGeometry,
-  LUTGeometry,
-  SkySphereViewportQuadGeometry,
-} from "./CachedGeometry";
+import { CachedGeometry, LUTGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { DrawParams, PrimitiveCommand } from "./DrawCommand";
 import { Graphic } from "./Graphic";
-import {
-  InstanceBuffers,
-  InstancedGeometry,
-  isInstancedGraphicParams,
-  PatternBuffers,
-} from "./InstancedGeometry";
+import { InstanceBuffers, InstancedGeometry, isInstancedGraphicParams, PatternBuffers } from "./InstancedGeometry";
 import { RenderCommands } from "./RenderCommands";
 import { Pass, RenderOrder, RenderPass } from "./RenderFlags";
 import { ShaderProgramExecutor } from "./ShaderProgram";
@@ -48,10 +39,7 @@ export class Primitive extends Graphic {
     if (!geom) return undefined;
 
     if (instances) {
-      assert(
-        geom instanceof LUTGeometry,
-        "Invalid geometry type for instancing"
-      );
+      assert(geom instanceof LUTGeometry, "Invalid geometry type for instancing");
       if (instances instanceof PatternBuffers) {
         geom = InstancedGeometry.createPattern(geom, true, instances);
       } else {
@@ -78,12 +66,8 @@ export class Primitive extends Graphic {
     if (!geom) return undefined;
 
     if (instances) {
-      assert(
-        geom instanceof LUTGeometry,
-        "Invalid geometry type for instancing"
-      );
-      if (instances instanceof InstanceBuffers)
-        geom = InstancedGeometry.create(geom, false, instances);
+      assert(geom instanceof LUTGeometry, "Invalid geometry type for instancing");
+      if (instances instanceof InstanceBuffers) geom = InstancedGeometry.create(geom, false, instances);
       else geom = InstancedGeometry.createPattern(geom, false, instances);
     }
 
@@ -128,14 +112,10 @@ export class Primitive extends Graphic {
     commands.addPrimitive(this);
   }
 
-  public override addHiliteCommands(
-    commands: RenderCommands,
-    pass: RenderPass
-  ): void {
+  public override addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
     // Edges do not contribute to hilite pass.
     // Note that IsEdge() does not imply geom->ToEdge() => true...polylines can be edges too...
-    if (!this.isEdge)
-      commands.getCommands(pass).push(new PrimitiveCommand(this));
+    if (!this.isEdge) commands.getCommands(pass).push(new PrimitiveCommand(this));
   }
 
   public get hasAnimation(): boolean {
@@ -169,8 +149,7 @@ export class Primitive extends Graphic {
 
   public draw(shader: ShaderProgramExecutor): void {
     // ###TODO: local to world should be pushed before we're invoked...we shouldn't need to pass (or copy) it
-    if (undefined === Primitive._drawParams)
-      Primitive._drawParams = new DrawParams();
+    if (undefined === Primitive._drawParams) Primitive._drawParams = new DrawParams();
 
     const drawParams = Primitive._drawParams;
     drawParams.init(shader.params, this.cachedGeometry);
@@ -209,9 +188,7 @@ export class SkySpherePrimitive extends Primitive {
   }
 
   public override draw(shader: ShaderProgramExecutor): void {
-    (this.cachedGeometry as SkySphereViewportQuadGeometry).initWorldPos(
-      shader.target
-    );
+    (this.cachedGeometry as SkySphereViewportQuadGeometry).initWorldPos(shader.target);
     super.draw(shader); // Draw the skybox sphere
   }
 }

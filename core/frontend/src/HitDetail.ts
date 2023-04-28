@@ -181,11 +181,7 @@ export class HitDetail {
 
   /** Determine if this HitPoint is from the same source as another HitDetail. */
   public isSameHit(otherHit?: HitDetail): boolean {
-    return (
-      undefined !== otherHit &&
-      this.sourceId === otherHit.sourceId &&
-      this.iModel === otherHit.iModel
-    );
+    return undefined !== otherHit && this.sourceId === otherHit.sourceId && this.iModel === otherHit.iModel;
   }
   /** Return whether sourceId is for a persistent element and not a pickable decoration. */
   public get isElementHit(): boolean {
@@ -303,9 +299,7 @@ export class SnapDetail extends HitDetail {
     );
     this.snapPoint = Point3d.fromJSON(snapPoint ? snapPoint : from.hitPoint);
     this.adjustedPoint = this.snapPoint.clone();
-    this.sprite = IconSprites.getSpriteFromUrl(
-      SnapDetail.getSnapSpriteUrl(snapMode)
-    );
+    this.sprite = IconSprites.getSpriteFromUrl(SnapDetail.getSnapSpriteUrl(snapMode));
   }
 
   /** Returns `HitDetailType.Snap` */
@@ -332,36 +326,27 @@ export class SnapDetail extends HitDetail {
   }
 
   /** Set curve primitive and HitGeometryType for this SnapDetail. */
-  public setCurvePrimitive(
-    primitive?: CurvePrimitive,
-    localToWorld?: Transform,
-    geomType?: HitGeomType
-  ): void {
+  public setCurvePrimitive(primitive?: CurvePrimitive, localToWorld?: Transform, geomType?: HitGeomType): void {
     this.primitive = primitive;
     this.geomType = undefined;
 
     // Only HitGeomType.Point and HitGeomType.Surface are valid without a curve primitive.
     if (undefined === this.primitive) {
-      if (HitGeomType.Point === geomType || HitGeomType.Surface === geomType)
-        this.geomType = geomType;
+      if (HitGeomType.Point === geomType || HitGeomType.Surface === geomType) this.geomType = geomType;
       return;
     }
 
-    if (undefined !== localToWorld)
-      this.primitive.tryTransformInPlace(localToWorld);
+    if (undefined !== localToWorld) this.primitive.tryTransformInPlace(localToWorld);
 
     if (this.primitive instanceof Arc3d) this.geomType = HitGeomType.Arc;
-    else if (this.primitive instanceof LineSegment3d)
-      this.geomType = HitGeomType.Segment;
-    else if (this.primitive instanceof LineString3d)
-      this.geomType = HitGeomType.Segment;
+    else if (this.primitive instanceof LineSegment3d) this.geomType = HitGeomType.Segment;
+    else if (this.primitive instanceof LineString3d) this.geomType = HitGeomType.Segment;
     else this.geomType = HitGeomType.Curve;
 
     // Set curve primitive geometry type override...
     //  - HitGeomType.Point with arc/ellipse denotes center.
     //  - HitGeomType.Surface with any curve primitive denotes an interior hit.
-    if (undefined !== geomType && HitGeomType.None !== geomType)
-      this.geomType = geomType;
+    if (undefined !== geomType && HitGeomType.None !== geomType) this.geomType = geomType;
   }
 
   /** Make a copy of this SnapDetail. */
@@ -376,9 +361,7 @@ export class SnapDetail extends HitDetail {
     return val;
   }
 
-  public getCurvePrimitive(
-    singleSegment: boolean = true
-  ): CurvePrimitive | undefined {
+  public getCurvePrimitive(singleSegment: boolean = true): CurvePrimitive | undefined {
     if (!singleSegment || undefined === this.primitive) return this.primitive;
 
     if (this.primitive instanceof LineString3d) {
@@ -389,10 +372,7 @@ export class SnapDetail extends HitDetail {
         const uSegRange = 1.0 / nSegments;
         let segmentNo = Math.floor(loc.fraction / uSegRange);
         if (segmentNo >= nSegments) segmentNo = nSegments - 1;
-        return LineSegment3d.create(
-          ls.points[segmentNo],
-          ls.points[segmentNo + 1]
-        );
+        return LineSegment3d.create(ls.points[segmentNo], ls.points[segmentNo + 1]);
       }
     }
 
@@ -415,14 +395,8 @@ export class SnapDetail extends HitDetail {
       }
 
       const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
-      const outline = context.viewport.hilite.color.adjustedForContrast(
-        context.viewport.view.backgroundColor,
-        50
-      );
-      const centerLine = context.viewport.hilite.color.adjustedForContrast(
-        outline,
-        175
-      );
+      const outline = context.viewport.hilite.color.adjustedForContrast(context.viewport.view.backgroundColor, 50);
+      const centerLine = context.viewport.hilite.color.adjustedForContrast(outline, 175);
       const path = Path.create(this.getCurvePrimitive(singleSegment)!);
 
       builder.setSymbology(outline, outline, 6);
@@ -478,14 +452,8 @@ export class IntersectDetail extends SnapDetail {
   public override draw(context: DecorateContext) {
     if (undefined !== this.primitive && undefined !== this.otherPrimitive) {
       const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
-      const outline = context.viewport.hilite.color.adjustedForContrast(
-        context.viewport.view.backgroundColor,
-        50
-      );
-      const centerLine = context.viewport.hilite.color.adjustedForContrast(
-        outline,
-        175
-      );
+      const outline = context.viewport.hilite.color.adjustedForContrast(context.viewport.view.backgroundColor, 50);
+      const centerLine = context.viewport.hilite.color.adjustedForContrast(outline, 175);
       const path1 = Path.create(this.primitive);
       const path2 = Path.create(this.otherPrimitive);
 
@@ -614,10 +582,7 @@ export class HitList<T extends HitDetail> {
   }
 
   /** compare two hits for insertion into list. */
-  public compare(
-    hit1: HitDetail | undefined,
-    hit2: HitDetail | undefined
-  ): -1 | 1 | 0 {
+  public compare(hit1: HitDetail | undefined, hit2: HitDetail | undefined): -1 | 1 | 0 {
     if (!hit1 || !hit2) return 0;
 
     const zOverride1 = this.getPriorityZOverride(hit1.priority);

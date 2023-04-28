@@ -29,10 +29,7 @@ import { SchemaContext } from "../../Context";
 import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
 import { Schema } from "../../Metadata/Schema";
 import { ECObjectsError } from "../../Exception";
-import {
-  createSchemaJsonWithItems,
-  createSchemaXmlWithItems,
-} from "../TestUtils/DeserializationHelpers";
+import { createSchemaJsonWithItems, createSchemaXmlWithItems } from "../TestUtils/DeserializationHelpers";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -139,10 +136,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestCustomAttributeClass");
-      if (findResult === undefined)
-        throw new Error(
-          "Expected finding CustomAttributeClass to be successful"
-        );
+      if (findResult === undefined) throw new Error("Expected finding CustomAttributeClass to be successful");
 
       const [, , itemElement] = findResult;
 
@@ -165,10 +159,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestCustomAttributeClass");
-      if (findResult === undefined)
-        throw new Error(
-          "Expected finding CustomAttributeClass to be successful"
-        );
+      if (findResult === undefined) throw new Error("Expected finding CustomAttributeClass to be successful");
 
       const [itemName, , itemElement] = findResult;
       assert.throws(
@@ -188,12 +179,9 @@ describe("XmlParser", () => {
     ): void {
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem(itemName);
-      if (findResult === undefined)
-        throw new Error("Expected finding EntityClass to be successful");
+      if (findResult === undefined) throw new Error("Expected finding EntityClass to be successful");
 
-      const actualReferenceSchema: SchemaReferenceProps[] = Array.from(
-        parser.getReferences()
-      );
+      const actualReferenceSchema: SchemaReferenceProps[] = Array.from(parser.getReferences());
       assert.deepEqual(actualReferenceSchema, expectedReferenceSchema);
 
       const [, , itemElement] = findResult;
@@ -247,12 +235,7 @@ describe("XmlParser", () => {
         mixins: ["TestSchema.Mixin1", "TestSchema.Mixin2"],
       } as EntityClassProps;
 
-      testParseEntityClass(
-        itemXml,
-        "Entity",
-        expectedReferenceSchema,
-        expectedProps
-      );
+      testParseEntityClass(itemXml, "Entity", expectedReferenceSchema, expectedProps);
     });
 
     it("item has ref alias:className base", async () => {
@@ -285,19 +268,10 @@ describe("XmlParser", () => {
         label: "Test",
         modifier: "None",
         baseClass: "BisCore.Element",
-        mixins: [
-          "BisCore.Mixin1",
-          "CoreCustomAttribute.ElementMixin1",
-          "CoreCustomAttribute.ElementMixin2",
-        ],
+        mixins: ["BisCore.Mixin1", "CoreCustomAttribute.ElementMixin1", "CoreCustomAttribute.ElementMixin2"],
       } as EntityClassProps;
 
-      testParseEntityClass(
-        itemXml,
-        "Entity",
-        expectedReferenceSchema,
-        expectedProps
-      );
+      testParseEntityClass(itemXml, "Entity", expectedReferenceSchema, expectedProps);
     });
 
     it("item has invalid alias:className base", async () => {
@@ -311,13 +285,10 @@ describe("XmlParser", () => {
       `;
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("Entity");
-      if (findResult === undefined)
-        throw new Error("Expected finding Entity to be successful");
+      if (findResult === undefined) throw new Error("Expected finding Entity to be successful");
 
       const [, , itemElement] = findResult;
-      expect(() => parser.parseEntityClass(itemElement)).to.throw(
-        "No valid schema found for alias invalid"
-      );
+      expect(() => parser.parseEntityClass(itemElement)).to.throw("No valid schema found for alias invalid");
     });
   });
 
@@ -330,8 +301,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestStructClass");
-      if (findResult === undefined)
-        throw new Error("Expected finding StructClass to be successful");
+      if (findResult === undefined) throw new Error("Expected finding StructClass to be successful");
 
       const [, , itemElement] = findResult;
 
@@ -357,8 +327,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEnumeration");
-      if (findResult === undefined)
-        throw new Error("Expected finding Enumeration to be successful");
+      if (findResult === undefined) throw new Error("Expected finding Enumeration to be successful");
 
       const [, , itemElement] = findResult;
 
@@ -398,8 +367,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEnumeration");
-      if (findResult === undefined)
-        throw new Error("Expected finding Enumeration to be successful");
+      if (findResult === undefined) throw new Error("Expected finding Enumeration to be successful");
 
       const [itemName, , itemElement] = findResult;
       assert.throws(
@@ -418,8 +386,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEnumeration");
-      if (findResult === undefined)
-        throw new Error("Expected finding Enumeration to be successful");
+      if (findResult === undefined) throw new Error("Expected finding Enumeration to be successful");
 
       const [itemName, , itemElement] = findResult;
       assert.throws(
@@ -438,16 +405,11 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEnumeration");
-      if (findResult === undefined)
-        throw new Error("Expected finding Enumeration to be successful");
+      if (findResult === undefined) throw new Error("Expected finding Enumeration to be successful");
 
       const [, , itemElement] = findResult;
       const props = parser.parseEnumeration(itemElement);
-      assert.equal(
-        props.isStrict,
-        true,
-        "Expected property isStrict to be set to true if missing from xml."
-      );
+      assert.equal(props.isStrict, true, "Expected property isStrict to be set to true if missing from xml.");
     });
 
     it("should throw for invalid isStrict attribute", () => {
@@ -459,8 +421,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEnumeration");
-      if (findResult === undefined)
-        throw new Error("Expected finding Enumeration to be successful");
+      if (findResult === undefined) throw new Error("Expected finding Enumeration to be successful");
 
       const [itemName, , itemElement] = findResult;
       assert.throws(
@@ -479,8 +440,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEnumeration");
-      if (findResult === undefined)
-        throw new Error("Expected finding Enumeration to be successful");
+      if (findResult === undefined) throw new Error("Expected finding Enumeration to be successful");
 
       const [itemName, , itemElement] = findResult;
       assert.throws(
@@ -499,8 +459,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEnumeration");
-      if (findResult === undefined)
-        throw new Error("Expected finding Enumeration to be successful");
+      if (findResult === undefined) throw new Error("Expected finding Enumeration to be successful");
 
       const [itemName, , itemElement] = findResult;
       assert.throws(
@@ -519,8 +478,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEnumeration");
-      if (findResult === undefined)
-        throw new Error("Expected finding Enumeration to be successful");
+      if (findResult === undefined) throw new Error("Expected finding Enumeration to be successful");
 
       const [itemName, , itemElement] = findResult;
       assert.throws(
@@ -544,8 +502,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestFormat");
-      if (findResult === undefined)
-        throw new Error("Expected finding Format to be successful");
+      if (findResult === undefined) throw new Error("Expected finding Format to be successful");
 
       const [, , itemElement] = findResult;
 
@@ -589,9 +546,7 @@ describe("XmlParser", () => {
         stationSeparator: undefined,
       } as SchemaItemFormatProps;
 
-      const actualReferenceSchema: SchemaReferenceProps[] = Array.from(
-        parser.getReferences()
-      );
+      const actualReferenceSchema: SchemaReferenceProps[] = Array.from(parser.getReferences());
       const actualProps = parser.parseFormat(itemElement);
       assert.deepEqual(actualProps, expectedProps);
       assert.deepEqual(actualReferenceSchema, expectedReferenceSchema);
@@ -604,8 +559,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestFormat");
-      if (findResult === undefined)
-        throw new Error("Expected finding Format to be successful");
+      if (findResult === undefined) throw new Error("Expected finding Format to be successful");
 
       const [itemName, , itemElement] = findResult;
       assert.throws(
@@ -629,8 +583,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestFormat");
-      if (findResult === undefined)
-        throw new Error("Expected finding Format to be successful");
+      if (findResult === undefined) throw new Error("Expected finding Format to be successful");
 
       const [itemName, , itemElement] = findResult;
       assert.throws(
@@ -649,8 +602,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestInvertedUnit");
-      if (findResult === undefined)
-        throw new Error("Expected finding InvertedUnit to be successful");
+      if (findResult === undefined) throw new Error("Expected finding InvertedUnit to be successful");
       const [, , itemElement] = findResult;
 
       const expectedProps = {
@@ -669,8 +621,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestInvertedUnit");
-      if (findResult === undefined)
-        throw new Error("Expected finding InvertedUnit to be successful");
+      if (findResult === undefined) throw new Error("Expected finding InvertedUnit to be successful");
       const [itemName, , itemElement] = findResult;
       assert.throws(
         () => parser.parseInvertedUnit(itemElement),
@@ -684,8 +635,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestInvertedUnit");
-      if (findResult === undefined)
-        throw new Error("Expected finding InvertedUnit to be successful");
+      if (findResult === undefined) throw new Error("Expected finding InvertedUnit to be successful");
       const [itemName, , itemElement] = findResult;
       assert.throws(
         () => parser.parseInvertedUnit(itemElement),
@@ -701,8 +651,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestKoQ");
-      if (findResult === undefined)
-        throw new Error("Expected finding KindOfQuantity to be successful");
+      if (findResult === undefined) throw new Error("Expected finding KindOfQuantity to be successful");
 
       const [, , itemElement] = findResult;
 
@@ -727,8 +676,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestKoQ");
-      if (findResult === undefined)
-        throw new Error("Expected finding KindOfQuantity to be successful");
+      if (findResult === undefined) throw new Error("Expected finding KindOfQuantity to be successful");
 
       const [, , itemElement] = findResult;
 
@@ -765,8 +713,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestKoQ");
-      if (findResult === undefined)
-        throw new Error("Expected finding KindOfQuantity to be successful");
+      if (findResult === undefined) throw new Error("Expected finding KindOfQuantity to be successful");
 
       const [itemName, , itemElement] = findResult;
       assert.throws(
@@ -781,8 +728,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestKoQ");
-      if (findResult === undefined)
-        throw new Error("Expected finding KindOfQuantity to be successful");
+      if (findResult === undefined) throw new Error("Expected finding KindOfQuantity to be successful");
 
       const [itemName, , itemElement] = findResult;
       assert.throws(
@@ -797,8 +743,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestKoQ");
-      if (findResult === undefined)
-        throw new Error("Expected finding KindOfQuantity to be successful");
+      if (findResult === undefined) throw new Error("Expected finding KindOfQuantity to be successful");
 
       const [itemName, , itemElement] = findResult;
       assert.throws(
@@ -822,8 +767,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestMixin");
-      if (findResult === undefined)
-        throw new Error("Expected finding Mixin to be successful");
+      if (findResult === undefined) throw new Error("Expected finding Mixin to be successful");
 
       const [, , itemElement] = findResult;
 
@@ -847,8 +791,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestMixin");
-      if (findResult === undefined)
-        throw new Error("Expected finding Mixin to be successful");
+      if (findResult === undefined) throw new Error("Expected finding Mixin to be successful");
 
       const [itemName, , itemElement] = findResult;
       assert.throws(
@@ -868,8 +811,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestMixin");
-      if (findResult === undefined)
-        throw new Error("Expected finding Mixin to be successful");
+      if (findResult === undefined) throw new Error("Expected finding Mixin to be successful");
 
       const [itemName, , itemElement] = findResult;
       assert.throws(
@@ -893,8 +835,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestMixin");
-      if (findResult === undefined)
-        throw new Error("Expected finding Mixin to be successful");
+      if (findResult === undefined) throw new Error("Expected finding Mixin to be successful");
 
       const [itemName, , itemElement] = findResult;
       assert.throws(
@@ -911,8 +852,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestPhenomenon");
-      if (findResult === undefined)
-        throw new Error("Expected finding Phenomenon to be successful");
+      if (findResult === undefined) throw new Error("Expected finding Phenomenon to be successful");
 
       const [, , itemElement] = findResult;
 
@@ -931,8 +871,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestPhenomenon");
-      if (findResult === undefined)
-        throw new Error("Expected finding Phenomenon to be successful");
+      if (findResult === undefined) throw new Error("Expected finding Phenomenon to be successful");
 
       const [itemName, , itemElement] = findResult;
       assert.throws(
@@ -949,8 +888,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestConstant");
-      if (findResult === undefined)
-        throw new Error("Expected finding Constant to be successful");
+      if (findResult === undefined) throw new Error("Expected finding Constant to be successful");
 
       const [, , itemElement] = findResult;
 
@@ -972,8 +910,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestConstant");
-      if (findResult === undefined)
-        throw new Error("Expected finding Constant to be successful");
+      if (findResult === undefined) throw new Error("Expected finding Constant to be successful");
 
       const [itemName, , itemElement] = findResult;
       assert.throws(
@@ -988,8 +925,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestConstant");
-      if (findResult === undefined)
-        throw new Error("Expected finding Constant to be successful");
+      if (findResult === undefined) throw new Error("Expected finding Constant to be successful");
 
       const [itemName, , itemElement] = findResult;
       assert.throws(
@@ -1004,8 +940,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestConstant");
-      if (findResult === undefined)
-        throw new Error("Expected finding Constant to be successful");
+      if (findResult === undefined) throw new Error("Expected finding Constant to be successful");
 
       const [itemName, , itemElement] = findResult;
       assert.throws(
@@ -1020,8 +955,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestConstant");
-      if (findResult === undefined)
-        throw new Error("Expected finding Constant to be successful");
+      if (findResult === undefined) throw new Error("Expected finding Constant to be successful");
 
       const [itemName, , itemElement] = findResult;
       assert.throws(
@@ -1041,19 +975,12 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEntityClass");
-      if (findResult === undefined)
-        throw new Error(
-          "Expected finding EntityClass with Property to be successful"
-        );
+      if (findResult === undefined) throw new Error("Expected finding EntityClass with Property to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(
-        parser.getProperties(parentElement, "TestSchema.TestEntityClass")
-      );
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
-        throw new Error(
-          "Expected parsing EntityClass with PrimitiveProperty to be successful"
-        );
+        throw new Error("Expected parsing EntityClass with PrimitiveProperty to be successful");
 
       const [, , propertyElement] = propertiesResult[0];
 
@@ -1088,18 +1015,12 @@ describe("XmlParser", () => {
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEntityClass");
       if (findResult === undefined)
-        throw new Error(
-          "Expected finding EntityClass with PrimitiveProperty (Enumeration) to be successful"
-        );
+        throw new Error("Expected finding EntityClass with PrimitiveProperty (Enumeration) to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(
-        parser.getProperties(parentElement, "TestSchema.TestEntityClass")
-      );
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
-        throw new Error(
-          "Expected parsing EntityClass PrimitiveProperty (Enumeration) to be successful"
-        );
+        throw new Error("Expected parsing EntityClass PrimitiveProperty (Enumeration) to be successful");
 
       const [, , propertyElement] = propertiesResult[0];
 
@@ -1134,16 +1055,11 @@ describe("XmlParser", () => {
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEntityClass");
       if (findResult === undefined)
-        throw new Error(
-          "Expected finding EntityClass with PrimitiveProperty to be successful"
-        );
+        throw new Error("Expected finding EntityClass with PrimitiveProperty to be successful");
 
       const [, , parentElement] = findResult;
       assert.throws(
-        () =>
-          Array.from(
-            parser.getProperties(parentElement, "TestSchema.TestEntityClass")
-          ),
+        () => Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass")),
         ECObjectsError,
         `An ECProperty in TestSchema.TestEntityClass is missing the required 'propertyName' attribute.`
       );
@@ -1158,18 +1074,12 @@ describe("XmlParser", () => {
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEntityClass");
       if (findResult === undefined)
-        throw new Error(
-          "Expected finding EntityClass with PrimitiveProperty to be successful"
-        );
+        throw new Error("Expected finding EntityClass with PrimitiveProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(
-        parser.getProperties(parentElement, "TestSchema.TestEntityClass")
-      );
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
-        throw new Error(
-          "Expected finding EntityClass PrimitiveProperty to be successful"
-        );
+        throw new Error("Expected finding EntityClass PrimitiveProperty to be successful");
 
       const [propName, , propEelement] = propertiesResult[0];
       assert.throws(
@@ -1188,18 +1098,12 @@ describe("XmlParser", () => {
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEntityClass");
       if (findResult === undefined)
-        throw new Error(
-          "Expected finding EntityClass with PrimitiveProperty to be successful"
-        );
+        throw new Error("Expected finding EntityClass with PrimitiveProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(
-        parser.getProperties(parentElement, "TestSchema.TestEntityClass")
-      );
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
-        throw new Error(
-          "Expected finding EntityClass PrimitiveProperty to be successful"
-        );
+        throw new Error("Expected finding EntityClass PrimitiveProperty to be successful");
 
       const [propName, , propElement] = propertiesResult[0];
       assert.throws(
@@ -1218,18 +1122,12 @@ describe("XmlParser", () => {
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEntityClass");
       if (findResult === undefined)
-        throw new Error(
-          "Expected finding EntityClass with PrimitiveProperty to be successful"
-        );
+        throw new Error("Expected finding EntityClass with PrimitiveProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(
-        parser.getProperties(parentElement, "TestSchema.TestEntityClass")
-      );
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
-        throw new Error(
-          "Expected finding EntityClass PrimitiveProperty to be successful"
-        );
+        throw new Error("Expected finding EntityClass PrimitiveProperty to be successful");
 
       const [propName, , propElement] = propertiesResult[0];
       assert.throws(
@@ -1248,18 +1146,12 @@ describe("XmlParser", () => {
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEntityClass");
       if (findResult === undefined)
-        throw new Error(
-          "Expected finding EntityClass with PrimitiveProperty to be successful"
-        );
+        throw new Error("Expected finding EntityClass with PrimitiveProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(
-        parser.getProperties(parentElement, "TestSchema.TestEntityClass")
-      );
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
-        throw new Error(
-          "Expected finding EntityClass PrimitiveProperty to be successful"
-        );
+        throw new Error("Expected finding EntityClass PrimitiveProperty to be successful");
 
       const [propName, , propElement] = propertiesResult[0];
       assert.throws(
@@ -1278,18 +1170,12 @@ describe("XmlParser", () => {
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEntityClass");
       if (findResult === undefined)
-        throw new Error(
-          "Expected finding EntityClass with PrimitiveProperty to be successful"
-        );
+        throw new Error("Expected finding EntityClass with PrimitiveProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(
-        parser.getProperties(parentElement, "TestSchema.TestEntityClass")
-      );
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
-        throw new Error(
-          "Expected finding EntityClass PrimitiveProperty to be successful"
-        );
+        throw new Error("Expected finding EntityClass PrimitiveProperty to be successful");
 
       const [propName, , propElement] = propertiesResult[0];
       assert.throws(
@@ -1308,18 +1194,12 @@ describe("XmlParser", () => {
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEntityClass");
       if (findResult === undefined)
-        throw new Error(
-          "Expected finding EntityClass with PrimitiveProperty to be successful"
-        );
+        throw new Error("Expected finding EntityClass with PrimitiveProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(
-        parser.getProperties(parentElement, "TestSchema.TestEntityClass")
-      );
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
-        throw new Error(
-          "Expected finding EntityClass PrimitiveProperty to be successful"
-        );
+        throw new Error("Expected finding EntityClass PrimitiveProperty to be successful");
 
       const [propName, , propElement] = propertiesResult[0];
       assert.throws(
@@ -1338,18 +1218,12 @@ describe("XmlParser", () => {
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEntityClass");
       if (findResult === undefined)
-        throw new Error(
-          "Expected finding EntityClass with PrimitiveProperty to be successful"
-        );
+        throw new Error("Expected finding EntityClass with PrimitiveProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(
-        parser.getProperties(parentElement, "TestSchema.TestEntityClass")
-      );
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
-        throw new Error(
-          "Expected finding EntityClass PrimitiveProperty to be successful"
-        );
+        throw new Error("Expected finding EntityClass PrimitiveProperty to be successful");
 
       const [propName, , propElement] = propertiesResult[0];
       assert.throws(
@@ -1368,18 +1242,12 @@ describe("XmlParser", () => {
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEntityClass");
       if (findResult === undefined)
-        throw new Error(
-          "Expected finding EntityClass with PrimitiveProperty to be successful"
-        );
+        throw new Error("Expected finding EntityClass with PrimitiveProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(
-        parser.getProperties(parentElement, "TestSchema.TestEntityClass")
-      );
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
-        throw new Error(
-          "Expected finding EntityClass PrimitiveProperty to be successful"
-        );
+        throw new Error("Expected finding EntityClass PrimitiveProperty to be successful");
 
       const [propName, , propElement] = propertiesResult[0];
       assert.throws(
@@ -1399,19 +1267,12 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEntityClass");
-      if (findResult === undefined)
-        throw new Error(
-          "Expected finding EntityClass with Property to be successful"
-        );
+      if (findResult === undefined) throw new Error("Expected finding EntityClass with Property to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(
-        parser.getProperties(parentElement, "TestSchema.TestEntityClass")
-      );
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
-        throw new Error(
-          "Expected parsing EntityClass with StructProperty to be successful"
-        );
+        throw new Error("Expected parsing EntityClass with StructProperty to be successful");
 
       const [, , propertyElement] = propertiesResult[0];
 
@@ -1442,19 +1303,12 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEntityClass");
-      if (findResult === undefined)
-        throw new Error(
-          "Expected finding EntityClass with ArrayProperty to be successful"
-        );
+      if (findResult === undefined) throw new Error("Expected finding EntityClass with ArrayProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(
-        parser.getProperties(parentElement, "TestSchema.TestEntityClass")
-      );
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
-        throw new Error(
-          "Expected parsing EntityClass StructArrayProperty to be successful"
-        );
+        throw new Error("Expected parsing EntityClass StructArrayProperty to be successful");
 
       const [, , propertyElement] = propertiesResult[0];
 
@@ -1487,19 +1341,11 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEntityClass");
-      if (findResult === undefined)
-        throw new Error(
-          "Expected finding EntityClass with ArrayProperty to be successful"
-        );
+      if (findResult === undefined) throw new Error("Expected finding EntityClass with ArrayProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(
-        parser.getProperties(parentElement, "TestSchema.TestEntityClass")
-      );
-      if (propertiesResult.length === 0)
-        throw new Error(
-          "Expected parsing EntityClass ArrayProperty to be successful"
-        );
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
+      if (propertiesResult.length === 0) throw new Error("Expected parsing EntityClass ArrayProperty to be successful");
 
       const [, , propertyElement] = propertiesResult[0];
 
@@ -1535,19 +1381,11 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEntityClass");
-      if (findResult === undefined)
-        throw new Error(
-          "Expected finding EntityClass with ArrayProperty to be successful"
-        );
+      if (findResult === undefined) throw new Error("Expected finding EntityClass with ArrayProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(
-        parser.getProperties(parentElement, "TestSchema.TestEntityClass")
-      );
-      if (propertiesResult.length === 0)
-        throw new Error(
-          "Expected finding EntityClass ArrayProperty to be successful"
-        );
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
+      if (propertiesResult.length === 0) throw new Error("Expected finding EntityClass ArrayProperty to be successful");
 
       const [propName, , propElement] = propertiesResult[0];
       assert.throws(
@@ -1565,19 +1403,11 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEntityClass");
-      if (findResult === undefined)
-        throw new Error(
-          "Expected finding EntityClass with ArrayProperty to be successful"
-        );
+      if (findResult === undefined) throw new Error("Expected finding EntityClass with ArrayProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(
-        parser.getProperties(parentElement, "TestSchema.TestEntityClass")
-      );
-      if (propertiesResult.length === 0)
-        throw new Error(
-          "Expected finding EntityClass ArrayProperty to be successful"
-        );
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
+      if (propertiesResult.length === 0) throw new Error("Expected finding EntityClass ArrayProperty to be successful");
 
       const [propName, , propElement] = propertiesResult[0];
       assert.throws(
@@ -1595,19 +1425,11 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEntityClass");
-      if (findResult === undefined)
-        throw new Error(
-          "Expected finding EntityClass with ArrayProperty to be successful"
-        );
+      if (findResult === undefined) throw new Error("Expected finding EntityClass with ArrayProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(
-        parser.getProperties(parentElement, "TestSchema.TestEntityClass")
-      );
-      if (propertiesResult.length === 0)
-        throw new Error(
-          "Expected finding EntityClass ArrayProperty to be successful"
-        );
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
+      if (propertiesResult.length === 0) throw new Error("Expected finding EntityClass ArrayProperty to be successful");
 
       const [propName, , propElement] = propertiesResult[0];
       assert.doesNotThrow(
@@ -1630,18 +1452,12 @@ describe("XmlParser", () => {
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEntityClass");
       if (findResult === undefined)
-        throw new Error(
-          "Expected finding EntityClass with NavigationProperty to be successful"
-        );
+        throw new Error("Expected finding EntityClass with NavigationProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(
-        parser.getProperties(parentElement, "TestSchema.TestEntityClass")
-      );
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
-        throw new Error(
-          "Expected parsing EntityClass NavigationProperty to be successful"
-        );
+        throw new Error("Expected parsing EntityClass NavigationProperty to be successful");
 
       const [, , propertyElement] = propertiesResult[0];
 
@@ -1672,18 +1488,12 @@ describe("XmlParser", () => {
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEntityClass");
       if (findResult === undefined)
-        throw new Error(
-          "Expected finding EntityClass with NavigationProperty to be successful"
-        );
+        throw new Error("Expected finding EntityClass with NavigationProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(
-        parser.getProperties(parentElement, "TestSchema.TestEntityClass")
-      );
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
-        throw new Error(
-          "Expected finding EntityClass NavigationProperty to be successful"
-        );
+        throw new Error("Expected finding EntityClass NavigationProperty to be successful");
 
       const [propName, , propElement] = propertiesResult[0];
       assert.throws(
@@ -1702,18 +1512,12 @@ describe("XmlParser", () => {
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestEntityClass");
       if (findResult === undefined)
-        throw new Error(
-          "Expected finding EntityClass with NavigationProperty to be successful"
-        );
+        throw new Error("Expected finding EntityClass with NavigationProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(
-        parser.getProperties(parentElement, "TestSchema.TestEntityClass")
-      );
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
-        throw new Error(
-          "Expected finding EntityClass NavigationProperty to be successful"
-        );
+        throw new Error("Expected finding EntityClass NavigationProperty to be successful");
 
       const [propName, , propElement] = propertiesResult[0];
       assert.throws(
@@ -1730,8 +1534,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestPropCategory");
-      if (findResult === undefined)
-        throw new Error("Expected finding PropertyCategory to be successful");
+      if (findResult === undefined) throw new Error("Expected finding PropertyCategory to be successful");
 
       const [, , itemElement] = findResult;
 
@@ -1750,8 +1553,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestPropCategory");
-      if (findResult === undefined)
-        throw new Error("Expected finding PropertyCategory to be successful");
+      if (findResult === undefined) throw new Error("Expected finding PropertyCategory to be successful");
 
       const [itemName, , itemElement] = findResult;
       assert.throws(
@@ -1766,8 +1568,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestPropCategory");
-      if (findResult === undefined)
-        throw new Error("Expected finding PropertyCategory to be successful");
+      if (findResult === undefined) throw new Error("Expected finding PropertyCategory to be successful");
 
       const [itemName, , itemElement] = findResult;
       assert.throws(
@@ -1792,10 +1593,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestRelationshipClass");
-      if (findResult === undefined)
-        throw new Error(
-          "Expected finding TestRelationshipClass to be successful"
-        );
+      if (findResult === undefined) throw new Error("Expected finding TestRelationshipClass to be successful");
 
       const [, , itemElement] = findResult;
 
@@ -1839,10 +1637,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestRelationshipClass");
-      assert.isDefined(
-        findResult,
-        "Expected finding TestRelationshipClass to be successful"
-      );
+      assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
       const [itemName, , itemElement] = findResult!;
       assert.throws(
         () => parser.parseRelationshipClass(itemElement),
@@ -1864,10 +1659,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestRelationshipClass");
-      assert.isDefined(
-        findResult,
-        "Expected finding TestRelationshipClass to be successful"
-      );
+      assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
       const [, , itemElement] = findResult!;
 
       const actualProps = parser.parseRelationshipClass(itemElement);
@@ -1884,10 +1676,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestRelationshipClass");
-      assert.isDefined(
-        findResult,
-        "Expected finding TestRelationshipClass to be successful"
-      );
+      assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
       const [itemName, , itemElement] = findResult!;
       assert.throws(
         () => parser.parseRelationshipClass(itemElement),
@@ -1906,10 +1695,7 @@ describe("XmlParser", () => {
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestRelationshipClass");
-      assert.isDefined(
-        findResult,
-        "Expected finding TestRelationshipClass to be successful"
-      );
+      assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
       const [itemName, , itemElement] = findResult!;
       assert.throws(
         () => parser.parseRelationshipClass(itemElement),
@@ -1932,10 +1718,7 @@ describe("XmlParser", () => {
 
         parser = new XmlParser(createSchemaXmlWithItems(itemXml));
         const findResult = parser.findItem("TestRelationshipClass");
-        assert.isDefined(
-          findResult,
-          "Expected finding TestRelationshipClass to be successful"
-        );
+        assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
         const [itemName, , itemElement] = findResult!;
         assert.throws(
           () => parser.parseRelationshipClass(itemElement),
@@ -1957,10 +1740,7 @@ describe("XmlParser", () => {
 
         parser = new XmlParser(createSchemaXmlWithItems(itemXml));
         const findResult = parser.findItem("TestRelationshipClass");
-        assert.isDefined(
-          findResult,
-          "Expected finding TestRelationshipClass to be successful"
-        );
+        assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
         const [itemName, , itemElement] = findResult!;
         assert.throws(
           () => parser.parseRelationshipClass(itemElement),
@@ -1982,10 +1762,7 @@ describe("XmlParser", () => {
 
         parser = new XmlParser(createSchemaXmlWithItems(itemXml));
         const findResult = parser.findItem("TestRelationshipClass");
-        assert.isDefined(
-          findResult,
-          "Expected finding TestRelationshipClass to be successful"
-        );
+        assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
         const [itemName, , itemElement] = findResult!;
         assert.throws(
           () => parser.parseRelationshipClass(itemElement),
@@ -2007,10 +1784,7 @@ describe("XmlParser", () => {
 
         parser = new XmlParser(createSchemaXmlWithItems(itemXml));
         const findResult = parser.findItem("TestRelationshipClass");
-        assert.isDefined(
-          findResult,
-          "Expected finding TestRelationshipClass to be successful"
-        );
+        assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
         const [itemName, , itemElement] = findResult!;
         assert.throws(
           () => parser.parseRelationshipClass(itemElement),
@@ -2031,10 +1805,7 @@ describe("XmlParser", () => {
 
         parser = new XmlParser(createSchemaXmlWithItems(itemXml));
         const findResult = parser.findItem("TestRelationshipClass");
-        assert.isDefined(
-          findResult,
-          "Expected finding TestRelationshipClass to be successful"
-        );
+        assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
         const [itemName, , itemElement] = findResult!;
         assert.throws(
           () => parser.parseRelationshipClass(itemElement),
@@ -2066,10 +1837,7 @@ describe("XmlParser", () => {
     it("invalid xmlns host (replacing dots with numbers), should throw", () => {
       const schemaDoc = createSchemaXmlWithItems(``, true);
       // this xmlns string passes without escaping the '.' in the xmlns regex.
-      schemaDoc.documentElement.setAttribute(
-        "xmlns",
-        "http://www1bentley2com/schemas/Bentley3ECXML4352"
-      );
+      schemaDoc.documentElement.setAttribute("xmlns", "http://www1bentley2com/schemas/Bentley3ECXML4352");
       parser = new XmlParser(schemaDoc);
       assert.throws(
         () => parser.parseSchema(),
@@ -2175,18 +1943,13 @@ describe("XmlParser", () => {
       });
     }
 
-    async function getTestCAClass(
-      propertyJson: any
-    ): Promise<CustomAttributeClass | undefined> {
+    async function getTestCAClass(propertyJson: any): Promise<CustomAttributeClass | undefined> {
       const schemaJson = createSchemaJson(propertyJson);
       const schema = await Schema.fromJson(schemaJson, new SchemaContext());
       return schema.getItem<CustomAttributeClass>("TestCustomAttribute");
     }
 
-    function getCAProviders(
-      itemXml: string,
-      expectedProviders: number = 1
-    ): CAProviderTuple[] {
+    function getCAProviders(itemXml: string, expectedProviders: number = 1): CAProviderTuple[] {
       const schemaDoc = createSchemaXmlWithItems(itemXml);
       parser = new XmlParser(schemaDoc);
       const providers = Array.from(parser.getSchemaCustomAttributeProviders());
@@ -2204,10 +1967,7 @@ describe("XmlParser", () => {
       parser = new XmlParser(schemaDoc);
 
       const providers = Array.from(parser.getSchemaCustomAttributeProviders());
-      expect(providers.length).to.equal(
-        2,
-        "Expected CustomAttribute Providers to be returned."
-      );
+      expect(providers.length).to.equal(2, "Expected CustomAttribute Providers to be returned.");
       expect(providers[0][0]).to.equal("TestSchema.TestAttribute1");
       expect(providers[0][1]).to.not.be.undefined;
       expect(providers[1][0]).to.equal("TestSchema.TestAttribute2");
@@ -2276,9 +2036,7 @@ describe("XmlParser", () => {
       const schemaDoc = createSchemaXmlWithItems(itemXml);
       parser = new XmlParser(schemaDoc);
       const entityElements = schemaDoc.getElementsByTagName("ECEntityClass");
-      const providers = Array.from(
-        parser.getClassCustomAttributeProviders(entityElements[0])
-      );
+      const providers = Array.from(parser.getClassCustomAttributeProviders(entityElements[0]));
 
       expect(providers.length).to.equal(1);
       expect(providers[0][0]).to.equal("TestSchema.TestAttribute");
@@ -2297,9 +2055,7 @@ describe("XmlParser", () => {
       const schemaDoc = createSchemaXmlWithItems(itemXml);
       parser = new XmlParser(schemaDoc);
       const entityElements = schemaDoc.getElementsByTagName("ECEntityClass");
-      const providers = Array.from(
-        parser.getClassCustomAttributeProviders(entityElements[0])
-      );
+      const providers = Array.from(parser.getClassCustomAttributeProviders(entityElements[0]));
 
       expect(providers.length).to.equal(1);
       expect(providers[0][0]).to.equal("TestSchema.TestAttribute");
@@ -3141,20 +2897,12 @@ describe("XmlParser", () => {
 
           expect(caInstance.TestStructArrayProperty).to.not.be.undefined;
           expect(caInstance.TestStructArrayProperty.length).to.equal(2);
-          expect(caInstance.TestStructArrayProperty[0].StringProperty).to.equal(
-            "test1"
-          );
+          expect(caInstance.TestStructArrayProperty[0].StringProperty).to.equal("test1");
           expect(caInstance.TestStructArrayProperty[0].IntProperty).to.equal(1);
-          expect(caInstance.TestStructArrayProperty[0].BoolProperty).to.equal(
-            true
-          );
-          expect(caInstance.TestStructArrayProperty[1].StringProperty).to.equal(
-            "test2"
-          );
+          expect(caInstance.TestStructArrayProperty[0].BoolProperty).to.equal(true);
+          expect(caInstance.TestStructArrayProperty[1].StringProperty).to.equal("test2");
           expect(caInstance.TestStructArrayProperty[1].IntProperty).to.equal(2);
-          expect(caInstance.TestStructArrayProperty[1].BoolProperty).to.equal(
-            false
-          );
+          expect(caInstance.TestStructArrayProperty[1].BoolProperty).to.equal(false);
         });
       });
 

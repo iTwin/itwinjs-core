@@ -43,9 +43,7 @@ export class ApproximateTerrainHeights {
    */
   public async initialize(): Promise<void> {
     if (!this._terrainHeights) {
-      const { terrainHeightsPropsString } = await import(
-        "./ApproximateTerrainHeightsProps"
-      );
+      const { terrainHeightsPropsString } = await import("./ApproximateTerrainHeightsProps");
       this._terrainHeights = JSON.parse(terrainHeightsPropsString);
     }
   }
@@ -73,10 +71,7 @@ export class ApproximateTerrainHeights {
     return result;
   }
 
-  public getMinimumMaximumHeights(
-    rectangle: Range2d,
-    result?: Range1d
-  ): Range1d {
+  public getMinimumMaximumHeights(rectangle: Range2d, result?: Range1d): Range1d {
     result = Range1d.createFrom(this.globalHeightRange, result);
     if (undefined === this._terrainHeights) return result; // Not initialized.
 
@@ -94,9 +89,7 @@ export class ApproximateTerrainHeights {
     return result;
   }
 
-  private _getTileXYLevel(
-    rectangle: Range2d
-  ): { x: number; y: number; level: number } | undefined {
+  private _getTileXYLevel(rectangle: Range2d): { x: number; y: number; level: number } | undefined {
     Cartographic.fromRadians(
       { longitude: rectangle.low.x, latitude: rectangle.high.y, height: 0.0 },
       this._scratchCorners[0]
@@ -129,10 +122,7 @@ export class ApproximateTerrainHeights {
         if (j === 0) {
           currentX = this._scratchTileXY.x;
           currentY = this._scratchTileXY.y;
-        } else if (
-          currentX !== this._scratchTileXY.x ||
-          currentY !== this._scratchTileXY.y
-        ) {
+        } else if (currentX !== this._scratchTileXY.x || currentY !== this._scratchTileXY.y) {
           failed = true;
           break;
         }

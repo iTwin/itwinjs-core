@@ -33,18 +33,9 @@ describe("OneAtATime test", () => {
     assert.equal(count, 2); // only the first and last complete
 
     // then, just try the whole thing again
-    expect(operation.request(10, "hello")).to.be.rejectedWith(
-      AbandonedError,
-      "cancelled"
-    ); // try calling a function that throws
-    expect(operation.request(200, "hello")).to.be.rejectedWith(
-      AbandonedError,
-      "testAbandon"
-    ); // becomes pending, doesn't abort previous because its already started
-    expect(operation.request(200, "hello")).to.be.rejectedWith(
-      AbandonedError,
-      "testAbandon"
-    ); // aborts previous, becomes pending
+    expect(operation.request(10, "hello")).to.be.rejectedWith(AbandonedError, "cancelled"); // try calling a function that throws
+    expect(operation.request(200, "hello")).to.be.rejectedWith(AbandonedError, "testAbandon"); // becomes pending, doesn't abort previous because its already started
+    expect(operation.request(200, "hello")).to.be.rejectedWith(AbandonedError, "testAbandon"); // aborts previous, becomes pending
     count = await operation.request(200, "hello");
     assert.equal(count, 3);
   });

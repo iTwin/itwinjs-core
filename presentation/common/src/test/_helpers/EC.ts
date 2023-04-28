@@ -26,9 +26,7 @@ export const createTestECClassInfo = (props?: Partial<ec.ClassInfo>) => ({
 /**
  * @internal Used for testing only.
  */
-export const createTestRelatedClassInfo = (
-  props?: Partial<ec.RelatedClassInfo>
-) => ({
+export const createTestRelatedClassInfo = (props?: Partial<ec.RelatedClassInfo>) => ({
   sourceClassInfo: createTestECClassInfo({
     id: "0x1",
     name: "source:class",

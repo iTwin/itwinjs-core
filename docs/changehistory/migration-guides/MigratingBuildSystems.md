@@ -27,15 +27,9 @@ With the above background in mind, the quickest/easiest migration pattern for al
 
    ```html
    <!-- check the browser to verify it is supported. -->
-   <script
-     type="text/javascript"
-     src="v<%= htmlWebpackPlugin.options.loaderVersion %>/checkbrowser.js"
-   ></script>
+   <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.loaderVersion %>/checkbrowser.js"></script>
 
-   <script
-     type="text/javascript"
-     src="v<%= htmlWebpackPlugin.options.runtimeVersion %>/runtime.js"
-   ></script>
+   <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.runtimeVersion %>/runtime.js"></script>
    <script
      type="text/javascript"
      src="v<%= htmlWebpackPlugin.options.loaderVersion %>/IModelJsLoader.js"
@@ -46,10 +40,7 @@ With the above background in mind, the quickest/easiest migration pattern for al
    and replace them with,
 
    ```html
-   <script
-     type="text/javascript"
-     src="%PUBLIC_URL%/scripts/checkbrowser.js"
-   ></script>
+   <script type="text/javascript" src="%PUBLIC_URL%/scripts/checkbrowser.js"></script>
    ```
 
 1. Add a `src/index.ts` file with an import to the current entry point of the app within `src/frontend`. For example if the entry point is currently `./src/frontend/index.ts`, then the new `./src/index.ts` will be as simple as the new [ui-test-app/src/index.ts](https://dev.azure.com/bentleycs/iModelTechnologies/_git/imodeljs/pullrequest/74170?_a=files&path=%2Ftest-apps%2Fui-test-app%2Fsrc%2Findex.ts) file.

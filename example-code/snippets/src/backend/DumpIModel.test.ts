@@ -6,13 +6,7 @@ import { assert } from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { DbResult, Id64String } from "@itwin/core-bentley";
-import {
-  ECSqlStatement,
-  Element,
-  IModelDb,
-  Model,
-  SnapshotDb,
-} from "@itwin/core-backend";
+import { ECSqlStatement, Element, IModelDb, Model, SnapshotDb } from "@itwin/core-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 // __PUBLISH_EXTRACT_START__ WireFormat_DumpIModel.code
@@ -42,11 +36,7 @@ class DumpIModel {
     });
   }
 
-  private static dumpModel(
-    iModel: IModelDb,
-    modelId: Id64String,
-    outputDir: string
-  ): void {
+  private static dumpModel(iModel: IModelDb, modelId: Id64String, outputDir: string): void {
     // Use the Id of the Model to create a JSON output file
     const outputFile = path.join(outputDir, `${modelId.toString()}.json`);
     fs.writeFileSync(outputFile, "[");
@@ -56,9 +46,7 @@ class DumpIModel {
       statement.bindId("modelId", modelId);
       let isFirstEntry = true;
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        isFirstEntry
-          ? fs.appendFileSync(outputFile, "\n")
-          : fs.appendFileSync(outputFile, ",\n");
+        isFirstEntry ? fs.appendFileSync(outputFile, "\n") : fs.appendFileSync(outputFile, ",\n");
         isFirstEntry = false;
         const row = statement.getRow();
         // Get the ElementProps (including the geometry detail) for the specified Element

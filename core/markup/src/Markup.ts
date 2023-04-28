@@ -9,23 +9,8 @@
 import { BentleyError, Logger } from "@itwin/core-bentley";
 import { Point3d, XAndY } from "@itwin/core-geometry";
 import { ImageSource, ImageSourceFormat } from "@itwin/core-common";
-import {
-  FrontendLoggerCategory,
-  imageElementFromImageSource,
-  IModelApp,
-  ScreenViewport,
-} from "@itwin/core-frontend";
-import {
-  adopt,
-  create,
-  G,
-  Marker,
-  Element as MarkupElement,
-  Matrix,
-  Point,
-  Svg,
-  SVG,
-} from "@svgdotjs/svg.js";
+import { FrontendLoggerCategory, imageElementFromImageSource, IModelApp, ScreenViewport } from "@itwin/core-frontend";
+import { adopt, create, G, Marker, Element as MarkupElement, Matrix, Point, Svg, SVG } from "@svgdotjs/svg.js";
 import * as redlineTool from "./RedlineTool";
 import { MarkupSelected, SelectTool } from "./SelectTool";
 import * as textTool from "./TextEdit";
@@ -227,17 +212,11 @@ export class MarkupApp {
   }
   public static markupSelectToolId = "Markup.Select";
 
-  protected static createMarkup(
-    view: ScreenViewport,
-    markupData?: MarkupSvgData
-  ) {
+  protected static createMarkup(view: ScreenViewport, markupData?: MarkupSvgData) {
     return new Markup(view, markupData);
   }
 
-  protected static lockViewportSize(
-    view: ScreenViewport,
-    markupData?: MarkupSvgData
-  ) {
+  protected static lockViewportSize(view: ScreenViewport, markupData?: MarkupSvgData) {
     const parentDiv = view.vpDiv;
     const rect = parentDiv.getBoundingClientRect();
     let width = rect.width;
@@ -254,16 +233,11 @@ export class MarkupApp {
 
   /** @internal */
   public static getActionName(action: string) {
-    return IModelApp.localization.getLocalizedString(
-      `${this.namespace}:actions.${action}`
-    );
+    return IModelApp.localization.getLocalizedString(`${this.namespace}:actions.${action}`);
   }
 
   /** Start a markup session */
-  public static async start(
-    view: ScreenViewport,
-    markupData?: MarkupSvgData
-  ): Promise<void> {
+  public static async start(view: ScreenViewport, markupData?: MarkupSvgData): Promise<void> {
     if (this.markup) return; // a markup session is already active.
 
     await this.initialize();
@@ -321,9 +295,7 @@ export class MarkupApp {
     if (undefined === this.namespace) {
       // only need to do this once
       this.namespace = "MarkupTools";
-      const namespacePromise = IModelApp.localization.registerNamespace(
-        this.namespace
-      );
+      const namespacePromise = IModelApp.localization.registerNamespace(this.namespace);
       IModelApp.tools.register(SelectTool, this.namespace);
       IModelApp.tools.registerModule(redlineTool, this.namespace);
       IModelApp.tools.registerModule(textTool, this.namespace);
@@ -364,14 +336,9 @@ export class MarkupApp {
     let svg, image;
     try {
       svg = this.readMarkupSvg(); // read the current svg data for the markup
-      const svgForImage =
-        svg && result.imprintSvgOnImage
-          ? this.readMarkupSvgForDrawImage()
-          : undefined;
+      const svgForImage = svg && result.imprintSvgOnImage ? this.readMarkupSvgForDrawImage() : undefined;
       if (svgForImage) {
-        const svgImage = await imageElementFromImageSource(
-          new ImageSource(svgForImage, ImageSourceFormat.Svg)
-        );
+        const svgImage = await imageElementFromImageSource(new ImageSource(svgForImage, ImageSourceFormat.Svg));
         canvas.getContext("2d")!.drawImage(svgImage, 0, 0); // draw markup svg onto view's canvas2d
       }
 
@@ -383,24 +350,12 @@ export class MarkupApp {
         newCanvas.height = canvas.height * (result.maxWidth / canvas.width);
         newCanvas
           .getContext("2d")!
-          .drawImage(
-            canvas,
-            0,
-            0,
-            canvas.width,
-            canvas.height,
-            0,
-            0,
-            newCanvas.width,
-            newCanvas.height
-          );
+          .drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, newCanvas.width, newCanvas.height);
         canvas = newCanvas; // return the image from adjusted canvas, not view canvas.
       }
 
       // return the markup data to be saved by the application.
-      image = !result.imageFormat
-        ? undefined
-        : canvas.toDataURL(result.imageFormat);
+      image = !result.imageFormat ? undefined : canvas.toDataURL(result.imageFormat);
     } catch (e) {
       Logger.logError(
         `${FrontendLoggerCategory.Package}.markup`,
@@ -514,9 +469,7 @@ export class Markup {
       .add(
         newSvgElement("filter")
           .id(MarkupApp.dropShadowId)
-          .add(
-            newSvgElement("feDropShadow").attr(MarkupApp.props.dropShadow.attr)
-          )
+          .add(newSvgElement("feDropShadow").attr(MarkupApp.props.dropShadow.attr))
       );
   }
   private addNested(className: string): G {
@@ -577,9 +530,7 @@ export class Markup {
     // First, see if there is a markup passed in as an argument
     if (markupData && markupData.svg) {
       this.markupDiv.innerHTML = markupData.svg; // make it a child of the markupDiv
-      this.svgContainer = SVG(`.${MarkupApp.containerClass}`) as
-        | Svg
-        | undefined; // get it in svg.js format
+      this.svgContainer = SVG(`.${MarkupApp.containerClass}`) as Svg | undefined; // get it in svg.js format
       this.svgMarkup = SVG(`.${MarkupApp.markupSvgClass}`) as G | undefined;
       if (!this.svgContainer || !this.svgMarkup)
         // if either isn't present, its not a valid markup
@@ -630,19 +581,11 @@ export class Markup {
   }
   /** Bring all the entries in the selection set to the front. */
   public bringToFront() {
-    this.selected.reposition(
-      MarkupApp.getActionName("toFront"),
-      this.undo,
-      (el) => el.front()
-    );
+    this.selected.reposition(MarkupApp.getActionName("toFront"), this.undo, (el) => el.front());
   }
   /** Send all the entries in the selection set to the back. */
   public sendToBack() {
-    this.selected.reposition(
-      MarkupApp.getActionName("toBack"),
-      this.undo,
-      (el) => el.back()
-    );
+    this.selected.reposition(MarkupApp.getActionName("toBack"), this.undo, (el) => el.back());
   }
   /** Group all the entries in the selection set, then select the group. */
   public groupSelected() {
@@ -674,11 +617,7 @@ export class Markup {
    * @param width the arrow head width
    * @note Flashing doesn't currently affect markers, need support for "context-stroke" and "context-fill". For now encode color in name...
    */
-  public createArrowMarker(
-    color: string,
-    length: number,
-    width: number
-  ): Marker {
+  public createArrowMarker(color: string, length: number, width: number): Marker {
     length = Math.ceil(length); // Don't allow "." in selector string...
     width = Math.ceil(width);
     const arrowMarkerId = `ArrowMarker${length}x${width}-${color}`;

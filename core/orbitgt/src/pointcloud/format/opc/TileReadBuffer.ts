@@ -35,8 +35,7 @@ export class TileReadBuffer {
   public constructor(attributeCount: int32) {
     this._geometryBuffer = null; //new ABuffer(1024);
     this._attributeBuffers = new Array<ABuffer>(attributeCount);
-    for (let i: number = 0; i < attributeCount; i++)
-      this._attributeBuffers[i] = null; //new ABuffer(1024);
+    for (let i: number = 0; i < attributeCount; i++) this._attributeBuffers[i] = null; //new ABuffer(1024);
   }
 
   /**

@@ -19,12 +19,7 @@ import { CubicEvaluator } from "./CubicEvaluator";
 export class AustralianRailCorpXYEvaluator extends CubicEvaluator {
   private _nominalLength1: number;
   private _nominalRadius1: number;
-  private constructor(
-    nominalLength1: number,
-    nominalRadius1: number,
-    axisLength: number,
-    cubicM: number
-  ) {
+  private constructor(nominalLength1: number, nominalRadius1: number, axisLength: number, cubicM: number) {
     super(axisLength, cubicM);
     this._nominalLength1 = nominalLength1;
     this._nominalRadius1 = nominalRadius1;
@@ -43,34 +38,19 @@ export class AustralianRailCorpXYEvaluator extends CubicEvaluator {
       this._cubicM
     );
   }
-  public static create(
-    nominalLength1: number,
-    nominalRadius1: number
-  ): AustralianRailCorpXYEvaluator | undefined {
-    const axisLength =
-      AustralianRailCorpXYEvaluator.radiusAndNominalLengthToAxisLength(
-        nominalRadius1,
-        nominalLength1
-      );
+  public static create(nominalLength1: number, nominalRadius1: number): AustralianRailCorpXYEvaluator | undefined {
+    const axisLength = AustralianRailCorpXYEvaluator.radiusAndNominalLengthToAxisLength(nominalRadius1, nominalLength1);
     const phi = this.radiusAndAxisLengthToPhi(nominalRadius1, axisLength);
     const xc2 = axisLength * axisLength;
     const cubicM = Math.tan(phi) / (3.0 * xc2);
-    return new AustralianRailCorpXYEvaluator(
-      nominalLength1,
-      nominalRadius1,
-      axisLength,
-      cubicM
-    );
+    return new AustralianRailCorpXYEvaluator(nominalLength1, nominalRadius1, axisLength, cubicM);
   }
   /**
    * Compute the phi constant for AustralianRail spiral with given end radius and length along axis.
    * @param nominalRadius1
    * @param axisLength
    */
-  public static radiusAndAxisLengthToPhi(
-    nominalRadius1: number,
-    axisLength: number
-  ): number {
+  public static radiusAndAxisLengthToPhi(nominalRadius1: number, axisLength: number): number {
     const xc = axisLength;
     const expr1 = 2 / Math.sqrt(3);
     let expr2 = (-(3 / 4) * Math.sqrt(3) * xc) / nominalRadius1;
@@ -115,11 +95,7 @@ export class AustralianRailCorpXYEvaluator extends CubicEvaluator {
       xc2 = xc * xc;
       m = Math.tan(phi) / (3.0 * xc2);
       const m2x4 = m * m * xc2 * xc2;
-      const correction =
-        xc *
-        m2x4 *
-        (9 / 10 +
-          m2x4 * (-(9 / 8) + m2x4 * (+(729 / 208) + m2x4 * -(32805 / 2176))));
+      const correction = xc * m2x4 * (9 / 10 + m2x4 * (-(9 / 8) + m2x4 * (+(729 / 208) + m2x4 * -(32805 / 2176))));
       const correctedLength = xc + correction;
       xc = (nominalLength1 / correctedLength) * xc;
 
@@ -137,14 +113,8 @@ export class AustralianRailCorpXYEvaluator extends CubicEvaluator {
       return (
         Geometry.isAlmostEqualNumber(this._cubicM, other._cubicM) &&
         Geometry.isAlmostEqualNumber(this._axisLength, other._axisLength) &&
-        Geometry.isAlmostEqualNumber(
-          this._nominalLength1,
-          other._nominalLength1
-        ) &&
-        Geometry.isAlmostEqualNumber(
-          this._nominalRadius1,
-          other._nominalRadius1
-        )
+        Geometry.isAlmostEqualNumber(this._nominalLength1, other._nominalLength1) &&
+        Geometry.isAlmostEqualNumber(this._nominalRadius1, other._nominalRadius1)
       );
     }
     return false;

@@ -5,12 +5,7 @@
 
 import { BeTimePoint } from "@itwin/core-bentley";
 import { RenderMode, ViewFlagOverrides } from "@itwin/core-common";
-import {
-  Tile,
-  TileDrawArgs,
-  TileTree,
-  TileTreeParams,
-} from "@itwin/core-frontend";
+import { Tile, TileDrawArgs, TileTree, TileTreeParams } from "@itwin/core-frontend";
 import { BatchedTile, BatchedTileParams } from "./BatchedTile";
 import { BatchedTilesetReader } from "./BatchedTilesetReader";
 

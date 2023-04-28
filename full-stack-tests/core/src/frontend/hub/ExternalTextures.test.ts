@@ -3,23 +3,9 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  ImageSource,
-  ImageSourceFormat,
-  RenderTexture,
-} from "@itwin/core-common";
-import {
-  CheckpointConnection,
-  imageElementFromImageSource,
-  IModelApp,
-  IModelConnection,
-} from "@itwin/core-frontend";
-import {
-  ExternalTextureLoader,
-  ExternalTextureRequest,
-  GL,
-  Texture2DHandle,
-} from "@itwin/core-frontend/lib/cjs/webgl";
+import { ImageSource, ImageSourceFormat, RenderTexture } from "@itwin/core-common";
+import { CheckpointConnection, imageElementFromImageSource, IModelApp, IModelConnection } from "@itwin/core-frontend";
+import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@itwin/core-frontend/lib/cjs/webgl";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestUtility } from "../TestUtility";
 
@@ -107,13 +93,8 @@ describe("external texture requests (#integration)", () => {
     await TestUtility.shutdownFrontend();
     await TestUtility.startFrontend(TestUtility.iModelAppOptions);
     await TestUtility.initialize(TestUsers.regular);
-    const contextId = await TestUtility.queryITwinIdByName(
-      TestUtility.testITwinName
-    );
-    const iModelId = await TestUtility.queryIModelIdByName(
-      contextId,
-      TestUtility.testIModelNames.smallTex
-    );
+    const contextId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
+    const iModelId = await TestUtility.queryIModelIdByName(contextId, TestUtility.testIModelNames.smallTex);
     imodel = await CheckpointConnection.openRemote(contextId, iModelId);
   });
 
@@ -124,9 +105,7 @@ describe("external texture requests (#integration)", () => {
   });
 
   function onExternalTextureLoaded(req: ExternalTextureRequest) {
-    expect(extTexLoader.numActiveRequests).lessThan(
-      extTexLoader.maxActiveRequests + 1
-    );
+    expect(extTexLoader.numActiveRequests).lessThan(extTexLoader.maxActiveRequests + 1);
     finishedTexRequests.push(req);
     totalLoadTextureCalls++;
   }
@@ -207,16 +186,8 @@ describe("external texture requests (#integration)", () => {
       expectNoDuplicates(texReq);
       const texHandle = texReq.handle;
       expect(texHandle.format).to.equal(GL.Texture.Format.Rgba);
-      expect(
-        texHandle.width === 1024 ||
-          texHandle.width === 512 ||
-          texHandle.width === 256
-      ).to.be.true;
-      expect(
-        texHandle.height === 1024 ||
-          texHandle.height === 512 ||
-          texHandle.height === 256
-      ).to.be.true;
+      expect(texHandle.width === 1024 || texHandle.width === 512 || texHandle.width === 256).to.be.true;
+      expect(texHandle.height === 1024 || texHandle.height === 512 || texHandle.height === 256).to.be.true;
     });
   }
 
@@ -232,8 +203,7 @@ describe("external texture requests (#integration)", () => {
       let image = await imageElementFromImageSource(imageSource);
       expect(image.width).to.be.lessThanOrEqual(maxTextureSize);
       expect(image.height).to.be.lessThanOrEqual(maxTextureSize);
-      expect(image.width === maxTextureSize || image.height === maxTextureSize)
-        .to.be.true;
+      expect(image.width === maxTextureSize || image.height === maxTextureSize).to.be.true;
 
       // check that requests textures are not downsampled when not requested.
       texData = await imodel.queryTextureData({ name });

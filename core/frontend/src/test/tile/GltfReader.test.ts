@@ -5,22 +5,10 @@
 
 import { expect } from "chai";
 import { Range3d } from "@itwin/core-geometry";
-import {
-  EmptyLocalization,
-  GltfV2ChunkTypes,
-  GltfVersions,
-  RenderTexture,
-  TileFormat,
-} from "@itwin/core-common";
+import { EmptyLocalization, GltfV2ChunkTypes, GltfVersions, RenderTexture, TileFormat } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
-import {
-  GltfDocument,
-  GltfId,
-  GltfNode,
-  GltfSampler,
-  GltfWrapMode,
-} from "../../gltf/GltfSchema";
+import { GltfDocument, GltfId, GltfNode, GltfSampler, GltfWrapMode } from "../../gltf/GltfSchema";
 import { GltfGraphicsReader, GltfReaderProps } from "../../tile/GltfReader";
 import { createBlankConnection } from "../createBlankConnection";
 
@@ -85,27 +73,18 @@ function glbFromChunks(chunks: Chunk[], header?: Header): Uint8Array {
   return glb;
 }
 
-function makeGlb(
-  json: Object | undefined,
-  binary?: Uint8Array,
-  header?: Header
-): Uint8Array {
+function makeGlb(json: Object | undefined, binary?: Uint8Array, header?: Header): Uint8Array {
   const chunks = [];
-  if (json)
-    chunks.push({ type: GltfV2ChunkTypes.JSON, data: jsonToBytes(json) });
+  if (json) chunks.push({ type: GltfV2ChunkTypes.JSON, data: jsonToBytes(json) });
 
   if (binary) chunks.push({ type: GltfV2ChunkTypes.Binary, data: binary });
 
   return glbFromChunks(chunks, header);
 }
 
-function expectBinaryData(
-  reader: GltfGraphicsReader,
-  expected: Uint8Array | undefined
-): void {
+function expectBinaryData(reader: GltfGraphicsReader, expected: Uint8Array | undefined): void {
   expect(undefined === reader.binaryData).to.equal(undefined === expected);
-  if (expected)
-    expect(Array.from(reader.binaryData!)).to.deep.equal(Array.from(expected));
+  if (expected) expect(Array.from(reader.binaryData!)).to.deep.equal(Array.from(expected));
 }
 
 describe("GltfReader", () => {
@@ -121,9 +100,7 @@ describe("GltfReader", () => {
     await IModelApp.shutdown();
   });
 
-  function createReader(
-    gltf: Uint8Array | GltfDocument
-  ): GltfGraphicsReader | undefined {
+  function createReader(gltf: Uint8Array | GltfDocument): GltfGraphicsReader | undefined {
     const props = GltfReaderProps.create(gltf, true);
     return props ? new GltfGraphicsReader(props, { gltf, iModel }) : undefined;
   }
@@ -136,12 +113,7 @@ describe("GltfReader", () => {
   });
 
   it("rejects glb with invalid header", () => {
-    function test(
-      version: number,
-      format: number,
-      length?: number,
-      expectValid = false
-    ) {
+    function test(version: number, format: number, length?: number, expectValid = false) {
       const glb = makeGlb(minimalJson, minimalBin);
       setHeader(glb, length ?? glb.length, format, version);
       const reader = createReader(glb);
@@ -160,18 +132,14 @@ describe("GltfReader", () => {
   });
 
   it("accepts glb with no binary chunk", () => {
-    const glb = glbFromChunks([
-      { data: jsonToBytes(minimalJson), type: GltfV2ChunkTypes.JSON },
-    ]);
+    const glb = glbFromChunks([{ data: jsonToBytes(minimalJson), type: GltfV2ChunkTypes.JSON }]);
     const reader = createReader(glb)!;
     expect(reader).not.to.be.undefined;
     expect(reader.binaryData).to.be.undefined;
   });
 
   it("rejects glb with no JSON chunk", () => {
-    const glb = glbFromChunks([
-      { data: minimalBin, type: GltfV2ChunkTypes.Binary },
-    ]);
+    const glb = glbFromChunks([{ data: minimalBin, type: GltfV2ChunkTypes.Binary }]);
     expect(createReader(glb)).to.be.undefined;
   });
 
@@ -251,10 +219,7 @@ describe("GltfReader", () => {
       ] as any,
     };
 
-    function expectSceneNodes(
-      sceneId: GltfId | undefined,
-      expectedSceneNodes: GltfId[]
-    ) {
+    function expectSceneNodes(sceneId: GltfId | undefined, expectedSceneNodes: GltfId[]) {
       json.scene = sceneId;
       const reader = createReader(makeGlb(json, minimalBin))!;
       expect(reader).not.to.be.undefined;
@@ -435,8 +400,7 @@ describe("GltfReader", () => {
 
     // Range is in world coordinates (z-up). Transform introduces slight floating point fuzz.
     expect(result.range).not.to.be.undefined;
-    expect(result.range!.isAlmostEqual(new Range3d(0, 0, -1, 1, 0, 0))).to.be
-      .true;
+    expect(result.range!.isAlmostEqual(new Range3d(0, 0, -1, 1, 0, 0))).to.be.true;
   });
 
   describe("textures", () => {
@@ -507,48 +471,20 @@ describe("GltfReader", () => {
     });
 
     it("overrides default texture type if unspecified by sampler", () => {
-      expectTextureType(
-        RenderTexture.Type.TileSection,
-        undefined,
-        GltfWrapMode.ClampToEdge
-      );
-      expectTextureType(
-        RenderTexture.Type.TileSection,
-        {},
-        GltfWrapMode.ClampToEdge
-      );
-      expectTextureType(
-        RenderTexture.Type.TileSection,
-        { magFilter: 9728, minFilter: 9987 },
-        GltfWrapMode.ClampToEdge
-      );
+      expectTextureType(RenderTexture.Type.TileSection, undefined, GltfWrapMode.ClampToEdge);
+      expectTextureType(RenderTexture.Type.TileSection, {}, GltfWrapMode.ClampToEdge);
+      expectTextureType(RenderTexture.Type.TileSection, { magFilter: 9728, minFilter: 9987 }, GltfWrapMode.ClampToEdge);
 
-      expectTextureType(
-        RenderTexture.Type.Normal,
-        { wrapS: GltfWrapMode.Repeat },
-        GltfWrapMode.ClampToEdge
-      );
-      expectTextureType(
-        RenderTexture.Type.Normal,
-        { wrapT: GltfWrapMode.Repeat },
-        GltfWrapMode.ClampToEdge
-      );
+      expectTextureType(RenderTexture.Type.Normal, { wrapS: GltfWrapMode.Repeat }, GltfWrapMode.ClampToEdge);
+      expectTextureType(RenderTexture.Type.Normal, { wrapT: GltfWrapMode.Repeat }, GltfWrapMode.ClampToEdge);
       expectTextureType(
         RenderTexture.Type.Normal,
         { wrapS: GltfWrapMode.Repeat, wrapT: GltfWrapMode.Repeat },
         GltfWrapMode.ClampToEdge
       );
 
-      expectTextureType(
-        RenderTexture.Type.Normal,
-        { wrapS: GltfWrapMode.MirroredRepeat },
-        GltfWrapMode.ClampToEdge
-      );
-      expectTextureType(
-        RenderTexture.Type.Normal,
-        { wrapT: GltfWrapMode.MirroredRepeat },
-        GltfWrapMode.ClampToEdge
-      );
+      expectTextureType(RenderTexture.Type.Normal, { wrapS: GltfWrapMode.MirroredRepeat }, GltfWrapMode.ClampToEdge);
+      expectTextureType(RenderTexture.Type.Normal, { wrapT: GltfWrapMode.MirroredRepeat }, GltfWrapMode.ClampToEdge);
       expectTextureType(
         RenderTexture.Type.Normal,
         {
@@ -558,16 +494,8 @@ describe("GltfReader", () => {
         GltfWrapMode.ClampToEdge
       );
 
-      expectTextureType(
-        RenderTexture.Type.TileSection,
-        { wrapS: GltfWrapMode.ClampToEdge },
-        GltfWrapMode.ClampToEdge
-      );
-      expectTextureType(
-        RenderTexture.Type.TileSection,
-        { wrapT: GltfWrapMode.ClampToEdge },
-        GltfWrapMode.ClampToEdge
-      );
+      expectTextureType(RenderTexture.Type.TileSection, { wrapS: GltfWrapMode.ClampToEdge }, GltfWrapMode.ClampToEdge);
+      expectTextureType(RenderTexture.Type.TileSection, { wrapT: GltfWrapMode.ClampToEdge }, GltfWrapMode.ClampToEdge);
       expectTextureType(
         RenderTexture.Type.TileSection,
         { wrapS: GltfWrapMode.ClampToEdge, wrapT: GltfWrapMode.ClampToEdge },

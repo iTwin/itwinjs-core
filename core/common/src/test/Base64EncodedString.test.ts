@@ -7,8 +7,7 @@ import { Base64EncodedString } from "../Base64EncodedString";
 
 function expectEqualUint8Arrays(actual: Uint8Array, expected: Uint8Array) {
   expect(actual.length).to.equal(expected.length);
-  for (let i = 0; i < actual.length; i++)
-    expect(actual[i]).to.equal(expected[i]);
+  for (let i = 0; i < actual.length; i++) expect(actual[i]).to.equal(expected[i]);
 }
 
 describe("Base64EncodedString", () => {
@@ -22,9 +21,7 @@ describe("Base64EncodedString", () => {
 
   it("should accept input without prefix", () => {
     const bytes = new Uint8Array([1, 2, 3, 4]);
-    const base64 = Base64EncodedString.fromUint8Array(bytes).substring(
-      Base64EncodedString.prefix.length
-    );
+    const base64 = Base64EncodedString.fromUint8Array(bytes).substring(Base64EncodedString.prefix.length);
     expectEqualUint8Arrays(Base64EncodedString.toUint8Array(base64), bytes);
   });
 
@@ -53,10 +50,7 @@ describe("Base64EncodedString", () => {
     expect(props.data).to.equal(Base64EncodedString.fromUint8Array(thing.data));
     expect(props.name).to.equal(thing.name);
 
-    const thing2 = JSON.parse(
-      propsString,
-      Base64EncodedString.reviver
-    ) as Thing;
+    const thing2 = JSON.parse(propsString, Base64EncodedString.reviver) as Thing;
     expect(thing2.name).to.equal(thing.name);
     expectEqualUint8Arrays(thing2.data, thing.data);
   });

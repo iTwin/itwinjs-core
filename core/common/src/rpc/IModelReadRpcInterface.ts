@@ -6,20 +6,10 @@
  * @module RpcInterface
  */
 
-import {
-  CompressedId64Set,
-  GuidString,
-  Id64String,
-  IModelStatus,
-} from "@itwin/core-bentley";
+import { CompressedId64Set, GuidString, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { Range3dProps } from "@itwin/core-geometry";
 import { CodeProps } from "../Code";
-import {
-  DbBlobRequest,
-  DbBlobResponse,
-  DbQueryRequest,
-  DbQueryResponse,
-} from "../ConcurrentQuery";
+import { DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse } from "../ConcurrentQuery";
 import { RpcResponseCacheControl } from "./core/RpcConstants";
 import { RpcOperation } from "./core/RpcOperation";
 import { ElementLoadOptions, ElementProps } from "../ElementProps";
@@ -31,16 +21,9 @@ import {
   IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps,
 } from "../GeoCoordinateServices";
-import {
-  GeometryContainmentRequestProps,
-  GeometryContainmentResponseProps,
-} from "../GeometryContainment";
+import { GeometryContainmentRequestProps, GeometryContainmentResponseProps } from "../GeometryContainment";
 import { GeometrySummaryRequestProps } from "../GeometrySummary";
-import {
-  IModelConnectionProps,
-  IModelRpcOpenProps,
-  IModelRpcProps,
-} from "../IModel";
+import { IModelConnectionProps, IModelRpcOpenProps, IModelRpcProps } from "../IModel";
 import {
   MassPropertiesPerCandidateRequestProps,
   MassPropertiesPerCandidateResponseProps,
@@ -110,9 +93,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   }
 
   /** Returns the IModelReadRpcInterface instance for a custom RPC routing configuration. */
-  public static getClientForRouting(
-    token: RpcRoutingToken
-  ): IModelReadRpcInterface {
+  public static getClientForRouting(token: RpcRoutingToken): IModelReadRpcInterface {
     return RpcManager.getClientForInterface(IModelReadRpcInterface, token);
   }
 
@@ -127,15 +108,10 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
   @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
-  public async getConnectionProps(
-    _iModelToken: IModelRpcOpenProps
-  ): Promise<IModelConnectionProps> {
+  public async getConnectionProps(_iModelToken: IModelRpcOpenProps): Promise<IModelConnectionProps> {
     return this.forward(arguments);
   }
-  public async queryRows(
-    _iModelToken: IModelRpcProps,
-    _request: DbQueryRequest
-  ): Promise<DbQueryResponse> {
+  public async queryRows(_iModelToken: IModelRpcProps, _request: DbQueryRequest): Promise<DbQueryResponse> {
     return this.forward(arguments);
   }
   @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
@@ -145,62 +121,35 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   ): Promise<SubCategoryResultRow[]> {
     return this.forward(arguments);
   }
-  public async queryBlob(
-    _iModelToken: IModelRpcProps,
-    _request: DbBlobRequest
-  ): Promise<DbBlobResponse> {
+  public async queryBlob(_iModelToken: IModelRpcProps, _request: DbBlobRequest): Promise<DbBlobResponse> {
     return this.forward(arguments);
   }
   @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
-  public async getModelProps(
-    _iModelToken: IModelRpcProps,
-    _modelIds: Id64String[]
-  ): Promise<ModelProps[]> {
+  public async getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelProps[]> {
     return this.forward(arguments);
   }
   @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
-  public async queryModelRanges(
-    _iModelToken: IModelRpcProps,
-    _modelIds: Id64String[]
-  ): Promise<Range3dProps[]> {
+  public async queryModelRanges(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<Range3dProps[]> {
     return this.forward(arguments);
   }
   @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
-  public async queryModelExtents(
-    _iModelToken: IModelRpcProps,
-    _modelIds: Id64String[]
-  ): Promise<ModelExtentsProps[]> {
+  public async queryModelExtents(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelExtentsProps[]> {
     return this.forward(arguments);
   }
-  public async queryModelProps(
-    _iModelToken: IModelRpcProps,
-    _params: EntityQueryParams
-  ): Promise<ModelProps[]> {
+  public async queryModelProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<ModelProps[]> {
     return this.forward(arguments);
   }
-  public async getElementProps(
-    _iModelToken: IModelRpcProps,
-    _elementIds: Id64String[]
-  ): Promise<ElementProps[]> {
+  public async getElementProps(_iModelToken: IModelRpcProps, _elementIds: Id64String[]): Promise<ElementProps[]> {
     return this.forward(arguments);
   }
-  public async queryElementProps(
-    _iModelToken: IModelRpcProps,
-    _params: EntityQueryParams
-  ): Promise<ElementProps[]> {
+  public async queryElementProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<ElementProps[]> {
     return this.forward(arguments);
   }
-  public async queryEntityIds(
-    _iModelToken: IModelRpcProps,
-    _params: EntityQueryParams
-  ): Promise<Id64String[]> {
+  public async queryEntityIds(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<Id64String[]> {
     return this.forward(arguments);
   }
   @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
-  public async getClassHierarchy(
-    _iModelToken: IModelRpcProps,
-    _startClassName: string
-  ): Promise<string[]> {
+  public async getClassHierarchy(_iModelToken: IModelRpcProps, _startClassName: string): Promise<string[]> {
     return this.forward(arguments);
   }
   public async getAllCodeSpecs(_iModelToken: IModelRpcProps): Promise<any[]> {
@@ -214,28 +163,18 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   ): Promise<ViewStateProps> {
     return this.forward(arguments);
   }
-  public async readFontJson(
-    _iModelToken: IModelRpcProps
-  ): Promise<FontMapProps> {
+  public async readFontJson(_iModelToken: IModelRpcProps): Promise<FontMapProps> {
     return this.forward(arguments);
   }
-  public async getToolTipMessage(
-    _iModelToken: IModelRpcProps,
-    _elementId: string
-  ): Promise<string[]> {
+  public async getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]> {
     return this.forward(arguments);
   }
   /** @deprecated in 3.x with no replacement; thumbnails are rarely added to the iModel. */
-  public async getViewThumbnail(
-    _iModelToken: IModelRpcProps,
-    _viewId: string
-  ): Promise<Uint8Array> {
+  public async getViewThumbnail(_iModelToken: IModelRpcProps, _viewId: string): Promise<Uint8Array> {
     return this.forward(arguments);
   }
   @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
-  public async getDefaultViewId(
-    _iModelToken: IModelRpcProps
-  ): Promise<Id64String> {
+  public async getDefaultViewId(_iModelToken: IModelRpcProps): Promise<Id64String> {
     return this.forward(arguments);
   }
   @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
@@ -259,10 +198,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   ): Promise<SnapResponseProps> {
     return this.forward(arguments);
   }
-  public async cancelSnap(
-    _iModelToken: IModelRpcProps,
-    _sessionId: string
-  ): Promise<void> {
+  public async cancelSnap(_iModelToken: IModelRpcProps, _sessionId: string): Promise<void> {
     return this.forward(arguments);
   }
   public async getGeometryContainment(
@@ -296,10 +232,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   ): Promise<GeoCoordinatesResponseProps> {
     return this.forward(arguments);
   }
-  public async getGeometrySummary(
-    _iModelToken: IModelRpcProps,
-    _props: GeometrySummaryRequestProps
-  ): Promise<string> {
+  public async getGeometrySummary(_iModelToken: IModelRpcProps, _props: GeometrySummaryRequestProps): Promise<string> {
     return this.forward(arguments);
   }
   public async queryTextureData(

@@ -23,9 +23,5 @@ export interface TestCmdResult {
 }
 
 export interface TestCommandIpc extends EditCommandIpc {
-  testMethod1: (
-    str1: string,
-    str2: string,
-    obj1: TestCmdOjb1
-  ) => Promise<TestCmdResult>;
+  testMethod1: (str1: string, str2: string, obj1: TestCmdOjb1) => Promise<TestCmdResult>;
 }

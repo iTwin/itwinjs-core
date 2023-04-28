@@ -80,9 +80,7 @@ const booleanFlagNames: BooleanFlagName[] = [
   "wiremesh",
 ];
 
-const lowercaseBooleanFlagNames = booleanFlagNames.map((name) =>
-  name.toLowerCase()
-);
+const lowercaseBooleanFlagNames = booleanFlagNames.map((name) => name.toLowerCase());
 
 /** Modifies the selected viewport's DisplayStyleState.
  * @beta
@@ -98,11 +96,7 @@ export abstract class DisplayStyleTool extends Tool {
 
   public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (
-      undefined !== vp &&
-      (!this.require3d || vp.view.is3d()) &&
-      (await this.execute(vp))
-    )
+    if (undefined !== vp && (!this.require3d || vp.view.is3d()) && (await this.execute(vp)))
       vp.displayStyle = vp.view.displayStyle;
 
     return true;
@@ -110,12 +104,7 @@ export abstract class DisplayStyleTool extends Tool {
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (
-      undefined !== vp &&
-      (!this.require3d || vp.view.is3d()) &&
-      (await this.parse(args, vp))
-    )
-      return this.run();
+    if (undefined !== vp && (!this.require3d || vp.view.is3d()) && (await this.parse(args, vp))) return this.run();
     else return false;
   }
 }
@@ -232,12 +221,10 @@ export class SkySphereTool extends DisplayStyleTool {
 
   public async execute(vp: Viewport) {
     if (this._image && vp.view.is3d()) {
-      vp.view.displayStyle.environment = vp.view.displayStyle.environment.clone(
-        {
-          displaySky: true,
-          sky: new SkySphere(this._image),
-        }
-      );
+      vp.view.displayStyle.environment = vp.view.displayStyle.environment.clone({
+        displaySky: true,
+        sky: new SkySphere(this._image),
+      });
     }
 
     return true;
@@ -363,17 +350,11 @@ export class SaveRenderingStyleTool extends DisplayStyleTool {
   }
 
   public async execute(vp: Viewport) {
-    let json = JSON.stringify(
-      vp.displayStyle.settings.toOverrides(this._options)
-    );
+    let json = JSON.stringify(vp.displayStyle.settings.toOverrides(this._options));
     if (this._quote) json = `"${json.replace(/"/g, '""')}"`;
 
     IModelApp.notifications.outputMessage(
-      new NotifyMessageDetails(
-        OutputMessagePriority.Info,
-        "Rendering style saved",
-        json
-      )
+      new NotifyMessageDetails(OutputMessagePriority.Info, "Rendering style saved", json)
     );
     if (this._copyToClipboard) copyStringToClipboard(json);
 
@@ -402,9 +383,7 @@ export class ApplyRenderingStyleTool extends DisplayStyleTool {
       this._overrides = JSON.parse(args[0]);
       return true;
     } catch {
-      IModelApp.notifications.outputMessage(
-        new NotifyMessageDetails(OutputMessagePriority.Error, "Invalid JSON")
-      );
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "Invalid JSON"));
       return false;
     }
   }
@@ -450,8 +429,7 @@ export class OverrideSubCategoryTool extends DisplayStyleTool {
 
   public async execute(vp: Viewport) {
     const ovr = SubCategoryOverride.fromJSON(this._overrideProps);
-    for (const id of this._subcategoryIds)
-      vp.displayStyle.overrideSubCategory(id, ovr);
+    for (const id of this._subcategoryIds) vp.displayStyle.overrideSubCategory(id, ovr);
 
     return true;
   }
@@ -480,11 +458,8 @@ export class WoWIgnoreBackgroundTool extends DisplayStyleTool {
   }
 
   public async execute(vp: Viewport) {
-    const ignoreBackgroundColor =
-      this._ignore ??
-      !vp.displayStyle.settings.whiteOnWhiteReversal.ignoreBackgroundColor;
-    vp.displayStyle.settings.whiteOnWhiteReversal =
-      WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor });
+    const ignoreBackgroundColor = this._ignore ?? !vp.displayStyle.settings.whiteOnWhiteReversal.ignoreBackgroundColor;
+    vp.displayStyle.settings.whiteOnWhiteReversal = WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor });
     return true;
   }
 }
@@ -513,10 +488,7 @@ export class ToggleWiremeshTool extends DisplayStyleTool {
   }
 
   public async execute(vp: Viewport) {
-    vp.viewFlags = vp.viewFlags.with(
-      "wiremesh",
-      this._enable ?? !vp.viewFlags.wiremesh
-    );
+    vp.viewFlags = vp.viewFlags.with("wiremesh", this._enable ?? !vp.viewFlags.wiremesh);
     return true;
   }
 }

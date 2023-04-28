@@ -55,11 +55,7 @@ export class OrbitGtContextIModelCreator {
    * @param iModelFileName the output iModel file name
    * @param url the reality model URL
    */
-  public constructor(
-    private _props: OrbitGtPointCloudProps,
-    iModelFileName: string,
-    private _name: string
-  ) {
+  public constructor(private _props: OrbitGtPointCloudProps, iModelFileName: string, private _name: string) {
     fs.unlink(iModelFileName, (_err) => {});
     this.iModelDb = SnapshotDb.createEmpty(iModelFileName, {
       rootSubject: { name: "Reality Model Context" },
@@ -67,33 +63,17 @@ export class OrbitGtContextIModelCreator {
   }
   /** Perform the import */
   public async create(): Promise<void> {
-    const { rdsUrl, accountName, containerName, blobFileName, sasToken } =
-      this._props;
+    const { rdsUrl, accountName, containerName, blobFileName, sasToken } = this._props;
     try {
-      this.definitionModelId = DefinitionModel.insert(
-        this.iModelDb,
-        IModelDb.rootSubjectId,
-        "Definitions"
-      );
-      this.physicalModelId = PhysicalModel.insert(
-        this.iModelDb,
-        IModelDb.rootSubjectId,
-        "Empty Model"
-      );
+      this.definitionModelId = DefinitionModel.insert(this.iModelDb, IModelDb.rootSubjectId, "Definitions");
+      this.physicalModelId = PhysicalModel.insert(this.iModelDb, IModelDb.rootSubjectId, "Empty Model");
 
-      if (Downloader.INSTANCE == null)
-        Downloader.INSTANCE = new DownloaderNode();
-      if (CRSManager.ENGINE == null)
-        CRSManager.ENGINE = await OnlineEngine.create();
+      if (Downloader.INSTANCE == null) Downloader.INSTANCE = new DownloaderNode();
+      if (CRSManager.ENGINE == null) CRSManager.ENGINE = await OnlineEngine.create();
 
       let blobFileURL: string = blobFileName;
       if (accountName.length > 0)
-        blobFileURL = UrlFS.getAzureBlobSasUrl(
-          accountName,
-          containerName,
-          blobFileName,
-          sasToken
-        );
+        blobFileURL = UrlFS.getAzureBlobSasUrl(accountName, containerName, blobFileName, sasToken);
 
       const urlFS: UrlFS = new UrlFS();
 
@@ -106,11 +86,7 @@ export class OrbitGtContextIModelCreator {
         128 * 1024 /* pageSize */,
         128 /* maxPageCount */
       );
-      const fileReader: PointCloudReader = await OPCReader.openFile(
-        blobFile,
-        blobFileURL,
-        true /* lazyLoading */
-      );
+      const fileReader: PointCloudReader = await OPCReader.openFile(blobFile, blobFileURL, true /* lazyLoading */);
 
       let fileCrs = fileReader.getFileCRS();
       if (fileCrs == null) fileCrs = "";
@@ -129,11 +105,7 @@ export class OrbitGtContextIModelCreator {
         const wgs84Crs = "4978";
         await CRSManager.ENGINE.prepareForArea(wgs84Crs, new OrbitGtBounds());
 
-        const ecefBounds = CRSManager.transformBounds(
-          bounds,
-          fileCrs,
-          wgs84Crs
-        );
+        const ecefBounds = CRSManager.transformBounds(bounds, fileCrs, wgs84Crs);
         const ecefRange = Range3d.createXYZXYZ(
           ecefBounds.getMinX(),
           ecefBounds.getMinY(),
@@ -145,8 +117,7 @@ export class OrbitGtContextIModelCreator {
         const ecefCenter = ecefRange.localXYZToWorld(0.5, 0.5, 0.5)!;
         const cartoCenter = Cartographic.fromEcef(ecefCenter)!;
         cartoCenter.height = 0;
-        const ecefLocation =
-          EcefLocation.createFromCartographicOrigin(cartoCenter);
+        const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter);
         this.iModelDb.setEcefLocation(ecefLocation);
         const ecefToWorld = ecefLocation.getTransform().inverse()!;
         worldRange = ecefToWorld.multiplyRange(ecefRange);
@@ -168,9 +139,7 @@ export class OrbitGtContextIModelCreator {
       this.iModelDb.updateProjectExtents(worldRange);
       this.iModelDb.saveChanges();
     } catch (error) {
-      process.stdout.write(
-        `Error creating model from: ${blobFileName} Error: ${error}`
-      );
+      process.stdout.write(`Error creating model from: ${blobFileName} Error: ${error}`);
     }
   }
 
@@ -181,29 +150,19 @@ export class OrbitGtContextIModelCreator {
     realityModels: ContextRealityModelProps[],
     geoLocated: boolean
   ): Id64String {
-    const modelSelectorId: Id64String = ModelSelector.insert(
-      this.iModelDb,
-      this.definitionModelId,
-      viewName,
-      [this.physicalModelId]
-    );
-    const categorySelectorId: Id64String = CategorySelector.insert(
-      this.iModelDb,
-      this.definitionModelId,
-      viewName,
-      []
-    );
+    const modelSelectorId: Id64String = ModelSelector.insert(this.iModelDb, this.definitionModelId, viewName, [
+      this.physicalModelId,
+    ]);
+    const categorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, this.definitionModelId, viewName, []);
     const vf = new ViewFlags({
       backgroundMap: geoLocated,
       renderMode: RenderMode.SmoothShade,
       lighting: true,
     });
-    const displayStyleId: Id64String = DisplayStyle3d.insert(
-      this.iModelDb,
-      this.definitionModelId,
-      viewName,
-      { viewFlags: vf, contextRealityModels: realityModels }
-    );
+    const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, {
+      viewFlags: vf,
+      contextRealityModels: realityModels,
+    });
     return SpatialViewDefinition.insertWithCamera(
       this.iModelDb,
       this.definitionModelId,

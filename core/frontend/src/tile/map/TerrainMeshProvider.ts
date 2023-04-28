@@ -10,12 +10,7 @@ import { Range1d } from "@itwin/core-geometry";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { ScreenViewport } from "../../Viewport";
 import { RealityMeshParams } from "../../render/RealityMeshParams";
-import {
-  MapCartoRectangle,
-  MapTile,
-  MapTilingScheme,
-  QuadId,
-} from "../internal";
+import { MapCartoRectangle, MapTile, MapTilingScheme, QuadId } from "../internal";
 
 /** Options supplied to [[TerrainProvider.createTerrainMeshProvider]] to construct a [[TerrainMeshProvider]].
  * @public
@@ -83,9 +78,7 @@ export abstract class TerrainMeshProvider {
   /** Convert the terrain data supplied by [[requestMeshData]] into a terrain mesh.
    * @see [[RealityMeshParamsBuilder]] to simplify the process of creating the mesh.
    */
-  public abstract readMesh(
-    args: ReadMeshArgs
-  ): Promise<RealityMeshParams | undefined>;
+  public abstract readMesh(args: ReadMeshArgs): Promise<RealityMeshParams | undefined>;
 
   /** Add attribution logo cards for the terrain data supplied by this provider to the [[Viewport]]'s logo div.
    * For example, a provider that produces meshes from [Bing Maps](https://docs.microsoft.com/en-us/bingmaps/rest-services/elevations/) would be required to
@@ -108,11 +101,7 @@ export abstract class TerrainMeshProvider {
    * This range is used for culling terrain meshes that do not intersect the view frustum.
    * The default implementation uses a fast approximation.
    */
-  public getChildHeightRange(
-    quadId: QuadId,
-    rectangle: MapCartoRectangle,
-    parent: MapTile
-  ): Range1d | undefined {
+  public getChildHeightRange(quadId: QuadId, rectangle: MapCartoRectangle, parent: MapTile): Range1d | undefined {
     return quadId.level < ApproximateTerrainHeights.maxLevel
       ? ApproximateTerrainHeights.instance.getMinimumMaximumHeights(rectangle)
       : parent.heightRange;

@@ -9,10 +9,7 @@
 
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 
-import type {
-  GeometryHandler,
-  IStrokeHandler,
-} from "../geometry3d/GeometryHandler";
+import type { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import type { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import type { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import type { Ray3d } from "../geometry3d/Ray3d";
@@ -63,10 +60,7 @@ export abstract class ProxyCurve extends CurvePrimitive {
   }
 
   /** Implement by proxyCurve */
-  public emitStrokableParts(
-    dest: IStrokeHandler,
-    options?: StrokeOptions
-  ): void {
+  public emitStrokableParts(dest: IStrokeHandler, options?: StrokeOptions): void {
     this._proxyCurve.emitStrokableParts(dest, options);
   }
 
@@ -74,19 +68,14 @@ export abstract class ProxyCurve extends CurvePrimitive {
   public abstract override clone(): ProxyCurve;
 
   /** Return a transformed clone. */
-  public override cloneTransformed(
-    transform: Transform
-  ): ProxyCurve | undefined {
+  public override cloneTransformed(transform: Transform): ProxyCurve | undefined {
     const myClone = this.clone();
     if (myClone.tryTransformInPlace(transform)) return myClone;
     return undefined;
   }
 
   /** Implement by proxyCurve. Subclasses may eventually override this default implementation. */
-  public override clonePartialCurve(
-    fractionA: number,
-    fractionB: number
-  ): CurvePrimitive | undefined {
+  public override clonePartialCurve(fractionA: number, fractionB: number): CurvePrimitive | undefined {
     return this._proxyCurve.clonePartialCurve(fractionA, fractionB);
   }
 
@@ -141,10 +130,7 @@ export abstract class ProxyCurve extends CurvePrimitive {
   }
 
   /** Implement by proxyCurve */
-  public override projectedParameterRange(
-    ray: Vector3d | Ray3d,
-    lowHigh?: Range1d
-  ): Range1d | undefined {
+  public override projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
     return this._proxyCurve.projectedParameterRange(ray, lowHigh);
   }
 }

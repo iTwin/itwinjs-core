@@ -59,21 +59,14 @@ describe("Cached decorations", () => {
           break;
       }
     }
-    public constructor(
-      type: "graphic" | "html" | "canvas",
-      useCachedDecorations: boolean
-    ) {
+    public constructor(type: "graphic" | "html" | "canvas", useCachedDecorations: boolean) {
       this._type = type;
       this._useCachedDecorations = useCachedDecorations;
     }
   }
 
   // Drop the decorator and ensure no decorations are cached anymore.
-  async function dropAndVerifyEmptyCache(
-    vp: ScreenTestViewport,
-    dec: Decorator,
-    cache: DecorationsCache
-  ) {
+  async function dropAndVerifyEmptyCache(vp: ScreenTestViewport, dec: Decorator, cache: DecorationsCache) {
     IModelApp.viewManager.dropDecorator(dec);
     await vp.drawFrame();
     expect(cache.size).to.equal(0);
@@ -125,8 +118,7 @@ describe("Cached decorations", () => {
       const cachedDecorationA = cachedA![0];
 
       await dropAndVerifyEmptyCache(vp, cachableDecoratorA, cache);
-      if ("graphic" === type)
-        verifyGraphicDecorationDisposed(cachedDecorationA);
+      if ("graphic" === type) verifyGraphicDecorationDisposed(cachedDecorationA);
 
       // Add another cachable decorator and ensure one decoration has been cached.
       const cachableDecoratorB = new TestDecorator(type, true);
@@ -149,8 +141,7 @@ describe("Cached decorations", () => {
       expect(cachedDecorationC === cachedDecorationB).to.be.true; // verify that this cached decoration is the previous one
 
       await dropAndVerifyEmptyCache(vp, cachableDecoratorB, cache);
-      if ("graphic" === type)
-        verifyGraphicDecorationDisposed(cachedDecorationB);
+      if ("graphic" === type) verifyGraphicDecorationDisposed(cachedDecorationB);
 
       IModelApp.viewManager.dropDecorator(nonCachableDecorator);
     });
@@ -171,10 +162,7 @@ describe("Cached decorations", () => {
   it("should prohibit removal while decorating", async () => {
     const cachedDecorator = new TestDecorator("graphic", true);
 
-    async function test(
-      decorateFunc: (vp: ScreenViewport) => void,
-      expectRemovalAfterDecorate = true
-    ): Promise<void> {
+    async function test(decorateFunc: (vp: ScreenViewport) => void, expectRemovalAfterDecorate = true): Promise<void> {
       await testOnScreenViewport("0x24", imodel, 200, 150, async (vp) => {
         IModelApp.viewManager.addDecorator(cachedDecorator);
 

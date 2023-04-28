@@ -18,10 +18,7 @@ import { Mixin } from "./Metadata/Mixin";
 import { Phenomenon } from "./Metadata/Phenomenon";
 import { AnyProperty, Property } from "./Metadata/Property";
 import { PropertyCategory } from "./Metadata/PropertyCategory";
-import {
-  RelationshipClass,
-  RelationshipConstraint,
-} from "./Metadata/RelationshipClass";
+import { RelationshipClass, RelationshipConstraint } from "./Metadata/RelationshipClass";
 import { Schema } from "./Metadata/Schema";
 import { SchemaItem } from "./Metadata/SchemaItem";
 import { Unit } from "./Metadata/Unit";
@@ -137,9 +134,7 @@ export interface ISchemaPartVisitor {
    * Called for each [[RelationshipClass]] instance.
    * @param relationshipClass a RelationshipClass object.
    */
-  /* async */ visitRelationshipClass?: (
-    relationshipClass: RelationshipClass
-  ) => Promise<void>;
+  /* async */ visitRelationshipClass?: (relationshipClass: RelationshipClass) => Promise<void>;
 
   /**
    * Called for each [[RelationshipClass]] instance.
@@ -151,33 +146,25 @@ export interface ISchemaPartVisitor {
    * Called for each [[RelationshipConstraint]] of each RelationshipClass.
    * @param relationshipConstraint a RelationshipConstraint object.
    */
-  /* async */ visitRelationshipConstraint?: (
-    relationshipConstraint: RelationshipConstraint
-  ) => Promise<void>;
+  /* async */ visitRelationshipConstraint?: (relationshipConstraint: RelationshipConstraint) => Promise<void>;
 
   /**
    * Called for each [[RelationshipConstraint]] of each RelationshipClass.
    * @param relationshipConstraint a RelationshipConstraint object.
    */
-  visitRelationshipConstraintSync?: (
-    relationshipConstraint: RelationshipConstraint
-  ) => void;
+  visitRelationshipConstraintSync?: (relationshipConstraint: RelationshipConstraint) => void;
 
   /**
    * Called for each [[CustomAttributeClass]] instance.
    * @param customAttributeClass a CustomAttributeClass object.
    */
-  /* async */ visitCustomAttributeClass?: (
-    customAttributeClass: CustomAttributeClass
-  ) => Promise<void>;
+  /* async */ visitCustomAttributeClass?: (customAttributeClass: CustomAttributeClass) => Promise<void>;
 
   /**
    * Called for each [[CustomAttributeClass]] instance.
    * @param customAttributeClass a CustomAttributeClass object.
    */
-  visitCustomAttributeClassSync?: (
-    customAttributeClass: CustomAttributeClass
-  ) => void;
+  visitCustomAttributeClassSync?: (customAttributeClass: CustomAttributeClass) => void;
 
   /**
    * Called for each CustomAttribute container in the schema.
@@ -191,9 +178,7 @@ export interface ISchemaPartVisitor {
    * Called for each CustomAttribute container in the schema.
    * @param customAttributeContainer a CustomAttributeContainerProps object.
    */
-  visitCustomAttributeContainerSync?: (
-    customAttributeContainer: CustomAttributeContainerProps
-  ) => void;
+  visitCustomAttributeContainerSync?: (customAttributeContainer: CustomAttributeContainerProps) => void;
 
   /**
    * Called for each [[Enumeration]] instance.
@@ -223,9 +208,7 @@ export interface ISchemaPartVisitor {
    * Called for each [[PropertyCategory]] instance.
    * @param category a PropertyCategory object.
    */
-  /* async */ visitPropertyCategory?: (
-    category: PropertyCategory
-  ) => Promise<void>;
+  /* async */ visitPropertyCategory?: (category: PropertyCategory) => Promise<void>;
 
   /**
    * Called for each [[PropertyCategory]] instance.
@@ -306,9 +289,7 @@ export interface ISchemaPartVisitor {
   visitConstantSync?: (constant: Constant) => void;
 }
 
-function isCustomAttributeContainer(
-  object: any
-): object is CustomAttributeContainerProps {
+function isCustomAttributeContainer(object: any): object is CustomAttributeContainerProps {
   return "customAttributes" in object;
 }
 
@@ -328,15 +309,10 @@ export class SchemaPartVisitorDelegate {
    * @param schema The schema to pass to the visitor.
    * @param fullSchema Indicates if the schema is partially or fully-loaded.
    */
-  public async visitSchema(
-    schema: Schema,
-    fullSchema: boolean = true
-  ): Promise<void> {
-    if (!fullSchema && this._visitor.visitEmptySchema)
-      await this._visitor.visitEmptySchema(schema);
+  public async visitSchema(schema: Schema, fullSchema: boolean = true): Promise<void> {
+    if (!fullSchema && this._visitor.visitEmptySchema) await this._visitor.visitEmptySchema(schema);
 
-    if (fullSchema && this._visitor.visitFullSchema)
-      await this._visitor.visitFullSchema(schema);
+    if (fullSchema && this._visitor.visitFullSchema) await this._visitor.visitFullSchema(schema);
   }
 
   /**
@@ -345,11 +321,9 @@ export class SchemaPartVisitorDelegate {
    * @param fullSchema Indicates if the schema is partially or fully-loaded.
    */
   public visitSchemaSync(schema: Schema, fullSchema: boolean = true): void {
-    if (!fullSchema && this._visitor.visitEmptySchemaSync)
-      this._visitor.visitEmptySchemaSync(schema);
+    if (!fullSchema && this._visitor.visitEmptySchemaSync) this._visitor.visitEmptySchemaSync(schema);
 
-    if (fullSchema && this._visitor.visitFullSchemaSync)
-      this._visitor.visitFullSchemaSync(schema);
+    if (fullSchema && this._visitor.visitFullSchemaSync) this._visitor.visitFullSchemaSync(schema);
   }
 
   /**
@@ -369,10 +343,7 @@ export class SchemaPartVisitorDelegate {
       await this._visitor.visitRelationshipConstraint(schemaPart);
     }
 
-    if (
-      isCustomAttributeContainer(schemaPart) &&
-      this._visitor.visitCustomAttributeContainer
-    ) {
+    if (isCustomAttributeContainer(schemaPart) && this._visitor.visitCustomAttributeContainer) {
       await this._visitor.visitCustomAttributeContainer(schemaPart);
     }
   }
@@ -385,10 +356,7 @@ export class SchemaPartVisitorDelegate {
   public visitSchemaPartSync(schemaPart: AnyECType): void {
     if (SchemaItem.isSchemaItem(schemaPart)) {
       this.visitSchemaItemSync(schemaPart);
-    } else if (
-      Property.isProperty(schemaPart) &&
-      this._visitor.visitPropertySync
-    ) {
+    } else if (Property.isProperty(schemaPart) && this._visitor.visitPropertySync) {
       this._visitor.visitPropertySync(schemaPart);
     } else if (
       RelationshipConstraint.isRelationshipConstraint(schemaPart) &&
@@ -397,155 +365,116 @@ export class SchemaPartVisitorDelegate {
       this._visitor.visitRelationshipConstraintSync(schemaPart);
     }
 
-    if (
-      isCustomAttributeContainer(schemaPart) &&
-      this._visitor.visitCustomAttributeContainerSync
-    )
+    if (isCustomAttributeContainer(schemaPart) && this._visitor.visitCustomAttributeContainerSync)
       this._visitor.visitCustomAttributeContainerSync(schemaPart);
   }
 
   private async visitSchemaItem(schemaItem: SchemaItem) {
-    if (this._visitor.visitSchemaItem)
-      await this._visitor.visitSchemaItem(schemaItem);
+    if (this._visitor.visitSchemaItem) await this._visitor.visitSchemaItem(schemaItem);
 
     if (ECClass.isECClass(schemaItem) && this._visitor.visitClass)
       await this._visitor.visitClass(schemaItem as AnyClass);
 
     switch (schemaItem.schemaItemType) {
       case SchemaItemType.Constant:
-        if (this._visitor.visitConstant)
-          await this._visitor.visitConstant(schemaItem as Constant);
+        if (this._visitor.visitConstant) await this._visitor.visitConstant(schemaItem as Constant);
         break;
       case SchemaItemType.CustomAttributeClass:
         if (this._visitor.visitCustomAttributeClass)
-          await this._visitor.visitCustomAttributeClass(
-            schemaItem as CustomAttributeClass
-          );
+          await this._visitor.visitCustomAttributeClass(schemaItem as CustomAttributeClass);
         break;
       case SchemaItemType.EntityClass:
-        if (this._visitor.visitEntityClass)
-          await this._visitor.visitEntityClass(schemaItem as EntityClass);
+        if (this._visitor.visitEntityClass) await this._visitor.visitEntityClass(schemaItem as EntityClass);
         break;
       case SchemaItemType.Enumeration:
-        if (this._visitor.visitEnumeration)
-          await this._visitor.visitEnumeration(schemaItem as Enumeration);
+        if (this._visitor.visitEnumeration) await this._visitor.visitEnumeration(schemaItem as Enumeration);
         break;
       case SchemaItemType.Format:
-        if (this._visitor.visitFormat)
-          await this._visitor.visitFormat(schemaItem as Format);
+        if (this._visitor.visitFormat) await this._visitor.visitFormat(schemaItem as Format);
         break;
       case SchemaItemType.InvertedUnit:
-        if (this._visitor.visitInvertedUnit)
-          await this._visitor.visitInvertedUnit(schemaItem as InvertedUnit);
+        if (this._visitor.visitInvertedUnit) await this._visitor.visitInvertedUnit(schemaItem as InvertedUnit);
         break;
       case SchemaItemType.KindOfQuantity:
-        if (this._visitor.visitKindOfQuantity)
-          await this._visitor.visitKindOfQuantity(schemaItem as KindOfQuantity);
+        if (this._visitor.visitKindOfQuantity) await this._visitor.visitKindOfQuantity(schemaItem as KindOfQuantity);
         break;
       case SchemaItemType.Mixin:
-        if (this._visitor.visitMixin)
-          await this._visitor.visitMixin(schemaItem as Mixin);
+        if (this._visitor.visitMixin) await this._visitor.visitMixin(schemaItem as Mixin);
         break;
       case SchemaItemType.Phenomenon:
-        if (this._visitor.visitPhenomenon)
-          await this._visitor.visitPhenomenon(schemaItem as Phenomenon);
+        if (this._visitor.visitPhenomenon) await this._visitor.visitPhenomenon(schemaItem as Phenomenon);
         break;
       case SchemaItemType.PropertyCategory:
         if (this._visitor.visitPropertyCategory)
-          await this._visitor.visitPropertyCategory(
-            schemaItem as PropertyCategory
-          );
+          await this._visitor.visitPropertyCategory(schemaItem as PropertyCategory);
         break;
       case SchemaItemType.RelationshipClass:
         if (this._visitor.visitRelationshipClass)
-          await this._visitor.visitRelationshipClass(
-            schemaItem as RelationshipClass
-          );
+          await this._visitor.visitRelationshipClass(schemaItem as RelationshipClass);
         break;
       case SchemaItemType.StructClass:
-        if (this._visitor.visitStructClass)
-          await this._visitor.visitStructClass(schemaItem as StructClass);
+        if (this._visitor.visitStructClass) await this._visitor.visitStructClass(schemaItem as StructClass);
         break;
       case SchemaItemType.Unit:
-        if (this._visitor.visitUnit)
-          await this._visitor.visitUnit(schemaItem as Unit);
+        if (this._visitor.visitUnit) await this._visitor.visitUnit(schemaItem as Unit);
         break;
       case SchemaItemType.UnitSystem:
-        if (this._visitor.visitUnitSystem)
-          await this._visitor.visitUnitSystem(schemaItem as UnitSystem);
+        if (this._visitor.visitUnitSystem) await this._visitor.visitUnitSystem(schemaItem as UnitSystem);
         break;
     }
   }
 
   private visitSchemaItemSync(schemaItem: SchemaItem) {
-    if (this._visitor.visitSchemaItemSync)
-      this._visitor.visitSchemaItemSync(schemaItem);
+    if (this._visitor.visitSchemaItemSync) this._visitor.visitSchemaItemSync(schemaItem);
 
     if (ECClass.isECClass(schemaItem) && this._visitor.visitClassSync)
       this._visitor.visitClassSync(schemaItem as AnyClass);
 
     switch (schemaItem.schemaItemType) {
       case SchemaItemType.Constant:
-        if (this._visitor.visitConstantSync)
-          this._visitor.visitConstantSync(schemaItem as Constant);
+        if (this._visitor.visitConstantSync) this._visitor.visitConstantSync(schemaItem as Constant);
         break;
       case SchemaItemType.CustomAttributeClass:
         if (this._visitor.visitCustomAttributeClassSync)
-          this._visitor.visitCustomAttributeClassSync(
-            schemaItem as CustomAttributeClass
-          );
+          this._visitor.visitCustomAttributeClassSync(schemaItem as CustomAttributeClass);
         break;
       case SchemaItemType.EntityClass:
-        if (this._visitor.visitEntityClassSync)
-          this._visitor.visitEntityClassSync(schemaItem as EntityClass);
+        if (this._visitor.visitEntityClassSync) this._visitor.visitEntityClassSync(schemaItem as EntityClass);
         break;
       case SchemaItemType.Enumeration:
-        if (this._visitor.visitEnumerationSync)
-          this._visitor.visitEnumerationSync(schemaItem as Enumeration);
+        if (this._visitor.visitEnumerationSync) this._visitor.visitEnumerationSync(schemaItem as Enumeration);
         break;
       case SchemaItemType.Format:
-        if (this._visitor.visitFormatSync)
-          this._visitor.visitFormatSync(schemaItem as Format);
+        if (this._visitor.visitFormatSync) this._visitor.visitFormatSync(schemaItem as Format);
         break;
       case SchemaItemType.InvertedUnit:
-        if (this._visitor.visitInvertedUnitSync)
-          this._visitor.visitInvertedUnitSync(schemaItem as InvertedUnit);
+        if (this._visitor.visitInvertedUnitSync) this._visitor.visitInvertedUnitSync(schemaItem as InvertedUnit);
         break;
       case SchemaItemType.KindOfQuantity:
-        if (this._visitor.visitKindOfQuantitySync)
-          this._visitor.visitKindOfQuantitySync(schemaItem as KindOfQuantity);
+        if (this._visitor.visitKindOfQuantitySync) this._visitor.visitKindOfQuantitySync(schemaItem as KindOfQuantity);
         break;
       case SchemaItemType.Mixin:
-        if (this._visitor.visitMixinSync)
-          this._visitor.visitMixinSync(schemaItem as Mixin);
+        if (this._visitor.visitMixinSync) this._visitor.visitMixinSync(schemaItem as Mixin);
         break;
       case SchemaItemType.Phenomenon:
-        if (this._visitor.visitPhenomenonSync)
-          this._visitor.visitPhenomenonSync(schemaItem as Phenomenon);
+        if (this._visitor.visitPhenomenonSync) this._visitor.visitPhenomenonSync(schemaItem as Phenomenon);
         break;
       case SchemaItemType.PropertyCategory:
         if (this._visitor.visitPropertyCategorySync)
-          this._visitor.visitPropertyCategorySync(
-            schemaItem as PropertyCategory
-          );
+          this._visitor.visitPropertyCategorySync(schemaItem as PropertyCategory);
         break;
       case SchemaItemType.RelationshipClass:
         if (this._visitor.visitRelationshipClassSync)
-          this._visitor.visitRelationshipClassSync(
-            schemaItem as RelationshipClass
-          );
+          this._visitor.visitRelationshipClassSync(schemaItem as RelationshipClass);
         break;
       case SchemaItemType.StructClass:
-        if (this._visitor.visitStructClassSync)
-          this._visitor.visitStructClassSync(schemaItem as StructClass);
+        if (this._visitor.visitStructClassSync) this._visitor.visitStructClassSync(schemaItem as StructClass);
         break;
       case SchemaItemType.Unit:
-        if (this._visitor.visitUnitSync)
-          this._visitor.visitUnitSync(schemaItem as Unit);
+        if (this._visitor.visitUnitSync) this._visitor.visitUnitSync(schemaItem as Unit);
         break;
       case SchemaItemType.UnitSystem:
-        if (this._visitor.visitUnitSystemSync)
-          this._visitor.visitUnitSystemSync(schemaItem as UnitSystem);
+        if (this._visitor.visitUnitSystemSync) this._visitor.visitUnitSystemSync(schemaItem as UnitSystem);
         break;
     }
   }

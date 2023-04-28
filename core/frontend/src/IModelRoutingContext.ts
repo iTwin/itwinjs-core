@@ -6,11 +6,7 @@
  * @module IModelConnection
  */
 
-import {
-  BentleyStatus,
-  IModelError,
-  RpcRoutingToken,
-} from "@itwin/core-common";
+import { BentleyStatus, IModelError, RpcRoutingToken } from "@itwin/core-common";
 
 /**
  * Controls the RPC routing for an iModel connection.
@@ -23,9 +19,7 @@ export class IModelRoutingContext {
     return new IModelRoutingContext(token);
   }
 
-  public static readonly default = new IModelRoutingContext(
-    RpcRoutingToken.default
-  );
+  public static readonly default = new IModelRoutingContext(RpcRoutingToken.default);
 
   public static get current(): IModelRoutingContext | undefined {
     return this._current;
@@ -43,10 +37,7 @@ export class IModelRoutingContext {
 
   public route<T>(handler: () => T): T {
     if (IModelRoutingContext.current) {
-      throw new IModelError(
-        BentleyStatus.ERROR,
-        "Concurrent use is not supported."
-      );
+      throw new IModelError(BentleyStatus.ERROR, "Concurrent use is not supported.");
     }
 
     IModelRoutingContext._current = this;

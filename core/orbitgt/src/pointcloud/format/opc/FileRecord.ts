@@ -130,29 +130,12 @@ export class FileRecord {
     let crs: string = LittleEndian.readBufferString(data, 4);
     let dataOffset: int32 = 4 + LittleEndian.getStringByteCount(crs);
     let levelCount: int32 = LittleEndian.readBufferInt(data, dataOffset + 0);
-    let attributeCount: int32 = LittleEndian.readBufferInt(
-      data,
-      dataOffset + 4
-    );
+    let attributeCount: int32 = LittleEndian.readBufferInt(data, dataOffset + 4);
     let blockSize: int32 = LittleEndian.readBufferInt(data, dataOffset + 8);
-    let metricCellSize: float64 = LittleEndian.readBufferDouble(
-      data,
-      dataOffset + 12
-    );
-    let creationTime: ALong = LittleEndian.readBufferLong(
-      data,
-      dataOffset + 20
-    );
+    let metricCellSize: float64 = LittleEndian.readBufferDouble(data, dataOffset + 12);
+    let creationTime: ALong = LittleEndian.readBufferLong(data, dataOffset + 20);
     /* Return the record */
-    return new FileRecord(
-      options,
-      crs,
-      levelCount,
-      attributeCount,
-      blockSize,
-      metricCellSize,
-      creationTime
-    );
+    return new FileRecord(options, crs, levelCount, attributeCount, blockSize, metricCellSize, creationTime);
   }
 
   /**
@@ -169,11 +152,7 @@ export class FileRecord {
     size: ALong
   ): Promise<FileRecord> {
     /* Read the record */
-    let data: ABuffer = await fileStorage.readFilePart(
-      fileName,
-      offset,
-      size.toInt()
-    );
+    let data: ABuffer = await fileStorage.readFilePart(fileName, offset, size.toInt());
     /* Parse the record */
     return FileRecord.readFromBuffer(data);
   }

@@ -6,11 +6,7 @@
 import { expect } from "chai";
 import * as fs from "fs";
 import { AnyCurve } from "../../curve/CurveChain";
-import {
-  BagOfCurves,
-  CurveChain,
-  CurveCollection,
-} from "../../curve/CurveCollection";
+import { BagOfCurves, CurveChain, CurveCollection } from "../../curve/CurveCollection";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { OffsetHelpers } from "../../curve/internalContexts/MultiChainCollector";
 import { JointOptions } from "../../curve/internalContexts/PolygonOffsetContext";
@@ -23,10 +19,7 @@ import { Geometry } from "../../Geometry";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { PolylineOps } from "../../geometry3d/PolylineOps";
 import { Range3d } from "../../geometry3d/Range";
-import {
-  Sample,
-  SteppedIndexFunctionFactory,
-} from "../../serialization/GeometrySamples";
+import { Sample, SteppedIndexFunctionFactory } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
@@ -50,10 +43,7 @@ describe("ChainCollector", () => {
       "MBDenseCurvesToOffset",
     ]) {
       const allGeometry: GeometryQuery[] = [];
-      const stringData = fs.readFileSync(
-        `${chainCollectorInputDirectory}${filename}.imjs`,
-        "utf8"
-      );
+      const stringData = fs.readFileSync(`${chainCollectorInputDirectory}${filename}.imjs`, "utf8");
       if (stringData) {
         const jsonData = JSON.parse(stringData);
         let fragments = IModelJson.Reader.parse(jsonData);
@@ -65,12 +55,7 @@ describe("ChainCollector", () => {
 
           const offsetDistance = 0.1 * range.xLength();
           const yShift = 2 * range.yLength();
-          GeometryCoreTestIO.captureCloneGeometry(
-            allGeometry,
-            fragments,
-            x0,
-            y0
-          );
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, fragments, x0, y0);
 
           if (filename === noOffset0) {
             y0 += yShift;
@@ -79,65 +64,25 @@ describe("ChainCollector", () => {
               const gapTolerance = gapFraction * range.xLength();
               for (const fragment of fragments) {
                 if (fragment instanceof GeometryQuery) {
-                  const anyLocation =
-                    CurveCollection.createCurveLocationDetailOnAnyCurvePrimitive(
-                      fragment,
-                      0.0
-                    );
+                  const anyLocation = CurveCollection.createCurveLocationDetailOnAnyCurvePrimitive(fragment, 0.0);
                   if (anyLocation) {
-                    GeometryCoreTestIO.createAndCaptureXYCircle(
-                      allGeometry,
-                      anyLocation.point,
-                      gapTolerance,
-                      x0,
-                      y0
-                    );
+                    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, anyLocation.point, gapTolerance, x0, y0);
                   }
                 }
               }
               const chains = RegionOps.collectChains(fragments, gapTolerance);
-              GeometryCoreTestIO.captureCloneGeometry(
-                allGeometry,
-                chains,
-                x0,
-                y0
-              );
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, chains, x0, y0);
               y0 += 0.1 * yShift;
             }
           } else {
-            const offsets = RegionOps.collectInsideAndOutsideOffsets(
-              fragments,
-              offsetDistance,
-              offsetDistance * 0.1
-            );
+            const offsets = RegionOps.collectInsideAndOutsideOffsets(fragments, offsetDistance, offsetDistance * 0.1);
             y0 += yShift;
-            GeometryCoreTestIO.captureCloneGeometry(
-              allGeometry,
-              offsets.chains,
-              x0,
-              y0
-            );
-            GeometryCoreTestIO.captureCloneGeometry(
-              allGeometry,
-              offsets.insideOffsets,
-              x0,
-              y0,
-              0.01
-            );
-            GeometryCoreTestIO.captureCloneGeometry(
-              allGeometry,
-              offsets.outsideOffsets,
-              x0,
-              y0,
-              -0.01
-            );
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsets.chains, x0, y0);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsets.insideOffsets, x0, y0, 0.01);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsets.outsideOffsets, x0, y0, -0.01);
           }
           GeometryCoreTestIO.consoleLog(`output to ${filename}`);
-          GeometryCoreTestIO.saveGeometry(
-            allGeometry,
-            "ChainCollector",
-            filename
-          );
+          GeometryCoreTestIO.saveGeometry(allGeometry, "ChainCollector", filename);
           xOut += 2 * range.xLength();
         }
       }
@@ -154,10 +99,7 @@ describe("ChainCollector", () => {
     // expect a single loo input ...
     for (const filename of ["MBDenseCurvesToOffset"]) {
       const allGeometry: GeometryQuery[] = [];
-      const stringData = fs.readFileSync(
-        `${chainCollectorInputDirectory}${filename}.imjs`,
-        "utf8"
-      );
+      const stringData = fs.readFileSync(`${chainCollectorInputDirectory}${filename}.imjs`, "utf8");
       if (stringData) {
         const jsonData = JSON.parse(stringData);
         const fragments = IModelJson.Reader.parse(jsonData);
@@ -168,13 +110,7 @@ describe("ChainCollector", () => {
           const range = OffsetHelpers.extendRange(Range3d.create(), fragments);
           let x0 = xOut - range.low.x;
           y0 = -range.low.y;
-          GeometryCoreTestIO.captureCloneGeometry(
-            allGeometry,
-            pointsA,
-            x0,
-            y0,
-            0.01
-          );
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, pointsA, x0, y0, 0.01);
 
           const yShift = 2 * range.yLength();
           for (const offsetFraction of offsetFractions) {
@@ -187,33 +123,12 @@ describe("ChainCollector", () => {
                 offset: offsetDistance,
                 compress: compressionDistance,
               });
-              const pointsB = PolylineOps.compressByChordError(
-                pointsA.getPoint3dArray(),
-                compressionDistance
-              );
-              GeometryCoreTestIO.captureCloneGeometry(
-                allGeometry,
-                pointsB,
-                x0,
-                y0,
-                0.01
-              );
+              const pointsB = PolylineOps.compressByChordError(pointsA.getPoint3dArray(), compressionDistance);
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, pointsB, x0, y0, 0.01);
               const loopB = Loop.createPolygon(pointsB);
-              const options = new JointOptions(
-                offsetSign * offsetDistance,
-                100,
-                135
-              );
-              const offsetCurves = RegionOps.constructCurveXYOffset(
-                loopB,
-                options
-              );
-              GeometryCoreTestIO.captureCloneGeometry(
-                allGeometry,
-                offsetCurves,
-                x0,
-                y0
-              );
+              const options = new JointOptions(offsetSign * offsetDistance, 100, 135);
+              const offsetCurves = RegionOps.constructCurveXYOffset(loopB, options);
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsetCurves, x0, y0);
             }
             y0 += 5 * range.yLength();
             // cleanup at 0.25 ... offset 25%, repeat
@@ -223,49 +138,20 @@ describe("ChainCollector", () => {
             const offsetStep = (offsetSign * offsetDistance) / numOffsets;
             let currentPoints = pointsA.getPoint3dArray();
             for (let i = 0; i < 4; i++) {
-              const newPoints = PolylineOps.compressByChordError(
-                currentPoints,
-                cleanupDistance
-              );
+              const newPoints = PolylineOps.compressByChordError(currentPoints, cleanupDistance);
               const loopB = Loop.createPolygon(newPoints);
               const options = new JointOptions(offsetStep, 100, 135);
-              const offsetCurves = RegionOps.constructCurveXYOffset(
-                loopB,
-                options
-              ) as Loop;
-              currentPoints = offsetCurves
-                .getPackedStrokes()!
-                .getPoint3dArray();
-              GeometryCoreTestIO.captureCloneGeometry(
-                allGeometry,
-                pointsA,
-                x0,
-                y0,
-                0.01
-              );
-              GeometryCoreTestIO.captureCloneGeometry(
-                allGeometry,
-                loopB,
-                x0,
-                y0,
-                -0.01
-              );
-              GeometryCoreTestIO.captureCloneGeometry(
-                allGeometry,
-                currentPoints,
-                x0,
-                y0
-              );
+              const offsetCurves = RegionOps.constructCurveXYOffset(loopB, options) as Loop;
+              currentPoints = offsetCurves.getPackedStrokes()!.getPoint3dArray();
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, pointsA, x0, y0, 0.01);
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, loopB, x0, y0, -0.01);
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, currentPoints, x0, y0);
               y0 += yShift;
             }
             x0 += 2.5 * range.xLength();
           }
           GeometryCoreTestIO.consoleLog(`output to ${filename}`);
-          GeometryCoreTestIO.saveGeometry(
-            allGeometry,
-            "OffsetCleanup",
-            filename
-          );
+          GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetCleanup", filename);
           xOut += 2 * range.xLength();
         }
       }
@@ -292,9 +178,7 @@ describe("ChainCollector", () => {
       // make primitives in simple order around the ellipse ..
       const sequentialPrimitives = [];
       for (let i = 0; i + 1 < circlePoints.length; i++)
-        sequentialPrimitives.push(
-          LineSegment3d.create(circlePoints[i], circlePoints[i + 1])
-        );
+        sequentialPrimitives.push(LineSegment3d.create(circlePoints[i], circlePoints[i + 1]));
       // step through the primitives at various intervals to get them out non-sequentially
       for (const step of [2, 3, 7, 5, 1]) {
         for (let i = 0; i < sequentialPrimitives.length; i += step) {
@@ -312,12 +196,7 @@ describe("ChainCollector", () => {
         }
       }
       // sort them all back together
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        shuffledPrimitives,
-        x0,
-        y0
-      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, shuffledPrimitives, x0, y0);
       y0 += yShift;
       const offsets = RegionOps.collectInsideAndOutsideOffsets(
         shuffledPrimitives,
@@ -325,40 +204,14 @@ describe("ChainCollector", () => {
         offsetDistance * 0.1
       );
       y0 += yShift;
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        shuffledPrimitives,
-        x0,
-        y0
-      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, shuffledPrimitives, x0, y0);
       y0 += yShift;
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        offsets.chains,
-        x0,
-        y0
-      );
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        offsets.insideOffsets,
-        x0,
-        y0,
-        0.1
-      );
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        offsets.outsideOffsets,
-        x0,
-        y0,
-        -0.1
-      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsets.chains, x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsets.insideOffsets, x0, y0, 0.1);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsets.outsideOffsets, x0, y0, -0.1);
       x0 += xShift;
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "ChainCollector",
-      "PrimitiveOrder"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ChainCollector", "PrimitiveOrder");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -369,48 +222,21 @@ describe("ChainCollector", () => {
     const xShift = 20.0;
     const yShift = 20.0;
     const offsetDistance = 0.5;
-    const boxA = Loop.create(
-      LineString3d.create(Sample.createRectangle(0, 0, 3, 4, 0, true))
-    );
-    const boxB = Loop.create(
-      LineString3d.create(Sample.createRectangle(5, 0, 9, 4, 0, true))
-    );
+    const boxA = Loop.create(LineString3d.create(Sample.createRectangle(0, 0, 3, 4, 0, true)));
+    const boxB = Loop.create(LineString3d.create(Sample.createRectangle(5, 0, 9, 4, 0, true)));
     for (const primitives of [boxA, BagOfCurves.create(boxA, boxB)]) {
       let y0 = 0;
       // sort them all back together
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, primitives, x0, y0);
       y0 += yShift;
-      const offsets = RegionOps.collectInsideAndOutsideOffsets(
-        [primitives],
-        offsetDistance,
-        offsetDistance * 0.1
-      );
+      const offsets = RegionOps.collectInsideAndOutsideOffsets([primitives], offsetDistance, offsetDistance * 0.1);
       y0 += yShift;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, primitives, x0, y0);
       y0 += yShift;
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        offsets.chains,
-        x0,
-        y0
-      );
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        offsets.insideOffsets,
-        x0,
-        y0,
-        0.1
-      );
-      GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry,
-        offsets.outsideOffsets,
-        x0,
-        y0,
-        -0.1
-      );
-      const outsideOffsetLength = OffsetHelpers.sumLengths(
-        offsets.outsideOffsets
-      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsets.chains, x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsets.insideOffsets, x0, y0, 0.1);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsets.outsideOffsets, x0, y0, -0.1);
+      const outsideOffsetLength = OffsetHelpers.sumLengths(offsets.outsideOffsets);
       // skip the inside and outside ..
       const myOffsetA: AnyCurve[] = [];
       OffsetHelpers.appendOffsets(primitives, -offsetDistance, myOffsetA);
@@ -427,11 +253,7 @@ describe("ChainCollector", () => {
       ck.testCoordinate(outsideOffsetLength, myLengthB);
       x0 += xShift;
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "ChainCollector",
-      "SmallInputs"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ChainCollector", "SmallInputs");
     expect(ck.getNumErrors()).equals(0);
   });
 });

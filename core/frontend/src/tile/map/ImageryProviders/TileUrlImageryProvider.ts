@@ -6,11 +6,7 @@
  * @module Tiles
  */
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import {
-  MapLayerImageryProvider,
-  MapLayerSourceStatus,
-  MapLayerSourceValidation,
-} from "../../internal";
+import { MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation } from "../../internal";
 
 const levelToken = "{level}";
 const rowToken = "{row}";
@@ -23,30 +19,19 @@ export class TileUrlImageryProvider extends MapLayerImageryProvider {
   constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
   }
-  public static validateUrlTemplate(
-    template: string
-  ): MapLayerSourceValidation {
+  public static validateUrlTemplate(template: string): MapLayerSourceValidation {
     return {
       status:
-        template.indexOf(levelToken) > 0 &&
-        template.indexOf(columnToken) > 0 &&
-        template.indexOf(rowToken) > 0
+        template.indexOf(levelToken) > 0 && template.indexOf(columnToken) > 0 && template.indexOf(rowToken) > 0
           ? MapLayerSourceStatus.Valid
           : MapLayerSourceStatus.InvalidUrl,
     };
   }
 
   // construct the Url from the desired Tile
-  public async constructUrl(
-    row: number,
-    column: number,
-    level: number
-  ): Promise<string> {
+  public async constructUrl(row: number, column: number, level: number): Promise<string> {
     let url = this._settings.url;
-    if (
-      TileUrlImageryProvider.validateUrlTemplate(url).status !==
-      MapLayerSourceStatus.Valid
-    ) {
+    if (TileUrlImageryProvider.validateUrlTemplate(url).status !== MapLayerSourceStatus.Valid) {
       if (url.lastIndexOf("/") !== url.length - 1) url = `${url}/`;
       url = `${url}{level}/{column}/{row}.png`;
     }

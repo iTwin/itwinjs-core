@@ -16,11 +16,7 @@ import {
   SchemaKey,
   StrengthDirection,
 } from "@itwin/ecschema-metadata";
-import {
-  PropertyEditResults,
-  SchemaContextEditor,
-  SchemaItemEditResults,
-} from "./Editor";
+import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { ECClasses } from "./ECClasses";
 import { MutableRelationshipClass } from "./Mutable/MutableRelationshipClass";
 
@@ -67,22 +63,15 @@ export class RelationshipClasses extends ECClasses {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       return {
-        errorMessage: `Schema Key ${schemaKey.toString(
-          true
-        )} not found in context`,
+        errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context`,
       };
 
-    if (relationshipProps.name === undefined)
-      return { errorMessage: `No name was supplied within props.` };
+    if (relationshipProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
 
-    const newClass = (await schema.createRelationshipClass(
-      relationshipProps.name
-    )) as MutableRelationshipClass;
+    const newClass = (await schema.createRelationshipClass(relationshipProps.name)) as MutableRelationshipClass;
     if (newClass === undefined)
       return {
-        errorMessage: `Failed to create class ${
-          relationshipProps.name
-        } in schema ${schemaKey.toString(true)}.`,
+        errorMessage: `Failed to create class ${relationshipProps.name} in schema ${schemaKey.toString(true)}.`,
       };
 
     await newClass.fromJSON(relationshipProps);
@@ -98,10 +87,9 @@ export class RelationshipClasses extends ECClasses {
     relationship: string | RelationshipClass,
     direction: string | StrengthDirection
   ): Promise<PropertyEditResults> {
-    const relationshipClass =
-      await this._schemaEditor.schemaContext.getSchemaItem<MutableRelationshipClass>(
-        relationshipKey
-      );
+    const relationshipClass = await this._schemaEditor.schemaContext.getSchemaItem<MutableRelationshipClass>(
+      relationshipKey
+    );
 
     if (relationshipClass === undefined)
       throw new ECObjectsError(
@@ -115,11 +103,7 @@ export class RelationshipClasses extends ECClasses {
         `Expected ${relationshipKey.fullName} to be of type Relationship Class.`
       );
 
-    await relationshipClass.createNavigationProperty(
-      name,
-      relationship,
-      direction
-    );
+    await relationshipClass.createNavigationProperty(name, relationship, direction);
     return { itemKey: relationshipKey, propertyName: name };
   }
 }

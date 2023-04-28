@@ -53,10 +53,7 @@ export class Quantity implements QuantityProps {
    *  @param conversion  Defines the information needed to convert the Quantity's magnitude from the current unit to another unit. This conversion info is usually
    *                     returned from the UnitsProvider.
    */
-  public convertTo(
-    toUnit: UnitProps,
-    conversion: UnitConversionProps
-  ): Quantity | undefined {
+  public convertTo(toUnit: UnitProps, conversion: UnitConversionProps): Quantity | undefined {
     const newMagnitude = this.magnitude * conversion.factor + conversion.offset;
     return new Quantity(toUnit, newMagnitude);
   }

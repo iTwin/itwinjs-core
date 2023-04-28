@@ -37,10 +37,7 @@ class TestUiItemsProvider implements UiItemsProvider {
     toolbarUsage: ToolbarUsage,
     toolbarOrientation: ToolbarOrientation
   ): CommonToolbarItem[] {
-    if (
-      toolbarUsage === ToolbarUsage.ContentManipulation &&
-      toolbarOrientation === ToolbarOrientation.Horizontal
-    ) {
+    if (toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
       const simpleActionSpec = ToolbarItemUtilities.createActionButton(
         "simple-test-action-tool",
         200,
@@ -57,11 +54,7 @@ class TestUiItemsProvider implements UiItemsProvider {
   }
 
   public static statusBarItemIsVisible = true;
-  public provideStatusBarItems(
-    _stageId: string,
-    _stageUsage: string,
-    _stageAppData?: any
-  ): CommonStatusBarItem[] {
+  public provideStatusBarItems(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[] {
     const statusBarItems: CommonStatusBarItem[] = [];
 
     statusBarItems.push(
@@ -160,11 +153,7 @@ describe("UiItemsManager", () => {
     expect(statusbarItems.length).to.be.eq(0);
     const backstageItems = UiItemsManager.getBackstageItems();
     expect(backstageItems.length).to.be.eq(0);
-    const widgets = UiItemsManager.getWidgets(
-      "",
-      testStageUsage,
-      StagePanelLocation.Right
-    );
+    const widgets = UiItemsManager.getWidgets("", testStageUsage, StagePanelLocation.Right);
     expect(widgets.length).to.be.eq(0);
   });
 
@@ -223,18 +212,11 @@ describe("UiItemsManager", () => {
       ToolbarOrientation.Horizontal
     );
     expect(toolSpecs.length).to.be.eq(1);
-    const statusbarItems = UiItemsManager.getStatusBarItems(
-      "stage",
-      testStageUsage
-    );
+    const statusbarItems = UiItemsManager.getStatusBarItems("stage", testStageUsage);
     expect(statusbarItems.length).to.be.eq(2);
     const backstageItems = UiItemsManager.getBackstageItems();
     expect(backstageItems.length).to.be.eq(1);
-    const widgets = UiItemsManager.getWidgets(
-      "",
-      testStageUsage,
-      StagePanelLocation.Right
-    );
+    const widgets = UiItemsManager.getWidgets("", testStageUsage, StagePanelLocation.Right);
     expect(widgets.length).to.be.eq(1);
     UiItemsManager.unregister(testUiProvider.id);
   });
@@ -249,18 +231,11 @@ describe("UiItemsManager", () => {
       ToolbarOrientation.Horizontal
     );
     expect(toolSpecs.length).to.be.eq(1);
-    const statusbarItems = UiItemsManager.getStatusBarItems(
-      "stage",
-      testStageUsage
-    );
+    const statusbarItems = UiItemsManager.getStatusBarItems("stage", testStageUsage);
     expect(statusbarItems.length).to.be.eq(2);
     const backstageItems = UiItemsManager.getBackstageItems();
     expect(backstageItems.length).to.be.eq(1);
-    const widgets = UiItemsManager.getWidgets(
-      "stage",
-      testStageUsage,
-      StagePanelLocation.Right
-    );
+    const widgets = UiItemsManager.getWidgets("stage", testStageUsage, StagePanelLocation.Right);
     expect(widgets.length).to.be.eq(1);
     UiItemsManager.unregister(testUiProvider.id);
   });
@@ -279,11 +254,7 @@ describe("UiItemsManager", () => {
     expect(statusbarItems.length).to.be.eq(2);
     const backstageItems = UiItemsManager.getBackstageItems();
     expect(backstageItems.length).to.be.eq(1);
-    const widgets = UiItemsManager.getWidgets(
-      "stage",
-      "private",
-      StagePanelLocation.Right
-    );
+    const widgets = UiItemsManager.getWidgets("stage", "private", StagePanelLocation.Right);
     expect(widgets.length).to.be.eq(1);
     UiItemsManager.unregister(testUiProvider.id);
   });
@@ -298,19 +269,12 @@ describe("UiItemsManager", () => {
       ToolbarOrientation.Horizontal
     );
     expect(toolSpecs.length).to.be.eq(0);
-    const statusbarItems = UiItemsManager.getStatusBarItems(
-      "stage",
-      testStageUsage
-    );
+    const statusbarItems = UiItemsManager.getStatusBarItems("stage", testStageUsage);
     expect(statusbarItems.length).to.be.eq(0);
     // backstage items are not stage specific
     const backstageItems = UiItemsManager.getBackstageItems();
     expect(backstageItems.length).to.be.eq(1);
-    const widgets = UiItemsManager.getWidgets(
-      "stage",
-      testStageUsage,
-      StagePanelLocation.Right
-    );
+    const widgets = UiItemsManager.getWidgets("stage", testStageUsage, StagePanelLocation.Right);
     expect(widgets.length).to.be.eq(0);
     UiItemsManager.unregister(testUiProvider.id);
   });
@@ -329,18 +293,11 @@ describe("UiItemsManager", () => {
       ToolbarOrientation.Horizontal
     );
     expect(toolSpecs.length).to.be.eq(1);
-    const statusbarItems = UiItemsManager.getStatusBarItems(
-      "stage",
-      testStageUsage
-    );
+    const statusbarItems = UiItemsManager.getStatusBarItems("stage", testStageUsage);
     expect(statusbarItems.length).to.be.eq(2);
     const backstageItems = UiItemsManager.getBackstageItems();
     expect(backstageItems.length).to.be.eq(1);
-    const widgets = UiItemsManager.getWidgets(
-      "stage",
-      testStageUsage,
-      StagePanelLocation.Right
-    );
+    const widgets = UiItemsManager.getWidgets("stage", testStageUsage, StagePanelLocation.Right);
     expect(widgets.length).to.be.eq(1);
 
     const toolSpecs2 = UiItemsManager.getToolbarButtonItems(
@@ -350,18 +307,11 @@ describe("UiItemsManager", () => {
       ToolbarOrientation.Horizontal
     );
     expect(toolSpecs2.length).to.be.eq(1);
-    const statusbarItems2 = UiItemsManager.getStatusBarItems(
-      "stage2",
-      testStageUsage
-    );
+    const statusbarItems2 = UiItemsManager.getStatusBarItems("stage2", testStageUsage);
     expect(statusbarItems2.length).to.be.eq(2);
     const backstageItems2 = UiItemsManager.getBackstageItems();
     expect(backstageItems2.length).to.be.eq(1);
-    const widgets2 = UiItemsManager.getWidgets(
-      "stage2",
-      testStageUsage,
-      StagePanelLocation.Right
-    );
+    const widgets2 = UiItemsManager.getWidgets("stage2", testStageUsage, StagePanelLocation.Right);
     expect(widgets2.length).to.be.eq(1);
 
     UiItemsManager.unregister(testUiProvider.id);
@@ -382,18 +332,11 @@ describe("UiItemsManager", () => {
       ToolbarOrientation.Horizontal
     );
     expect(toolSpecs.length).to.be.eq(1);
-    const statusbarItems = UiItemsManager.getStatusBarItems(
-      "stage",
-      testStageUsage
-    );
+    const statusbarItems = UiItemsManager.getStatusBarItems("stage", testStageUsage);
     expect(statusbarItems.length).to.be.eq(2);
     const backstageItems = UiItemsManager.getBackstageItems();
     expect(backstageItems.length).to.be.eq(1);
-    const widgets = UiItemsManager.getWidgets(
-      "stage",
-      testStageUsage,
-      StagePanelLocation.Right
-    );
+    const widgets = UiItemsManager.getWidgets("stage", testStageUsage, StagePanelLocation.Right);
     expect(widgets.length).to.be.eq(1);
 
     UiItemsManager.unregister(testUiProvider.id);
@@ -410,19 +353,12 @@ describe("UiItemsManager", () => {
       ToolbarOrientation.Horizontal
     );
     expect(toolSpecs.length).to.be.eq(0);
-    const statusbarItems = UiItemsManager.getStatusBarItems(
-      "stage",
-      testStageUsage
-    );
+    const statusbarItems = UiItemsManager.getStatusBarItems("stage", testStageUsage);
     expect(statusbarItems.length).to.be.eq(0);
     // NOTE: backstage items are not "stage" specific
     const backstageItems = UiItemsManager.getBackstageItems();
     expect(backstageItems.length).to.be.eq(1);
-    const widgets = UiItemsManager.getWidgets(
-      "",
-      testStageUsage,
-      StagePanelLocation.Right
-    );
+    const widgets = UiItemsManager.getWidgets("", testStageUsage, StagePanelLocation.Right);
     expect(widgets.length).to.be.eq(0);
     UiItemsManager.unregister(testUiProvider.id);
   });

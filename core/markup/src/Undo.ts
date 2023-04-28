@@ -92,11 +92,7 @@ class RepositionAction extends UndoAction {
  * @internal
  */
 class ModifyAction extends UndoAction {
-  constructor(
-    cmdName: string,
-    private _newElem: MarkupElement,
-    private _oldElement: MarkupElement
-  ) {
+  constructor(cmdName: string, private _newElem: MarkupElement, private _oldElement: MarkupElement) {
     super(cmdName);
     assert(_newElem !== undefined && _oldElement !== undefined);
     MarkupApp.markup!.selected.replace(_oldElement, _newElem);
@@ -167,14 +163,8 @@ export class UndoManager {
     this.addAction(new DeleteAction(this._cmdName, elem));
   }
   /** call this from within a [[performOperation]] function *after* an element has been moved in display order in a markup */
-  public onRepositioned(
-    elem: MarkupElement,
-    oldIndex: number,
-    oldParent: MarkupElement
-  ) {
-    this.addAction(
-      new RepositionAction(this._cmdName, elem, oldIndex, oldParent)
-    );
+  public onRepositioned(elem: MarkupElement, oldIndex: number, oldParent: MarkupElement) {
+    this.addAction(new RepositionAction(this._cmdName, elem, oldIndex, oldParent));
   }
   /** call this from within a [[performOperation]] function *after* an element has been modified in a markup */
   public onModified(newElem: MarkupElement, oldElem: MarkupElement) {
@@ -191,15 +181,11 @@ export class UndoManager {
   }
   /** the name of the operation that can be undone (or undefined) */
   public get undoString() {
-    return this.undoPossible
-      ? this._stack[this._currentPos - 1].cmdName
-      : undefined;
+    return this.undoPossible ? this._stack[this._currentPos - 1].cmdName : undefined;
   }
   /** the name of the operation that can be redone (or undefined) */
   public get redoString() {
-    return this.redoPossible
-      ? this._stack[this._currentPos].cmdName
-      : undefined;
+    return this.redoPossible ? this._stack[this._currentPos].cmdName : undefined;
   }
 
   /** reverse the most recent operation, if any */
@@ -207,10 +193,7 @@ export class UndoManager {
     if (this._currentPos === 0) return; // no operations have been performed
 
     const cmdId = this._stack[this._currentPos - 1].cmdId;
-    while (
-      this._currentPos > 0 &&
-      cmdId === this._stack[this._currentPos - 1].cmdId
-    )
+    while (this._currentPos > 0 && cmdId === this._stack[this._currentPos - 1].cmdId)
       this._stack[--this._currentPos].reverse();
   }
   /** reinstate the most recently reversed operation, if any */
@@ -218,10 +201,7 @@ export class UndoManager {
     if (this._currentPos === this.size) return; // no operations have been reversed.
 
     const cmdId = this._stack[this._currentPos].cmdId;
-    while (
-      this._currentPos < this.size &&
-      cmdId === this._stack[this._currentPos].cmdId
-    )
+    while (this._currentPos < this.size && cmdId === this._stack[this._currentPos].cmdId)
       this._stack[this._currentPos++].reinstate();
   }
 }

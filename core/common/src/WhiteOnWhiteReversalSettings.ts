@@ -39,17 +39,13 @@ export class WhiteOnWhiteReversalSettings {
   private static _ignore = new WhiteOnWhiteReversalSettings(false);
 
   /** Create from JSON representation. */
-  public static fromJSON(
-    props?: WhiteOnWhiteReversalProps
-  ): WhiteOnWhiteReversalSettings {
+  public static fromJSON(props?: WhiteOnWhiteReversalProps): WhiteOnWhiteReversalSettings {
     return props?.ignoreBackgroundColor ? this._noIgnore : this._ignore;
   }
 
   /** Convert to JSON representation. The JSON representation is `undefined` if these settings match the defaults. */
   public toJSON(): WhiteOnWhiteReversalProps | undefined {
-    return this.ignoreBackgroundColor
-      ? { ignoreBackgroundColor: true }
-      : undefined;
+    return this.ignoreBackgroundColor ? { ignoreBackgroundColor: true } : undefined;
   }
 
   /** Returns true if `this` is equivalent to `other`. */

@@ -62,10 +62,7 @@ private static _exampleMenuItems: AbstractMenuItemProps[] = [
 This function call example uses the `_exampleMenuItems` above and displays those menu items at the current cursor position.
 
 ```ts
-IModelApp.uiAdmin.showContextMenu(
-  this._exampleMenuItems,
-  IModelApp.uiAdmin.cursorPosition
-);
+IModelApp.uiAdmin.showContextMenu(this._exampleMenuItems, IModelApp.uiAdmin.cursorPosition);
 ```
 
 The menu items are displayed at the cursor.
@@ -272,12 +269,7 @@ private static _closeInputEditor() {
 This function call example displays an angle editor at the current cursor position.
 
 ```ts
-IModelApp.uiAdmin.showAngleEditor(
-  90,
-  IModelApp.uiAdmin.cursorPosition,
-  this._numberInputCommit,
-  this._inputCancel
-);
+IModelApp.uiAdmin.showAngleEditor(90, IModelApp.uiAdmin.cursorPosition, this._numberInputCommit, this._inputCancel);
 ```
 
 #### showLengthEditor
@@ -285,12 +277,7 @@ IModelApp.uiAdmin.showAngleEditor(
 This function call example displays a length editor at the current cursor position.
 
 ```ts
-IModelApp.uiAdmin.showLengthEditor(
-  90,
-  IModelApp.uiAdmin.cursorPosition,
-  this._numberInputCommit,
-  this._inputCancel
-);
+IModelApp.uiAdmin.showLengthEditor(90, IModelApp.uiAdmin.cursorPosition, this._numberInputCommit, this._inputCancel);
 ```
 
 ![uiAdmin-showLengthEditor](./images/UiAdmin-showLengthEditor.png "IModelApp.uiAdmin.showLengthEditor")
@@ -300,12 +287,7 @@ IModelApp.uiAdmin.showLengthEditor(
 This function call example displays a height editor at the current cursor position.
 
 ```ts
-IModelApp.uiAdmin.showHeightEditor(
-  30,
-  IModelApp.uiAdmin.cursorPosition,
-  this._numberInputCommit,
-  this._inputCancel
-);
+IModelApp.uiAdmin.showHeightEditor(30, IModelApp.uiAdmin.cursorPosition, this._numberInputCommit, this._inputCancel);
 ```
 
 ![uiAdmin-showHeightEditor](./images/UiAdmin-showHeightEditor.png "IModelApp.uiAdmin.showHeightEditor")
@@ -394,31 +376,23 @@ class PointOnePopupSettingsProvider extends DialogLayoutDataProvider {
   public weightProperty = new DialogProperty<number>(
     PropertyDescriptionHelper.buildWeightPickerDescription(
       "weight",
-      IModelApp.i18n.translate(
-        "SampleApp:tools.ToolWithSettings.Prompts.Weight"
-      )
+      IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Weight")
     ),
     3
   );
 
   /** Called by UI to inform data provider of changes.  */
-  public applyUiPropertyChange = (
-    updatedValue: DialogPropertySyncItem
-  ): void => {
+  public applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
     if (updatedValue.propertyName === this.weightProperty.name) {
       this.weightProperty.value = updatedValue.value.value! as number;
       const msg = `Set Weight = ${this.weightProperty.value}`;
-      IModelApp.notifications.outputMessage(
-        new NotifyMessageDetails(OutputMessagePriority.Info, msg)
-      );
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
     }
   };
 
   /** Called by UI to request available properties when UI is manually created. */
   public supplyDialogItems(): DialogItem[] | undefined {
-    return [
-      this.weightProperty.toDialogItem({ rowPriority: 1, columnIndex: 1 }),
-    ];
+    return [this.weightProperty.toDialogItem({ rowPriority: 1, columnIndex: 1 })];
   }
 
   /** Get Sync UI Control Properties Event */
@@ -440,9 +414,7 @@ class PointTwoPopupSettingsProvider extends DialogLayoutDataProvider {
   public sourceProperty = new DialogProperty<string>(
     PropertyDescriptionHelper.buildTextEditorDescription(
       "source",
-      IModelApp.i18n.translate(
-        "SampleApp:tools.ToolWithSettings.Prompts.Source"
-      )
+      IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Source")
     ),
     "unknown",
     undefined
@@ -451,21 +423,15 @@ class PointTwoPopupSettingsProvider extends DialogLayoutDataProvider {
   /** Called by UI to inform data provider of changes.  */
   public applyUiPropertyChange = (prop: DialogPropertySyncItem): void => {
     if (prop.propertyName === this.sourceProperty.name) {
-      this.sourceProperty.value = prop.value.value
-        ? (prop.value.value as string)
-        : "";
+      this.sourceProperty.value = prop.value.value ? (prop.value.value as string) : "";
       const msg = `Set Source = ${this.sourceProperty.value}`;
-      IModelApp.notifications.outputMessage(
-        new NotifyMessageDetails(OutputMessagePriority.Info, msg)
-      );
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
     }
   };
 
   /** Called by UI to request available properties when UI is manually created. */
   public supplyDialogItems(): DialogItem[] | undefined {
-    return [
-      this.sourceProperty.toDialogItem({ rowPriority: 1, columnIndex: 1 }),
-    ];
+    return [this.sourceProperty.toDialogItem({ rowPriority: 1, columnIndex: 1 })];
   }
 
   /** Get Sync UI Control Properties Event */
@@ -577,24 +543,18 @@ class DynamicModalUiDataProvider extends DialogLayoutDataProvider {
   }
 
   // called to apply a single property value change.
-  public applyUiPropertyChange = (
-    updatedValue: DialogPropertySyncItem
-  ): void => {
+  public applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
     this.processChangesInUi([updatedValue]);
   };
 
   /** Called by UI to inform data provider of changes.  */
-  public processChangesInUi(
-    properties: DialogPropertyItem[]
-  ): PropertyChangeResult {
+  public processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
     if (properties.length > 0) {
       for (const prop of properties) {
         if (prop.propertyName === DynamicModalUiDataProvider.userPropertyName) {
           this.user = prop.value.value ? (prop.value.value as string) : "";
           continue;
-        } else if (
-          prop.propertyName === DynamicModalUiDataProvider.cityPropertyName
-        ) {
+        } else if (prop.propertyName === DynamicModalUiDataProvider.cityPropertyName) {
           this.city = prop.value.value ? (prop.value.value as string) : "";
           continue;
         }

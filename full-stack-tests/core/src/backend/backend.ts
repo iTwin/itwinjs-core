@@ -24,12 +24,7 @@ import {
   SpatialCategory,
   SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
-import {
-  Id64String,
-  Logger,
-  LogLevel,
-  ProcessDetector,
-} from "@itwin/core-bentley";
+import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import {
   BentleyCloudRpcManager,
   CodeProps,
@@ -40,14 +35,8 @@ import {
   SubCategoryAppearance,
 } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
-import {
-  BasicManipulationCommand,
-  EditCommandAdmin,
-} from "@itwin/editor-backend";
-import {
-  fullstackIpcChannel,
-  FullStackTestIpc,
-} from "../common/FullStackTestIpc";
+import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
+import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import * as testCommands from "./TestEditCommands";
 import { exposeBackendCallbacks } from "../certa/certaBackend";
@@ -74,10 +63,7 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     return fullstackIpcChannel;
   }
 
-  public static async createAndInsertPartition(
-    iModelDb: IModelDb,
-    newModelCode: CodeProps
-  ): Promise<Id64String> {
+  public static async createAndInsertPartition(iModelDb: IModelDb, newModelCode: CodeProps): Promise<Id64String> {
     const modeledElementProps: ElementProps = {
       classFullName: PhysicalPartition.classFullName,
       parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
@@ -88,15 +74,9 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     return iModelDb.elements.insertElement(modeledElement.toJSON());
   }
 
-  public async createAndInsertPhysicalModel(
-    key: string,
-    newModelCode: CodeProps
-  ): Promise<Id64String> {
+  public async createAndInsertPhysicalModel(key: string, newModelCode: CodeProps): Promise<Id64String> {
     const iModelDb = IModelDb.findByKey(key);
-    const eid = await FullStackTestIpcHandler.createAndInsertPartition(
-      iModelDb,
-      newModelCode
-    );
+    const eid = await FullStackTestIpcHandler.createAndInsertPartition(iModelDb, newModelCode);
     const modeledElementRef = new RelatedElement({ id: eid });
     const newModel = iModelDb.models.createModel({
       modeledElement: modeledElementRef,
@@ -113,11 +93,7 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     appearance: SubCategoryAppearance.Props
   ): Promise<Id64String> {
     const iModelDb = IModelDb.findByKey(key);
-    const category = SpatialCategory.create(
-      iModelDb,
-      scopeModelId,
-      categoryName
-    );
+    const category = SpatialCategory.create(iModelDb, scopeModelId, categoryName);
     const categoryId = category.insert();
     category.setDefaultAppearance(appearance);
     return categoryId;
@@ -131,9 +107,7 @@ async function init() {
   const iModelHost: IModelHostOptions = {};
   const iModelClient = new IModelsClient({
     api: {
-      baseUrl: `https://${
-        process.env.IMJS_URL_PREFIX ?? ""
-      }api.bentley.com/imodels`,
+      baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`,
     },
   });
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
@@ -145,8 +119,7 @@ async function init() {
     exposeBackendCallbacks();
     const authClient = new ElectronMainAuthorization({
       clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "testClientId",
-      redirectUri:
-        process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "testRedirectUri",
+      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "testRedirectUri",
       scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "testScope",
     });
     await authClient.signInSilent();
@@ -201,11 +174,7 @@ class BackendTestAssetResolver extends FileNameResolver {
     if (path.isAbsolute(inFileName)) {
       return inFileName;
     }
-    return path.join(
-      __dirname,
-      "../../../../core/backend/lib/cjs/test/assets/",
-      inFileName
-    );
+    return path.join(__dirname, "../../../../core/backend/lib/cjs/test/assets/", inFileName);
   }
   /** Resolve a key (for testing FileNameResolver) */
   public override tryResolveKey(fileKey: string): string | undefined {

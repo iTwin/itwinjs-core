@@ -36,8 +36,7 @@ export interface IProjectToViewForSort {
  */
 export class TileLoadSorter implements iComparator<TileIndex> {
   /** @ignore */
-  public static readonly _CLASSNAME_: string =
-    "orbitgt.pointcloud.render.TileLoadSorter"; // the full name of the original java class
+  public static readonly _CLASSNAME_: string = "orbitgt.pointcloud.render.TileLoadSorter"; // the full name of the original java class
   // the interface implementation markers:
   private isiComparator_TileIndex_Instance: boolean = true;
 
@@ -53,10 +52,7 @@ export class TileLoadSorter implements iComparator<TileIndex> {
    * @param modelTransform the model transformation.
    * @param projection the view projection.
    */
-  public constructor(
-    tileIndex: ViewTree,
-    private viewProjector: IProjectToViewForSort
-  ) {
+  public constructor(tileIndex: ViewTree, private viewProjector: IProjectToViewForSort) {
     this.tileIndex = tileIndex;
   }
 
@@ -68,20 +64,11 @@ export class TileLoadSorter implements iComparator<TileIndex> {
    * @param dZ the z grid index offset.
    * @return the position in view space.
    */
-  private getTilePosition(
-    tile: TileIndex,
-    dX: int32,
-    dY: int32,
-    dZ: int32
-  ): Coordinate {
+  private getTilePosition(tile: TileIndex, dX: int32, dY: int32, dZ: int32): Coordinate {
     /* Get the position of the tile center in the view world space */
     let tileGrid: Grid = this.tileIndex.getLevel(tile.level).getTileGrid();
     let tileCenter: Coordinate = tileGrid.getCellCenter(
-      new GridIndex(
-        tile.gridIndex.x + dX,
-        tile.gridIndex.y + dY,
-        tile.gridIndex.z + dZ
-      )
+      new GridIndex(tile.gridIndex.x + dX, tile.gridIndex.y + dY, tile.gridIndex.z + dZ)
     );
     this.viewProjector.projectToViewForSort(tileCenter);
     /* Return the position */
@@ -113,10 +100,7 @@ export class TileLoadSorter implements iComparator<TileIndex> {
     let tileCenter: Coordinate = this.getTilePosition(tile, 0, 0, 0);
     if (tileCenter == null) return 0.0;
     /* Get the angle from the camera boresight (screen center) (the smaller the better) (radians) */
-    let angleFromScreenCenter: float64 = Coordinate.getAngleRad(
-      tileCenter,
-      new Coordinate(0.0, 0.0, 1.0) /*forward*/
-    );
+    let angleFromScreenCenter: float64 = Coordinate.getAngleRad(tileCenter, new Coordinate(0.0, 0.0, 1.0) /*forward*/);
     /* Get the radius of the tile in the view (camera) space */
     let tileRadius: float64 = this.getTileRadius(tile, tileCenter);
     /* Get the angular extent of the tile (the bigger the better) (radians) */

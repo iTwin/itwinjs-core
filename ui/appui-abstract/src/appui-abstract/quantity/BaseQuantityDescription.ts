@@ -6,10 +6,7 @@
  * @module Properties
  */
 
-import {
-  PropertyDescription,
-  PropertyEditorInfo,
-} from "../properties/Description";
+import { PropertyDescription, PropertyEditorInfo } from "../properties/Description";
 import {
   CustomFormattedNumberParams,
   IconEditorParams,

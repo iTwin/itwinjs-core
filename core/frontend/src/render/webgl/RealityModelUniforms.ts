@@ -7,10 +7,7 @@
  * @module WebGL
  */
 
-import {
-  PointCloudDisplaySettings,
-  RealityModelDisplaySettings,
-} from "@itwin/core-common";
+import { PointCloudDisplaySettings, RealityModelDisplaySettings } from "@itwin/core-common";
 import { UniformHandle } from "./UniformHandle";
 import { desync, sync } from "./Sync";
 import { Range3d, Transform, Vector3d } from "@itwin/core-geometry";
@@ -55,12 +52,7 @@ export class PointCloudUniforms {
     this.initialize(settings);
   }
 
-  public updateRange(
-    range: Range3d | undefined,
-    target: Target,
-    xform: Transform,
-    is3d: boolean
-  ): void {
+  public updateRange(range: Range3d | undefined, target: Target, xform: Transform, is3d: boolean): void {
     let rangeFactor = 8.0; // default to min scale factor of 8
     const near = target.uniforms.frustum.nearPlane;
     const far = target.uniforms.frustum.farPlane;
@@ -79,10 +71,7 @@ export class PointCloudUniforms {
       rangeFactor = Math.log(Math.max(10, viewDepth / rangeScale));
     }
     const zoomFactor = Math.log(far / near); // compensate for zoom level
-    const winSizeFactor = Math.pow(
-      1.8440033,
-      Math.log2(2226 / target.uniforms.viewRect.width)
-    ); // compensate for window size
+    const winSizeFactor = Math.pow(1.8440033, Math.log2(2226 / target.uniforms.viewRect.width)); // compensate for window size
     const scaleFactor = (rangeFactor + zoomFactor) / winSizeFactor;
 
     if (this._scaleFactor === scaleFactor && this._is3d === is3d) return;
@@ -105,8 +94,7 @@ export class PointCloudUniforms {
   }
 
   private initialize(settings: PointCloudDisplaySettings): void {
-    this._vec4[0] =
-      "pixel" === settings.sizeMode ? settings.pixelSize : -settings.voxelScale;
+    this._vec4[0] = "pixel" === settings.sizeMode ? settings.pixelSize : -settings.voxelScale;
     this._vec4[1] = settings.minPixelsPerVoxel;
     this._vec4[2] = settings.maxPixelsPerVoxel;
     this._vec4[3] = "square" === settings.shape ? 1 : 0;

@@ -6,11 +6,7 @@
  * @module RpcInterface
  */
 
-import {
-  IModelConnectionProps,
-  IModelRpcProps,
-  SnapshotOpenOptions,
-} from "../IModel";
+import { IModelConnectionProps, IModelRpcProps, SnapshotOpenOptions } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { RpcOperation } from "./core/RpcOperation";
@@ -34,9 +30,7 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
   }
 
   /** Returns the SnapshotIModelRpcInterface client instance for a custom RPC routing configuration. */
-  public static getClientForRouting(
-    token: RpcRoutingToken
-  ): SnapshotIModelRpcInterface {
+  public static getClientForRouting(token: RpcRoutingToken): SnapshotIModelRpcInterface {
     return RpcManager.getClientForInterface(SnapshotIModelRpcInterface, token);
   }
 
@@ -52,18 +46,12 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
   ===========================================================================================*/
 
   @RpcOperation.setRoutingProps(unknownIModelId)
-  public async openFile(
-    _filePath: string,
-    _opts?: SnapshotOpenOptions
-  ): Promise<IModelConnectionProps> {
+  public async openFile(_filePath: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> {
     return this.forward(arguments);
   }
 
   @RpcOperation.setRoutingProps(unknownIModelId)
-  public async openRemote(
-    _key: string,
-    _opts?: SnapshotOpenOptions
-  ): Promise<IModelConnectionProps> {
+  public async openRemote(_key: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> {
     return this.forward(arguments);
   }
 

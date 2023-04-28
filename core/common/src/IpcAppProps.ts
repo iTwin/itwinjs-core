@@ -6,13 +6,7 @@
  * @module NativeApp
  */
 
-import {
-  GuidString,
-  Id64String,
-  IModelStatus,
-  LogLevel,
-  OpenMode,
-} from "@itwin/core-bentley";
+import { GuidString, Id64String, IModelStatus, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { Range3dProps, XYZProps } from "@itwin/core-geometry";
 import { OpenBriefcaseProps } from "./BriefcaseTypes";
 import { ChangedEntities } from "./ChangedEntities";
@@ -105,9 +99,7 @@ export interface TxnNotifications {
   notifyProjectExtentsChanged: (extents: Range3dProps) => void;
   notifyGlobalOriginChanged: (origin: XYZProps) => void;
   notifyEcefLocationChanged: (ecef: EcefLocationProps | undefined) => void;
-  notifyGeographicCoordinateSystemChanged: (
-    gcs: GeographicCRSProps | undefined
-  ) => void;
+  notifyGeographicCoordinateSystemChanged: (gcs: GeographicCRSProps | undefined) => void;
 }
 
 /**
@@ -129,13 +121,7 @@ export interface IpcAppFunctions {
    * @param _message Specify log message.
    * @param _metaData metaData if any.
    */
-  log: (
-    _timestamp: number,
-    _level: LogLevel,
-    _category: string,
-    _message: string,
-    _metaData?: any
-  ) => Promise<void>;
+  log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
 
   /** see BriefcaseConnection.openFile */
   openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
@@ -161,36 +147,20 @@ export interface IpcAppFunctions {
   getRedoString: (key: string) => Promise<string>;
 
   /** see BriefcaseConnection.pullChanges */
-  pullChanges: (
-    key: string,
-    toIndex?: ChangesetIndex,
-    options?: PullChangesOptions
-  ) => Promise<ChangesetIndexAndId>;
+  pullChanges: (key: string, toIndex?: ChangesetIndex, options?: PullChangesOptions) => Promise<ChangesetIndexAndId>;
   /** Cancels pull of changes. */
   cancelPullChangesRequest: (key: string) => Promise<void>;
   /** see BriefcaseConnection.pushChanges */
-  pushChanges: (
-    key: string,
-    description: string
-  ) => Promise<ChangesetIndexAndId>;
+  pushChanges: (key: string, description: string) => Promise<ChangesetIndexAndId>;
   /** Cancels currently pending or active generation of tile content.  */
-  cancelTileContentRequests: (
-    tokenProps: IModelRpcProps,
-    _contentIds: TileTreeContentIds[]
-  ) => Promise<void>;
+  cancelTileContentRequests: (tokenProps: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
 
   /** Cancel element graphics requests.
    * @see [[IModelTileRpcInterface.requestElementGraphics]].
    */
-  cancelElementGraphicsRequests: (
-    key: string,
-    _requestIds: string[]
-  ) => Promise<void>;
+  cancelElementGraphicsRequests: (key: string, _requestIds: string[]) => Promise<void>;
 
-  toggleGraphicalEditingScope: (
-    key: string,
-    _startSession: boolean
-  ) => Promise<boolean>;
+  toggleGraphicalEditingScope: (key: string, _startSession: boolean) => Promise<boolean>;
   isGraphicalEditingSupported: (key: string) => Promise<boolean>;
 
   reverseTxns: (key: string, numOperations: number) => Promise<IModelStatus>;

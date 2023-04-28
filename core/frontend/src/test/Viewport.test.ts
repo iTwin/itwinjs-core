@@ -18,19 +18,13 @@ import { ViewRect } from "../ViewRect";
 import { ScreenViewport } from "../Viewport";
 import { DisplayStyle3dState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
-import {
-  openBlankViewport,
-  testBlankViewport,
-  testBlankViewportAsync,
-} from "./openBlankViewport";
+import { openBlankViewport, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
 import { DecorateContext } from "../ViewContext";
 import { GraphicType } from "../render/GraphicBuilder";
 import { Pixel } from "../render/Pixel";
 
 describe("Viewport", () => {
-  before(async () =>
-    IModelApp.startup({ localization: new EmptyLocalization() })
-  );
+  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
 
   describe("flashedId", () => {
@@ -43,13 +37,11 @@ describe("Viewport", () => {
       func: () => void
     ): void {
       let event: ChangedEvent | undefined;
-      const removeListener = viewport.onFlashedIdChanged.addListener(
-        (vp, arg) => {
-          expect(vp).to.equal(viewport);
-          expect(event).to.be.undefined;
-          event = [arg.previous, arg.current];
-        }
-      );
+      const removeListener = viewport.onFlashedIdChanged.addListener((vp, arg) => {
+        expect(vp).to.equal(viewport);
+        expect(event).to.be.undefined;
+        event = [arg.previous, arg.current];
+      });
 
       func();
       removeListener();
@@ -60,84 +52,35 @@ describe("Viewport", () => {
 
     it("dispatches events when flashed Id changes", () => {
       testBlankViewport((viewport) => {
-        expectFlashedId(
-          viewport,
-          "0x123",
-          [undefined, "0x123"],
-          () => (viewport.flashedId = "0x123")
-        );
-        expectFlashedId(
-          viewport,
-          "0x456",
-          ["0x123", "0x456"],
-          () => (viewport.flashedId = "0x456")
-        );
-        expectFlashedId(
-          viewport,
-          "0x456",
-          undefined,
-          () => (viewport.flashedId = "0x456")
-        );
-        expectFlashedId(
-          viewport,
-          undefined,
-          ["0x456", undefined],
-          () => (viewport.flashedId = undefined)
-        );
-        expectFlashedId(
-          viewport,
-          undefined,
-          undefined,
-          () => (viewport.flashedId = undefined)
-        );
+        expectFlashedId(viewport, "0x123", [undefined, "0x123"], () => (viewport.flashedId = "0x123"));
+        expectFlashedId(viewport, "0x456", ["0x123", "0x456"], () => (viewport.flashedId = "0x456"));
+        expectFlashedId(viewport, "0x456", undefined, () => (viewport.flashedId = "0x456"));
+        expectFlashedId(viewport, undefined, ["0x456", undefined], () => (viewport.flashedId = undefined));
+        expectFlashedId(viewport, undefined, undefined, () => (viewport.flashedId = undefined));
       });
     });
 
     it("treats invalid Id as undefined", () => {
       testBlankViewport((viewport) => {
         viewport.flashedId = "0x123";
-        expectFlashedId(
-          viewport,
-          undefined,
-          ["0x123", undefined],
-          () => (viewport.flashedId = "0")
-        );
+        expectFlashedId(viewport, undefined, ["0x123", undefined], () => (viewport.flashedId = "0"));
         viewport.flashedId = "0x123";
-        expectFlashedId(
-          viewport,
-          undefined,
-          ["0x123", undefined],
-          () => (viewport.flashedId = undefined)
-        );
+        expectFlashedId(viewport, undefined, ["0x123", undefined], () => (viewport.flashedId = undefined));
       });
     });
 
     it("rejects malformed Ids", () => {
       testBlankViewport((viewport) => {
-        expectFlashedId(
-          viewport,
-          undefined,
-          undefined,
-          () => (viewport.flashedId = "not an id")
-        );
+        expectFlashedId(viewport, undefined, undefined, () => (viewport.flashedId = "not an id"));
         viewport.flashedId = "0x123";
-        expectFlashedId(
-          viewport,
-          "0x123",
-          undefined,
-          () => (viewport.flashedId = "not an id")
-        );
+        expectFlashedId(viewport, "0x123", undefined, () => (viewport.flashedId = "not an id"));
       });
     });
 
     it("prohibits assignment from within event callback", () => {
       testBlankViewport((viewport) => {
-        const oldHandler = UnexpectedErrors.setHandler(
-          UnexpectedErrors.reThrowImmediate
-        );
-        viewport.onFlashedIdChanged.addOnce(
-          () => (viewport.flashedId = "0x12345")
-        );
+        const oldHandler = UnexpectedErrors.setHandler(UnexpectedErrors.reThrowImmediate);
+        viewport.onFlashedIdChanged.addOnce(() => (viewport.flashedId = "0x12345"));
         expect(() => (viewport.flashedId = "0x12345")).to.throw(
           Error,
           "Cannot assign to Viewport.flashedId from within an onFlashedIdChanged event callback"
@@ -155,19 +98,12 @@ describe("Viewport", () => {
           expect(viewport.onChangeView.numberOfListeners).to.equal(expectedNum);
 
           // The viewport registers its own listener for each of these.
-          expect(
-            viewport.view.onDisplayStyleChanged.numberOfListeners
-          ).to.equal(expectedNum + 1);
-          expect(
-            viewport.displayStyle.settings.onAnalysisStyleChanged
-              .numberOfListeners
-          ).to.equal(expectedNum + 1);
+          expect(viewport.view.onDisplayStyleChanged.numberOfListeners).to.equal(expectedNum + 1);
+          expect(viewport.displayStyle.settings.onAnalysisStyleChanged.numberOfListeners).to.equal(expectedNum + 1);
         }
 
         expectListeners(false);
-        const removeListener = viewport.addOnAnalysisStyleChangedListener(
-          () => undefined
-        );
+        const removeListener = viewport.addOnAnalysisStyleChangedListener(() => undefined);
         expectListeners(true);
         removeListener();
         expectListeners(false);
@@ -177,17 +113,12 @@ describe("Viewport", () => {
     it("emits events when analysis style changes", () => {
       testBlankViewport((viewport) => {
         type EventPayload = AnalysisStyle | "undefined" | "none";
-        function expectChangedEvent(
-          expectedPayload: EventPayload,
-          func: () => void
-        ): void {
+        function expectChangedEvent(expectedPayload: EventPayload, func: () => void): void {
           let payload: EventPayload = "none";
-          const removeListener = viewport.addOnAnalysisStyleChangedListener(
-            (style) => {
-              expect(payload).to.equal("none");
-              payload = style ?? "undefined";
-            }
-          );
+          const removeListener = viewport.addOnAnalysisStyleChangedListener((style) => {
+            expect(payload).to.equal("none");
+            payload = style ?? "undefined";
+          });
 
           func();
           removeListener();
@@ -196,14 +127,8 @@ describe("Viewport", () => {
 
         const a = AnalysisStyle.fromJSON({ normalChannelName: "a" });
 
-        expectChangedEvent(
-          a,
-          () => (viewport.displayStyle.settings.analysisStyle = a)
-        );
-        expectChangedEvent(
-          "none",
-          () => (viewport.displayStyle.settings.analysisStyle = a)
-        );
+        expectChangedEvent(a, () => (viewport.displayStyle.settings.analysisStyle = a));
+        expectChangedEvent("none", () => (viewport.displayStyle.settings.analysisStyle = a));
 
         const b = AnalysisStyle.fromJSON({ normalChannelName: "b" });
         expectChangedEvent(b, () => {
@@ -220,14 +145,8 @@ describe("Viewport", () => {
           viewport.changeView(view);
         });
 
-        expectChangedEvent(
-          "undefined",
-          () => (viewport.displayStyle.settings.analysisStyle = undefined)
-        );
-        expectChangedEvent(
-          "none",
-          () => (viewport.displayStyle.settings.analysisStyle = undefined)
-        );
+        expectChangedEvent("undefined", () => (viewport.displayStyle.settings.analysisStyle = undefined));
+        expectChangedEvent("none", () => (viewport.displayStyle.settings.analysisStyle = undefined));
       });
     });
   });
@@ -254,10 +173,7 @@ describe("Viewport", () => {
     });
 
     afterEach(() => {
-      viewport.view.displayStyle = new DisplayStyle3dState(
-        {} as any,
-        viewport.iModel
-      );
+      viewport.view.displayStyle = new DisplayStyle3dState({} as any, viewport.iModel);
       expectBackgroundMap(false);
       expectTerrain(false);
       viewport.dispose();
@@ -332,10 +248,7 @@ describe("Viewport", () => {
       }
     }
 
-    function test(
-      testCase: TestCase,
-      func: (viewport: ScreenViewport) => void
-    ): void {
+    function test(testCase: TestCase, func: (viewport: ScreenViewport) => void): void {
       const decHeight = testCase.image.length / testCase.width;
       const rectHeight = testCase.height ?? decHeight;
       expect(rectHeight).to.equal(Math.floor(rectHeight));
@@ -349,14 +262,9 @@ describe("Viewport", () => {
           expect(viewport.viewRect.width).to.equal(testCase.width);
           expect(viewport.viewRect.height).to.equal(rectHeight);
 
-          if (testCase.bgColor)
-            viewport.displayStyle.backgroundColor = testCase.bgColor;
+          if (testCase.bgColor) viewport.displayStyle.backgroundColor = testCase.bgColor;
 
-          const decorator = new Decorator(
-            testCase.image,
-            testCase.width,
-            decHeight
-          );
+          const decorator = new Decorator(testCase.image, testCase.width, decHeight);
           try {
             viewport.renderFrame();
             func(viewport);
@@ -367,10 +275,7 @@ describe("Viewport", () => {
       });
     }
 
-    function expectColors(
-      image: ImageBuffer,
-      expectedColors: ColorDef[]
-    ): void {
+    function expectColors(image: ImageBuffer, expectedColors: ColorDef[]): void {
       expect(image.width * image.height).to.equal(expectedColors.length);
       expect(image.format).to.equal(ImageBufferFormat.Rgba);
 
@@ -405,13 +310,7 @@ describe("Viewport", () => {
 
     const rgbwp1: TestCase = {
       width: 1,
-      image: [
-        ColorDef.red,
-        ColorDef.green,
-        ColorDef.blue,
-        ColorDef.white,
-        purple,
-      ],
+      image: [ColorDef.red, ColorDef.green, ColorDef.blue, ColorDef.white, purple],
     };
 
     const rTransp50pct: TestCase = {
@@ -428,17 +327,7 @@ describe("Viewport", () => {
 
     const square3: TestCase = {
       width: 3,
-      image: [
-        ColorDef.red,
-        ColorDef.green,
-        ColorDef.blue,
-        ColorDef.white,
-        ColorDef.black,
-        grey,
-        cyan,
-        purple,
-        yellow,
-      ],
+      image: [ColorDef.red, ColorDef.green, ColorDef.blue, ColorDef.white, ColorDef.black, grey, cyan, purple, yellow],
     };
 
     describe("readImage", () => {
@@ -447,12 +336,7 @@ describe("Viewport", () => {
           // eslint-disable-next-line deprecation/deprecation
           const image = viewport.readImage()!;
           expect(image).not.to.be.undefined;
-          expectColors(image, [
-            ColorDef.blue,
-            ColorDef.white,
-            ColorDef.red,
-            ColorDef.green,
-          ]);
+          expectColors(image, [ColorDef.blue, ColorDef.white, ColorDef.red, ColorDef.green]);
         });
       });
 
@@ -468,11 +352,7 @@ describe("Viewport", () => {
       it("inverts view rect y (BUG)", () => {
         test(rgbwp1, (viewport) => {
           // eslint-disable-next-line deprecation/deprecation
-          const image = viewport.readImage(
-            new ViewRect(0, 1, 1, 3),
-            undefined,
-            true
-          )!;
+          const image = viewport.readImage(new ViewRect(0, 1, 1, 3), undefined, true)!;
           expect(image).not.to.be.undefined;
           expectColors(image, [ColorDef.blue, ColorDef.white]);
         });
@@ -492,12 +372,7 @@ describe("Viewport", () => {
         test(rgbw2, (viewport) => {
           const image = viewport.readImageBuffer({ upsideDown: true })!;
           expect(image).not.to.be.undefined;
-          expectColors(image, [
-            ColorDef.blue,
-            ColorDef.white,
-            ColorDef.red,
-            ColorDef.green,
-          ]);
+          expectColors(image, [ColorDef.blue, ColorDef.white, ColorDef.red, ColorDef.green]);
         });
       });
 
@@ -513,13 +388,7 @@ describe("Viewport", () => {
 
       it("captures specified region", () => {
         test(square3, (viewport) => {
-          const capture = (
-            left: number,
-            top: number,
-            width: number,
-            height: number,
-            expected: ColorDef[]
-          ) => {
+          const capture = (left: number, top: number, width: number, height: number, expected: ColorDef[]) => {
             const rect = new ViewRect(left, top, left + width, top + height);
             const image = viewport.readImageBuffer({ rect })!;
             expect(image).not.to.be.undefined;
@@ -527,12 +396,7 @@ describe("Viewport", () => {
           };
 
           capture(0, 0, 3, 3, square3.image);
-          capture(0, 0, 2, 2, [
-            ColorDef.red,
-            ColorDef.green,
-            ColorDef.white,
-            ColorDef.black,
-          ]);
+          capture(0, 0, 2, 2, [ColorDef.red, ColorDef.green, ColorDef.white, ColorDef.black]);
           capture(1, 1, 2, 2, [ColorDef.black, grey, purple, yellow]);
           capture(2, 0, 1, 3, [ColorDef.blue, grey, yellow]);
           capture(0, 2, 3, 1, [cyan, purple, yellow]);
@@ -542,12 +406,7 @@ describe("Viewport", () => {
 
       it("rejects invalid capture rects", () => {
         test(rgbw2, (viewport) => {
-          const expectNoImage = (
-            left: number,
-            top: number,
-            right: number,
-            bottom: number
-          ) => {
+          const expectNoImage = (left: number, top: number, right: number, bottom: number) => {
             expect(
               viewport.readImageBuffer({
                 rect: new ViewRect(left, top, right, bottom),
@@ -597,9 +456,7 @@ describe("Viewport", () => {
                   image.data[i + 2],
                   0xff - image.data[i + 3]
                 );
-                expect(color.equals(grey)).to.equal(
-                  x < left || y < top || x >= right || y >= bottom
-                );
+                expect(color.equals(grey)).to.equal(x < left || y < top || x >= right || y >= bottom);
               }
             }
           };
@@ -647,8 +504,7 @@ describe("Viewport", () => {
       it("rejects invalid sizes", () => {
         test(rgbw2, (viewport) => {
           const expectNoImage = (width: number, height: number) => {
-            expect(viewport.readImageBuffer({ size: { x: width, y: height } }))
-              .to.be.undefined;
+            expect(viewport.readImageBuffer({ size: { x: width, y: height } })).to.be.undefined;
           };
 
           expectNoImage(0, 1);
@@ -685,8 +541,7 @@ describe("Viewport", () => {
         test(rTransp50pct, (viewport) => {
           const image = viewport.readImageBuffer({ size: { x: 2, y: 4 } })!;
           expect(image).not.to.be.undefined;
-          for (let i = 3; i < 2 * 4 * 4; i += 4)
-            expect(image.data[i]).to.equal(0xff);
+          for (let i = 3; i < 2 * 4 * 4; i += 4) expect(image.data[i]).to.equal(0xff);
         });
       });
 
@@ -701,11 +556,7 @@ describe("Viewport", () => {
   describe("readPixels", () => {
     it("returns undefined if viewport is disposed", async () => {
       testBlankViewport((vp) => {
-        vp.readPixels(
-          vp.viewRect,
-          Pixel.Selector.All,
-          (pixels) => expect(pixels).not.to.be.undefined
-        );
+        vp.readPixels(vp.viewRect, Pixel.Selector.All, (pixels) => expect(pixels).not.to.be.undefined);
 
         // BlankViewport.dispose also closes the iModel and removes the viewport's div from the DOM.
         // We don't want that until the test completes.
@@ -713,11 +564,7 @@ describe("Viewport", () => {
         vp.dispose = ScreenViewport.prototype.dispose; // eslint-disable-line @typescript-eslint/unbound-method
         vp.dispose();
 
-        vp.readPixels(
-          vp.viewRect,
-          Pixel.Selector.All,
-          (pixels) => expect(pixels).to.be.undefined
-        );
+        vp.readPixels(vp.viewRect, Pixel.Selector.All, (pixels) => expect(pixels).to.be.undefined);
 
         vp.dispose = dispose;
       });
@@ -727,16 +574,8 @@ describe("Viewport", () => {
   describe("readPixels", () => {
     it("returns undefined if specified area is invalid", async () => {
       testBlankViewport((vp) => {
-        vp.readPixels(
-          new ViewRect(10, 0, 50, 0),
-          Pixel.Selector.All,
-          (pixels) => expect(pixels).to.be.undefined
-        );
-        vp.readPixels(
-          new ViewRect(0, 10, 0, 50),
-          Pixel.Selector.All,
-          (pixels) => expect(pixels).to.be.undefined
-        );
+        vp.readPixels(new ViewRect(10, 0, 50, 0), Pixel.Selector.All, (pixels) => expect(pixels).to.be.undefined);
+        vp.readPixels(new ViewRect(0, 10, 0, 50), Pixel.Selector.All, (pixels) => expect(pixels).to.be.undefined);
       });
     });
   });

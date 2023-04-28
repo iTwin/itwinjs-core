@@ -31,8 +31,7 @@ describe("SchemaGraphUtil tests:", () => {
     assert.strictEqual(schemaB.references[1].name, "SchemaC");
 
     // Act
-    const schemaList =
-      SchemaGraphUtil.buildDependencyOrderedSchemaList(schemaA);
+    const schemaList = SchemaGraphUtil.buildDependencyOrderedSchemaList(schemaA);
 
     // Assert
     assert.strictEqual(schemaList.length, 4);
@@ -44,22 +43,13 @@ describe("SchemaGraphUtil tests:", () => {
 
   it("buildDependencyOrderedSchemaList with same schema references, contains schema once", () => {
     // Arrange
-    const importSchema = new Schema(
-      context,
-      new SchemaKey("SchemaA", 1, 0, 0),
-      "A"
-    );
-    const refSchema = new Schema(
-      context,
-      new SchemaKey("SchemaB", 1, 0, 0),
-      "B"
-    );
+    const importSchema = new Schema(context, new SchemaKey("SchemaA", 1, 0, 0), "A");
+    const refSchema = new Schema(context, new SchemaKey("SchemaB", 1, 0, 0), "B");
     importSchema.references.push(refSchema);
     importSchema.references.push(refSchema);
 
     // Act
-    const schemaList =
-      SchemaGraphUtil.buildDependencyOrderedSchemaList(importSchema);
+    const schemaList = SchemaGraphUtil.buildDependencyOrderedSchemaList(importSchema);
 
     // Assert
     assert.strictEqual(schemaList.length, 2);
@@ -81,8 +71,7 @@ describe("SchemaGraphUtil tests:", () => {
     schemaA.references.push(schemaD);
     schemaA.references.push(schemaE);
 
-    const schemaList =
-      SchemaGraphUtil.buildDependencyOrderedSchemaList(schemaA);
+    const schemaList = SchemaGraphUtil.buildDependencyOrderedSchemaList(schemaA);
 
     assert.strictEqual(schemaList.length, 5);
     assert.strictEqual(schemaList[0].name, "SchemaC");
@@ -93,66 +82,18 @@ describe("SchemaGraphUtil tests:", () => {
   });
 
   it("buildDependencyOrderedSchemaList checks schem depenedency order with complex references", async () => {
-    const schBDWS = new Schema(
-      context,
-      new SchemaKey("BuildingDataGroupWS", 1, 1, 0),
-      "BDWS"
-    );
-    const schAecUnits = new Schema(
-      context,
-      new SchemaKey("AecUnits", 1, 0, 1),
-      "AECU"
-    );
-    const schArchitecturalPhysical = new Schema(
-      context,
-      new SchemaKey("ArchitecturalPhysical", 1, 0, 0),
-      "ArchPhys"
-    );
-    const schBisCore = new Schema(
-      context,
-      new SchemaKey("BisCore", 1, 0, 4),
-      "bis"
-    );
-    const schECDbMap = new Schema(
-      context,
-      new SchemaKey("ECDbMap", 2, 0, 0),
-      "ecdbmap"
-    );
-    const schECDbSchemaPolicies = new Schema(
-      context,
-      new SchemaKey("ECDbSchemaPolicies", 1, 0, 0),
-      "ecdbpol"
-    );
-    const schBuildingDataGroupBase = new Schema(
-      context,
-      new SchemaKey("BuildingDataGroupBase", 1, 0, 4),
-      "bdgb"
-    );
-    const schBuildingSpatial = new Schema(
-      context,
-      new SchemaKey("BuildingSpatial", 1, 0, 0),
-      "spatial"
-    );
-    const schSpatialComposition = new Schema(
-      context,
-      new SchemaKey("SpatialComposition", 1, 0, 0),
-      "spcomp"
-    );
-    const schCoreCustomAttributes = new Schema(
-      context,
-      new SchemaKey("CoreCustomAttributes", 1, 0, 2),
-      "CoreCA"
-    );
-    const schFormats = new Schema(
-      context,
-      new SchemaKey("Formats", 1, 0, 0),
-      "f"
-    );
-    const schStructuralPhysical = new Schema(
-      context,
-      new SchemaKey("StructuralPhysical", 1, 0, 0),
-      "sp"
-    );
+    const schBDWS = new Schema(context, new SchemaKey("BuildingDataGroupWS", 1, 1, 0), "BDWS");
+    const schAecUnits = new Schema(context, new SchemaKey("AecUnits", 1, 0, 1), "AECU");
+    const schArchitecturalPhysical = new Schema(context, new SchemaKey("ArchitecturalPhysical", 1, 0, 0), "ArchPhys");
+    const schBisCore = new Schema(context, new SchemaKey("BisCore", 1, 0, 4), "bis");
+    const schECDbMap = new Schema(context, new SchemaKey("ECDbMap", 2, 0, 0), "ecdbmap");
+    const schECDbSchemaPolicies = new Schema(context, new SchemaKey("ECDbSchemaPolicies", 1, 0, 0), "ecdbpol");
+    const schBuildingDataGroupBase = new Schema(context, new SchemaKey("BuildingDataGroupBase", 1, 0, 4), "bdgb");
+    const schBuildingSpatial = new Schema(context, new SchemaKey("BuildingSpatial", 1, 0, 0), "spatial");
+    const schSpatialComposition = new Schema(context, new SchemaKey("SpatialComposition", 1, 0, 0), "spcomp");
+    const schCoreCustomAttributes = new Schema(context, new SchemaKey("CoreCustomAttributes", 1, 0, 2), "CoreCA");
+    const schFormats = new Schema(context, new SchemaKey("Formats", 1, 0, 0), "f");
+    const schStructuralPhysical = new Schema(context, new SchemaKey("StructuralPhysical", 1, 0, 0), "sp");
     const schUnits = new Schema(context, new SchemaKey("Units", 1, 0, 4), "u");
 
     schFormats.references.push(schUnits);
@@ -179,8 +120,7 @@ describe("SchemaGraphUtil tests:", () => {
     schBDWS.references.push(schStructuralPhysical);
     schBDWS.references.push(schUnits);
 
-    const schemaList =
-      SchemaGraphUtil.buildDependencyOrderedSchemaList(schBDWS);
+    const schemaList = SchemaGraphUtil.buildDependencyOrderedSchemaList(schBDWS);
 
     assert.strictEqual(schemaList.length, 13);
     assert.strictEqual(schemaList[0].name, "ECDbSchemaPolicies");

@@ -29,11 +29,9 @@ export class ReadRequest {
   /** The request to only read the geometry */
   public static readonly READ_GEOMETRY: ReadRequest = ReadRequest.getGeometry();
   /** The request to only read the geometry and color */
-  public static readonly READ_GEOMETRY_AND_COLOR: ReadRequest =
-    ReadRequest.getGeometryAndColor();
+  public static readonly READ_GEOMETRY_AND_COLOR: ReadRequest = ReadRequest.getGeometryAndColor();
   /** The request to read geometry and attributes */
-  public static readonly READ_ALL: ReadRequest =
-    ReadRequest.getGeometryAndAttributes();
+  public static readonly READ_ALL: ReadRequest = ReadRequest.getGeometryAndAttributes();
 
   /** Should the geometry be read? */
   private _readGeometryAttribute: boolean;
@@ -90,12 +88,7 @@ export class ReadRequest {
    * @param readWeight should the weight be read?
    * @param thinning should thinning be used?
    */
-  public static create(
-    readColor: boolean,
-    readIntensity: boolean,
-    readWeight: boolean,
-    thinning: int32
-  ): ReadRequest {
+  public static create(readColor: boolean, readIntensity: boolean, readWeight: boolean, thinning: int32): ReadRequest {
     let request: ReadRequest = new ReadRequest();
     request._readColorAttribute = readColor;
     request._readIntensityAttribute = readIntensity;
@@ -110,12 +103,7 @@ export class ReadRequest {
    * @return the request.
    */
   public static getGeometry(): ReadRequest {
-    return ReadRequest.create(
-      false /*color*/,
-      false /*intensity*/,
-      false /*weight*/,
-      0 /*thinning*/
-    );
+    return ReadRequest.create(false /*color*/, false /*intensity*/, false /*weight*/, 0 /*thinning*/);
   }
 
   /**
@@ -123,12 +111,7 @@ export class ReadRequest {
    * @return the request.
    */
   public static getGeometryAndColor(): ReadRequest {
-    return ReadRequest.create(
-      true /*color*/,
-      false /*intensity*/,
-      false /*weight*/,
-      0 /*thinning*/
-    );
+    return ReadRequest.create(true /*color*/, false /*intensity*/, false /*weight*/, 0 /*thinning*/);
   }
 
   /**

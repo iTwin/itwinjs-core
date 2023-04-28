@@ -51,17 +51,10 @@ export class Complex implements BeJSONFunctions {
   }
   /** test for near equality using coordinate tolerances */
   public isAlmostEqual(other: Complex): boolean {
-    return (
-      Geometry.isAlmostEqualNumber(this.x, other.x) &&
-      Geometry.isAlmostEqualNumber(this.x, other.x)
-    );
+    return Geometry.isAlmostEqualNumber(this.x, other.x) && Geometry.isAlmostEqualNumber(this.x, other.x);
   }
   /** Create a new Complex instance from given x and y. */
-  public static create(
-    x: number = 0,
-    y: number = 0,
-    result?: Complex
-  ): Complex {
+  public static create(x: number = 0, y: number = 0, result?: Complex): Complex {
     if (result) {
       result.x = x;
       result.y = y;
@@ -79,19 +72,11 @@ export class Complex implements BeJSONFunctions {
   }
   /** Return the complex product  `this * other` */
   public times(other: Complex, result?: Complex): Complex {
-    return Complex.create(
-      this.x * other.x - this.y * other.y,
-      this.x * other.y + this.y * other.x,
-      result
-    );
+    return Complex.create(this.x * other.x - this.y * other.y, this.x * other.y + this.y * other.x, result);
   }
   /** Return the complex product `this * x+i*y`. That is, the second Complex value exists via the args without being formally created as an instance. */
   public timesXY(x: number, y: number, result?: Complex): Complex {
-    return Complex.create(
-      this.x * x - this.y * y,
-      this.x * y + this.y * x,
-      result
-    );
+    return Complex.create(this.x * x - this.y * y, this.x * y + this.y * x, result);
   }
   /** Return the mangitude of the complex number */
   public magnitude(): number {

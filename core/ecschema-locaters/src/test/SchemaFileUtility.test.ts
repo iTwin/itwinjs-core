@@ -6,11 +6,7 @@ import { expect } from "chai";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as sinon from "sinon";
-import {
-  SchemaContext,
-  SchemaKey,
-  SchemaMatchType,
-} from "@itwin/ecschema-metadata";
+import { SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { SchemaXmlFileLocater } from "../SchemaXmlFileLocater";
 import { SchemaFileUtility } from "../SchemaFileUtility";
 
@@ -47,23 +43,19 @@ describe("SchemaFileUtility tests:", () => {
 
     await SchemaFileUtility.writeSchemaXmlFile(schema!, outDir);
 
-    const resultSchema = await resultContext.getSchema(
-      schemaKey,
-      SchemaMatchType.Exact
-    );
+    const resultSchema = await resultContext.getSchema(schemaKey, SchemaMatchType.Exact);
 
     expect(resultSchema).to.not.be.undefined;
-    expect(resultSchema?.schemaKey.matches(schema?.schemaKey as SchemaKey)).to
-      .be.true;
+    expect(resultSchema?.schemaKey.matches(schema?.schemaKey as SchemaKey)).to.be.true;
   });
 
   it("writeSchemaXmlFile with bad path specified, should fail.", async () => {
     const schemaKey = new SchemaKey("SchemaD", 4, 4, 4);
     const schema = await context.getSchema(schemaKey, SchemaMatchType.Exact);
 
-    await expect(
-      SchemaFileUtility.writeSchemaXmlFile(schema!, "badPath")
-    ).to.be.rejectedWith(`The output directory 'badPath' does not exist.`);
+    await expect(SchemaFileUtility.writeSchemaXmlFile(schema!, "badPath")).to.be.rejectedWith(
+      `The output directory 'badPath' does not exist.`
+    );
   });
 
   it("writeSchemaXmlFile, writeFile fails, failure handled properly.", async () => {
@@ -72,9 +64,7 @@ describe("SchemaFileUtility tests:", () => {
     sinon.stub(fs, "writeFile").rejects(new Error("SomeError"));
     const outFile = path.resolve(outDir, `${schema!.name}.ecschema.xml`);
 
-    await expect(
-      SchemaFileUtility.writeSchemaXmlFile(schema!, outDir)
-    ).to.be.rejectedWith(
+    await expect(SchemaFileUtility.writeSchemaXmlFile(schema!, outDir)).to.be.rejectedWith(
       `An error occurred writing to file '${outFile}': SomeError`
     );
   });

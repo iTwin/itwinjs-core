@@ -6,9 +6,7 @@
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 
 export function createEmptyXmlDocument(): Document {
-  return new DOMParser().parseFromString(
-    `<?xml version="1.0" encoding="UTF-8"?>`
-  );
+  return new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`);
 }
 
 export function getElementChildren(xmlElement: Element): Element[] {
@@ -21,10 +19,7 @@ export function getElementChildren(xmlElement: Element): Element[] {
   return children as Element[];
 }
 
-export function getElementChildrenByTagName(
-  xmlElement: Element,
-  tagName: string | RegExp
-): Element[] {
+export function getElementChildrenByTagName(xmlElement: Element, tagName: string | RegExp): Element[] {
   const children = getElementChildren(xmlElement);
   if ("*" === tagName) return children;
   let result = new Array<Element>();

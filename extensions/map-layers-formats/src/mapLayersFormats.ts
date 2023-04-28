@@ -23,7 +23,6 @@ export class MapLayersFormats {
       IModelApp.initialized,
       "MapLayersFormats.initialize must be called after IModelApp.startup and before IModelApp.shutdown"
     );
-    if (IModelApp.initialized)
-      IModelApp.mapLayerFormatRegistry.register(ArcGisFeatureMapLayerFormat);
+    if (IModelApp.initialized) IModelApp.mapLayerFormatRegistry.register(ArcGisFeatureMapLayerFormat);
   }
 }

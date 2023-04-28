@@ -24,24 +24,12 @@ import { ScreenViewport } from "../../../Viewport";
 import { DisplayParams } from "../../../render/primitives/DisplayParams";
 import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
 import { Mesh } from "../../../render/primitives/mesh/MeshPrimitives";
-import {
-  PolyfacePrimitive,
-  PolyfacePrimitiveList,
-} from "../../../render/primitives/Polyface";
+import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../render/primitives/Polyface";
 import { PrimitiveBuilder } from "../../../render/primitives/geometry/GeometryListBuilder";
-import {
-  StrokesPrimitiveList,
-  StrokesPrimitivePointLists,
-} from "../../../render/primitives/Strokes";
-import {
-  ToleranceRatio,
-  Triangle,
-} from "../../../render/primitives/Primitives";
+import { StrokesPrimitiveList, StrokesPrimitivePointLists } from "../../../render/primitives/Strokes";
+import { ToleranceRatio, Triangle } from "../../../render/primitives/Primitives";
 import { MeshParams } from "../../../render/primitives/VertexTable";
-import {
-  MeshBuilder,
-  MeshEdgeCreationOptions,
-} from "../../../render/primitives/mesh/MeshBuilder";
+import { MeshBuilder, MeshEdgeCreationOptions } from "../../../render/primitives/mesh/MeshBuilder";
 import { openBlankViewport } from "../../openBlankViewport";
 
 class FakeDisplayParams extends DisplayParams {
@@ -50,9 +38,7 @@ class FakeDisplayParams extends DisplayParams {
   }
 }
 
-const edgeOptions = new MeshEdgeCreationOptions(
-  MeshEdgeCreationOptions.Type.NoEdges
-);
+const edgeOptions = new MeshEdgeCreationOptions(MeshEdgeCreationOptions.Type.NoEdges);
 
 describe("Mesh Builder Tests", () => {
   let viewport: ScreenViewport;
@@ -117,8 +103,7 @@ describe("Mesh Builder Tests", () => {
     assert(arcGeom !== undefined);
     if (arcGeom === undefined) return;
 
-    const strokesPrimList: StrokesPrimitiveList | undefined =
-      arcGeom.getStrokes(0.22);
+    const strokesPrimList: StrokesPrimitiveList | undefined = arcGeom.getStrokes(0.22);
 
     assert(strokesPrimList !== undefined);
     if (strokesPrimList === undefined) return;
@@ -130,10 +115,7 @@ describe("Mesh Builder Tests", () => {
 
     const displayParams = new FakeDisplayParams();
     const type = Mesh.PrimitiveType.Polyline;
-    const range = Range3d.createArray([
-      new Point3d(),
-      new Point3d(10000, 10000, 10000),
-    ]);
+    const range = Range3d.createArray([new Point3d(), new Point3d(10000, 10000, 10000)]);
     const is2d = false;
     const isPlanar = true;
     const tolerance = 0.15;
@@ -189,10 +171,7 @@ describe("Mesh Builder Tests", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(
-      gfParams,
-      false
-    );
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
 
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
@@ -208,8 +187,7 @@ describe("Mesh Builder Tests", () => {
     );
 
     // query polyface list from loopGeom
-    const pfPrimList: PolyfacePrimitiveList | undefined =
-      loopGeom.getPolyfaces(0);
+    const pfPrimList: PolyfacePrimitiveList | undefined = loopGeom.getPolyfaces(0);
     assert(pfPrimList !== undefined);
     if (pfPrimList === undefined) return;
 
@@ -217,10 +195,7 @@ describe("Mesh Builder Tests", () => {
     const pfPrim: PolyfacePrimitive = pfPrimList[0];
     expect(pfPrim.indexedPolyface.pointCount).to.equal(points.length);
 
-    const range = Range3d.createArray([
-      new Point3d(),
-      new Point3d(1000, 1000, 1000),
-    ]);
+    const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
     const is2d = false;
     const isPlanar = true;
     const tolerance = 0.15;
@@ -240,11 +215,7 @@ describe("Mesh Builder Tests", () => {
 
     const includeParams = false;
     const fillColor = ColorDef.white.tbgr;
-    mb.addFromPolyface(
-      pfPrim.indexedPolyface,
-      { edgeOptions, includeParams, fillColor },
-      undefined
-    );
+    mb.addFromPolyface(pfPrim.indexedPolyface, { edgeOptions, includeParams, fillColor }, undefined);
 
     expect(mb.triangleSet.length).to.equal(2);
   });
@@ -262,10 +233,7 @@ describe("Mesh Builder Tests", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(
-      gfParams,
-      false
-    );
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
 
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
@@ -281,8 +249,7 @@ describe("Mesh Builder Tests", () => {
     );
 
     // query polyface list from loopGeom
-    const pfPrimList: PolyfacePrimitiveList | undefined =
-      loopGeom.getPolyfaces(0);
+    const pfPrimList: PolyfacePrimitiveList | undefined = loopGeom.getPolyfaces(0);
     assert(pfPrimList !== undefined);
     if (pfPrimList === undefined) return;
 
@@ -290,10 +257,7 @@ describe("Mesh Builder Tests", () => {
     const pfPrim: PolyfacePrimitive = pfPrimList[0];
     expect(pfPrim.indexedPolyface.pointCount).to.equal(points.length);
 
-    const range = Range3d.createArray([
-      new Point3d(),
-      new Point3d(1000, 1000, 1000),
-    ]);
+    const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
     const is2d = false;
     const isPlanar = true;
     const tolerance = 0.15;
@@ -314,11 +278,7 @@ describe("Mesh Builder Tests", () => {
     const visitor = pfPrim.indexedPolyface.createVisitor();
     const includeParams = false;
     const fillColor = ColorDef.white.tbgr;
-    mb.addFromPolyfaceVisitor(
-      visitor,
-      { edgeOptions, includeParams, fillColor },
-      undefined
-    );
+    mb.addFromPolyfaceVisitor(visitor, { edgeOptions, includeParams, fillColor }, undefined);
 
     expect(mb.triangleSet.length).to.equal(1);
   });
@@ -336,10 +296,7 @@ describe("Mesh Builder Tests", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(
-      gfParams,
-      false
-    );
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
 
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
@@ -355,18 +312,14 @@ describe("Mesh Builder Tests", () => {
     );
 
     // query polyface list from loopGeom
-    const pfPrimList: PolyfacePrimitiveList | undefined =
-      loopGeom.getPolyfaces(0);
+    const pfPrimList: PolyfacePrimitiveList | undefined = loopGeom.getPolyfaces(0);
     assert(pfPrimList !== undefined);
     if (pfPrimList === undefined) return;
 
     expect(pfPrimList.length).to.be.greaterThan(0);
     const pfPrim: PolyfacePrimitive = pfPrimList[0];
     expect(pfPrim.indexedPolyface.pointCount).to.equal(points.length);
-    const range = Range3d.createArray([
-      new Point3d(),
-      new Point3d(1000, 1000, 1000),
-    ]);
+    const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
     const is2d = false;
     const isPlanar = true;
     const tolerance = 0.15;
@@ -413,10 +366,7 @@ describe("Mesh Builder Tests", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(
-      gfParams,
-      false
-    );
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
 
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
@@ -429,14 +379,10 @@ describe("Mesh Builder Tests", () => {
       undefined
     );
     // query polyface list from loopGeom
-    const pfPrimList: PolyfacePrimitiveList | undefined =
-      loopGeom.getPolyfaces(0);
+    const pfPrimList: PolyfacePrimitiveList | undefined = loopGeom.getPolyfaces(0);
     if (pfPrimList === undefined) return;
     const pfPrim: PolyfacePrimitive = pfPrimList[0];
-    const range = Range3d.createArray([
-      new Point3d(),
-      new Point3d(1000, 1000, 1000),
-    ]);
+    const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
     const is2d = false;
     const isPlanar = true;
     const tolerance = 0.15;
@@ -473,10 +419,7 @@ describe("Mesh Builder Tests", () => {
   it("addPolyline", () => {
     const displayParams = new FakeDisplayParams();
     let type = Mesh.PrimitiveType.Mesh;
-    const range = Range3d.createArray([
-      new Point3d(),
-      new Point3d(1000, 1000, 1000),
-    ]);
+    const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
     const is2d = false;
     const isPlanar = true;
     const tolerance = 0.15;
@@ -493,11 +436,7 @@ describe("Mesh Builder Tests", () => {
       areaTolerance,
     });
 
-    let points = [
-      new Point3d(),
-      new Point3d(100, 100, 100),
-      new Point3d(200, 200, 200),
-    ];
+    let points = [new Point3d(), new Point3d(100, 100, 100), new Point3d(200, 200, 200)];
     const fillColor = ColorDef.white.tbgr;
 
     points = [new Point3d(), new Point3d(1, 1, 1), new Point3d(2, 2, 2)];
@@ -538,10 +477,7 @@ describe("Mesh Builder Tests", () => {
   it("addPointString", () => {
     const displayParams = new FakeDisplayParams();
     let type = Mesh.PrimitiveType.Mesh;
-    const range = Range3d.createArray([
-      new Point3d(),
-      new Point3d(1000, 1000, 1000),
-    ]);
+    const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
     const is2d = false;
     const isPlanar = true;
     const tolerance = 0.15;
@@ -558,11 +494,7 @@ describe("Mesh Builder Tests", () => {
       areaTolerance,
     });
 
-    let points = [
-      new Point3d(),
-      new Point3d(100, 100, 100),
-      new Point3d(200, 200, 200),
-    ];
+    let points = [new Point3d(), new Point3d(100, 100, 100), new Point3d(200, 200, 200)];
     const fillColor = ColorDef.white.tbgr;
 
     points = [new Point3d(), new Point3d(1, 1, 1), new Point3d(2, 2, 2)];
@@ -606,10 +538,7 @@ describe("Mesh Builder Tests", () => {
 
     const displayParams = new FakeDisplayParams();
     const type = Mesh.PrimitiveType.Mesh;
-    const range = Range3d.createArray([
-      new Point3d(),
-      new Point3d(1000, 1000, 1000),
-    ]);
+    const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
     const is2d = false;
     const isPlanar = true;
     const tolerance = 0.15;
@@ -642,8 +571,7 @@ describe("Mesh Builder Tests", () => {
       type,
       range,
       tolerance,
-      areaTolerance:
-        options.areaTolerance ?? ToleranceRatio.facetArea * tolerance,
+      areaTolerance: options.areaTolerance ?? ToleranceRatio.facetArea * tolerance,
       displayParams: options.displayParams ?? new FakeDisplayParams(),
       is2d: options.is2d ?? false,
       isPlanar: options.isPlanar ?? true,
@@ -651,46 +579,29 @@ describe("Mesh Builder Tests", () => {
   }
 
   describe("aux data", () => {
-    function expectAuxChannelTable(
-      mesh: Mesh,
-      expectedUint16Data: number[]
-    ): void {
+    function expectAuxChannelTable(mesh: Mesh, expectedUint16Data: number[]): void {
       const args = mesh.toMeshArgs()!;
       expect(args).not.to.be.undefined;
       const meshParams = MeshParams.create(args);
       const aux = meshParams.auxChannels!;
       expect(aux).not.to.be.undefined;
-      expect(Array.from(new Uint16Array(aux.data.buffer))).to.deep.equal(
-        expectedUint16Data
-      );
+      expect(Array.from(new Uint16Array(aux.data.buffer))).to.deep.equal(expectedUint16Data);
     }
 
     it("preserves aux data for triangle facets", () => {
       const pfBuilder = PolyfaceBuilder.create();
-      pfBuilder.addTriangleFacet([
-        new Point3d(0, 0, 0),
-        new Point3d(1, 0, 0),
-        new Point3d(1, 1, 0),
-      ]);
+      pfBuilder.addTriangleFacet([new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(1, 1, 0)]);
 
       const pf = pfBuilder.claimPolyface();
       const channelData = new AuxChannelData(1, [0, 0x7fff, 0xffff]);
-      const channel = new AuxChannel(
-        [channelData],
-        AuxChannelDataType.Scalar,
-        "s"
-      );
+      const channel = new AuxChannel([channelData], AuxChannelDataType.Scalar, "s");
       pf.data.auxData = new PolyfaceAuxData([channel], [0, 1, 2]);
 
       const meshBuilder = createMeshBuilder(
         Mesh.PrimitiveType.Mesh,
         Range3d.fromJSON({ low: [0, 0, 0], high: [1, 1, 0] })
       );
-      meshBuilder.addFromPolyface(
-        pf,
-        { edgeOptions, includeParams: false, fillColor: 0 },
-        undefined
-      );
+      meshBuilder.addFromPolyface(pf, { edgeOptions, includeParams: false, fillColor: 0 }, undefined);
       const mesh = meshBuilder.mesh;
       expect(mesh.points.length).to.equal(3);
       expect(mesh.auxChannels!.length).to.equal(1);
@@ -701,31 +612,18 @@ describe("Mesh Builder Tests", () => {
 
     it("preserves aux data for facets with more than 3 sides", () => {
       const pfBuilder = PolyfaceBuilder.create();
-      pfBuilder.addQuadFacet([
-        new Point3d(0, 0, 0),
-        new Point3d(0, 1, 0),
-        new Point3d(1, 1, 0),
-        new Point3d(1, 0, 0),
-      ]);
+      pfBuilder.addQuadFacet([new Point3d(0, 0, 0), new Point3d(0, 1, 0), new Point3d(1, 1, 0), new Point3d(1, 0, 0)]);
 
       const pf = pfBuilder.claimPolyface();
       const channelData = new AuxChannelData(1, [0, 0x4fff, 0xbfff, 0xffff]);
-      const channel = new AuxChannel(
-        [channelData],
-        AuxChannelDataType.Scalar,
-        "s"
-      );
+      const channel = new AuxChannel([channelData], AuxChannelDataType.Scalar, "s");
       pf.data.auxData = new PolyfaceAuxData([channel], [0, 1, 2, 3]);
 
       const meshBuilder = createMeshBuilder(
         Mesh.PrimitiveType.Mesh,
         Range3d.fromJSON({ low: [0, 0, 0], high: [1, 1, 0] })
       );
-      meshBuilder.addFromPolyface(
-        pf,
-        { edgeOptions, includeParams: false, fillColor: 0 },
-        undefined
-      );
+      meshBuilder.addFromPolyface(pf, { edgeOptions, includeParams: false, fillColor: 0 }, undefined);
       const mesh = meshBuilder.mesh;
       expect(mesh.points.length).to.equal(6);
       expect(mesh.auxChannels!.length).to.equal(1);
@@ -739,81 +637,48 @@ describe("Mesh Builder Tests", () => {
 
     it("maps aux data to vertices based on indices", () => {
       const pfBuilder = PolyfaceBuilder.create();
-      pfBuilder.addQuadFacet([
-        new Point3d(0, 0, 0),
-        new Point3d(0, 1, 0),
-        new Point3d(1, 1, 0),
-        new Point3d(1, 0, 0),
-      ]);
+      pfBuilder.addQuadFacet([new Point3d(0, 0, 0), new Point3d(0, 1, 0), new Point3d(1, 1, 0), new Point3d(1, 0, 0)]);
 
       const pf = pfBuilder.claimPolyface();
       const channelData = new AuxChannelData(1, [0x4000, 0x6000, 0x8000]);
-      const channel = new AuxChannel(
-        [channelData],
-        AuxChannelDataType.Scalar,
-        "s"
-      );
+      const channel = new AuxChannel([channelData], AuxChannelDataType.Scalar, "s");
       pf.data.auxData = new PolyfaceAuxData([channel], [2, 0, 0, 1]);
 
       const meshBuilder = createMeshBuilder(
         Mesh.PrimitiveType.Mesh,
         Range3d.fromJSON({ low: [0, 0, 0], high: [1, 1, 0] })
       );
-      meshBuilder.addFromPolyface(
-        pf,
-        { edgeOptions, includeParams: false, fillColor: 0 },
-        undefined
-      );
+      meshBuilder.addFromPolyface(pf, { edgeOptions, includeParams: false, fillColor: 0 }, undefined);
       const mesh = meshBuilder.mesh;
       expect(mesh.points.length).to.equal(6);
       expect(mesh.auxChannels!.length).to.equal(1);
 
       const aux = mesh.auxChannels![0];
       expect(aux.data.length).to.equal(1);
-      expect(aux.data[0].values).to.deep.equal([
-        0x8000, 0x4000, 0x4000, 0x8000, 0x4000, 0x6000,
-      ]);
+      expect(aux.data[0].values).to.deep.equal([0x8000, 0x4000, 0x4000, 0x8000, 0x4000, 0x6000]);
       expectAuxChannelTable(mesh, [0xffff, 0, 0, 0xffff, 0, 0x8000]);
     });
 
     it("produces aux data for vector channel", () => {
       const pfBuilder = PolyfaceBuilder.create();
-      pfBuilder.addQuadFacet([
-        new Point3d(0, 0, 0),
-        new Point3d(0, 1, 0),
-        new Point3d(1, 1, 0),
-        new Point3d(1, 0, 0),
-      ]);
+      pfBuilder.addQuadFacet([new Point3d(0, 0, 0), new Point3d(0, 1, 0), new Point3d(1, 1, 0), new Point3d(1, 0, 0)]);
 
       const pf = pfBuilder.claimPolyface();
       const channelData = new AuxChannelData(1, [0, 1, 2, 3, 4, 0xffff]);
-      const channel = new AuxChannel(
-        [channelData],
-        AuxChannelDataType.Vector,
-        "v"
-      );
+      const channel = new AuxChannel([channelData], AuxChannelDataType.Vector, "v");
       pf.data.auxData = new PolyfaceAuxData([channel], [0, 1, 1, 0]);
 
       const meshBuilder = createMeshBuilder(
         Mesh.PrimitiveType.Mesh,
         Range3d.fromJSON({ low: [0, 0, 0], high: [1, 1, 0] })
       );
-      meshBuilder.addFromPolyface(
-        pf,
-        { edgeOptions, includeParams: false, fillColor: 0 },
-        undefined
-      );
+      meshBuilder.addFromPolyface(pf, { edgeOptions, includeParams: false, fillColor: 0 }, undefined);
 
       const aux = meshBuilder.mesh.auxChannels![0];
-      expect(aux.data[0].values).to.deep.equal([
-        0, 1, 2, 3, 4, 0xffff, 3, 4, 0xffff, 0, 1, 2, 3, 4, 0xffff, 0, 1, 2,
-      ]);
+      expect(aux.data[0].values).to.deep.equal([0, 1, 2, 3, 4, 0xffff, 3, 4, 0xffff, 0, 1, 2, 3, 4, 0xffff, 0, 1, 2]);
       expectAuxChannelTable(
         meshBuilder.mesh,
-        [
-          0, 0, 0, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0, 0, 0,
-          0xffff, 0xffff, 0xffff, 0, 0, 0,
-        ]
+        [0, 0, 0, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0, 0, 0, 0xffff, 0xffff, 0xffff, 0, 0, 0]
       );
     });
   });

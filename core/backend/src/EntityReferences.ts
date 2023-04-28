@@ -6,13 +6,7 @@
  * @module Schema
  */
 
-import {
-  ConcreteEntityTypes,
-  ElementAspectProps,
-  ElementProps,
-  EntityReference,
-  ModelProps,
-} from "@itwin/core-common";
+import { ConcreteEntityTypes, ElementAspectProps, ElementProps, EntityReference, ModelProps } from "@itwin/core-common";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import type { Entity } from "./Entity";
 import { Model } from "./Model";
@@ -31,11 +25,7 @@ export type ConcreteEntity = Element | Model | ElementAspect | Relationship;
 /** Props for a [[ConcreteEntity]]
  * @alpha
  */
-export type ConcreteEntityProps =
-  | ElementProps
-  | ModelProps
-  | ElementAspectProps
-  | RelationshipProps;
+export type ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps;
 
 /**
  * Utilities for the [EntityReference]($common) type which is a kind of strings
@@ -59,9 +49,7 @@ export namespace EntityReferences {
   }
 
   /** split a concrete entity id into its type and raw id */
-  export function split(
-    id: EntityReference
-  ): [ConcreteEntityTypes, Id64String] {
+  export function split(id: EntityReference): [ConcreteEntityTypes, Id64String] {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     return [id[0] as ConcreteEntityTypes, id.slice(1)];
   }
@@ -87,36 +75,22 @@ export namespace EntityReferences {
   }
 
   /** create an EntityReference given an id and a JavaScript class */
-  export function fromClass(
-    id: Id64String,
-    entityClass: typeof Entity
-  ): EntityReference {
+  export function fromClass(id: Id64String, entityClass: typeof Entity): EntityReference {
     const type = typeFromClass(entityClass);
     return `${type}${id}`;
   }
 
   /** Create an EntityReference quickly from an exact reference type and id */
-  export function fromEntityType(
-    id: Id64String,
-    type: ConcreteEntityTypes
-  ): EntityReference {
+  export function fromEntityType(id: Id64String, type: ConcreteEntityTypes): EntityReference {
     return `${type}${id}`;
   }
 
   /** @internal the argument entityClass be concrete (i.e. not the Entity abstract base class) */
-  export function typeFromClass(
-    entityClass: typeof Entity
-  ): ConcreteEntityTypes {
+  export function typeFromClass(entityClass: typeof Entity): ConcreteEntityTypes {
     if (entityClass.is(Element)) return ConcreteEntityTypes.Element;
-    else if (entityClass.is(ElementAspect))
-      return ConcreteEntityTypes.ElementAspect;
+    else if (entityClass.is(ElementAspect)) return ConcreteEntityTypes.ElementAspect;
     else if (entityClass.is(Model)) return ConcreteEntityTypes.Model;
-    else if (entityClass.is(Relationship))
-      return ConcreteEntityTypes.Relationship;
-    else
-      assert(
-        false,
-        "unknown or abstract entity type passed to EntityReferences.from"
-      );
+    else if (entityClass.is(Relationship)) return ConcreteEntityTypes.Relationship;
+    else assert(false, "unknown or abstract entity type passed to EntityReferences.from");
   }
 }

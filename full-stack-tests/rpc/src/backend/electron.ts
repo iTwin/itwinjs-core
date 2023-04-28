@@ -10,17 +10,11 @@ import { setupIpcTestElectron } from "./ipc";
 
 async function init() {
   await commonSetup();
-  registerBackendCallback(
-    BackendTestCallbacks.getEnvironment,
-    () => "electron"
-  );
-  registerBackendCallback(
-    BackendTestCallbacks.setChunkThreshold,
-    (value: number) => {
-      ElectronHost.rpcConfig.protocol.transferChunkThreshold = value;
-      return true;
-    }
-  );
+  registerBackendCallback(BackendTestCallbacks.getEnvironment, () => "electron");
+  registerBackendCallback(BackendTestCallbacks.setChunkThreshold, (value: number) => {
+    ElectronHost.rpcConfig.protocol.transferChunkThreshold = value;
+    return true;
+  });
   setupIpcTestElectron();
 }
 

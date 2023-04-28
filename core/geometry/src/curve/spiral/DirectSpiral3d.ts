@@ -7,10 +7,7 @@
  */
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
-import {
-  GeometryHandler,
-  IStrokeHandler,
-} from "../../geometry3d/GeometryHandler";
+import { GeometryHandler, IStrokeHandler } from "../../geometry3d/GeometryHandler";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
@@ -22,10 +19,7 @@ import { LineString3d } from "../LineString3d";
 import { StrokeOptions } from "../StrokeOptions";
 import { AustralianRailCorpXYEvaluator } from "./AustralianRailCorpXYEvaluator";
 import { ClothoidSeriesRLEvaluator } from "./ClothoidSeries";
-import {
-  CzechSpiralEvaluator,
-  ItalianSpiralEvaluator,
-} from "./CzechSpiralEvaluator";
+import { CzechSpiralEvaluator, ItalianSpiralEvaluator } from "./CzechSpiralEvaluator";
 import { DirectHalfCosineSpiralEvaluator } from "./DirectHalfCosineSpiralEvaluator";
 import { MXCubicAlongArcEvaluator } from "./MXCubicAlongArcSpiralEvaluator";
 import { PolishCubicEvaluator } from "./PolishCubicSpiralEvaluator";
@@ -63,9 +57,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
   private _activeStrokes?: LineString3d;
   /** Return the internal stroked form of the (possibly partial) spiral   */
   public get activeStrokes(): LineString3d {
-    return this._activeStrokes !== undefined
-      ? this._activeStrokes
-      : this._globalStrokes;
+    return this._activeStrokes !== undefined ? this._activeStrokes : this._globalStrokes;
   }
 
   private _nominalL1: number;
@@ -129,20 +121,11 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     strokes.ensureEmptyUVParams();
     strokes.ensureEmptyFractions();
     const distances = strokes.packedUVParams!;
-    const nominalIntervalLength =
-      Math.abs(fractionB - fractionA) * this._nominalL1;
+    const nominalIntervalLength = Math.abs(fractionB - fractionA) * this._nominalL1;
     for (let i = 0; i <= numInterval; i++) {
-      const fraction = Geometry.interpolate(
-        fractionA,
-        i / numInterval,
-        fractionB
-      );
+      const fraction = Geometry.interpolate(fractionA, i / numInterval, fractionB);
       const nominalDistanceAlong = fraction * nominalIntervalLength;
-      strokes.packedPoints.pushXYZ(
-        this._evaluator.fractionToX(fraction),
-        this._evaluator.fractionToY(fraction),
-        0
-      );
+      strokes.packedPoints.pushXYZ(this._evaluator.fractionToX(fraction), this._evaluator.fractionToY(fraction), 0);
       distances.pushXY(fraction, nominalDistanceAlong); // the second distance will be updated below
     }
     if (applyLocalToWorld) strokes.tryTransformInPlace(this._localToWorld);
@@ -151,9 +134,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     let trueDistance1, fraction1;
     for (let i = 1; i <= numInterval; i++) {
       fraction1 = distances.getXAtUncheckedPointIndex(i);
-      trueDistance1 =
-        trueDistance0 +
-        this._evaluator.integrateDistanceBetweenFractions(fraction0, fraction1);
+      trueDistance1 = trueDistance0 + this._evaluator.integrateDistanceBetweenFractions(fraction0, fraction1);
       distances.setXYAtCheckedPointIndex(i, fraction1, trueDistance1);
       fraction0 = fraction1;
       trueDistance0 = trueDistance1;
@@ -163,16 +144,9 @@ export class DirectSpiral3d extends TransitionSpiral3d {
   public override refreshComputedProperties() {
     const sweepRadians = this.nominalL1 / (2.0 * this.nominalR1);
     const radiansStep = 0.02;
-    const numInterval = StrokeOptions.applyAngleTol(
-      undefined,
-      4,
-      sweepRadians,
-      radiansStep
-    );
+    const numInterval = StrokeOptions.applyAngleTol(undefined, 4, sweepRadians, radiansStep);
     this.computeStrokes(this._globalStrokes, 0, 1, numInterval);
-    const numActiveInterval = Math.ceil(
-      this._activeFractionInterval.absoluteDelta() * numInterval
-    );
+    const numActiveInterval = Math.ceil(this._activeFractionInterval.absoluteDelta() * numInterval);
     this._activeStrokes = LineString3d.create();
     this.computeStrokes(
       this._activeStrokes,
@@ -202,12 +176,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
   ): DirectSpiral3d | undefined {
     if (numXTerm < 1) numXTerm = 1;
     if (numYTerm < 1) numYTerm = 1;
-    const evaluator = new ClothoidSeriesRLEvaluator(
-      nominalL1,
-      1.0 / (2.0 * nominalL1 * nominalR1),
-      numXTerm,
-      numYTerm
-    );
+    const evaluator = new ClothoidSeriesRLEvaluator(nominalL1, 1.0 / (2.0 * nominalL1 * nominalR1), numXTerm, numYTerm);
     return new DirectSpiral3d(
       localToWorld.clone(),
       spiralType,
@@ -389,10 +358,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     nominalR1: number,
     activeInterval?: Segment1d
   ): DirectSpiral3d | undefined {
-    const evaluator = AustralianRailCorpXYEvaluator.create(
-      nominalL1,
-      nominalR1
-    );
+    const evaluator = AustralianRailCorpXYEvaluator.create(nominalL1, nominalR1);
     if (evaluator === undefined) return undefined;
     return new DirectSpiral3d(
       localToWorld.clone(),
@@ -437,16 +403,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     nominalR1: number,
     activeInterval?: Segment1d
   ): DirectSpiral3d | undefined {
-    return this.createTruncatedClothoid(
-      "Arema",
-      localToWorld,
-      2,
-      2,
-      undefined,
-      nominalL1,
-      nominalR1,
-      activeInterval
-    );
+    return this.createTruncatedClothoid("Arema", localToWorld, 2, 2, undefined, nominalL1, nominalR1, activeInterval);
   }
 
   /**
@@ -532,76 +489,29 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     localToWorld: Transform
   ): TransitionSpiral3d | undefined {
     if (bearing0 !== undefined && !bearing0.isAlmostZero) return undefined;
-    if (radius0 !== undefined && !Geometry.isSmallMetricDistance(radius0))
-      return undefined;
-    if (radius1 === undefined || Geometry.isSmallMetricDistance(radius1))
-      return undefined;
+    if (radius0 !== undefined && !Geometry.isSmallMetricDistance(radius0)) return undefined;
+    if (radius1 === undefined || Geometry.isSmallMetricDistance(radius1)) return undefined;
     if (arcLength === undefined) return undefined;
     if (Geometry.equalStringNoCase(spiralType, "Arema"))
       return this.createArema(localToWorld, arcLength, radius1, activeInterval);
     if (Geometry.equalStringNoCase(spiralType, "ChineseCubic"))
-      return this.createChineseCubic(
-        localToWorld,
-        arcLength,
-        radius1,
-        activeInterval
-      );
+      return this.createChineseCubic(localToWorld, arcLength, radius1, activeInterval);
     if (Geometry.equalStringNoCase(spiralType, "JapaneseCubic"))
-      return this.createJapaneseCubic(
-        localToWorld,
-        arcLength,
-        radius1,
-        activeInterval
-      );
+      return this.createJapaneseCubic(localToWorld, arcLength, radius1, activeInterval);
     if (Geometry.equalStringNoCase(spiralType, "HalfCosine"))
-      return this.createDirectHalfCosine(
-        localToWorld,
-        arcLength,
-        radius1,
-        activeInterval
-      );
+      return this.createDirectHalfCosine(localToWorld, arcLength, radius1, activeInterval);
     if (Geometry.equalStringNoCase(spiralType, "Czech"))
-      return this.createCzechCubic(
-        localToWorld,
-        arcLength,
-        radius1,
-        activeInterval
-      );
+      return this.createCzechCubic(localToWorld, arcLength, radius1, activeInterval);
     if (Geometry.equalStringNoCase(spiralType, "Italian"))
-      return this.createItalian(
-        localToWorld,
-        arcLength,
-        radius1,
-        activeInterval
-      );
+      return this.createItalian(localToWorld, arcLength, radius1, activeInterval);
     if (Geometry.equalStringNoCase(spiralType, "AustralianRailCorp"))
-      return this.createAustralianRail(
-        localToWorld,
-        arcLength,
-        radius1,
-        activeInterval
-      );
+      return this.createAustralianRail(localToWorld, arcLength, radius1, activeInterval);
     if (Geometry.equalStringNoCase(spiralType, "MXCubicAlongArc"))
-      return this.createMXCubicAlongArc(
-        localToWorld,
-        arcLength,
-        radius1,
-        activeInterval
-      );
+      return this.createMXCubicAlongArc(localToWorld, arcLength, radius1, activeInterval);
     if (Geometry.equalStringNoCase(spiralType, "WesternAustralian"))
-      return this.createWesternAustralian(
-        localToWorld,
-        arcLength,
-        radius1,
-        activeInterval
-      );
+      return this.createWesternAustralian(localToWorld, arcLength, radius1, activeInterval);
     if (Geometry.equalStringNoCase(spiralType, "PolishCubic"))
-      return this.createPolishCubic(
-        localToWorld,
-        arcLength,
-        radius1,
-        activeInterval
-      );
+      return this.createPolishCubic(localToWorld, arcLength, radius1, activeInterval);
     return undefined;
   }
   /** Deep clone of this spiral */
@@ -641,14 +551,8 @@ export class DirectSpiral3d extends TransitionSpiral3d {
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
     return (
       plane.isPointInPlane(this.localToWorld.origin as Point3d) &&
-      Geometry.isSameCoordinate(
-        0.0,
-        this.localToWorld.matrix.dotColumnX(plane.getNormalRef())
-      ) &&
-      Geometry.isSameCoordinate(
-        0.0,
-        this.localToWorld.matrix.dotColumnY(plane.getNormalRef())
-      )
+      Geometry.isSameCoordinate(0.0, this.localToWorld.matrix.dotColumnX(plane.getNormalRef())) &&
+      Geometry.isSameCoordinate(0.0, this.localToWorld.matrix.dotColumnY(plane.getNormalRef()))
     );
   }
   /** Return quick length of the spiral.
@@ -675,10 +579,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     this.activeStrokes.emitStrokes(dest, options);
   }
   /** emit stroke fragments to `dest` handler. */
-  public emitStrokableParts(
-    dest: IStrokeHandler,
-    options?: StrokeOptions
-  ): void {
+  public emitStrokableParts(dest: IStrokeHandler, options?: StrokeOptions): void {
     const n = this.computeStrokeCountForOptions(options);
     const activeStrokes = this.activeStrokes;
     dest.startParentCurvePrimitive(this);
@@ -692,19 +593,8 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     }
 
     if (n <= activeStrokes.numPoints())
-      dest.announceIntervalForUniformStepStrokes(
-        this,
-        2 * activeStrokes.numPoints(),
-        globalFraction0,
-        globalFraction1
-      );
-    else
-      dest.announceIntervalForUniformStepStrokes(
-        this,
-        n,
-        globalFraction0,
-        globalFraction1
-      );
+      dest.announceIntervalForUniformStepStrokes(this, 2 * activeStrokes.numPoints(), globalFraction0, globalFraction1);
+    else dest.announceIntervalForUniformStepStrokes(this, n, globalFraction0, globalFraction1);
 
     dest.endParentCurvePrimitive(this);
   }
@@ -723,16 +613,9 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       numStroke = options.applyMaxEdgeLength(numStroke, this.quickLength());
       numStroke = options.applyMinStrokesPerPrimitive(numStroke);
     } else {
-      numStroke = StrokeOptions.applyAngleTol(
-        undefined,
-        4,
-        nominalRadians,
-        0.02
-      );
+      numStroke = StrokeOptions.applyAngleTol(undefined, 4, nominalRadians, 0.02);
     }
-    numStroke = Math.ceil(
-      this._activeFractionInterval.absoluteDelta() * numStroke
-    );
+    numStroke = Math.ceil(this._activeFractionInterval.absoluteDelta() * numStroke);
     return numStroke;
   }
 
@@ -742,29 +625,20 @@ export class DirectSpiral3d extends TransitionSpiral3d {
 
   public reverseInPlace(): void {
     this._activeFractionInterval.reverseInPlace();
-    if (this._activeStrokes === undefined)
-      this._activeStrokes = this._globalStrokes.clone();
+    if (this._activeStrokes === undefined) this._activeStrokes = this._globalStrokes.clone();
     this._activeStrokes.reverseInPlace();
   }
   /** Evaluate curve point with respect to fraction. */
   public fractionToPoint(activeFraction: number, result?: Point3d): Point3d {
-    const globalFraction =
-      this._activeFractionInterval.fractionToPoint(activeFraction);
+    const globalFraction = this._activeFractionInterval.fractionToPoint(activeFraction);
     result = this._evaluator.fractionToPoint(globalFraction, result);
     this.localToWorld.multiplyPoint3d(result, result);
     return result;
   }
   /** Evaluate curve point and derivative with respect to fraction. */
-  public fractionToPointAndDerivative(
-    activeFraction: number,
-    result?: Ray3d
-  ): Ray3d {
-    const globalFraction =
-      this._activeFractionInterval.fractionToPoint(activeFraction);
-    result = this._evaluator.fractionToPointAndDerivative(
-      globalFraction,
-      result
-    );
+  public fractionToPointAndDerivative(activeFraction: number, result?: Ray3d): Ray3d {
+    const globalFraction = this._activeFractionInterval.fractionToPoint(activeFraction);
+    result = this._evaluator.fractionToPointAndDerivative(globalFraction, result);
     result.direction.scaleInPlace(this._activeFractionInterval.signedDelta());
     result.transformInPlace(this.localToWorld);
     return result;
@@ -781,12 +655,8 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     activeFraction: number,
     result?: Plane3dByOriginAndVectors
   ): Plane3dByOriginAndVectors | undefined {
-    const globalFraction =
-      this._activeFractionInterval.fractionToPoint(activeFraction);
-    result = this._evaluator.fractionToPointAnd2Derivatives(
-      globalFraction,
-      result
-    );
+    const globalFraction = this._activeFractionInterval.fractionToPoint(activeFraction);
+    result = this._evaluator.fractionToPointAnd2Derivatives(globalFraction, result);
     const a = this._activeFractionInterval.signedDelta();
     result.vectorU.scaleInPlace(a);
     result.vectorV.scaleInPlace(a * a);
@@ -804,9 +674,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
         Geometry.isSameCoordinate(this._nominalL1, other._nominalL1) &&
         Geometry.isSameCoordinate(this._nominalR1, other._nominalR1) &&
         this.localToWorld.isAlmostEqual(other.localToWorld) &&
-        this._activeFractionInterval.isAlmostEqual(
-          other._activeFractionInterval
-        ) &&
+        this._activeFractionInterval.isAlmostEqual(other._activeFractionInterval) &&
         this._evaluator.isAlmostEqual(other._evaluator)
       );
     }

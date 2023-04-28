@@ -40,9 +40,7 @@ interface TileContentRequestProps {
 }
 
 // Goes through models in imodel until it finds a root tile for a non empty model, returns tile content request props for that tile
-export async function getTileProps(
-  iModel: IModelDb
-): Promise<TileContentRequestProps | undefined> {
+export async function getTileProps(iModel: IModelDb): Promise<TileContentRequestProps | undefined> {
   const queryParams = {
     from: GeometricModel3d.classFullName,
     limit: IModelDb.maxLimit,
@@ -65,15 +63,10 @@ export async function getTileProps(
     );
     const treeProps = await iModel.tiles.requestTileTreeProps(treeId);
     // Ignore empty tile trees.
-    if (
-      treeProps.rootTile.maximumSize === 0 &&
-      treeProps.rootTile.isLeaf === true
-    )
-      continue;
+    if (treeProps.rootTile.maximumSize === 0 && treeProps.rootTile.isLeaf === true) continue;
 
     let guid = model.geometryGuid || iModel.changeset.id || "first";
-    if (treeProps.contentIdQualifier)
-      guid = `${guid}_${treeProps.contentIdQualifier}`;
+    if (treeProps.contentIdQualifier) guid = `${guid}_${treeProps.contentIdQualifier}`;
 
     const idProvider = ContentIdProvider.create(true, defaultTileOptions);
     const contentId = idProvider.rootContentId;
@@ -93,10 +86,7 @@ describe("TileCache open v1", () => {
 
   const verifyTileCache = async (dbPath: string) => {
     RpcManager.initializeInterface(IModelTileRpcInterface);
-    tileRpcInterface =
-      RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(
-        IModelTileRpcInterface
-      );
+    tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface);
 
     const iModel = SnapshotDb.openFile(dbPath);
     expect(iModel);
@@ -123,10 +113,7 @@ describe("TileCache open v1", () => {
     await TestUtils.startBackend();
 
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim");
-    const snapshot = IModelTestUtils.createSnapshotFromSeed(
-      dbPath,
-      IModelTestUtils.resolveAssetFile("mirukuru.ibim")
-    );
+    const snapshot = IModelTestUtils.createSnapshotFromSeed(dbPath, IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
     snapshot.close();
     await verifyTileCache(dbPath);
   });
@@ -139,10 +126,7 @@ describe("TileCache open v1", () => {
     await TestUtils.startBackend(config);
 
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim");
-    const snapshot = IModelTestUtils.createSnapshotFromSeed(
-      dbPath,
-      IModelTestUtils.resolveAssetFile("mirukuru.ibim")
-    );
+    const snapshot = IModelTestUtils.createSnapshotFromSeed(dbPath, IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
     snapshot.close();
 
     await verifyTileCache(dbPath);
@@ -152,10 +136,7 @@ describe("TileCache open v1", () => {
 describe("TileCache, open v2", async () => {
   it("should place .Tiles in tempFileBase for V2 checkpoints", async () => {
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim");
-    const snapshot = IModelTestUtils.createSnapshotFromSeed(
-      dbPath,
-      IModelTestUtils.resolveAssetFile("mirukuru.ibim")
-    );
+    const snapshot = IModelTestUtils.createSnapshotFromSeed(dbPath, IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
     const iModelId = snapshot.iModelId;
     const iTwinId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
@@ -166,10 +147,7 @@ describe("TileCache, open v2", async () => {
 
     RpcManager.initializeInterface(IModelTileRpcInterface);
     const key = `${iModelId}\$${changeset.id}`;
-    const tileRpcInterface =
-      RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(
-        IModelTileRpcInterface
-      );
+    const tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface);
     const tempFileBase = path.join(IModelHost.cacheDir, key);
     const checkpoint = SnapshotDb.openFile(dbPath, { key, tempFileBase });
     expect(checkpoint.nativeDb.getTempFileBaseName()).equals(tempFileBase);

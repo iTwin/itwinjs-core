@@ -3,20 +3,9 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-  BeEvent,
-  compareBooleans,
-  compareStrings,
-  Id64,
-  Id64String,
-  SortedArray,
-} from "@itwin/core-bentley";
+import { BeEvent, compareBooleans, compareStrings, Id64, Id64String, SortedArray } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
-import {
-  IModelConnection,
-  SpatialViewState,
-  ViewState,
-} from "@itwin/core-frontend";
+import { IModelConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
 
 interface ViewSpec extends IModelConnection.ViewSpec {
   isPrivate: boolean;
@@ -43,10 +32,7 @@ export class ViewList extends SortedArray<ViewSpec> {
     return this._defaultViewId;
   }
 
-  public async getView(
-    id: Id64String,
-    iModel: IModelConnection
-  ): Promise<ViewState> {
+  public async getView(id: Id64String, iModel: IModelConnection): Promise<ViewState> {
     let view = this._views.get(id);
     if (undefined === view) {
       try {
@@ -69,10 +55,7 @@ export class ViewList extends SortedArray<ViewSpec> {
     return this.getView(this.defaultViewId, iModel);
   }
 
-  public static async create(
-    iModel: IModelConnection,
-    viewName?: string
-  ): Promise<ViewList> {
+  public static async create(iModel: IModelConnection, viewName?: string): Promise<ViewList> {
     const viewList = new ViewList();
     await viewList.populate(iModel, viewName);
     return viewList;
@@ -84,10 +67,7 @@ export class ViewList extends SortedArray<ViewSpec> {
     this._views.clear();
   }
 
-  public async populate(
-    iModel: IModelConnection,
-    viewName?: string
-  ): Promise<void> {
+  public async populate(iModel: IModelConnection, viewName?: string): Promise<void> {
     this.clear();
 
     // Query all non-private views. They sort first in list.
@@ -146,11 +126,7 @@ export class ViewList extends SortedArray<ViewSpec> {
     const ext = iModel.projectExtents;
 
     // start with a new "blank" spatial view to show the extents of the project, from top view
-    const blankView = SpatialViewState.createBlank(
-      iModel,
-      ext.low,
-      ext.high.minus(ext.low)
-    );
+    const blankView = SpatialViewState.createBlank(iModel, ext.low, ext.high.minus(ext.low));
 
     // turn on the background map
     const style = blankView.displayStyle;
@@ -167,9 +143,7 @@ export class ViewList extends SortedArray<ViewSpec> {
 
 export class ViewPicker {
   private readonly _select: HTMLSelectElement;
-  public readonly onSelectedViewChanged = new BeEvent<
-    (viewId: Id64String) => void
-  >();
+  public readonly onSelectedViewChanged = new BeEvent<(viewId: Id64String) => void>();
 
   public get element(): HTMLElement {
     return this._select;
@@ -178,8 +152,7 @@ export class ViewPicker {
   public constructor(parent: HTMLElement, views: ViewList) {
     this._select = document.createElement("select");
     this._select.className = "viewList";
-    this._select.onchange = () =>
-      this.onSelectedViewChanged.raiseEvent(this._select.value);
+    this._select.onchange = () => this.onSelectedViewChanged.raiseEvent(this._select.value);
 
     parent.appendChild(this._select);
 
@@ -187,8 +160,7 @@ export class ViewPicker {
   }
 
   public populate(views: ViewList): void {
-    while (this._select.hasChildNodes())
-      this._select.removeChild(this._select.firstChild!);
+    while (this._select.hasChildNodes()) this._select.removeChild(this._select.firstChild!);
 
     let index = 0;
     for (const spec of views) {

@@ -19,10 +19,9 @@ describe("DgnDbWorker", () => {
       name: "DgnDbWorker tests",
       description: "DgnDbWorker tests",
     };
-    imodel = StandaloneDb.createEmpty(
-      IModelTestUtils.prepareOutputFile("DgnDbWorker", "DgnDbWorker.bim"),
-      { rootSubject }
-    );
+    imodel = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("DgnDbWorker", "DgnDbWorker.bim"), {
+      rootSubject,
+    });
   }
 
   before(() => {
@@ -182,14 +181,7 @@ describe("DgnDbWorker", () => {
     reject.setThrow();
 
     // These 6 workers will never resolve nor reject explicitly.
-    const cancel = [
-      new Worker(),
-      new Worker(),
-      new Worker(),
-      new Worker(),
-      new Worker(),
-      new Worker(),
-    ];
+    const cancel = [new Worker(), new Worker(), new Worker(), new Worker(), new Worker(), new Worker()];
 
     // Queue up all the workers.
     const workers = cancel.concat([resolve, reject]);
@@ -199,9 +191,7 @@ describe("DgnDbWorker", () => {
     imodel.close();
     openIModel();
 
-    await expect(Promise.all(workers.map(async (x) => x.promise))).rejectedWith(
-      "canceled"
-    );
+    await expect(Promise.all(workers.map(async (x) => x.promise))).rejectedWith("canceled");
 
     expect(cancel.every((x) => x.isCanceled)).to.be.true;
     expect(cancel.every((x) => x.isAborted || x.isSkipped)).to.be.true;

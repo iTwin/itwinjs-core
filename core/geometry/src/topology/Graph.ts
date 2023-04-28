@@ -93,17 +93,11 @@ export type HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean;
 /** function signature for function of a node and a mask, returning a number
  * @internal
  */
-export type HalfEdgeAndMaskToBooleanFunction = (
-  node: HalfEdge,
-  mask: HalfEdgeMask
-) => boolean;
+export type HalfEdgeAndMaskToBooleanFunction = (node: HalfEdge, mask: HalfEdgeMask) => boolean;
 /** function signature for function of a graph and a node, returning a boolean
  * @internal
  */
-export type GraphNodeFunction = (
-  graph: HalfEdgeGraph,
-  node: HalfEdge
-) => boolean;
+export type GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolean;
 /** Non-topological data members in a half edge.
  * These are not part of adjacency and masking logic.
  */
@@ -197,10 +191,8 @@ export class HalfEdge implements HalfEdgeUserData {
    */
   public faceStepY(numStep: number): number {
     let node: HalfEdge = this;
-    if (numStep > 0)
-      for (let i = 0; i < numStep; i++) node = node.faceSuccessor;
-    else if (numStep < 0)
-      for (let i = 0; i > numStep; i--) node = node.facePredecessor;
+    if (numStep > 0) for (let i = 0; i < numStep; i++) node = node.faceSuccessor;
+    else if (numStep < 0) for (let i = 0; i > numStep; i--) node = node.facePredecessor;
     return node.y;
   }
   /**
@@ -325,10 +317,7 @@ export class HalfEdge implements HalfEdgeUserData {
    * * Each new edge mates to one existing edge.
    * @returns Returns the reference to the half edge created.
    */
-  public static splitEdgeCreateSliverFace(
-    baseA: HalfEdge,
-    heArray: HalfEdge[] | undefined
-  ): HalfEdge {
+  public static splitEdgeCreateSliverFace(baseA: HalfEdge, heArray: HalfEdge[] | undefined): HalfEdge {
     // raw edges ...
     const newA = new HalfEdge();
     const newB = new HalfEdge();
@@ -369,12 +358,7 @@ export class HalfEdge implements HalfEdgeUserData {
     }
   }
   private static _totalNodesCreated = 0;
-  public constructor(
-    x: number = 0,
-    y: number = 0,
-    z: number = 0,
-    i: number = 0
-  ) {
+  public constructor(x: number = 0, y: number = 0, z: number = 0, i: number = 0) {
     this._id = HalfEdge._totalNodesCreated++;
     this.i = i;
     this.maskBits = 0x00000000;
@@ -514,10 +498,7 @@ export class HalfEdge implements HalfEdgeUserData {
   /**
    * @return whether the mask is set (or unset) on all nodes of the face loop
    */
-  public isMaskedAroundFace(
-    mask: HalfEdgeMask,
-    value: boolean = true
-  ): boolean {
+  public isMaskedAroundFace(mask: HalfEdgeMask, value: boolean = true): boolean {
     let node: HalfEdge = this;
     if (value) {
       do {
@@ -539,11 +520,7 @@ export class HalfEdge implements HalfEdgeUserData {
    * @param edgeTag tag to apply
    * @param bothSides If true, also apply the tag to the mates around the face.
    */
-  public setMaskAndEdgeTagAroundFace(
-    mask: HalfEdgeMask,
-    tag: any,
-    applyToMate: boolean = false
-  ) {
+  public setMaskAndEdgeTagAroundFace(mask: HalfEdgeMask, tag: any, applyToMate: boolean = false) {
     let node: HalfEdge = this;
     do {
       node.setMask(mask);
@@ -569,10 +546,7 @@ export class HalfEdge implements HalfEdgeUserData {
   }
 
   /** Returns the number of nodes found with the given mask value around this vertex loop. */
-  public countMaskAroundFace(
-    mask: HalfEdgeMask,
-    value: boolean = true
-  ): number {
+  public countMaskAroundFace(mask: HalfEdgeMask, value: boolean = true): number {
     let count = 0;
     let node: HalfEdge = this;
     if (value) {
@@ -590,10 +564,7 @@ export class HalfEdge implements HalfEdgeUserData {
   }
 
   /** Returns the number of nodes found with the given mask value around this vertex loop.   */
-  public countMaskAroundVertex(
-    mask: HalfEdgeMask,
-    value: boolean = true
-  ): number {
+  public countMaskAroundVertex(mask: HalfEdgeMask, value: boolean = true): number {
     let count = 0;
     let node: HalfEdge = this;
     if (value) {
@@ -611,10 +582,7 @@ export class HalfEdge implements HalfEdgeUserData {
   }
 
   /** Returns the first node with given mask value around this vertex loop.   */
-  public findMaskAroundVertex(
-    mask: HalfEdgeMask,
-    value: boolean = true
-  ): HalfEdge | undefined {
+  public findMaskAroundVertex(mask: HalfEdgeMask, value: boolean = true): HalfEdge | undefined {
     let node: HalfEdge = this;
     do {
       if (node.isMaskSet(mask) === value) return node;
@@ -624,10 +592,7 @@ export class HalfEdge implements HalfEdgeUserData {
   }
 
   /** Returns the first node with given mask value around this face loop.   */
-  public findMaskAroundFace(
-    mask: HalfEdgeMask,
-    value: boolean = true
-  ): HalfEdge | undefined {
+  public findMaskAroundFace(mask: HalfEdgeMask, value: boolean = true): HalfEdge | undefined {
     let node: HalfEdge = this;
     do {
       if (node.isMaskSet(mask) === value) return node;
@@ -636,10 +601,7 @@ export class HalfEdge implements HalfEdgeUserData {
     return undefined;
   }
   /** Returns the first node with given mask value on this edge (i.e. examining this and this.mate)  */
-  public findMaskAroundEdge(
-    mask: HalfEdgeMask,
-    value: boolean = true
-  ): HalfEdge | undefined {
+  public findMaskAroundEdge(mask: HalfEdgeMask, value: boolean = true): HalfEdge | undefined {
     if (this.isMaskSet(mask) === value) return this;
     const mate = this.edgeMate;
     if (mate.isMaskSet(mask) === value) return mate;
@@ -705,14 +667,7 @@ export class HalfEdge implements HalfEdgeUserData {
    * @param x1 x coordinate for second node
    * @param y1 y coordinate for second node
    */
-  public static createEdgeXYXY(
-    id0: any,
-    x0: number,
-    y0: number,
-    id1: any,
-    x1: number,
-    y1: number
-  ): HalfEdge {
+  public static createEdgeXYXY(id0: any, x0: number, y0: number, id1: any, x1: number, y1: number): HalfEdge {
     const node0 = new HalfEdge(x0, y0);
     const node1 = new HalfEdge(x1, y1);
     node0._faceSuccessor = node0._facePredecessor = node0._edgeMate = node1;
@@ -788,9 +743,7 @@ export class HalfEdge implements HalfEdgeUserData {
   }
   /** Return the [id, [x,y]] of a node.  Useful for collector methods. */
   public static nodeToIdXYString(node: HalfEdge): string {
-    const s = `${node.id.toString()}+${HalfEdge.nodeToMaskString(node)}[${
-      node.x
-    },${node.y}]`;
+    const s = `${node.id.toString()}+${HalfEdge.nodeToMaskString(node)}[${node.x},${node.y}]`;
     return s;
   }
 
@@ -817,37 +770,20 @@ export class HalfEdge implements HalfEdgeUserData {
   }
   /** Return Vector2d to face successor, with only xy coordinates */
   public vectorToFaceSuccessorXY(result?: Vector2d): Vector2d {
-    return Vector2d.create(
-      this.faceSuccessor.x - this.x,
-      this.faceSuccessor.y - this.y,
-      result
-    );
+    return Vector2d.create(this.faceSuccessor.x - this.x, this.faceSuccessor.y - this.y, result);
   }
   /** Return Vector3d to face successor */
   public vectorToFaceSuccessor(result?: Vector3d): Vector3d {
     const other = this.faceSuccessor;
-    return Vector3d.create(
-      other.x - this.x,
-      other.y - this.y,
-      other.z - this.z,
-      result
-    );
+    return Vector3d.create(other.x - this.x, other.y - this.y, other.z - this.z, result);
   }
   /** Return Vector3d to face successor */
   public vectorToFacePredecessor(result?: Vector3d): Vector3d {
     const other = this.facePredecessor;
-    return Vector3d.create(
-      other.x - this.x,
-      other.y - this.y,
-      other.z - this.z,
-      result
-    );
+    return Vector3d.create(other.x - this.x, other.y - this.y, other.z - this.z, result);
   }
   /** test if spaceNode is in the sector at sectorNode */
-  public static isNodeVisibleInSector(
-    spaceNode: HalfEdge,
-    sectorNode: HalfEdge
-  ): boolean {
+  public static isNodeVisibleInSector(spaceNode: HalfEdge, sectorNode: HalfEdge): boolean {
     // remark: fussy details ported from native code.
     // The obscure cases seemed "unlikely" at first.  But preexisting unit tests for triangulation pinged just about everything.
     // So it really matters to do the "0" cases this way.
@@ -855,60 +791,29 @@ export class HalfEdge implements HalfEdgeUserData {
     if (sectorNode.vertexSuccessor === sectorNode) return true;
     const successor = sectorNode.faceSuccessor;
     const predecessor = sectorNode.facePredecessor;
-    const successorCross = this.crossProductXYToTargets(
-      sectorNode,
-      successor,
-      spaceNode
-    );
-    const predecessorCross = this.crossProductXYToTargets(
-      predecessor,
-      sectorNode,
-      spaceNode
-    );
+    const successorCross = this.crossProductXYToTargets(sectorNode, successor, spaceNode);
+    const predecessorCross = this.crossProductXYToTargets(predecessor, sectorNode, spaceNode);
     // simplest case:  two positives
     if (successorCross > 0.0 && predecessorCross > 0.0) return true;
 
-    const sectorCross = this.crossProductXYToTargets(
-      predecessor,
-      sectorNode,
-      successor
-    );
+    const sectorCross = this.crossProductXYToTargets(predecessor, sectorNode, successor);
 
     if (predecessorCross <= 0.0 && successorCross <= 0.0) {
-      if (
-        predecessorCross === 0.0 &&
-        successorCross === 0.0 &&
-        sectorCross === 0.0
-      ) {
+      if (predecessorCross === 0.0 && successorCross === 0.0 && sectorCross === 0.0) {
         /* Everything is on a line.*/
         /* If the sector is a degenerate face, nodeP can only be
                 in if it is the other node in the degenerate face.
         */
-        if (
-          predecessor === successor &&
-          sectorNode.vertexSuccessor !== sectorNode
-        )
-          return spaceNode === successor;
+        if (predecessor === successor && sectorNode.vertexSuccessor !== sectorNode) return spaceNode === successor;
         /* Sector is 360 degrees.  Call it in only if vector from predP
             to sectorP points forward to nodeP.
         */
-        return (
-          HalfEdge.dotProductNodeToNodeVectorsXY(
-            predecessor,
-            sectorNode,
-            sectorNode,
-            spaceNode
-          ) > 0.0
-        );
+        return HalfEdge.dotProductNodeToNodeVectorsXY(predecessor, sectorNode, sectorNode, spaceNode) > 0.0;
       } else {
         return false;
       }
     } else {
-      if (
-        sectorCross === 0.0 &&
-        predecessorCross !== 0.0 &&
-        successorCross !== 0.0
-      ) {
+      if (sectorCross === 0.0 && predecessorCross !== 0.0 && successorCross !== 0.0) {
         // The incoming and outgoing edges at the sector are identical direction.
         // We have to decide if this node is  inside the degenerate face (i.e. a geometrically empty sector)
         // or outside (i.e. a nearly complete sector).
@@ -922,17 +827,8 @@ export class HalfEdge implements HalfEdgeUserData {
   }
 
   /** Returns Return cross product (2d) of vectors from baseA to targetA and baseB to targetB */
-  public static crossProductXYToTargets(
-    base: HalfEdge,
-    targetA: HalfEdge,
-    targetB: HalfEdge
-  ): number {
-    return Geometry.crossProductXYXY(
-      targetA.x - base.x,
-      targetA.y - base.y,
-      targetB.x - base.x,
-      targetB.y - base.y
-    );
+  public static crossProductXYToTargets(base: HalfEdge, targetA: HalfEdge, targetB: HalfEdge): number {
+    return Geometry.crossProductXYXY(targetA.x - base.x, targetA.y - base.y, targetB.x - base.x, targetB.y - base.y);
   }
 
   /** Returns Return dot product (2d) of vectors along two edges. */
@@ -942,43 +838,23 @@ export class HalfEdge implements HalfEdgeUserData {
     baseB: HalfEdge,
     targetB: HalfEdge
   ): number {
-    return Geometry.dotProductXYXY(
-      targetA.x - baseA.x,
-      targetA.y - baseA.y,
-      targetB.x - baseB.x,
-      targetB.y - baseB.y
-    );
+    return Geometry.dotProductXYXY(targetA.x - baseA.x, targetA.y - baseA.y, targetB.x - baseB.x, targetB.y - baseB.y);
   }
 
   /** Return cross product (2d) of vectors from nodeA to nodeB and nodeB to nodeC
    */
-  public static crossProductXYAlongChain(
-    nodeA: HalfEdge,
-    nodeB: HalfEdge,
-    nodeC: HalfEdge
-  ): number {
-    return Geometry.crossProductXYXY(
-      nodeB.x - nodeA.x,
-      nodeB.y - nodeA.y,
-      nodeC.x - nodeB.x,
-      nodeC.y - nodeB.y
-    );
+  public static crossProductXYAlongChain(nodeA: HalfEdge, nodeB: HalfEdge, nodeC: HalfEdge): number {
+    return Geometry.crossProductXYXY(nodeB.x - nodeA.x, nodeB.y - nodeA.y, nodeC.x - nodeB.x, nodeC.y - nodeB.y);
   }
 
   /**
    * @return whether the sector represented by the 2D vectors from nodeA to nodeB and nodeB to nodeC is convex.
    */
-  public static isSectorConvex(
-    nodeA: HalfEdge,
-    nodeB: HalfEdge,
-    nodeC: HalfEdge
-  ): boolean {
+  public static isSectorConvex(nodeA: HalfEdge, nodeB: HalfEdge, nodeC: HalfEdge): boolean {
     const cross = HalfEdge.crossProductXYAlongChain(nodeA, nodeB, nodeC);
     if (cross > 0.0) return true;
     if (cross < 0.0) return false;
-    return (
-      HalfEdge.dotProductNodeToNodeVectorsXY(nodeA, nodeB, nodeB, nodeC) > 0.0
-    );
+    return HalfEdge.dotProductNodeToNodeVectorsXY(nodeA, nodeB, nodeB, nodeC) > 0.0;
   }
 
   /**
@@ -986,11 +862,7 @@ export class HalfEdge implements HalfEdgeUserData {
    */
   // eslint-disable-next-line @itwin/prefer-get
   public isSectorConvex(): boolean {
-    return HalfEdge.isSectorConvex(
-      this.facePredecessor,
-      this,
-      this.faceSuccessor
-    );
+    return HalfEdge.isSectorConvex(this.facePredecessor, this, this.faceSuccessor);
   }
 
   /**
@@ -1019,10 +891,7 @@ export class HalfEdge implements HalfEdgeUserData {
    * @return whether this edge is isolated from the rest of the graph.
    */
   public get isIsolatedEdge() {
-    return (
-      this === this.vertexSuccessor &&
-      this.edgeMate === this.edgeMate.vertexSuccessor
-    );
+    return this === this.vertexSuccessor && this.edgeMate === this.edgeMate.vertexSuccessor;
   }
 
   /** Return true if `this` is lexically below `other`, comparing y first then x. */
@@ -1050,10 +919,7 @@ export class HalfEdge implements HalfEdgeUserData {
   /** Returns radians between this edge and its face predecessor edge, using all three coordinates x,y,z and given normal to resolve sweep direction.
    *   * The returned angle is positive, i.e. may be larger than PI radians.
    */
-  public static sectorSweepRadiansXYZ(
-    node: HalfEdge,
-    normal: Vector3d
-  ): number {
+  public static sectorSweepRadiansXYZ(node: HalfEdge, normal: Vector3d): number {
     const nodeB = node.faceSuccessor;
     const nodeC = node.facePredecessor;
     return Angle.orientedRadiansBetweenVectorsXYZ(
@@ -1087,14 +953,7 @@ export class HalfEdge implements HalfEdgeUserData {
 
   /** Return distance between xyz coordinates of this and other node */
   public distanceXYZ(other: HalfEdge): number {
-    return Geometry.distanceXYZXYZ(
-      this.x,
-      this.y,
-      this.z,
-      other.x,
-      other.y,
-      other.z
-    );
+    return Geometry.distanceXYZXYZ(this.x, this.y, this.z, other.x, other.y, other.z);
   }
   /**
    *
@@ -1118,11 +977,7 @@ export class HalfEdge implements HalfEdgeUserData {
    * @param value target value for mask on half edges.
    * @param collectedNodes optional array to be cleared and receive masked nodes
    */
-  public collectMaskedEdgesAroundVertex(
-    mask: HalfEdgeMask,
-    value: boolean = true,
-    result?: HalfEdge[]
-  ): HalfEdge[] {
+  public collectMaskedEdgesAroundVertex(mask: HalfEdgeMask, value: boolean = true, result?: HalfEdge[]): HalfEdge[] {
     if (result === undefined) result = [];
     else result.length = 0;
     let node: HalfEdge = this;
@@ -1233,11 +1088,7 @@ export class HalfEdge implements HalfEdgeUserData {
    */
   public fractionToPoint2d(fraction: number, result?: Point2d): Point2d {
     const node1 = this.faceSuccessor;
-    return Point2d.create(
-      this.x + (node1.x - this.x) * fraction,
-      this.y + (node1.y - this.y) * fraction,
-      result
-    );
+    return Point2d.create(this.x + (node1.x - this.x) * fraction, this.y + (node1.y - this.y) * fraction, result);
   }
   /**
    * interpolate xy coordinates between this node and its face successor.
@@ -1291,12 +1142,7 @@ export class HalfEdge implements HalfEdgeUserData {
    */
   public getVector3dAlongEdge(result?: Vector3d): Vector3d {
     const nodeB = this.faceSuccessor;
-    return Vector3d.create(
-      nodeB.x - this.x,
-      nodeB.y - this.y,
-      nodeB.z - this.z,
-      result
-    );
+    return Vector3d.create(nodeB.x - this.x, nodeB.y - this.y, nodeB.z - this.z, result);
   }
 
   /**
@@ -1368,17 +1214,10 @@ export class HalfEdge implements HalfEdgeUserData {
    * * If the edge is not horizontal, return the fractional position (possibly outside 0..1) of the intersection.
    * @param node0 Base node of edge
    */
-  public static horizontalScanFraction(
-    node0: HalfEdge,
-    y: number
-  ): number | undefined | HalfEdge {
+  public static horizontalScanFraction(node0: HalfEdge, y: number): number | undefined | HalfEdge {
     const node1 = node0.faceSuccessor;
     const dy = node1.y - node0.y;
-    if (
-      Geometry.isSameCoordinate(y, node0.y) &&
-      Geometry.isSameCoordinate(y, node1.y)
-    )
-      return node0;
+    if (Geometry.isSameCoordinate(y, node0.y) && Geometry.isSameCoordinate(y, node1.y)) return node0;
     if (Geometry.isSameCoordinate(dy, 0.0)) return undefined;
     return Geometry.conditionalDivideFraction(y - node0.y, dy);
   }
@@ -1389,21 +1228,13 @@ export class HalfEdge implements HalfEdgeUserData {
    * * If the edge is not horizontal and y is between its end y's, return the fraction
    * @param node0 Base node of edge
    */
-  public static horizontalScanFraction01(
-    node0: HalfEdge,
-    y: number
-  ): number | undefined {
+  public static horizontalScanFraction01(node0: HalfEdge, y: number): number | undefined {
     const node1 = node0.faceSuccessor;
     const dy = node1.y - node0.y;
-    if (
-      Geometry.isSameCoordinate(y, node0.y) &&
-      Geometry.isSameCoordinate(y, node1.y)
-    )
-      return undefined;
+    if (Geometry.isSameCoordinate(y, node0.y) && Geometry.isSameCoordinate(y, node1.y)) return undefined;
     if (Geometry.isSameCoordinate(dy, 0.0)) return undefined;
     const fraction = Geometry.conditionalDivideFraction(y - node0.y, dy);
-    if (fraction !== undefined && fraction >= 0.0 && fraction <= 1.0)
-      return fraction;
+    if (fraction !== undefined && fraction >= 0.0 && fraction <= 1.0) return fraction;
     return undefined;
   }
   /**
@@ -1487,17 +1318,7 @@ export class HalfEdgeGraph {
     zB: number = 0,
     iB: number = 0
   ): HalfEdge {
-    const a = HalfEdge.createHalfEdgePairWithCoordinates(
-      xA,
-      yA,
-      zA,
-      iA,
-      xB,
-      yB,
-      zB,
-      iB,
-      this.allHalfEdges
-    );
+    const a = HalfEdge.createHalfEdgePairWithCoordinates(xA, yA, zA, iA, xB, yB, zB, iB, this.allHalfEdges);
     return a;
   }
   /**
@@ -1510,17 +1331,7 @@ export class HalfEdgeGraph {
    * @returns Return pointer to the first half edge created.  (This has idA as its id.)
    */
   public createEdgeIdId(iA: number = 0, iB: number = 0): HalfEdge {
-    const a = HalfEdge.createHalfEdgePairWithCoordinates(
-      0.0,
-      0.0,
-      0.0,
-      iA,
-      0.0,
-      0.0,
-      0.0,
-      iB,
-      this.allHalfEdges
-    );
+    const a = HalfEdge.createHalfEdgePairWithCoordinates(0.0, 0.0, 0.0, iA, 0.0, 0.0, 0.0, iB, this.allHalfEdges);
     return a;
   }
   /**
@@ -1535,17 +1346,7 @@ export class HalfEdgeGraph {
     node: HalfEdge,
     iB: number = 0
   ): HalfEdge {
-    const a = HalfEdge.createHalfEdgePairWithCoordinates(
-      xA,
-      yA,
-      zA,
-      iA,
-      node.x,
-      node.y,
-      node.z,
-      iB,
-      this.allHalfEdges
-    );
+    const a = HalfEdge.createHalfEdgePairWithCoordinates(xA, yA, zA, iA, node.x, node.y, node.z, iB, this.allHalfEdges);
     const b = a.faceSuccessor;
     HalfEdge.pinch(node, b);
     return a;
@@ -1554,12 +1355,7 @@ export class HalfEdgeGraph {
    * * create an edge from coordinates x,y,z to (the tail of) an existing half edge.
    * @returns Return pointer to the half edge with tail at x,y,z
    */
-  public createEdgeHalfEdgeHalfEdge(
-    nodeA: HalfEdge,
-    idA: number,
-    nodeB: HalfEdge,
-    idB: number = 0
-  ): HalfEdge {
+  public createEdgeHalfEdgeHalfEdge(nodeA: HalfEdge, idA: number, nodeB: HalfEdge, idB: number = 0): HalfEdge {
     const a = HalfEdge.createHalfEdgePairWithCoordinates(
       nodeA.x,
       nodeA.y,
@@ -1584,12 +1380,7 @@ export class HalfEdgeGraph {
    * * The two edges are added to the graph's HalfEdge set
    * @returns Return pointer to the first half edge created.
    */
-  public createEdgeXYAndZ(
-    xyz0: XYAndZ,
-    id0: number,
-    xyz1: XYAndZ,
-    id1: number
-  ): HalfEdge {
+  public createEdgeXYAndZ(xyz0: XYAndZ, id0: number, xyz1: XYAndZ, id1: number): HalfEdge {
     const a = HalfEdge.createHalfEdgePairWithCoordinates(
       xyz0.x,
       xyz0.y,
@@ -1671,14 +1462,7 @@ export class HalfEdgeGraph {
    * @returns Return one of the two nodes, which the caller may consider as the start of the edge.
    */
   public addEdgeXY(x0: number, y0: number, x1: number, y1: number): HalfEdge {
-    const baseNode = HalfEdge.createEdgeXYXY(
-      this._numNodesCreated,
-      x0,
-      y0,
-      this._numNodesCreated + 1,
-      x1,
-      y1
-    );
+    const baseNode = HalfEdge.createEdgeXYXY(this._numNodesCreated, x0, y0, this._numNodesCreated + 1, x1, y1);
     this._numNodesCreated += 2;
     this.allHalfEdges.push(baseNode);
     this.allHalfEdges.push(baseNode.faceSuccessor);
@@ -1751,10 +1535,7 @@ export class HalfEdgeGraph {
    * Returns the number of face loops satisfying a filter function with mask argument.
    *
    */
-  public countFaceLoopsWithMaskFilter(
-    filter: HalfEdgeAndMaskToBooleanFunction,
-    mask: HalfEdgeMask
-  ): number {
+  public countFaceLoopsWithMaskFilter(filter: HalfEdgeAndMaskToBooleanFunction, mask: HalfEdgeMask): number {
     this.clearMask(HalfEdgeMask.VISITED);
     let count = 0;
     this.announceFaceLoops((_graph: HalfEdgeGraph, seed: HalfEdge) => {

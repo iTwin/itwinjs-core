@@ -5,10 +5,7 @@
 // import { Point3d } from "../PointVector";
 
 import { expect } from "chai";
-import {
-  BSplineSurface3dH,
-  BSplineSurface3dQuery,
-} from "../../bspline/BSplineSurface";
+import { BSplineSurface3dH, BSplineSurface3dQuery } from "../../bspline/BSplineSurface";
 import { BSplineWrapMode } from "../../bspline/KnotVector";
 import { Geometry } from "../../Geometry";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -21,11 +18,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-function testBasisValues(
-  ck: Checker,
-  data: Float64Array,
-  expectedValue: number = 1
-) {
+function testBasisValues(ck: Checker, data: Float64Array, expectedValue: number = 1) {
   let s = 0.0;
   for (const a of data) s += a;
   ck.testCoordinate(expectedValue, s, "basis sum");
@@ -47,21 +40,13 @@ function testBSplineSurface(ck: Checker, surfaceA: BSplineSurface3dQuery) {
   const pointB1 = surfaceB.fractionToPoint(u1, v1);
   const frameA0 = surfaceA.fractionToRigidFrame(u0, v0);
   const frameB0 = surfaceB.fractionToRigidFrame(u0, v0);
-  if (
-    ck.testPointer(frameA0) &&
-    ck.testPointer(frameB0) &&
-    frameA0 &&
-    frameB0
-  ) {
+  if (ck.testPointer(frameA0) && ck.testPointer(frameB0) && frameA0 && frameB0) {
     ck.testTransform(frameA0, frameB0);
     const frameA0Inverse = frameA0.inverse();
     if (ck.testPointer(frameA0Inverse)) {
       const rangeA2 = Range3d.create();
       surfaceA.extendRange(rangeA2, frameA0Inverse);
-      const planeA2 = Plane3dByOriginAndUnitNormal.create(
-        Point3d.createFrom(frameA0.origin),
-        frameA0.matrix.columnZ()
-      );
+      const planeA2 = Plane3dByOriginAndUnitNormal.create(Point3d.createFrom(frameA0.origin), frameA0.matrix.columnZ());
       ck.testBoolean(
         surfaceA.isInPlane(planeA2!),
         Geometry.isSmallMetricDistance(rangeA2.zLength()),
@@ -94,11 +79,7 @@ function testBSplineSurface(ck: Checker, surfaceA: BSplineSurface3dQuery) {
 
   // verify degree, order, and pole layouts in expected "u-major" pole construction
   ck.testExactNumber(1, surfaceA.poleStepUV(0), "u-major u step");
-  ck.testExactNumber(
-    surfaceA.numPolesUV(0),
-    surfaceA.poleStepUV(1),
-    "v-major v step"
-  );
+  ck.testExactNumber(surfaceA.numPolesUV(0), surfaceA.poleStepUV(1), "v-major v step");
   ck.testExactNumber(
     surfaceA.numPolesTotal(),
     surfaceA.numPolesUV(0) * surfaceA.numPolesUV(1),
@@ -106,10 +87,7 @@ function testBSplineSurface(ck: Checker, surfaceA: BSplineSurface3dQuery) {
   );
   for (const value of [0, 1]) {
     const select = surfaceA.numberToUVSelect(value);
-    ck.testExactNumber(
-      surfaceA.numPolesUV(select),
-      surfaceA.numSpanUV(select) + surfaceA.degreeUV(select)
-    );
+    ck.testExactNumber(surfaceA.numPolesUV(select), surfaceA.numSpanUV(select) + surfaceA.degreeUV(select));
   }
 
   if (surfaceA instanceof BSplineSurface3dH) {
@@ -141,10 +119,7 @@ function testBSplineSurface(ck: Checker, surfaceA: BSplineSurface3dQuery) {
           const uFraction = uKnots.spanFractionToFraction(i, f);
           const vFraction = vKnots.spanFractionToFraction(j, f);
           const fractionPoint = surfaceA.fractionToPoint(uFraction, vFraction);
-          const fractionPoint4d = surfaceA.fractionToPoint4d(
-            uFraction,
-            vFraction
-          );
+          const fractionPoint4d = surfaceA.fractionToPoint4d(uFraction, vFraction);
           const fractionPoint4dto3d = fractionPoint4d.realPointDefault000();
           const knotPoint4dto3d = knotPoint4d.realPointDefault000();
           ck.testPoint3d(knotPoint4dto3d, fractionPoint);
@@ -177,16 +152,7 @@ describe("BSplineSurface", () => {
     const surfaceAH1 = Sample.createWeightedXYGridBsplineSurface(4, 3, 3, 2);
     if (ck.testPointer(surfaceAH1)) testBSplineSurface(ck, surfaceAH1);
     // A rational surface with mild bilinear-patch weight variation.  This is NOT planar ...
-    const surfaceAHw = Sample.createWeightedXYGridBsplineSurface(
-      4,
-      3,
-      3,
-      2,
-      1.0,
-      1.1,
-      0.9,
-      1.0
-    );
+    const surfaceAHw = Sample.createWeightedXYGridBsplineSurface(4, 3, 3, 2, 1.0, 1.1, 0.9, 1.0);
     if (ck.testPointer(surfaceAHw)) testBSplineSurface(ck, surfaceAHw);
 
     ck.checkpoint("BSplineSurface.Hello");
@@ -249,11 +215,7 @@ describe("BSplineSurface", () => {
     surfaceB.tryTranslateInPlace(10, 0, 0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, surfaceA, 0, 0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, surfaceB, 0, 0);
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "BSplineSurface",
-      "PseudoTorusExample"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineSurface", "PseudoTorusExample");
     ck.checkpoint("BSplineSurface.Wrapped");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -263,20 +225,8 @@ describe("BSplineSurface", () => {
     let dx = 0.0;
     const dy = 0.0;
     for (const bsurf of [
-      Sample.createConeBsplineSurface(
-        Point3d.create(0, 0, 0),
-        Point3d.create(0, 0, 1),
-        4.0,
-        1.0,
-        2
-      ),
-      Sample.createConeBsplineSurface(
-        Point3d.create(0, 0, 0),
-        Point3d.create(1, 3, 1),
-        4.0,
-        1.0,
-        3
-      ),
+      Sample.createConeBsplineSurface(Point3d.create(0, 0, 0), Point3d.create(0, 0, 1), 4.0, 1.0, 2),
+      Sample.createConeBsplineSurface(Point3d.create(0, 0, 0), Point3d.create(1, 3, 1), 4.0, 1.0, 3),
     ]) {
       if (ck.testPointer(bsurf)) {
         bsurf.tryTranslateInPlace(dx, dy);
@@ -284,11 +234,7 @@ describe("BSplineSurface", () => {
         dx += 10.0;
       }
     }
-    GeometryCoreTestIO.saveGeometry(
-      allGeometry,
-      "BSplineSurface",
-      "createCone"
-    );
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineSurface", "createCone");
     ck.checkpoint("BSplineSurface.Wrapped");
     expect(ck.getNumErrors()).equals(0);
   });

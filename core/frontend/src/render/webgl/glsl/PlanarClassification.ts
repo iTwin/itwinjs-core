@@ -13,12 +13,7 @@ import { SpatialClassifierInsideDisplay } from "@itwin/core-common";
 import { Matrix4 } from "../Matrix";
 import { PlanarClassifierContent } from "../PlanarClassifier";
 import { TextureUnit } from "../RenderFlags";
-import {
-  FragmentShaderComponent,
-  ProgramBuilder,
-  ShaderBuilder,
-  VariableType,
-} from "../ShaderBuilder";
+import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType } from "../ShaderBuilder";
 import { IsThematic } from "../TechniqueFlags";
 import { Texture2DHandle } from "../Texture";
 import { addShaderFlags, addUInt32s } from "./Common";
@@ -194,8 +189,7 @@ const computeClassifiedSurfaceHiliteColor = `
     return vec4(0.0);
 ${computeClassifiedHiliteColor}`;
 
-const computeClassifierPos =
-  "vec4 classProj = u_pClassProj * rawPosition; v_pClassPos = classProj.xy;";
+const computeClassifierPos = "vec4 classProj = u_pClassProj * rawPosition; v_pClassPos = classProj.xy;";
 const computeInstancedClassifierPos =
   "vec4 classProj = u_pClassProj * g_instancedRtcMatrix * rawPosition; v_pClassPos = classProj.xy;";
 const computeClassifierPosW = "v_pClassPosW = classProj.w;";
@@ -213,16 +207,10 @@ function addPlanarClassifierCommon(builder: ProgramBuilder) {
   vert.addUniform("u_pClassProj", VariableType.Mat4, (prog) => {
     prog.addGraphicUniform("u_pClassProj", (uniform, params) => {
       const source = params.target.currentPlanarClassifierOrDrape!;
-      assert(
-        undefined !== source ||
-          undefined !== params.target.activeVolumeClassifierTexture
-      );
+      assert(undefined !== source || undefined !== params.target.activeVolumeClassifierTexture);
       if (undefined !== params.target.currentPlanarClassifierOrDrape) {
         source.projectionMatrix.multiplyMatrixMatrix(
-          Matrix4d.createTransform(
-            params.target.currentTransform,
-            scratchModel
-          ),
+          Matrix4d.createTransform(params.target.currentTransform, scratchModel),
           scratchModelProjection
         );
         scratchMatrix.initFromMatrix4d(scratchModelProjection);
@@ -236,62 +224,28 @@ function addPlanarClassifierCommon(builder: ProgramBuilder) {
   builder.addInlineComputedVarying(
     "v_pClassPos",
     VariableType.Vec2,
-    vert.usesInstancedGeometry
-      ? computeInstancedClassifierPos
-      : computeClassifierPos
+    vert.usesInstancedGeometry ? computeInstancedClassifierPos : computeClassifierPos
   );
-  builder.addInlineComputedVarying(
-    "v_pClassPosW",
-    VariableType.Float,
-    computeClassifierPosW
-  );
+  builder.addInlineComputedVarying("v_pClassPosW", VariableType.Float, computeClassifierPosW);
 
   addPlanarClassifierConstants(builder.frag);
 }
 
 function addPlanarClassifierConstants(builder: ShaderBuilder) {
-  builder.addDefine(
-    "kClassifierDisplay_Off",
-    SpatialClassifierInsideDisplay.Off.toFixed(1)
-  );
-  builder.addDefine(
-    "kClassifierDisplay_On",
-    SpatialClassifierInsideDisplay.On.toFixed(1)
-  );
-  builder.addDefine(
-    "kClassifierDisplay_Dimmed",
-    SpatialClassifierInsideDisplay.Dimmed.toFixed(1)
-  );
-  builder.addDefine(
-    "kClassifierDisplay_Hilite",
-    SpatialClassifierInsideDisplay.Hilite.toFixed(1)
-  );
-  builder.addDefine(
-    "kClassifierDisplay_Element",
-    SpatialClassifierInsideDisplay.ElementColor.toFixed(1)
-  );
+  builder.addDefine("kClassifierDisplay_Off", SpatialClassifierInsideDisplay.Off.toFixed(1));
+  builder.addDefine("kClassifierDisplay_On", SpatialClassifierInsideDisplay.On.toFixed(1));
+  builder.addDefine("kClassifierDisplay_Dimmed", SpatialClassifierInsideDisplay.Dimmed.toFixed(1));
+  builder.addDefine("kClassifierDisplay_Hilite", SpatialClassifierInsideDisplay.Hilite.toFixed(1));
+  builder.addDefine("kClassifierDisplay_Element", SpatialClassifierInsideDisplay.ElementColor.toFixed(1));
   const td = SpatialClassifierInsideDisplay.ElementColor + 1;
   builder.addDefine("kTextureDrape", td.toFixed(1));
-  builder.addDefine(
-    "kTextureContentClassifierOnly",
-    PlanarClassifierContent.ClassifierOnly.toFixed(1)
-  );
-  builder.addDefine(
-    "kTextureContentMaskOnly",
-    PlanarClassifierContent.MaskOnly.toFixed(1)
-  );
-  builder.addDefine(
-    "kTextureContentClassifierAndMask",
-    PlanarClassifierContent.ClassifierAndMask.toFixed(1)
-  );
+  builder.addDefine("kTextureContentClassifierOnly", PlanarClassifierContent.ClassifierOnly.toFixed(1));
+  builder.addDefine("kTextureContentMaskOnly", PlanarClassifierContent.MaskOnly.toFixed(1));
+  builder.addDefine("kTextureContentClassifierAndMask", PlanarClassifierContent.ClassifierAndMask.toFixed(1));
 }
 
 /** @internal */
-export function addColorPlanarClassifier(
-  builder: ProgramBuilder,
-  translucent: boolean,
-  isThematic: IsThematic
-) {
+export function addColorPlanarClassifier(builder: ProgramBuilder, translucent: boolean, isThematic: IsThematic) {
   addPlanarClassifierCommon(builder);
   const frag = builder.frag;
   frag.addUniform("s_pClassSampler", VariableType.Sampler2D, (prog) => {
@@ -301,16 +255,8 @@ export function addColorPlanarClassifier(
       assert(undefined !== source || undefined !== volClass);
       if (source) {
         assert(undefined !== source.texture);
-        source.texture.texture.bindSampler(
-          uniform,
-          TextureUnit.PlanarClassification
-        );
-      } else
-        Texture2DHandle.bindSampler(
-          uniform,
-          volClass!,
-          TextureUnit.PlanarClassification
-        );
+        source.texture.texture.bindSampler(uniform, TextureUnit.PlanarClassification);
+      } else Texture2DHandle.bindSampler(uniform, volClass!, TextureUnit.PlanarClassification);
     });
   });
 
@@ -335,8 +281,7 @@ export function addColorPlanarClassifier(
     frag.addUniform("u_pClassPointCloud", VariableType.Boolean, (prog) => {
       prog.addGraphicUniform("u_pClassPointCloud", (uniform, params) => {
         const classifier = params.target.currentPlanarClassifier;
-        const isPointCloud =
-          undefined !== classifier && classifier.isClassifyingPointCloud;
+        const isPointCloud = undefined !== classifier && classifier.isClassifyingPointCloud;
         uniform.setUniform1i(isPointCloud ? 1 : 0);
       });
     });
@@ -357,9 +302,7 @@ export function addColorPlanarClassifier(
 
   frag.set(
     FragmentShaderComponent.ApplyPlanarClassifier,
-    isThematic === IsThematic.No
-      ? applyPlanarClassificationColor
-      : applyPlanarClassificationColorForThematic
+    isThematic === IsThematic.No ? applyPlanarClassificationColor : applyPlanarClassificationColorForThematic
   );
 }
 
@@ -385,30 +328,20 @@ export function addFeaturePlanarClassifier(builder: ProgramBuilder) {
 }
 
 /** @internal */
-export function addHilitePlanarClassifier(
-  builder: ProgramBuilder,
-  supportTextures = true
-) {
+export function addHilitePlanarClassifier(builder: ProgramBuilder, supportTextures = true) {
   addPlanarClassifierCommon(builder);
   const frag = builder.frag;
   frag.addUniform("s_pClassHiliteSampler", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("s_pClassHiliteSampler", (uniform, params) => {
       const classifier = params.target.currentPlanarClassifier!;
-      assert(
-        undefined !== classifier && undefined !== classifier.hiliteTexture
-      );
-      classifier.hiliteTexture.texture.bindSampler(
-        uniform,
-        TextureUnit.PlanarClassificationHilite
-      );
+      assert(undefined !== classifier && undefined !== classifier.hiliteTexture);
+      classifier.hiliteTexture.texture.bindSampler(uniform, TextureUnit.PlanarClassificationHilite);
     });
   });
 
   frag.set(
     FragmentShaderComponent.ComputeBaseColor,
-    supportTextures
-      ? computeClassifiedSurfaceHiliteColor
-      : computeClassifiedHiliteColor
+    supportTextures ? computeClassifiedSurfaceHiliteColor : computeClassifiedHiliteColor
   );
 }
 
@@ -448,11 +381,8 @@ const overrideClassifierColorPostlude = `
 `;
 
 const overrideClassifierWithFeatures =
-  overrideClassifierColorPrelude +
-  overrideClassifierEmphasis +
-  overrideClassifierColorPostlude;
-const overrideClassifierForClip =
-  overrideClassifierColorPrelude + overrideClassifierColorPostlude;
+  overrideClassifierColorPrelude + overrideClassifierEmphasis + overrideClassifierColorPostlude;
+const overrideClassifierForClip = overrideClassifierColorPrelude + overrideClassifierColorPostlude;
 
 const overrideClassifierColorPreludeForThematic = `
   if (0.0 == u_planarClassifierInsideMode)
@@ -478,12 +408,9 @@ const overrideClassifierColorPostludeClipForThematic = `
 `;
 
 const overrideClassifierWithFeaturesForThematic =
-  overrideClassifierColorPreludeForThematic +
-  overrideClassifierEmphasisForThematic +
-  overrideClassifierColorPostlude;
+  overrideClassifierColorPreludeForThematic + overrideClassifierEmphasisForThematic + overrideClassifierColorPostlude;
 const overrideClassifierForClipForThematic =
-  overrideClassifierColorPreludeForThematic +
-  overrideClassifierColorPostludeClipForThematic;
+  overrideClassifierColorPreludeForThematic + overrideClassifierColorPostludeClipForThematic;
 
 /** The classified geometry needs some information about the classifier geometry. The classified fragment shader outputs special values that do not represent valid RGB+A combinations when using
  * pre-multiplied alpha. The alpha channel will be 0.5, and the red, green, and/or blue channels will be 1.0:
@@ -492,31 +419,18 @@ const overrideClassifierForClipForThematic =
  * - Blue: fully-transparent. Indicates clipping mask (discard the classified pixel).
  * @internal
  */
-export function addOverrideClassifierColor(
-  builder: ProgramBuilder,
-  isThematic: IsThematic
-): void {
+export function addOverrideClassifierColor(builder: ProgramBuilder, isThematic: IsThematic): void {
   addPlanarClassifierConstants(builder.frag);
-  builder.frag.addUniform(
-    "u_planarClassifierInsideMode",
-    VariableType.Float,
-    (prog) => {
-      prog.addGraphicUniform(
-        "u_planarClassifierInsideMode",
-        (uniform, params) => {
-          const classifier = params.target.currentlyDrawingClassifier;
-          const override =
-            undefined !== classifier ? classifier.insideDisplay : 0;
-          uniform.setUniform1f(override);
-        }
-      );
-    }
-  );
+  builder.frag.addUniform("u_planarClassifierInsideMode", VariableType.Float, (prog) => {
+    prog.addGraphicUniform("u_planarClassifierInsideMode", (uniform, params) => {
+      const classifier = params.target.currentlyDrawingClassifier;
+      const override = undefined !== classifier ? classifier.insideDisplay : 0;
+      uniform.setUniform1f(override);
+    });
+  });
 
   const haveOverrides = undefined !== builder.frag.find("v_feature_emphasis");
-  builder.frag.addFunction(
-    haveOverrides ? encodeNonLocatableWithFeatures : encodeNonLocatable
-  );
+  builder.frag.addFunction(haveOverrides ? encodeNonLocatableWithFeatures : encodeNonLocatable);
   if (isThematic === IsThematic.No)
     builder.frag.set(
       FragmentShaderComponent.OverrideColor,
@@ -525,8 +439,6 @@ export function addOverrideClassifierColor(
   else
     builder.frag.set(
       FragmentShaderComponent.OverrideColor,
-      haveOverrides
-        ? overrideClassifierWithFeaturesForThematic
-        : overrideClassifierForClipForThematic
+      haveOverrides ? overrideClassifierWithFeaturesForThematic : overrideClassifierForClipForThematic
     );
 }

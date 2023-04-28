@@ -15,12 +15,7 @@ import { AttributeMap } from "./AttributeMap";
 import { CachedGeometry } from "./CachedGeometry";
 import { ShaderProgramParams } from "./DrawCommand";
 import { GL } from "./GL";
-import {
-  BufferHandle,
-  BufferParameters,
-  BuffersContainer,
-  QBufferHandle3d,
-} from "./AttributeBuffers";
+import { BufferHandle, BufferParameters, BuffersContainer, QBufferHandle3d } from "./AttributeBuffers";
 import { Pass, RenderOrder } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
@@ -58,15 +53,8 @@ export class PointCloudGeometry extends CachedGeometry {
   constructor(pointCloud: PointCloudArgs) {
     super();
     this.buffers = BuffersContainer.create();
-    this._vertices = QBufferHandle3d.create(
-      pointCloud.qparams,
-      pointCloud.positions
-    ) as QBufferHandle3d;
-    const attrPos = AttributeMap.findAttribute(
-      "a_pos",
-      TechniqueId.PointCloud,
-      false
-    );
+    this._vertices = QBufferHandle3d.create(pointCloud.qparams, pointCloud.positions) as QBufferHandle3d;
+    const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.PointCloud, false);
     assert(undefined !== attrPos);
     const vertexDataType =
       pointCloud.positions instanceof Float32Array
@@ -75,15 +63,7 @@ export class PointCloudGeometry extends CachedGeometry {
         ? GL.DataType.UnsignedByte
         : GL.DataType.UnsignedShort;
     this.buffers.addBuffer(this._vertices, [
-      BufferParameters.create(
-        attrPos.location,
-        3,
-        vertexDataType,
-        false,
-        0,
-        0,
-        false
-      ),
+      BufferParameters.create(attrPos.location, 3, vertexDataType, false, 0, 0, false),
     ]);
     this._vertexCount = pointCloud.positions.length / 3;
     this._hasFeatures = FeatureIndexType.Empty !== pointCloud.features.type;
@@ -92,30 +72,16 @@ export class PointCloudGeometry extends CachedGeometry {
 
     if (undefined !== pointCloud.colors) {
       this._colorHandle = BufferHandle.createArrayBuffer(pointCloud.colors);
-      const attrColor = AttributeMap.findAttribute(
-        "a_color",
-        TechniqueId.PointCloud,
-        false
-      );
+      const attrColor = AttributeMap.findAttribute("a_color", TechniqueId.PointCloud, false);
       assert(undefined !== attrColor);
       this.buffers.addBuffer(this._colorHandle!, [
-        BufferParameters.create(
-          attrColor.location,
-          3,
-          GL.DataType.UnsignedByte,
-          true,
-          0,
-          0,
-          false
-        ),
+        BufferParameters.create(attrColor.location, 3, GL.DataType.UnsignedByte, true, 0, 0, false),
       ]);
     }
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    const bytesUsed =
-      this._vertices.bytesUsed +
-      (undefined !== this._colorHandle ? this._colorHandle.bytesUsed : 0);
+    const bytesUsed = this._vertices.bytesUsed + (undefined !== this._colorHandle ? this._colorHandle.bytesUsed : 0);
     stats.addPointCloud(bytesUsed);
   }
 
@@ -151,11 +117,7 @@ export class PointCloudGeometry extends CachedGeometry {
 
   public draw(): void {
     this.buffers.bind();
-    System.instance.context.drawArrays(
-      GL.PrimitiveType.Points,
-      0,
-      this._vertexCount
-    );
+    System.instance.context.drawArrays(GL.PrimitiveType.Points, 0, this._vertexCount);
     this.buffers.unbind();
   }
 

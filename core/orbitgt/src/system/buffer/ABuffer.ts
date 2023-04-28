@@ -43,11 +43,7 @@ export class ABuffer {
   /**
    * Wrap an existing buffer.
    */
-  public static wrapRange(
-    buffer: ArrayBuffer,
-    offset: int32,
-    size: int32
-  ): ABuffer {
+  public static wrapRange(buffer: ArrayBuffer, offset: int32, size: int32): ABuffer {
     /* The whole buffer? */
     if (offset == 0 && size == buffer.byteLength) return ABuffer.wrap(buffer);
     /* Copy the range */
@@ -92,8 +88,7 @@ export class ABuffer {
     if (begin < 0) begin += this._content.byteLength;
     if (end < 0) end += this._content.byteLength;
     let result: ABuffer = new ABuffer(end - begin);
-    for (let i: number = 0; i < result._content.byteLength; i++)
-      result.set(i, this.get(begin + i));
+    for (let i: number = 0; i < result._content.byteLength; i++) result.set(i, this.get(begin + i));
     return result;
   }
 
@@ -107,7 +102,6 @@ export class ABuffer {
     targetIndex: int32,
     count: int32
   ): void {
-    for (let i: number = 0; i < count; i++)
-      target.set(targetIndex++, source.get(sourceIndex++));
+    for (let i: number = 0; i < count; i++) target.set(targetIndex++, source.get(sourceIndex++));
   }
 }

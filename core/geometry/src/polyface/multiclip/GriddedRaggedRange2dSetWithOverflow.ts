@@ -22,10 +22,7 @@ import { LinearSearchRange2dArray } from "./LinearSearchRange2dArray";
 export class GriddedRaggedRange2dSetWithOverflow<T> {
   private _gridSet: GriddedRaggedRange2dSet<T>;
   private _overflowSet: LinearSearchRange2dArray<T>;
-  private constructor(
-    gridSet: GriddedRaggedRange2dSet<T>,
-    overflowSet: LinearSearchRange2dArray<T>
-  ) {
+  private constructor(gridSet: GriddedRaggedRange2dSet<T>, overflowSet: LinearSearchRange2dArray<T>) {
     this._gridSet = gridSet;
     this._overflowSet = overflowSet;
   }
@@ -40,16 +37,8 @@ export class GriddedRaggedRange2dSetWithOverflow<T> {
     numXEdge: number,
     numYEdge: number
   ): GriddedRaggedRange2dSetWithOverflow<T> | undefined {
-    const grids = GriddedRaggedRange2dSet.create<T>(
-      range.clone(),
-      numXEdge,
-      numYEdge
-    );
-    if (grids)
-      return new GriddedRaggedRange2dSetWithOverflow<T>(
-        grids,
-        new LinearSearchRange2dArray<T>()
-      );
+    const grids = GriddedRaggedRange2dSet.create<T>(range.clone(), numXEdge, numYEdge);
+    if (grids) return new GriddedRaggedRange2dSetWithOverflow<T>(grids, new LinearSearchRange2dArray<T>());
     return undefined;
   }
   /**
@@ -60,15 +49,8 @@ export class GriddedRaggedRange2dSetWithOverflow<T> {
    * @param handler function to receive range and tag hits.
    * @return false if search terminated by handler.  Return true if no handler returned false.
    */
-  public searchXY(
-    x: number,
-    y: number,
-    handler: (range: Range2d, tag: T) => boolean
-  ): boolean {
-    return (
-      this._gridSet.searchXY(x, y, handler) &&
-      this._overflowSet.searchXY(x, y, handler)
-    );
+  public searchXY(x: number, y: number, handler: (range: Range2d, tag: T) => boolean): boolean {
+    return this._gridSet.searchXY(x, y, handler) && this._overflowSet.searchXY(x, y, handler);
   }
   /**
    * * Search for ranges overlapping testRange
@@ -78,14 +60,8 @@ export class GriddedRaggedRange2dSetWithOverflow<T> {
    * @param handler function to receive range and tag hits.
    * @return false if search terminated by handler.  Return true if no handler returned false.
    */
-  public searchRange2d(
-    testRange: LowAndHighXY,
-    handler: (range: Range2d, tag: T) => boolean
-  ): boolean {
-    return (
-      this._gridSet.searchRange2d(testRange, handler) &&
-      this._overflowSet.searchRange2d(testRange, handler)
-    );
+  public searchRange2d(testRange: LowAndHighXY, handler: (range: Range2d, tag: T) => boolean): boolean {
+    return this._gridSet.searchRange2d(testRange, handler) && this._overflowSet.searchRange2d(testRange, handler);
   }
   /** If possible, insert a range into the set.
    * * Decline to insert (and return false) if
@@ -95,14 +71,10 @@ export class GriddedRaggedRange2dSetWithOverflow<T> {
    */
   public addRange(range: Range2d | Range3d, tag: T): void {
     if (!range.isNull) {
-      if (!this._gridSet.conditionalInsert(range, tag))
-        this._overflowSet.addRange(range, tag);
+      if (!this._gridSet.conditionalInsert(range, tag)) this._overflowSet.addRange(range, tag);
     }
   }
-  public visitChildren(
-    initialDepth: number,
-    handler: (depth: number, child: LinearSearchRange2dArray<T>) => void
-  ) {
+  public visitChildren(initialDepth: number, handler: (depth: number, child: LinearSearchRange2dArray<T>) => void) {
     handler(initialDepth, this._overflowSet);
     this._gridSet.visitChildren(initialDepth + 1, handler);
   }

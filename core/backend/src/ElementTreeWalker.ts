@@ -5,22 +5,10 @@
 /** @packageDocumentation
  * @module Elements
  */
-import {
-  assert,
-  DbResult,
-  Id64Array,
-  Id64String,
-  Logger,
-  LogLevel,
-} from "@itwin/core-bentley";
+import { assert, DbResult, Id64Array, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import { IModel } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import {
-  DefinitionElement,
-  DefinitionPartition,
-  Element,
-  Subject,
-} from "./Element";
+import { DefinitionElement, DefinitionPartition, Element, Subject } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel, Model } from "./Model";
 
@@ -32,10 +20,7 @@ export interface ElementTreeWalkerModelInfo {
   isDefinitionModel: boolean;
 }
 
-function sortChildrenBeforeParents(
-  iModel: IModelDb,
-  ids: Id64Array
-): Array<Id64Array> {
+function sortChildrenBeforeParents(iModel: IModelDb, ids: Id64Array): Array<Id64Array> {
   const children: Id64Array = [];
   const parents: Id64Array = [];
   for (const eid of ids) {
@@ -50,20 +35,15 @@ function sortChildrenBeforeParents(
 }
 
 function isModelEmpty(iModel: IModelDb, modelId: Id64String): boolean {
-  return iModel.withPreparedStatement(
-    `select count(*) from ${Element.classFullName} where Model.Id = ?`,
-    (stmt) => {
-      stmt.bindId(1, modelId);
-      stmt.step();
-      return stmt.getValue(0).getInteger() === 0;
-    }
-  );
+  return iModel.withPreparedStatement(`select count(*) from ${Element.classFullName} where Model.Id = ?`, (stmt) => {
+    stmt.bindId(1, modelId);
+    stmt.step();
+    return stmt.getValue(0).getInteger() === 0;
+  });
 }
 
 function isDefinitionModel(model: Model): boolean {
-  return (
-    model.id !== IModel.repositoryModelId && model instanceof DefinitionModel
-  );
+  return model.id !== IModel.repositoryModelId && model instanceof DefinitionModel;
 }
 
 enum ElementPruningClassification {
@@ -73,10 +53,7 @@ enum ElementPruningClassification {
   PRUNING_CLASS_DefinitionPartition = 3,
 }
 
-function classifyElementForPruning(
-  iModel: IModelDb,
-  elementId: Id64String
-): ElementPruningClassification {
+function classifyElementForPruning(iModel: IModelDb, elementId: Id64String): ElementPruningClassification {
   const el = iModel.elements.getElement(elementId);
   return el instanceof Subject
     ? ElementPruningClassification.PRUNING_CLASS_Subject
@@ -98,14 +75,8 @@ export class ElementTreeWalkerScope {
   public readonly enclosingModelInfo: ElementTreeWalkerModelInfo;
 
   constructor(topElement: Id64String, model: Model);
-  constructor(
-    enclosingScope: ElementTreeWalkerScope,
-    newScope: Id64String | Model
-  );
-  constructor(
-    arg1: Id64String | ElementTreeWalkerScope,
-    arg2: Model | Id64String
-  ) {
+  constructor(enclosingScope: ElementTreeWalkerScope, newScope: Id64String | Model);
+  constructor(arg1: Id64String | ElementTreeWalkerScope, arg2: Model | Id64String) {
     if (typeof arg1 === "string") {
       // normal constructor
       assert(arg2 instanceof Model);
@@ -176,10 +147,7 @@ function fmtModel(model: Model): string {
 let isTraceEnabledChecked = -1;
 
 function isTraceEnabled(): boolean {
-  if (isTraceEnabledChecked === -1)
-    isTraceEnabledChecked = Logger.isEnabled(loggerCategory, LogLevel.Trace)
-      ? 1
-      : 0;
+  if (isTraceEnabledChecked === -1) isTraceEnabledChecked = Logger.isEnabled(loggerCategory, LogLevel.Trace) ? 1 : 0;
   return isTraceEnabledChecked === 1;
 }
 
@@ -192,15 +160,10 @@ function logElement(
 ): void {
   if (!isTraceEnabled()) return;
 
-  Logger.logTrace(
-    loggerCategory,
-    `${op} ${fmtElement(iModel, elementId)} ${scope ? scope.toString() : ""}`
-  );
+  Logger.logTrace(loggerCategory, `${op} ${fmtElement(iModel, elementId)} ${scope ? scope.toString() : ""}`);
 
   if (logChildren)
-    iModel.elements
-      .queryChildren(elementId)
-      .forEach((c) => logElement(" - ", iModel, c, undefined, true));
+    iModel.elements.queryChildren(elementId).forEach((c) => logElement(" - ", iModel, c, undefined, true));
 }
 
 function logModel(
@@ -212,21 +175,15 @@ function logModel(
 ): void {
   if (!isTraceEnabled()) return;
   const model: Model = iModel.models.getModel(modelId);
-  Logger.logTrace(
-    loggerCategory,
-    `${op} ${fmtModel(model)} ${scope ? scope.toString() : ""}`
-  );
+  Logger.logTrace(loggerCategory, `${op} ${fmtModel(model)} ${scope ? scope.toString() : ""}`);
 
   if (logElements) {
-    iModel.withPreparedStatement(
-      `select ecinstanceid from ${Element.classFullName} where Model.Id = ?`,
-      (stmt) => {
-        stmt.bindId(1, modelId);
-        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-          logElement(" - ", iModel, stmt.getValue(0).getId());
-        }
+    iModel.withPreparedStatement(`select ecinstanceid from ${Element.classFullName} where Model.Id = ?`, (stmt) => {
+      stmt.bindId(1, modelId);
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        logElement(" - ", iModel, stmt.getValue(0).getId());
       }
-    );
+    });
   }
 }
 
@@ -245,89 +202,54 @@ export abstract class ElementTreeBottomUp {
   constructor(protected _iModel: IModelDb) {}
 
   /** Return true if the search should recurse into this model  */
-  protected shouldExploreModel(
-    _model: Model,
-    _scope: ElementTreeWalkerScope
-  ): boolean {
+  protected shouldExploreModel(_model: Model, _scope: ElementTreeWalkerScope): boolean {
     return true;
   }
   /** Return true if the search should recurse into the children (if any) of this element  */
-  protected shouldExploreChildren(
-    _parentId: Id64String,
-    _scope: ElementTreeWalkerScope
-  ): boolean {
+  protected shouldExploreChildren(_parentId: Id64String, _scope: ElementTreeWalkerScope): boolean {
     return true;
   }
   /** Return true if the search should visit this element  */
-  protected shouldVisitElement(
-    _elementId: Id64String,
-    _scope: ElementTreeWalkerScope
-  ): boolean {
+  protected shouldVisitElement(_elementId: Id64String, _scope: ElementTreeWalkerScope): boolean {
     return true;
   }
   /** Return true if the search should visit this model  */
-  protected shouldVisitModel(
-    _model: Model,
-    _scope: ElementTreeWalkerScope
-  ): boolean {
+  protected shouldVisitModel(_model: Model, _scope: ElementTreeWalkerScope): boolean {
     return true;
   }
 
   /** Called to visit a model */
-  protected abstract visitModel(
-    model: Model,
-    scope: ElementTreeWalkerScope
-  ): void;
+  protected abstract visitModel(model: Model, scope: ElementTreeWalkerScope): void;
 
   /** Called to visit an element */
-  protected abstract visitElement(
-    elementId: Id64String,
-    scope: ElementTreeWalkerScope
-  ): void;
+  protected abstract visitElement(elementId: Id64String, scope: ElementTreeWalkerScope): void;
 
   /** The main tree-walking function */
-  protected processElementTree(
-    element: Id64String,
-    scope: ElementTreeWalkerScope
-  ) {
+  protected processElementTree(element: Id64String, scope: ElementTreeWalkerScope) {
     const subModel = this._iModel.models.tryGetModel<Model>(element);
     if (subModel !== undefined) {
-      if (this.shouldExploreModel(subModel, scope))
-        this._processSubModel(subModel, scope);
+      if (this.shouldExploreModel(subModel, scope)) this._processSubModel(subModel, scope);
 
-      if (this.shouldVisitModel(subModel, scope))
-        this.visitModel(subModel, scope);
+      if (this.shouldVisitModel(subModel, scope)) this.visitModel(subModel, scope);
     }
 
-    if (this.shouldExploreChildren(element, scope))
-      this._processChildren(element, scope);
+    if (this.shouldExploreChildren(element, scope)) this._processChildren(element, scope);
 
-    if (this.shouldVisitElement(element, scope))
-      this.visitElement(element, scope);
+    if (this.shouldVisitElement(element, scope)) this.visitElement(element, scope);
   }
 
   /** process the children of the specified parent element */
-  private _processChildren(
-    parentElement: Id64String,
-    parentScope: ElementTreeWalkerScope
-  ): void {
+  private _processChildren(parentElement: Id64String, parentScope: ElementTreeWalkerScope): void {
     const children = this._iModel.elements.queryChildren(parentElement);
     if (children.length === 0) return;
 
-    const childrenScope = new ElementTreeWalkerScope(
-      parentScope,
-      parentElement
-    );
+    const childrenScope = new ElementTreeWalkerScope(parentScope, parentElement);
 
-    for (const childElement of children)
-      this.processElementTree(childElement, childrenScope);
+    for (const childElement of children) this.processElementTree(childElement, childrenScope);
   }
 
   /** process the elements in the specified model */
-  private _processSubModel(
-    model: Model,
-    parenScope: ElementTreeWalkerScope
-  ): void {
+  private _processSubModel(model: Model, parenScope: ElementTreeWalkerScope): void {
     const scope = new ElementTreeWalkerScope(parenScope, model);
     // Visit only the top-level parents. processElementTree will visit their children (bottom-up).
     model.iModel.withPreparedStatement(
@@ -349,10 +271,7 @@ class SpecialElements {
   public definitions: Id64Array = [];
   public subjects: Id64Array = [];
 
-  public recordSpecialElement(
-    iModel: IModelDb,
-    elementId: Id64String
-  ): boolean {
+  public recordSpecialElement(iModel: IModelDb, elementId: Id64String): boolean {
     // Defer Definitions and Subjects
     const cls = classifyElementForPruning(iModel, elementId);
     if (cls === ElementPruningClassification.PRUNING_CLASS_Subject) {
@@ -361,9 +280,7 @@ class SpecialElements {
     } else if (cls === ElementPruningClassification.PRUNING_CLASS_Definition) {
       this.definitions.push(elementId);
       return true;
-    } else if (
-      cls === ElementPruningClassification.PRUNING_CLASS_DefinitionPartition
-    ) {
+    } else if (cls === ElementPruningClassification.PRUNING_CLASS_DefinitionPartition) {
       this.definitionModels.push(elementId);
       return true;
     }
@@ -383,12 +300,8 @@ class SpecialElements {
     // A similar problem occurs when you pass other kinds of elements to deleteDefinitionElements, where some are
     // children and others are parents. deleteDefinitionElements does not preserve the order that you specify,
     // and it does not process children before parents.
-    for (const definitions of sortChildrenBeforeParents(
-      iModel,
-      this.definitions
-    )) {
-      if (isTraceEnabled())
-        definitions.forEach((e) => logElement("try delete", iModel, e));
+    for (const definitions of sortChildrenBeforeParents(iModel, this.definitions)) {
+      if (isTraceEnabled()) definitions.forEach((e) => logElement("try delete", iModel, e));
 
       iModel.elements.deleteDefinitionElements(definitions); // will not delete definitions that are still in use.
     }
@@ -442,10 +355,7 @@ export class ElementTreeDeleter extends ElementTreeBottomUp {
     return true;
   }
 
-  protected override visitModel(
-    model: Model,
-    _scope: ElementTreeWalkerScope
-  ): void {
+  protected override visitModel(model: Model, _scope: ElementTreeWalkerScope): void {
     if (isDefinitionModel(model)) return; // we recorded definition models in visitElement when we encountered the DefinitionPartition elements.
 
     // visitElement has already deleted the elements in the model. So, now it's safe to delete the model itself.
@@ -453,10 +363,7 @@ export class ElementTreeDeleter extends ElementTreeBottomUp {
     model.delete();
   }
 
-  protected override visitElement(
-    elementId: Id64String,
-    _scope: ElementTreeWalkerScope
-  ): void {
+  protected override visitElement(elementId: Id64String, _scope: ElementTreeWalkerScope): void {
     if (!this._special.recordSpecialElement(this._iModel, elementId)) {
       logElement("delete", this._iModel, elementId, _scope);
       this._iModel.elements.deleteElement(elementId);
@@ -469,12 +376,8 @@ export class ElementTreeDeleter extends ElementTreeBottomUp {
    * @param scope How the parent was found
    * @see deleteSpecialElements
    */
-  public deleteNormalElements(
-    topElement: Id64String,
-    scope?: ElementTreeWalkerScope
-  ): void {
-    const topScope =
-      scope ?? ElementTreeWalkerScope.createTopScope(this._iModel, topElement);
+  public deleteNormalElements(topElement: Id64String, scope?: ElementTreeWalkerScope): void {
+    const topScope = scope ?? ElementTreeWalkerScope.createTopScope(this._iModel, topElement);
     this.processElementTree(topElement, topScope); //
   }
 
@@ -496,22 +399,13 @@ abstract class ElementTreeTopDown {
   constructor(protected _iModel: IModelDb) {}
 
   /** Should the search *not* recurse into this sub-tree? */
-  protected shouldPrune(
-    _elementId: Id64String,
-    _scope: ElementTreeWalkerScope
-  ): boolean {
+  protected shouldPrune(_elementId: Id64String, _scope: ElementTreeWalkerScope): boolean {
     return false;
   }
 
-  protected abstract prune(
-    _elementId: Id64String,
-    _scope: ElementTreeWalkerScope
-  ): void;
+  protected abstract prune(_elementId: Id64String, _scope: ElementTreeWalkerScope): void;
 
-  protected processElementTree(
-    element: Id64String,
-    scope: ElementTreeWalkerScope
-  ) {
+  protected processElementTree(element: Id64String, scope: ElementTreeWalkerScope) {
     if (this.shouldPrune(element, scope)) {
       this.prune(element, scope);
       return;
@@ -528,8 +422,7 @@ abstract class ElementTreeTopDown {
   private _processChildren(element: Id64String, scope: ElementTreeWalkerScope) {
     let parentScope: ElementTreeWalkerScope | undefined;
     for (const childElement of this._iModel.elements.queryChildren(element)) {
-      if (parentScope === undefined)
-        parentScope = new ElementTreeWalkerScope(scope, element);
+      if (parentScope === undefined) parentScope = new ElementTreeWalkerScope(scope, element);
       this.processElementTree(childElement, parentScope);
     }
   }
@@ -556,10 +449,7 @@ abstract class ElementTreeTopDown {
  * @return true if the element and its children and sub-models should be deleted.
  * @beta
  */
-export type ElementSubTreeDeleteFilter = (
-  elementId: Id64String,
-  scope: ElementTreeWalkerScope
-) => boolean;
+export type ElementSubTreeDeleteFilter = (elementId: Id64String, scope: ElementTreeWalkerScope) => boolean;
 
 /** Performs a breadth-first search to visit elements in top-down order.
  * When the supplied filter function chooses an element, ElementTreeDeleter is used to delete it and its sub-tree.
@@ -575,19 +465,13 @@ export class ElementSubTreeDeleter extends ElementTreeTopDown {
    * @param shouldPruneCb Callback that selects sub-trees that should be deleted.
    * @see deleteElementSubTrees for a simple way to use this class.
    */
-  public constructor(
-    iModel: IModelDb,
-    shouldPruneCb: ElementSubTreeDeleteFilter
-  ) {
+  public constructor(iModel: IModelDb, shouldPruneCb: ElementSubTreeDeleteFilter) {
     super(iModel);
     this._treeDeleter = new ElementTreeDeleter(this._iModel);
     this._shouldPruneCb = shouldPruneCb;
   }
 
-  protected override shouldPrune(
-    elementId: Id64String,
-    scope: ElementTreeWalkerScope
-  ): boolean {
+  protected override shouldPrune(elementId: Id64String, scope: ElementTreeWalkerScope): boolean {
     return this._shouldPruneCb(elementId, scope);
   }
 
@@ -598,12 +482,8 @@ export class ElementSubTreeDeleter extends ElementTreeTopDown {
   /** Traverses the tree of elements beginning with the top element, and deletes all selected sub-trees.
    * Normal elements are deleted. Any special elements that are encountered are deferred.
    * Call deleteSpecialElementSubTrees after all top elements have been processed. */
-  public deleteNormalElementSubTrees(
-    topElement: Id64String,
-    scope?: ElementTreeWalkerScope
-  ) {
-    const topScope =
-      scope ?? ElementTreeWalkerScope.createTopScope(this._iModel, topElement);
+  public deleteNormalElementSubTrees(topElement: Id64String, scope?: ElementTreeWalkerScope) {
+    const topScope = scope ?? ElementTreeWalkerScope.createTopScope(this._iModel, topElement);
     this.processElementTree(topElement, topScope); // deletes normal elements and their sub-trees, defers special elements
   }
 
@@ -620,10 +500,7 @@ export class ElementSubTreeDeleter extends ElementTreeTopDown {
  * @param topElement The parent of the sub-tree
  * @beta
  */
-export function deleteElementTree(
-  iModel: IModelDb,
-  topElement: Id64String
-): void {
+export function deleteElementTree(iModel: IModelDb, topElement: Id64String): void {
   const del = new ElementTreeDeleter(iModel);
   del.deleteNormalElements(topElement);
   del.deleteSpecialElements();

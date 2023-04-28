@@ -25,8 +25,7 @@ A type converter may be obtained for a certain type name by calling the
 `TypeConverterManager.getConverter` method:
 
 ```ts
-const typeConverter =
-  TypeConverterManager.TypeConverterManager.getConverter("string");
+const typeConverter = TypeConverterManager.TypeConverterManager.getConverter("string");
 ```
 
 The following is a list of the provided type converters:

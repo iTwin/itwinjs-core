@@ -32,13 +32,10 @@ beforeEach(function () {
 
   // we want snapshot tests to use the same random data between runs
   let seed = 0;
-  for (let i = 0; i < currentTest.fullTitle().length; ++i)
-    seed += currentTest.fullTitle().charCodeAt(i);
+  for (let i = 0; i < currentTest.fullTitle().length; ++i) seed += currentTest.fullTitle().charCodeAt(i);
   faker.seed(seed);
 
-  const sourceFilePath = this.currentTest.file
-    .replace("lib", "src")
-    .replace(/\.(jsx?|tsx?)$/, "");
+  const sourceFilePath = this.currentTest.file.replace("lib", "src").replace(/\.(jsx?|tsx?)$/, "");
   const snapPath = sourceFilePath + ".snap";
   chaiJestSnapshot.setFilename(snapPath);
   chaiJestSnapshot.setTestName(currentTest.fullTitle());

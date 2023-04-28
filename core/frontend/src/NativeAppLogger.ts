@@ -6,12 +6,7 @@
  * @module NativeApp
  */
 
-import {
-  BentleyError,
-  Logger,
-  LoggingMetaData,
-  LogLevel,
-} from "@itwin/core-bentley";
+import { BentleyError, Logger, LoggingMetaData, LogLevel } from "@itwin/core-bentley";
 import { IpcApp } from "./IpcApp";
 
 /**
@@ -45,13 +40,7 @@ export class NativeAppLogger {
     try {
       while (messages.length > 0) {
         const msg: LogMessage = messages.shift()!;
-        await IpcApp.appFunctionIpc.log(
-          msg.timestamp,
-          msg.level,
-          msg.category,
-          msg.message,
-          { ...msg.metaData }
-        );
+        await IpcApp.appFunctionIpc.log(msg.timestamp, msg.level, msg.category, msg.message, { ...msg.metaData });
       }
     } finally {
       // Put back unsent messages.
@@ -65,12 +54,7 @@ export class NativeAppLogger {
     }
   }
 
-  private static log(
-    level: LogLevel,
-    category: string,
-    message: string,
-    metaData: LoggingMetaData
-  ) {
+  private static log(level: LogLevel, category: string, message: string, metaData: LoggingMetaData) {
     this._messages.push({
       timestamp: Date.now(),
       level,
@@ -81,35 +65,19 @@ export class NativeAppLogger {
     this.flushToBackend();
   }
 
-  public static logError(
-    category: string,
-    message: string,
-    metaData: LoggingMetaData
-  ) {
+  public static logError(category: string, message: string, metaData: LoggingMetaData) {
     this.log(LogLevel.Error, category, message, metaData);
   }
 
-  public static logInfo(
-    category: string,
-    message: string,
-    metaData: LoggingMetaData
-  ) {
+  public static logInfo(category: string, message: string, metaData: LoggingMetaData) {
     this.log(LogLevel.Info, category, message, metaData);
   }
 
-  public static logTrace(
-    category: string,
-    message: string,
-    metaData: LoggingMetaData
-  ) {
+  public static logTrace(category: string, message: string, metaData: LoggingMetaData) {
     this.log(LogLevel.Trace, category, message, metaData);
   }
 
-  public static logWarning(
-    category: string,
-    message: string,
-    metaData: LoggingMetaData
-  ) {
+  public static logWarning(category: string, message: string, metaData: LoggingMetaData) {
     this.log(LogLevel.Warning, category, message, metaData);
   }
 
@@ -121,26 +89,14 @@ export class NativeAppLogger {
   }
 
   public static initialize() {
-    const errCb = (
-      category: string,
-      message: string,
-      metaData: LoggingMetaData
-    ) => this.logError(category, message, metaData);
-    const warnCb = (
-      category: string,
-      message: string,
-      metaData: LoggingMetaData
-    ) => this.logWarning(category, message, metaData);
-    const infoCb = (
-      category: string,
-      message: string,
-      metaData: LoggingMetaData
-    ) => this.logInfo(category, message, metaData);
-    const traceCb = (
-      category: string,
-      message: string,
-      metaData: LoggingMetaData
-    ) => this.logTrace(category, message, metaData);
+    const errCb = (category: string, message: string, metaData: LoggingMetaData) =>
+      this.logError(category, message, metaData);
+    const warnCb = (category: string, message: string, metaData: LoggingMetaData) =>
+      this.logWarning(category, message, metaData);
+    const infoCb = (category: string, message: string, metaData: LoggingMetaData) =>
+      this.logInfo(category, message, metaData);
+    const traceCb = (category: string, message: string, metaData: LoggingMetaData) =>
+      this.logTrace(category, message, metaData);
 
     Logger.initialize(errCb, warnCb, infoCb, traceCb);
   }

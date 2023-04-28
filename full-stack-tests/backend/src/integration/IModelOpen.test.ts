@@ -22,10 +22,7 @@ describe("IModelOpen", () => {
     accessToken = await TestUtility.getAccessToken(TestUsers.regular);
     testITwinId = await HubUtility.getTestITwinId(accessToken);
 
-    testIModelId = await HubUtility.getTestIModelId(
-      accessToken,
-      HubUtility.testIModelNames.stadium
-    );
+    testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);
   });
 
   const deleteTestIModelCache = () => {
@@ -43,10 +40,7 @@ describe("IModelOpen", () => {
       })
     )
       .to.be.rejectedWith(IModelError)
-      .to.eventually.have.property(
-        "errorNumber",
-        RepositoryStatus.InvalidRequest
-      );
+      .to.eventually.have.property("errorNumber", RepositoryStatus.InvalidRequest);
   });
 
   it("should be able to handle simultaneous open calls", async () => {

@@ -26,17 +26,12 @@ export class ProcessDetector {
 
   /** Is this process the frontend of an Electron app? */
   public static get isElectronAppFrontend() {
-    return (
-      typeof navigator === "object" &&
-      navigator.userAgent.toLowerCase().indexOf("electron") >= 0
-    );
+    return typeof navigator === "object" && navigator.userAgent.toLowerCase().indexOf("electron") >= 0;
   }
 
   /** Is this process the backend of an Electron app? */
   public static get isElectronAppBackend() {
-    return (
-      typeof process === "object" && process.versions.hasOwnProperty("electron")
-    );
+    return typeof process === "object" && process.versions.hasOwnProperty("electron");
   }
 
   /** Is this process running in a browser on an iPad?
@@ -45,9 +40,7 @@ export class ProcessDetector {
   public static get isIPadBrowser() {
     return (
       (this.isBrowserProcess && window.navigator.platform === "iPad") ||
-      (window.navigator.platform === "MacIntel" &&
-        window.navigator.maxTouchPoints > 0 &&
-        !("MSStream" in window))
+      (window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 0 && !("MSStream" in window))
     ); /* eslint-disable-line deprecation/deprecation */
   }
 
@@ -55,9 +48,7 @@ export class ProcessDetector {
    * @note This method will return `true` for any frontend running on an iPhone, whether it is a user-launched web browser (e.g. Safari) or the frontend of a mobile app.
    */
   public static get isIPhoneBrowser() {
-    return (
-      this.isBrowserProcess && /(iphone|ipod)/i.test(window.navigator.userAgent)
-    );
+    return this.isBrowserProcess && /(iphone|ipod)/i.test(window.navigator.userAgent);
   }
 
   /** Is this process running in a browser on an iOS device?
@@ -101,18 +92,12 @@ export class ProcessDetector {
 
   /** Is this process the frontend of an iOS mobile application? */
   public static get isIOSAppFrontend() {
-    return (
-      this.isBrowserProcess &&
-      window.location.hash.indexOf("platform=ios") !== -1
-    );
+    return this.isBrowserProcess && window.location.hash.indexOf("platform=ios") !== -1;
   }
 
   /** Is this process the frontend of an Android mobile application? */
   public static get isAndroidAppFrontend() {
-    return (
-      this.isBrowserProcess &&
-      window.location.hash.indexOf("platform=android") !== -1
-    );
+    return this.isBrowserProcess && window.location.hash.indexOf("platform=android") !== -1;
   }
 
   /** Is this process the backend of an iOS mobile application? */

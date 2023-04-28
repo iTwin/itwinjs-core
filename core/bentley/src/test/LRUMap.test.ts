@@ -186,14 +186,8 @@ describe("LRUMap", () => {
     assert.equal(c.size, 2);
     assert(c.newest !== c.oldest);
 
-    assert.deepEqual(
-      { key: c.newest!.key, value: c.newest!.value },
-      { key: "b", value: 6 }
-    );
-    assert.deepEqual(
-      { key: c.oldest!.key, value: c.oldest!.value },
-      { key: "a", value: 5 }
-    );
+    assert.deepEqual({ key: c.newest!.key, value: c.newest!.value }, { key: "b", value: 6 });
+    assert.deepEqual({ key: c.oldest!.key, value: c.oldest!.value }, { key: "a", value: 5 });
 
     c.shift();
     assert.equal(c.size, 1);

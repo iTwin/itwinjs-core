@@ -43,8 +43,7 @@ export class SchemaWalker {
     await this._visitorHelper.visitSchema(schema);
     await this._visitorHelper.visitSchemaPart(schema);
 
-    for (const item of this._schema.getItems())
-      await this.traverseSchemaItem(item);
+    for (const item of this._schema.getItems()) await this.traverseSchemaItem(item);
     return schema;
   }
 
@@ -62,12 +61,8 @@ export class SchemaWalker {
     }
 
     if (ecClass.schemaItemType === SchemaItemType.RelationshipClass) {
-      await this._visitorHelper.visitSchemaPart(
-        (ecClass as RelationshipClass).source
-      );
-      await this._visitorHelper.visitSchemaPart(
-        (ecClass as RelationshipClass).target
-      );
+      await this._visitorHelper.visitSchemaPart((ecClass as RelationshipClass).source);
+      await this._visitorHelper.visitSchemaPart((ecClass as RelationshipClass).target);
     }
   }
 }

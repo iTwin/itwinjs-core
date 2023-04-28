@@ -6,20 +6,10 @@
 import { assert, expect } from "chai";
 import { BentleyError, Logger } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
-import {
-  EntityClass,
-  PrimitiveProperty,
-  PrimitiveType,
-  Schema,
-  SchemaContext,
-} from "@itwin/ecschema-metadata";
+import { EntityClass, PrimitiveProperty, PrimitiveType, Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { FormatDiagnosticReporter } from "../../ecschema-editing";
 import { MutableClass } from "../../Editing/Mutable/MutableClass";
-import {
-  AnyDiagnostic,
-  createPropertyDiagnosticClass,
-  DiagnosticCategory,
-} from "../../Validation/Diagnostic";
+import { AnyDiagnostic, createPropertyDiagnosticClass, DiagnosticCategory } from "../../Validation/Diagnostic";
 import { LoggingDiagnosticReporter } from "../../Validation/LoggingDiagnosticReporter";
 
 import sinon = require("sinon");
@@ -43,13 +33,11 @@ describe("DiagnosticReporters tests", () => {
   ): Promise<AnyDiagnostic> {
     testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
     testSchemaItem = new EntityClass(testSchema, "TestEntity");
-    testProperty = await (
-      testSchemaItem as unknown as MutableClass
-    ).createPrimitiveProperty("TestProperty", PrimitiveType.String);
-    const diagnosticClass = createPropertyDiagnosticClass(
-      "TestRuleSet-100",
-      "Test Message {0} {1}"
+    testProperty = await (testSchemaItem as unknown as MutableClass).createPrimitiveProperty(
+      "TestProperty",
+      PrimitiveType.String
     );
+    const diagnosticClass = createPropertyDiagnosticClass("TestRuleSet-100", "Test Message {0} {1}");
     const diagnostic = new diagnosticClass(testProperty, messageArgs, category);
     // These were added to a test collection because the generator, createAsyncIterableDiagnostic,
     // can only be consumed once, hence the need for the collection, which allows the tests access
@@ -83,9 +71,7 @@ describe("DiagnosticReporters tests", () => {
 
       reporter.report(diag);
 
-      expect(
-        reportDiagnostic.calledOnceWith(diag, "Test Message Param1 Param2")
-      ).to.be.true;
+      expect(reportDiagnostic.calledOnceWith(diag, "Test Message Param1 Param2")).to.be.true;
     });
 
     it("rules code not in suppressions, should call reportDiagnostic correctly", async () => {
@@ -97,9 +83,7 @@ describe("DiagnosticReporters tests", () => {
 
       reporter.report(diag);
 
-      expect(
-        reportDiagnostic.calledOnceWith(diag, "Test Message Param1 Param2")
-      ).to.be.true;
+      expect(reportDiagnostic.calledOnceWith(diag, "Test Message Param1 Param2")).to.be.true;
     });
 
     it("diagnostic suppressed, should not call reportDiagnostic", async () => {
@@ -123,12 +107,7 @@ describe("DiagnosticReporters tests", () => {
 
       reporter.report(diag);
 
-      expect(
-        logMessage.calledOnceWith(
-          "ecschema-metadata",
-          "Test Message Param1 Param2"
-        )
-      ).to.be.true;
+      expect(logMessage.calledOnceWith("ecschema-metadata", "Test Message Param1 Param2")).to.be.true;
       const metaDataFunc = logMessage.firstCall.args[2];
       assert.isDefined(metaDataFunc);
       const metaData = BentleyError.getMetaData(metaDataFunc) as any;
@@ -151,12 +130,7 @@ describe("DiagnosticReporters tests", () => {
 
       reporter.report(diag);
 
-      expect(
-        logMessage.calledOnceWith(
-          "ecschema-metadata",
-          "Translated text Param1 Param2"
-        )
-      ).to.be.true;
+      expect(logMessage.calledOnceWith("ecschema-metadata", "Translated text Param1 Param2")).to.be.true;
     });
 
     it("no message args, should log expected error with translated message", async () => {
@@ -170,8 +144,7 @@ describe("DiagnosticReporters tests", () => {
 
       reporter.report(diag);
 
-      expect(logMessage.calledOnceWith("ecschema-metadata", "Translated text"))
-        .to.be.true;
+      expect(logMessage.calledOnceWith("ecschema-metadata", "Translated text")).to.be.true;
     });
 
     it("should log expected warning", async () => {
@@ -181,12 +154,7 @@ describe("DiagnosticReporters tests", () => {
 
       reporter.report(diag);
 
-      expect(
-        logMessage.calledOnceWith(
-          "ecschema-metadata",
-          "Test Message Param1 Param2"
-        )
-      ).to.be.true;
+      expect(logMessage.calledOnceWith("ecschema-metadata", "Test Message Param1 Param2")).to.be.true;
       const metaDataFunc = logMessage.firstCall.args[2];
       assert.isDefined(metaDataFunc);
       const metaData = BentleyError.getMetaData(metaDataFunc) as any;
@@ -205,12 +173,7 @@ describe("DiagnosticReporters tests", () => {
 
       reporter.report(diag);
 
-      expect(
-        logMessage.calledOnceWith(
-          "ecschema-metadata",
-          "Test Message Param1 Param2"
-        )
-      ).to.be.true;
+      expect(logMessage.calledOnceWith("ecschema-metadata", "Test Message Param1 Param2")).to.be.true;
       const metaDataFunc = logMessage.firstCall.args[2];
       assert.isDefined(metaDataFunc);
       const metaData = BentleyError.getMetaData(metaDataFunc) as any;
@@ -229,12 +192,7 @@ describe("DiagnosticReporters tests", () => {
 
       reporter.report(diag);
 
-      expect(
-        logMessage.calledOnceWith(
-          "ecschema-metadata",
-          "Test Message Param1 Param2"
-        )
-      ).to.be.true;
+      expect(logMessage.calledOnceWith("ecschema-metadata", "Test Message Param1 Param2")).to.be.true;
       const metaDataFunc = logMessage.firstCall.args[2];
       assert.isDefined(metaDataFunc);
       const metaData = BentleyError.getMetaData(metaDataFunc) as any;

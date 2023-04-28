@@ -16,11 +16,7 @@ describe("YieldManager", () => {
 
     const expectedYieldTimes = 5;
     const yieldManager = new CountingYieldManager();
-    for (
-      let i = 0;
-      i < expectedYieldTimes * yieldManager.options.iterationsBeforeYield;
-      ++i
-    ) {
+    for (let i = 0; i < expectedYieldTimes * yieldManager.options.iterationsBeforeYield; ++i) {
       await yieldManager.allowYield();
     }
     expect(yieldManager.actualYieldCount).to.equal(expectedYieldTimes);

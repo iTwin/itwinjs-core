@@ -3,11 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { LineSegment3d, Point3d } from "@itwin/core-geometry";
-import {
-  IModelDb,
-  SpatialCategory,
-  SpatialLocationElement,
-} from "@itwin/core-backend";
+import { IModelDb, SpatialCategory, SpatialLocationElement } from "@itwin/core-backend";
 import { GeometryStreamBuilder, GeometryStreamProps } from "@itwin/core-common";
 import { RobotWorld } from "./RobotWorldSchema";
 

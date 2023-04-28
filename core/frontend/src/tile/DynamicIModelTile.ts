@@ -54,17 +54,12 @@ export abstract class DynamicIModelTile extends Tile {
     super(params, tree);
   }
 
-  public static create(
-    root: RootIModelTile,
-    elements: Iterable<ElementGeometryChange>
-  ): DynamicIModelTile {
+  public static create(root: RootIModelTile, elements: Iterable<ElementGeometryChange>): DynamicIModelTile {
     return new RootTile(root, elements);
   }
 
   /** Updates the tiles when elements are modified during the editing scope. */
-  public abstract handleGeometryChanges(
-    changes: Iterable<ElementGeometryChange>
-  ): void;
+  public abstract handleGeometryChanges(changes: Iterable<ElementGeometryChange>): void;
 
   /** Overrides symbology of the *static* [[IModelTile]]s to hide elements that have been deleted or modified. */
   public abstract get appearanceProvider(): FeatureAppearanceProvider;
@@ -106,10 +101,7 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
     return this._elements.array;
   }
 
-  public constructor(
-    parent: RootIModelTile,
-    elements: Iterable<ElementGeometryChange>
-  ) {
+  public constructor(parent: RootIModelTile, elements: Iterable<ElementGeometryChange>) {
     const params: TileParams = {
       parent,
       isLeaf: false,
@@ -156,43 +148,25 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
   ): FeatureAppearance | undefined {
     if (this._hiddenElements.has(elemLo, elemHi)) return undefined;
 
-    return source.getAppearance(
-      elemLo,
-      elemHi,
-      subcatLo,
-      subcatHi,
-      geomClass,
-      modelLo,
-      modelHi,
-      type,
-      animationNodeId
-    );
+    return source.getAppearance(elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
   }
 
   public handleGeometryChanges(changes: Iterable<ElementGeometryChange>): void {
     assert(undefined !== this.children);
 
     for (const change of changes) {
-      if (change.type !== DbOpcode.Insert)
-        this._hiddenElements.addId(change.id);
+      if (change.type !== DbOpcode.Insert) this._hiddenElements.addId(change.id);
 
-      let tile = this._elements.findEquivalent((t: ElementTile) =>
-        compareStrings(t.contentId, change.id)
-      );
+      let tile = this._elements.findEquivalent((t: ElementTile) => compareStrings(t.contentId, change.id));
       if (change.type === DbOpcode.Delete) {
         if (tile) {
           tile.dispose();
           this._elements.remove(tile);
         }
       } else {
-        const range = change.range.isNull
-          ? change.range.clone()
-          : this.transformToTree.multiplyRange(change.range);
+        const range = change.range.isNull ? change.range.clone() : this.transformToTree.multiplyRange(change.range);
         if (tile) tile.update(range);
-        else
-          this._elements.insert(
-            (tile = new ElementTile(this, change.id, range))
-          );
+        else this._elements.insert((tile = new ElementTile(this, change.id, range)));
       }
     }
 
@@ -203,10 +177,7 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
     this._imodelRoot.updateDynamicRange(this);
   }
 
-  protected _loadChildren(
-    resolve: (children: Tile[] | undefined) => void,
-    _reject: (errpr: Error) => void
-  ): void {
+  protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (errpr: Error) => void): void {
     // This is invoked from constructor. We will add a child per element later - for now just mark the children as having been loaded.
     resolve(this._elements.array);
   }
@@ -229,8 +200,7 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
   }
 
   public selectTiles(selected: Tile[], args: TileDrawArgs): void {
-    for (const child of this._elementChildren)
-      child.selectTiles(selected, args);
+    for (const child of this._elementChildren) child.selectTiles(selected, args);
   }
 
   public pruneChildren(olderThan: BeTimePoint): void {
@@ -260,10 +230,7 @@ class ElementTile extends Tile {
     this.setIsReady();
   }
 
-  protected _loadChildren(
-    resolve: (children: Tile[] | undefined) => void,
-    _reject: (error: Error) => void
-  ): void {
+  protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
     // Invoked from constructor. We'll add child tiles later as needed.
     resolve([]);
   }
@@ -272,9 +239,7 @@ class ElementTile extends Tile {
     throw new Error("ElementTile has no content");
   }
 
-  public async requestContent(
-    _isCanceled: () => boolean
-  ): Promise<TileRequest.Response> {
+  public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
     assert(false, "ElementTile has no content");
     return undefined;
   }
@@ -291,10 +256,7 @@ class ElementTile extends Tile {
     const children = this.children as GraphicsTile[];
     assert(undefined !== children);
 
-    const partitionIndex = partitionArray(
-      children,
-      (child) => !child.usageMarker.isExpired(olderThan)
-    );
+    const partitionIndex = partitionArray(children, (child) => !child.usageMarker.isExpired(olderThan));
 
     // Remove expired children.
     if (partitionIndex < children.length) {
@@ -336,26 +298,14 @@ class ElementTile extends Tile {
       } else if (tol === toleranceLog10) {
         exactMatch = child;
       } else if (tol < toleranceLog10) {
-        if (!exactMatch)
-          children.splice(
-            i++,
-            0,
-            (exactMatch = new GraphicsTile(this, toleranceLog10))
-          );
+        if (!exactMatch) children.splice(i++, 0, (exactMatch = new GraphicsTile(this, toleranceLog10)));
 
-        if (
-          child.hasGraphics &&
-          (!closestMatch || closestMatch.toleranceLog10 > toleranceLog10)
-        )
-          closestMatch = child;
+        if (child.hasGraphics && (!closestMatch || closestMatch.toleranceLog10 > toleranceLog10)) closestMatch = child;
       }
     }
 
     if (!exactMatch) {
-      assert(
-        children.length === 0 ||
-          children[children.length - 1].toleranceLog10 > toleranceLog10
-      );
+      assert(children.length === 0 || children[children.length - 1].toleranceLog10 > toleranceLog10);
       children.push((exactMatch = new GraphicsTile(this, toleranceLog10)));
     }
 
@@ -420,10 +370,7 @@ class GraphicsTile extends Tile {
     return 0;
   }
 
-  protected _loadChildren(
-    resolve: (children: Tile[] | undefined) => void,
-    _reject: (error: Error) => void
-  ): void {
+  protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
     resolve(undefined);
   }
 
@@ -431,9 +378,7 @@ class GraphicsTile extends Tile {
     return IModelApp.tileAdmin.channels.elementGraphicsRpc;
   }
 
-  public async requestContent(
-    _isCanceled: () => boolean
-  ): Promise<TileRequest.Response> {
+  public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
     // ###TODO tree flags (enforce display priority)
     // ###TODO classifiers, animation
 
@@ -454,8 +399,7 @@ class GraphicsTile extends Tile {
       contentFlags: idProvider.contentFlags,
       omitEdges: !this.tree.edgeOptions,
       edgeType: this.tree.edgeOptions && this.tree.edgeOptions.indexed ? 2 : 1,
-      smoothPolyfaceEdges:
-        this.tree.edgeOptions && this.tree.edgeOptions.smooth,
+      smoothPolyfaceEdges: this.tree.edgeOptions && this.tree.edgeOptions.smooth,
       clipToProjectExtents: true,
       sectionCut: this.tree.stringifiedSectionClip,
     };

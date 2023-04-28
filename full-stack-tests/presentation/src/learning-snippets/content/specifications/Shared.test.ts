@@ -15,9 +15,7 @@ describe("Learning Snippets", () => {
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile(
-      "assets/datasets/Properties_60InstancesWithUrl2.ibim"
-    );
+    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {
@@ -72,14 +70,9 @@ describe("Learning Snippets", () => {
         });
 
         expect(content!.contentSet.length).to.eq(4);
-        const field = getFieldByLabel(
-          content!.descriptor.fields,
-          "Category Selector"
-        );
+        const field = getFieldByLabel(content!.descriptor.fields, "Category Selector");
         content!.contentSet.forEach((record) => {
-          expect(record.displayValues[field.name]).to.be.string(
-            "Default - View"
-          );
+          expect(record.displayValues[field.name]).to.be.string("Default - View");
         });
       });
 
@@ -126,16 +119,9 @@ describe("Learning Snippets", () => {
         });
 
         expect(content!.contentSet.length).to.eq(2);
-        const field = getFieldByLabel(
-          content!.descriptor.fields,
-          "Modeled Element"
-        );
-        expect(content!.contentSet[0].displayValues[field.name]).to.eq(
-          "BisCore.DictionaryModel"
-        );
-        expect(content!.contentSet[1].displayValues[field.name]).to.eq(
-          "Properties_60InstancesWithUrl2"
-        );
+        const field = getFieldByLabel(content!.descriptor.fields, "Modeled Element");
+        expect(content!.contentSet[0].displayValues[field.name]).to.eq("BisCore.DictionaryModel");
+        expect(content!.contentSet[1].displayValues[field.name]).to.eq("Properties_60InstancesWithUrl2");
       });
 
       it("uses `relatedProperties` attribute", async () => {
@@ -185,12 +171,7 @@ describe("Learning Snippets", () => {
           .to.containSubset([
             {
               label: "Display Style",
-              nestedFields: [
-                { label: "Model" },
-                { label: "Code" },
-                { label: "User Label" },
-                { label: "Is Private" },
-              ],
+              nestedFields: [{ label: "Model" }, { label: "Code" }, { label: "User Label" }, { label: "Is Private" }],
             },
           ])
           .and.to.have.lengthOf(18);
@@ -284,9 +265,7 @@ describe("Learning Snippets", () => {
           descriptor: {},
         });
 
-        expect(content!.descriptor.categories).containSubset([
-          { label: "Camera settings" },
-        ]);
+        expect(content!.descriptor.categories).containSubset([{ label: "Camera settings" }]);
         expect(content!.descriptor.fields).to.containSubset([
           {
             label: "Eye Point",
@@ -320,9 +299,7 @@ describe("Learning Snippets", () => {
                     classNames: ["ViewDefinition"],
                     arePolymorphic: true,
                   },
-                  propertyOverrides: [
-                    { name: "Model", labelOverride: "Container Model" },
-                  ],
+                  propertyOverrides: [{ name: "Model", labelOverride: "Container Model" }],
                 },
               ],
             },
@@ -401,9 +378,7 @@ describe("Learning Snippets", () => {
 
         expect(content!.contentSet.length).to.eq(1);
         const field = getFieldByLabel(content!.descriptor.fields, "Code");
-        expect(content!.contentSet[0].values[field.name]).to.eq(
-          "Default - View 2"
-        );
+        expect(content!.contentSet[0].values[field.name]).to.eq("Default - View 2");
       });
     });
   });

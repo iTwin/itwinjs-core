@@ -8,14 +8,7 @@
 
 import { ByteStream, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { Point3d, Transform, Vector3d } from "@itwin/core-geometry";
-import {
-  B3dmHeader,
-  ColorDef,
-  ElementAlignedBox3d,
-  Feature,
-  FeatureTable,
-  TileReadStatus,
-} from "@itwin/core-common";
+import { B3dmHeader, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, TileReadStatus } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { RenderSystem } from "../render/RenderSystem";
@@ -57,10 +50,7 @@ export class B3dmReader extends GltfReader {
     if (!header.isValid) return undefined;
 
     let returnToCenterTransform, pseudoRtcBias;
-    if (
-      header.featureTableJson &&
-      Array.isArray(header.featureTableJson.RTC_CENTER)
-    ) {
+    if (header.featureTableJson && Array.isArray(header.featureTableJson.RTC_CENTER)) {
       returnToCenterTransform = Transform.createTranslationXYZ(
         header.featureTableJson.RTC_CENTER[0],
         header.featureTableJson.RTC_CENTER[1],
@@ -83,13 +73,8 @@ export class B3dmReader extends GltfReader {
         ? transformToRoot.multiplyTransformTransform(returnToCenterTransform)
         : returnToCenterTransform;
 
-    const props = GltfReaderProps.create(
-      stream.nextBytes(header.length - stream.curPos),
-      yAxisUp
-    );
-    const batchTableLength = header.featureTableJson
-      ? JsonUtils.asInt(header.featureTableJson.BATCH_LENGTH, 0)
-      : 0;
+    const props = GltfReaderProps.create(stream.nextBytes(header.length - stream.curPos), yAxisUp);
+    const batchTableLength = header.featureTableJson ? JsonUtils.asInt(header.featureTableJson.BATCH_LENGTH, 0) : 0;
 
     return undefined !== props
       ? new B3dmReader(
@@ -145,24 +130,11 @@ export class B3dmReader extends GltfReader {
       this._modelId,
       this._type
     );
-    if (
-      this._batchTableLength > 0 &&
-      this._idMap !== undefined &&
-      this._batchTableJson !== undefined
-    ) {
-      if (
-        this._batchTableJson.extensions &&
-        this._batchTableJson.extensions["3DTILES_batch_table_hierarchy"]
-      ) {
-        const hierarchy =
-          this._batchTableJson.extensions["3DTILES_batch_table_hierarchy"];
-        const { classIds, classes, parentIds, parentCounts, instancesLength } =
-          hierarchy;
-        if (
-          classes !== undefined &&
-          classIds !== undefined &&
-          instancesLength !== 0
-        ) {
+    if (this._batchTableLength > 0 && this._idMap !== undefined && this._batchTableJson !== undefined) {
+      if (this._batchTableJson.extensions && this._batchTableJson.extensions["3DTILES_batch_table_hierarchy"]) {
+        const hierarchy = this._batchTableJson.extensions["3DTILES_batch_table_hierarchy"];
+        const { classIds, classes, parentIds, parentCounts, instancesLength } = hierarchy;
+        if (classes !== undefined && classIds !== undefined && instancesLength !== 0) {
           const classCounts = new Array<number>(classes.length);
           classCounts.fill(0);
           const classIndexes = new Uint16Array(instancesLength);
@@ -175,12 +147,8 @@ export class B3dmReader extends GltfReader {
           if (parentIds) {
             parentMap = new Array<[]>();
             for (let i = 0, parentIndex = 0; i < instancesLength; i++) {
-              const parentCount =
-                parentCounts === undefined ? 1 : parentCounts[i];
-              parentMap[i] = parentIds.slice(
-                parentIndex,
-                (parentIndex += parentCount)
-              );
+              const parentCount = parentCounts === undefined ? 1 : parentCounts[i];
+              parentMap[i] = parentIds.slice(parentIndex, (parentIndex += parentCount));
             }
           }
 
@@ -197,18 +165,14 @@ export class B3dmReader extends GltfReader {
             if (parentIds !== undefined) {
               const thisParents = parentMap![instanceIndex];
               for (const parentId of thisParents) {
-                if (parentId !== instanceIndex)
-                  getProperties(instance, parentId);
+                if (parentId !== instanceIndex) getProperties(instance, parentId);
               }
             }
           };
           for (let batchId = 0; batchId < instancesLength; batchId++) {
             const instance: any = {};
             getProperties(instance, batchId);
-            this._batchIdRemap.set(
-              batchId,
-              featureTable.insert(new Feature(this._idMap.getBatchId(instance)))
-            );
+            this._batchIdRemap.set(batchId, featureTable.insert(new Feature(this._idMap.getBatchId(instance))));
             const cesiumColor = instance["cesium#color"];
             if (undefined !== cesiumColor) {
               if (!this._colors) {
@@ -225,10 +189,7 @@ export class B3dmReader extends GltfReader {
           for (const key in this._batchTableJson) // eslint-disable-line guard-for-in
             feature[key] = this._batchTableJson[key][i];
 
-          this._batchIdRemap.set(
-            i,
-            featureTable.insert(new Feature(this._idMap.getBatchId(feature)))
-          );
+          this._batchIdRemap.set(i, featureTable.insert(new Feature(this._idMap.getBatchId(feature))));
         }
       }
     }
@@ -240,8 +201,7 @@ export class B3dmReader extends GltfReader {
     }
 
     await this.resolveResources();
-    if (this._isCanceled)
-      return { readStatus: TileReadStatus.Canceled, isLeaf: this._isLeaf };
+    if (this._isCanceled) return { readStatus: TileReadStatus.Canceled, isLeaf: this._isLeaf };
 
     return this.readGltfAndCreateGraphics(
       this._isLeaf,
@@ -254,11 +214,7 @@ export class B3dmReader extends GltfReader {
 
   protected override readBatchTable(mesh: Mesh, json: GltfMeshPrimitive) {
     if (mesh.features !== undefined) {
-      if (
-        this._batchTableLength > 0 &&
-        undefined !== this._batchTableJson &&
-        undefined !== json.attributes
-      ) {
+      if (this._batchTableLength > 0 && undefined !== this._batchTableJson && undefined !== json.attributes) {
         const view = this.getBufferView(json.attributes, "_BATCHID");
         let batchIds: undefined | GltfBufferData;
         if (
@@ -272,8 +228,7 @@ export class B3dmReader extends GltfReader {
           if (this._colors && this._colors.length === this._batchTableLength) {
             colorRemap = new Uint32Array(this._batchTableLength);
 
-            for (let i = 0; i < this._batchTableLength; i++)
-              colorRemap[i] = colorMap.insert(this._colors[i]);
+            for (let i = 0; i < this._batchTableLength; i++) colorRemap[i] = colorMap.insert(this._colors[i]);
           }
 
           for (let i = 0; i < batchIds.count; i++) {

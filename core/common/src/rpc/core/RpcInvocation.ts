@@ -24,11 +24,7 @@ import { RpcInterface } from "../../RpcInterface";
 import { SessionProps } from "../../SessionProps";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcProtocolEvent, RpcRequestStatus } from "./RpcConstants";
-import {
-  RpcControlChannel,
-  RpcNotFoundResponse,
-  RpcPendingResponse,
-} from "./RpcControl";
+import { RpcControlChannel, RpcNotFoundResponse, RpcPendingResponse } from "./RpcControl";
 import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
 import {
@@ -70,10 +66,7 @@ export interface SerializedRpcActivity {
 }
 
 /** @internal */
-export type RpcActivityRun = (
-  activity: RpcActivity,
-  fn: () => Promise<any>
-) => Promise<any>;
+export type RpcActivityRun = (activity: RpcActivity, fn: () => Promise<any>) => Promise<any>;
 
 /** An RPC operation invocation in response to a request.
  * @internal
@@ -166,18 +159,14 @@ export class RpcInvocation {
     }
 
     this.fulfillment = this.result.then(
-      async (value) =>
-        this._threw ? this.fulfillRejected(value) : this.fulfillResolved(value),
+      async (value) => (this._threw ? this.fulfillRejected(value) : this.fulfillResolved(value)),
       async (reason) => this.fulfillRejected(reason)
     );
   }
 
   private handleUnknownOperation(error: any): boolean {
     RpcControlChannel.ensureInitialized();
-    return this.protocol.configuration.controlChannel.handleUnknownOperation(
-      this,
-      error
-    );
+    return this.protocol.configuration.controlChannel.handleUnknownOperation(this, error);
   }
 
   public static sanitizeForLog(activity?: RpcActivity) {
@@ -208,13 +197,9 @@ export class RpcInvocation {
     try {
       this.protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
 
-      const parameters =
-        request.parametersOverride ||
-        RpcMarshaling.deserialize(this.protocol, request.parameters);
+      const parameters = request.parametersOverride || RpcMarshaling.deserialize(this.protocol, request.parameters);
       this.applyPolicies(parameters);
-      const impl = RpcRegistry.instance.getImplForInterface(
-        this.operation.interfaceDefinition
-      );
+      const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition);
       (impl as any)[CURRENT_INVOCATION] = this;
       const op = this.lookupOperationFunction(impl);
 
@@ -222,11 +207,9 @@ export class RpcInvocation {
         op.call(impl, ...parameters).catch(async (error) => {
           // this catch block is intentionally placed inside `runActivity` to attach the right logging metadata and use the correct openTelemetry span.
           if (!(error instanceof RpcPendingResponse)) {
-            Logger.logError(
-              CommonLoggerCategory.RpcInterfaceBackend,
-              "Error in RPC operation",
-              { error: BentleyError.getErrorProps(error) }
-            );
+            Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, "Error in RPC operation", {
+              error: BentleyError.getErrorProps(error),
+            });
             Tracing.setAttributes({ error: true });
           }
           throw error;
@@ -247,20 +230,13 @@ export class RpcInvocation {
         parameter !== null &&
         parameter.hasOwnProperty("iModelId") &&
         parameter.hasOwnProperty("iTwinId");
-      if (
-        isToken &&
-        this.protocol.checkToken &&
-        !this.operation.policy.allowTokenMismatch
-      ) {
+      if (isToken && this.protocol.checkToken && !this.operation.policy.allowTokenMismatch) {
         const inflated = this.protocol.inflateToken(parameter, this.request);
         parameters[i] = inflated;
 
         if (!RpcInvocation.compareTokens(parameter, inflated)) {
           if (RpcConfiguration.throwOnTokenMismatch) {
-            throw new IModelError(
-              BentleyStatus.ERROR,
-              "IModelRpcProps mismatch detected for this request."
-            );
+            throw new IModelError(BentleyStatus.ERROR, "IModelRpcProps mismatch detected for this request.");
           } else {
             Logger.logWarning(
               CommonLoggerCategory.RpcInterfaceBackend,
@@ -288,10 +264,7 @@ export class RpcInvocation {
 
   private async fulfillResolved(value: any): Promise<RpcRequestFulfillment> {
     this._timeOut = new Date().getTime();
-    this.protocol.events.raiseEvent(
-      RpcProtocolEvent.BackendResponseCreated,
-      this
-    );
+    this.protocol.events.raiseEvent(RpcProtocolEvent.BackendResponseCreated, this);
     const result = await RpcMarshaling.serialize(this.protocol, value);
     return this.fulfill(result, value);
   }
@@ -306,33 +279,18 @@ export class RpcInvocation {
       this._pending = true;
       this._threw = false;
       result.objects = reason.message;
-      this.protocol.events.raiseEvent(
-        RpcProtocolEvent.BackendReportedPending,
-        this
-      );
-    } else if (
-      this.supportsNoContent() &&
-      reason?.errorNumber === IModelStatus.NoContent
-    ) {
+      this.protocol.events.raiseEvent(RpcProtocolEvent.BackendReportedPending, this);
+    } else if (this.supportsNoContent() && reason?.errorNumber === IModelStatus.NoContent) {
       this._noContent = true;
       this._threw = false;
-      this.protocol.events.raiseEvent(
-        RpcProtocolEvent.BackendReportedNoContent,
-        this
-      );
+      this.protocol.events.raiseEvent(RpcProtocolEvent.BackendReportedNoContent, this);
     } else if (reason instanceof RpcNotFoundResponse) {
       this._notFound = true;
       this._threw = false;
-      this.protocol.events.raiseEvent(
-        RpcProtocolEvent.BackendReportedNotFound,
-        this
-      );
+      this.protocol.events.raiseEvent(RpcProtocolEvent.BackendReportedNotFound, this);
     } else {
       this._threw = true;
-      this.protocol.events.raiseEvent(
-        RpcProtocolEvent.BackendErrorOccurred,
-        this
-      );
+      this.protocol.events.raiseEvent(RpcProtocolEvent.BackendErrorOccurred, this);
     }
 
     return this.fulfill(result, reason);
@@ -359,36 +317,25 @@ export class RpcInvocation {
     }
 
     return (
-      RpcProtocol.protocolVersion >=
-        RpcProtocolVersion.IntroducedStatusCategory &&
-      this.request.protocolVersion >=
-        RpcProtocolVersion.IntroducedStatusCategory
+      RpcProtocol.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory &&
+      this.request.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory
     );
   }
 
-  private fulfill(
-    result: RpcSerializedValue,
-    rawResult: any
-  ): RpcRequestFulfillment {
+  private fulfill(result: RpcSerializedValue, rawResult: any): RpcRequestFulfillment {
     const fulfillment: RpcRequestFulfillment = {
       result,
       rawResult,
       status: this.protocol.getCode(this.status),
       id: this.request.id,
-      interfaceName:
-        typeof this.operation === "undefined"
-          ? ""
-          : this.operation.interfaceDefinition.interfaceName,
-      allowCompression:
-        this.operation?.policy.allowResponseCompression || false,
+      interfaceName: typeof this.operation === "undefined" ? "" : this.operation.interfaceDefinition.interfaceName,
+      allowCompression: this.operation?.policy.allowResponseCompression || false,
     };
 
     this.transformResponseStatus(fulfillment, rawResult);
 
     try {
-      const impl = RpcRegistry.instance.getImplForInterface(
-        this.operation.interfaceDefinition
-      ) as any;
+      const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition) as any;
       if (impl[CURRENT_INVOCATION] === this) {
         impl[CURRENT_INVOCATION] = undefined;
       }
@@ -397,9 +344,7 @@ export class RpcInvocation {
     return fulfillment;
   }
 
-  private lookupOperationFunction(
-    implementation: RpcInterface
-  ): (...args: any[]) => Promise<any> {
+  private lookupOperationFunction(implementation: RpcInterface): (...args: any[]) => Promise<any> {
     const func = (implementation as any)[this.operation.operationName];
     if (!func || typeof func !== "function")
       throw new IModelError(
@@ -410,10 +355,7 @@ export class RpcInvocation {
     return func;
   }
 
-  private transformResponseStatus(
-    fulfillment: RpcRequestFulfillment,
-    rawResult: any
-  ) {
+  private transformResponseStatus(fulfillment: RpcRequestFulfillment, rawResult: any) {
     if (!this.supportsStatusCategory()) {
       return;
     }

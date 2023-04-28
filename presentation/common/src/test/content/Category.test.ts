@@ -10,9 +10,7 @@ describe("CategoryDescription", () => {
   describe("toJSON", () => {
     it("returns valid JSON for category without parent", () => {
       const category = createTestCategoryDescription({ parent: undefined });
-      expect(CategoryDescription.toJSON(category)).to.not.haveOwnProperty(
-        "parent"
-      );
+      expect(CategoryDescription.toJSON(category)).to.not.haveOwnProperty("parent");
     });
 
     it("returns valid JSON for category with parent", () => {

@@ -12,12 +12,7 @@ export class NamedViewStatePropsString {
   private _selectedElements?: string;
   private _overrideElements?: string;
 
-  public constructor(
-    name: string,
-    viewState: string,
-    selectedElements?: string,
-    overrideElements?: string
-  ) {
+  public constructor(name: string, viewState: string, selectedElements?: string, overrideElements?: string) {
     this._name = name;
     this._viewStatePropsString = viewState;
     this._selectedElements = selectedElements;
@@ -93,13 +88,12 @@ export class NamedVSPSList extends SortedArray<NamedViewStatePropsString> {
     if (undefined !== esvString && "" !== esvString) {
       const namedVSPs = JSON.parse(esvString) as any[];
       for (const obj of namedVSPs) {
-        const esvProps: NamedViewStatePropsString =
-          new NamedViewStatePropsString(
-            obj._name,
-            obj._viewStatePropsString,
-            obj._selectedElements,
-            obj._overrideElements
-          );
+        const esvProps: NamedViewStatePropsString = new NamedViewStatePropsString(
+          obj._name,
+          obj._viewStatePropsString,
+          obj._selectedElements,
+          obj._overrideElements
+        );
         this.insert(esvProps);
       }
     }

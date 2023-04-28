@@ -10,19 +10,10 @@ import { assert } from "@itwin/core-bentley";
 import { BriefcaseConnection } from "../BriefcaseConnection";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import {
-  NotifyMessageDetails,
-  OutputMessagePriority,
-} from "../NotificationManager";
+import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
 import { Viewport } from "../Viewport";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
-import {
-  BeButton,
-  BeButtonEvent,
-  CoordinateLockOverrides,
-  CoreTools,
-  InteractiveTool,
-} from "./Tool";
+import { BeButton, BeButtonEvent, CoordinateLockOverrides, CoreTools, InteractiveTool } from "./Tool";
 
 /** The PrimitiveTool class can be used to implement tools to create or modify geometric elements.
  * @see [Writing a PrimitiveTool]($docs/learning/frontend/primitivetools.md)
@@ -64,10 +55,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
    */
   public override async run(..._args: any[]): Promise<boolean> {
     const { toolAdmin, viewManager } = IModelApp;
-    if (
-      !this.isCompatibleViewport(viewManager.selectedView, false) ||
-      !(await toolAdmin.onInstallTool(this))
-    )
+    if (!this.isCompatibleViewport(viewManager.selectedView, false) || !(await toolAdmin.onInstallTool(this)))
       return false;
 
     await toolAdmin.startPrimitiveTool(this);
@@ -78,10 +66,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
   /** Determine whether the supplied Viewport is compatible with this tool.
    * @param vp the Viewport to check
    */
-  public override isCompatibleViewport(
-    vp: Viewport | undefined,
-    isSelectedViewChange: boolean
-  ): boolean {
+  public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean {
     if (undefined === vp) return false; // No views are open...
 
     const view = vp.view;
@@ -89,29 +74,19 @@ export abstract class PrimitiveTool extends InteractiveTool {
 
     if (this.requireWriteableTarget() && iModel.isReadonly) return false; // this Tool can't be used when iModel is read only.
 
-    if (
-      undefined === this.targetView ||
-      (!this.targetIsLocked && isSelectedViewChange)
-    )
-      this.targetView = vp; // Update target to new view if undefined or still free to change.
+    if (undefined === this.targetView || (!this.targetIsLocked && isSelectedViewChange)) this.targetView = vp; // Update target to new view if undefined or still free to change.
 
-    if (
-      undefined === this.targetModelId &&
-      (!this.targetIsLocked || vp === this.targetView)
-    )
-      return true; // Accept if this view is current target or any type of model/view is still ok as target is still free to change.
+    if (undefined === this.targetModelId && (!this.targetIsLocked || vp === this.targetView)) return true; // Accept if this view is current target or any type of model/view is still ok as target is still free to change.
 
     if (iModel !== this.iModel) return false; // Once a ViewState has been established, only accept viewport showing the same iModel.
 
     if (this.targetModelId) return view.viewsModel(this.targetModelId); // If a specific target model is specified, only allow view that shows it.
 
-    if (view.isSpatialView() && this.targetView.view.isSpatialView())
-      return true; // No specific target, two spatial views are considered compatible.
+    if (view.isSpatialView() && this.targetView.view.isSpatialView()) return true; // No specific target, two spatial views are considered compatible.
 
     let allowView = false;
     view.forEachModel((model) => {
-      if (!allowView && this.targetView!.view.viewsModel(model.id))
-        allowView = true;
+      if (!allowView && this.targetView!.view.viewsModel(model.id)) allowView = true;
     });
 
     return allowView; // Accept if this view shares a model in common with target.
@@ -123,10 +98,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
    * outside the project extents, but it will be sufficient to handle most cases and provide good feedback to the user.
    * @return true if ev is acceptable.
    */
-  public override isValidLocation(
-    ev: BeButtonEvent,
-    isButtonEvent: boolean
-  ): boolean {
+  public override isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean {
     const vp = ev.viewport;
     if (undefined === vp) return false;
 
@@ -136,11 +108,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     if (!view.isSpatialView()) return true;
 
     // NOTE: If points aren't being adjusted then the tool shouldn't be creating geometry currently (ex. locating elements) and we shouldn't filter point...
-    if (
-      0 !==
-      (IModelApp.toolAdmin.toolState.coordLockOvr & CoordinateLockOverrides.ACS)
-    )
-      return true;
+    if (0 !== (IModelApp.toolAdmin.toolState.coordLockOvr & CoordinateLockOverrides.ACS)) return true;
 
     // We know the tool isn't doing a locate, we don't know what it will do with this point. Minimize erroneous filtering by restricting the check to when AccuSnap is tool enable (not user enabled)...
     if (!IModelApp.accuSnap.isSnapEnabled) return true;
@@ -150,10 +118,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
 
     if (isButtonEvent && ev.isDown)
       IModelApp.notifications.outputMessage(
-        new NotifyMessageDetails(
-          OutputMessagePriority.Error,
-          CoreTools.translate("ElementSet.Error.ProjectExtents")
-        )
+        new NotifyMessageDetails(OutputMessagePriority.Error, CoreTools.translate("ElementSet.Error.ProjectExtents"))
       );
 
     return false;
@@ -252,7 +217,6 @@ export abstract class PrimitiveTool extends InteractiveTool {
 
   /** If this tool is editing a briefcase, commits any elements that the tool has changed, supplying the tool name as the undo string. */
   public async saveChanges(): Promise<void> {
-    if (this.iModel.isBriefcaseConnection())
-      return this.iModel.saveChanges(this.toolId);
+    if (this.iModel.isBriefcaseConnection()) return this.iModel.saveChanges(this.toolId);
   }
 }

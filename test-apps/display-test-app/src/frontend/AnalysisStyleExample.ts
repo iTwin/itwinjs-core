@@ -46,10 +46,7 @@ interface AnalysisMesh {
   readonly styles: Map<string, AnalysisStyle | undefined>;
 }
 
-function populateAnalysisStyles(
-  mesh: AnalysisMesh,
-  displacementScale: number
-): void {
+function populateAnalysisStyles(mesh: AnalysisMesh, displacementScale: number): void {
   const auxdata = mesh.polyface.data.auxData;
   if (!auxdata) return;
 
@@ -58,9 +55,7 @@ function populateAnalysisStyles(
     if (undefined === channel.name || !channel.isScalar) continue;
 
     const displacementChannel = auxdata.channels.find(
-      (x) =>
-        x.inputName === channel.inputName &&
-        x.dataType === AuxChannelDataType.Vector
+      (x) => x.inputName === channel.inputName && x.dataType === AuxChannelDataType.Vector
     );
     const thematicSettings: ThematicGradientSettingsProps = {};
     if (channel.name.endsWith("Height")) {
@@ -83,8 +78,7 @@ function populateAnalysisStyles(
         channelName: displacementChannel.name,
         scale: displacementScale,
       };
-      const exaggeration =
-        1 !== displacementScale ? "" : ` X ${displacementScale}`;
+      const exaggeration = 1 !== displacementScale ? "" : ` X ${displacementScale}`;
       name = `${name} and ${displacementChannel.name}${exaggeration}`;
     }
 
@@ -94,9 +88,7 @@ function populateAnalysisStyles(
 
 async function createCantilever(): Promise<Polyface> {
   const { cantileverJsonString } = await import("./Cantilever");
-  const polyface = IModelJson.Reader.parse(
-    JSON.parse(cantileverJsonString)
-  ) as Polyface;
+  const polyface = IModelJson.Reader.parse(JSON.parse(cantileverJsonString)) as Polyface;
   assert(polyface instanceof Polyface);
 
   const transform = Transform.createScaleAboutPoint(new Point3d(), 30);
@@ -144,10 +136,7 @@ function createFlatMeshWithWaves(): Polyface {
 
   /** Create a radial wave - start and return to zero  */
   for (let i = 0; i < polyface.data.point.length; i++) {
-    const angle =
-      (Angle.pi2Radians *
-        polyface.data.point.distanceIndexToPoint(i, center)!) /
-      radius;
+    const angle = (Angle.pi2Radians * polyface.data.point.distanceIndexToPoint(i, center)!) / radius;
     const height = maxHeight * Math.sin(angle);
     const slope = Math.abs(Math.cos(angle));
 
@@ -215,20 +204,10 @@ function createFlatMeshWithWaves(): Polyface {
     )
   );
   auxChannels.push(
-    new AuxChannel(
-      radialHeightDataVector,
-      AuxChannelDataType.Distance,
-      "Animated Radial Height",
-      "Radial: Time"
-    )
+    new AuxChannel(radialHeightDataVector, AuxChannelDataType.Distance, "Animated Radial Height", "Radial: Time")
   );
   auxChannels.push(
-    new AuxChannel(
-      radialSlopeDataVector,
-      AuxChannelDataType.Scalar,
-      "Animated Radial Slope",
-      "Radial: Time"
-    )
+    new AuxChannel(radialSlopeDataVector, AuxChannelDataType.Scalar, "Animated Radial Slope", "Radial: Time")
   );
 
   /** Create linear waves -- 10 separate frames.  */
@@ -258,52 +237,24 @@ function createFlatMeshWithWaves(): Polyface {
       linearDisplacementData.push(0.0);
       linearDisplacementData.push(height);
     }
-    linearDisplacementDataVector.push(
-      new AuxChannelData(i, linearDisplacementData)
-    );
+    linearDisplacementDataVector.push(new AuxChannelData(i, linearDisplacementData));
     linearHeightDataVector.push(new AuxChannelData(i, linearHeightData));
     linearSlopeDataVector.push(new AuxChannelData(i, linearSlopeData));
   }
   auxChannels.push(
-    new AuxChannel(
-      linearDisplacementDataVector,
-      AuxChannelDataType.Vector,
-      "Linear Displacement",
-      "Linear: Time"
-    )
+    new AuxChannel(linearDisplacementDataVector, AuxChannelDataType.Vector, "Linear Displacement", "Linear: Time")
   );
   auxChannels.push(
-    new AuxChannel(
-      linearHeightDataVector,
-      AuxChannelDataType.Distance,
-      "Linear Height",
-      "Linear: Time"
-    )
+    new AuxChannel(linearHeightDataVector, AuxChannelDataType.Distance, "Linear Height", "Linear: Time")
   );
-  auxChannels.push(
-    new AuxChannel(
-      linearSlopeDataVector,
-      AuxChannelDataType.Scalar,
-      "Linear Slope",
-      "Linear: Time"
-    )
-  );
+  auxChannels.push(new AuxChannel(linearSlopeDataVector, AuxChannelDataType.Scalar, "Linear Slope", "Linear: Time"));
 
-  polyface.data.auxData = new PolyfaceAuxData(
-    auxChannels,
-    polyface.data.pointIndex
-  );
+  polyface.data.auxData = new PolyfaceAuxData(auxChannels, polyface.data.pointIndex);
   return polyface;
 }
 
-async function createMesh(
-  type: AnalysisMeshType,
-  displacementScale = 1
-): Promise<AnalysisMesh> {
-  const polyface =
-    "Flat with waves" === type
-      ? createFlatMeshWithWaves()
-      : await createCantilever();
+async function createMesh(type: AnalysisMeshType, displacementScale = 1): Promise<AnalysisMesh> {
+  const polyface = "Flat with waves" === type ? createFlatMeshWithWaves() : await createCantilever();
   const styles = new Map<string, AnalysisStyle | undefined>();
   const mesh = { type, polyface, styles };
   populateAnalysisStyles(mesh, displacementScale);
@@ -322,14 +273,11 @@ class AnalysisDecorator {
     this.mesh = mesh;
     this._id = viewport.iModel.transientIds.getNext();
 
-    const removeDisposalListener = viewport.onDisposed.addOnce(() =>
-      this.dispose()
-    );
-    const removeAnalysisStyleListener =
-      viewport.addOnAnalysisStyleChangedListener(() => {
-        this._graphic?.disposeGraphic();
-        this._graphic = undefined;
-      });
+    const removeDisposalListener = viewport.onDisposed.addOnce(() => this.dispose());
+    const removeAnalysisStyleListener = viewport.addOnAnalysisStyleChangedListener(() => {
+      this._graphic?.disposeGraphic();
+      this._graphic = undefined;
+    });
 
     this._dispose = () => {
       removeAnalysisStyleListener();
@@ -356,17 +304,11 @@ class AnalysisDecorator {
     if (context.viewport !== this._viewport) return;
 
     if (!this._graphic) {
-      const builder = context.createGraphicBuilder(
-        GraphicType.Scene,
-        undefined,
-        this._id
-      );
+      const builder = context.createGraphicBuilder(GraphicType.Scene, undefined, this._id);
       const color = ColorDef.fromTbgr(ColorByName.darkSlateBlue);
       builder.setSymbology(color, color, 1);
       builder.addPolyface(this.mesh.polyface, false);
-      this._graphic = IModelApp.renderSystem.createGraphicOwner(
-        builder.finish()
-      );
+      this._graphic = IModelApp.renderSystem.createGraphicOwner(builder.finish());
     }
 
     context.addDecoration(GraphicType.Scene, this._graphic);
@@ -374,10 +316,7 @@ class AnalysisDecorator {
 }
 
 export async function openAnalysisStyleExample(viewer: Viewer): Promise<void> {
-  const meshes = await Promise.all([
-    createMesh("Cantilever", 100),
-    createMesh("Flat with waves"),
-  ]);
+  const meshes = await Promise.all([createMesh("Cantilever", 100), createMesh("Flat with waves")]);
   let decorator = new AnalysisDecorator(viewer.viewport, meshes[0]);
 
   const meshPicker = document.createElement("select");
@@ -395,10 +334,7 @@ export async function openAnalysisStyleExample(viewer: Viewer): Promise<void> {
     const type = meshPicker.value as AnalysisMeshType;
     if (type !== decorator.mesh.type) {
       decorator.dispose();
-      decorator = new AnalysisDecorator(
-        viewer.viewport,
-        meshes[meshPicker.selectedIndex]
-      );
+      decorator = new AnalysisDecorator(viewer.viewport, meshes[meshPicker.selectedIndex]);
       populateStylePicker();
     }
   };
@@ -407,13 +343,11 @@ export async function openAnalysisStyleExample(viewer: Viewer): Promise<void> {
   stylePicker.className = "viewList";
   viewer.toolBar.element.appendChild(stylePicker);
   stylePicker.onchange = () => {
-    viewer.viewport.displayStyle.settings.analysisStyle =
-      decorator.mesh.styles.get(stylePicker.value);
+    viewer.viewport.displayStyle.settings.analysisStyle = decorator.mesh.styles.get(stylePicker.value);
   };
 
   function populateStylePicker(): void {
-    while (stylePicker.firstChild)
-      stylePicker.removeChild(stylePicker.firstChild);
+    while (stylePicker.firstChild) stylePicker.removeChild(stylePicker.firstChild);
 
     for (const name of decorator.mesh.styles.keys()) {
       const option = document.createElement("option");
@@ -430,9 +364,7 @@ export async function openAnalysisStyleExample(viewer: Viewer): Promise<void> {
   viewer.viewport.setStandardRotation(StandardViewId.Iso);
   viewer.viewport.zoomToVolume(viewer.viewport.iModel.projectExtents);
 
-  viewer.viewport.viewFlags = viewer.viewport.viewFlags.withRenderMode(
-    RenderMode.SolidFill
-  );
+  viewer.viewport.viewFlags = viewer.viewport.viewFlags.withRenderMode(RenderMode.SolidFill);
 
   const settings = viewer.viewport.view.getDisplayStyle3d().settings;
   settings.environment = settings.environment.clone({

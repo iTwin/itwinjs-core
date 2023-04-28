@@ -8,12 +8,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { Point3d, Vector3d } from "@itwin/core-geometry";
-import {
-  LinePixels,
-  PolylineData,
-  PolylineTypeFlags,
-  QPoint3dList,
-} from "@itwin/core-common";
+import { LinePixels, PolylineData, PolylineTypeFlags, QPoint3dList } from "@itwin/core-common";
 import { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";
 import { VertexIndices, VertexTable } from "./VertexTable";
 
@@ -86,10 +81,7 @@ class PolylineVertex {
     if (noDisplacement) param = PolylineParam.kNoneAdjustWeight;
     // prevent getting tossed before width adjustment
     else if (adjacentToJoint) param = PolylineParam.kMiterInsideOnly;
-    else
-      param = this.isPolylineStartOrEnd
-        ? PolylineParam.kSquare
-        : PolylineParam.kMiter;
+    else param = this.isPolylineStartOrEnd ? PolylineParam.kSquare : PolylineParam.kMiter;
 
     let adjust = 0;
     if (negatePerp) adjust = PolylineParam.kNegatePerp;
@@ -109,15 +101,10 @@ class PolylineTesselator {
   private _nextParam: number[] = [];
   private _position: Point3d[] = [];
 
-  public constructor(
-    polylines: PolylineData[],
-    points: QPoint3dList | Point3d[],
-    doJointTriangles: boolean
-  ) {
+  public constructor(polylines: PolylineData[], points: QPoint3dList | Point3d[], doJointTriangles: boolean) {
     this._polylines = polylines;
     if (points instanceof QPoint3dList) {
-      for (const p of points.list)
-        this._position.push(p.unquantize(points.params));
+      for (const p of points.list) this._position.push(p.unquantize(points.params));
     } else {
       this._position = points;
     }
@@ -126,11 +113,7 @@ class PolylineTesselator {
   }
 
   public static fromPolyline(args: PolylineArgs): PolylineTesselator {
-    return new PolylineTesselator(
-      args.polylines,
-      args.points,
-      wantJointTriangles(args.width, args.flags.is2d)
-    );
+    return new PolylineTesselator(args.polylines, args.points, wantJointTriangles(args.width, args.flags.is2d));
   }
 
   public static fromMesh(args: MeshArgs): PolylineTesselator | undefined {
@@ -181,28 +164,14 @@ class PolylineTesselator {
         const idx1 = line.vertIndices[i + 1];
         const isStart: boolean = 0 === i;
         const isEnd: boolean = last - 1 === i;
-        const prevIdx0 = isStart
-          ? isClosed
-            ? line.vertIndices[last - 1]
-            : idx0
-          : line.vertIndices[i - 1];
-        const nextIdx1 = isEnd
-          ? isClosed
-            ? line.vertIndices[1]
-            : idx1
-          : line.vertIndices[i + 2];
+        const prevIdx0 = isStart ? (isClosed ? line.vertIndices[last - 1] : idx0) : line.vertIndices[i - 1];
+        const nextIdx1 = isEnd ? (isClosed ? line.vertIndices[1] : idx1) : line.vertIndices[i + 2];
 
         v0.init(true, isStart && !isClosed, idx0, prevIdx0, idx1);
         v1.init(false, isEnd && !isClosed, idx1, nextIdx1, idx0);
 
-        const jointAt0: boolean =
-          this._doJoints &&
-          (isClosed || !isStart) &&
-          this._dotProduct(v0) > maxJointDot;
-        const jointAt1: boolean =
-          this._doJoints &&
-          (isClosed || !isEnd) &&
-          this._dotProduct(v1) > maxJointDot;
+        const jointAt0: boolean = this._doJoints && (isClosed || !isStart) && this._dotProduct(v0) > maxJointDot;
+        const jointAt1: boolean = this._doJoints && (isClosed || !isEnd) && this._dotProduct(v1) > maxJointDot;
 
         if (jointAt0 || jointAt1) {
           this._addVertex(v0, v0.computeParam(true, jointAt0, false, false));
@@ -218,19 +187,9 @@ class PolylineTesselator {
           this._addVertex(v1, v1.computeParam(false, jointAt1, false, true));
           this._addVertex(v1, v1.computeParam(true, jointAt1, false, false));
 
-          if (jointAt0)
-            this.addJointTriangles(
-              v0,
-              v0.computeParam(false, true, false, true),
-              v0
-            );
+          if (jointAt0) this.addJointTriangles(v0, v0.computeParam(false, true, false, true), v0);
 
-          if (jointAt1)
-            this.addJointTriangles(
-              v1,
-              v1.computeParam(false, true, false, true),
-              v1
-            );
+          if (jointAt1) this.addJointTriangles(v1, v1.computeParam(false, true, false, true), v1);
         } else {
           this._addVertex(v0, v0.computeParam(true));
           this._addVertex(v1, v1.computeParam(false));
@@ -243,11 +202,7 @@ class PolylineTesselator {
     }
   }
 
-  private addJointTriangles(
-    v0: PolylineVertex,
-    p0: number,
-    v1: PolylineVertex
-  ): void {
+  private addJointTriangles(v0: PolylineVertex, p0: number, v1: PolylineVertex): void {
     const param = v1.computeParam(false, false, true);
     for (let i = 0; i < 3; i++) {
       this._addVertex(v0, p0);
@@ -258,14 +213,8 @@ class PolylineTesselator {
 
   private _dotProduct(v: PolylineVertex): number {
     const pos: Point3d = this._position[v.vertexIndex];
-    const prevDir: Vector3d = Vector3d.createStartEnd(
-      this._position[v.prevIndex],
-      pos
-    );
-    const nextDir: Vector3d = Vector3d.createStartEnd(
-      this._position[v.nextIndex],
-      pos
-    );
+    const prevDir: Vector3d = Vector3d.createStartEnd(this._position[v.prevIndex], pos);
+    const nextDir: Vector3d = Vector3d.createStartEnd(this._position[v.nextIndex], pos);
     return prevDir.dotProduct(nextDir);
   }
 
@@ -284,11 +233,7 @@ export function tesselatePolyline(
   points: QPoint3dList,
   doJointTriangles: boolean
 ): TesselatedPolyline {
-  const tesselator = new PolylineTesselator(
-    polylines,
-    points,
-    doJointTriangles
-  );
+  const tesselator = new PolylineTesselator(polylines, points, doJointTriangles);
   return tesselator.tesselate();
 }
 

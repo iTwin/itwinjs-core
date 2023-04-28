@@ -80,8 +80,7 @@ export namespace RenderMaterial {
       return this._alpha;
     }
     public set alpha(alpha: number | undefined) {
-      this._alpha =
-        undefined !== alpha ? clampToNormalizedRange(alpha) : undefined;
+      this._alpha = undefined !== alpha ? clampToNormalizedRange(alpha) : undefined;
     }
 
     /** Create a RenderMaterial params object using specified key and ColorDef values, as well as an optional texture mapping. */

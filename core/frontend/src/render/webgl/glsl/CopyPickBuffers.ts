@@ -8,11 +8,7 @@
 
 import { CopyPickBufferGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
-import {
-  FragmentShaderComponent,
-  VariablePrecision,
-  VariableType,
-} from "../ShaderBuilder";
+import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { Texture2DHandle } from "../Texture";
 import { createViewportQuadBuilder } from "./ViewportQuad";
@@ -25,9 +21,7 @@ const assignFragData = `
 `;
 
 /** @internal */
-export function createCopyPickBuffersProgram(
-  context: WebGL2RenderingContext
-): ShaderProgram {
+export function createCopyPickBuffersProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 
@@ -38,11 +32,7 @@ export function createCopyPickBuffersProgram(
     VariableType.Sampler2D,
     (prog) => {
       prog.addGraphicUniform("u_pickFeatureId", (uniform, params) => {
-        Texture2DHandle.bindSampler(
-          uniform,
-          (params.geometry as CopyPickBufferGeometry).featureId,
-          TextureUnit.Zero
-        );
+        Texture2DHandle.bindSampler(uniform, (params.geometry as CopyPickBufferGeometry).featureId, TextureUnit.Zero);
       });
     },
     VariablePrecision.High

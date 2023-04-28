@@ -31,11 +31,7 @@ export class ConnectorRunner {
 
     Logger.initializeToConsole();
     const { loggerConfigJSONFile } = jobArgs;
-    if (
-      loggerConfigJSONFile &&
-      path.extname(loggerConfigJSONFile) === ".json" &&
-      fs.existsSync(loggerConfigJSONFile)
-    )
+    if (loggerConfigJSONFile && path.extname(loggerConfigJSONFile) === ".json" && fs.existsSync(loggerConfigJSONFile))
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       Logger.configureLevels(require(loggerConfigJSONFile));
     else Logger.setLevelDefault(LogLevel.Info);
@@ -63,9 +59,7 @@ export class ConnectorRunner {
   public static fromJSON(json: AllArgsProps): ConnectorRunner {
     const supportedVersion = "0.0.1";
     if (!json.version || json.version !== supportedVersion)
-      throw new Error(
-        `Arg file has invalid version ${json.version}. Supported version is ${supportedVersion}.`
-      );
+      throw new Error(`Arg file has invalid version ${json.version}. Supported version is ${supportedVersion}.`);
 
     // __PUBLISH_EXTRACT_START__ ConnectorRunner-constructor.example-code
     if (!json.jobArgs) throw new Error("jobArgs is not defined");

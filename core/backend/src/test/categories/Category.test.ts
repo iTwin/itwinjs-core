@@ -18,19 +18,16 @@ import { IModelTestUtils } from "../IModelTestUtils";
 describe("Category", () => {
   let imodel: StandaloneDb;
   before(() => {
-    imodel = StandaloneDb.createEmpty(
-      IModelTestUtils.prepareOutputFile("Category", "Category.bim"),
-      {
-        rootSubject: { name: "Category tests", description: "Category tests" },
-        client: "Category",
-        globalOrigin: { x: 0, y: 0 },
-        projectExtents: {
-          low: { x: -500, y: -500, z: -50 },
-          high: { x: 500, y: 500, z: 50 },
-        },
-        guid: Guid.createValue(),
-      }
-    );
+    imodel = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("Category", "Category.bim"), {
+      rootSubject: { name: "Category tests", description: "Category tests" },
+      client: "Category",
+      globalOrigin: { x: 0, y: 0 },
+      projectExtents: {
+        low: { x: -500, y: -500, z: -50 },
+        high: { x: 500, y: 500, z: 50 },
+      },
+      guid: Guid.createValue(),
+    });
   });
 
   after(() => {
@@ -48,12 +45,7 @@ describe("Category", () => {
       specularColor: [0.2, 0.2, 0.2],
     };
 
-    const materialId = RenderMaterialElement.insert(
-      imodel,
-      IModelDb.dictionaryId,
-      "FieldWeldMaterial",
-      params
-    );
+    const materialId = RenderMaterialElement.insert(imodel, IModelDb.dictionaryId, "FieldWeldMaterial", params);
     expect(Id64.isValidId64(materialId)).to.be.true;
 
     const appearance = new SubCategoryAppearance({
@@ -61,17 +53,10 @@ describe("Category", () => {
       priority: 100,
       transp: 0.75,
     });
-    const priCategoryId = SpatialCategory.insert(
-      imodel,
-      IModelDb.dictionaryId,
-      "FieldWeld",
-      appearance
-    );
+    const priCategoryId = SpatialCategory.insert(imodel, IModelDb.dictionaryId, "FieldWeld", appearance);
     expect(Id64.isValidId64(priCategoryId)).to.be.true;
 
-    const subCatId = imodel.elements.queryElementIdByCode(
-      SubCategory.createCode(imodel, priCategoryId, "FieldWeld")
-    )!;
+    const subCatId = imodel.elements.queryElementIdByCode(SubCategory.createCode(imodel, priCategoryId, "FieldWeld"))!;
     expect(subCatId).not.to.be.undefined;
     expect(Id64.isValidId64(subCatId)).to.be.true;
     const subCat = imodel.elements.getElement<SubCategory>(subCatId)!;

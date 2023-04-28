@@ -22,9 +22,7 @@ export const configureForPromiseResult = <T>(mock: moq.IMock<T>): void => {
  */
 export const isKeySet = (expectedKeys: Keys) => {
   const expected = new KeySet(expectedKeys);
-  return moq.It.is<KeySet>(
-    (actual: KeySet) => actual.size === expected.size && actual.hasAll(expected)
-  );
+  return moq.It.is<KeySet>((actual: KeySet) => actual.size === expected.size && actual.hasAll(expected));
 };
 
 /**

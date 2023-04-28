@@ -7,19 +7,9 @@
  * @module Widgets
  */
 
-import {
-  IModelApp,
-  MessageBoxIconType,
-  MessageBoxType,
-  ParseAndRunResult,
-} from "@itwin/core-frontend";
+import { IModelApp, MessageBoxIconType, MessageBoxType, ParseAndRunResult } from "@itwin/core-frontend";
 import { createButton } from "../ui/Button";
-import {
-  appendDataListEntries,
-  createDataList,
-  DataList,
-  DataListEntry,
-} from "../ui/DataList";
+import { appendDataListEntries, createDataList, DataList, DataListEntry } from "../ui/DataList";
 import { createTextBox, TextBox } from "../ui/TextBox";
 
 function keyinsToDataListEntries(keyins: string[]): DataListEntry[] {
@@ -82,8 +72,7 @@ export class KeyinField {
   private readonly _localization: KeyinFieldLocalization;
 
   public constructor(props: KeyinFieldProps) {
-    this._localization =
-      props.localization ?? KeyinFieldLocalization.NonLocalized;
+    this._localization = props.localization ?? KeyinFieldLocalization.NonLocalized;
     this.keyins = this.findKeyins();
     const autoCompleteListId = `${props.baseId}_autoComplete`;
     this.autoCompleteList = createDataList({
@@ -136,10 +125,7 @@ export class KeyinField {
   }
 
   public selectAll(): void {
-    this.textBox.textbox.setSelectionRange(
-      0,
-      this.textBox.textbox.value.length
-    );
+    this.textBox.textbox.setSelectionRange(0, this.textBox.textbox.value.length);
   }
 
   private async handleKeyPress(ev: KeyboardEvent): Promise<void> {
@@ -168,8 +154,7 @@ export class KeyinField {
     const newIndex = this._historyIndex + direction;
     if (newIndex >= 0 && newIndex < this._history.length) {
       this._historyIndex = newIndex;
-      if (this._historyIndex >= 0)
-        this.textBox.textbox.value = this._history[newIndex];
+      if (this._historyIndex >= 0) this.textBox.textbox.value = this._history[newIndex];
     }
   }
 
@@ -182,10 +167,7 @@ export class KeyinField {
 
     this.textBox.textbox.value = "";
     this.resetHistoryIndex();
-    if (
-      this._history.length === 0 ||
-      keyin.toLowerCase() !== this._history[0].toLowerCase()
-    ) {
+    if (this._history.length === 0 || keyin.toLowerCase() !== this._history[0].toLowerCase()) {
       this._history.unshift(keyin);
       if (this._history.length > this._historyLength) this._history.pop();
     }
@@ -216,11 +198,7 @@ export class KeyinField {
     }
 
     if (undefined !== message)
-      await IModelApp.notifications.openMessageBox(
-        MessageBoxType.MediumAlert,
-        message,
-        MessageBoxIconType.Warning
-      );
+      await IModelApp.notifications.openMessageBox(MessageBoxType.MediumAlert, message, MessageBoxIconType.Warning);
   }
 
   private respondToKeyinFocus() {
@@ -237,11 +215,7 @@ export class KeyinField {
           this.keyins.push(keyin);
         }
 
-      if (newKeyins.length > 0)
-        appendDataListEntries(
-          this.autoCompleteList,
-          keyinsToDataListEntries(newKeyins)
-        );
+      if (newKeyins.length > 0) appendDataListEntries(this.autoCompleteList, keyinsToDataListEntries(newKeyins));
     }
   }
 

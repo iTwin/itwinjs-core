@@ -6,16 +6,8 @@
  * @module Rendering
  */
 
-import {
-  assert,
-  Uint32ArrayBuilder,
-  Uint8ArrayBuilder,
-} from "@itwin/core-bentley";
-import {
-  ColorDef,
-  ComputeNodeId,
-  PackedFeatureTable,
-} from "@itwin/core-common";
+import { assert, Uint32ArrayBuilder, Uint8ArrayBuilder } from "@itwin/core-bentley";
+import { ColorDef, ComputeNodeId, PackedFeatureTable } from "@itwin/core-common";
 import {
   computeDimensions,
   MeshParams,
@@ -26,12 +18,7 @@ import {
 } from "./VertexTable";
 import { PointStringParams } from "./PointStringParams";
 import { PolylineParams, TesselatedPolyline } from "./PolylineParams";
-import {
-  calculateEdgeTableParams,
-  EdgeParams,
-  EdgeTable,
-  IndexedEdgeParams,
-} from "./EdgeParams";
+import { calculateEdgeTableParams, EdgeParams, EdgeTable, IndexedEdgeParams } from "./EdgeParams";
 import { createSurfaceMaterial, SurfaceMaterial } from "./SurfaceParams";
 import { IModelApp } from "../../IModelApp";
 import { CreateRenderMaterialArgs } from "../RenderMaterial";
@@ -105,10 +92,8 @@ class VertexBuffer {
     colorTable = colorTable ?? source.uniformColor;
     assert(undefined !== colorTable);
 
-    const colorTableLength =
-      colorTable instanceof Uint32Array ? colorTable.length : 0;
-    const materialAtlasTableLength =
-      materialAtlasTable instanceof Uint32Array ? materialAtlasTable.length : 0;
+    const colorTableLength = colorTable instanceof Uint32Array ? colorTable.length : 0;
+    const materialAtlasTableLength = materialAtlasTable instanceof Uint32Array ? materialAtlasTable.length : 0;
     const dimensions = computeDimensions(
       this.length,
       this.vertexSize,
@@ -129,15 +114,10 @@ class VertexBuffer {
       tableSize += colorTable.length;
     }
 
-    if (materialAtlasTable instanceof Uint32Array)
-      rgbaData.set(materialAtlasTable, tableSize);
+    if (materialAtlasTable instanceof Uint32Array) rgbaData.set(materialAtlasTable, tableSize);
 
     const tableProps: VertexTableProps = {
-      data: new Uint8Array(
-        rgbaData.buffer,
-        rgbaData.byteOffset,
-        rgbaData.byteLength
-      ),
+      data: new Uint8Array(rgbaData.buffer, rgbaData.byteOffset, rgbaData.byteLength),
       usesUnquantizedPositions: source.usesUnquantizedPositions,
       qparams: source.qparams,
       width: dimensions.width,
@@ -170,10 +150,7 @@ class ColorTableRemapper {
   }
 
   /** Extract the color index stored in `vertex`, ensure it is present in the remapped color table, and return its index in that table. */
-  public remap(
-    vertex: Uint32Array,
-    usesUnquantizedPositions: boolean | undefined
-  ): void {
+  public remap(vertex: Uint32Array, usesUnquantizedPositions: boolean | undefined): void {
     const vertIndex = usesUnquantizedPositions ? 4 : 1;
     const shortIndex = usesUnquantizedPositions ? 0 : 1;
     this._32[0] = vertex[vertIndex];
@@ -193,9 +170,7 @@ class ColorTableRemapper {
   /** Construct the finished color table. */
   public buildColorTable(): ColorTable {
     assert(this.colors.length > 0);
-    return this.colors.length > 1
-      ? new Uint32Array(this.colors)
-      : ColorDef.fromAbgr(this.colors[0]);
+    return this.colors.length > 1 ? new Uint32Array(this.colors) : ColorDef.fromAbgr(this.colors[0]);
   }
 }
 
@@ -213,10 +188,7 @@ class MaterialAtlasRemapper {
   }
 
   /** Extract the mat index stored in `vertex`, ensure it is present in the remapped atlas table, and return its index in that table. */
-  public remap(
-    vertex: Uint32Array,
-    usesUnquantizedPositions: boolean | undefined
-  ): void {
+  public remap(vertex: Uint32Array, usesUnquantizedPositions: boolean | undefined): void {
     const vertIndex = usesUnquantizedPositions ? 3 : 2;
     this._32[0] = vertex[vertIndex];
     const oldIndex = this._8[3];
@@ -248,17 +220,13 @@ class MaterialAtlasRemapper {
     return base * Math.pow(10.0, exponent);
   }
 
-  private materialFromAtlasEntry(
-    entry: Uint32Array
-  ): SurfaceMaterial | undefined {
+  private materialFromAtlasEntry(entry: Uint32Array): SurfaceMaterial | undefined {
     const rgbOverridden = (entry[1] & 0x1000000) !== 0;
     const alphaOverridden = (entry[1] & 0x2000000) !== 0;
     const args: CreateRenderMaterialArgs = {
       alpha: alphaOverridden ? (entry[0] >>> 24) / 255.0 : undefined,
       diffuse: {
-        color: rgbOverridden
-          ? ColorDef.fromTbgr(entry[0] & 0xffffff)
-          : undefined,
+        color: rgbOverridden ? ColorDef.fromTbgr(entry[0] & 0xffffff) : undefined,
         weight: (entry[1] >>> 8) / 255.0,
       },
       specular: {
@@ -289,30 +257,20 @@ class Node {
   public readonly usesUnquantizedPositions?: boolean;
 
   /** `vertexTable` is the source table containing vertex data for all nodes, from which this node will extract the vertices belong to it. */
-  public constructor(
-    vertexTable: VertexTable,
-    numColorsPrecedingAtlas: number | undefined
-  ) {
+  public constructor(vertexTable: VertexTable, numColorsPrecedingAtlas: number | undefined) {
     this.vertices = new VertexBuffer(vertexTable);
     if (undefined === vertexTable.uniformColor)
       this.colors = new ColorTableRemapper(
         new Uint32Array(
           vertexTable.data.buffer,
-          vertexTable.data.byteOffset +
-            4 * vertexTable.numVertices * vertexTable.numRgbaPerVertex
+          vertexTable.data.byteOffset + 4 * vertexTable.numVertices * vertexTable.numRgbaPerVertex
         )
       );
 
     if (undefined !== numColorsPrecedingAtlas) {
-      const atlasOffset =
-        (vertexTable.numVertices * vertexTable.numRgbaPerVertex +
-          numColorsPrecedingAtlas) *
-        4;
+      const atlasOffset = (vertexTable.numVertices * vertexTable.numRgbaPerVertex + numColorsPrecedingAtlas) * 4;
       this.atlas = new MaterialAtlasRemapper(
-        new Uint32Array(
-          vertexTable.data.buffer,
-          vertexTable.data.byteOffset + atlasOffset
-        )
+        new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset + atlasOffset)
       );
     }
 
@@ -335,15 +293,10 @@ class Node {
 
   public buildOutput(maxDimension: number): VertexTableWithIndices {
     const materialAtlas = this.atlas?.buildAtlasTable();
-    const material: SurfaceMaterial | undefined =
-      materialAtlas instanceof Uint32Array ? undefined : materialAtlas;
+    const material: SurfaceMaterial | undefined = materialAtlas instanceof Uint32Array ? undefined : materialAtlas;
     return {
       indices: this.indices.toVertexIndices(),
-      vertices: this.vertices.buildVertexTable(
-        maxDimension,
-        this.colors?.buildColorTable(),
-        materialAtlas
-      ),
+      vertices: this.vertices.buildVertexTable(maxDimension, this.colors?.buildColorTable(), materialAtlas),
       material,
     };
   }
@@ -359,19 +312,13 @@ class VertexTableSplitter {
   private readonly _computeNodeId: ComputeNodeId;
   private readonly _nodes = new Map<number, Node>();
 
-  private constructor(
-    input: VertexTableSplitArgs,
-    computeNodeId: ComputeNodeId
-  ) {
+  private constructor(input: VertexTableSplitArgs, computeNodeId: ComputeNodeId) {
     this._input = input;
     this._computeNodeId = computeNodeId;
   }
 
   /** Split the source into one or more output nodes, returning a mapping of integer node Id to node. */
-  public static split(
-    source: VertexTableSplitArgs,
-    computeNodeId: ComputeNodeId
-  ): Map<number, Node> {
+  public static split(source: VertexTableSplitArgs, computeNodeId: ComputeNodeId): Map<number, Node> {
     const splitter = new VertexTableSplitter(source, computeNodeId);
     splitter.split();
     return splitter._nodes;
@@ -397,8 +344,7 @@ class VertexTableSplitter {
     for (const index of this._input.indices) {
       // Extract the data for this vertex without allocating new typed arrays.
       const vertexOffset = index * vertSize;
-      for (let i = 0; i < vertex.length; i++)
-        vertex[i] = vertexTable[vertexOffset + i];
+      for (let i = 0; i < vertex.length; i++) vertex[i] = vertexTable[vertexOffset + i];
 
       // Determine to which element the vertex belongs and find the corresponding Node.
       const featureIndex = vertex[2] & 0x00ffffff;
@@ -408,10 +354,7 @@ class VertexTableSplitter {
         const nodeId = this._computeNodeId(elemIdPair, featureIndex);
         let node = this._nodes.get(nodeId);
         if (undefined === node)
-          this._nodes.set(
-            nodeId,
-            (node = new Node(this._input.vertices, this._input.atlasOffset))
-          );
+          this._nodes.set(nodeId, (node = new Node(this._input.vertices, this._input.atlasOffset)));
 
         curState.node = node;
       }
@@ -436,9 +379,7 @@ export interface SplitPointStringArgs extends SplitVertexTableArgs {
  * the input params as needed.
  * @internal
  */
-export function splitPointStringParams(
-  args: SplitPointStringArgs
-): Map<number, PointStringParams> {
+export function splitPointStringParams(args: SplitPointStringArgs): Map<number, PointStringParams> {
   const nodes = VertexTableSplitter.split(
     {
       indices: args.params.indices,
@@ -451,10 +392,7 @@ export function splitPointStringParams(
   const result = new Map<number, PointStringParams>();
   for (const [id, node] of nodes) {
     const { vertices, indices } = node.buildOutput(args.maxDimension);
-    result.set(
-      id,
-      new PointStringParams(vertices, indices, args.params.weight)
-    );
+    result.set(id, new PointStringParams(vertices, indices, args.params.weight));
   }
 
   return result;
@@ -493,11 +431,7 @@ interface RemappedIndex {
   index: number;
 }
 
-function remapIndex(
-  out: RemappedIndex,
-  srcIndex: number,
-  nodes: Map<number, Node>
-): boolean {
+function remapIndex(out: RemappedIndex, srcIndex: number, nodes: Map<number, Node>): boolean {
   for (const [id, node] of nodes) {
     const index = node.remappedIndices.get(srcIndex);
     if (undefined !== index) {
@@ -616,32 +550,19 @@ function remapPolylineEdges(
   }
 }
 
-function remapIndexedEdges(
-  src: IndexedEdgeParams,
-  nodes: Map<number, Node>,
-  edges: Map<number, RemappedEdges>
-): void {
+function remapIndexedEdges(src: IndexedEdgeParams, nodes: Map<number, Node>, edges: Map<number, RemappedEdges>): void {
   const srcEdgeData = src.edges.data;
   const numSegments = src.edges.numSegments;
-  const silhouetteStartByteIndex =
-    numSegments * 6 + src.edges.silhouettePadding;
+  const silhouetteStartByteIndex = numSegments * 6 + src.edges.silhouettePadding;
 
   function getUint24EdgePair(byteIndex: number): [number, number] {
     return [
-      srcEdgeData[byteIndex + 0] |
-        (srcEdgeData[byteIndex + 1] << 8) |
-        (srcEdgeData[byteIndex + 2] << 16),
-      srcEdgeData[byteIndex + 3] |
-        (srcEdgeData[byteIndex + 4] << 8) |
-        (srcEdgeData[byteIndex + 5] << 16),
+      srcEdgeData[byteIndex + 0] | (srcEdgeData[byteIndex + 1] << 8) | (srcEdgeData[byteIndex + 2] << 16),
+      srcEdgeData[byteIndex + 3] | (srcEdgeData[byteIndex + 4] << 8) | (srcEdgeData[byteIndex + 5] << 16),
     ];
   }
 
-  function setUint24EdgePair(
-    indEdges: RemappedIndexEdges,
-    value1: number,
-    value2: number
-  ): void {
+  function setUint24EdgePair(indEdges: RemappedIndexEdges, value1: number, value2: number): void {
     indEdges.edges.push(value1 & 0x0000ff);
     indEdges.edges.push((value1 & 0x00ff00) >>> 8);
     indEdges.edges.push((value1 & 0xff0000) >>> 16);
@@ -650,16 +571,10 @@ function remapIndexedEdges(
     indEdges.edges.push((value2 & 0xff0000) >>> 16);
   }
 
-  function getUint24SilPair(
-    byteIndex: number
-  ): [number, number, number, number] {
+  function getUint24SilPair(byteIndex: number): [number, number, number, number] {
     return [
-      srcEdgeData[byteIndex + 0] |
-        (srcEdgeData[byteIndex + 1] << 8) |
-        (srcEdgeData[byteIndex + 2] << 16),
-      srcEdgeData[byteIndex + 3] |
-        (srcEdgeData[byteIndex + 4] << 8) |
-        (srcEdgeData[byteIndex + 5] << 16),
+      srcEdgeData[byteIndex + 0] | (srcEdgeData[byteIndex + 1] << 8) | (srcEdgeData[byteIndex + 2] << 16),
+      srcEdgeData[byteIndex + 3] | (srcEdgeData[byteIndex + 4] << 8) | (srcEdgeData[byteIndex + 5] << 16),
       srcEdgeData[byteIndex + 6] | (srcEdgeData[byteIndex + 7] << 8),
       srcEdgeData[byteIndex + 8] | (srcEdgeData[byteIndex + 9] << 8),
     ];
@@ -692,11 +607,7 @@ function remapIndexedEdges(
     es2Index = 0,
     n1 = 0,
     n2 = 0;
-  for (
-    let curSegment = 0, byteIndex = 0;
-    curSegment <= maxIndex;
-    ++curSegment
-  ) {
+  for (let curSegment = 0, byteIndex = 0; curSegment <= maxIndex; ++curSegment) {
     if (curSegment < numSegments) {
       // edges
       [es1Index, es2Index] = getUint24EdgePair(byteIndex);
@@ -736,10 +647,7 @@ function remapIndexedEdges(
   }
 }
 
-function splitEdges(
-  source: EdgeParams,
-  nodes: Map<number, Node>
-): Map<number, EdgeParams> {
+function splitEdges(source: EdgeParams, nodes: Map<number, Node>): Map<number, EdgeParams> {
   const edges = new Map<number, RemappedEdges>();
   remapSegmentEdges("segments", source, nodes, edges);
   remapSegmentEdges("silhouettes", source, nodes, edges);
@@ -750,36 +658,26 @@ function splitEdges(
 
   const result = new Map<number, EdgeParams>();
   for (const [id, remappedEdges] of edges) {
-    if (
-      !remappedEdges.segments &&
-      !remappedEdges.silhouettes &&
-      !remappedEdges.indexed
-    )
-      continue;
+    if (!remappedEdges.segments && !remappedEdges.silhouettes && !remappedEdges.indexed) continue;
 
     let edgeTable = {} as unknown as EdgeTable;
     let edgeIndices = {} as unknown as VertexIndices;
     if (remappedEdges.indexed) {
       const numSegmentEdges = remappedEdges.indexed.edges.length / 6;
       const numSilhouettes = remappedEdges.indexed.silhouettes.length / 10;
-      const { width, height, silhouettePadding, silhouetteStartByteIndex } =
-        calculateEdgeTableParams(
-          numSegmentEdges,
-          numSilhouettes,
-          IModelApp.renderSystem.maxTextureSize
-        );
+      const { width, height, silhouettePadding, silhouetteStartByteIndex } = calculateEdgeTableParams(
+        numSegmentEdges,
+        numSilhouettes,
+        IModelApp.renderSystem.maxTextureSize
+      );
       const data = new Uint8Array(width * height * 4);
       data.set(remappedEdges.indexed.edges.toTypedArray(), 0);
       if (numSilhouettes > 0)
-        data.set(
-          remappedEdges.indexed.silhouettes.toTypedArray(),
-          silhouetteStartByteIndex + silhouettePadding
-        );
+        data.set(remappedEdges.indexed.silhouettes.toTypedArray(), silhouetteStartByteIndex + silhouettePadding);
 
       const numTotalEdges = numSegmentEdges + numSilhouettes;
       edgeIndices = new VertexIndices(new Uint8Array(numTotalEdges * 6 * 3));
-      for (let i = 0; i < numTotalEdges; i++)
-        for (let j = 0; j < 6; j++) edgeIndices.setNthIndex(i * 6 + j, i);
+      for (let i = 0; i < numTotalEdges; i++) for (let j = 0; j < 6; j++) edgeIndices.setNthIndex(i * 6 + j, i);
 
       edgeTable = {
         data,
@@ -796,15 +694,13 @@ function splitEdges(
       segments: remappedEdges.segments
         ? {
             indices: remappedEdges.segments.indices.toVertexIndices(),
-            endPointAndQuadIndices:
-              remappedEdges.segments.endPointAndQuadIndices.toUint8Array(),
+            endPointAndQuadIndices: remappedEdges.segments.endPointAndQuadIndices.toUint8Array(),
           }
         : undefined,
       silhouettes: remappedEdges.silhouettes
         ? {
             indices: remappedEdges.silhouettes.indices.toVertexIndices(),
-            endPointAndQuadIndices:
-              remappedEdges.silhouettes.endPointAndQuadIndices.toUint8Array(),
+            endPointAndQuadIndices: remappedEdges.silhouettes.endPointAndQuadIndices.toUint8Array(),
             normalPairs: remappedEdges.silhouettes.normalPairs.toUint8Array(),
           }
         : undefined,
@@ -812,8 +708,7 @@ function splitEdges(
         ? {
             indices: remappedEdges.polylines.indices.toVertexIndices(),
             prevIndices: remappedEdges.polylines.prevIndices.toVertexIndices(),
-            nextIndicesAndParams:
-              remappedEdges.polylines.nextIndicesAndParams.toUint8Array(),
+            nextIndicesAndParams: remappedEdges.polylines.nextIndicesAndParams.toUint8Array(),
           }
         : undefined,
       indexed: remappedEdges.indexed
@@ -836,8 +731,7 @@ export function splitMeshParams(args: SplitMeshArgs): Map<number, MeshParams> {
   const result = new Map<number, MeshParams>();
 
   const mat = args.params.surface.material;
-  const atlasOffset =
-    undefined !== mat && mat.isAtlas ? mat.vertexTableOffset : undefined;
+  const atlasOffset = undefined !== mat && mat.isAtlas ? mat.vertexTableOffset : undefined;
 
   const nodes = VertexTableSplitter.split(
     {
@@ -849,9 +743,7 @@ export function splitMeshParams(args: SplitMeshArgs): Map<number, MeshParams> {
     args.computeNodeId
   );
 
-  const edges = args.params.edges
-    ? splitEdges(args.params.edges, nodes)
-    : undefined;
+  const edges = args.params.edges ? splitEdges(args.params.edges, nodes) : undefined;
 
   for (const [id, node] of nodes) {
     const { vertices, indices, material } = node.buildOutput(args.maxDimension);
@@ -863,8 +755,7 @@ export function splitMeshParams(args: SplitMeshArgs): Map<number, MeshParams> {
         fillFlags: args.params.surface.fillFlags,
         hasBakedLighting: args.params.surface.hasBakedLighting,
         textureMapping: args.params.surface.textureMapping,
-        material:
-          material !== undefined ? material : args.params.surface.material,
+        material: material !== undefined ? material : args.params.surface.material,
       },
       edges?.get(id),
       args.params.isPlanar,
@@ -887,9 +778,7 @@ interface PolylineNode extends Node {
   nextIndicesAndParams?: Uint32ArrayBuilder;
 }
 
-export function splitPolylineParams(
-  args: SplitPolylineArgs
-): Map<number, PolylineParams> {
+export function splitPolylineParams(args: SplitPolylineArgs): Map<number, PolylineParams> {
   const nodes = VertexTableSplitter.split(
     {
       indices: args.params.polyline.indices,
@@ -935,9 +824,7 @@ export function splitPolylineParams(
 
   const result = new Map<number, PolylineParams>();
   for (const [id, node] of nodes) {
-    assert(
-      undefined !== node.prevIndices && undefined !== node.nextIndicesAndParams
-    );
+    assert(undefined !== node.prevIndices && undefined !== node.nextIndicesAndParams);
     const { vertices, indices } = node.buildOutput(args.maxDimension);
     const params = new PolylineParams(
       vertices,

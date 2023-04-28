@@ -107,10 +107,7 @@ const initializeCommon = async (props: {
   Logger.setLevelDefault(LogLevel.Warning);
   Logger.setLevel("i18n", LogLevel.Error);
   Logger.setLevel("SQLite", LogLevel.Error);
-  Logger.setLevel(
-    PresentationBackendNativeLoggerCategory.ECObjects,
-    LogLevel.Warning
-  );
+  Logger.setLevel(PresentationBackendNativeLoggerCategory.ECObjects, LogLevel.Warning);
 
   // prepare an empty, process-unique output directory
   const outputRoot = getOutputRoot();
@@ -175,9 +172,7 @@ export const initialize = async (props?: {
 };
 
 export const initializeWithClientServices = async () => {
-  const authorizationClient = TestUtility.getAuthorizationClient(
-    TestUsers.regular
-  );
+  const authorizationClient = TestUtility.getAuthorizationClient(TestUsers.regular);
   await authorizationClient.signIn();
   await initializeCommon({ authorizationClient });
 };
@@ -196,9 +191,7 @@ export const resetBackend = () => {
 };
 
 export const testLocalization = new ITwinLocalization({
-  urlTemplate: `file://${path
-    .join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json")
-    .replace(/\\/g, "/")}`,
+  urlTemplate: `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}`,
   initOptions: {
     preload: ["test"],
   },
@@ -240,11 +233,7 @@ async function initializePresentation(props: PresentationInitProps) {
   if (isInitialized) return;
 
   // set up rpc interfaces
-  initializeRpcInterfaces([
-    SnapshotIModelRpcInterface,
-    IModelReadRpcInterface,
-    PresentationRpcInterface,
-  ]);
+  initializeRpcInterfaces([SnapshotIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface]);
 
   // init backend
   // make sure backend gets assigned an id which puts its resources into a unique directory
@@ -263,8 +252,7 @@ async function terminatePresentation(frontendApp = IModelApp) {
 
   // store directory that needs to be cleaned-up
   let hierarchiesCacheDirectory: string | undefined;
-  const hierarchiesCacheConfig =
-    PresentationBackend.initProps?.caching?.hierarchies;
+  const hierarchiesCacheConfig = PresentationBackend.initProps?.caching?.hierarchies;
   if (hierarchiesCacheConfig?.mode === HierarchyCacheMode.Disk)
     hierarchiesCacheDirectory = hierarchiesCacheConfig?.directory;
   else if (hierarchiesCacheConfig?.mode === HierarchyCacheMode.Hybrid)
@@ -287,8 +275,7 @@ function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
     public override interfaces: any = () => interfaces;
   };
 
-  for (const definition of interfaces)
-    RpcConfiguration.assign(definition, () => config);
+  for (const definition of interfaces) RpcConfiguration.assign(definition, () => config);
 
   const instance = RpcConfiguration.obtain(config);
 

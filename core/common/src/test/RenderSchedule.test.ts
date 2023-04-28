@@ -5,13 +5,7 @@
 
 import { expect } from "chai";
 import { CompressedId64Set } from "@itwin/core-bentley";
-import {
-  Matrix3d,
-  Point3d,
-  Point4d,
-  Transform,
-  TransformProps,
-} from "@itwin/core-geometry";
+import { Matrix3d, Point3d, Point4d, Transform, TransformProps } from "@itwin/core-geometry";
 import { RenderSchedule as RS } from "../RenderSchedule";
 import { RgbColor } from "../RgbColor";
 
@@ -71,9 +65,7 @@ describe("RenderSchedule", () => {
                 interpolation: 2,
                 time: 1439904180,
                 value: {
-                  orientation: [
-                    -1.109122e-8, -3.543056e-8, -0.228533, 0.973536,
-                  ],
+                  orientation: [-1.109122e-8, -3.543056e-8, -0.228533, 0.973536],
                   pivot: [63533.371094, -16860.751953, 22829.71875],
                   position: [-20778.666016, 14528.351563, -22869.257813],
                   transform: [
@@ -87,9 +79,7 @@ describe("RenderSchedule", () => {
                 interpolation: 2,
                 time: 1439982060,
                 value: {
-                  orientation: [
-                    -1.113305e-8, -3.556418e-8, -0.229395, 0.973333,
-                  ],
+                  orientation: [-1.113305e-8, -3.556418e-8, -0.229395, 0.973333],
                   pivot: [63533.371094, -16860.751953, 22829.71875],
                   position: [5798.800781, 18796.800781, -22869.259766],
                   transform: [
@@ -136,10 +126,7 @@ describe("RenderSchedule", () => {
     const script = RS.Script.fromJSON(props)!;
     expect(script).not.to.be.undefined;
 
-    function expectTransform(
-      timepoint: number,
-      expected: TransformProps
-    ): void {
+    function expectTransform(timepoint: number, expected: TransformProps): void {
       const actual = script.getTransform("0x123", 1, timepoint)!;
       expect(actual).not.to.be.undefined;
       expect(actual.isAlmostEqual(Transform.fromJSON(expected))).to.be.true;
@@ -158,18 +145,9 @@ describe("RenderSchedule", () => {
     ]);
 
     expectTransform(script.duration.fractionToPoint(0.5), [
-      [
-        0.9542084100696944, -0.29673855635648877, -0.037848901222266286,
-        71759.88767870933,
-      ],
-      [
-        0.29684190212797457, 0.9549219611634173, -0.002988850758880856,
-        21679.967974600604,
-      ],
-      [
-        0.03702965424240229, -0.008383153301704048, 0.9992790038059481,
-        2437.9638765390373,
-      ],
+      [0.9542084100696944, -0.29673855635648877, -0.037848901222266286, 71759.88767870933],
+      [0.29684190212797457, 0.9549219611634173, -0.002988850758880856, 21679.967974600604],
+      [0.03702965424240229, -0.008383153301704048, 0.9992790038059481, 2437.9638765390373],
     ]);
   });
 
@@ -202,8 +180,7 @@ describe("RenderSchedule", () => {
     const timeline = new RS.Timeline(props);
     const vis = timeline.visibility!;
     let i = 0;
-    for (const entry of vis)
-      expect(timeline.getVisibility(entry.time)).to.equal(vis.getValue(i++));
+    for (const entry of vis) expect(timeline.getVisibility(entry.time)).to.equal(vis.getValue(i++));
 
     expect(timeline.getVisibility(timeline.duration.low)).to.equal(100);
     expect(timeline.getVisibility(timeline.duration.high)).to.equal(30);
@@ -214,8 +191,7 @@ describe("RenderSchedule", () => {
       const a = props.visibilityTimeline![j];
       const b = props.visibilityTimeline![j + 1];
       const time = a.time + (b.time - a.time) / 2;
-      const value =
-        (a.value ?? 100) + ((b.value ?? 100) - (a.value ?? 100)) / 2;
+      const value = (a.value ?? 100) + ((b.value ?? 100) - (a.value ?? 100)) / 2;
       expect(timeline.getVisibility(time)).to.equal(value);
     }
   });
@@ -347,19 +323,12 @@ describe("RenderSchedule", () => {
       model2.realityModelUrl = "https://google.com";
 
       const elem2 = model2.addElementTimeline(["0xabc"]);
-      elem2.addTransform(
-        400,
-        Transform.createRefs(new Point3d(4, 5, 6), Matrix3d.createIdentity())
-      );
-      elem2.addTransform(
-        500,
-        Transform.createRefs(new Point3d(4, 5, 6), Matrix3d.createIdentity()),
-        {
-          pivot: new Point3d(1, 2, 3),
-          position: new Point3d(8, 9, 0),
-          orientation: Point4d.create(4, 5, 6, 7),
-        }
-      );
+      elem2.addTransform(400, Transform.createRefs(new Point3d(4, 5, 6), Matrix3d.createIdentity()));
+      elem2.addTransform(500, Transform.createRefs(new Point3d(4, 5, 6), Matrix3d.createIdentity()), {
+        pivot: new Point3d(1, 2, 3),
+        position: new Point3d(8, 9, 0),
+        orientation: Point4d.create(4, 5, 6, 7),
+      });
 
       const elem3 = model2.addElementTimeline(["0xdef"]);
       elem3.addCuttingPlane(600, {
@@ -376,11 +345,7 @@ describe("RenderSchedule", () => {
     equals(other: T): boolean;
   }
 
-  function expectEquality<T extends HasEquals<T>>(
-    a: T,
-    b: T,
-    expected: boolean
-  ): void {
+  function expectEquality<T extends HasEquals<T>>(a: T, b: T, expected: boolean): void {
     expect(a.equals(b)).to.equal(expected);
   }
 
@@ -394,14 +359,8 @@ describe("RenderSchedule", () => {
 
   describe("VisibilityEntry", () => {
     it("compares for equality", () => {
-      expectEqual(
-        new RS.VisibilityEntry({ time: 1 }),
-        new RS.VisibilityEntry({ time: 1 })
-      );
-      expectUnequal(
-        new RS.VisibilityEntry({ time: 1 }),
-        new RS.VisibilityEntry({ time: 2 })
-      );
+      expectEqual(new RS.VisibilityEntry({ time: 1 }), new RS.VisibilityEntry({ time: 1 }));
+      expectUnequal(new RS.VisibilityEntry({ time: 1 }), new RS.VisibilityEntry({ time: 2 }));
       expectEqual(
         new RS.VisibilityEntry({ time: 1, interpolation: 1 }),
         new RS.VisibilityEntry({ time: 1, interpolation: 1 })
@@ -411,35 +370,17 @@ describe("RenderSchedule", () => {
         new RS.VisibilityEntry({ time: 1, interpolation: 2 })
       );
 
-      expectEqual(
-        new RS.VisibilityEntry({ time: 1, value: 2 }),
-        new RS.VisibilityEntry({ time: 1, value: 2 })
-      );
-      expectUnequal(
-        new RS.VisibilityEntry({ time: 1, value: 2 }),
-        new RS.VisibilityEntry({ time: 1, value: 3 })
-      );
+      expectEqual(new RS.VisibilityEntry({ time: 1, value: 2 }), new RS.VisibilityEntry({ time: 1, value: 2 }));
+      expectUnequal(new RS.VisibilityEntry({ time: 1, value: 2 }), new RS.VisibilityEntry({ time: 1, value: 3 }));
     });
   });
 
   describe("ColorEntry", () => {
     it("compares for equality", () => {
-      expectEqual(
-        new RS.ColorEntry({ time: 1 }),
-        new RS.ColorEntry({ time: 1 })
-      );
-      expectUnequal(
-        new RS.ColorEntry({ time: 1 }),
-        new RS.ColorEntry({ time: 2 })
-      );
-      expectEqual(
-        new RS.ColorEntry({ time: 1, interpolation: 1 }),
-        new RS.ColorEntry({ time: 1, interpolation: 1 })
-      );
-      expectUnequal(
-        new RS.ColorEntry({ time: 1, interpolation: 1 }),
-        new RS.ColorEntry({ time: 1, interpolation: 2 })
-      );
+      expectEqual(new RS.ColorEntry({ time: 1 }), new RS.ColorEntry({ time: 1 }));
+      expectUnequal(new RS.ColorEntry({ time: 1 }), new RS.ColorEntry({ time: 2 }));
+      expectEqual(new RS.ColorEntry({ time: 1, interpolation: 1 }), new RS.ColorEntry({ time: 1, interpolation: 1 }));
+      expectUnequal(new RS.ColorEntry({ time: 1, interpolation: 1 }), new RS.ColorEntry({ time: 1, interpolation: 2 }));
 
       expectEqual(
         new RS.ColorEntry({ time: 1, value: { red: 1, green: 2, blue: 3 } }),
@@ -473,14 +414,8 @@ describe("RenderSchedule", () => {
 
   describe("TransformEntry", () => {
     it("compares for equality", () => {
-      expectEqual(
-        new RS.TransformEntry({ time: 1 }),
-        new RS.TransformEntry({ time: 1 })
-      );
-      expectUnequal(
-        new RS.TransformEntry({ time: 1 }),
-        new RS.TransformEntry({ time: 2 })
-      );
+      expectEqual(new RS.TransformEntry({ time: 1 }), new RS.TransformEntry({ time: 1 }));
+      expectUnequal(new RS.TransformEntry({ time: 1 }), new RS.TransformEntry({ time: 2 }));
       expectEqual(
         new RS.TransformEntry({ time: 1, interpolation: 1 }),
         new RS.TransformEntry({ time: 1, interpolation: 1 })
@@ -528,14 +463,8 @@ describe("RenderSchedule", () => {
 
   describe("CuttingPlaneEntry", () => {
     it("compares for equality", () => {
-      expectEqual(
-        new RS.CuttingPlaneEntry({ time: 1 }),
-        new RS.CuttingPlaneEntry({ time: 1 })
-      );
-      expectUnequal(
-        new RS.CuttingPlaneEntry({ time: 1 }),
-        new RS.CuttingPlaneEntry({ time: 2 })
-      );
+      expectEqual(new RS.CuttingPlaneEntry({ time: 1 }), new RS.CuttingPlaneEntry({ time: 1 }));
+      expectUnequal(new RS.CuttingPlaneEntry({ time: 1 }), new RS.CuttingPlaneEntry({ time: 2 }));
       expectEqual(
         new RS.CuttingPlaneEntry({ time: 1, interpolation: 1 }),
         new RS.CuttingPlaneEntry({ time: 1, interpolation: 1 })
@@ -651,36 +580,22 @@ describe("RenderSchedule", () => {
       expectEqual(timeline, RS.ElementTimeline.fromJSON(timelineProps));
 
       const stringifiedProps = JSON.stringify(timelineProps);
-      const keys = [
-        "visibilityTimeline",
-        "colorTimeline",
-        "transformTimeline",
-        "cuttingPlaneTimeline",
-      ] as const;
+      const keys = ["visibilityTimeline", "colorTimeline", "transformTimeline", "cuttingPlaneTimeline"] as const;
       for (const key of keys) {
         let props = { ...timelineProps };
         delete props[key];
         expectUnequal(timeline, RS.ElementTimeline.fromJSON(props));
-        expectEqual(
-          RS.ElementTimeline.fromJSON(props),
-          RS.ElementTimeline.fromJSON(props)
-        );
+        expectEqual(RS.ElementTimeline.fromJSON(props), RS.ElementTimeline.fromJSON(props));
 
         props = JSON.parse(stringifiedProps);
         props[key].pop();
         expectUnequal(timeline, RS.ElementTimeline.fromJSON(props));
-        expectEqual(
-          RS.ElementTimeline.fromJSON(props),
-          RS.ElementTimeline.fromJSON(props)
-        );
+        expectEqual(RS.ElementTimeline.fromJSON(props), RS.ElementTimeline.fromJSON(props));
 
         props = JSON.parse(stringifiedProps);
         props[key].push(props[key][1] as any);
         expectUnequal(timeline, RS.ElementTimeline.fromJSON(props));
-        expectEqual(
-          RS.ElementTimeline.fromJSON(props),
-          RS.ElementTimeline.fromJSON(props)
-        );
+        expectEqual(RS.ElementTimeline.fromJSON(props), RS.ElementTimeline.fromJSON(props));
       }
     });
 
@@ -764,14 +679,8 @@ describe("RenderSchedule", () => {
       const m1 = { modelId: "0x1", elementTimelines };
       const m2 = { modelId: "0x2", elementTimelines };
       const m3 = { modelId: "0x3", elementTimelines };
-      expectEqual(
-        RS.Script.fromJSON([m1, m2, m3])!,
-        RS.Script.fromJSON([m1, m2, m3])!
-      );
-      expectUnequal(
-        RS.Script.fromJSON([m1, m2, m3])!,
-        RS.Script.fromJSON([m3, m2, m1])!
-      );
+      expectEqual(RS.Script.fromJSON([m1, m2, m3])!, RS.Script.fromJSON([m1, m2, m3])!);
+      expectUnequal(RS.Script.fromJSON([m1, m2, m3])!, RS.Script.fromJSON([m3, m2, m1])!);
     });
 
     it("weakly caches previous comparisons", () => {
