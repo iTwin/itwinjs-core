@@ -138,5 +138,5 @@ export namespace BlobContainer {
   }
 
   /** Object that implements the methods to create, delete, and request access to a container. */
-  export let service: Service | undefined;
+  export let service: BlobContainer.Service | undefined;
 }
