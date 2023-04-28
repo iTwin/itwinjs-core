@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module OrbitGT
  */
@@ -133,7 +133,7 @@ export class Transform {
       to.setZ(from.getZ());
       //Message.print(MODULE,"_VERTICAL: ellipsoid->ellipsoid: "+from.getZ());
     } else if (fromVerticalCRS == null && toVerticalCRS != null) {
-    /* 2: From 'ellipsoid' to 'local' height ? */
+      /* 2: From 'ellipsoid' to 'local' height ? */
       /* Get the geoid separation */
       let geoidModel: VerticalModel = toVerticalCRS.getVerticalModel();
       let toZ: float64 = from.getZ();
@@ -152,7 +152,7 @@ export class Transform {
       to.setY(from.getY());
       to.setZ(toZ);
     } else if (fromVerticalCRS != null && toVerticalCRS == null) {
-    /* 3: From 'local' to 'ellipsoid' height ? */
+      /* 3: From 'local' to 'ellipsoid' height ? */
       /* Get the geoid separation */
       let geoidModel: VerticalModel = fromVerticalCRS.getVerticalModel();
       let toZ: float64 = from.getZ();
@@ -171,7 +171,7 @@ export class Transform {
       to.setY(from.getY());
       to.setZ(toZ);
     } else {
-    /* 4: From 'local1' to 'local2' */
+      /* 4: From 'local1' to 'local2' */
       /* Same ? */
       if (fromVerticalCRS.getCode() == toVerticalCRS.getCode()) {
         /* Straight copy */

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module OrbitGT
  */
@@ -296,11 +296,11 @@ export class CoordinateSystem {
       this._xAxis = this._axes.get(0);
       this._yAxis = this._axes.get(1);
     } else if (yx1 || yx2) {
-    /* YX sequence */
+      /* YX sequence */
       this._xAxis = this._axes.get(1);
       this._yAxis = this._axes.get(0);
     } else {
-    /* Default */
+      /* Default */
       this._xAxis = this._axes.get(0);
       this._yAxis = this._axes.get(1);
       /* Log */

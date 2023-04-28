@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module HyperModeling
  */
@@ -70,10 +70,8 @@ export class PopupToolbarManager {
 
     const delay = 1000;
     if (this._current.overToolbarHotspot || !IModelApp.toolAdmin.cursorView)
-      setTimeout(
-        () => this.closeAfterTimeout(),
-        delay
-      ); // Cursor not in view or over hotspot, check again
+      setTimeout(() => this.closeAfterTimeout(), delay);
+    // Cursor not in view or over hotspot, check again
     else this.close();
   }
 

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Rendering
  */
@@ -52,9 +52,8 @@ export enum AnimationNodeId {
  * @public
  * @extensions
  */
-export class GraphicBranch
-  implements IDisposable /* , RenderMemory.Consumer */
-{
+export class GraphicBranch implements IDisposable {
+  /* , RenderMemory.Consumer */
   /** The child nodes of this branch */
   public readonly entries: RenderGraphic[] = [];
   /** If true, when the branch is disposed of, the RenderGraphics in its entries array will also be disposed */

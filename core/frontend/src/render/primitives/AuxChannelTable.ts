@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Rendering
  */
@@ -214,7 +214,8 @@ class AuxChannelTableBuilder {
         Math.floor((numVertices + 1) / 2),
         numBytesPerVertex / 2,
         0
-      ); // twice as many RGBA for half as many vertices.
+      );
+    // twice as many RGBA for half as many vertices.
     else dimensions = computeDimensions(numVertices, nRgbaPerVertex, 0);
 
     const data = new Uint8Array(dimensions.width * dimensions.height * 4);

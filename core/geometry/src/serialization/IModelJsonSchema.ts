@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 /** @packageDocumentation
  * @module Serialization
@@ -1172,10 +1172,8 @@ export namespace IModelJson {
           }
         } else {
           for (const p of data.pointIndex) {
-            if (p === 0)
-              polyface.terminateFacet(
-                false
-              ); // we are responsible for index checking !!!
+            if (p === 0) polyface.terminateFacet(false);
+            // we are responsible for index checking !!!
             else {
               const p0 = Math.abs(p) - 1;
               polyface.addPointIndex(p0, p > 0);

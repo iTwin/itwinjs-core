@@ -5,7 +5,7 @@ ECSQL allows use of these built-in functions:
 1. `ec_classname()` - Gets the formatted/qualified class name, given ECClassId as input
 2. `ec_classid())` - Gets ECClassId, given a formatted/qualified class name as input
 
-# ec_classname(_ecclassId_[,_format-string_ | _format-id_)
+# ec*classname(\_ecclassId*[,_format-string_ | _format-id_)
 
 For the specified ecClassId, returns the class name as a string formatted according to the specified format-string
 
@@ -49,7 +49,7 @@ SELECT * FROM bis:Element WHERE ec_classname(ECClassId, 3) = 'bis'
 SELECT * FROM bis:Element WHERE ec_classname(ECClassId, 'c') = 'PUMP'
 ```
 
-# ec_classId('_schema-name-or-alias_ : | . _classname_' )
+# ec*classId('\_schema-name-or-alias* : | . _classname_' )
 
 For the specified (qualified) class name, returns the `ECCassId`.
 

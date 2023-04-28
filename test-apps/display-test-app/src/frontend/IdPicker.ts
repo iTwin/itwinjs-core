@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import {
   assert,
   compareStringsOrUndefined,
@@ -383,10 +383,8 @@ export class ModelPicker extends IdPicker {
     return false;
   }
   protected changeDisplay(ids: Id64Arg, enabled: boolean) {
-    if (enabled)
-      this._vp.addViewedModels(
-        ids
-      ); // eslint-disable-line @typescript-eslint/no-floating-promises
+    if (enabled) this._vp.addViewedModels(ids);
+    // eslint-disable-line @typescript-eslint/no-floating-promises
     else this._vp.changeModelDisplay(ids, enabled);
   }
 

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { ByteStream, IDisposable } from "@itwin/core-bentley";
 import {
@@ -598,9 +598,8 @@ describe("Disposal of WebGL Resources", () => {
     else assert.isTrue(isDisposed(target));
     assert.isFalse(isDisposed(texture));
     if (batches.length > 0 && !allOverridesSharedWithTarget(target, batches))
-      assert.isFalse(
-        isDisposed(batches)
-      ); // we did not call getOverrides on any graphics
+      assert.isFalse(isDisposed(batches));
+    // we did not call getOverrides on any graphics
     else assert.isTrue(isDisposed(batches));
 
     // Post-disposal of target (only owned resource checks)

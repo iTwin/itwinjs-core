@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 /** @packageDocumentation
  * @module AccuDraw
@@ -921,11 +921,8 @@ export class AccuDraw {
             break;
 
           case ContextMode.XAxis2:
-            if (vp)
-              this.getBestViewedRotationFromXVector(
-                newRotation,
-                vp
-              ); // Use base rotation axis that results in compass being most closely aligned to view direction....
+            if (vp) this.getBestViewedRotationFromXVector(newRotation, vp);
+            // Use base rotation axis that results in compass being most closely aligned to view direction....
             else this.getRotationFromVector(newRotation, 0);
             clearLocks =
               LockedStates.Y_BM !== this.locked ||

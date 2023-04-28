@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module OrbitGT
  */
@@ -183,10 +183,10 @@ export class Strings {
         parts.add(value.substring(start, i));
         start = i + 1;
       } else if (opens.indexOf(c) >= 0) {
-      /* Open ? */
+        /* Open ? */
         level += 1;
       } else if (closes.indexOf(c) >= 0) {
-      /* Close ? */
+        /* Close ? */
         level -= 1;
       }
     }

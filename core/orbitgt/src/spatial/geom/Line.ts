@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module OrbitGT
  */
@@ -120,11 +120,11 @@ export class Line {
       /* Copy */
       point.setXYZ(this.p0.getX(), this.p0.getY(), this.p0.getZ());
     } else if (t == 1.0) {
-    /* End point? */
+      /* End point? */
       /* Copy */
       point.setXYZ(this.p1.getX(), this.p1.getY(), this.p1.getZ());
     } else {
-    /* Intermediate point */
+      /* Intermediate point */
       /* Calculate a new point */
       let x: float64 = this.p0.getX() + t * (this.p1.getX() - this.p0.getX());
       let y: float64 = this.p0.getY() + t * (this.p1.getY() - this.p0.getY());
@@ -144,11 +144,11 @@ export class Line {
       /* Copy */
       return this.p0.getX();
     } else if (t == 1.0) {
-    /* End point? */
+      /* End point? */
       /* Copy */
       return this.p1.getX();
     } else {
-    /* Intermediate point */
+      /* Intermediate point */
       /* Calculate a new point */
       return this.p0.getX() + t * (this.p1.getX() - this.p0.getX());
     }
@@ -165,11 +165,11 @@ export class Line {
       /* Copy */
       return this.p0.getY();
     } else if (t == 1.0) {
-    /* End point? */
+      /* End point? */
       /* Copy */
       return this.p1.getY();
     } else {
-    /* Intermediate point */
+      /* Intermediate point */
       /* Calculate a new point */
       return this.p0.getY() + t * (this.p1.getY() - this.p0.getY());
     }
@@ -186,11 +186,11 @@ export class Line {
       /* Copy */
       return this.p0.getZ();
     } else if (t == 1.0) {
-    /* End point? */
+      /* End point? */
       /* Copy */
       return this.p1.getZ();
     } else {
-    /* Intermediate point */
+      /* Intermediate point */
       /* Calculate a new point */
       return this.p0.getZ() + t * (this.p1.getZ() - this.p0.getZ());
     }

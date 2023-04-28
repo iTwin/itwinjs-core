@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Rendering
  */
@@ -17,9 +17,8 @@ import { RenderMemory } from "./RenderMemory";
  * @public
  * @extensions
  */
-export abstract class RenderGraphic
-  implements IDisposable /* , RenderMemory.Consumer */
-{
+export abstract class RenderGraphic implements IDisposable {
+  /* , RenderMemory.Consumer */
   public abstract dispose(): void;
 
   /** @internal */

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 /** @packageDocumentation
  * @module CartesianGeometry
@@ -1127,9 +1127,7 @@ export class Point3dArray {
    * Return (clones of) points in data[] with min and max x and y parts.
    * @param data array to examine.
    */
-  public static minMaxPoints(
-    data: Point3d[]
-  ):
+  public static minMaxPoints(data: Point3d[]):
     | {
         minXPoint: Point3d;
         maxXPoint: Point3d;

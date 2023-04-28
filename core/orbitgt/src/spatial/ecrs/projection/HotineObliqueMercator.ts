@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module OrbitGT
  */
@@ -151,9 +151,8 @@ export class HotineObliqueMercator extends OperationMethod {
       this._lonC - Math.asin(this._G * Math.tan(this._latO)) / this._B;
     this._vC = 0.0;
     if (Math.abs(this._aziC - 0.5 * Math.PI) < 0.00001)
-      this._uC =
-        this._A *
-        (this._lonC - this._lonO); // special case Hungary, Switzerland
+      this._uC = this._A * (this._lonC - this._lonO);
+    // special case Hungary, Switzerland
     else
       this._uC =
         (this._A / this._B) *

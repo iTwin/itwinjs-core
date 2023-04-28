@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module SelectionSet
  */
@@ -691,7 +691,8 @@ export class SelectionTool extends PrimitiveTool {
               this.processSelection(
                 contents,
                 SelectionProcessing.ReplaceSelectionWithElement
-              ); // eslint-disable-line @typescript-eslint/no-floating-promises
+              );
+            // eslint-disable-line @typescript-eslint/no-floating-promises
             else
               this.processSelection(
                 contents,

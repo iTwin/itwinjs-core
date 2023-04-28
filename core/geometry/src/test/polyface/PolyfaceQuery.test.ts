@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 
 import { Arc3d } from "../../curve/Arc3d";
@@ -1782,9 +1782,8 @@ describe("Intersections", () => {
         "boundedRay",
       ]) {
         let intersects: FacetLocationDetail[] = [];
-        if (filter === "firstFound")
-          options.acceptIntersection =
-            undefined; // default behavior: accept first found intersection with infinite line
+        if (filter === "firstFound") options.acceptIntersection = undefined;
+        // default behavior: accept first found intersection with infinite line
         else
           options.acceptIntersection = (
             detail: FacetLocationDetail

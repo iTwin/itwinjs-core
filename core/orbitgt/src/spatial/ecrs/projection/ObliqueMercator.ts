@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module OrbitGT
  */
@@ -153,10 +153,8 @@ export class ObliqueMercator extends OperationMethod {
     // end of fix
     this._vC = 0.0;
     if (Math.abs(this._aziC - 0.5 * ObliqueMercator.PI) < 1.0e-12)
-      this._uC =
-        this._A *
-        (this._lonC -
-          this._lonO); // special case aziC==90 (Hungary, Switzerland)
+      this._uC = this._A * (this._lonC - this._lonO);
+    // special case aziC==90 (Hungary, Switzerland)
     else
       this._uC =
         (this._A / this._B) *

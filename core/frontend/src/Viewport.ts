@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Views
  */
@@ -3234,8 +3234,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     if (viewSpace.frustFraction < 1.0)
       result.z =
         (z * viewSpace.frustFraction) /
-        (1.0 +
-          z * (viewSpace.frustFraction - 1.0)); // correct to npc if camera on.
+        (1.0 + z * (viewSpace.frustFraction - 1.0));
+    // correct to npc if camera on.
     else result.z = z;
 
     return result;

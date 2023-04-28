@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
   Code,
@@ -61,10 +61,8 @@ class ElementTreeCollector extends ElementTreeBottomUp {
     elementId: Id64String,
     scope: ElementTreeWalkerScope
   ): void {
-    if (scope.inDefinitionModel)
-      this.definitions.push(
-        elementId
-      ); // may be some other kind of InformationContentElement - that's OK.
+    if (scope.inDefinitionModel) this.definitions.push(elementId);
+    // may be some other kind of InformationContentElement - that's OK.
     else this.elements.push(elementId);
   }
 

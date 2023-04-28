@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, EmptyLocalization, RenderMode } from "@itwin/core-common";
 import { IModelConnection } from "../../../IModelConnection";

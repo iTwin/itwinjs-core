@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module OrbitGT
  */
@@ -981,7 +981,7 @@ export class CRS {
         return false;
       return true;
     } else if (this.isProjected()) {
-    /* Projected? */
+      /* Projected? */
       /* Same projection? */
       if (
         Operation.isCompatibleOperation(other._projection, this._projection) ==
@@ -993,13 +993,13 @@ export class CRS {
       /* Same base? */
       return other._baseCRS.isCompatible(this._baseCRS);
     } else if (this.isVertical()) {
-    /* Vertical? */
+      /* Vertical? */
       /* Same datum? */
       if (Datum.areCompatible(other.getDatum(), this.getDatum()) == false)
         return false;
       return true;
     } else if (this.isCompound()) {
-    /* Compound? */
+      /* Compound? */
       /* Same components? */
       if (
         CRS.areCompatible(
@@ -1015,7 +1015,7 @@ export class CRS {
         return false;
       return true;
     } else {
-    /* Other */
+      /* Other */
       return false;
     }
   }

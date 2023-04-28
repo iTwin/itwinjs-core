@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import {
   Angle,
@@ -524,41 +524,33 @@ describe("ViewState", () => {
     compareView(viewState, cppView, "LookAtVolume 2");
 
     assert.isTrue(
-      viewState
-        .getOrigin()
-        .isAlmostEqual({
-          x: 15.16944341639925,
-          y: 14.830556583600767,
-          z: -10.838886832798472,
-        })
+      viewState.getOrigin().isAlmostEqual({
+        x: 15.16944341639925,
+        y: 14.830556583600767,
+        z: -10.838886832798472,
+      })
     );
     assert.isTrue(
-      viewState
-        .getExtents()
-        .isAlmostEqual({
-          x: 18.384776310850253,
-          y: 18.384776310850253,
-          z: 15.877132402714713,
-        })
+      viewState.getExtents().isAlmostEqual({
+        x: 18.384776310850253,
+        y: 18.384776310850253,
+        z: 15.877132402714713,
+      })
     );
     viewState.adjustAspectRatio(2);
     assert.isTrue(
-      viewState
-        .getOrigin()
-        .isAlmostEqual({
-          x: 8.66944341639924,
-          y: 8.33055658360076,
-          z: -10.838886832798472,
-        })
+      viewState.getOrigin().isAlmostEqual({
+        x: 8.66944341639924,
+        y: 8.33055658360076,
+        z: -10.838886832798472,
+      })
     );
     assert.isTrue(
-      viewState
-        .getExtents()
-        .isAlmostEqual({
-          x: 36.769552621700505,
-          y: 18.384776310850253,
-          z: 15.877132402714713,
-        })
+      viewState.getExtents().isAlmostEqual({
+        x: 36.769552621700505,
+        y: 18.384776310850253,
+        z: 15.877132402714713,
+      })
     );
   });
 

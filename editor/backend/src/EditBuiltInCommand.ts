@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Editing
  */
@@ -272,7 +272,8 @@ export class BasicManipulationCommand
           )
             entityType = ElementGeometry.isCurve(entry)
               ? BRepEntity.Type.Wire
-              : undefined; // skip surface/solid opcodes...
+              : undefined;
+          // skip surface/solid opcodes...
           else entityType = ElementGeometry.getBRepEntityType(entry);
 
           switch (entityType) {

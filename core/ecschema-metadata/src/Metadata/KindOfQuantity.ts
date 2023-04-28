@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Metadata
  */
@@ -142,10 +142,8 @@ export class KindOfQuantity extends SchemaItem {
 
       if (undefined !== match[i + 2])
         // matches '|'
-        returnValue.unitAndLabels.push([
-          match[i + 1],
-          match[i + 3],
-        ]); // add unit name and label override
+        returnValue.unitAndLabels.push([match[i + 1], match[i + 3]]);
+      // add unit name and label override
       else returnValue.unitAndLabels.push([match[i + 1], undefined]); // add unit name
 
       i += 4;

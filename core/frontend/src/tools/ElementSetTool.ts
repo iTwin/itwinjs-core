@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Tools
  */
@@ -237,10 +237,8 @@ export class ElementAgenda {
         continue;
       }
 
-      if (removeSingleEntry)
-        groupMarks[
-          iMark
-        ].start -= 1; // Only removing single entry, not entire group...
+      if (removeSingleEntry) groupMarks[iMark].start -= 1;
+      // Only removing single entry, not entire group...
       else groupMarks[iMark].start -= groupEnd - groupStart; // Adjust indices...
     }
 

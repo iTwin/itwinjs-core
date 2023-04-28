@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Format } from "../Formatter/Format";
 import { FormatterSpec } from "../Formatter/FormatterSpec";
@@ -857,9 +857,8 @@ describe("Synchronous Parsing tests:", async () => {
       );
       if (logTestOutput) {
         if (Parser.isParsedQuantity(parseResult))
-          console.log(
-            `input=${testEntry.value} output=${parseResult.value}`
-          ); // eslint-disable-line no-console
+          console.log(`input=${testEntry.value} output=${parseResult.value}`);
+        // eslint-disable-line no-console
         else if (Parser.isParseError(parseResult))
           console.log(`input=${testEntry.value} error=${parseResult.error}`); // eslint-disable-line no-console
       }

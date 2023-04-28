@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module HyperModeling
  */
@@ -249,9 +249,8 @@ export class HyperModelingDecorator implements Decorator {
     if (changeFlags.viewState) {
       // If we're looking at a different view now, and we did not initiate that, turn off the active marker.
       if (this.viewport.view !== this._appliedSpatialView)
-        this.setActiveMarker(
-          undefined
-        ); // eslint-disable-line @typescript-eslint/no-floating-promises
+        this.setActiveMarker(undefined);
+      // eslint-disable-line @typescript-eslint/no-floating-promises
       else this._appliedSpatialView = undefined;
     }
   }

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module MarkupTools
  */
@@ -864,16 +864,13 @@ export class SelectTool extends MarkupTool {
       vec.y < 0 ? end.y : start.y
     ); // define location by corner points...
     this.markup.svgDynamics!.clear();
-    this.markup
-      .svgDynamics!.rect(width, height)
-      .move(offset.x, offset.y)
-      .css({
-        "stroke-width": 1,
-        stroke: "black",
-        "stroke-opacity": 0.5,
-        fill: "lightBlue",
-        "fill-opacity": 0.2,
-      });
+    this.markup.svgDynamics!.rect(width, height).move(offset.x, offset.y).css({
+      "stroke-width": 1,
+      stroke: "black",
+      "stroke-opacity": 0.5,
+      fill: "lightBlue",
+      "fill-opacity": 0.2,
+    });
     const selectBox = this.markup
       .svgDynamics!.rect(width, height)
       .move(offset.x, offset.y)

@@ -17,8 +17,7 @@ By building a Subject hierarchy with parent-child relationships among Subjects, 
 
 The subject hierarchy approach is used by iModel connectors and legacy applications, because it more closely maps to legacy ways of modeling.
 
-> _Theoretically, the child Subject could have a relationship to some Element in the PhysicalModel of its parent Subject, in order to indicate that the child Subject’s PhysicalModel is modeling the same thing as the Element in the other model, though this has not been done in practice. It would be a more-flexible way of expressing that the child Subject's PhysicalModel is essentially sub-modeling an Element in the parent `Subject`'s PhysicalModel, as described below._
-> _In general, new classes of relationships could be invented to relate specific Elements to specific Subjects, regardless of their modeling perspective. This could facilitate flexible re-organization of Models/Elements while maintaining the semantic connection to the Subject hierarchy._
+> _Theoretically, the child Subject could have a relationship to some Element in the PhysicalModel of its parent Subject, in order to indicate that the child Subject’s PhysicalModel is modeling the same thing as the Element in the other model, though this has not been done in practice. It would be a more-flexible way of expressing that the child Subject's PhysicalModel is essentially sub-modeling an Element in the parent `Subject`'s PhysicalModel, as described below._ > _In general, new classes of relationships could be invented to relate specific Elements to specific Subjects, regardless of their modeling perspective. This could facilitate flexible re-organization of Models/Elements while maintaining the semantic connection to the Subject hierarchy._
 
 ## Sub-modeling
 

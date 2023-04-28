@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ Serialize_Schema_To_XML_Imports
 import * as fs from "fs-extra"; // file system api
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom"; // XML support

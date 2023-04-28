@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
 import { assert } from "chai";
@@ -175,20 +175,16 @@ async function testWindowSizeSettings() {
   assert(isMaximized === window.isMaximized());
 
   window.maximize();
-  if (isXvfbRunning)
-    window.emit(
-      "maximize"
-    ); // "maximize" event is not emitted when running with xvfb (linux)
+  if (isXvfbRunning) window.emit("maximize");
+  // "maximize" event is not emitted when running with xvfb (linux)
   else await BeDuration.wait(100); // "maximize" event is not always emitted immediately
 
   isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
   assert(isMaximized);
 
   window.unmaximize();
-  if (isXvfbRunning)
-    window.emit(
-      "unmaximize"
-    ); // "unmaximize" event is not emitted when running with xvfb (linux)
+  if (isXvfbRunning) window.emit("unmaximize");
+  // "unmaximize" event is not emitted when running with xvfb (linux)
   else await BeDuration.wait(100); // "unmaximize" event is not always emitted immediately
 
   isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);

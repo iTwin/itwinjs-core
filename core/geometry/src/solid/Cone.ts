@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 /** @packageDocumentation
  * @module Solid
@@ -220,9 +220,8 @@ export class Cone
   ): LineString3d {
     let strokeCount = 16;
     if (fixedStrokeCount !== undefined) strokeCount = fixedStrokeCount;
-    else if (options !== undefined)
-      strokeCount =
-        options.defaultCircleStrokes; // NEEDS WORK -- get circle stroke count with this.maxRadius !!!
+    else if (options !== undefined) strokeCount = options.defaultCircleStrokes;
+    // NEEDS WORK -- get circle stroke count with this.maxRadius !!!
     else {
       // accept the local default
     }

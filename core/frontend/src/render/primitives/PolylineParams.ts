@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Rendering
  */
@@ -83,9 +83,8 @@ class PolylineVertex {
     if (joint) return PolylineParam.kJointBase;
 
     let param: PolylineParam;
-    if (noDisplacement)
-      param =
-        PolylineParam.kNoneAdjustWeight; // prevent getting tossed before width adjustment
+    if (noDisplacement) param = PolylineParam.kNoneAdjustWeight;
+    // prevent getting tossed before width adjustment
     else if (adjacentToJoint) param = PolylineParam.kMiterInsideOnly;
     else
       param = this.isPolylineStartOrEnd
