@@ -420,6 +420,7 @@ export class BisCoreSchema extends Schema {
 
 // @beta
 export namespace BlobContainer {
+    let service: BlobContainer.Service | undefined;
     export interface AccessContainerProps {
         // (undocumented)
         address: Address;
@@ -469,7 +470,6 @@ export namespace BlobContainer {
         token: ContainerToken;
     }
     export type UserToken = AccessToken;
-    let service: Service | undefined;
 }
 
 // @public

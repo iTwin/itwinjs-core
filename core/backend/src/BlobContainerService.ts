@@ -16,6 +16,9 @@ import { AccessToken, Id64String } from "@itwin/core-bentley";
  */
 export namespace BlobContainer {
 
+  /** Object that implements the methods to create, delete, and request access to a container. */
+  export let service: BlobContainer.Service | undefined;
+
   /** name of cloud provider for a container. */
   export type Provider = "azure" | "google" | "aws";
 
@@ -136,7 +139,4 @@ export namespace BlobContainer {
      */
     requestToken(props: RequestTokenProps): Promise<TokenProps>;
   }
-
-  /** Object that implements the methods to create, delete, and request access to a container. */
-  export let service: BlobContainer.Service | undefined;
 }
