@@ -25,17 +25,24 @@ export function createSchemaJsonWithItems(itemsJson: any, referenceJson?: any): 
 export class ReferenceSchemaLocater implements ISchemaLocater {
   private readonly _schemaList: Map<string, Object>;
   private readonly _parser: (schemaContent: any, context: SchemaContext) => Schema;
+  private readonly _asyncParser: (SchemaContent: any, context: SchemaContext) => Promise<Schema>;
 
-  constructor(parser: (schemaContent: any, context: SchemaContext) => Schema) {
+  constructor(parser: (schemaContent: any, context: SchemaContext) => Schema, asyncParser: (SchemaContent: any, context: SchemaContext) => Promise<Schema>) {
     this._schemaList = new Map();
     this._parser = parser;
+    this._asyncParser = asyncParser;
   }
 
   public addSchema(schemaName: string, schema: any) {
     this._schemaList.set(schemaName, schema);
   }
-  public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
-    return this.getSchemaSync(schemaKey, matchType, context) as T;
+  public async getSchema<T extends Schema>(schemaKey: SchemaKey, _matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
+    if (this._schemaList.has(schemaKey.name)) {
+      const schemaBody = this._schemaList.get(schemaKey.name);
+      const schema = this._asyncParser(schemaBody, context);
+      return schema as Promise<T>;
+    }
+    return undefined;
   }
 
   public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, _matchType: SchemaMatchType, context: SchemaContext): T | undefined {
@@ -52,7 +59,10 @@ export class ReferenceSchemaLocater implements ISchemaLocater {
 }
 
 export async function deserializeXml(schemaXml: string, context: SchemaContext) {
-  return Promise.resolve(deserializeXmlSync(schemaXml, context));
+  const parser = new DOMParser();
+  const document = parser.parseFromString(schemaXml);
+  const reader = new SchemaReadHelper(XmlParser, context);
+  return reader.readSchema(new Schema(context), document);
 }
 
 export function deserializeXmlSync(schemaXml: string, context: SchemaContext) {

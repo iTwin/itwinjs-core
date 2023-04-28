@@ -90,6 +90,8 @@ export class SchemaCache implements ISchemaLocater {
     if (this.schemaExists(schemaPromise))
       throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schemaPromise.toString()}, already exists within this cache.`);
 
+    this._schemaPromises.push(schemaPromise);
+
     schemaPromise.then((schema: Schema) => {
       if (!this.loadedSchemaExists(schema.schemaKey))
         this._schema.push(schema);
@@ -98,8 +100,6 @@ export class SchemaCache implements ISchemaLocater {
     }).finally(
       () => this.removeSchemaPromise(schemaPromise)
     );
-
-    this._schemaPromises.push(schemaPromise);
   }
 
   /**
