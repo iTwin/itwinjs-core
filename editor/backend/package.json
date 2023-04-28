@@ -56,8 +56,7 @@
     "typescript": "~5.0.2"
   },
   "dependencies": {
-    "@itwin/editor-common": "workspace:*",
-    "prettier": "~2.8.8"
+    "@itwin/editor-common": "workspace:*"
   },
   "eslintConfig": {
     "plugins": [

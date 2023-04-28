@@ -49,8 +49,7 @@
     "dotenv-expand": "^5.1.0",
     "mocha": "^10.0.0",
     "openid-client": "^4.7.4",
-    "puppeteer": "15.5.0",
-    "prettier": "~2.8.8"
+    "puppeteer": "15.5.0"
   },
   "devDependencies": {
     "@itwin/core-backend": "workspace:*",

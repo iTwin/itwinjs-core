@@ -31,8 +31,7 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "fs-extra": "^8.1.0",
-    "prettier": "~2.8.8"
+    "fs-extra": "^8.1.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",

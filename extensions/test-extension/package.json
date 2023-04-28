@@ -39,8 +39,7 @@
   "dependencies": {
     "@itwin/core-extension": "workspace:*",
     "buffer": "^6.0.3",
-    "url": "^0.11.0",
-    "prettier": "~2.8.8"
+    "url": "^0.11.0"
   },
   "eslintConfig": {
     "plugins": [

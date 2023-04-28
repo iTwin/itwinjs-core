@@ -33,8 +33,7 @@
     "nodemon": "^2.0.4",
     "webpack": "^5.76.0",
     "yargonaut": "^1.1.2",
-    "yargs": "^17.4.0",
-    "prettier": "~2.8.8"
+    "yargs": "^17.4.0"
   },
   "devDependencies": {
     "rimraf": "^3.0.2"

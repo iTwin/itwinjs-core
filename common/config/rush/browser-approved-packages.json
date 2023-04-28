@@ -643,10 +643,6 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
-      "name": "prettier",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
       "name": "puppeteer",
       "allowedCategories": [ "integration-testing", "tools" ]
     },

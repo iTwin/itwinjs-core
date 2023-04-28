@@ -78,8 +78,7 @@
     "NOTE: core-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@bentley/icons-generic-webfont": "^1.0.15",
-    "prettier": "~2.8.8"
+    "@bentley/icons-generic-webfont": "^1.0.15"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc",

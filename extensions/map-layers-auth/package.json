@@ -87,8 +87,5 @@
     "reporterOptions": [
       "mochaFile=lib/test/junit_results.xml"
     ]
-  },
-  "dependencies": {
-    "prettier": "~2.8.8"
   }
 }

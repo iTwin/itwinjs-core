@@ -43,7 +43,6 @@ importers:
       multiparty: ^4.2.1
       null-loader: ^4.0.1
       nyc: ^15.1.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       semver: ^7.3.5
       sinon: ^9.0.2
@@ -62,7 +61,6 @@ importers:
       inversify: 5.0.5
       json5: 2.2.3
       multiparty: 4.2.3
-      prettier: 2.8.8
       semver: 7.3.8
       ws: 7.5.9
     devDependencies:
@@ -112,11 +110,8 @@ importers:
       eslint: ^8.36.0
       mocha: ^10.0.0
       nyc: ^15.1.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       typescript: ~5.0.2
-    dependencies:
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': 4.0.0-dev.33_eslint@8.36.0+typescript@5.0.2
@@ -151,7 +146,6 @@ importers:
       js-base64: ^3.6.1
       mocha: ^10.0.0
       nyc: ^15.1.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       semver: ^7.3.5
       typescript: ~5.0.2
@@ -159,7 +153,6 @@ importers:
       '@itwin/object-storage-core': 1.5.0
       flatbuffers: 1.12.0
       js-base64: 3.7.5
-      prettier: 2.8.8
       semver: 7.3.8
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -202,12 +195,9 @@ importers:
       eslint: ^8.36.0
       mocha: ^10.0.0
       nyc: ^15.1.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       sinon: ^9.0.2
       typescript: ~5.0.2
-    dependencies:
-      prettier: 2.8.8
     devDependencies:
       '@bentley/units-schema': 1.0.7
       '@itwin/build-tools': link:../../tools/build
@@ -256,14 +246,12 @@ importers:
       glob: ^7.1.2
       mocha: ^10.0.0
       nyc: ^15.1.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       typescript: ~5.0.2
     dependencies:
       '@xmldom/xmldom': 0.8.6
       fs-extra: 8.1.0
       glob: 7.2.3
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/ecschema-metadata': link:../ecschema-metadata
@@ -307,13 +295,11 @@ importers:
       eslint: ^8.36.0
       mocha: ^10.0.0
       nyc: ^15.1.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       sinon: ^9.0.2
       typescript: ~5.0.2
     dependencies:
       almost-equal: 1.1.0
-      prettier: 2.8.8
     devDependencies:
       '@bentley/units-schema': 1.0.7
       '@itwin/build-tools': link:../../tools/build
@@ -348,11 +334,8 @@ importers:
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': ^4.0.0-dev.33
       eslint: ^8.36.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       typescript: ~5.0.2
-    dependencies:
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/core-bentley': link:../../bentley
@@ -375,11 +358,8 @@ importers:
       '@itwin/ecschema-rpcinterface-common': workspace:*
       '@itwin/eslint-plugin': ^4.0.0-dev.33
       eslint: ^8.36.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       typescript: ~5.0.2
-    dependencies:
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/core-backend': link:../../backend
@@ -411,7 +391,6 @@ importers:
       eslint: ^8.36.0
       mocha: ^10.0.0
       open: ^7.0.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
       typescript: ~5.0.2
@@ -421,7 +400,6 @@ importers:
     dependencies:
       '@openid/appauth': 1.3.1
       open: 7.4.2
-      prettier: 2.8.8
       username: 5.1.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -464,7 +442,6 @@ importers:
       express-ws: ^5.0.2
       mocha: ^10.0.0
       nyc: ^15.1.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       sinon: ^9.0.2
       supertest: ^3.0.0
@@ -472,7 +449,6 @@ importers:
     dependencies:
       express: 4.18.2
       express-ws: 5.0.2_express@4.18.2
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-backend': link:../backend
@@ -502,12 +478,10 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/eslint-plugin': ^4.0.0-dev.33
       eslint: ^8.36.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
     dependencies:
       '@itwin/core-common': link:../common
       '@itwin/core-frontend': link:../frontend
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': 4.0.0-dev.33_eslint@8.36.0
@@ -548,7 +522,6 @@ importers:
       glob: ^7.1.2
       mocha: ^10.0.0
       nyc: ^15.1.0
-      prettier: ~2.8.8
       reflect-metadata: 0.1.13
       rimraf: ^3.0.2
       sinon: ^9.0.2
@@ -566,7 +539,6 @@ importers:
       '@loaders.gl/core': 3.3.1
       '@loaders.gl/draco': 3.3.1
       fuse.js: 3.6.1
-      prettier: 2.8.8
       reflect-metadata: 0.1.13
       wms-capabilities: 0.4.0
     devDependencies:
@@ -612,7 +584,6 @@ importers:
       cpx2: ^3.0.0
       eslint: ^8.36.0
       file-saver: ^2.0.2
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       typescript: ~5.0.2
     dependencies:
@@ -621,7 +592,6 @@ importers:
       '@itwin/core-frontend': link:../frontend
       '@itwin/core-geometry': link:../geometry
       file-saver: 2.0.5
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': 4.0.0-dev.33_eslint@8.36.0+typescript@5.0.2
@@ -647,13 +617,11 @@ importers:
       flatbuffers: ~1.12.0
       mocha: ^10.0.0
       nyc: ^15.1.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       typescript: ~5.0.2
     dependencies:
       '@itwin/core-bentley': link:../bentley
       flatbuffers: 1.12.0
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': 4.0.0-dev.33_eslint@8.36.0+typescript@5.0.2
@@ -690,14 +658,12 @@ importers:
       glob: ^7.1.2
       mocha: ^10.0.0
       nyc: ^15.1.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
       typescript: ~5.0.2
       webpack: ^5.76.0
     dependencies:
       '@itwin/appui-abstract': link:../../ui/appui-abstract
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
@@ -741,7 +707,6 @@ importers:
       i18next: ^21.9.1
       i18next-browser-languagedetector: ^6.1.2
       i18next-http-backend: ^1.4.4
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
       typescript: ~5.0.2
@@ -751,7 +716,6 @@ importers:
       i18next: 21.10.0
       i18next-browser-languagedetector: 6.1.8
       i18next-http-backend: 1.4.5
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
@@ -794,14 +758,12 @@ importers:
       glob: ^7.1.2
       mocha: ^10.0.0
       nyc: ^15.1.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
       typescript: ~5.0.2
       webpack: ^5.76.0
     dependencies:
       '@svgdotjs/svg.js': 3.0.13
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
@@ -848,14 +810,12 @@ importers:
       eslint: ^8.36.0
       lodash: ^4.17.10
       mocha: ^10.0.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       superagent: ^7.1.5
       typescript: ~5.0.2
       ws: ^7.5.3
     dependencies:
       lodash: 4.17.21
-      prettier: 2.8.8
       superagent: 7.1.5
       ws: 7.5.9
     devDependencies:
@@ -895,11 +855,8 @@ importers:
       eslint: ^8.36.0
       mocha: ^10.0.0
       nyc: ^15.1.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       typescript: ~5.0.2
-    dependencies:
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
@@ -932,12 +889,9 @@ importers:
       eslint: ^8.36.0
       mocha: ^10.0.0
       nyc: ^15.1.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       sinon: ^9.0.2
       typescript: ~5.0.2
-    dependencies:
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
@@ -970,7 +924,6 @@ importers:
       chai: ^4.1.2
       eslint: ^8.36.0
       mocha: ^10.0.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
       typescript: ~5.0.2
@@ -978,7 +931,6 @@ importers:
     dependencies:
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
@@ -1009,14 +961,12 @@ importers:
       eslint: ^8.36.0
       glob: ^7.1.2
       mocha: ^10.0.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
       typescript: ~5.0.2
       webpack: ^5.76.0
     dependencies:
       '@itwin/core-bentley': link:../bentley
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
@@ -1052,12 +1002,9 @@ importers:
       eslint: ^8.36.0
       mocha: ^10.0.0
       nyc: ^15.1.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       semver: ^7.3.5
       typescript: ~5.0.2
-    dependencies:
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/core-backend': link:../../../core/backend
@@ -1095,11 +1042,8 @@ importers:
       eslint: ^8.36.0
       mocha: ^10.0.0
       nyc: ^15.1.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       typescript: ~5.0.2
-    dependencies:
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/core-backend': link:../../../core/backend
@@ -1132,11 +1076,8 @@ importers:
       eslint: ^8.36.0
       mocha: ^10.0.0
       nyc: ^15.1.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       typescript: ~5.0.2
-    dependencies:
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/core-bentley': link:../../../core/bentley
@@ -1167,11 +1108,8 @@ importers:
       eslint: ^8.36.0
       mocha: ^10.0.0
       nyc: ^15.1.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       typescript: ~5.0.2
-    dependencies:
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/core-backend': link:../../../core/backend
@@ -1199,12 +1137,10 @@ importers:
       '@itwin/editor-common': workspace:*
       '@itwin/eslint-plugin': ^4.0.0-dev.33
       eslint: ^8.36.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       typescript: ~5.0.2
     dependencies:
       '@itwin/editor-common': link:../common
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-backend': link:../../core/backend
@@ -1229,11 +1165,8 @@ importers:
       chai: ^4.1.2
       eslint: ^8.36.0
       mocha: ^10.0.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       typescript: ~5.0.2
-    dependencies:
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
@@ -1262,12 +1195,10 @@ importers:
       '@itwin/eslint-plugin': ^4.0.0-dev.33
       cpx2: ^3.0.0
       eslint: ^8.36.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       typescript: ~5.0.2
     dependencies:
       '@itwin/editor-common': link:../common
-      prettier: 2.8.8
     devDependencies:
       '@itwin/appui-abstract': link:../../ui/appui-abstract
       '@itwin/build-tools': link:../../tools/build
@@ -1301,7 +1232,6 @@ importers:
       electron: ^24.0.0
       eslint: ^8.36.0
       mocha: ^10.0.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       typescript: ~5.0.2
     dependencies:
@@ -1312,7 +1242,6 @@ importers:
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
       electron: 24.1.0
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': 4.0.0-dev.33_eslint@8.36.0+typescript@5.0.2
@@ -1354,7 +1283,6 @@ importers:
       eslint: ^8.36.0
       fs-extra: ^8.1.0
       mocha: ^10.0.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       typescript: ~5.0.2
     dependencies:
@@ -1370,7 +1298,6 @@ importers:
       '@itwin/service-authorization': 0.6.3
       '@xmldom/xmldom': 0.8.6
       fs-extra: 8.1.0
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': 4.0.0-dev.33_eslint@8.36.0+typescript@5.0.2
@@ -1398,11 +1325,8 @@ importers:
       '@itwin/eslint-plugin': ^4.0.0-dev.33
       '@types/node': ^18.11.5
       eslint: ^8.36.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       typescript: ~5.0.2
-    dependencies:
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
@@ -1432,14 +1356,11 @@ importers:
       jsdom-global: 3.0.2
       mocha: ^10.0.0
       nyc: ^15.1.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
       source-map-support: ^0.5.6
       typescript: ~5.0.2
-    dependencies:
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
@@ -1485,7 +1406,6 @@ importers:
       jsdom-global: 3.0.2
       mocha: ^10.0.0
       nyc: ^15.1.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
@@ -1493,7 +1413,6 @@ importers:
       typescript: ~5.0.2
     dependencies:
       google-protobuf: 3.20.1
-      prettier: 2.8.8
     devDependencies:
       '@itwin/appui-abstract': link:../../ui/appui-abstract
       '@itwin/build-tools': link:../../tools/build
@@ -1529,14 +1448,12 @@ importers:
       buffer: ^6.0.3
       esbuild: ^0.13.8
       eslint: ^8.36.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       typescript: ~5.0.2
       url: ^0.11.0
     dependencies:
       '@itwin/core-extension': link:../../core/extension
       buffer: 6.0.3
-      prettier: 2.8.8
       url: 0.11.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -1596,7 +1513,6 @@ importers:
       mocha: ^10.0.0
       npm-run-all: ^4.1.5
       nyc: ^15.1.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       sinon: ^9.0.2
       typescript: ~5.0.2
@@ -1639,7 +1555,6 @@ importers:
       fs-extra: 8.1.0
       mocha: 10.2.0
       nyc: 15.1.0
-      prettier: 2.8.8
       rimraf: 3.0.2
       sinon: 9.2.4
     devDependencies:
@@ -1711,7 +1626,6 @@ importers:
       null-loader: ^4.0.1
       nyc: ^15.1.0
       path-browserify: ^1.0.1
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
@@ -1749,7 +1663,6 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.7
       electron: 24.1.0
       fs-extra: 8.1.0
-      prettier: 2.8.8
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.7+sinon@9.2.4
     devDependencies:
@@ -1829,7 +1742,6 @@ importers:
       null-loader: ^4.0.1
       openid-client: ^4.7.4
       path-browserify: ^1.0.1
-      prettier: ~2.8.8
       puppeteer: 15.5.0
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
@@ -1861,7 +1773,6 @@ importers:
       dotenv-expand: 5.1.0
       mocha: 10.2.0
       openid-client: 4.9.1
-      prettier: 2.8.8
       puppeteer: 15.5.0
     devDependencies:
       '@itwin/core-backend': link:../../core/backend
@@ -1932,7 +1843,6 @@ importers:
       jsdom: ^19.0.0
       jsdom-global: 3.0.2
       mocha: ^10.0.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       sanitize-filename: ^1.6.3
       sinon: ^9.0.2
@@ -1973,7 +1883,6 @@ importers:
       faker: 4.1.0
       fast-sort: 3.2.1
       mocha: 10.2.0
-      prettier: 2.8.8
       rimraf: 3.0.2
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.7+sinon@9.2.4
@@ -2021,7 +1930,6 @@ importers:
       express: ^4.16.3
       glob: ^7.1.2
       null-loader: ^4.0.1
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       semver: ^7.3.5
       source-map-loader: ^4.0.0
@@ -2040,7 +1948,6 @@ importers:
       '@itwin/express-server': link:../../core/express-server
       electron: 24.1.0
       express: 4.18.2
-      prettier: 2.8.8
       semver: 7.3.8
       spdy: 4.0.2
     devDependencies:
@@ -2108,7 +2015,6 @@ importers:
       null-loader: ^4.0.1
       openid-client: ^4.7.4
       path-browserify: ^1.0.1
-      prettier: ~2.8.8
       puppeteer: 15.5.0
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
@@ -2139,7 +2045,6 @@ importers:
       dotenv-expand: 5.1.0
       mocha: 10.2.0
       openid-client: 4.9.1
-      prettier: 2.8.8
       puppeteer: 15.5.0
     devDependencies:
       '@itwin/core-backend': link:../../core/backend
@@ -2202,7 +2107,6 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       object-hash: ^1.3.1
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       semver: ^7.3.5
       sinon: ^9.0.2
@@ -2211,7 +2115,6 @@ importers:
       typescript: ~5.0.2
     dependencies:
       object-hash: 1.3.1
-      prettier: 2.8.8
       semver: 7.3.8
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -2283,7 +2186,6 @@ importers:
       json-schema-faker: 0.5.0-rc16
       mocha: ^10.0.0
       nyc: ^15.1.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
@@ -2291,8 +2193,6 @@ importers:
       typescript: ~5.0.2
       typescript-json-schema: ^0.55.0
       yargs: ^17.4.0
-    dependencies:
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
@@ -2362,15 +2262,12 @@ importers:
       jsdom-global: 3.0.2
       mocha: ^10.0.0
       nyc: ^15.1.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
       source-map-support: ^0.5.6
       typemoq: ^2.1.0
       typescript: ~5.0.2
-    dependencies:
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
@@ -2449,7 +2346,6 @@ importers:
       internal-tools: workspace:*
       npm-run-all: ^4.1.5
       null-loader: ^4.0.1
-      prettier: ~2.8.8
       react: ^18.0.0
       rimraf: ^3.0.2
       typescript: ~5.0.2
@@ -2474,7 +2370,6 @@ importers:
       '@itwin/oidc-signin-tool': 3.6.1_electron@24.1.0
       '@itwin/reality-data-client': 0.9.0
       body-parser: 1.20.2
-      prettier: 2.8.8
     devDependencies:
       '@bentley/react-scripts': 5.0.4_react@18.2.0+typescript@5.0.2
       '@itwin/build-tools': link:../../tools/build
@@ -2554,7 +2449,6 @@ importers:
       node-simctl: ~7.1.4
       npm-run-all: ^4.1.5
       null-loader: ^4.0.1
-      prettier: ~2.8.8
       react: ^18.0.0
       rimraf: ^3.0.2
       ts-node: ^10.8.2
@@ -2592,7 +2486,6 @@ importers:
       '@itwin/reality-data-client': 0.9.0
       '@itwin/webgl-compatibility': link:../../core/webgl-compatibility
       body-parser: 1.20.2
-      prettier: 2.8.8
       vhacd-js: 0.0.1
     devDependencies:
       '@bentley/react-scripts': 5.0.4_a2b166917d564d023c4905ba08ca8f85
@@ -2634,7 +2527,6 @@ importers:
       '@types/node': ^18.11.5
       '@types/yargs': 17.0.19
       eslint: ^8.36.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       typescript: ~5.0.2
       yargs: ^17.4.0
@@ -2643,7 +2535,6 @@ importers:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
-      prettier: 2.8.8
       yargs: 17.7.1
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -2669,7 +2560,6 @@ importers:
       chai: ^4.1.2
       eslint: ^8.36.0
       mocha: ^10.0.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       typescript: ~5.0.2
       yargs: ^17.4.0
@@ -2679,7 +2569,6 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
       chai: 4.3.7
-      prettier: 2.8.8
       yargs: 17.7.1
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -2707,7 +2596,6 @@ importers:
       '@types/yargs': 17.0.19
       eslint: ^8.36.0
       fs-extra: ^8.1.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       typescript: ~5.0.2
       yargs: ^17.4.0
@@ -2717,7 +2605,6 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
       fs-extra: 8.1.0
-      prettier: 2.8.8
       yargs: 17.7.1
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -2743,7 +2630,6 @@ importers:
       '@types/node': ^18.11.5
       '@types/yargs': 17.0.19
       eslint: ^8.36.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       typescript: ~5.0.2
       yargs: ^17.4.0
@@ -2753,7 +2639,6 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-orbitgt': link:../../core/orbitgt
-      prettier: 2.8.8
       yargs: 17.7.1
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -2779,7 +2664,6 @@ importers:
       '@types/yargs': 17.0.19
       eslint: ^8.36.0
       fs-extra: ^8.1.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       typescript: ~5.0.2
       yargs: ^17.4.0
@@ -2789,7 +2673,6 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
       fs-extra: 8.1.0
-      prettier: 2.8.8
       yargs: 17.7.1
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -2811,7 +2694,6 @@ importers:
       fs-extra: ^8.1.0
       glob: ^7.1.2
       nodemon: ^2.0.4
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       webpack: ^5.76.0
       yargonaut: ^1.1.2
@@ -2824,7 +2706,6 @@ importers:
       fs-extra: 8.1.0
       glob: 7.2.3
       nodemon: 2.0.21
-      prettier: 2.8.8
       webpack: 5.76.1
       yargonaut: 1.1.4
       yargs: 17.7.1
@@ -2844,7 +2725,6 @@ importers:
       glob: ^7.1.2
       mocha: ^10.0.0
       mocha-junit-reporter: ^2.0.2
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       tree-kill: ^1.2.0
       typedoc: ^0.22.11
@@ -2861,7 +2741,6 @@ importers:
       glob: 7.2.3
       mocha: 10.2.0
       mocha-junit-reporter: 2.2.0_mocha@10.2.0
-      prettier: 2.8.8
       rimraf: 3.0.2
       tree-kill: 1.2.2
       typedoc: 0.22.18
@@ -2893,7 +2772,6 @@ importers:
       lodash: ^4.17.10
       mocha: ^10.0.0
       nyc: ^15.1.0
-      prettier: ~2.8.8
       puppeteer: 15.5.0
       rimraf: ^3.0.2
       source-map-support: ^0.5.6
@@ -2905,7 +2783,6 @@ importers:
       jsonc-parser: 2.0.3
       lodash: 4.17.21
       mocha: 10.2.0
-      prettier: 2.8.8
       puppeteer: 15.5.0
       source-map-support: 0.5.21
       yargs: 17.7.1
@@ -2950,7 +2827,6 @@ importers:
       fs-extra: ^8.1.0
       mocha: ^10.0.0
       nyc: ^15.1.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       source-map-support: ^0.5.6
       typescript: ~5.0.2
@@ -2966,7 +2842,6 @@ importers:
       chalk: 3.0.0
       commander: 2.20.3
       fs-extra: 8.1.0
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../build
       '@itwin/eslint-plugin': 4.0.0-dev.33_eslint@8.36.0+typescript@5.0.2
@@ -2988,10 +2863,8 @@ importers:
     specifiers:
       '@itwin/build-tools': workspace:*
       mocha: ^10.0.0
-      prettier: ~2.8.8
       yargs: ^17.4.0
     dependencies:
-      prettier: 2.8.8
       yargs: 17.7.1
     devDependencies:
       '@itwin/build-tools': link:../build
@@ -3004,12 +2877,10 @@ importers:
       '@types/fs-extra': ^4.0.7
       eslint: ^8.36.0
       fs-extra: ^8.1.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       typescript: ~5.0.2
     dependencies:
       fs-extra: 8.1.0
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../build
       '@itwin/eslint-plugin': 4.0.0-dev.33_eslint@8.36.0+typescript@5.0.2
@@ -3044,7 +2915,6 @@ importers:
       memfs: ^3.2.2
       mocha: ^10.0.0
       nyc: ^15.1.0
-      prettier: ~2.8.8
       resolve: 1.19.0
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
@@ -3058,7 +2928,6 @@ importers:
       fs-extra: 8.1.0
       glob: 7.2.3
       lodash: 4.17.21
-      prettier: 2.8.8
       resolve: 1.19.0
       source-map-loader: 4.0.1_webpack@5.76.1
     devDependencies:
@@ -3108,7 +2977,6 @@ importers:
       jsdom-global: 3.0.2
       mocha: ^10.0.0
       nyc: ^15.1.0
-      prettier: ~2.8.8
       raf: ^3.4.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
@@ -3118,7 +2986,6 @@ importers:
       xmlhttprequest: ^1.8.0
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.34
-      prettier: 2.8.8
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
@@ -3164,7 +3031,6 @@ importers:
       eslint: ^8.36.0
       glob: ^7.1.2
       mocha: ^10.0.0
-      prettier: ~2.8.8
       rimraf: ^3.0.2
       typescript: ~5.0.2
       yargs: ^17.4.0
@@ -3173,7 +3039,6 @@ importers:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       glob: 7.2.3
-      prettier: 2.8.8
       yargs: 17.7.1
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -16085,12 +15950,6 @@ packages:
   /prelude-ls/1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
-
-  /prettier/2.8.8:
-    resolution: {integrity: sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==}
-    engines: {node: '>=10.13.0'}
-    hasBin: true
-    dev: false
 
   /pretty-bytes/5.6.0:
     resolution: {integrity: sha512-FFw039TmrBqFK8ma/7OL3sDz/VytdtJr044/QUJtH0wK9lb9jLq9tJyIxUwtQJHwar2BqtiA4iCWSwo9JLkzFg==}

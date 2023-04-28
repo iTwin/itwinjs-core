@@ -67,8 +67,7 @@
     "webpack": "^5.76.0"
   },
   "dependencies": {
-    "@itwin/appui-abstract": "workspace:*",
-    "prettier": "~2.8.8"
+    "@itwin/appui-abstract": "workspace:*"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

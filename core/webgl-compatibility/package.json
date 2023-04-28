@@ -36,8 +36,7 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@itwin/core-bentley": "workspace:*",
-    "prettier": "~2.8.8"
+    "@itwin/core-bentley": "workspace:*"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",

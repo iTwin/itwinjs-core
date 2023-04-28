@@ -29,8 +29,7 @@
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "chai": "^4.1.2",
-    "yargs": "^17.4.0",
-    "prettier": "~2.8.8"
+    "yargs": "^17.4.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",

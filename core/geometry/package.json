@@ -52,8 +52,7 @@
   },
   "dependencies": {
     "@itwin/core-bentley": "workspace:*",
-    "flatbuffers": "~1.12.0",
-    "prettier": "~2.8.8"
+    "flatbuffers": "~1.12.0"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc",
