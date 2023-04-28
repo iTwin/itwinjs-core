@@ -19,7 +19,7 @@ export namespace BlobContainer {
   /** name of cloud provider for a container. */
   export type Provider = "azure" | "google" | "aws";
 
-  /** the name of the container within its [[Scope]] */
+  /** the name of the container within its `Scope` */
   export type ContainerId = string;
 
   /** token that authenticates a user. This token is required to obtain a `ContainerToken`. */
@@ -62,7 +62,7 @@ export namespace BlobContainer {
     [propertyName: string]: string;
   }
 
-  /** Properties returned by [[Service.requestToken]] */
+  /** Properties returned by `Service.requestToken` */
   export interface TokenProps {
     /**
      * expiring token that provides the requested access to the container. Should be used in all subsequent requests for blobs within the container,

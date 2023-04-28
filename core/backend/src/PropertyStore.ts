@@ -39,7 +39,7 @@ export namespace PropertyStore {
   }
 
   /**
-   * A SQLite database for storing [[PropertyName]]/[[PropertyValue]] pairs.
+   * A SQLite database for storing PropertyName/PropertyValue pairs.
    */
   export class PropertyDb extends VersionedSqliteDb {
     public override readonly myVersion = "3.0.0";
@@ -226,7 +226,7 @@ export namespace PropertyStore {
 
   /**
    * Provides access to a cloud-based `PropertyDb` to hold a set of values of type `PropertyType`, each with a unique `PropertyName`.
-   * `PropertyStore.CloudDb`s are stored in cloud containers and require an access token that grants permission to read and/or write them.
+   * `PropertyStore.PropertyDb`s that are stored in cloud containers require an access token that grants permission to read and/or write them.
    * All write operations will fail without an access token that grants write permission.
    *
    * The database is cached on a local drive so reads are fast and inexpensive, and may even be done offline after a prefetch.
