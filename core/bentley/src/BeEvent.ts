@@ -30,7 +30,9 @@ export class BeEvent<T extends Listener> {
   private _insideRaiseEvent: boolean = false;
 
   /** The number of listeners currently subscribed to the event. */
-  public get numberOfListeners() { return this._listeners.length; }
+  public get numberOfListeners() {
+    return this._listeners.length;
+  }
 
   /**
    * Registers a Listener to be executed whenever this event is raised.
@@ -111,7 +113,9 @@ export class BeEvent<T extends Listener> {
 
     // if we had dropped listeners, remove them now
     if (dropped)
-      this._listeners = this._listeners.filter((ctx) => ctx.listener !== undefined);
+      this._listeners = this._listeners.filter(
+        (ctx) => ctx.listener !== undefined
+      );
 
     this._insideRaiseEvent = false;
   }
@@ -130,7 +134,9 @@ export class BeEvent<T extends Listener> {
   }
 
   /** Clear all Listeners from this BeEvent. */
-  public clear(): void { this._listeners.length = 0; }
+  public clear(): void {
+    this._listeners.length = 0;
+  }
 }
 
 /** Specialization of BeEvent for events that take a single strongly typed argument, primarily used for UI events.
@@ -138,7 +144,9 @@ export class BeEvent<T extends Listener> {
  */
 export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
   /** Raises event with single strongly typed argument. */
-  public emit(args: TEventArgs): void { this.raiseEvent(args); }
+  public emit(args: TEventArgs): void {
+    this.raiseEvent(args);
+  }
 }
 
 /**
@@ -155,8 +163,7 @@ export class BeEventList<T extends Listener> {
    */
   public get(name: string): BeEvent<T> {
     let event = this._events[name];
-    if (event)
-      return event;
+    if (event) return event;
 
     event = new BeEvent();
     this._events[name] = event;

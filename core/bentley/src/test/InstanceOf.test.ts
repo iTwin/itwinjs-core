@@ -21,7 +21,9 @@ describe("InstanceOf", () => {
         this.stuff = "private";
       }
 
-      public static create() { return new PrivateThing(); }
+      public static create() {
+        return new PrivateThing();
+      }
     }
 
     const test = (value: any, expectInstanceOf = false) => {
@@ -29,8 +31,7 @@ describe("InstanceOf", () => {
       expect(isInstance).to.equal(expectInstanceOf);
       const instance = asInstanceOf<Thing>(value, Thing);
       expect(undefined !== instance).to.equal(isInstance);
-      if (isInstance)
-        expect(value instanceof Thing);
+      if (isInstance) expect(value instanceof Thing);
     };
 
     test(new Thing(), true);

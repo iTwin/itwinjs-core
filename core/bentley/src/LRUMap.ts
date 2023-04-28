@@ -21,7 +21,7 @@ import { Dictionary } from "./Dictionary";
 export class Entry<K, V> {
   public newer?: Entry<K, V>;
   public older?: Entry<K, V>;
-  constructor(public key: K, public value: V) { }
+  constructor(public key: K, public value: V) {}
 }
 
 class EntryIterator<K, V> implements Iterator<[K, V] | undefined> {
@@ -31,23 +31,21 @@ class EntryIterator<K, V> implements Iterator<[K, V] | undefined> {
   }
   public next() {
     const ent = this._entry;
-    if (!ent)
-      return { done: true, value: undefined };
+    if (!ent) return { done: true, value: undefined };
     this._entry = ent.newer;
     const val: [K, V] = [ent.key, ent.value];
     return { done: false, value: val };
   }
 }
 
-class KeyIterator<K, V> implements Iterator<K | undefined>  {
+class KeyIterator<K, V> implements Iterator<K | undefined> {
   private _entry: Entry<K, V> | undefined;
   constructor(oldestEntry: Entry<K, V>) {
     this._entry = oldestEntry;
   }
   public next() {
     const ent = this._entry;
-    if (!ent)
-      return { done: true, value: undefined };
+    if (!ent) return { done: true, value: undefined };
     this._entry = ent.newer;
     return { done: false, value: ent.key };
   }
@@ -60,8 +58,7 @@ class ValueIterator<K, V> implements Iterator<V | undefined> {
   }
   public next() {
     const ent = this._entry;
-    if (!ent)
-      return { done: true, value: undefined };
+    if (!ent) return { done: true, value: undefined };
     this._entry = ent.newer;
     return { done: false, value: ent.value };
   }
@@ -126,8 +123,7 @@ export class LRUCache<K, V> {
   }
 
   private markEntryAsUsed(entry: Entry<K, V>) {
-    if (entry === this.newest)
-      return; // Already the most recently used entry, so no need to update the list
+    if (entry === this.newest) return; // Already the most recently used entry, so no need to update the list
 
     // HEAD--------------TAIL
     //   <.older   .newer>
@@ -180,8 +176,7 @@ export class LRUCache<K, V> {
   public get(key: K): V | undefined {
     // First, find our cache entry
     const entry = this._container.get(key);
-    if (!entry)
-      return; // Not cached. Sorry.
+    if (!entry) return; // Not cached. Sorry.
     // As <key> was found in the cache, register it as being requested recently
     this.markEntryAsUsed(entry);
     return entry.value;
@@ -265,8 +260,7 @@ export class LRUCache<K, V> {
    */
   public delete(key: K): V | undefined {
     const entry = this._container.get(key);
-    if (!entry)
-      return;
+    if (!entry) return;
 
     this._container.delete(entry.key);
     if (entry.newer && entry.older) {
@@ -283,7 +277,8 @@ export class LRUCache<K, V> {
       entry.older.newer = undefined;
       // link the newer entry to head
       this.newest = entry.older;
-    } else { // if(entry.older === undefined && entry.newer === undefined) {
+    } else {
+      // if(entry.older === undefined && entry.newer === undefined) {
       this.oldest = this.newest = undefined;
     }
 
@@ -315,7 +310,10 @@ export class LRUCache<K, V> {
   }
 
   /**  Call `fun` for each entry, starting with the oldest entry. */
-  public forEach(fun: (value: V, key: K, m: LRUCache<K, V>) => void, thisObj?: any): void {
+  public forEach(
+    fun: (value: V, key: K, m: LRUCache<K, V>) => void,
+    thisObj?: any
+  ): void {
     if (typeof thisObj !== "object") {
       thisObj = this; // eslint-disable-line @typescript-eslint/no-this-alias
     }
@@ -327,7 +325,7 @@ export class LRUCache<K, V> {
   }
 
   /** Returns a JSON (array) representation */
-  public toJSON(): Array<{ key: K, value: V }> {
+  public toJSON(): Array<{ key: K; value: V }> {
     const s = new Array(this.size);
     let i = 0;
     let entry = this.oldest;

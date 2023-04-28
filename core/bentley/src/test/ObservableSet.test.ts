@@ -11,14 +11,21 @@ class Listener {
   private _cleared = false;
 
   public constructor(set: ObservableSet<string>) {
-    set.onAdded.addListener((_) => this._added = true);
-    set.onDeleted.addListener((_) => this._deleted = true);
-    set.onCleared.addListener(() => this._cleared = true);
+    set.onAdded.addListener((_) => (this._added = true));
+    set.onDeleted.addListener((_) => (this._deleted = true));
+    set.onCleared.addListener(() => (this._cleared = true));
   }
 
-  private clear() { this._added = this._deleted = this._cleared; }
+  private clear() {
+    this._added = this._deleted = this._cleared;
+  }
 
-  public expect(added: boolean, deleted: boolean, cleared: boolean, func: () => void): void {
+  public expect(
+    added: boolean,
+    deleted: boolean,
+    cleared: boolean,
+    func: () => void
+  ): void {
     this.clear();
     func();
     expect(this._added).to.equal(added);
@@ -27,10 +34,18 @@ class Listener {
     this.clear();
   }
 
-  public expectNone(func: () => void) { this.expect(false, false, false, func); }
-  public expectAdd(func: () => void) { this.expect(true, false, false, func); }
-  public expectDelete(func: () => void) { this.expect(false, true, false, func); }
-  public expectClear(func: () => void) { this.expect(false, false, true, func); }
+  public expectNone(func: () => void) {
+    this.expect(false, false, false, func);
+  }
+  public expectAdd(func: () => void) {
+    this.expect(true, false, false, func);
+  }
+  public expectDelete(func: () => void) {
+    this.expect(false, true, false, func);
+  }
+  public expectClear(func: () => void) {
+    this.expect(false, false, true, func);
+  }
 }
 
 describe("ObservableSet", () => {

@@ -9,7 +9,7 @@
 import { BentleyError } from "./BentleyError";
 
 /** @beta */
-export class AbandonedError extends Error { }
+export class AbandonedError extends Error {}
 
 /**
  * An object that returns a Promise when you call [[init]], but supplies a way to abandon the promise if it is no longer relevant.
@@ -26,12 +26,16 @@ class PromiseWithAbandon<T> {
    * @param _run The method that creates the underlying Promise.
    * @param _args An array of args to be passed to run when [[start]] is called.
    */
-  constructor(private _run: (...args: any[]) => Promise<T>, private _args: any[]) { }
+  constructor(
+    private _run: (...args: any[]) => Promise<T>,
+    private _args: any[]
+  ) {}
 
   /** Create a Promise that is chained to the underlying Promise, but is connected to the abandon method. */
   public async init(msg: string): Promise<T> {
     return new Promise<T>((resolve, reject) => {
-      this.abandon = (message?: string) => reject(new AbandonedError(message ?? msg));
+      this.abandon = (message?: string) =>
+        reject(new AbandonedError(message ?? msg));
       this._resolve = resolve;
     });
   }
@@ -78,8 +82,10 @@ export class OneAtATimeAction<T> {
     const entry = new PromiseWithAbandon<T>(this._run, args); // create an "abandon-able promise" object
     const promise = entry.init(this.msg); // create the Promise from PromiseWithAbandon. Note: this must be called before we call start.
 
-    if (this._active !== undefined) { // is there an active request?
-      if (this._pending) // yes. If there is also a pending request, this one replaces it and previous one is abandoned
+    if (this._active !== undefined) {
+      // is there an active request?
+      if (this._pending)
+        // yes. If there is also a pending request, this one replaces it and previous one is abandoned
         this._pending.abandon(); // rejects previous call to this method, throwing AbandonedError.
       this._pending = entry;
     } else {
@@ -93,8 +99,7 @@ export class OneAtATimeAction<T> {
       // do all of this whether promise was fulfilled or rejected
       this._active = this._pending; // see if there's a pending request waiting
       this._pending = undefined; // clear pending
-      if (this._active)
-        this._active.start(); // eslint-disable-line @typescript-eslint/no-floating-promises
+      if (this._active) this._active.start(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
   }
 }

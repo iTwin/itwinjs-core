@@ -26,11 +26,11 @@ export class ObservableSet<T> extends Set<T> {
     // NB: Set constructor will invoke add(). Do not override until initialized.
     super(elements);
 
-    this.add = (item: T) => { // eslint-disable-line @typescript-eslint/unbound-method
+    this.add = (item: T) => {
+      // eslint-disable-line @typescript-eslint/unbound-method
       const prevSize = this.size;
       const ret = super.add(item);
-      if (this.size !== prevSize)
-        this.onAdded.raiseEvent(item);
+      if (this.size !== prevSize) this.onAdded.raiseEvent(item);
 
       return ret;
     };
@@ -39,8 +39,7 @@ export class ObservableSet<T> extends Set<T> {
   /** @internal */
   public override delete(item: T): boolean {
     const ret = super.delete(item);
-    if (ret)
-      this.onDeleted.raiseEvent(item);
+    if (ret) this.onDeleted.raiseEvent(item);
 
     return ret;
   }

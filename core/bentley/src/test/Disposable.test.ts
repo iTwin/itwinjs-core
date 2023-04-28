@@ -17,11 +17,9 @@ class CallbackDisposable implements IDisposable {
 }
 
 describe("Disposable", () => {
-
   describe("isIDisposable", () => {
-
     it("returns true when given an object with `dispose` function", () => {
-      assert.isTrue(isIDisposable({ dispose: () => { } }));
+      assert.isTrue(isIDisposable({ dispose: () => {} }));
     });
 
     it("returns false when given an object without `dispose` function", () => {
@@ -39,11 +37,9 @@ describe("Disposable", () => {
       assert.isFalse(isIDisposable("123"));
       assert.isFalse(isIDisposable([]));
     });
-
   });
 
   describe("using IDisposable", () => {
-
     it("Calls dispose on success and returns result", () => {
       let disposed = false;
       const disposable = new CallbackDisposable(() => {
@@ -100,9 +96,12 @@ describe("Disposable", () => {
           }, 0);
         });
       });
-      await result.then(() => {
-        assert.fail(undefined, undefined, "Expected result to be rejected");
-      }, () => { });
+      await result.then(
+        () => {
+          assert.fail(undefined, undefined, "Expected result to be rejected");
+        },
+        () => {}
+      );
       assert.isTrue(disposed);
     });
 
@@ -115,26 +114,29 @@ describe("Disposable", () => {
       const disposable2 = new CallbackDisposable(() => {
         disposed2 = true;
       });
-      const result = using([disposable1, disposable2], (resource1, resource2) => {
-        assert.equal(resource1, disposable1);
-        assert.equal(resource2, disposable2);
-        return 123;
-      });
+      const result = using(
+        [disposable1, disposable2],
+        (resource1, resource2) => {
+          assert.equal(resource1, disposable1);
+          assert.equal(resource2, disposable2);
+          return 123;
+        }
+      );
       assert.equal(result, 123);
       assert.isTrue(disposed1);
       assert.isTrue(disposed2);
     });
-
   });
 
   describe("DisposableList", () => {
-
     it("Calls dispose on registered IDisposable", () => {
       let disposed = false;
       const disposableList = new DisposableList();
-      disposableList.add(new CallbackDisposable(() => {
-        disposed = true;
-      }));
+      disposableList.add(
+        new CallbackDisposable(() => {
+          disposed = true;
+        })
+      );
       disposableList.dispose();
       assert.isTrue(disposed);
     });
@@ -160,7 +162,5 @@ describe("Disposable", () => {
       disposableList.dispose();
       assert.isTrue(disposed);
     });
-
   });
-
 });

@@ -23,7 +23,10 @@
  * ```
  * @public
  */
-export function partitionArray<T>(array: T[], criterion: (element: T) => boolean): number {
+export function partitionArray<T>(
+  array: T[],
+  criterion: (element: T) => boolean
+): number {
   let index = 0;
   let partition = array.length;
   while (index < partition) {

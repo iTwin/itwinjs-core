@@ -50,9 +50,18 @@ describe("TupleKeyedMap", () => {
 
     // subkey-level insertion order is expected because the underlying Map guarantees insertion order
     const iter = map[Symbol.iterator]();
-    expect(iter.next()).to.deep.equal({ value: [["three", 3, c], 10], done: false});
-    expect(iter.next()).to.deep.equal({ value: [["three", 4, c], 11], done: false});
-    expect(iter.next()).to.deep.equal({ value: [["four", 4, d], 4], done: false});
+    expect(iter.next()).to.deep.equal({
+      value: [["three", 3, c], 10],
+      done: false,
+    });
+    expect(iter.next()).to.deep.equal({
+      value: [["three", 4, c], 11],
+      done: false,
+    });
+    expect(iter.next()).to.deep.equal({
+      value: [["four", 4, d], 4],
+      done: false,
+    });
     expect(iter.next()).to.deep.equal({ value: undefined, done: true });
   });
 });

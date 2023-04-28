@@ -6,7 +6,6 @@ import { assert } from "chai";
 import { LRUMap } from "../core-bentley";
 
 describe("LRUMap", () => {
-
   it("get and set", () => {
     const c = new LRUMap(4);
     assert.equal(c.size, 0);
@@ -14,10 +13,7 @@ describe("LRUMap", () => {
     assert.equal(c.oldest, undefined);
     assert.equal(c.newest, undefined);
 
-    c.set("adam", 29)
-      .set("john", 26)
-      .set("angela", 24)
-      .set("bob", 48);
+    c.set("adam", 29).set("john", 26).set("angela", 24).set("bob", 48);
     assert.equal(c.toString(), "adam:29 < john:26 < angela:24 < bob:48");
     assert.equal(c.size, 4);
 
@@ -190,8 +186,14 @@ describe("LRUMap", () => {
     assert.equal(c.size, 2);
     assert(c.newest !== c.oldest);
 
-    assert.deepEqual({ key: c.newest!.key, value: c.newest!.value }, { key: "b", value: 6 });
-    assert.deepEqual({ key: c.oldest!.key, value: c.oldest!.value }, { key: "a", value: 5 });
+    assert.deepEqual(
+      { key: c.newest!.key, value: c.newest!.value },
+      { key: "b", value: 6 }
+    );
+    assert.deepEqual(
+      { key: c.oldest!.key, value: c.oldest!.value },
+      { key: "a", value: 5 }
+    );
 
     c.shift();
     assert.equal(c.size, 1);
@@ -314,5 +316,4 @@ describe("LRUMap", () => {
       { key: "bob", value: 48 },
     ]);
   });
-
 });

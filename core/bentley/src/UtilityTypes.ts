@@ -21,7 +21,8 @@ export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
 /** Make a new type from an existing type `T`, with set of optional properties `K` required.
  * @public
  */
-export type MarkRequired<T, K extends keyof T> = Pick<Required<T>, K> & Omit<T, K>;
+export type MarkRequired<T, K extends keyof T> = Pick<Required<T>, K> &
+  Omit<T, K>;
 
 /** Generically represents a class `T`, for use in type annotations.
  * @note A variable of type `Constructor<T>` matches a class `T` only if `T` has a **public** constructor.
@@ -35,7 +36,10 @@ export type Constructor<T> = new (...args: any[]) => T;
  * @see [[asInstanceOf]] to cast `obj` to class `T`.
  * @public
  */
-export function isInstanceOf<T>(obj: any, constructor: Constructor<T>): boolean {
+export function isInstanceOf<T>(
+  obj: any,
+  constructor: Constructor<T>
+): boolean {
   return "object" === typeof obj && obj instanceof constructor;
 }
 
@@ -43,8 +47,11 @@ export function isInstanceOf<T>(obj: any, constructor: Constructor<T>): boolean 
  * @see [[isInstanceOf]] to query whether `obj` is of class `T`.
  * @public
  */
-export function asInstanceOf<T>(obj: any, constructor: Constructor<T>): T | undefined {
-  return isInstanceOf<T>(obj, constructor) ? obj as T : undefined;
+export function asInstanceOf<T>(
+  obj: any,
+  constructor: Constructor<T>
+): T | undefined {
+  return isInstanceOf<T>(obj, constructor) ? (obj as T) : undefined;
 }
 
 /** Extracts the names of all public properties of `T` that are not of type `function`.
@@ -91,17 +98,25 @@ export type AsyncFunction = (...args: any) => Promise<any>;
 /** The members of `T` that are async functions (functions that return a promise), and no other properties
  * @public
  */
-export type PickAsyncMethods<T> = { [P in keyof T]: T[P] extends AsyncFunction ? T[P] : never; };
+export type PickAsyncMethods<T> = {
+  [P in keyof T]: T[P] extends AsyncFunction ? T[P] : never;
+};
 
 /** Extracts the names of all function properties of `T` that return a Promise.
  * @public
  */
-export type AsyncMethodsOf<T> = { [P in keyof T]: T[P] extends AsyncFunction ? P : never }[keyof T];
+export type AsyncMethodsOf<T> = {
+  [P in keyof T]: T[P] extends AsyncFunction ? P : never;
+}[keyof T];
 
 /** Extracts the type to which the Promise returned by an async function resolves.
  * @public
  */
-export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
+export type PromiseReturnType<T extends AsyncFunction> = T extends (
+  ...args: any
+) => Promise<infer R>
+  ? R
+  : any;
 
 /** A runtime property omitter, makes a shallow copy of the given object without the specified properties
  * Compatible with the typescript `Omit` mapped type:
@@ -110,10 +125,12 @@ export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any
  * ```
  * @public
  */
-export function omit<T extends {}, K extends readonly (keyof T)[]>(t: T, keys: K): Omit<T, K[number]> {
+export function omit<T extends {}, K extends readonly (keyof T)[]>(
+  t: T,
+  keys: K
+): Omit<T, K[number]> {
   const clone = { ...t };
-  for (const key of keys)
-    delete clone[key];
+  for (const key of keys) delete clone[key];
   return clone;
 }
 
@@ -131,5 +148,6 @@ export function omit<T extends {}, K extends readonly (keyof T)[]>(t: T, keys: K
  * @public
  */
 export type RequireAtLeastOne<T> = {
-  [K in keyof T]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<keyof T, K>>>;
+  [K in keyof T]-?: Required<Pick<T, K>> &
+    Partial<Pick<T, Exclude<keyof T, K>>>;
 }[keyof T];

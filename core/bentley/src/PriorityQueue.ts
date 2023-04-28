@@ -28,19 +28,28 @@ export class PriorityQueue<T> implements Iterable<T> {
    * @param clone The function used to clone a value for insertion onto the queue. The default implementation simply returns its input.
    * @note If the criterion which control the result of the `compare` function changes, then [[PriorityQueue.sort]] should be used to reorder the queue according to the new criterion.
    */
-  public constructor(compare: OrderedComparator<T>, clone: CloneFunction<T> = shallowClone) {
+  public constructor(
+    compare: OrderedComparator<T>,
+    clone: CloneFunction<T> = shallowClone
+  ) {
     this._compare = compare;
     this._clone = clone;
   }
 
   /** The number of values in the queue. */
-  public get length(): number { return this._array.length; }
+  public get length(): number {
+    return this._array.length;
+  }
 
   /** Returns true if the queue contains no values. */
-  public get isEmpty(): boolean { return 0 === this.length; }
+  public get isEmpty(): boolean {
+    return 0 === this.length;
+  }
 
   /** Returns an iterator over the contents of the heap suitable for use in `for-of` loops. */
-  public [Symbol.iterator](): Iterator<T> { return this._array[Symbol.iterator](); }
+  public [Symbol.iterator](): Iterator<T> {
+    return this._array[Symbol.iterator]();
+  }
 
   protected _swap(a: number, b: number) {
     const temp = this._array[a];
@@ -53,12 +62,17 @@ export class PriorityQueue<T> implements Iterable<T> {
     while (true) {
       const right = 2 * (index + 1);
       const left = right - 1;
-      if (left < this.length && this._compare(this._array[left], this._array[index]) < 0)
+      if (
+        left < this.length &&
+        this._compare(this._array[left], this._array[index]) < 0
+      )
         candidate = left;
-      else
-        candidate = index;
+      else candidate = index;
 
-      if (right < this.length && this._compare(this._array[right], this._array[candidate]) < 0)
+      if (
+        right < this.length &&
+        this._compare(this._array[right], this._array[candidate]) < 0
+      )
         candidate = right;
 
       if (candidate !== index) {
@@ -75,8 +89,7 @@ export class PriorityQueue<T> implements Iterable<T> {
    * For example, a priority queue containing graphics sorted by their distance from the camera would need to be reordered when the position of the camera changes.
    */
   public sort(): void {
-    for (let i = Math.ceil(this.length / 2); i >= 0; i--)
-      this._heapify(i);
+    for (let i = Math.ceil(this.length / 2); i >= 0; i--) this._heapify(i);
   }
 
   /**
@@ -138,8 +151,7 @@ export class PriorityQueue<T> implements Iterable<T> {
    * @returns the value at the specified index, or undefined if the index is out of range.
    */
   protected _pop(index: number): T | undefined {
-    if (index < 0 || index >= this.length)
-      return undefined;
+    if (index < 0 || index >= this.length) return undefined;
 
     const root = this._array[index];
     this._swap(index, this.length - 1);
@@ -155,9 +167,7 @@ export class PriorityQueue<T> implements Iterable<T> {
    * @returns the value at the specified index, or undefined if the index is out of range.
    */
   protected _peek(index: number): T | undefined {
-    if (index < 0 || index >= this.length)
-      return undefined;
-    else
-      return this._array[index];
+    if (index < 0 || index >= this.length) return undefined;
+    else return this._array[index];
   }
 }

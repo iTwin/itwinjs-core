@@ -21,7 +21,8 @@ export type OrderedId64Iterable = Iterable<Id64String>;
  * @see [[OrderedId64Array]] for a mutable implementation.
  * @public
  */
-export namespace OrderedId64Iterable { // eslint-disable-line @typescript-eslint/no-redeclare
+export namespace OrderedId64Iterable {
+  // eslint-disable-line @typescript-eslint/no-redeclare
   /** An ordered comparison of [[Id64String]]s suitable for use with sorting routines like
    * [Array.sort](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort) and sorted containers
    * like [[SortedArray]] and [[Dictionary]]. The comparison compares the 64-bit numerical values of the two Ids, returning a negative number if lhs < rhs,
@@ -30,13 +31,11 @@ export namespace OrderedId64Iterable { // eslint-disable-line @typescript-eslint
    * @see [[OrderedId64Iterable.sortArray]] for a convenient way to sort an array of Id64Strings.
    */
   export function compare(lhs: Id64String, rhs: Id64String): number {
-    if (lhs.length !== rhs.length)
-      return lhs.length < rhs.length ? -1 : 1;
+    if (lhs.length !== rhs.length) return lhs.length < rhs.length ? -1 : 1;
 
     // This is faster than localeCompare(). Unclear why there is no string.compare() - would be generally useful in
     // array sort functions...
-    if (lhs !== rhs)
-      return lhs < rhs ? -1 : 1;
+    if (lhs !== rhs) return lhs < rhs ? -1 : 1;
 
     return 0;
   }
@@ -56,7 +55,10 @@ export namespace OrderedId64Iterable { // eslint-disable-line @typescript-eslint
   /** Given two ordered collections of [[Id64String]]s, determine whether they are identical sets. Duplicate Ids are ignored.
    * @note If the inputs are not ordered as required by [[OrderedId64Iterable]], the results are unpredictable.
    */
-  export function areEqualSets(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable): boolean {
+  export function areEqualSets(
+    ids1: OrderedId64Iterable,
+    ids2: OrderedId64Iterable
+  ): boolean {
     const leftIter = uniqueIterator(ids1);
     const rightIter = uniqueIterator(ids2);
     let leftState = leftIter.next();
@@ -65,15 +67,13 @@ export namespace OrderedId64Iterable { // eslint-disable-line @typescript-eslint
     while (!leftState.done && !rightState.done) {
       const left = leftState.value;
       const right = rightState.value;
-      if (0 !== compare(left, right))
-        return false;
+      if (0 !== compare(left, right)) return false;
 
       leftState = leftIter.next();
       rightState = rightIter.next();
     }
 
-    if (leftState.done && rightState.done)
-      return true;
+    if (leftState.done && rightState.done) return true;
 
     return false;
   }
@@ -82,9 +82,10 @@ export namespace OrderedId64Iterable { // eslint-disable-line @typescript-eslint
    * @param ids A well-formed, ordered collection of zero or more valid Ids.
    * @returns true if the input represents an empty set of Ids. The result is unspecified if the input does not meet the criteria for the input type.
    */
-  export function isEmptySet(ids: OrderedId64Iterable | CompressedId64Set): boolean {
-    if (typeof ids === "string")
-      return "" === ids;
+  export function isEmptySet(
+    ids: OrderedId64Iterable | CompressedId64Set
+  ): boolean {
+    if (typeof ids === "string") return "" === ids;
 
     return true === ids[Symbol.iterator]().next().done;
   }
@@ -117,28 +118,40 @@ export namespace OrderedId64Iterable { // eslint-disable-line @typescript-eslint
   /** Given two ordered collections of [[Id64String]]s, produce a collection representing their union - i.e., the Ids that are present in either or both collections.
    * @note If the inputs are not ordered as required by [[OrderedId64Iterable]], the results are unpredictable.
    */
-  export function union(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable): OrderedId64Iterable {
+  export function union(
+    ids1: OrderedId64Iterable,
+    ids2: OrderedId64Iterable
+  ): OrderedId64Iterable {
     return { [Symbol.iterator]: () => unionIterator(ids1, ids2) };
   }
 
   /** Given two ordered collections of [[Id64String]]s, produce an iterator representing their intersection - i.e., the Ids that are present in both collections.
    * @note If the inputs are not ordered as required by [[OrderedId64Iterable]], the results are unpredictable.
    */
-  export function intersection(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable): OrderedId64Iterable {
+  export function intersection(
+    ids1: OrderedId64Iterable,
+    ids2: OrderedId64Iterable
+  ): OrderedId64Iterable {
     return { [Symbol.iterator]: () => intersectionIterator(ids1, ids2) };
   }
 
   /** Given two ordered collections of [[Id64String]]s, produce an iterator representing their difference - i.e., the Ids that are present in `ids1` but not present in `ids2`.
    * @note If the inputs are not ordered as required by [[OrderedId64Iterable]], the results are unpredictable.
    */
-  export function difference(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable): OrderedId64Iterable {
+  export function difference(
+    ids1: OrderedId64Iterable,
+    ids2: OrderedId64Iterable
+  ): OrderedId64Iterable {
     return { [Symbol.iterator]: () => differenceIterator(ids1, ids2) };
   }
 
   /** Given two ordered collections of [[Id64String]]s, produce an iterator representing their union - i.e., the Ids that are present in either or both collections.
    * @note If the inputs are not ordered as required by [[OrderedId64Iterable]], the results are unpredictable.
    */
-  export function* unionIterator(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable) {
+  export function* unionIterator(
+    ids1: OrderedId64Iterable,
+    ids2: OrderedId64Iterable
+  ) {
     const leftIter = ids1[Symbol.iterator]();
     const rightIter = ids2[Symbol.iterator]();
     let leftState = leftIter.next();
@@ -150,8 +163,7 @@ export namespace OrderedId64Iterable { // eslint-disable-line @typescript-eslint
       const right = rightState.done ? undefined : rightState.value;
 
       assert(undefined !== left || undefined !== right);
-      if (undefined === left && undefined === right)
-        break;
+      if (undefined === left && undefined === right) break;
 
       let next: Id64String;
       if (undefined === left) {
@@ -166,16 +178,14 @@ export namespace OrderedId64Iterable { // eslint-disable-line @typescript-eslint
         if (cmp <= 0) {
           next = left;
           leftState = leftIter.next();
-          if (0 === cmp)
-            rightState = rightIter.next();
+          if (0 === cmp) rightState = rightIter.next();
         } else {
           next = right;
           rightState = rightIter.next();
         }
       }
 
-      if (prev === next)
-        continue;
+      if (prev === next) continue;
 
       prev = next;
       yield next;
@@ -185,7 +195,10 @@ export namespace OrderedId64Iterable { // eslint-disable-line @typescript-eslint
   /** Given two ordered collections of [[Id64String]]s, produce an iterator representing their intersection - i.e., the Ids that are present in both collections.
    * @note If the inputs are not ordered as required by [[OrderedId64Iterable]], the results are unpredictable.
    */
-  export function* intersectionIterator(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable) {
+  export function* intersectionIterator(
+    ids1: OrderedId64Iterable,
+    ids2: OrderedId64Iterable
+  ) {
     const leftIter = ids1[Symbol.iterator]();
     const rightIter = ids2[Symbol.iterator]();
     let leftState = leftIter.next();
@@ -195,8 +208,7 @@ export namespace OrderedId64Iterable { // eslint-disable-line @typescript-eslint
     while (!leftState.done && !rightState.done) {
       const left = leftState.value;
       leftState = leftIter.next();
-      if (left === prev)
-        continue;
+      if (left === prev) continue;
 
       prev = left;
 
@@ -204,22 +216,23 @@ export namespace OrderedId64Iterable { // eslint-disable-line @typescript-eslint
       let cmp = compare(left, right);
       while (cmp > 0) {
         rightState = rightIter.next();
-        if (rightState.done)
-          return;
+        if (rightState.done) return;
 
         right = rightState.value;
         cmp = compare(left, right);
       }
 
-      if (0 === cmp)
-        yield left;
+      if (0 === cmp) yield left;
     }
   }
 
   /** Given two ordered collections of [[Id64String]]s, produce an iterator representing their difference - i.e., the Ids that are present in `ids1` but not present in `ids2`.
    * @note If the inputs are not ordered as required by [[OrderedId64Iterable]], the results are unpredictable.
    */
-  export function* differenceIterator(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable) {
+  export function* differenceIterator(
+    ids1: OrderedId64Iterable,
+    ids2: OrderedId64Iterable
+  ) {
     const leftIter = ids1[Symbol.iterator]();
     const rightIter = ids2[Symbol.iterator]();
     let leftState = leftIter.next();
@@ -229,10 +242,9 @@ export namespace OrderedId64Iterable { // eslint-disable-line @typescript-eslint
     while (!leftState.done) {
       const left = leftState.value;
       leftState = leftIter.next();
-      if (left === prev)
-        continue;
+      if (left === prev) continue;
       else if (rightState.done) {
-        yield prev = left;
+        yield (prev = left);
         continue;
       }
 
@@ -241,7 +253,7 @@ export namespace OrderedId64Iterable { // eslint-disable-line @typescript-eslint
       while (cmp > 0 && !rightState.done) {
         rightState = rightIter.next();
         if (rightState.done) {
-          yield prev = left;
+          yield (prev = left);
           continue;
         }
 
@@ -249,8 +261,7 @@ export namespace OrderedId64Iterable { // eslint-disable-line @typescript-eslint
         cmp = compare(left, right);
       }
 
-      if (cmp < 0)
-        yield prev = left;
+      if (cmp < 0) yield (prev = left);
     }
   }
 }

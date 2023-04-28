@@ -21,11 +21,13 @@ class TestHeap extends PriorityQueue<number> {
     for (let i = 0; i < this.length; i++) {
       const left = 2 * (i + 1) - 1;
       if (left < this.length)
-        isSorted = isSorted && (this._compare(this._array[i], this._array[left]) <= 0);
+        isSorted =
+          isSorted && this._compare(this._array[i], this._array[left]) <= 0;
 
       const right = 2 * (i + 1);
       if (right < this.length)
-        isSorted = isSorted && (this._compare(this._array[i], this._array[right]) <= 0);
+        isSorted =
+          isSorted && this._compare(this._array[i], this._array[right]) <= 0;
     }
 
     return isSorted;
@@ -33,8 +35,7 @@ class TestHeap extends PriorityQueue<number> {
 
   public initRandom(numEntries: number = 100) {
     this.clear();
-    for (let i = 0; i < numEntries; i++)
-      this.push(Math.random());
+    for (let i = 0; i < numEntries; i++) this.push(Math.random());
   }
 }
 

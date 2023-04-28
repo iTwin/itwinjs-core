@@ -24,7 +24,7 @@ export namespace JsonUtils {
    * @returns the value of json as an integer, or default value
    */
   export function asInt(json: any, defaultVal = 0): number {
-    return (typeof json === "number") ? Math.trunc(json) : defaultVal;
+    return typeof json === "number" ? Math.trunc(json) : defaultVal;
   }
   /** Get a value as a double.
    * @param json the input JSON object
@@ -32,7 +32,7 @@ export namespace JsonUtils {
    * @returns the value of json as a double, or default value
    */
   export function asDouble(json: any, defaultVal = 0): number {
-    return (typeof json === "number") ? json : defaultVal;
+    return typeof json === "number" ? json : defaultVal;
   }
   /** Get a value as a string.
    * @param json the input JSON object
@@ -66,11 +66,14 @@ export namespace JsonUtils {
    * @param val the value to set
    * @param defaultVal the default value.
    */
-  export function setOrRemoveNumber(json: any, key: string, val: number, defaultVal: number) {
-    if (val === defaultVal)
-      delete json[key];
-    else
-      json[key] = val;
+  export function setOrRemoveNumber(
+    json: any,
+    key: string,
+    val: number,
+    defaultVal: number
+  ) {
+    if (val === defaultVal) delete json[key];
+    else json[key] = val;
   }
 
   /** Set or remove a boolean on a json object, given a key name, a value, and a default value. Sets `json[key] = val` if val is *not* equal to the default,
@@ -80,11 +83,14 @@ export namespace JsonUtils {
    * @param val the value to set
    * @param defaultVal the default value.
    */
-  export function setOrRemoveBoolean(json: any, key: string, val: boolean, defaultVal: boolean) {
-    if (val === defaultVal)
-      delete json[key];
-    else
-      json[key] = val;
+  export function setOrRemoveBoolean(
+    json: any,
+    key: string,
+    val: boolean,
+    defaultVal: boolean
+  ) {
+    if (val === defaultVal) delete json[key];
+    else json[key] = val;
   }
 
   /** Determine if a Javascript object is equivalent to `{}`.
@@ -120,20 +126,22 @@ export namespace JsonUtils {
    * Works recursively for object members, and over arrays entries. Calls "toJSON" on any members that implement it.
    */
   export function toObject(val: any): any {
-    if (typeof val === "boolean" || typeof val === "number" || typeof val === "string")
+    if (
+      typeof val === "boolean" ||
+      typeof val === "number" ||
+      typeof val === "string"
+    )
       return val;
 
-    if (typeof val !== "object")
-      return undefined;
+    if (typeof val !== "object") return undefined;
 
     // See if the object has toJSON() function defined.
-    if (typeof val.toJSON !== "undefined")
-      return toObject(val.toJSON());
+    if (typeof val.toJSON !== "undefined") return toObject(val.toJSON());
 
     // if it's an array, convert each member.
     if (Array.isArray(val)) {
       const arr = new Array(val.length);
-      val.forEach((el, i) => arr[i] = toObject(el));
+      val.forEach((el, i) => (arr[i] = toObject(el)));
       return arr;
     }
 
@@ -141,11 +149,9 @@ export namespace JsonUtils {
     const out: any = {};
     Object.getOwnPropertyNames(val).forEach((prop) => {
       const transformVal = toObject(val[prop]);
-      if (transformVal !== undefined)
-        out[prop] = transformVal;
+      if (transformVal !== undefined) out[prop] = transformVal;
     });
 
     return out;
   }
-
 }

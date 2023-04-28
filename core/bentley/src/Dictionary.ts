@@ -73,14 +73,20 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
    * @param cloneKey The function invoked to clone a key for insertion into the dictionary. The default implementation simply returns its input.
    * @param cloneValue The function invoked to clone a value for insertion into the dictionary. The default implementation simply returns its input.
    */
-  public constructor(compareKeys: OrderedComparator<K>, cloneKey: CloneFunction<K> = shallowClone, cloneValue: CloneFunction<V> = shallowClone) {
+  public constructor(
+    compareKeys: OrderedComparator<K>,
+    cloneKey: CloneFunction<K> = shallowClone,
+    cloneValue: CloneFunction<V> = shallowClone
+  ) {
     this._compareKeys = compareKeys;
     this._cloneKey = cloneKey;
     this._cloneValue = cloneValue;
   }
 
   /** The number of entries in the dictionary. */
-  public get size(): number { return this._keys.length; }
+  public get size(): number {
+    return this._keys.length;
+  }
 
   /** Returns an iterator over the key-value pairs in the Dictionary suitable for use in `for-of` loops. Entries are returned in sorted order by key. */
   public [Symbol.iterator](): Iterator<DictionaryEntry<K, V>> {
@@ -89,9 +95,8 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
 
   /** Provides iteration over the keys in this Dictionary, in sorted order. */
   public keys(): Iterable<K> {
-    function * iterator(dict: Dictionary<K, V>) {
-      for (const entry of dict)
-        yield entry.key;
+    function* iterator(dict: Dictionary<K, V>) {
+      for (const entry of dict) yield entry.key;
     }
 
     return {
@@ -101,9 +106,8 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
 
   /** Provides iteration over the values in this Dictionary, in sorted order by the corresponding keys. */
   public values(): Iterable<V> {
-    function * iterator(dict: Dictionary<K, V>) {
-      for (const entry of dict)
-        yield entry.value;
+    function* iterator(dict: Dictionary<K, V>) {
+      for (const entry of dict) yield entry.value;
     }
 
     return {
@@ -169,7 +173,7 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
    * @param value The value to associate with `key` if `key` does not yet exist in the dictionary.
    * @returns The found or inserted value and a flag indicating whether the new value was inserted.
    */
-  public findOrInsert(key: K, value: V): { value: V, inserted: boolean } {
+  public findOrInsert(key: K, value: V): { value: V; inserted: boolean } {
     const bound = this.lowerBound(key);
     if (bound.equal)
       return { value: this._values[bound.index], inserted: false };
@@ -200,8 +204,8 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
    * Extracts the contents of this dictionary as an array of { key, value } pairs, and empties this dictionary.
    * @returns An array of { key, value } pairs sorted by key.
    */
-  public extractPairs(): Array<{ key: K, value: V }> {
-    const pairs: Array<{ key: K, value: V }> = [];
+  public extractPairs(): Array<{ key: K; value: V }> {
+    const pairs: Array<{ key: K; value: V }> = [];
     for (let i = 0; i < this.size; i++)
       pairs.push({ key: this._keys[i], value: this._values[i] });
 
@@ -215,7 +219,7 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
    * The position of each value in the array of values corresponds the the position of the corresponding key in the array of keys.
    * @returns a pair of { keys, values } arrays in which key[i] corresponds to value[i] in this dictionary and the keys are in sorted order.
    */
-  public extractArrays(): { keys: K[], values: V[] } {
+  public extractArrays(): { keys: K[]; values: V[] } {
     const result = { keys: this._keys, values: this._values };
     this.clear();
     return result;
@@ -225,8 +229,7 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
    * @param func The function to be applied.
    */
   public forEach(func: (key: K, value: V) => void): void {
-    for (let i = 0; i < this.size; i++)
-      func(this._keys[i], this._values[i]);
+    for (let i = 0; i < this.size; i++) func(this._keys[i], this._values[i]);
   }
 
   /**
@@ -234,5 +237,7 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
    * @param key The key whose position is to be computed.
    * @returns an object with 'index' corresponding to the computed position and 'equal' set to true if an equivalent key already exists at that index.
    */
-  protected lowerBound(key: K): { index: number, equal: boolean } { return lowerBound(key, this._keys, this._compareKeys); }
+  protected lowerBound(key: K): { index: number; equal: boolean } {
+    return lowerBound(key, this._keys, this._compareKeys);
+  }
 }

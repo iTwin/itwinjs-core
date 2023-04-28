@@ -13,10 +13,16 @@ describe("BentleyError.getErrorMessage", () => {
 
   it("prefers Error.toString() to message property", () => {
     class CustomError extends Error {
-      public override toString() { return "CustomToString"; }
+      public override toString() {
+        return "CustomToString";
+      }
     }
-    expect(BentleyError.getErrorMessage(new Error("foo"))).to.equal("Error: foo");
-    expect(BentleyError.getErrorMessage(new CustomError("foo"))).to.equal("CustomToString");
+    expect(BentleyError.getErrorMessage(new Error("foo"))).to.equal(
+      "Error: foo"
+    );
+    expect(BentleyError.getErrorMessage(new CustomError("foo"))).to.equal(
+      "CustomToString"
+    );
   });
 
   it("prefers message property to msg property", () => {
@@ -30,7 +36,9 @@ describe("BentleyError.getErrorMessage", () => {
   });
 
   it("returns useful toString output", () => {
-    expect(BentleyError.getErrorMessage({ toString: () => "abc" })).to.equal("abc");
+    expect(BentleyError.getErrorMessage({ toString: () => "abc" })).to.equal(
+      "abc"
+    );
   });
 
   it("returns empty string for object with useless toString", () => {
@@ -111,25 +119,40 @@ describe("BentleyError.getErrorMetadata", () => {
   });
 
   it("returns undefined for unsupported getMetaData property types", () => {
-    expect(BentleyError.getErrorMetadata({ getMetaData: "foo" })).to.be.undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: null })).to.be.undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: undefined })).to.be.undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: "foo" })).to.be
+      .undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: null })).to.be
+      .undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: undefined })).to.be
+      .undefined;
     expect(BentleyError.getErrorMetadata({ getMetaData: 5 })).to.be.undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: BigInt(42) })).to.be.undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: Symbol() })).to.be.undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: true })).to.be.undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: false })).to.be.undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: BigInt(42) })).to.be
+      .undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: Symbol() })).to.be
+      .undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: true })).to.be
+      .undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: false })).to.be
+      .undefined;
   });
 
   it("returns undefined for unsupported getMetaData return types", () => {
-    expect(BentleyError.getErrorMetadata({ getMetaData: () => "foo" })).to.be.undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: () => null })).to.be.undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: () => undefined })).to.be.undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: () => 5 })).to.be.undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: () => BigInt(42) })).to.be.undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: () => Symbol() })).to.be.undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: () => true })).to.be.undefined;
-    expect(BentleyError.getErrorMetadata({ getMetaData: () => false })).to.be.undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: () => "foo" })).to.be
+      .undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: () => null })).to.be
+      .undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: () => undefined })).to
+      .be.undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: () => 5 })).to.be
+      .undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: () => BigInt(42) })).to
+      .be.undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: () => Symbol() })).to.be
+      .undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: () => true })).to.be
+      .undefined;
+    expect(BentleyError.getErrorMetadata({ getMetaData: () => false })).to.be
+      .undefined;
   });
 });
 
@@ -147,11 +170,17 @@ describe("BentleyError.getErrorProps", () => {
     const err = new BentleyError(BentleyStatus.ERROR, "fail", () => metadata);
     const serialized = BentleyError.getErrorProps(err);
     expect(serialized).to.be.an("object");
-    expect(serialized).to.eql({ message: err.toString(), stack: err.stack, metadata });
+    expect(serialized).to.eql({
+      message: err.toString(),
+      stack: err.stack,
+      metadata,
+    });
   });
 
   it("returns values that can safely be JSON round-tripped", () => {
-    const err = new BentleyError(BentleyStatus.ERROR, "fail", () => ({ prop: "value" }));
+    const err = new BentleyError(BentleyStatus.ERROR, "fail", () => ({
+      prop: "value",
+    }));
     // Regular Error objects can NOT be JSON round-tripped
     expect(JSON.parse(JSON.stringify(err))).to.not.eql(err);
     const serialized = BentleyError.getErrorProps(err);

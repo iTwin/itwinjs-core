@@ -32,13 +32,14 @@ export type OrderedComparator<T, U = T> = (lhs: T, rhs: U) => number;
  * An [[OrderedComparator]] for numbers that treats two numbers as equal if the absolute value of their difference is less than a specified tolerance.
  * @public
  */
-export function compareWithTolerance(a: number, b: number, tolerance = 0.1): number {
-  if (a < b - tolerance)
-    return -1;
-  else if (a > b + tolerance)
-    return 1;
-  else
-    return 0;
+export function compareWithTolerance(
+  a: number,
+  b: number,
+  tolerance = 0.1
+): number {
+  if (a < b - tolerance) return -1;
+  else if (a > b + tolerance) return 1;
+  else return 0;
 }
 
 /** @public */
@@ -53,17 +54,18 @@ export function compareBooleans(a: boolean, b: boolean): number {
 
 /** @public */
 export function compareStrings(a: string, b: string): number {
-  return a === b ? 0 : (a < b ? -1 : 1);
+  return a === b ? 0 : a < b ? -1 : 1;
 }
 
 /** @public */
-export function comparePossiblyUndefined<T>(compareDefined: (lhs: T, rhs: T) => number, lhs?: T, rhs?: T): number {
-  if (undefined === lhs)
-    return undefined === rhs ? 0 : -1;
-  else if (undefined === rhs)
-    return 1;
-  else
-    return compareDefined(lhs, rhs);
+export function comparePossiblyUndefined<T>(
+  compareDefined: (lhs: T, rhs: T) => number,
+  lhs?: T,
+  rhs?: T
+): number {
+  if (undefined === lhs) return undefined === rhs ? 0 : -1;
+  else if (undefined === rhs) return 1;
+  else return compareDefined(lhs, rhs);
 }
 
 /** @public */
@@ -77,18 +79,22 @@ export function compareNumbersOrUndefined(lhs?: number, rhs?: number): number {
 }
 
 /** @public */
-export function compareBooleansOrUndefined(lhs?: boolean, rhs?: boolean): number {
+export function compareBooleansOrUndefined(
+  lhs?: boolean,
+  rhs?: boolean
+): number {
   return comparePossiblyUndefined(compareBooleans, lhs, rhs);
 }
 
 /** Compare two possibly-undefined values for equality. If both are undefined, the comparison is performed by the supplied `areEqual` function.
  * @public
  */
-export function areEqualPossiblyUndefined<T, U>(t: T | undefined, u: U | undefined, areEqual: (t: T, u: U) => boolean): boolean {
-  if (undefined === t)
-    return undefined === u;
-  else if (undefined === u)
-    return false;
-  else
-    return areEqual(t, u);
+export function areEqualPossiblyUndefined<T, U>(
+  t: T | undefined,
+  u: U | undefined,
+  areEqual: (t: T, u: U) => boolean
+): boolean {
+  if (undefined === t) return undefined === u;
+  else if (undefined === u) return false;
+  else return areEqual(t, u);
 }

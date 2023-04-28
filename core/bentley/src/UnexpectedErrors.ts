@@ -22,17 +22,23 @@ export type OnUnexpectedError = (error: any) => void;
  */
 export class UnexpectedErrors {
   /** handler for re-throwing exceptions directly */
-  public static readonly reThrowImmediate = (e: any) => { throw e; };
+  public static readonly reThrowImmediate = (e: any) => {
+    throw e;
+  };
   /** handler for re-throwing exceptions from an asynchronous interval (so the current call stack is not aborted) */
-  public static readonly reThrowDeferred = (e: any) => setTimeout(() => { throw e; }, 0);
+  public static readonly reThrowDeferred = (e: any) =>
+    setTimeout(() => {
+      throw e;
+    }, 0);
   /** handler for logging exception to console */
   public static readonly consoleLog = (e: any) => console.error(e); // eslint-disable-line no-console
   /** handler for logging exception with [[Logger]] */
-  public static readonly errorLog = (e: any) => Logger.logException("unhandled", e);
+  public static readonly errorLog = (e: any) =>
+    Logger.logException("unhandled", e);
 
   private static _telemetry: OnUnexpectedError[] = [];
   private static _handler = this.errorLog; // default to error logging
-  private constructor() { } // this is a singleton
+  private constructor() {} // this is a singleton
 
   /** Add a "telemetry tracker" for unexpected errors. Useful for tracking/reporting errors without changing handler.
    * @returns a method to remove the tracker

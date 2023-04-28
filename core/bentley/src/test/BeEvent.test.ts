@@ -7,17 +7,14 @@ import { BeEvent, BeEventList } from "../core-bentley";
 
 /* eslint-disable no-empty */
 class Dummy {
-  constructor(_name: string) { }
+  constructor(_name: string) {}
 }
 
 type DummyListener = (d: Dummy, r: number) => void;
 
 describe("BeEvent tests", () => {
-
   describe("BeEvent", () => {
-
     it("Subscribing to the event dispatcher", () => {
-
       const carolus = new Dummy("Carolus");
 
       const dispatcher = new BeEvent<DummyListener>();
@@ -94,7 +91,6 @@ describe("BeEvent tests", () => {
     });
 
     it("Subscribing to the event dispatcher. Fire twice", () => {
-
       const carolus = new Dummy("Carolus");
 
       const dispatcher = new BeEvent<DummyListener>();
@@ -114,7 +110,6 @@ describe("BeEvent tests", () => {
     });
 
     it("Sub to the event dispatcher. Fire twice", () => {
-
       const carolus = new Dummy("Carolus");
 
       const dispatcher = new BeEvent<DummyListener>();
@@ -134,7 +129,6 @@ describe("BeEvent tests", () => {
     });
 
     it("One subscription to the event dispatcher. Fire twice.", () => {
-
       const carolus = new Dummy("Carolus");
 
       const dispatcher = new BeEvent<DummyListener>();
@@ -154,7 +148,6 @@ describe("BeEvent tests", () => {
     });
 
     it("Unsubscribing from the event dispatcher.", () => {
-
       const carolus = new Dummy("Carolus");
 
       const dispatcher = new BeEvent<DummyListener>();
@@ -172,11 +165,9 @@ describe("BeEvent tests", () => {
 
       expect(resultDummy, "resultDummy should be empty.").to.equal(undefined);
       expect(resultNr, "resultNr should be 0.").to.equal(0);
-
     });
 
     it("Unsubscribe from the event dispatcher.", () => {
-
       const carolus = new Dummy("Carolus");
 
       const dispatcher = new BeEvent<DummyListener>();
@@ -197,7 +188,6 @@ describe("BeEvent tests", () => {
     });
 
     it("Unsubscribing to a one subscription.", () => {
-
       const carolus = new Dummy("Carolus");
 
       const dispatcher = new BeEvent<DummyListener>();
@@ -218,14 +208,14 @@ describe("BeEvent tests", () => {
     });
 
     it("Has no event.", () => {
-      const fn = (_dummy: Dummy, _nr: number) => { };
+      const fn = (_dummy: Dummy, _nr: number) => {};
       const dispatcher = new BeEvent<DummyListener>();
       const result = dispatcher.has(fn);
       expect(result, "Handler should not be present.").to.equal(false);
     });
 
     it("Has event through subscribe.", () => {
-      const fn = (_dummy: Dummy, _nr: number) => { };
+      const fn = (_dummy: Dummy, _nr: number) => {};
       const dispatcher = new BeEvent<DummyListener>();
       dispatcher.addListener(fn);
       const result = dispatcher.has(fn);
@@ -233,7 +223,7 @@ describe("BeEvent tests", () => {
     });
 
     it("Has event through one.", () => {
-      const fn = (_dummy: Dummy, _nr: number) => { };
+      const fn = (_dummy: Dummy, _nr: number) => {};
       const dispatcher = new BeEvent<DummyListener>();
       dispatcher.addOnce(fn);
       const result = dispatcher.has(fn);
@@ -241,16 +231,18 @@ describe("BeEvent tests", () => {
     });
 
     it("Test subscribe -> unsubscribe -> has", () => {
-      const fn = (_dummy: Dummy, _nr: number) => { };
+      const fn = (_dummy: Dummy, _nr: number) => {};
       const dispatcher = new BeEvent<DummyListener>();
       dispatcher.addListener(fn);
       dispatcher.removeListener(fn);
       const result = dispatcher.has(fn);
-      expect(result, "Handler should not be present because of unsubscribe.").to.equal(false);
+      expect(
+        result,
+        "Handler should not be present because of unsubscribe."
+      ).to.equal(false);
     });
 
     it("Clear subscriptions.", () => {
-
       const carolus = new Dummy("Carolus");
       const willem = new Dummy("Willem");
 
@@ -271,26 +263,30 @@ describe("BeEvent tests", () => {
     });
 
     it("Drop removed listeners only.", () => {
-      const fnOnce = () => { };
-      const fn = () => { };
+      const fnOnce = () => {};
+      const fn = () => {};
       const dispatcher = new BeEvent<DummyListener>();
       dispatcher.addOnce(fnOnce);
       dispatcher.addListener(fn);
       dispatcher.raiseEvent(new Dummy("a"), 10);
       const hasFn = dispatcher.has(fn);
       const hasOnceFn = dispatcher.has(fnOnce);
-      expect(hasFn, "Handler should be present because it was not dropped.").to.equal(true);
-      expect(hasOnceFn, "Handler should not be present because it was dropped.").to.equal(false);
+      expect(
+        hasFn,
+        "Handler should be present because it was not dropped."
+      ).to.equal(true);
+      expect(
+        hasOnceFn,
+        "Handler should not be present because it was dropped."
+      ).to.equal(false);
     });
-
   });
 
   describe("BeEventList", () => {
-
     it("Subscribe to event name", () => {
       const event = "myEvent";
       const list = new BeEventList<DummyListener>();
-      const fn = (_dummy: Dummy, _nr: number) => { };
+      const fn = (_dummy: Dummy, _nr: number) => {};
 
       list.get(event).addListener(fn);
       const result = list.get(event).has(fn);
@@ -300,25 +296,28 @@ describe("BeEvent tests", () => {
     it("Unsubscribe to event name", () => {
       const event = "myEvent";
       const list = new BeEventList<DummyListener>();
-      const fn = (_dummy: Dummy, _nr: number) => { };
+      const fn = (_dummy: Dummy, _nr: number) => {};
 
       list.get(event).addListener(fn);
       list.get(event).removeListener(fn);
 
       const result = list.get(event).has(fn);
-      expect(result, "result should be false due to unsubscribe.").to.equals(false);
+      expect(result, "result should be false due to unsubscribe.").to.equals(
+        false
+      );
     });
 
     it("Test firing two events in one list", () => {
-
       const list = new BeEventList<DummyListener>();
       let result: string | undefined;
 
       const event1 = "ev1";
-      const fn1 = (_dummy: Dummy | undefined, nr: number) => result = `ev1:${nr}`;
+      const fn1 = (_dummy: Dummy | undefined, nr: number) =>
+        (result = `ev1:${nr}`);
 
       const event2 = "ev2";
-      const fn2 = (_dummy: Dummy | undefined, nr: number) => result = `ev2:${nr}`;
+      const fn2 = (_dummy: Dummy | undefined, nr: number) =>
+        (result = `ev2:${nr}`);
 
       list.get(event1).addListener(fn1);
       list.get(event2).addListener(fn2);
@@ -331,9 +330,8 @@ describe("BeEvent tests", () => {
     });
 
     it("Test remove from list.", () => {
-
       const list = new BeEventList<DummyListener>();
-      const fn = (_dummy: Dummy, _nr: number) => { };
+      const fn = (_dummy: Dummy, _nr: number) => {};
 
       const event1 = "ev1";
       list.get(event1).addListener(fn);

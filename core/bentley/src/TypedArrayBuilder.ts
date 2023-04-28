@@ -59,7 +59,10 @@ export class TypedArrayBuilder<T extends UintArray> {
   public readonly growthFactor: number;
 
   /** Constructs a new builder from the specified options, with a [[length]] of zero. */
-  protected constructor(constructor: Constructor<T>, options?: TypedArrayBuilderOptions) {
+  protected constructor(
+    constructor: Constructor<T>,
+    options?: TypedArrayBuilderOptions
+  ) {
     this._constructor = constructor;
     this._data = new constructor(options?.initialCapacity ?? 0);
     this.growthFactor = Math.max(1.0, options?.growthFactor ?? 1.5);
@@ -81,8 +84,7 @@ export class TypedArrayBuilder<T extends UintArray> {
    * @note It is your responsibility to ensure the index falls within the bounds of the array.
    */
   public at(index: number): number {
-    if (index < 0)
-      index = this.length - index;
+    if (index < 0) index = this.length - index;
 
     const value = this._data[index];
     assert(value !== undefined, "index out of bounds");
@@ -98,8 +100,7 @@ export class TypedArrayBuilder<T extends UintArray> {
    * [[length]] remains unchanged; [[capacity]] reflects the size of the new TypeArray.
    */
   public ensureCapacity(newCapacity: number): number {
-    if (this.capacity >= newCapacity)
-      return this.capacity;
+    if (this.capacity >= newCapacity) return this.capacity;
 
     assert(this.growthFactor >= 1.0);
     newCapacity = Math.ceil(newCapacity * this.growthFactor);
@@ -131,8 +132,7 @@ export class TypedArrayBuilder<T extends UintArray> {
    * returned array's length will be equal to [[length]].
    */
   public toTypedArray(includeUnusedCapacity = false): T {
-    if (includeUnusedCapacity)
-      return this._data;
+    if (includeUnusedCapacity) return this._data;
 
     const subarray = this._data.subarray(0, this.length);
     assert(subarray instanceof this._constructor);
@@ -172,8 +172,7 @@ export class Uint32ArrayBuilder extends TypedArrayBuilder<Uint32Array> {
 
   /** Obtain a view of the finished array as an array of bytes. */
   public toUint8Array(includeUnusedCapacity = false): Uint8Array {
-    if (includeUnusedCapacity)
-      return new Uint8Array(this._data.buffer);
+    if (includeUnusedCapacity) return new Uint8Array(this._data.buffer);
 
     return new Uint8Array(this._data.buffer, 0, this.length * 4);
   }
@@ -234,9 +233,10 @@ export class UintArrayBuilder extends TypedArrayBuilder<UintArray> {
    */
   protected ensureBytesPerElement(newValues: Iterable<number>): void {
     const curBytesPerElem = this.bytesPerElement;
-    assert(curBytesPerElem === 1 || curBytesPerElem === 2 || curBytesPerElem === 4);
-    if (curBytesPerElem >= 4)
-      return;
+    assert(
+      curBytesPerElem === 1 || curBytesPerElem === 2 || curBytesPerElem === 4
+    );
+    if (curBytesPerElem >= 4) return;
 
     let neededBytesPerElem = curBytesPerElem;
     for (const value of newValues) {
@@ -248,10 +248,14 @@ export class UintArrayBuilder extends TypedArrayBuilder<UintArray> {
       }
     }
 
-    if (neededBytesPerElem <= curBytesPerElem)
-      return;
+    if (neededBytesPerElem <= curBytesPerElem) return;
 
-    this._constructor = neededBytesPerElem === 1 ? Uint8Array : (neededBytesPerElem === 2 ? Uint16Array : Uint32Array);
+    this._constructor =
+      neededBytesPerElem === 1
+        ? Uint8Array
+        : neededBytesPerElem === 2
+        ? Uint16Array
+        : Uint32Array;
     this._data = new this._constructor(this._data);
   }
 

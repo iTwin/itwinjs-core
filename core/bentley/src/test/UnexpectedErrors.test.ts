@@ -8,7 +8,6 @@ import { BeEvent } from "../BeEvent";
 import { UnexpectedErrors } from "../UnexpectedErrors";
 
 describe("Unexpected error handling", () => {
-
   it("from BeEvent", () => {
     let unexpectedCalled = 0;
     let telemetry1 = 0;

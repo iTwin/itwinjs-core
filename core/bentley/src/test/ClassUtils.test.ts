@@ -10,10 +10,18 @@ type Extends<T, Base> = T extends Base ? true : false;
 
 describe("ClassUtils", () => {
   it("isProperSubclassOf", () => {
-    class A { public a = "a"; }
-    class B extends A { public b = "b"; }
-    class C extends B { public c = "c"; }
-    class M { public m = "m"; }
+    class A {
+      public a = "a";
+    }
+    class B extends A {
+      public b = "b";
+    }
+    class C extends B {
+      public c = "c";
+    }
+    class M {
+      public m = "m";
+    }
 
     expect(ClassUtils.isProperSubclassOf(A, A)).to.be.false;
     expect(ClassUtils.isProperSubclassOf(A, B)).to.be.false;
@@ -48,10 +56,18 @@ describe("ClassUtils", () => {
   });
 
   it("isSubclassOf", () => {
-    class A { public a = "a"; }
-    class B extends A { public b = "b"; }
-    class C extends B { public c = "c"; }
-    class M { public m = "m"; }
+    class A {
+      public a = "a";
+    }
+    class B extends A {
+      public b = "b";
+    }
+    class C extends B {
+      public c = "c";
+    }
+    class M {
+      public m = "m";
+    }
 
     expect(ClassUtils.isSubclassOf(A, A)).to.be.true;
     expect(ClassUtils.isSubclassOf(A, B)).to.be.false;

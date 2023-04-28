@@ -6,7 +6,15 @@
  * @module Logging
  */
 
-import type { ContextAPI, SpanAttributes, SpanAttributeValue, SpanContext, SpanOptions, TraceAPI, Tracer } from "@opentelemetry/api";
+import type {
+  ContextAPI,
+  SpanAttributes,
+  SpanAttributeValue,
+  SpanContext,
+  SpanOptions,
+  TraceAPI,
+  Tracer,
+} from "@opentelemetry/api";
 import { LogFunction, Logger } from "./Logger";
 
 // re-export so that consumers can construct full SpanOptions object without external dependencies
@@ -19,41 +27,48 @@ export enum SpanKind {
   SERVER = 1,
   CLIENT = 2,
   PRODUCER = 3,
-  CONSUMER = 4
+  CONSUMER = 4,
 }
 
 function isValidPrimitive(val: unknown): val is SpanAttributeValue {
-  return typeof val === "string" || typeof val === "number" || typeof val === "boolean";
+  return (
+    typeof val === "string" ||
+    typeof val === "number" ||
+    typeof val === "boolean"
+  );
 }
 
 // Only _homogenous_ arrays of strings, numbers, or booleans are supported as OpenTelemetry Attribute values.
 // Per the spec (https://opentelemetry.io/docs/reference/specification/common/common/#attribute), empty arrays and null values are supported too.
 function isValidPrimitiveArray(val: unknown): val is SpanAttributeValue {
-  if (!Array.isArray(val))
-    return false;
+  if (!Array.isArray(val)) return false;
 
   let itemType;
   for (const x of val) {
-    if (x === undefined || x === null)
-      continue;
+    if (x === undefined || x === null) continue;
 
     if (!itemType) {
       itemType = typeof x;
-      if (!isValidPrimitive(x))
-        return false;
+      if (!isValidPrimitive(x)) return false;
     }
 
-    if (typeof x !== itemType)
-      return false;
+    if (typeof x !== itemType) return false;
   }
   return true;
 }
 
 function isPlainObject(obj: unknown): obj is object {
-  return typeof obj === "object" && obj !== null && Object.getPrototypeOf(obj) === Object.prototype;
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    Object.getPrototypeOf(obj) === Object.prototype
+  );
 }
 
-function* getFlatEntries(obj: unknown, path = ""): Iterable<[string, SpanAttributeValue]> {
+function* getFlatEntries(
+  obj: unknown,
+  path = ""
+): Iterable<[string, SpanAttributeValue]> {
   if (isValidPrimitiveArray(obj)) {
     yield [path, obj];
     return;
@@ -68,11 +83,10 @@ function* getFlatEntries(obj: unknown, path = ""): Iterable<[string, SpanAttribu
 
   // Always serialize empty objects/arrays as empty array values
   const entries = Object.entries(obj);
-  if (entries.length === 0)
-    yield [path, []];
+  if (entries.length === 0) yield [path, []];
 
   for (const [key, val] of entries)
-    yield* getFlatEntries(val, (path === "") ? key : `${path}.${key}`);
+    yield* getFlatEntries(val, path === "" ? key : `${path}.${key}`);
 }
 
 function flattenObject(obj: object): SpanAttributes {
@@ -85,7 +99,10 @@ function flattenObject(obj: object): SpanAttributes {
  */
 export class Tracing {
   private static _tracer?: Tracer;
-  private static _openTelemetry?: { trace: Pick<TraceAPI, "setSpan" | "setSpanContext" | "getSpan">, context: Pick<ContextAPI, "active" | "with"> };
+  private static _openTelemetry?: {
+    trace: Pick<TraceAPI, "setSpan" | "setSpanContext" | "getSpan">;
+    context: Pick<ContextAPI, "active" | "with">;
+  };
 
   /**
    * If OpenTelemetry tracing is enabled, creates a new span and runs the provided function in it.
@@ -95,31 +112,49 @@ export class Tracing {
    * @param options span options
    * @param parentContext optional context used to retrieve parent span id
    */
-  public static async withSpan<T>(name: string, fn: () => Promise<T>, options?: SpanOptions, parentContext?: SpanContext): Promise<T> {
+  public static async withSpan<T>(
+    name: string,
+    fn: () => Promise<T>,
+    options?: SpanOptions,
+    parentContext?: SpanContext
+  ): Promise<T> {
     if (Tracing._tracer === undefined || Tracing._openTelemetry === undefined)
       return fn();
 
     // this case is for context propagation - parentContext is typically constructed from HTTP headers
-    const parent = parentContext === undefined
-      ? Tracing._openTelemetry.context.active()
-      : Tracing._openTelemetry.trace.setSpanContext(Tracing._openTelemetry.context.active(), parentContext);
+    const parent =
+      parentContext === undefined
+        ? Tracing._openTelemetry.context.active()
+        : Tracing._openTelemetry.trace.setSpanContext(
+            Tracing._openTelemetry.context.active(),
+            parentContext
+          );
 
     return Tracing._openTelemetry.context.with(
       Tracing._openTelemetry.trace.setSpan(
         parent,
-        Tracing._tracer.startSpan(name, options, Tracing._openTelemetry.context.active())
+        Tracing._tracer.startSpan(
+          name,
+          options,
+          Tracing._openTelemetry.context.active()
+        )
       ),
       async () => {
         try {
           return await fn();
         } catch (err) {
-          if (err instanceof Error) // ignore non-Error throws, such as RpcControlResponse
-            Tracing._openTelemetry?.trace.getSpan(Tracing._openTelemetry.context.active())?.setAttribute("error", true);
+          if (err instanceof Error)
+            // ignore non-Error throws, such as RpcControlResponse
+            Tracing._openTelemetry?.trace
+              .getSpan(Tracing._openTelemetry.context.active())
+              ?.setAttribute("error", true);
           throw err;
         } finally {
-          Tracing._openTelemetry?.trace.getSpan(Tracing._openTelemetry.context.active())?.end();
+          Tracing._openTelemetry?.trace
+            .getSpan(Tracing._openTelemetry.context.active())
+            ?.end();
         }
-      },
+      }
     );
   }
 
@@ -128,7 +163,10 @@ export class Tracing {
    * [IModelHost.startup]($backend) will call this automatically if the `enableOpenTelemetry` option is enabled and it succeeds in requiring `@opentelemetry/api`.
    * @note Node.js OpenTelemetry SDK should be initialized by the user.
    */
-  public static enableOpenTelemetry(tracer: Tracer, api: typeof Tracing._openTelemetry) {
+  public static enableOpenTelemetry(
+    tracer: Tracer,
+    api: typeof Tracing._openTelemetry
+  ) {
     Tracing._tracer = tracer;
     Tracing._openTelemetry = api;
     Logger.logTrace = Tracing.withOpenTelemetry(Logger.logTrace);
@@ -137,11 +175,19 @@ export class Tracing {
     Logger.logError = Tracing.withOpenTelemetry(Logger.logError);
   }
 
-  private static withOpenTelemetry(base: LogFunction, isError: boolean = false): LogFunction {
+  private static withOpenTelemetry(
+    base: LogFunction,
+    isError: boolean = false
+  ): LogFunction {
     return (category, message, metaData) => {
       try {
-        Tracing._openTelemetry?.trace.getSpan(Tracing._openTelemetry.context.active())?.addEvent(message, { ...flattenObject(Logger.getMetaData(metaData)), error: isError });
-      } catch (_e) { } // avoid throwing random errors (with stack trace mangled by async hooks) when openTelemetry collector doesn't work
+        Tracing._openTelemetry?.trace
+          .getSpan(Tracing._openTelemetry.context.active())
+          ?.addEvent(message, {
+            ...flattenObject(Logger.getMetaData(metaData)),
+            error: isError,
+          });
+      } catch (_e) {} // avoid throwing random errors (with stack trace mangled by async hooks) when openTelemetry collector doesn't work
       base(category, message, metaData);
     };
   }
@@ -150,6 +196,8 @@ export class Tracing {
    * @param attributes The attributes to set
    */
   public static setAttributes(attributes: SpanAttributes) {
-    Tracing._openTelemetry?.trace.getSpan(Tracing._openTelemetry.context.active())?.setAttributes(attributes);
+    Tracing._openTelemetry?.trace
+      .getSpan(Tracing._openTelemetry.context.active())
+      ?.setAttributes(attributes);
   }
 }

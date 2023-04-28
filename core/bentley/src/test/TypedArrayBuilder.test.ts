@@ -11,7 +11,10 @@ describe("UintArrayBuilder", () => {
       return this._data;
     }
 
-    public expect(type: typeof Uint8Array | typeof Uint16Array | typeof Uint32Array, expected: number[]) {
+    public expect(
+      type: typeof Uint8Array | typeof Uint16Array | typeof Uint32Array,
+      expected: number[]
+    ) {
       expect(this.data).instanceof(type);
       const actual = Array.from(this.toTypedArray());
       expect(actual).to.deep.equal(expected);

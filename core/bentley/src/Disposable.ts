@@ -34,7 +34,12 @@ export interface IDisposable {
  */
 export function isIDisposable(obj: unknown): obj is IDisposable {
   // eslint-disable-next-line @typescript-eslint/unbound-method
-  return !!obj && (obj instanceof Object) && !!(obj as IDisposable).dispose && (typeof (obj as IDisposable).dispose === "function");
+  return (
+    !!obj &&
+    obj instanceof Object &&
+    !!(obj as IDisposable).dispose &&
+    typeof (obj as IDisposable).dispose === "function"
+  );
 }
 
 /** Convenience function for disposing of a disposable object that may be undefined.
@@ -56,8 +61,7 @@ export function isIDisposable(obj: unknown): obj is IDisposable {
  * @public
  */
 export function dispose(disposable?: IDisposable): undefined {
-  if (undefined !== disposable)
-    disposable.dispose();
+  if (undefined !== disposable) disposable.dispose();
   return undefined;
 }
 
@@ -67,11 +71,9 @@ export function dispose(disposable?: IDisposable): undefined {
  * @public
  */
 export function disposeArray(list?: IDisposable[]): undefined {
-  if (undefined === list)
-    return undefined;
+  if (undefined === list) return undefined;
 
-  for (const entry of list)
-    dispose(entry);
+  for (const entry of list) dispose(entry);
 
   list.length = 0;
   return undefined;
@@ -83,11 +85,14 @@ export function disposeArray(list?: IDisposable[]): undefined {
  * disposing the resource).
  * @public
  */
-export function using<T extends IDisposable, TResult>(resources: T | T[], func: (...r: T[]) => TResult): TResult {
-  if (!Array.isArray(resources))
-    return using([resources], func);
+export function using<T extends IDisposable, TResult>(
+  resources: T | T[],
+  func: (...r: T[]) => TResult
+): TResult {
+  if (!Array.isArray(resources)) return using([resources], func);
 
-  const doDispose = () => resources.forEach((disposable) => disposable.dispose());
+  const doDispose = () =>
+    resources.forEach((disposable) => disposable.dispose());
   let shouldDisposeImmediately = true;
 
   try {
@@ -98,8 +103,7 @@ export function using<T extends IDisposable, TResult>(resources: T | T[], func: 
     }
     return result;
   } finally {
-    if (shouldDisposeImmediately)
-      doDispose();
+    if (shouldDisposeImmediately) doDispose();
   }
 }
 
@@ -110,8 +114,12 @@ export type DisposeFunc = () => void;
 
 class FuncDisposable implements IDisposable {
   private _disposeFunc: () => void;
-  constructor(disposeFunc: () => void) { this._disposeFunc = disposeFunc; }
-  public dispose() { this._disposeFunc(); }
+  constructor(disposeFunc: () => void) {
+    this._disposeFunc = disposeFunc;
+  }
+  public dispose() {
+    this._disposeFunc();
+  }
 }
 
 /** A disposable container of disposable objects.
@@ -134,22 +142,18 @@ export class DisposableList implements IDisposable {
 
   /** Register an object for disposal. */
   public add(disposable: IDisposable | DisposeFunc) {
-    if (this.isDisposable(disposable))
-      this._disposables.push(disposable);
-    else
-      this._disposables.push(new FuncDisposable(disposable));
+    if (this.isDisposable(disposable)) this._disposables.push(disposable);
+    else this._disposables.push(new FuncDisposable(disposable));
   }
 
   /** Unregister disposable object. */
   public remove(disposable: IDisposable): void {
     const idx = this._disposables.indexOf(disposable);
-    if (-1 !== idx)
-      this._disposables.splice(idx, 1);
+    if (-1 !== idx) this._disposables.splice(idx, 1);
   }
 
   /** Disposes all registered objects. */
   public dispose(): void {
-    for (const disposable of this._disposables)
-      disposable.dispose();
+    for (const disposable of this._disposables) disposable.dispose();
   }
 }

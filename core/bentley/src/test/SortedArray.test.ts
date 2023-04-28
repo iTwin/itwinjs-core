@@ -4,46 +4,53 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { compareStrings, SortedArray } from "../core-bentley";
-import { compareBooleans, compareNumbers, compareNumbersOrUndefined, compareStringsOrUndefined, compareWithTolerance } from "../Compare";
+import {
+  compareBooleans,
+  compareNumbers,
+  compareNumbersOrUndefined,
+  compareStringsOrUndefined,
+  compareWithTolerance,
+} from "../Compare";
 
 class Thing {
-  public constructor(public readonly first: number, public readonly second: number) { }
+  public constructor(
+    public readonly first: number,
+    public readonly second: number
+  ) {}
 }
 
 function compareThings(lhs: Thing, rhs: Thing) {
-  if (lhs === rhs)
-    return 0;
+  if (lhs === rhs) return 0;
 
   const diff = lhs.first - rhs.first;
-  if (0 !== diff)
-    return diff;
+  if (0 !== diff) return diff;
 
   return lhs.second - rhs.second;
 }
 
 export class Id {
-  public constructor(public readonly value: string) { }
+  public constructor(public readonly value: string) {}
 
   public compare(rhs: Id) {
-    if (this === rhs || this.value === rhs.value)
-      return 0;
-    else if (this.value < rhs.value)
-      return -123;
-    else
-      return 654;
+    if (this === rhs || this.value === rhs.value) return 0;
+    else if (this.value < rhs.value) return -123;
+    else return 654;
   }
 }
 
-export function expectSorted<T>(array: T[], expectedLength: number, allowDuplicates: boolean, compare: (lhs: T, rhs: T) => number) {
+export function expectSorted<T>(
+  array: T[],
+  expectedLength: number,
+  allowDuplicates: boolean,
+  compare: (lhs: T, rhs: T) => number
+) {
   expect(array.length).to.equal(expectedLength);
   for (let i = 0; i < array.length - 1; i++) {
     const lhs = array[i];
     const rhs = array[i + 1];
     const comp = compare(lhs, rhs);
-    if (allowDuplicates)
-      expect(comp).to.not.be.above(0);
-    else
-      expect(comp).to.be.lessThan(0);
+    if (allowDuplicates) expect(comp).to.not.be.above(0);
+    else expect(comp).to.be.lessThan(0);
   }
 }
 
@@ -56,7 +63,9 @@ describe("SortedArray", () => {
     expect(list.length).to.equal(1);
     let index = list.indexOf(thing);
     expect(index).to.equal(0);
-    expect(list.indexOfEquivalent((x) => compareThings(x, thing))).to.equal(index);
+    expect(list.indexOfEquivalent((x) => compareThings(x, thing))).to.equal(
+      index
+    );
 
     // not allowing duplicates
     index = list.insert(thing);
@@ -67,7 +76,9 @@ describe("SortedArray", () => {
     let found = list.findEqual(new Thing(1, 1));
     expect(found).not.to.be.undefined;
     expect(found).to.equal(thing);
-    expect(list.findEquivalent((x) => compareThings(x, new Thing(1, 1)))).to.equal(thing);
+    expect(
+      list.findEquivalent((x) => compareThings(x, new Thing(1, 1)))
+    ).to.equal(thing);
 
     found = list.get(0);
     expect(found).not.to.be.undefined;
@@ -80,7 +91,9 @@ describe("SortedArray", () => {
     expect(list.indexOf(thing)).to.equal(1);
     expect(list.indexOfEquivalent((x) => compareThings(x, thing))).to.equal(1);
     expect(list.indexOf(new Thing(2, 1))).to.equal(2);
-    expect(list.indexOfEquivalent((x) => compareThings(x, new Thing(2, 1)))).to.equal(2);
+    expect(
+      list.indexOfEquivalent((x) => compareThings(x, new Thing(2, 1)))
+    ).to.equal(2);
     expect(list.length).to.equal(3);
 
     const thing05 = new Thing(0, 5);
@@ -96,7 +109,11 @@ describe("SortedArray", () => {
   });
 
   it("Should clone and allow duplicates", () => {
-    const list = new SortedArray<Id>((lhs: Id, rhs: Id) => lhs.compare(rhs), true, (src: Id) => new Id(src.value));
+    const list = new SortedArray<Id>(
+      (lhs: Id, rhs: Id) => lhs.compare(rhs),
+      true,
+      (src: Id) => new Id(src.value)
+    );
 
     const id = new Id("a");
     list.insert(id);
@@ -108,12 +125,33 @@ describe("SortedArray", () => {
     list.insert(id);
     expect(list.length).to.equal(2);
     const lengthA = list.length;
-    const ids = ["x", "w", "z", "a", "a", "z", "w", "p", "a", "x", "y", "e", "r", "w", "q"];
-    for (const toInsert of ids)
-      list.insert(new Id(toInsert));
-    expect(list.length, "length of protected array").to.equal(ids.length + lengthA);
-    expectSorted(list.extractArray(), ids.length + 2, true, (lhs: Id, rhs: Id) => lhs.compare(rhs));
-
+    const ids = [
+      "x",
+      "w",
+      "z",
+      "a",
+      "a",
+      "z",
+      "w",
+      "p",
+      "a",
+      "x",
+      "y",
+      "e",
+      "r",
+      "w",
+      "q",
+    ];
+    for (const toInsert of ids) list.insert(new Id(toInsert));
+    expect(list.length, "length of protected array").to.equal(
+      ids.length + lengthA
+    );
+    expectSorted(
+      list.extractArray(),
+      ids.length + 2,
+      true,
+      (lhs: Id, rhs: Id) => lhs.compare(rhs)
+    );
   });
 
   it("Number array", () => {
@@ -125,18 +163,18 @@ describe("SortedArray", () => {
     let sumBInsert = 0;
     for (const toInsert of numbers) {
       listA.insert(toInsert);
-      listB.insert(toInsert, (a: number) => sumBInsert += a);
+      listB.insert(toInsert, (a: number) => (sumBInsert += a));
       expect(listA.findEqual(toInsert)).is.gte(0);
       sumAll += toInsert;
     }
 
-    expect(listA.findEqual(sumAll)).to.be.undefined;   // sum of positives is larger
+    expect(listA.findEqual(sumAll)).to.be.undefined; // sum of positives is larger
 
     expect(sumBInsert).to.equal(sumAll);
     let sumA = 0;
     let sumB = 0;
-    listA.forEach((value: number) => sumA += value);
-    listB.forEach((value: number) => sumB += value);
+    listA.forEach((value: number) => (sumA += value));
+    listB.forEach((value: number) => (sumB += value));
     expect(sumB).to.equal(sumAll);
     expect(sumA).to.be.lt(sumAll);
     const numDuplicates = listB.length - listA.length;
@@ -148,14 +186,17 @@ describe("SortedArray", () => {
       const removeA = listA.remove(a);
       expect(listA.contains(a)).to.be.false;
       const removeB = listB.remove(a);
-      expect(removeB, "listB should have all original entries with duplicates").is.gte(0);
-      if (removeA === -1)   // this must be removal of a dup.
+      expect(
+        removeB,
+        "listB should have all original entries with duplicates"
+      ).is.gte(0);
+      if (removeA === -1)
+        // this must be removal of a dup.
         numDuplicatesDuringRemoval++;
     }
     expect(numDuplicates).to.be.equal(numDuplicatesDuringRemoval);
     listA.clear();
     expect(listA.isEmpty).to.be.true;
-
   });
 
   it("Should support iteration", () => {
@@ -174,8 +215,7 @@ describe("SortedArray", () => {
     countEntries();
 
     const contents = [6, 5, 1, 3, 2, 4, 4, 6, 5, 5, 5];
-    for (const content of contents)
-      list.insert(content);
+    for (const content of contents) list.insert(content);
 
     countEntries();
 
@@ -227,7 +267,9 @@ describe("SortFunctions", () => {
       const number0 = b0 ? 1 : 0;
       for (const b1 of [false, true]) {
         const number1 = b1 ? 1 : 0;
-        expect(compareBooleans(b0, b1)).to.equal(compareNumbers(number0, number1));
+        expect(compareBooleans(b0, b1)).to.equal(
+          compareNumbers(number0, number1)
+        );
       }
     }
   });

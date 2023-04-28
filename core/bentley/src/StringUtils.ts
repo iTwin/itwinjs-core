@@ -45,10 +45,8 @@ namespace Utf8ToString {
 
         // 3 byte character
         if (inRange(currentByte, 0xe0, 0xef)) {
-          if (0xe0 === currentByte)
-            lowerBoundary = 0xa0;
-          else if (0xed === currentByte)
-            upperBoundary = 0x9f;
+          if (0xe0 === currentByte) lowerBoundary = 0xa0;
+          else if (0xed === currentByte) upperBoundary = 0x9f;
 
           bytesNeeded = 2;
           codePoint = currentByte & 0xf;
@@ -57,10 +55,8 @@ namespace Utf8ToString {
 
         // 4 byte character
         if (inRange(currentByte, 0xf0, 0xf4)) {
-          if (0xf0 === currentByte)
-            lowerBoundary = 0x90;
-          else if (0xf4 === currentByte)
-            upperBoundary = 0x8f;
+          if (0xf0 === currentByte) lowerBoundary = 0x90;
+          else if (0xf4 === currentByte) upperBoundary = 0x8f;
 
           bytesNeeded = 3;
           codePoint = currentByte & 0x7;
@@ -101,15 +97,17 @@ namespace Utf8ToString {
   export function decodeWithFromCharCode(view: Uint8Array): string | undefined {
     let result = "";
     const codePoints = utf8Handler(view);
-    if (undefined === codePoints)
-      return undefined;
+    if (undefined === codePoints) return undefined;
 
     for (let cp of codePoints) {
       if (cp <= 0xffff) {
         result += String.fromCharCode(cp);
       } else {
         cp -= 0x10000;
-        result += String.fromCharCode((cp >> 10) + 0xd800, (cp & 0x3ff) + 0xdc00);
+        result += String.fromCharCode(
+          (cp >> 10) + 0xd800,
+          (cp & 0x3ff) + 0xdc00
+        );
       }
     }
 
@@ -144,10 +142,8 @@ export function utf8ToString(utf8: Uint8Array): string | undefined {
     }
   }
 
-  if (undefined !== decoder)
-    return decoder.decode(utf8);
-  else
-    return utf8ToStringPolyfill(utf8);
+  if (undefined !== decoder) return decoder.decode(utf8);
+  else return utf8ToStringPolyfill(utf8);
 }
 
 /** Given a base-64-encoded string, decode it into an array of bytes.
@@ -157,5 +153,9 @@ export function utf8ToString(utf8: Uint8Array): string | undefined {
  * @public
  */
 export function base64StringToUint8Array(base64: string): Uint8Array {
-  return new Uint8Array(atob(base64).split("").map((c) => c.charCodeAt(0))); // eslint-disable-line deprecation/deprecation
+  return new Uint8Array(
+    atob(base64)
+      .split("")
+      .map((c) => c.charCodeAt(0))
+  ); // eslint-disable-line deprecation/deprecation
 }
