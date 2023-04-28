@@ -15,7 +15,7 @@
   "eslint.lintTask.enable": true,
   "eslint.options": {
     "overrideConfigFile": "./package.json",
-    "resolvePluginsRelativeTo": "../../common/temp/node_modules/.pnpm/@itwin+eslint-plugin@*/node_modules",
+    "resolvePluginsRelativeTo": "../../common/temp/node_modules/.pnpm/@itwin+eslint-plugin*/node_modules",
     "useEslintrc": false
   },
   "eslint.packageManager": "pnpm",
