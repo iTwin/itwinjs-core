@@ -40,7 +40,8 @@
   "dependencies": {
     "lodash": "^4.17.10",
     "superagent": "^7.1.5",
-    "ws": "^7.5.3"
+    "ws": "^7.5.3",
+    "prettier": "~2.8.8"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",

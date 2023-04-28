@@ -61,7 +61,8 @@
   },
   "dependencies": {
     "express": "^4.16.3",
-    "express-ws": "^5.0.2"
+    "express-ws": "^5.0.2",
+    "prettier": "~2.8.8"
   },
   "eslintConfig": {
     "plugins": [

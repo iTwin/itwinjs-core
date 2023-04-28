@@ -101,7 +101,8 @@
     "json5": "^2.2.3",
     "multiparty": "^4.2.1",
     "semver": "^7.3.5",
-    "ws": "^7.5.3"
+    "ws": "^7.5.3",
+    "prettier": "~2.8.8"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

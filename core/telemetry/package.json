@@ -34,7 +34,8 @@
   },
   "dependencies": {
     "@itwin/core-bentley": "workspace:*",
-    "@itwin/core-common": "workspace:*"
+    "@itwin/core-common": "workspace:*",
+    "prettier": "~2.8.8"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",

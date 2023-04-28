@@ -78,5 +78,8 @@
       "radix": "warn",
       "@typescript-eslint/explicit-member-accessibility": "warn"
     }
+  },
+  "dependencies": {
+    "prettier": "~2.8.8"
   }
 }

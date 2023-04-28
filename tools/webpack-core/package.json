@@ -32,7 +32,8 @@
     "glob": "^7.1.2",
     "lodash": "^4.17.10",
     "resolve": "1.19.0",
-    "source-map-loader": "^4.0.0"
+    "source-map-loader": "^4.0.0",
+    "prettier": "~2.8.8"
   },
   "peerDependencies": {
     "webpack": "^5.76.0"

@@ -63,7 +63,8 @@
     "@itwin/core-quantity": "workspace:^4.0.0-dev.86"
   },
   "dependencies": {
-    "almost-equal": "^1.1.0"
+    "almost-equal": "^1.1.0",
+    "prettier": "~2.8.8"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

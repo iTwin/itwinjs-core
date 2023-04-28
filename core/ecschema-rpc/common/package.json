@@ -52,5 +52,8 @@
       "@itwin"
     ],
     "extends": "plugin:@itwin/itwinjs-recommended"
+  },
+  "dependencies": {
+    "prettier": "~2.8.8"
   }
 }

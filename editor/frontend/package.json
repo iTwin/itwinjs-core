@@ -65,7 +65,8 @@
     "NOTE: editor-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@itwin/editor-common": "workspace:*"
+    "@itwin/editor-common": "workspace:*",
+    "prettier": "~2.8.8"
   },
   "eslintConfig": {
     "plugins": [

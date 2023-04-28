@@ -23,7 +23,8 @@
     "@itwin/core-electron": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "electron": "^24.0.0"
+    "electron": "^24.0.0",
+    "prettier": "~2.8.8"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",

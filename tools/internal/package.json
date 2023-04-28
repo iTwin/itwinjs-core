@@ -20,7 +20,8 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "yargs": "^17.4.0"
+    "yargs": "^17.4.0",
+    "prettier": "~2.8.8"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
