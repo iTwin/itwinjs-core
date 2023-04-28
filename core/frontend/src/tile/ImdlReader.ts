@@ -9,7 +9,7 @@
 import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { ClipVector, ClipVectorProps, Point2d, Point3d, Range2d, Range3d, Range3dProps, Transform, TransformProps, XYProps, XYZProps } from "@itwin/core-geometry";
 import {
-  BatchType, ColorDef, ColorDefProps, decodeTileContentDescription, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient,
+  BatchType, ColorDef, ColorDefProps, ComputeNodeId, decodeTileContentDescription, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient,
   ImageSource, ImageSourceFormat, ImdlFlags, ImdlHeader, LinePixels, MultiModelPackedFeatureTable, PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d,
   RenderFeatureTable, RenderMaterial, RenderSchedule, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileHeader, TileReadError, TileReadStatus,
 } from "@itwin/core-common";
@@ -476,6 +476,9 @@ export interface Imdl {
   namedTextures?: ImdlDictionary<ImdlNamedTexture>;
 }
 
+/** @internal */
+export type ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script;
+
 /** Arguments supplied to [[ImdlReader.create]]
  * @internal
  */
@@ -494,7 +497,7 @@ export interface ImdlReaderCreateArgs {
   options?: BatchOptions | false;
   containsTransformNodes?: boolean; // default false
   /** Supplied if the graphics in the tile are to be split up based on the nodes in the timeline. */
-  timeline?: RenderSchedule.ModelTimeline;
+  timeline?: ImdlTimeline;
 }
 
 type PrimitiveParams = {
@@ -537,7 +540,7 @@ export class ImdlReader {
   private readonly _options: BatchOptions | false;
   private readonly _patternGeometry = new Map<string, RenderGeometry[]>();
   private readonly _containsTransformNodes: boolean;
-  private readonly _timeline?: RenderSchedule.ModelTimeline;
+  private readonly _timeline?: ImdlTimeline;
   private readonly _rtcCenter?: Point3d;
   private readonly _hasMultiModelFeatureTable: boolean;
 
@@ -1328,10 +1331,7 @@ export class ImdlReader {
     return geometry;
   }
 
-  private readAnimationBranches(output: RenderGraphic[], mesh: ImdlMesh, featureTable: RenderFeatureTable): void {
-    const timeline = this._timeline;
-    assert(undefined !== timeline);
-
+  private readAnimationBranches(output: RenderGraphic[], mesh: ImdlMesh, featureTable: RenderFeatureTable, timeline: ImdlTimeline): void {
     const primitives = mesh.primitives;
     if (!primitives)
       return;
@@ -1348,10 +1348,7 @@ export class ImdlReader {
       return branch;
     };
 
-    featureTable.populateAnimationNodeIds((feature) => {
-      const elementTimeline = timeline.getTimelineForElement(feature.elementId.lower, feature.elementId.upper);
-      return elementTimeline?.batchId ?? 0;
-    }, timeline.maxBatchId);
+    featureTable.populateAnimationNodeIds((feature) => timeline.getBatchIdForFeature(feature), timeline.maxBatchId);
 
     const discreteNodeIds = timeline.discreteBatchIds;
     const computeNodeId: ComputeAnimationNodeId = (featureIndex) => {
@@ -1467,7 +1464,7 @@ export class ImdlReader {
         if ("Node_Root" === nodeKey) {
           if (this._timeline) {
             // Split up the root node into transform nodes.
-            this.readAnimationBranches(graphics, meshValue, featureTable);
+            this.readAnimationBranches(graphics, meshValue, featureTable, this._timeline);
           } else if (this._containsTransformNodes) {
             // If transform nodes exist in the tile tree, then we need to create a branch for Node_Root so that elements not associated with
             // any node in the schedule script can be grouped together.
