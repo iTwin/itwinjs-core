@@ -126,12 +126,10 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
   }
 
   /** @internal */
-  public mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined {
-    let mapLayer;
-    if (undefined === (mapLayer = this.backgroundMap.layerFromTreeModelIds(mapTreeId, layerTreeId)))
-      mapLayer = this.overlayMap.layerFromTreeModelIds(mapTreeId, layerTreeId);
-
-    return mapLayer;
+  public mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings[] {
+    const bgMapLayers = this.backgroundMap.layerFromTreeModelIds(mapTreeId, layerTreeId);
+    const ovlMapLayers = this.overlayMap.layerFromTreeModelIds(mapTreeId, layerTreeId);
+    return [...bgMapLayers, ...ovlMapLayers];
   }
 }
 

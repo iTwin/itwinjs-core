@@ -18,7 +18,7 @@ import {
   Viewport,
 } from "@itwin/core-frontend";
 import { BeEvent } from "@itwin/core-bentley";
-import { ImageMapLayerSettings } from "@itwin/core-common";
+import { ImageMapLayerSettings, MapLayerSettings } from "@itwin/core-common";
 import { MapFeatureInfoDecorator } from "./MapFeatureInfoDecorator";
 
 export class MapFeatureInfoTool extends PrimitiveTool {
@@ -28,7 +28,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
   public static override iconSpec = "icon-map";
 
   private _decorator: MapFeatureInfoDecorator = new MapFeatureInfoDecorator();
-  private _layerSettingsCache = new Map<string, ImageMapLayerSettings[]>;
+  private _layerSettingsCache = new Map<string, MapLayerSettings[]>;
   private readonly _detachListeners: VoidFunction[] = [];
 
   private static readonly _supportedFormats = ['ArcGISFeature'];
@@ -42,18 +42,18 @@ export class MapFeatureInfoTool extends PrimitiveTool {
     this.initLocateElements();
     IModelApp.locateManager.options.allowDecorations = true;
 
-    this.updateMapLayerSettingsCache();
+    this._layerSettingsCache.clear();
 
     // Listen of display style configuration changes, that we don't have to restart the tool to be up to date.
     const vp = this.targetView;
     if (vp) {
 
-      this._detachListeners.push(vp.onChangeView.addListener((vp, _previous) => {
-        this.updateMapLayerSettingsCache(vp);
+      this._detachListeners.push(vp.onChangeView.addListener((_vp, _previous) => {
+        this._layerSettingsCache.clear();
       }));
 
       this._detachListeners.push(vp.displayStyle.settings.onMapImageryChanged.addListener((_newImagery: any) => {
-        this.updateMapLayerSettingsCache();
+        this._layerSettingsCache.clear();
       }));
     }
 
@@ -67,48 +67,33 @@ export class MapFeatureInfoTool extends PrimitiveTool {
     IModelApp.viewManager.dropDecorator(this._decorator);
   }
 
-  private getMapLayerSettingsFromTileTreeId(tileTreeId: string) {
-    return this._layerSettingsCache.get(tileTreeId) ?? [];
-  }
-
-  private updateMapLayerSettingsCache(vp?: Viewport) {
-
-    if (!vp) {
-      if (this.targetView)
-        vp = this.targetView;
-      else
-        return;
+  private getSettingsFromHit(hit: HitDetail) {
+    let settings: MapLayerSettings[] = [];
+    const fromCache = this._layerSettingsCache.get(hit.sourceId);
+    if (fromCache) {
+      settings = fromCache;
+    } else if (this.targetView) {
+      settings = this.targetView?.mapLayerFromHit(hit).filter((settings => settings instanceof ImageMapLayerSettings && MapFeatureInfoTool._supportedFormats.includes(settings.formatId)));
+      this._layerSettingsCache.set(hit.sourceId, settings);
     }
-    this._layerSettingsCache.clear();
-    vp.forEachMapTreeRef((mapRef: TileTreeReference) => {
-      if (mapRef instanceof MapTileTreeReference) {
-        mapRef.forEachLayerTileTreeRef((layerRef: TileTreeReference) => {
-          if (layerRef instanceof MapLayerTileTreeReference
-            && layerRef.layerSettings instanceof ImageMapLayerSettings
-            && MapFeatureInfoTool._supportedFormats.includes(layerRef.layerSettings.formatId)
-            && layerRef.treeOwner.tileTree?.modelId) {
 
-            const entry = this._layerSettingsCache.get(layerRef.treeOwner.tileTree?.modelId);
-            this._layerSettingsCache.set(layerRef.treeOwner.tileTree?.modelId, (entry ? [...entry, layerRef.layerSettings] : [layerRef.layerSettings]));
-          }
-        });
-      }
-    });
+    return settings;
   }
+
 
   public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string> {
-    if (hit.isMapHit) {
-      const settings = this.getMapLayerSettingsFromTileTreeId(hit.sourceId);
-      if (settings.length > 0) {
-        const names = settings.map(setting => setting.name);
-        return `Layer${names.length > 1 ? 's' : ''}: ${names.join(', ')}"`
-      }
+
+    const settings = this.getSettingsFromHit(hit);
+    if (settings.length > 0) {
+      const names = settings.map(setting => setting.name);
+      return `Layer${names.length > 1 ? 's' : ''}: ${names.join(', ')}`
     }
+
     return "";
   }
 
   public override async filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus> {
-    return hit.isMapHit && this.getMapLayerSettingsFromTileTreeId(hit.sourceId).length > 0 ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
+    return this.getSettingsFromHit(hit).length > 0 ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
   }
 
   public override async onDataButtonDown(
@@ -121,7 +106,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
       ev.viewport,
       ev.inputSource
     );
-    if (hit !== undefined && hit.isMapHit && this.getMapLayerSettingsFromTileTreeId(hit.sourceId).length > 0) {
+    if (hit !== undefined && this.getSettingsFromHit(hit).length > 0) {
       IModelApp.toolAdmin.setCursor("wait");
       try {
         const mapInfo = await hit.viewport.getMapFeatureInfo(hit);

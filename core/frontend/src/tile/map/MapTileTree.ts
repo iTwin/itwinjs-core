@@ -1040,25 +1040,26 @@ export class MapTileTreeReference extends TileTreeReference {
       this._planarClipMask.discloseTileTrees(trees);
   }
 
-  public imageryTreeFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): ImageryMapLayerTreeReference | undefined {
+  public imageryTreeFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): ImageryMapLayerTreeReference[] {
+    const imageryTrees: ImageryMapLayerTreeReference[] = [];
     const tree = this.treeOwner.tileTree as MapTileTree;
     if (undefined === tree || tree.modelId !== mapTreeModelId)
-      return undefined;
+      return imageryTrees;
 
     for (const imageryTree of this._layerTrees)
       if (imageryTree && imageryTree.treeOwner.tileTree && imageryTree.treeOwner.tileTree.modelId === layerTreeModelId)
-        return imageryTree;
+        imageryTrees.push(imageryTree);
 
-    return undefined;
+    return imageryTrees;
   }
 
-  public layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerSettings | undefined {
+  public layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerSettings[] {
     const imageryTree = this.imageryTreeFromTreeModelIds(mapTreeModelId, layerTreeModelId);
-    return imageryTree === undefined ? imageryTree : imageryTree.layerSettings;
+    return imageryTree.map(tree => tree.layerSettings);
   }
 
   // Utility method that execute the provided function for every *imagery* tiles under a given HotDetail object.
-  private async forEachImageryTileHit(hit: HitDetail, func: (imageryTreeRef: ImageryMapLayerTreeReference, quadId: QuadId, cartoGraphic: Cartographic,imageryTree: ImageryMapTileTree ) => Promise<void>): Promise<void> {
+  private async forEachImageryTileHit(hit: HitDetail, func: (imageryTreeRef: ImageryMapLayerTreeReference, quadId: QuadId, cartoGraphic: Cartographic, imageryTree: ImageryMapTileTree) => Promise<void>): Promise<void> {
     const tree = this.treeOwner.tileTree as MapTileTree;
     if (undefined === tree || hit.iModel !== tree.iModel || tree.modelId !== hit.modelId || !hit.viewport || !hit.viewport.view.is3d)
       return undefined;
@@ -1068,7 +1069,7 @@ export class MapTileTreeReference extends TileTreeReference {
       return undefined;
 
     const worldPoint = hit.hitPoint.clone();
-    let cartoGraphic: Cartographic|undefined;
+    let cartoGraphic: Cartographic | undefined;
     try {
       cartoGraphic = await backgroundMapGeometry.dbToWGS84CartographicFromGcs(worldPoint);
     } catch {
@@ -1077,26 +1078,31 @@ export class MapTileTreeReference extends TileTreeReference {
       return undefined;
     }
 
-    const strings = [];
     const imageryTreeRef = this.imageryTreeFromTreeModelIds(hit.modelId, hit.sourceId);
-    if (imageryTreeRef !== undefined) {
-      strings.push(`Imagery Layer: ${imageryTreeRef.layerSettings.name}`);
+    if (imageryTreeRef.length > 0) {
       if (hit.tileId !== undefined) {
         const terrainQuadId = QuadId.createFromContentId(hit.tileId);
         const terrainTile = tree.tileFromQuadId(terrainQuadId);
-        if (terrainTile && terrainTile.imageryTiles) {
-          const imageryTree = imageryTreeRef.treeOwner.tileTree as ImageryMapTileTree;
-          if (imageryTree) {
-            for (const imageryTile of terrainTile.imageryTiles) {
-              if (imageryTree === imageryTile.imageryTree && imageryTile.rectangle.containsCartographic(cartoGraphic)) {
-                try {
-                  await func (imageryTreeRef, imageryTile.quadId, cartoGraphic, imageryTree);
-                } catch {
-                  // continue iterating even though we got a failure.
+
+        for (const treeRef of imageryTreeRef) {
+          const processedTileIds: string[] = []
+          if (terrainTile && terrainTile.imageryTiles) {
+            const imageryTree = treeRef.treeOwner.tileTree as ImageryMapTileTree;
+            if (imageryTree) {
+              for (const imageryTile of terrainTile.imageryTiles) {
+                if (!processedTileIds.includes(imageryTile.contentId)
+                  && imageryTree === imageryTile.imageryTree
+                  && imageryTile.rectangle.containsCartographic(cartoGraphic)) {
+                  processedTileIds.push(imageryTile.contentId);
+                  try {
+                    await func(treeRef, imageryTile.quadId, cartoGraphic, imageryTree);
+                  } catch {
+                    // continue iterating even though we got a failure.
+                  }
+
                 }
 
               }
-
             }
           }
         }
@@ -1109,11 +1115,11 @@ export class MapTileTreeReference extends TileTreeReference {
     if (tree.modelId !== hit.modelId)
       return undefined;
 
-    let carto: Cartographic|undefined;
+    let carto: Cartographic | undefined;
 
     const strings: string[] = [];
 
-    const getTooltipFunc = async (imageryTreeRef: ImageryMapLayerTreeReference,  quadId: QuadId, cartoGraphic: Cartographic,imageryTree: ImageryMapTileTree ) => {
+    const getTooltipFunc = async (imageryTreeRef: ImageryMapLayerTreeReference, quadId: QuadId, cartoGraphic: Cartographic, imageryTree: ImageryMapTileTree) => {
       strings.push(`Imagery Layer: ${imageryTreeRef.layerSettings.name}`);
       carto = cartoGraphic;
       await imageryTree.imageryLoader.getToolTip(strings, quadId, cartoGraphic, imageryTree);

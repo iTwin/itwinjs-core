@@ -1576,14 +1576,14 @@ export abstract class Viewport implements IDisposable, TileUser {
     return this._tiledGraphicsProviders.has(provider);
   }
 
-  /** @internal */
-  public mapLayerFromHit(hit: HitDetail): MapLayerSettings | undefined {
-    return undefined === hit.modelId ? undefined : this.mapLayerFromIds(hit.modelId, hit.sourceId);
+  /** @beta */
+  public mapLayerFromHit(hit: HitDetail): MapLayerSettings[] {
+    return undefined === hit.modelId ? [] : this.mapLayerFromIds(hit.modelId, hit.sourceId);
   }
 
   /** @internal */
-  public mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined {
-    return this._mapTiledGraphicsProvider?.mapLayerFromIds(mapTreeId, layerTreeId);
+  public mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings[] {
+    return this._mapTiledGraphicsProvider === undefined ? [] : this._mapTiledGraphicsProvider.mapLayerFromIds(mapTreeId, layerTreeId);
   }
 
   /** @internal */
