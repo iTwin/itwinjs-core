@@ -1,128 +1,114 @@
 // Place your settings in this file to overwrite default and user settings.
 {
-  "editor.tabSize": 2,
+  "debug.internalConsoleOptions": "openOnSessionStart",
+  "editor.codeActionsOnSave": {
+    "editor.action.fixAll": true,
+    "source.fixAll.eslint": true,
+    "source.fixAll.markdownlint": true
+  },
+  // "editor.formatOnSave": true,
   "editor.insertSpaces": true,
-  "editor.formatOnSave": true,
-  "search.exclude": {
-    "**/node_modules": true,
-    "**/bower_components": true,
-    "**/.nyc_output": true,
-    "**/.rush": true
+  "editor.tabSize": 2,
+  "eslint.debug": true,
+  "eslint.enable": true,
+  "eslint.format.enable": true,
+  "eslint.lintTask.enable": true,
+  // "eslint.nodePath": "common/temp/node_modules/eslint",
+  "eslint.nodePath": "./node_modules",
+  "eslint.options": {
+    "overrideConfigFile": "./package.json",
+    "resolvePluginsRelativeTo": "./node_modules/@itwin/eslint-plugin",
+    // "resolvePluginsRelativeTo": "common/temp/node_modules/",
+    "useEslintrc": false
   },
-  "files.exclude": {
-    "**/.nyc_output": true,
-    "**/.rush": true,
-    "**/*.build.log": true,
-    "**/*.build.error.log": true,
-    "**/generated-docs": true,
-    "**/staging-docs": true,
-    "**/package-deps.json": true,
-    "**/node_modules": true,
-    "**/test-apps/**/build": true,
-    "**/out": true,
-    "**/lib": true,
-    "common/temp": true
-  },
-  "files.trimTrailingWhitespace": true,
-  "files.associations": {
-    "*.snap": "javascript",
-    ".nycrc": "json",
-    "certa.json": "jsonc"
-  },
-  "cSpell.enableFiletypes": [
-    "c",
-    "cpp",
-    "csharp",
-    "go",
-    "html",
-    "javascript",
-    "javascriptreact",
-    "latex",
-    "markdown",
-    "php",
-    "plaintext",
-    "python",
-    "text",
-    "typescript",
-    "typescriptreact",
-    "xml",
-    "yml"
-  ],
-  "json.schemas": [
-    {
-      "fileMatch": [
-        "certa.json"
-      ],
-      "url": "./tools/certa/certa.schema.json"
-    },
-  ],
-  "markdownlint.config": {
-    "MD024": {
-      "allow_different_nesting": true
-    },
-  },
-  "markdownlint.ignore": [
-    "**/CHANGELOG.md"
-  ],
+  "eslint.packageManager": "pnpm",
+  "eslint.run": "onSave",
+  "eslint.trace.server": "verbose",
   "eslint.validate": [
     "javascript",
     "javascriptreact",
     "typescript",
-    "typescriptreact",
+    "typescriptreact"
   ],
   "eslint.workingDirectories": [
     {
       "mode": "auto"
     }
   ],
-  "eslint.options": {
-    "configFile": "./package.json",
-    "useEslintrc": false,
-    "resolvePluginsRelativeTo": "./node_modules/@itwin/eslint-plugin"
+  // "eslint.useESLintClass": true,
+  "files.associations": {
+    ".nycrc": "json",
+    "*.snap": "javascript",
+    "certa.json": "jsonc"
   },
-  "importSorter.importStringConfiguration.quoteMark": "double",
+  "files.exclude": {
+    "**/.nyc_output": false,
+    "**/.rush": false,
+    "**/*.build.error.log": false,
+    "**/*.build.log": false,
+    "**/generated-docs": false,
+    "**/lib": false,
+    "**/node_modules": false,
+    "**/out": false,
+    "**/package-deps.json": false,
+    "**/staging-docs": false,
+    "**/test-apps/**/build": false,
+    "common/temp": false
+  },
+  "files.trimTrailingWhitespace": true,
   "importSorter.generalConfiguration.sortImportsInDirectory": false,
   "importSorter.generalConfiguration.sortOnBeforeSave": false,
-  "importSorter.importStringConfiguration.trailingComma": "multiLine",
   "importSorter.importStringConfiguration.maximumNumberOfImportExpressionsPerLine.count": 150,
+  "importSorter.importStringConfiguration.quoteMark": "double",
   "importSorter.importStringConfiguration.tabSize": 2,
-  "importSorter.sortConfiguration.removeUnusedImports": true,
+  "importSorter.importStringConfiguration.trailingComma": "multiLine",
+  "importSorter.sortConfiguration.customOrderingRules.defaultNumberOfEmptyLinesAfterGroup": 0,
   "importSorter.sortConfiguration.customOrderingRules.rules": [
     {
-      "type": "importMember",
-      "regex": "^$",
+      "disableSort": true,
       "orderLevel": 5,
-      "disableSort": true
+      "regex": "^$",
+      "type": "importMember"
     },
     {
-      "regex": "^[^.@]",
-      "orderLevel": 10
+      "orderLevel": 10,
+      "regex": "^[^.@]"
     },
     {
-      "regex": "^[@]",
-      "orderLevel": 15
+      "orderLevel": 15,
+      "regex": "^[@]"
     },
     {
-      "regex": "^[.]",
-      "orderLevel": 30
+      "orderLevel": 30,
+      "regex": "^[.]"
     }
   ],
-  "importSorter.sortConfiguration.customOrderingRules.defaultNumberOfEmptyLinesAfterGroup": 0,
-  "debug.internalConsoleOptions": "openOnSessionStart",
-  "eslint.format.enable": true,
-  "eslint.lintTask.enable": true,
-  "editor.codeActionsOnSave": {
-    "source.fixAll.markdownlint": true, // first run the markdown linter
-    "editor.action.fixAll": true, // Run the default formatter before eslint, it handles whitespace better
-    "source.fixAll.eslint": true // then run ESLint auto-fix
+  "importSorter.sortConfiguration.removeUnusedImports": true,
+  "json.schemas": [
+    {
+      "fileMatch": ["certa.json"],
+      "url": "./tools/certa/certa.schema.json"
+    }
+  ],
+  "markdownlint.config": {
+    "MD024": {
+      "allow_different_nesting": true
+    }
   },
-  "terminal.integrated.env.windows": {
-    "NODE_ENV": "development"
+  "markdownlint.ignore": ["**/CHANGELOG.md"],
+  "search.exclude": {
+    "**/.nyc_output": true,
+    "**/.rush": true,
+    "**/bower_components": true,
+    "**/node_modules": true
   },
   "terminal.integrated.env.linux": {
     "NODE_ENV": "development"
   },
   "terminal.integrated.env.osx": {
+    "NODE_ENV": "development"
+  },
+  "terminal.integrated.env.windows": {
     "NODE_ENV": "development"
   },
   "typescript.tsdk": "common/temp/node_modules/typescript/lib"
