@@ -116,7 +116,8 @@ export class MapFeatureInfoDecorator implements Decorator {
   public setState(state: MapFeatureInfoDataUpdate) {
 
     this._drapedStrings = undefined;
-    // this._graphicPrimitives = graphics;
+
+    IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
     this._state = state;
 
     this._drapePoints.clear();

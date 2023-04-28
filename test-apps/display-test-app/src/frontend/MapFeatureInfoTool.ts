@@ -17,7 +17,7 @@ import {
   TileTreeReference,
 } from "@itwin/core-frontend";
 import { BeEvent } from "@itwin/core-bentley";
-import { BaseMapLayerSettings, ImageMapLayerSettings, MapLayerSettings } from "@itwin/core-common";
+import { BaseMapLayerSettings, IModel, ImageMapLayerSettings, MapLayerSettings } from "@itwin/core-common";
 import { MapFeatureInfoDecorator } from "./MapFeatureInfoDecorator";
 
 export class DefaultMapFeatureInfoTool extends PrimitiveTool {
@@ -50,11 +50,15 @@ export class DefaultMapFeatureInfoTool extends PrimitiveTool {
         this.updateMapLayerSettingsCache();
       }));
     }
+
+    IModelApp.viewManager.addDecorator(this._decorator);
   }
 
   public override async onCleanup() {
     this._detachListeners.forEach((f) => f());
     this._detachListeners.length = 0;
+
+    IModelApp.viewManager.dropDecorator(this._decorator);
   }
 
   private getMapLayerSettingsFromTileTreeId(tileTreeId: string) {
@@ -108,24 +112,20 @@ export class DefaultMapFeatureInfoTool extends PrimitiveTool {
       ev.viewport,
       ev.inputSource
     );
-    if (hit !== undefined && hit.isMapHit) {
-      /// //////////////////////////
-      // This needs to move somewhere else
-      // const widgetDef = UiFramework.frontstages.findWidget(
-      //   FeatureInfoUiItemsProvider.widgetId
-      // );
-      // if (widgetDef && widgetDef.state !== WidgetState.Open) // eslint-disable-line deprecation/deprecation
-      //   widgetDef.setWidgetState(WidgetState.Open); // eslint-disable-line deprecation/deprecation
-
-      const mapInfo = await hit.viewport.getMapFeatureInfo(hit);
-      console.log("Map feature info retrieved");
-      if (mapInfo.layerInfo && mapInfo.layerInfo.length > 0) {
-        const layerInfo = mapInfo.layerInfo[0];
-        if (layerInfo.info && !(layerInfo.info instanceof HTMLElement) && layerInfo.info && layerInfo.info.length > 0)
-          this._decorator.setState({ mapHit: hit, graphics: layerInfo.info[0].graphics });
+    if (hit !== undefined && hit.isMapHit && this.getMapLayerSettingsFromTileTreeId(hit.sourceId).length > 0) {
+      IModelApp.toolAdmin.setCursor("wait");
+      try {
+        const mapInfo = await hit.viewport.getMapFeatureInfo(hit);
+        if (mapInfo.layerInfo && mapInfo.layerInfo.length > 0) {
+          const layerInfo = mapInfo.layerInfo[0];
+          if (layerInfo.info && !(layerInfo.info instanceof HTMLElement) && layerInfo.info && layerInfo.info.length > 0)
+            this._decorator.setState({ mapHit: hit, graphics: layerInfo.info[0].graphics });
+        }
+      } finally {
+        IModelApp.toolAdmin.setCursor(undefined);
+        DefaultMapFeatureInfoTool.onMapHit.raiseEvent(hit);
       }
 
-      DefaultMapFeatureInfoTool.onMapHit.raiseEvent(hit);
       return EventHandled.Yes;
     }
     DefaultMapFeatureInfoTool.onMapHit.raiseEvent(hit);
@@ -146,7 +146,4 @@ export class DefaultMapFeatureInfoTool extends PrimitiveTool {
       return this.exitTool();
   }
 
-  public override decorate(context: DecorateContext): void {
-    this._decorator.decorate(context);
-  }
 }
