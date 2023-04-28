@@ -8,7 +8,7 @@ import * as chaiAsPromised from "chai-as-promised";
 import { emptyDirSync, existsSync, mkdirsSync, removeSync } from "fs-extra";
 import { basename, join } from "path";
 import * as azureBlob from "@azure/storage-blob";
-import { BriefcaseDb, CloudSqlite, EditableWorkspaceDb, IModelHost, KnownLocations, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
+import { BriefcaseDb, CloudSqlite, EditableWorkspaceDb, IModelDb, IModelHost, KnownLocations, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { assert, BeDuration, DbResult, Guid, GuidString, OpenMode } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
@@ -149,13 +149,12 @@ describe("CloudSqlite", () => {
     });
     container.checkForChanges();
 
-    let db = new SQLiteDb();
-    db.openDb(basename(testBimFileName), OpenMode.Readonly, container);
+    let db = SnapshotDb.openFile(basename(testBimFileName), {container});
     db.withPreparedSqliteStatement("PRAGMA bcv_client", (stmt) => {
       stmt.step();
       expect(stmt.getValueString(0)).equal(containerProps.cloudSqliteLogId);
     });
-    db.closeDb();
+    db.close();
     container.disconnect();
 
     const containerProps2: CloudSqlite.ContainerAccessProps = {
@@ -171,13 +170,12 @@ describe("CloudSqlite", () => {
 
     container2.checkForChanges();
 
-    db = new SQLiteDb();
-    db.openDb(basename(testBimFileName), OpenMode.Readonly, container2);
+    db = SnapshotDb.openFile(basename(testBimFileName), {container: container2});
     db.withPreparedSqliteStatement("PRAGMA bcv_client", (stmt) => {
       stmt.step();
       expect(stmt.getValueString(0)).equal(containerProps2.cloudSqliteLogId);
     });
-    db.closeDb();
+    db.close();
     container2.disconnect();
 
     const containerProps3: CloudSqlite.ContainerAccessProps = { // No cloudsqlitelogid, so undefined. Should be "" by default.
@@ -192,13 +190,12 @@ describe("CloudSqlite", () => {
 
     container3.checkForChanges();
 
-    db = new SQLiteDb();
-    db.openDb(basename(testBimFileName), OpenMode.Readonly, container3);
+    db = SnapshotDb.openFile(basename(testBimFileName), {container: container3});
     db.withPreparedSqliteStatement("PRAGMA bcv_client", (stmt) => {
       stmt.step();
       expect(stmt.getValueString(0)).equal("");
     });
-    db.closeDb();
+    db.close();
     container.disconnect();
   });
 
